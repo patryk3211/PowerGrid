@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "powergrid",
+	"version": "${version}",
+	"name": "Create Power Grid",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"patryk3211"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "GPLv3",
+	"icon": "assets/powergrid/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"org.patryk3211.PowerGrid"
+		],
+		"client": [
+			"org.patryk3211.CreatePowerGridClient"
+		],
+		"fabric-datagen": [
+			"org.patryk3211.CreatePowerGridDataGenerator"
+		]
+	},
+	"mixins": [
+	],
+	"depends": {
+		"fabricloader": ">=0.16.10",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*",
+		"create": "${create_version}"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

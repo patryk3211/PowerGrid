@@ -1,0 +1,128 @@
+plugins {
+	id 'fabric-loom' version '1.10-SNAPSHOT'
+	id 'maven-publish'
+}
+
+group = project.maven_group
+base.archivesName = project.archives_base_name
+
+String buildNumber = System.getenv("GITHUB_RUN_NUMBER")
+version = "${project.mod_version}+${project.minecraft_version}" + (buildNumber != null ? "-build.$buildNumber" : "")
+
+repositories {
+	maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
+
+	maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
+	maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
+	maven { url = "https://maven.tterrag.com/" } // Flywheel
+	maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
+	maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" } // Forge Config API Port
+
+	maven { // Fabric ASM for Porting Lib
+		url = "https://jitpack.io/"
+		content { includeGroupAndSubgroups("com.github") }
+	}
+
+	maven { url = "https://maven.shedaniel.me" } // Cloth Config, REI
+	maven { url = "https://maven.blamejared.com" } // JEI
+
+	maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
+}
+
+configurations.configureEach {
+	resolutionStrategy {
+		// Make sure the desired version of loader is used. Sometimes old versions are pulled in transitively.
+		force("net.fabricmc:fabric-loader:${project.loader_version}")
+	}
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"powergrid" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+
+}
+
+fabricApi {
+	configureDataGeneration {
+		client = true
+	}
+}
+
+dependencies {
+	implementation "org.ejml:ejml-all:0.44.0"
+
+	minecraft "net.minecraft:minecraft:${project.minecraft_version}"
+//	mappings(loom.layered {
+//		it.officialMojangMappings { nameSyntheticMembers = false }
+//		it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
+//	})
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// Create - dependencies are added transitively
+	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_version}")
+
+	// Development QOL
+	modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
+	modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+}
+
+processResources {
+	inputs.property "version", project.version
+	inputs.property "create_version", project.create_version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version, "create_version": inputs.properties.create_version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
+}
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+	inputs.property "archivesName", project.base.archivesName
+
+	from("LICENSE") {
+		rename { "${it}_${inputs.properties.archivesName}" }
+	}
+
+	from("NOTICE") {
+		rename { "${it}_${inputs.properties.archivesName}" }
+	}
+}
+
+// configure the maven publication
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
+	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+	repositories {
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
+	}
+}
