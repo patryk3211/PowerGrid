@@ -13,24 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.electricity;
+package org.patryk3211.electricity.node;
 
-public abstract class CouplingNode implements ICouplingNode {
-    protected ElectricalNetwork network;
-    protected int index;
-
-    @Override
-    public void setNetwork(ElectricalNetwork network) {
-        this.network = network;
-    }
-
-    @Override
-    public void assignIndex(int index) {
-        this.index = index;
-    }
-
-    @Override
-    public int getIndex() {
-        return this.index;
-    }
+public interface INode {
+    void assignIndex(int index);
+    int getIndex();
 }

@@ -17,6 +17,9 @@ package org.patryk3211.electricity;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.patryk3211.electricity.node.FloatingNode;
+import org.patryk3211.electricity.node.TransformerCoupling;
+import org.patryk3211.electricity.node.VoltageSourceNode;
 
 public class TransformerTests {
     @Test

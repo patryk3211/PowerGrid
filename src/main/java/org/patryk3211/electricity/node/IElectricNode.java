@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.electricity;
+package org.patryk3211.electricity.node;
 
-public interface INode {
-    void assignIndex(int index);
-    int getIndex();
+public interface IElectricNode extends INode {
+    float getVoltage();
+    float getCurrent();
+
+    void receiveResult(float value);
 }

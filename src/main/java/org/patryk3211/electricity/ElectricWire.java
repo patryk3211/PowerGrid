@@ -15,6 +15,8 @@
  */
 package org.patryk3211.electricity;
 
+import org.patryk3211.electricity.node.IElectricNode;
+
 public class ElectricWire {
     private float resistance;
     public final IElectricNode node1;

@@ -16,6 +16,12 @@
 package org.patryk3211.electricity;
 
 import org.ejml.data.DMatrixRMaj;
+import org.patryk3211.electricity.node.ICouplingNode;
+import org.patryk3211.electricity.node.IElectricNode;
+import org.patryk3211.electricity.node.INode;
+import org.patryk3211.electricity.node.VoltageSourceNode;
+import org.patryk3211.electricity.solver.BiCGSTABSolver;
+import org.patryk3211.electricity.solver.ISolver;
 
 import java.util.ArrayList;
 import java.util.HashSet;

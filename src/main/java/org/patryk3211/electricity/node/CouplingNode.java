@@ -13,11 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.electricity;
+package org.patryk3211.electricity.node;
 
-public interface IElectricNode extends INode {
-    float getVoltage();
-    float getCurrent();
+import org.patryk3211.electricity.ElectricalNetwork;
 
-    void receiveResult(float value);
+public abstract class CouplingNode implements ICouplingNode {
+    protected ElectricalNetwork network;
+    protected int index;
+
+    @Override
+    public void setNetwork(ElectricalNetwork network) {
+        this.network = network;
+    }
+
+    @Override
+    public void assignIndex(int index) {
+        this.index = index;
+    }
+
+    @Override
+    public int getIndex() {
+        return this.index;
+    }
 }

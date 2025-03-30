@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.electricity;
+package org.patryk3211.electricity.solver;
 
 import org.ejml.data.DMatrixRMaj;
 

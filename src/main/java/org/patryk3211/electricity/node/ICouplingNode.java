@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.electricity;
+package org.patryk3211.electricity.node;
 
-public class VoltageSourceNode extends ElectricNode {
-    public VoltageSourceNode() {
-    }
+import org.ejml.data.DMatrixRMaj;
+import org.patryk3211.electricity.ElectricalNetwork;
 
-    public VoltageSourceNode(float voltage) {
-        setVoltage(voltage);
-    }
+public interface ICouplingNode extends INode {
+    void couple(DMatrixRMaj conductance);
 
-    @Override
-    public void receiveResult(float value) {
-        this.current = value;
-    }
+    void setNetwork(ElectricalNetwork network);
 }
