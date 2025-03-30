@@ -15,9 +15,7 @@
  **/
 package org.patryk3211.electricity;
 
-public interface IElectricNode extends INode {
-    float getVoltage();
-    float getCurrent();
-
-    void receiveResult(float value);
+public interface INode {
+    void assignIndex(int index);
+    int getIndex();
 }

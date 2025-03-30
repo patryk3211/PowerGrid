@@ -20,6 +20,8 @@ public class ElectricWire {
     public final IElectricNode node1;
     public final IElectricNode node2;
 
+    private ElectricalNetwork network;
+
     public ElectricWire(float resistance, IElectricNode node1, IElectricNode node2) {
         this.resistance = resistance;
         this.node1 = node1;
@@ -27,10 +29,25 @@ public class ElectricWire {
     }
 
     public void setResistance(float resistance) {
+        double old = this.resistance;
         this.resistance = resistance;
+        if(network != null)
+            this.network.updateResistance(this, old);
+    }
+
+    public float getResistance() {
+        return resistance;
+    }
+
+    public void setNetwork(ElectricalNetwork network) {
+        this.network = network;
     }
 
     public float potentialDifference() {
+        if(node1 == null)
+            return node2.getVoltage();
+        if(node2 == null)
+            return node1.getVoltage();
         return Math.abs(node1.getVoltage() - node2.getVoltage());
     }
 

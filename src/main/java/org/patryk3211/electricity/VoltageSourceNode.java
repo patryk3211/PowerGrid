@@ -19,6 +19,10 @@ public class VoltageSourceNode extends ElectricNode {
     public VoltageSourceNode() {
     }
 
+    public VoltageSourceNode(float voltage) {
+        setVoltage(voltage);
+    }
+
     @Override
     public void receiveResult(float value) {
         this.current = value;

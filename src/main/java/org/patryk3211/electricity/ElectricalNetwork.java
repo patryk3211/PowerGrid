@@ -16,6 +16,7 @@
 package org.patryk3211.electricity;
 
 import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,51 +25,131 @@ import java.util.Set;
 public class ElectricalNetwork {
     private static final double PRECISION = 1e-6;
 
-    private Set<ElectricWire> wires = new HashSet<>();
-    private final ArrayList<IElectricNode> nodes = new ArrayList<>();
+    private final Set<ElectricWire> wires = new HashSet<>();
+    private final Set<ICouplingNode> couplings = new HashSet<>();
+    private final ArrayList<INode> nodes = new ArrayList<>();
 
-    private ISolver solver;
+    private final ISolver solver;
     private DMatrixRMaj conductanceMatrix;
     private DMatrixRMaj currentMatrix;
+//    private DMatrixRMaj couplingMatrix;
+//    private DMatrixRMaj coupledConductanceMatrix;
+
+//    private int nodeIndex;
+    private boolean dirty;
 
     public ElectricalNetwork() {
         solver = new BiCGSTABSolver(PRECISION);
+//        nodeIndex = 0;
+        dirty = true;
+    }
 
-        var N1 = new VoltageSourceNode();
-        var N2 = new FloatingNode();
-        var N3 = new FloatingNode();
-        var N4 = new VoltageSourceNode();
-
-        N1.setVoltage(5);
-        N4.setVoltage(2);
-
-        addNode(N1);
-        addNode(N2);
-        addNode(N3);
-        addNode(N4);
-
-        wires.add(new ElectricWire(2, N1, N2));
-        wires.add(new ElectricWire(4, N2, null));
-        wires.add(new ElectricWire(5, N2, N3));
-        wires.add(new ElectricWire(10, N3, null));
-        wires.add(new ElectricWire(10, N3, null));
-        wires.add(new ElectricWire(10, N1, N3));
-        wires.add(new ElectricWire(5, N4, N2));
+    // Make sure all variables are completely rebuilt and repopulated.
+    public void setDirty() {
+        this.dirty = true;
     }
 
     public void addNode(IElectricNode node) {
         node.assignIndex(nodes.size());
         nodes.add(node);
+        setDirty();
     }
 
-    public void calculate() {
-        var size = nodes.size();
-        if(conductanceMatrix == null || conductanceMatrix.getNumRows() != size) {
-            conductanceMatrix = new DMatrixRMaj(size, size);
-            currentMatrix = new DMatrixRMaj(size, 1);
-        }
-        solver.setStateSize(size);
+    public void addNodes(IElectricNode... nodes) {
+        for(var node : nodes)
+            addNode(node);
+    }
 
+    public void removeNode(INode node) {
+        if(nodes.get(node.getIndex()) != node)
+            // This node is not actually in this network.
+            return;
+
+        if(nodes.size() > 1) {
+            // Move last node into the place of removed node to prevent holes in the array.
+            var last = nodes.get(nodes.size() - 1);
+            nodes.set(node.getIndex(), last);
+            nodes.remove(nodes.size() - 1);
+            last.assignIndex(node.getIndex());
+        } else {
+            // This is the only node so it's ok to just remove it.
+            nodes.remove(node);
+        }
+
+        if(node instanceof ICouplingNode)
+            couplings.remove(node);
+
+        setDirty();
+    }
+
+    public void removeNode(int index) {
+        if(nodes.size() <= index)
+            return;
+
+        removeNode(nodes.get(index));
+    }
+
+    public void addWire(ElectricWire wire) {
+        if((wire.node1 != null && !nodes.contains(wire.node1)) || (wire.node2 != null && !nodes.contains(wire.node2)))
+            // If node of a wire is not null it must be in the network's node set.
+            throw new IllegalArgumentException("Both nodes of a wire must be part of the network");
+        wire.setNetwork(this);
+        wires.add(wire);
+
+        updateResistance(wire, 0);
+    }
+
+    public void removeWire(ElectricWire wire) {
+        if(!wires.contains(wire))
+            return;
+        wires.remove(wire);
+
+//        double change = -wire.conductance();
+//        if(wire.node1 != null && wire.node2 != null) {
+//            var index1 = wire.node1.getIndex();
+//            var index2 = wire.node2.getIndex();
+//            conductanceMatrix.add(index1, index1, change);
+//            conductanceMatrix.add(index2, index2, change);
+//            conductanceMatrix.add(index1, index2, -change);
+//            conductanceMatrix.add(index2, index1, -change);
+//        } else {
+//            var index = wire.node1 != null ? wire.node1.getIndex() : wire.node2.getIndex();
+//            conductanceMatrix.add(index, index, change);
+//        }
+    }
+
+    public void updateResistance(ElectricWire wire, double oldResistance) {
+//        if(conductanceMatrix == null || dirty)
+//            return;
+//
+//        double change;
+//        if(oldResistance != 0)
+//            change = wire.conductance() - 1 / oldResistance;
+//        else
+//            change = wire.conductance();
+//
+//        if(wire.node1 != null && wire.node2 != null) {
+//            var index1 = wire.node1.getIndex();
+//            var index2 = wire.node2.getIndex();
+//            conductanceMatrix.add(index1, index1, change);
+//            conductanceMatrix.add(index2, index2, change);
+//            conductanceMatrix.add(index1, index2, -change);
+//            conductanceMatrix.add(index2, index1, -change);
+//        } else {
+//            var index = wire.node1 != null ? wire.node1.getIndex() : wire.node2.getIndex();
+//            conductanceMatrix.add(index, index, change);
+//        }
+    }
+
+    public void addNode(ICouplingNode coupling) {
+        coupling.assignIndex(nodes.size());
+        coupling.setNetwork(this);
+        couplings.add(coupling);
+        nodes.add(coupling);
+        setDirty();
+    }
+
+    private void populateConductanceMatrix() {
         conductanceMatrix.zero();
         for(var wire : wires) {
             var G = wire.conductance();
@@ -85,31 +166,47 @@ public class ElectricalNetwork {
             }
         }
 
+        for(var node : couplings) {
+            node.couple(conductanceMatrix);
+        }
+    }
+
+    private void populateCurrentMatrix() {
         currentMatrix.zero();
+        final var mat = conductanceMatrix;
         for(var node : nodes) {
             if(node instanceof VoltageSourceNode source) {
                 var U = source.getVoltage();
                 var index = node.getIndex();
 
-                for(int i = 0; i < size; ++i) {
-                    currentMatrix.add(i, 0, -U * conductanceMatrix.get(i, index));
-                    conductanceMatrix.set(i, index, 0);
+                for(int i = 0; i < nodes.size(); ++i) {
+                    currentMatrix.add(i, 0, -U * mat.get(i, index));
+                    mat.set(i, index, 0);
                 }
-                conductanceMatrix.set(index, index, -1);
+                mat.set(index, index, -1);
             }
         }
+    }
 
-//        for(int i = 0; i < size; ++i) {
-//            for(int j = 0; j < size; ++j) {
-//                System.out.printf("%7.3f ", conductanceMatrix.get(i, j));
-//            }
-//            System.out.printf("   %7.3f\n", currentMatrix.get(i, 0));
-//        }
+    public void calculate() {
+        var nodeCount = nodes.size();
+        if(conductanceMatrix == null || dirty || conductanceMatrix.getNumRows() != nodeCount) {
+            conductanceMatrix = new DMatrixRMaj(nodeCount, nodeCount);
+            currentMatrix = new DMatrixRMaj(nodeCount, 1);
+            solver.setStateSize(nodeCount);
+            dirty = false;
+
+            // Conductance and coupling matrices need to be fully rebuild only after a state size change,
+            // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
+        }
+
+        populateConductanceMatrix();
+        populateCurrentMatrix();
 
         var result = solver.solve(conductanceMatrix, currentMatrix);
-
         for(var node : nodes) {
-            node.receiveResult((float) result.get(node.getIndex(), 0));
+            if(node instanceof IElectricNode enode)
+                enode.receiveResult((float) result.get(node.getIndex(), 0));
         }
     }
 }

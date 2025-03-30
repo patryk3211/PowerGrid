@@ -15,9 +15,10 @@
  **/
 package org.patryk3211.electricity;
 
-public interface IElectricNode extends INode {
-    float getVoltage();
-    float getCurrent();
+import org.ejml.data.DMatrixRMaj;
 
-    void receiveResult(float value);
+public interface ICouplingNode extends INode {
+    void couple(DMatrixRMaj conductance);
+
+    void setNetwork(ElectricalNetwork network);
 }

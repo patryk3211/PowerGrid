@@ -15,9 +15,22 @@
  **/
 package org.patryk3211.electricity;
 
-public interface IElectricNode extends INode {
-    float getVoltage();
-    float getCurrent();
+public abstract class CouplingNode implements ICouplingNode {
+    protected ElectricalNetwork network;
+    protected int index;
 
-    void receiveResult(float value);
+    @Override
+    public void setNetwork(ElectricalNetwork network) {
+        this.network = network;
+    }
+
+    @Override
+    public void assignIndex(int index) {
+        this.index = index;
+    }
+
+    @Override
+    public int getIndex() {
+        return this.index;
+    }
 }

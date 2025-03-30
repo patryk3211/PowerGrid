@@ -18,8 +18,14 @@ package org.patryk3211.electricity;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
+import org.ejml.dense.row.RandomMatrices_DDRM;
+
+import java.util.Random;
 
 public class BiCGSTABSolver implements ISolver {
+    private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
+    private final Random random;
+
     // Solved vector
     private DMatrixRMaj guess;
 
@@ -32,10 +38,11 @@ public class BiCGSTABSolver implements ISolver {
     private DMatrixRMaj s;
     private DMatrixRMaj t;
 
-    private double targetDistance;
+    private final double targetDistance;
 
     public BiCGSTABSolver(double targetDistance) {
         this.targetDistance = targetDistance;
+        this.random = new Random();
     }
 
     @Override
@@ -58,13 +65,26 @@ public class BiCGSTABSolver implements ISolver {
         CommonOps_DDRM.mult(A, guess, v);
         CommonOps_DDRM.subtract(b, v, residual);
 
-        hatResidual.setTo(residual);
+        if(USE_RANDOM_HAT_RESIDUAL) {
+            RandomMatrices_DDRM.fillUniform(hatResidual, random);
+        } else {
+            hatResidual.setTo(residual);
+        }
         double dot = CommonOps_DDRM.dot(hatResidual, residual);
+        if(USE_RANDOM_HAT_RESIDUAL) {
+            while (dot == 0) {
+                // Just in case the random vector happens to be perpendicular.
+                RandomMatrices_DDRM.fillUniform(hatResidual, random);
+                dot = CommonOps_DDRM.dot(hatResidual, residual);
+            }
+        }
         p.setTo(residual);
 
-        while(true) {
+        int iters = 0;
+        while(iters++ < 100) {
             // v = A * p
             CommonOps_DDRM.mult(A, p, v);
+
             double alpha = dot / CommonOps_DDRM.dot(hatResidual, v);
             // h = x + alpha * p
             CommonOps_DDRM.add(guess, alpha, p, h);
