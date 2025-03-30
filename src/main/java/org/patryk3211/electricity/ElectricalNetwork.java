@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2025 patryk3211
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **/
+ */
 package org.patryk3211.electricity;
 
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.CommonOps_DDRM;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,15 +31,11 @@ public class ElectricalNetwork {
     private final ISolver solver;
     private DMatrixRMaj conductanceMatrix;
     private DMatrixRMaj currentMatrix;
-//    private DMatrixRMaj couplingMatrix;
-//    private DMatrixRMaj coupledConductanceMatrix;
 
-//    private int nodeIndex;
     private boolean dirty;
 
     public ElectricalNetwork() {
         solver = new BiCGSTABSolver(PRECISION);
-//        nodeIndex = 0;
         dirty = true;
     }
 
