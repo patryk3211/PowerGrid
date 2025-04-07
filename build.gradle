@@ -37,15 +37,16 @@ configurations.configureEach {
 }
 
 loom {
-	splitEnvironmentSourceSets()
+//	splitEnvironmentSourceSets()
 
 	mods {
 		"powergrid" {
 			sourceSet sourceSets.main
-			sourceSet sourceSets.client
+//			sourceSet sourceSets.client
 		}
 	}
 
+	log4jConfigs.from(file('log4j-dev.xml'))
 }
 
 fabricApi {

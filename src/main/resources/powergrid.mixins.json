@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "org.patryk3211.mixin",
+	"package": "org.patryk3211.powergrid.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 	],

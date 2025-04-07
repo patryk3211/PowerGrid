@@ -1,0 +1,6 @@
+{
+  "powergrid.gui.voltage_meter.title": "Measured voltage",
+
+  "powergrid.generic.unit.volt": "V",
+  "powergrid.generic.unit.amp": "A"
+}

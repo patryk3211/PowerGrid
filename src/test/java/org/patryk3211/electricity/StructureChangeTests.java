@@ -17,9 +17,11 @@ package org.patryk3211.electricity;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.patryk3211.electricity.node.FloatingNode;
-import org.patryk3211.electricity.node.TransformerCoupling;
-import org.patryk3211.electricity.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
+import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class StructureChangeTests {
     @Test
@@ -188,5 +190,70 @@ public class StructureChangeTests {
         network.calculate();
 
         Assertions.assertEquals(5f / 10f, V1.getCurrent(), "Voltage source current is incorrect");
+    }
+
+    @Test
+    void testVoltageSourceChange() {
+        var network = new ElectricalNetwork();
+
+        var V1 = new VoltageSourceNode(5);
+        var N1 = new FloatingNode();
+
+        network.addNodes(V1, N1);
+
+        network.addWire(new ElectricWire(10, V1, N1));
+        network.addWire(new ElectricWire(20, N1, null));
+
+        network.calculate();
+
+        Assertions.assertEquals(5f * 20 / (10 + 20), N1.getVoltage(), 1e-6, "Resistor divider node has incorrect voltage");
+        Assertions.assertEquals(5f / 30, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+
+        V1.setVoltage(10);
+
+        network.calculate();
+
+        Assertions.assertEquals(10f * 20 / (10 + 20), N1.getVoltage(), 1e-6, "Resistor divider node has incorrect voltage");
+        Assertions.assertEquals(10f / 30, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+
+        V1.setVoltage(5);
+
+        network.calculate();
+
+        Assertions.assertEquals(5f * 20 / (10 + 20), N1.getVoltage(), 1e-6, "Resistor divider node has incorrect voltage");
+        Assertions.assertEquals(5f / 30, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+    }
+
+    @Test
+    void testMerge() {
+        var net1 = new ElectricalNetwork();
+        var V1 = new VoltageSourceNode(5);
+        var N1 = new FloatingNode();
+        net1.addNodes(V1, N1);
+        net1.addWire(new ElectricWire(10, V1, N1));
+        net1.addWire(new ElectricWire(10, N1, null));
+
+        var net2 = new ElectricalNetwork();
+        var V2 = new VoltageSourceNode(4);
+        var N2 = new FloatingNode();
+        net2.addNodes(V2, N2);
+        net2.addWire(new ElectricWire(10, V2, N2));
+        net2.addWire(new ElectricWire(10, N2, null));
+
+        net1.calculate();
+        net2.calculate();
+
+        net1.merge(net2);
+
+        N1.setVoltage(0);
+        N2.setVoltage(0);
+        V1.setCurrent(0);
+        V2.setCurrent(0);
+        net1.calculate();
+
+        Assertions.assertEquals(2.5f, N1.getVoltage(), "N1 voltage incorrect");
+        Assertions.assertEquals(2f, N2.getVoltage(), "N2 voltage incorrect");
+        Assertions.assertEquals(5f / 20, V1.getCurrent(), "V1 current incorrect");
+        Assertions.assertEquals(4f / 20, V2.getCurrent(), "V2 current incorrect");
     }
 }
