@@ -18,9 +18,6 @@ package org.patryk3211.powergrid;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -30,8 +27,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.network.ServerBoundPackets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +55,11 @@ public class PowerGrid implements ModInitializer {
 		ModdedBlocks.REGISTRATE.register();
 		ModdedItems.REGISTRATE.register();
 		ModdedBlockEntities.REGISTRATE.register();
+		ModdedEntities.REGISTRATE.register();
 
 		GlobalElectricNetworks.init();
+
+		ServerBoundPackets.init();
 	}
 
 	public static Identifier asResource(String path) {

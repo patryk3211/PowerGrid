@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.gauge;
 
 import com.jozufozu.flywheel.core.PartialModel;
 import com.simibubi.create.AllPartialModels;
+import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
 import com.simibubi.create.foundation.utility.Iterate;
@@ -28,11 +29,9 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.electricity.base.ElectricRenderer;
 
-public class GaugeRenderer extends ElectricRenderer<GaugeBlockEntity> {
+public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
     public GaugeRenderer(BlockEntityRendererFactory.Context context) {
-        super(context);
     }
 
     @Override
@@ -61,8 +60,6 @@ public class GaugeRenderer extends ElectricRenderer<GaugeBlockEntity> {
             rotateBufferTowards(headBuffer, facing).light(light)
                     .renderInto(ms, vb);
         }
-
-        super.renderSafe(be, partialTicks, ms, buffer, light, overlay);
     }
 
     protected SuperByteBuffer rotateBufferTowards(SuperByteBuffer buffer, Direction target) {

@@ -13,22 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid;
+package org.patryk3211.powergrid.network;
 
-import net.fabricmc.api.ClientModInitializer;
-import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.collections.ModdedRenderLayers;
-import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
-import org.patryk3211.powergrid.network.ClientBoundPackets;
+public class ServerBoundPackets {
+    public static void init() {
 
-public class PowerGridClient implements ClientModInitializer {
-	@Override
-	public void onInitializeClient() {
-		ClientElectricNetwork.init();
-
-		ModdedPartialModels.init();
-		ModdedRenderLayers.init();
-
-		ClientBoundPackets.init();
-	}
+    }
 }

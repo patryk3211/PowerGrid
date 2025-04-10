@@ -13,22 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid;
+package org.patryk3211.powergrid.collections;
 
-import net.fabricmc.api.ClientModInitializer;
-import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.collections.ModdedRenderLayers;
-import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
-import org.patryk3211.powergrid.network.ClientBoundPackets;
+import net.minecraft.util.Identifier;
+import org.patryk3211.powergrid.PowerGrid;
 
-public class PowerGridClient implements ClientModInitializer {
-	@Override
-	public void onInitializeClient() {
-		ClientElectricNetwork.init();
-
-		ModdedPartialModels.init();
-		ModdedRenderLayers.init();
-
-		ClientBoundPackets.init();
-	}
+public class ModdedPackets {
+    public static final Identifier ENTITY_DATA_PACKET = Identifier.of(PowerGrid.MOD_ID, "entity_data");
 }

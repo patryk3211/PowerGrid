@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.collections;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.electricity.base.ElectricRenderer;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
@@ -41,7 +40,6 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<BatteryBlockEntity> BATTERY =
             REGISTRATE.blockEntity("battery", BatteryBlockEntity::new)
                     .validBlock(ModdedBlocks.BATTERY)
-                    .renderer(() -> ElectricRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<VoltageGaugeBlockEntity> VOLTAGE_METER =

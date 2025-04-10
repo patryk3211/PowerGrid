@@ -42,6 +42,7 @@ public class ElectricalNetwork {
     private DMatrixRMaj currentMatrix;
 
     private boolean dirty;
+    private boolean calculating;
 
     public ElectricalNetwork() {
         solver = new BiCGSTABSolver(PRECISION);
@@ -268,8 +269,24 @@ public class ElectricalNetwork {
 
         var result = solver.solve(AMatrix, currentMatrix);
         for(var node : nodes) {
-            if(node instanceof IElectricNode enode)
-                enode.receiveResult((float) result.get(node.getIndex(), 0));
+            if(node instanceof IElectricNode enode) {
+                float value = (float) result.get(node.getIndex(), 0);
+                if(Float.isNaN(value)) {
+                    if(!calculating) {
+                        // Try again.
+                        solver.zero();
+                        calculating = true;
+                        calculate();
+                        calculating = false;
+                        break;
+                    } else {
+                        // Failed again
+                        enode.receiveResult(0);
+                    }
+                } else {
+                    enode.receiveResult(value);
+                }
+            }
         }
     }
 }

@@ -20,14 +20,17 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 public interface IElectric extends IWrenchable {
     /**
@@ -95,7 +98,7 @@ public interface IElectric extends IWrenchable {
         return null;
     }
 
-    static Vec3d getRenderPosition(BlockPos position, BlockState state, int terminalIndex) {
+    static Vec3d getTerminalPos(BlockPos position, BlockState state, int terminalIndex) {
         if(state.getBlock() instanceof IElectric electric) {
             var terminal = electric.terminal(state, terminalIndex);
             var origin = terminal.getOrigin();
@@ -106,6 +109,10 @@ public interface IElectric extends IWrenchable {
     }
 
     static boolean makeConnection(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemUsageContext context) {
+        if(world.isClient)
+            return false;
+        ServerWorld serverWorld = (ServerWorld) world;
+
         var behaviour1 = getBehaviour(world, pos1);
         var behaviour2 = getBehaviour(world, pos2);
         if(behaviour1 == null || behaviour2 == null)
@@ -128,15 +135,12 @@ public interface IElectric extends IWrenchable {
         var R = item.getResistance();
         var wire = GlobalElectricNetworks.makeConnection(behaviour1, node1, behaviour2, node2, R);
 
-        ElectricBehaviour.ConnectionRenderParameters params = null;
-        if(world.isClient) {
-            Vec3d renderPos1 = getRenderPosition(pos1, world.getBlockState(pos1), terminal1);
-            Vec3d renderPos2 = getRenderPosition(pos2, world.getBlockState(pos2), terminal2);
-            params = new ElectricBehaviour.ConnectionRenderParameters(renderPos1, renderPos2);
-        }
+        var entity = WireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2);
+        if (!serverWorld.spawnNewEntityAndPassengers(entity))
+            PowerGrid.LOGGER.error("Failed to spawn new connection wire entity.");
 
-        behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(pos2, terminal2, wire, stack.copy(), params));
-        behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(pos1, terminal1, wire, stack.copy()));
+        behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(pos2, terminal2, wire, stack.copy(), entity.getUuid()));
+        behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(pos1, terminal1, wire, stack.copy(), entity.getUuid()));
         return true;
     }
 }

@@ -20,4 +20,5 @@ import org.ejml.data.DMatrixRMaj;
 public interface ISolver {
     void setStateSize(int size);
     DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b);
+    void zero();
 }

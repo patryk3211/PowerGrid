@@ -24,17 +24,19 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Box;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 public class ElectricBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<ElectricBehaviour> TYPE = new BehaviourType<>();
@@ -132,16 +134,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         if(targetConnection != null) {
             targetConnection.wire = wire;
         } else {
-            targetBehaviour.addConnection(connection.targetTerminal, new Connection(getPos(), sourceTerminal, wire, connection.usedWire.copy()));
-        }
-
-        if(world.isClient) {
-            if(targetConnection != null && targetConnection.renderParameters == null) {
-                connection.renderParameters = new ConnectionRenderParameters(
-                        IElectric.getRenderPosition(getPos(), blockEntity.getCachedState(), sourceTerminal),
-                        IElectric.getRenderPosition(connection.target, world.getBlockState(connection.target), connection.targetTerminal)
-                );
-            }
+            targetBehaviour.addConnection(connection.targetTerminal, new Connection(getPos(), sourceTerminal, wire, connection.usedWire.copy(), connection.wireEntityId));
         }
         return true;
     }
@@ -153,8 +146,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 var sourceConnections = connections.get(sourceTerminal);
                 List<Connection> removed = new LinkedList<>();
                 for(var connection : sourceConnections) {
-                    if(!buildConnection(sourceTerminal, connection))
+                    if(!buildConnection(sourceTerminal, connection)) {
                         removed.add(connection);
+                    }
                 }
                 sourceConnections.removeAll(removed);
             }
@@ -182,6 +176,17 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             if(connection.target.equals(target) && connection.targetTerminal == targetTerminal) {
                 sourceConnections.remove(connection);
                 blockEntity.notifyUpdate();
+                // Remove wire entity
+                var world = getWorld();
+                if(!world.isClient) {
+                    var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), target).expand(1));
+                    for(var entity : entities) {
+                        if(entity.getUuid().equals(connection.wireEntityId)) {
+                            entity.discard();
+                            break;
+                        }
+                    }
+                }
                 return;
             }
         }
@@ -228,6 +233,17 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             }
 
             // Remove non-existent connections.
+            for(var connection : sourceConnections) {
+                // Remove wire of non-existent connection if one exists.
+                if(connection.wire != null)
+                    connection.wire.remove();
+                // TODO: Might have to remove the entity here as well.
+                // This is mostly used by the client when syncing data,
+                // which means that entities are handled on the server side.
+                // Only when loading data from disk will this be run on the
+                // server. Hopefully this means that we don't actually need
+                // to care about entities here.
+            }
             connections.get(sourceTerminal).removeAll(sourceConnections);
         }
     }
@@ -302,24 +318,19 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         super.destroy();
     }
 
-    public record ConnectionRenderParameters(Vec3d pos1, Vec3d pos2) { }
-
     public static class Connection {
         public final BlockPos target;
         public final int targetTerminal;
         public ElectricWire wire;
         public final ItemStack usedWire;
-        public ConnectionRenderParameters renderParameters;
+        public final UUID wireEntityId;
 
-        public Connection(BlockPos target, int targetTerminal, ElectricWire wire, ItemStack usedWire) {
+        public Connection(BlockPos target, int targetTerminal, ElectricWire wire, ItemStack usedWire, UUID wireEntityId) {
             this.target = target;
             this.targetTerminal = targetTerminal;
             this.wire = wire;
             this.usedWire = usedWire;
-        }
-        public Connection(BlockPos target, int targetTerminal, ElectricWire wire, ItemStack usedWire, ConnectionRenderParameters renderParameters) {
-            this(target, targetTerminal, wire, usedWire);
-            this.renderParameters = renderParameters;
+            this.wireEntityId = wireEntityId;
         }
 
         NbtCompound serialize() {
@@ -327,6 +338,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             tag.putIntArray("position", new int[] { target.getX(), target.getY(), target.getZ() });
             tag.putInt("terminal", targetTerminal);
             tag.put("stack", usedWire.serializeNBT());
+            tag.putUuid("entity", wireEntityId);
             return tag;
         }
 
@@ -338,8 +350,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             var posArray = tag.getIntArray("position");
             var pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
             var terminal = tag.getInt("terminal");
+            var entity = tag.getUuid("entity");
 
-            return new Connection(pos, terminal, null, ItemStack.fromNbt(tag.getCompound("stack")));
+            return new Connection(pos, terminal, null, ItemStack.fromNbt(tag.getCompound("stack")), entity);
         }
     }
 }

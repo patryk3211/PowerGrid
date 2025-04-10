@@ -66,6 +66,20 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
+    public void zero() {
+        if(guess != null) {
+            guess.zero();
+            residual.zero();
+            hatResidual.zero();
+            p.zero();
+            v.zero();
+            h.zero();
+            s.zero();
+            t.zero();
+        }
+    }
+
+    @Override
     public DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b) {
         if(b.getNumRows() == 0)
             return guess;
@@ -83,11 +97,6 @@ public class BiCGSTABSolver implements ISolver {
         if(USE_RANDOM_HAT_RESIDUAL) {
             if(dot == 0)
                 hatResidual = residual;
-//            while (dot == 0) {
-//                // Just in case the random vector happens to be perpendicular.
-//                RandomMatrices_DDRM.fillUniform(hatResidual, random);
-//                dot = CommonOps_DDRM.dot(hatResidual, residual);
-//            }
         }
         p.setTo(residual);
 

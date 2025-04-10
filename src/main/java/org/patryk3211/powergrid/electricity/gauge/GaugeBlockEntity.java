@@ -47,11 +47,13 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
 
     @Override
     public void tick() {
-        prevDialState = dialState;
-        dialState += (dialTarget - dialState) * .125f;
-        if (dialState > 1 && world.random.nextFloat() < 1 / 2f)
-            dialState -= (dialState - 1) * world.random.nextFloat();
-
+        super.tick();
+        if(!Float.isNaN(dialTarget)) {
+            prevDialState = dialState;
+            dialState += (dialTarget - dialState) * .125f;
+            if (dialState > 1 && world.random.nextFloat() < 1 / 2f)
+                dialState -= (dialState - 1) * world.random.nextFloat();
+        }
     }
 
     public abstract float getValue();
