@@ -16,21 +16,26 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 
 public class TerminalBoundingBox implements ITerminalPlacement, INamedTerminal {
-    private final Vec3d min;
-    private final Vec3d max;
-    private final Vec3d origin;
-    private final double expand;
+    private Vec3d min;
+    private Vec3d max;
+    private Vec3d origin;
+    private double expand;
     private final Text name;
+
+    private TerminalBoundingBox(Text name) {
+        this.name = name;
+    }
 
     public TerminalBoundingBox(Text name, double x1, double y1, double z1, double x2, double y2, double z2) {
         min = new Vec3d(x1 / 16.0, y1 / 16.0, z1 / 16.0);
         max = new Vec3d(x2 / 16.0, y2 / 16.0, z2 / 16.0);
-        origin = min.add(max).multiply(0.5);
+        origin = new Vec3d((x1 + x2) * 0.03125, (y1 + y2) * 0.03125, (z1 + z2) * 0.03125);
         expand = 0;
         this.name = name;
     }
@@ -38,7 +43,7 @@ public class TerminalBoundingBox implements ITerminalPlacement, INamedTerminal {
     public TerminalBoundingBox(Text name, double x1, double y1, double z1, double x2, double y2, double z2, double expand) {
         min = new Vec3d((x1 - expand) / 16.0, (y1 - expand) / 16.0, (z1 - expand) / 16.0);
         max = new Vec3d((x2 + expand) / 16.0, (y2 + expand) / 16.0, (z2 + expand) / 16.0);
-        origin = min.add(max).multiply(0.5);
+        origin = new Vec3d((x1 + x2) * 0.03125, (y1 + y2) * 0.03125, (z1 + z2) * 0.03125);
         this.expand = expand / 16.0;
         this.name = name;
     }
@@ -46,6 +51,52 @@ public class TerminalBoundingBox implements ITerminalPlacement, INamedTerminal {
     public VoxelShape getShape() {
         return VoxelShapes.cuboid(min.x + expand, min.y + expand, min.z + expand,
                 max.x - expand, max.y - expand, max.z - expand);
+    }
+
+    /**
+     * Rotates the terminal bounding box around the block's center,
+     * the angle is determined by the provided direction, while
+     * treating the current terminal orientation as north.
+     */
+    public TerminalBoundingBox rotated(Direction direction) {
+        var xSize = max.x - min.x;
+        var ySize = max.y - min.y;
+        var zSize = max.z - min.z;
+        TerminalBoundingBox terminal = new TerminalBoundingBox(name);
+        terminal.expand = expand;
+        switch(direction) {
+            case NORTH -> {
+                terminal.min = min;
+                terminal.max = max;
+                terminal.origin = origin;
+            }
+            case EAST -> {
+                terminal.min = new Vec3d(1 - min.z - zSize, min.y, min.x);
+                terminal.max = new Vec3d(1 - min.z, max.y, max.x);
+                terminal.origin = new Vec3d(1 - origin.z, origin.y, origin.x);
+            }
+            case SOUTH -> {
+                terminal.min = new Vec3d(1 - min.x - xSize, min.y, 1 - min.z - zSize);
+                terminal.max = new Vec3d(1 - min.x, max.y, 1 - min.z);
+                terminal.origin = new Vec3d(1 - origin.x, origin.y, 1 - origin.z);
+            }
+            case WEST -> {
+                terminal.min = new Vec3d(min.z, min.y, 1 - min.x - xSize);
+                terminal.max = new Vec3d(max.z, max.y, 1 - min.x);
+                terminal.origin = new Vec3d(origin.z, origin.y, 1 - origin.x);
+            }
+            case UP, DOWN -> throw new IllegalArgumentException("Current unsupported");
+        };
+        return terminal;
+    }
+
+    public TerminalBoundingBox withOrigin(Vec3d origin) {
+        this.origin = origin.multiply(1.0 / 16.0);
+        return this;
+    }
+
+    public TerminalBoundingBox withOrigin(double x, double y, double z) {
+        return withOrigin(new Vec3d(x, y, z));
     }
 
     @Override

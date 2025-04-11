@@ -36,17 +36,21 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 
 public class VoltageGaugeBlock extends ElectricBlock implements IBE<VoltageGaugeBlockEntity>, IGaugeBlock {
-    private static final TerminalBoundingBox NORTH_TERMINAL_1 = new TerminalBoundingBox(INamedTerminal.POSITIVE, 13, 12, 7, 16, 16, 9, 0.5);
-    private static final TerminalBoundingBox NORTH_TERMINAL_2 = new TerminalBoundingBox(INamedTerminal.NEGATIVE, 0, 12, 7, 3, 16, 9, 0.5);
+    private static final TerminalBoundingBox NORTH_TERMINAL_1 =
+            new TerminalBoundingBox(INamedTerminal.POSITIVE, 13, 12, 7, 16, 16, 9, 0.5)
+                    .withOrigin(14.5, 15, 8);
+    private static final TerminalBoundingBox NORTH_TERMINAL_2 =
+            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 0, 12, 7, 3, 16, 9, 0.5)
+                    .withOrigin(1.5, 15, 8);
 
-    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = new TerminalBoundingBox(INamedTerminal.NEGATIVE, 0, 12, 7, 3, 16, 9, 0.5);
-    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = new TerminalBoundingBox(INamedTerminal.POSITIVE, 13, 12, 7, 16, 16, 9, 0.5);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.SOUTH);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.SOUTH);
 
-    private static final TerminalBoundingBox EAST_TERMINAL_1 = new TerminalBoundingBox(INamedTerminal.POSITIVE, 7, 12, 13, 9, 16, 16, 0.5);
-    private static final TerminalBoundingBox EAST_TERMINAL_2 = new TerminalBoundingBox(INamedTerminal.NEGATIVE, 7, 12, 0, 9, 16, 3, 0.5);
+    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.EAST);
+    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.EAST);
 
-    private static final TerminalBoundingBox WEST_TERMINAL_1 = new TerminalBoundingBox(INamedTerminal.NEGATIVE, 7, 12, 0, 9, 16, 3, 0.5);
-    private static final TerminalBoundingBox WEST_TERMINAL_2 = new TerminalBoundingBox(INamedTerminal.POSITIVE, 7, 12, 13, 9, 16, 16, 0.5);
+    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.WEST);
+    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.WEST);
 
     private static final VoxelShape SHAPE_NORTH_SOUTH = VoxelShapes.union(
             createCuboidShape(1, 0, 2, 15, 14, 14),
@@ -75,7 +79,7 @@ public class VoltageGaugeBlock extends ElectricBlock implements IBE<VoltageGauge
         return switch (state.get(Properties.HORIZONTAL_FACING)) {
             case NORTH, SOUTH -> SHAPE_NORTH_SOUTH;
             case EAST, WEST -> SHAPE_EAST_WEST;
-            default -> super.getOutlineShape(state, world, pos, context);
+            default -> throw new IllegalArgumentException("Invalid horizontal facing");
         };
     }
 
@@ -87,7 +91,7 @@ public class VoltageGaugeBlock extends ElectricBlock implements IBE<VoltageGauge
 
     @Override
     public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return super.getPlacementState(ctx)
+        return getDefaultState()
                 .with(Properties.HORIZONTAL_FACING, ctx.getHorizontalPlayerFacing().getOpposite());
     }
 

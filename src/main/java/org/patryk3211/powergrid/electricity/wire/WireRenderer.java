@@ -33,10 +33,11 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
         private final Vec3d normal;
         private final float dx;
         private final float L;
+        private final Vec3d cross1, cross2;
 
         // Catenary parameter calculation implemented according to:
         // https://math.stackexchange.com/questions/3557767/how-to-construct-a-catenary-of-a-specified-length-through-two-specified-points
-        public RenderParameters(Vec3d t1, Vec3d t2, double horizontalCoefficient, double verticalCoefficient, Vec3d entityPos) {
+        public RenderParameters(Vec3d t1, Vec3d t2, double horizontalCoefficient, double verticalCoefficient, double thickness, Vec3d entityPos) {
             var direction = new Vec3d(t2.x - t1.x, 0, t2.z - t1.z);
             double dy = t2.y - t1.y;
             dx = (float) direction.length();
@@ -62,6 +63,12 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
             b = -a * 0.5 * Math.log((1 + z) / (1 - z));
             double y1 = t1.y - entityPos.y;
             c = y1 - a * Math.cosh((-(dx / 2) - b) / a);
+
+            // Calculate cross parameters
+            direction = new Vec3d(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
+            Vec3d v1 = new Vec3d(1 - direction.x, 1 - direction.y, 1 - direction.z);
+            cross1 = v1.crossProduct(direction).normalize().multiply(thickness * 0.5);
+            cross2 = cross1.crossProduct(direction).normalize().multiply(thickness * 0.5);
         }
 
         float apply(float x) {
@@ -69,7 +76,7 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
         }
 
         void runForSegments(ISegmentConsumer consumer) {
-            int segmentCount = (int) Math.round(L / SEGMENT_SIZE);
+            int segmentCount = Math.max((int) Math.round(L / SEGMENT_SIZE), 5);
 
             float prevX = -dx / 2;
             float prevY = apply(prevX);
@@ -114,21 +121,22 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
 
         var buffer = vertexConsumers.getBuffer(ModdedRenderLayers.getWireLayer());
         assert entity.renderParams instanceof RenderParameters;
-        ((RenderParameters) entity.renderParams).runForSegments((x1, y1, z1, x2, y2, z2) ->
+        RenderParameters rp = (RenderParameters) entity.renderParams;
+        rp.runForSegments((x1, y1, z1, x2, y2, z2) ->
             renderSegment(matrices, buffer,
                     x1, y1, z1,
                     x2, y2, z2,
-                    0.1, light));
+                    rp.cross1, rp.cross2, light));
     }
 
     public static void renderSegment(MatrixStack ms, VertexConsumer buffer,
                                      float x1, float y1, float z1, float x2, float y2, float z2,
-                                     double thickness, int light) {
-        var direction = new Vec3d(x2 - x1, y2 - y1, z2 - z1);
-        var v1 = new Vec3d(1 - direction.x, 1 - direction.y, 1 - direction.z);
+                                     Vec3d cross1, Vec3d cross2, int light) {
+//        var direction = new Vec3d(x2 - x1, y2 - y1, z2 - z1);
+//        var v1 = new Vec3d(1 - direction.x, 1 - direction.y, 1 - direction.z);
 
-        var cross1 = v1.crossProduct(direction).normalize().multiply(thickness * 0.5);
-        var cross2 = cross1.crossProduct(direction).normalize().multiply(thickness * 0.5);
+//        var cross1 = v1.crossProduct(direction).normalize().multiply(thickness * 0.5);
+//        var cross2 = cross1.crossProduct(direction).normalize().multiply(thickness * 0.5);
 
         var matrix = ms.peek().getPositionMatrix();
         quad(matrix, buffer, light,

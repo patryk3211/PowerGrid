@@ -21,6 +21,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
+import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.GeneratorBlockEntity;
 
@@ -46,5 +47,10 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("voltage_meter", VoltageGaugeBlockEntity::new)
                     .validBlock(ModdedBlocks.VOLTAGE_METER)
                     .renderer(() -> GaugeRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<HeaterBlockEntity> HEATING_COIL =
+            REGISTRATE.blockEntity("heating_coil", HeaterBlockEntity::new)
+                    .validBlock(ModdedBlocks.HEATING_COIL)
                     .register();
 }

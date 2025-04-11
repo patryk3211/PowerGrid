@@ -57,7 +57,7 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer {
     public void updateRenderParams() {
         if(!getWorld().isClient)
             return;
-        renderParams = new WireRenderer.RenderParameters(terminalPos1, terminalPos2, 1.01, 1.2, getPos());
+        renderParams = new WireRenderer.RenderParameters(terminalPos1, terminalPos2, 1.01, 1.2, 0.1, getPos());
     }
 
     public static WireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2) {

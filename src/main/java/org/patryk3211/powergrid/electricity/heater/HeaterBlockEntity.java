@@ -13,31 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.wireconnector;
+package org.patryk3211.powergrid.electricity.heater;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
+import java.util.Collection;
 import java.util.List;
 
-public class ConnectorBlockEntity extends ElectricBlockEntity {
-    private IElectricNode node;
+public class HeaterBlockEntity extends ElectricBlockEntity {
+    private static final float RESISTANCE = 10;
 
-    public ConnectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    private IElectricNode node1;
+    private IElectricNode node2;
+
+    public HeaterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     @Override
     public void initializeNodes() {
-        node = new FloatingNode();
+        node1 = new FloatingNode();
+        node2 = new FloatingNode();
     }
 
     @Override
     public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(node);
+        nodes.add(node1);
+        nodes.add(node2);
+    }
+
+    @Override
+    public void addInternalWires(Collection<ElectricWire> wires) {
+        wires.add(new ElectricWire(RESISTANCE, node1, node2));
     }
 }

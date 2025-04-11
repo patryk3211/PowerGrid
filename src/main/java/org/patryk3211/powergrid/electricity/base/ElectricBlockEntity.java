@@ -17,14 +17,13 @@ package org.patryk3211.powergrid.electricity.base;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 
-public abstract class ElectricBlockEntity extends SmartBlockEntity implements IElectricEntity, CustomRenderBoundingBoxBlockEntity {
+public abstract class ElectricBlockEntity extends SmartBlockEntity implements IElectricEntity {
     public ElectricBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -33,6 +32,4 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         behaviours.add(new ElectricBehaviour(this));
     }
-
-
 }

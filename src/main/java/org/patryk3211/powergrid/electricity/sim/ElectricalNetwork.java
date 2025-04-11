@@ -40,13 +40,15 @@ public class ElectricalNetwork {
     private DMatrixRMaj conductanceMatrix;
     private DMatrixRMaj AMatrix;
     private DMatrixRMaj currentMatrix;
+    private int sourceCount;
 
     private boolean dirty;
-    private boolean calculating;
+    private boolean recalculating;
 
     public ElectricalNetwork() {
         solver = new BiCGSTABSolver(PRECISION);
         dirty = true;
+        sourceCount = 0;
     }
 
     // Make sure all variables are completely rebuilt and repopulated.
@@ -68,6 +70,9 @@ public class ElectricalNetwork {
         node.setNetwork(this);
         nodes.add(node);
         setDirty();
+
+        if(node instanceof VoltageSourceNode)
+            ++sourceCount;
     }
 
     public void addNodes(IElectricNode... nodes) {
@@ -93,6 +98,8 @@ public class ElectricalNetwork {
 
         if(node instanceof ICouplingNode)
             couplings.remove(node);
+        if(node instanceof VoltageSourceNode)
+            --sourceCount;
 
         setDirty();
     }
@@ -250,6 +257,15 @@ public class ElectricalNetwork {
     }
 
     public void calculate() {
+        if(sourceCount == 0) {
+            for(var node : nodes) {
+                if(node instanceof IElectricNode enode) {
+                    enode.receiveResult(0);
+                }
+            }
+            return;
+        }
+
         var nodeCount = nodes.size();
         if(conductanceMatrix == null || dirty || conductanceMatrix.getNumRows() != nodeCount) {
             PowerGrid.LOGGER.debug("Network state size has changed, reallocating variables.");
@@ -272,12 +288,12 @@ public class ElectricalNetwork {
             if(node instanceof IElectricNode enode) {
                 float value = (float) result.get(node.getIndex(), 0);
                 if(Float.isNaN(value)) {
-                    if(!calculating) {
+                    if(!recalculating) {
                         // Try again.
                         solver.zero();
-                        calculating = true;
+                        recalculating = true;
                         calculate();
-                        calculating = false;
+                        recalculating = false;
                         break;
                     } else {
                         // Failed again

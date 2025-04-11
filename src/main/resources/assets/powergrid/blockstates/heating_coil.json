@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "powergrid:block/heating_coil" },
+    "facing=south": { "model": "powergrid:block/heating_coil", "y": 180 },
+    "facing=east": { "model": "powergrid:block/heating_coil", "y": 90 },
+    "facing=west": { "model": "powergrid:block/heating_coil", "y": -90 }
+  }
+}

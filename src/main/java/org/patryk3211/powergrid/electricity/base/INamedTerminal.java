@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
-import com.simibubi.create.foundation.utility.Lang;
 import net.minecraft.text.Text;
-import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.utility.Lang;
 
 public interface INamedTerminal {
-    Text POSITIVE = Lang.builder(PowerGrid.MOD_ID).translate("generic.positive_terminal").component();
-    Text NEGATIVE = Lang.builder(PowerGrid.MOD_ID).translate("generic.negative_terminal").component();
+    Text POSITIVE = Lang.builder().translate("generic.positive_terminal").component();
+    Text NEGATIVE = Lang.builder().translate("generic.negative_terminal").component();
+    Text CONNECTOR = Lang.builder().translate("generic.terminal").component();
 
     Text getName();
 }

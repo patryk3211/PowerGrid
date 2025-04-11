@@ -1,6 +1,19 @@
 {
+  "block.powergrid.wire_connector": "Connector",
+  "block.powergrid.voltage_meter": "Voltage Gauge",
+  "block.powergrid.battery": "Battery",
+  "block.powergrid.heating_coil": "Heating Coil",
+
+  "item.powergrid.wire": "Wire",
+
+  "itemGroup.powergrid.main": "Create: Power Grid",
+
   "powergrid.gui.voltage_meter.title": "Measured voltage",
 
   "powergrid.generic.unit.volt": "V",
-  "powergrid.generic.unit.amp": "A"
+  "powergrid.generic.unit.amp": "A",
+
+  "generic.positive_terminal": "Positive",
+  "generic.negative_terminal": "Negative",
+  "generic.terminal": "Connector"
 }
