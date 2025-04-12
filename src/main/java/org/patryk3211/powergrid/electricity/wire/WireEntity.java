@@ -155,4 +155,8 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer {
 //        return super.interact(player, hand);
         return ActionResult.SUCCESS;
     }
+
+    @Override
+    public void setOnFire(boolean onFire) {
+    }
 }

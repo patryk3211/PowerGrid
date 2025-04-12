@@ -34,18 +34,17 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
 
     public VoltageGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        setLazyTickRate(10);
     }
 
     @Override
-    public void lazyTick() {
-        super.lazyTick();
+    public void tick() {
         var potential = Math.abs(getValue());
         if(potential > maxValue) {
             dialTarget = 1.125f;
         } else {
             dialTarget = potential / maxValue;
         }
+        super.tick();
     }
 
     @Override

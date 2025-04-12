@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wireconnector;
 
-import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.foundation.block.IBE;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
@@ -35,8 +34,6 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.INamedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-
-import java.util.function.Function;
 
 public class ConnectorBlock extends ElectricBlock implements IBE<ConnectorBlockEntity> {
     private static final ITerminalPlacement TERMINAL = new TerminalBoundingBox(INamedTerminal.CONNECTOR, 0, 0, 0, 16, 16, 16);

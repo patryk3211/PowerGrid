@@ -62,8 +62,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         connections = new ArrayList<>();
         for(int i = 0; i < externalNodes.size(); ++i)
             connections.add(new LinkedList<>());
-
-        setLazyTickRate(10);
     }
 
     public void joinNetwork(ElectricalNetwork network) {
@@ -139,19 +137,24 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return true;
     }
 
-    @Override
-    public void lazyTick() {
-        if(nbtChanged) {
-            for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
-                var sourceConnections = connections.get(sourceTerminal);
-                List<Connection> removed = new LinkedList<>();
-                for(var connection : sourceConnections) {
-                    if(!buildConnection(sourceTerminal, connection)) {
-                        removed.add(connection);
-                    }
+    private void connectionRefresh() {
+        for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
+            var sourceConnections = connections.get(sourceTerminal);
+            List<Connection> removed = new LinkedList<>();
+            for(var connection : sourceConnections) {
+                if(!buildConnection(sourceTerminal, connection)) {
+                    removed.add(connection);
                 }
-                sourceConnections.removeAll(removed);
             }
+            sourceConnections.removeAll(removed);
+        }
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        if(nbtChanged) {
+            connectionRefresh();
             nbtChanged = false;
         }
     }
@@ -245,6 +248,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 // to care about entities here.
             }
             connections.get(sourceTerminal).removeAll(sourceConnections);
+        }
+
+        if(nbtChanged && blockEntity.hasWorld()) {
+            connectionRefresh();
+            nbtChanged = false;
         }
     }
 

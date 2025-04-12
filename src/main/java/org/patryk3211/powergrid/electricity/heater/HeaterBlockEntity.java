@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.heater;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
@@ -29,11 +30,45 @@ import java.util.List;
 public class HeaterBlockEntity extends ElectricBlockEntity {
     private static final float RESISTANCE = 10;
 
+    public enum State {
+        COLD,
+        SMOKING,
+        BLASTING
+    }
+
     private IElectricNode node1;
     private IElectricNode node2;
+    private State state;
 
     public HeaterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        this.state = State.COLD;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        float voltage = Math.abs(node1.getVoltage() - node2.getVoltage());
+        float power = voltage * voltage / RESISTANCE;
+        if(power < ModdedConfigs.server().electricity.heaterSmokingPower.get()) {
+            updateState(State.COLD);
+        } else if(power < ModdedConfigs.server().electricity.heaterBlastingPower.get()) {
+            updateState(State.SMOKING);
+        } else {
+            updateState(State.BLASTING);
+        }
+    }
+
+    private void updateState(State state) {
+        assert world != null;
+        if(this.state != state) {
+            this.state = state;
+            world.updateNeighbors(pos, getCachedState().getBlock());
+        }
+    }
+
+    public State getState() {
+        return state;
     }
 
     @Override

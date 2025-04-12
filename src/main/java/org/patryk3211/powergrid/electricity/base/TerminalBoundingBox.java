@@ -86,7 +86,7 @@ public class TerminalBoundingBox implements ITerminalPlacement, INamedTerminal {
                 terminal.origin = new Vec3d(origin.z, origin.y, 1 - origin.x);
             }
             case UP, DOWN -> throw new IllegalArgumentException("Current unsupported");
-        };
+        }
         return terminal;
     }
 

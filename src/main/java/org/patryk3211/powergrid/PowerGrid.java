@@ -25,10 +25,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.collections.ModdedBlocks;
-import org.patryk3211.powergrid.collections.ModdedEntities;
-import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.network.ServerBoundPackets;
 import org.slf4j.Logger;
@@ -56,6 +53,8 @@ public class PowerGrid implements ModInitializer {
 		ModdedItems.REGISTRATE.register();
 		ModdedBlockEntities.REGISTRATE.register();
 		ModdedEntities.REGISTRATE.register();
+
+		ModdedConfigs.register();
 
 		GlobalElectricNetworks.init();
 

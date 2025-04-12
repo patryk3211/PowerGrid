@@ -113,6 +113,10 @@ jar {
 	}
 }
 
+runClient {
+	enableAssertions = true
+}
+
 test {
 	useJUnitPlatform()
 }
