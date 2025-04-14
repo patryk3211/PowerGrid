@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.collections;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import net.minecraft.item.Item;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 
@@ -25,4 +26,7 @@ public class ModdedItems {
             .defaultCreativeTab(PowerGrid.ITEM_GROUP_KEY);
 
     public static final ItemEntry<WireItem> WIRE = WireItem.register(REGISTRATE);
+
+    public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
+            .register();
 }

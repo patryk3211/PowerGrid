@@ -135,12 +135,12 @@ public interface IElectric extends IWrenchable {
         var R = item.getResistance();
         var wire = GlobalElectricNetworks.makeConnection(behaviour1, node1, behaviour2, node2, R);
 
-        var entity = WireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2);
+        var entity = WireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, stack.copy());
         if (!serverWorld.spawnNewEntityAndPassengers(entity))
             PowerGrid.LOGGER.error("Failed to spawn new connection wire entity.");
 
-        behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(pos2, terminal2, wire, stack.copy(), entity.getUuid()));
-        behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(pos1, terminal1, wire, stack.copy(), entity.getUuid()));
+        behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(pos2, terminal2, wire, entity.getUuid()));
+        behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(pos1, terminal1, wire, entity.getUuid()));
         return true;
     }
 }

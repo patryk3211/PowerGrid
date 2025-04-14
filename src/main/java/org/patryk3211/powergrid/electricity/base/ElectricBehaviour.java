@@ -18,8 +18,6 @@ package org.patryk3211.powergrid.electricity.base;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -30,7 +28,6 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
-import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
@@ -125,14 +122,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         if(targetNode == null)
             return false;
 
-        float R = ((IWire) connection.usedWire.getItem()).getResistance();
+        float R = connection.resistance;
         var wire = GlobalElectricNetworks.makeConnection(this, getTerminal(sourceTerminal), targetBehaviour, targetNode, R);
 
         connection.wire = wire;
         if(targetConnection != null) {
             targetConnection.wire = wire;
         } else {
-            targetBehaviour.addConnection(connection.targetTerminal, new Connection(getPos(), sourceTerminal, wire, connection.usedWire.copy(), connection.wireEntityId));
+            targetBehaviour.addConnection(connection.targetTerminal, new Connection(getPos(), sourceTerminal, wire, connection.wireEntityId));
         }
         return true;
     }
@@ -184,14 +181,30 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 if(!world.isClient) {
                     var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), target).expand(1));
                     for(var entity : entities) {
-                        if(entity.getUuid().equals(connection.wireEntityId)) {
-                            entity.discard();
+                        if(entity.getUuid().equals(connection.wireEntityId) && !entity.isRemoved()) {
+                            entity.kill();
                             break;
                         }
                     }
                 }
+                if(connection.wire != null) {
+                    connection.wire.remove();
+                }
                 return;
             }
+        }
+    }
+
+    private void updateResistance(int sourceTerminal, Connection connection, float resistance) {
+        if(connection.wire != null)
+            connection.wire.setResistance(resistance);
+        connection.resistance = resistance;
+
+        var targetEntity = getWorld().getBlockEntity(connection.target);
+        if(targetEntity instanceof SmartBlockEntity smartEntity) {
+            var behaviour = smartEntity.getBehaviour(TYPE);
+            var complementaryConnection = behaviour.getConnection(connection.targetTerminal, getPos(), sourceTerminal);
+            complementaryConnection.resistance = resistance;
         }
     }
 
@@ -226,7 +239,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 }
                 if(equivalent != null) {
                     sourceConnections.remove(equivalent);
-                    // TODO: Update resistance if needed.
+                    updateResistance(sourceTerminal, equivalent, nbtConnection.resistance);
                 } else {
                     // Add connection, wire will be populated by lazy tick,
                     // because world might not be valid here.
@@ -297,7 +310,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void breakConnections() {
-        List<ItemStack> dropped = new LinkedList<>();
         for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
             var sourceConnections = connections.get(sourceTerminal);
             for(var connection : sourceConnections) {
@@ -310,12 +322,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 }
                 if(connection.wire != null)
                     connection.wire.remove();
-                dropped.add(connection.usedWire);
             }
             sourceConnections.clear();
-        }
-        for(ItemStack stack : dropped) {
-            Block.dropStack(getWorld(), getPos(), stack);
         }
         blockEntity.notifyUpdate();
     }
@@ -330,14 +338,21 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         public final BlockPos target;
         public final int targetTerminal;
         public ElectricWire wire;
-        public final ItemStack usedWire;
+        public float resistance;
         public final UUID wireEntityId;
 
-        public Connection(BlockPos target, int targetTerminal, ElectricWire wire, ItemStack usedWire, UUID wireEntityId) {
+        public Connection(BlockPos target, int targetTerminal, ElectricWire wire, UUID wireEntityId) {
             this.target = target;
             this.targetTerminal = targetTerminal;
             this.wire = wire;
-            this.usedWire = usedWire;
+            this.resistance = wire.getResistance();
+            this.wireEntityId = wireEntityId;
+        }
+
+        private Connection(BlockPos target, int targetTerminal, UUID wireEntityId, float resistance) {
+            this.target = target;
+            this.targetTerminal = targetTerminal;
+            this.resistance = resistance;
             this.wireEntityId = wireEntityId;
         }
 
@@ -345,8 +360,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             var tag = new NbtCompound();
             tag.putIntArray("position", new int[] { target.getX(), target.getY(), target.getZ() });
             tag.putInt("terminal", targetTerminal);
-            tag.put("stack", usedWire.serializeNBT());
             tag.putUuid("entity", wireEntityId);
+            tag.putFloat("resistance", resistance);
             return tag;
         }
 
@@ -360,7 +375,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             var terminal = tag.getInt("terminal");
             var entity = tag.getUuid("entity");
 
-            return new Connection(pos, terminal, null, ItemStack.fromNbt(tag.getCompound("stack")), entity);
+            float resistance = 1;
+            if(tag.contains("resistance"))
+                resistance = tag.getFloat("resistance");
+
+            return new Connection(pos, terminal, entity, resistance);
         }
     }
 }

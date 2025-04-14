@@ -15,11 +15,14 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
@@ -34,6 +37,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
+import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.network.EntityDataPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
@@ -54,6 +59,8 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
     public Vec3d terminalPos1;
     public Vec3d terminalPos2;
 
+    private ItemStack item;
+
     public Object renderParams;
 
     public WireEntity(EntityType<?> type, World world) {
@@ -66,7 +73,7 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
         renderParams = new WireRenderer.CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS, getPos());
     }
 
-    public static WireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2) {
+    public static WireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item) {
         var entity = new WireEntity(ModdedEntities.WIRE.get(), world);
         entity.electricBlockPos1 = pos1;
         entity.electricBlockPos2 = pos2;
@@ -74,10 +81,10 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
         entity.electricTerminal2 = terminal2;
         entity.terminalPos1 = IElectric.getTerminalPos(pos1, world.getBlockState(pos1), terminal1);
         entity.terminalPos2 = IElectric.getTerminalPos(pos2, world.getBlockState(pos2), terminal2);
+        entity.item = item;
 
         var vect = entity.terminalPos2.subtract(entity.terminalPos1);
         var facing = vect.crossProduct(UP);
-        // TODO: I don't think we need to calculate this angle.
         float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
 
         entity.refreshPositionAndAngles(
@@ -141,6 +148,9 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
         electricTerminal1 = nbt.getInt("terminal1");
         electricTerminal2 = nbt.getInt("terminal2");
 
+        if(nbt.contains("item"))
+            item = ItemStack.fromNbt(nbt.getCompound("item"));
+
         var world = getWorld();
         if(world != null) {
             terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
@@ -155,12 +165,46 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
         nbt.putIntArray("pos2", new int[] { electricBlockPos2.getX(), electricBlockPos2.getY(), electricBlockPos2.getZ() });
         nbt.putInt("terminal1", electricTerminal1);
         nbt.putInt("terminal2", electricTerminal2);
+        if(item != null)
+            nbt.put("item", item.writeNbt(new NbtCompound()));
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        super.remove(reason);
+
+        if(reason.shouldDestroy()) {
+            var world = getWorld();
+
+            if(world.getBlockEntity(electricBlockPos1) instanceof SmartBlockEntity smartEntity) {
+                var behaviour = smartEntity.getBehaviour(ElectricBehaviour.TYPE);
+                behaviour.removeConnection(electricTerminal1, electricBlockPos2, electricTerminal2);
+            }
+
+            // This isn't really needed but just to be safe we try to remove from both sides.
+            if(world.getBlockEntity(electricBlockPos2) instanceof SmartBlockEntity smartEntity) {
+                var behaviour = smartEntity.getBehaviour(ElectricBehaviour.TYPE);
+                behaviour.removeConnection(electricTerminal2, electricBlockPos1, electricTerminal1);
+            }
+        }
+    }
+
+    @Override
+    public void kill() {
+        if(item != null) {
+            dropStack(item);
+            item = null;
+        }
+        super.kill();
     }
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
-//        return super.interact(player, hand);
-        return ActionResult.SUCCESS;
+        if(player.getStackInHand(hand).getItem() == ModdedItems.WIRE_CUTTER.get()) {
+            kill();
+            return ActionResult.SUCCESS;
+        }
+        return super.interact(player, hand);
     }
 
     @Override
