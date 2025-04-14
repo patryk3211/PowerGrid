@@ -20,6 +20,8 @@ import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 
+import java.util.OptionalDouble;
+
 public class ModdedRenderLayers {
     private static final RenderLayer WIRES = RenderLayer.of(
             "wire",
@@ -34,8 +36,25 @@ public class ModdedRenderLayers {
                 .build(false)
         );
 
+    private static final RenderLayer DEBUG_LINES = RenderLayer.of(
+            "powergrid_debug_lines",
+            VertexFormats.POSITION_COLOR,
+            VertexFormat.DrawMode.DEBUG_LINES,
+            256,
+            RenderLayer.MultiPhaseParameters.builder()
+                    .program(RenderPhase.COLOR_PROGRAM)
+                    .cull(RenderPhase.DISABLE_CULLING)
+                    .transparency(RenderPhase.NO_TRANSPARENCY)
+                    .lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(1.0f)))
+                    .build(false)
+    );
+
     public static RenderLayer getWireLayer() {
         return WIRES;
+    }
+
+    public static RenderLayer getDebugLines() {
+        return DEBUG_LINES;
     }
 
     public static void init() {

@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -30,14 +32,18 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.network.EntityDataPacket;
+import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 import java.util.List;
 
-public class WireEntity extends Entity implements EntityDataPacket.IConsumer {
+public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IComplexRaycast {
     private static final Vec3d UP = new Vec3d(0, 1, 0);
+
+    private static final float THICKNESS = 0.1f;
 
     private BlockPos electricBlockPos1;
     private BlockPos electricBlockPos2;
@@ -57,7 +63,7 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer {
     public void updateRenderParams() {
         if(!getWorld().isClient)
             return;
-        renderParams = new WireRenderer.RenderParameters(terminalPos1, terminalPos2, 1.01, 1.2, 0.1, getPos());
+        renderParams = new WireRenderer.CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS, getPos());
     }
 
     public static WireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2) {
@@ -99,6 +105,7 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer {
 
     @Override
     public boolean canHit() {
+        // Hits get handled by IComplexRaycast
         return false;
     }
 
@@ -158,5 +165,71 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer {
 
     @Override
     public void setOnFire(boolean onFire) {
+    }
+
+    @Override
+    @Environment(EnvType.CLIENT)
+    public @Nullable Vec3d raycast(Vec3d min, Vec3d max) {
+        if(renderParams instanceof WireRenderer.CurveParameters params) {
+            Vec3d ray = max.subtract(min);
+            var rayLength = ray.lengthSquared();
+            ray = ray.normalize();
+            Vec3d planeOrigin = getPos();
+            Vec3d planeNormal = getRotationVec(1);
+            Vec3d planeOriginVector = planeOrigin.subtract(min);
+
+            var planeYVector = new Vec3d(0, 1, 0);
+            var planeXVector = planeNormal.crossProduct(planeYVector);
+            if(ray.x * ray.x + ray.z * ray.z < ray.y * ray.y * 0.25) {
+                double planeDistance = planeOriginVector.dotProduct(planeYVector);
+
+                double hitDistance = planeDistance / planeYVector.dotProduct(ray);
+                if(hitDistance * hitDistance < rayLength) {
+                    Vec3d hit = min.add(ray.multiply(hitDistance));
+
+                    var hitOriginVector = hit.subtract(planeOrigin);
+
+                    var parallelDistance = Math.abs(planeXVector.dotProduct(hitOriginVector));
+                    var perpendicularDistance = Math.abs(planeNormal.dotProduct(hitOriginVector));
+
+                    if(parallelDistance < params.getCurveSpan() / 2 && perpendicularDistance < THICKNESS / 2) {
+                        // Hit
+                        return hit;
+                    } else {
+                        // Miss
+                        return null;
+                    }
+                }
+            } else {
+                double planeDistance = planeOriginVector.dotProduct(planeNormal);
+
+                double hitDistance = planeDistance / planeNormal.dotProduct(ray);
+                if (hitDistance > 0 && hitDistance * hitDistance < rayLength) {
+                    Vec3d hit = min.add(ray.multiply(hitDistance));
+
+                    var hitOriginVector = hit.subtract(planeOrigin);
+                    double x = planeXVector.dotProduct(hitOriginVector);
+                    // We can do that since the entity never has any pitch.
+                    double y = hitOriginVector.y;
+
+                    double closeX = params.findClosestPoint(x, y);
+                    double span = params.getCurveSpan() / 2;
+                    closeX = Math.min(Math.max(closeX, -span), span);
+
+                    double dX = x - closeX;
+                    double dY = y - params.apply((float) closeX);
+
+                    double squareDistance = dX * dX + dY * dY;
+                    if(squareDistance < THICKNESS * THICKNESS) {
+                        // Hit
+                        return hit;
+                    } else {
+                        // Miss
+                        return null;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

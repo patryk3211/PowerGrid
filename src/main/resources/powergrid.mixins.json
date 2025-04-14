@@ -1,12 +1,12 @@
 {
-	"required": true,
-	"package": "org.patryk3211.powergrid.mixin",
-	"compatibilityLevel": "JAVA_17",
-	"mixins": [
-		"BlastingTypeMixin",
-		"SmokingTypeMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "package": "org.patryk3211.powergrid.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "BlastingTypeMixin",
+    "SmokingTypeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }

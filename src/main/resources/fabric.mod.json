@@ -26,7 +26,8 @@
 		]
 	},
 	"mixins": [
-		"powergrid.mixins.json"
+		"powergrid.mixins.json",
+		"powergrid.client.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.16.10",

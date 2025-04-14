@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "org.patryk3211.powergrid.mixin.client",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "ComplexEntityRaycastMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

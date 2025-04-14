@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
@@ -25,10 +27,11 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
+@Environment(EnvType.CLIENT)
 public class WireRenderer extends EntityRenderer<WireEntity> {
     private static final double SEGMENT_SIZE = 0.5;
 
-    public static class RenderParameters {
+    public static class CurveParameters {
         private final double a, b, c;
         private final Vec3d normal;
         private final float dx;
@@ -37,7 +40,7 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
 
         // Catenary parameter calculation implemented according to:
         // https://math.stackexchange.com/questions/3557767/how-to-construct-a-catenary-of-a-specified-length-through-two-specified-points
-        public RenderParameters(Vec3d t1, Vec3d t2, double horizontalCoefficient, double verticalCoefficient, double thickness, Vec3d entityPos) {
+        public CurveParameters(Vec3d t1, Vec3d t2, double horizontalCoefficient, double verticalCoefficient, double thickness, Vec3d entityPos) {
             var direction = new Vec3d(t2.x - t1.x, 0, t2.z - t1.z);
             double dy = t2.y - t1.y;
             dx = (float) direction.length();
@@ -94,6 +97,51 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
             }
         }
 
+        /**
+         * Get length of the span (-dx/2, dx) in which the curve is defined.
+         * @return Curve span
+         */
+        float getCurveSpan() {
+            return dx;
+        }
+
+        /**
+         * Find closest x coordinate of the curve in relation to the given point.
+         * @param x1 First point coordinate
+         * @param y1 Second point coordinate
+         * @return First coordinate of closest curve point (x, f(x))
+         */
+        double findClosestPoint(double x1, double y1) {
+            // f(x) = square distance between cosh(x) and a point (in 2D space)
+            // f(x) = (x - P.x)^2 + (cosh(x) - P.y)^2
+            // f'(x) = 2(cosh(x) - P.y) * sinh(x) + 2(x - P.x)
+            // f''(x) = 4cosh^2(x) - 2cosh(x) * P.y
+            // The functions for a curve defined by a, b and c are slightly different:
+            // z = (x - b) / a
+            // f'(x) = 2 * sinh(z) * (a * cosh(z) + c - P.y) + 2(x - P.x)
+            // f''(x) = 4 * cosh^2(z) + (2 / a) * cosh(z) * (c - P.y)
+            // Find x where value of f(x) is the smallest (smallest square distance)
+
+            // Select initial guess for Newton's iteration.
+            double x = x1;
+
+            // Solve for f'(x) = 0
+            for(int i = 0; i < 5; ++i) {
+                // Apply Newton's iteration where x_{n+1} = x - f(x_n)/f'(x_n) (which means that we actually need the second derivative)
+                double z = (x - b) / a;
+                double xCosh = Math.cosh(z);
+                double xSinh = Math.sinh(z);
+                double fval = 2 * ((a * xCosh + c - y1) * xSinh + x - x1);
+                double fdval = 4 * xCosh * xCosh + (2 / a) * xCosh * (c - y1);
+                x = x - fval / fdval;
+                // TODO: Use fval to see if solution is close to zero (instead of a fixed number of iterations)
+            }
+
+            // X should correspond to a point on the curve (x, f(x)),
+            // where distance to point P(x1, y1) is the smallest.
+            return x;
+        }
+
         public interface ISegmentConsumer {
             void apply(float x1, float y1, float z1, float x2, float y2, float z2);
         }
@@ -120,8 +168,8 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
         }
 
         var buffer = vertexConsumers.getBuffer(ModdedRenderLayers.getWireLayer());
-        assert entity.renderParams instanceof RenderParameters;
-        RenderParameters rp = (RenderParameters) entity.renderParams;
+        assert entity.renderParams instanceof CurveParameters;
+        CurveParameters rp = (CurveParameters) entity.renderParams;
         rp.runForSegments((x1, y1, z1, x2, y2, z2) ->
             renderSegment(matrices, buffer,
                     x1, y1, z1,
@@ -132,12 +180,6 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
     public static void renderSegment(MatrixStack ms, VertexConsumer buffer,
                                      float x1, float y1, float z1, float x2, float y2, float z2,
                                      Vec3d cross1, Vec3d cross2, int light) {
-//        var direction = new Vec3d(x2 - x1, y2 - y1, z2 - z1);
-//        var v1 = new Vec3d(1 - direction.x, 1 - direction.y, 1 - direction.z);
-
-//        var cross1 = v1.crossProduct(direction).normalize().multiply(thickness * 0.5);
-//        var cross2 = cross1.crossProduct(direction).normalize().multiply(thickness * 0.5);
-
         var matrix = ms.peek().getPositionMatrix();
         quad(matrix, buffer, light,
                 x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
@@ -149,6 +191,19 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
                 x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
                 x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
                 x2 - cross2.x, y2 - cross2.y, z2 - cross2.z);
+    }
+
+    public static void debugLine(MatrixStack ms, VertexConsumer buffer, int light, int color,
+                                 Vec3d v1, Vec3d v2) {
+        var matrix = ms.peek().getPositionMatrix();
+        buffer.vertex(matrix, (float) v1.x, (float) v1.y, (float) v1.z)
+                .color(color)
+                .light(light)
+                .next();
+        buffer.vertex(matrix, (float) v2.x, (float) v2.y, (float) v2.z)
+                .color(color)
+                .light(light)
+                .next();
     }
 
     public static void quad(Matrix4f matrix, VertexConsumer buffer, int light,
