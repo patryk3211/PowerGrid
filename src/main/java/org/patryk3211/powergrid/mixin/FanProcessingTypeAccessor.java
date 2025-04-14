@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity;
+package org.patryk3211.powergrid.mixin;
 
-import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
+import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-public class ClientElectricNetwork extends GlobalElectricNetworks {
-    public static void init() {
-        ClientTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
-        ClientWorldEvents.UNLOAD.register((client, world) -> worldNetworks.remove(world));
+@Mixin(AllFanProcessingTypes.class)
+public interface FanProcessingTypeAccessor {
+    @Invoker(value = "register", remap = false)
+    static <T extends FanProcessingType> T invokeRegister(String id, T type) {
+        throw new AssertionError();
     }
 }

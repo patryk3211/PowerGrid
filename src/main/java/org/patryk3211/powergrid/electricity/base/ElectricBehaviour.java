@@ -139,7 +139,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             var sourceConnections = connections.get(sourceTerminal);
             List<Connection> removed = new LinkedList<>();
             for(var connection : sourceConnections) {
-                if(!buildConnection(sourceTerminal, connection)) {
+                if(!buildConnection(sourceTerminal, connection) && !getWorld().isClient) {
                     removed.add(connection);
                 }
             }
@@ -265,7 +265,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
         if(nbtChanged && blockEntity.hasWorld()) {
             connectionRefresh();
-            nbtChanged = false;
+            if(!blockEntity.getWorld().isClient)
+                nbtChanged = false;
         }
     }
 

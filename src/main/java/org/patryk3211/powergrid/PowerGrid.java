@@ -27,6 +27,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.network.ServerBoundPackets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,8 @@ public class PowerGrid implements ModInitializer {
 		ModdedItems.REGISTRATE.register();
 		ModdedBlockEntities.REGISTRATE.register();
 		ModdedEntities.REGISTRATE.register();
+
+		HeaterFanProcessingTypes.register();
 
 		ModdedConfigs.register();
 

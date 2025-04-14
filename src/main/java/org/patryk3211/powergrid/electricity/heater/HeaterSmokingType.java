@@ -13,23 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.mixin;
+package org.patryk3211.powergrid.electricity.heater;
 
 import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 
-@Mixin(AllFanProcessingTypes.BlastingType.class)
-public class BlastingTypeMixin {
-    @Inject(at = @At("TAIL"), method = "isValidAt(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Z", cancellable = true)
-    private void checkHeatingCoil(World level, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+public class HeaterSmokingType extends AllFanProcessingTypes.SmokingType implements IProcessingTypeModifier {
+    @Override
+    public int modifyTime(int inputTime) {
+        return (int) (inputTime * ModdedConfigs.server().electricity.heaterFanProcessingSpeedMultiplier.get());
+    }
+
+    @Override
+    public int getPriority() {
+        return 250;
+    }
+
+    @Override
+    public boolean isValidAt(World level, BlockPos pos) {
         if(level.getBlockEntity(pos) instanceof HeaterBlockEntity heatingCoil) {
-            cir.setReturnValue(heatingCoil.getState() == HeaterBlockEntity.State.BLASTING);
+            return heatingCoil.getState() == HeaterBlockEntity.State.SMOKING;
         }
+        return false;
     }
 }

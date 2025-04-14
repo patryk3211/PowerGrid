@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity;
+package org.patryk3211.powergrid.electricity.heater;
 
-import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import org.patryk3211.powergrid.mixin.FanProcessingTypeAccessor;
 
-public class ClientElectricNetwork extends GlobalElectricNetworks {
-    public static void init() {
-        ClientTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
-        ClientWorldEvents.UNLOAD.register((client, world) -> worldNetworks.remove(world));
+public class HeaterFanProcessingTypes {
+    public static final HeaterBlastingType BLASTING = FanProcessingTypeAccessor.invokeRegister("heater_blasting", new HeaterBlastingType());
+    public static final HeaterSmokingType SMOKING = FanProcessingTypeAccessor.invokeRegister("heater_smoking", new HeaterSmokingType());
+
+    public static void register() {
+        // Init static fields
     }
 }

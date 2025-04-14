@@ -20,6 +20,7 @@ import com.simibubi.create.foundation.config.ConfigBase;
 public class CElectricity extends ConfigBase {
     public final ConfigFloat heaterSmokingPower = f(20, 0, "heaterSmokingPower", Comments.heaterSmokingPower);
     public final ConfigFloat heaterBlastingPower = f(100, 0, "heaterBlastingPower", Comments.heaterBlastingPower);
+    public final ConfigFloat heaterFanProcessingSpeedMultiplier = f(0.75f, 0, "heaterFanProcessingSpeedMultiplier", Comments.heaterFanProcessingSpeedMultiplier);
 
     @Override
     public String getName() {
@@ -29,5 +30,6 @@ public class CElectricity extends ConfigBase {
     private static class Comments {
         public static final String heaterSmokingPower = "Minimum power required for heating coil to enable bulk smoking";
         public static final String heaterBlastingPower = "Minimum power required for heating coil to enable bulk blasting";
+        public static final String heaterFanProcessingSpeedMultiplier = "Multiplier of the base fan bulk processing time applied to items processed with the heating coil";
     }
 }
