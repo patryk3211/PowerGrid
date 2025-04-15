@@ -24,6 +24,7 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.GeneratorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.GeneratorBlockEntityRenderer;
 
 public class ModdedBlockEntities {
     public static final Registrate REGISTRATE = Registrate.create(PowerGrid.MOD_ID);
@@ -31,6 +32,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<GeneratorBlockEntity> GENERATOR =
             REGISTRATE.blockEntity("generator", GeneratorBlockEntity::new)
                     .validBlock(ModdedBlocks.GENERATOR)
+                    .renderer(() -> GeneratorBlockEntityRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ConnectorBlockEntity> WIRE_CONNECTOR =

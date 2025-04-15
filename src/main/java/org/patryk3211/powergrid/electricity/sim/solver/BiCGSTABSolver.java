@@ -83,6 +83,17 @@ public class BiCGSTABSolver implements ISolver {
     public DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b) {
         if(b.getNumRows() == 0)
             return guess;
+        boolean zeroResult = true;
+        for(int i = 0; i < b.getNumRows(); ++i) {
+            if(b.get(i, 0) != 0) {
+                zeroResult = false;
+                break;
+            }
+        }
+        if(zeroResult) {
+            zero();
+            return guess;
+        }
 
         // r = b - A * x
         CommonOps_DDRM.mult(A, guess, v);
