@@ -15,10 +15,12 @@
  */
 package org.patryk3211.electricity;
 
+import org.ejml.data.DMatrixRMaj;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.node.CouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
@@ -107,5 +109,27 @@ public class TransformerTests {
 
         Assertions.assertEquals((5 - 2) * 2, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary has incorrect voltage");
         Assertions.assertEquals(V1.getCurrent(), -V2.getCurrent(), 1e-6, "Voltage source currents are not balanced");
+    }
+
+    @Test
+    void transformerImpedance() {
+        var network = new ElectricalNetwork();
+
+        var V1 = new VoltageSourceNode(5);
+        var secondary1 = new FloatingNode();
+        var secondary2 = new FloatingNode();
+
+        var transformer = TransformerCoupling.create(2, 10, V1, secondary1, secondary2);
+
+        network.addNodes(V1, secondary1, secondary2);
+        network.addNode(transformer);
+
+        var wire = new ElectricWire(10, secondary1, secondary2);
+        network.addWire(wire);
+
+        network.calculate();
+
+        Assertions.assertEquals(((5f * 2) / 20f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+        Assertions.assertEquals(5f, Math.abs(secondary1.getVoltage() - secondary2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
     }
 }

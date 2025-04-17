@@ -19,10 +19,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.sim.node.*;
 
 public class SolverTests {
+    static FloatingNode N() {
+        return new FloatingNode();
+    }
+
+    static VoltageSourceNode V(float voltage) {
+        return new VoltageSourceNode(voltage);
+    }
+
+    static ElectricWire W(float R, IElectricNode N1, IElectricNode N2) {
+        return new ElectricWire(R, N1, N2);
+    }
+
     @Test
     void testResistorDivider() {
         var network = new ElectricalNetwork();
@@ -40,5 +51,30 @@ public class SolverTests {
 
         Assertions.assertEquals(5f * 20 / (10 + 20), N1.getVoltage(), 1e-6, "Resistor divider node has incorrect voltage");
         Assertions.assertEquals(5f / 30, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+    }
+
+    @Test
+    void testTwoTransformedSources() {
+        var network = new ElectricalNetwork();
+
+        VoltageSourceNode V1 = V(5), V2 = V(4);
+        FloatingNode V1P = N(), V1N = N(), V2P = N(), V2N = N();
+
+        CouplingNode V1C = TransformerCoupling.create(1, V1, V1P, V1N);
+        CouplingNode V2C = TransformerCoupling.create(1, V2, V2P, V2N);
+
+        network.addNodes(V1, V1P, V1N);
+        network.addNode(V1C);
+
+        network.addNodes(V2, V2P, V2N);
+        network.addNode(V2C);
+
+        network.addWire(W(5f, V1N, V2N));
+        network.addWire(W(5f, V1P, V2P));
+
+        network.calculate();
+
+        Assertions.assertEquals( 1f / 10, V1.getCurrent(), 1e-6, "Voltage source 1 current is incorrect");
+        Assertions.assertEquals(-1f / 10, V2.getCurrent(), 1e-6, "Voltage source 2 current is incorrect");
     }
 }

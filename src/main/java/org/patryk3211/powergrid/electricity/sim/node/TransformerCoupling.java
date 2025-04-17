@@ -19,35 +19,56 @@ import org.ejml.data.DMatrixRMaj;
 
 public abstract class TransformerCoupling extends CouplingNode {
     protected float ratio;
+    protected float resistance;
 
-    protected TransformerCoupling(float ratio) {
+    protected TransformerCoupling(float ratio, float resistance) {
         this.ratio = ratio;
+        this.resistance = resistance;
+    }
+
+    @Override
+    public void couple(DMatrixRMaj conductance) {
+        // Unlike other fields, this one holds resistance instead of conductance.
+        conductance.set(this.index, this.index, resistance);
     }
 
     public static TransformerCoupling create(float ratio, IElectricNode primary, IElectricNode secondary) {
-        return new Tr1P1S(ratio, primary, secondary);
+        return new Tr1P1S(ratio, 0, primary, secondary);
+    }
+
+    public static TransformerCoupling create(float ratio, float resistance, IElectricNode primary, IElectricNode secondary) {
+        return new Tr1P1S(ratio, resistance, primary, secondary);
     }
 
     public static TransformerCoupling create(float ratio, IElectricNode primary, IElectricNode secondary1, IElectricNode secondary2) {
-        return new Tr1P2S(ratio, primary, secondary1, secondary2);
+        return new Tr1P2S(ratio, 0, primary, secondary1, secondary2);
+    }
+
+    public static TransformerCoupling create(float ratio, float resistance, IElectricNode primary, IElectricNode secondary1, IElectricNode secondary2) {
+        return new Tr1P2S(ratio, resistance, primary, secondary1, secondary2);
     }
 
     public static TransformerCoupling create(float ratio, IElectricNode primary1, IElectricNode primary2, IElectricNode secondary1, IElectricNode secondary2) {
-        return new Tr2P2S(ratio, primary1, primary2, secondary1, secondary2);
+        return new Tr2P2S(ratio, 0, primary1, primary2, secondary1, secondary2);
+    }
+
+    public static TransformerCoupling create(float ratio, float resistance, IElectricNode primary1, IElectricNode primary2, IElectricNode secondary1, IElectricNode secondary2) {
+        return new Tr2P2S(ratio, resistance, primary1, primary2, secondary1, secondary2);
     }
 
     private static class Tr1P1S extends TransformerCoupling {
         private final IElectricNode primary;
         private final IElectricNode secondary;
 
-        protected Tr1P1S(float ratio, IElectricNode primary, IElectricNode secondary) {
-            super(ratio);
+        protected Tr1P1S(float ratio, float resistance, IElectricNode primary, IElectricNode secondary) {
+            super(ratio, resistance);
             this.primary = primary;
             this.secondary = secondary;
         }
 
         @Override
         public void couple(DMatrixRMaj conductance) {
+            super.couple(conductance);
             conductance.set(this.index, primary.getIndex(), ratio);
             conductance.set(this.index, secondary.getIndex(), -1);
             conductance.set(secondary.getIndex(), this.index, 1);
@@ -60,8 +81,8 @@ public abstract class TransformerCoupling extends CouplingNode {
         private final IElectricNode secondary1;
         private final IElectricNode secondary2;
 
-        protected Tr1P2S(float ratio, IElectricNode primary, IElectricNode secondary1, IElectricNode secondary2) {
-            super(ratio);
+        protected Tr1P2S(float ratio, float resistance, IElectricNode primary, IElectricNode secondary1, IElectricNode secondary2) {
+            super(ratio, resistance);
             this.primary = primary;
             this.secondary1 = secondary1;
             this.secondary2 = secondary2;
@@ -69,18 +90,13 @@ public abstract class TransformerCoupling extends CouplingNode {
 
         @Override
         public void couple(DMatrixRMaj conductance) {
+            super.couple(conductance);
             conductance.set(this.index, primary.getIndex(), ratio);
             conductance.set(this.index, secondary1.getIndex(), -1.0);
             conductance.set(this.index, secondary2.getIndex(),  1.0);
             conductance.set(secondary1.getIndex(), this.index,  1.0);
             conductance.set(secondary2.getIndex(), this.index, -1.0);
             conductance.set(primary.getIndex(), this.index, -ratio);
-
-            // Potentially of interest:
-            // I think this gives me the ability to set a kind of
-            // transformer impedance. This could come in handy in the future,
-            // I just need to calculate the correct value for it.
-            // conductance.set(this.index, this.index, 0.001);
         }
     }
 
@@ -90,8 +106,8 @@ public abstract class TransformerCoupling extends CouplingNode {
         private final IElectricNode secondary1;
         private final IElectricNode secondary2;
 
-        protected Tr2P2S(float ratio, IElectricNode primary1, IElectricNode primary2, IElectricNode secondary1, IElectricNode secondary2) {
-            super(ratio);
+        protected Tr2P2S(float ratio, float resistance, IElectricNode primary1, IElectricNode primary2, IElectricNode secondary1, IElectricNode secondary2) {
+            super(ratio, resistance);
             this.primary1 = primary1;
             this.primary2 = primary2;
             this.secondary1 = secondary1;
@@ -100,6 +116,7 @@ public abstract class TransformerCoupling extends CouplingNode {
 
         @Override
         public void couple(DMatrixRMaj conductance) {
+            super.couple(conductance);
             conductance.set(this.index, primary1.getIndex(),  ratio);
             conductance.set(this.index, primary2.getIndex(), -ratio);
             conductance.set(this.index, secondary1.getIndex(), -1.0);
