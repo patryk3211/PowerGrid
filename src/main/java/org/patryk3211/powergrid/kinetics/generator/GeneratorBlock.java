@@ -23,6 +23,7 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -100,6 +101,14 @@ public class GeneratorBlock extends HorizontalKineticBlock implements IBE<Genera
     @Override
     public boolean hasShaftTowards(WorldView world, BlockPos pos, BlockState state, Direction face) {
         return state.get(Properties.HORIZONTAL_FACING) == face;
+    }
+
+    @Override
+    public BlockState getPlacementState(ItemPlacementContext context) {
+        Direction preferred = this.getPreferredHorizontalFacing(context);
+        return (context.getPlayer() == null || !context.getPlayer().isSneaking()) && preferred != null
+                ? this.getDefaultState().with(Properties.HORIZONTAL_FACING, preferred)
+                : super.getPlacementState(context);
     }
 
     @Override
