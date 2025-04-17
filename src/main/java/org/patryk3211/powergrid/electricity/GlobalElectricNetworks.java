@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -31,7 +32,8 @@ public class GlobalElectricNetworks {
     protected static final Map<World, List<ElectricalNetwork>> worldNetworks = new HashMap<>();
 
     public static void init() {
-        ServerTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
+        ServerTickEvents.END_WORLD_TICK.register(GlobalElectricNetworks::tick);
+        ServerWorldEvents.UNLOAD.register((server, world) -> worldNetworks.remove(world));
     }
 
     protected static void tick(World world) {

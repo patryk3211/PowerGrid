@@ -20,7 +20,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 public class ClientElectricNetwork extends GlobalElectricNetworks {
     public static void init() {
-        ClientTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
+        ClientTickEvents.END_WORLD_TICK.register(GlobalElectricNetworks::tick);
         ClientWorldEvents.UNLOAD.register((client, world) -> worldNetworks.remove(world));
     }
 }

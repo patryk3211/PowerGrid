@@ -46,6 +46,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     private final List<List<Connection>> connections;
     private boolean nbtChanged = false;
+    private boolean destroying = false;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
         super(be);
@@ -171,6 +172,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void removeConnection(int sourceTerminal, BlockPos target, int targetTerminal) {
+        if(destroying)
+            return;
         var sourceConnections = connections.get(sourceTerminal);
         for (Connection connection : sourceConnections) {
             if(connection.target.equals(target) && connection.targetTerminal == targetTerminal) {
@@ -310,7 +313,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return connections;
     }
 
-    public void breakConnections() {
+    private void breakConnections() {
+        if(destroying)
+            return;
+        destroying = true;
         for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
             var sourceConnections = connections.get(sourceTerminal);
             for(var connection : sourceConnections) {

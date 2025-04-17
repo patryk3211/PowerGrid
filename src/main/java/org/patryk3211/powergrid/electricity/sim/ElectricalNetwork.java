@@ -256,7 +256,7 @@ public class ElectricalNetwork {
         other.couplings.clear();
     }
 
-    public void calculate() {
+    public void calculate(boolean printResult, boolean printState) {
         if(sourceCount == 0) {
             for(var node : nodes) {
                 if(node instanceof IElectricNode enode) {
@@ -268,7 +268,6 @@ public class ElectricalNetwork {
 
         var nodeCount = nodes.size();
         if(conductanceMatrix == null || dirty || conductanceMatrix.getNumRows() != nodeCount) {
-            PowerGrid.LOGGER.debug("Network state size has changed, reallocating variables.");
             conductanceMatrix = new DMatrixRMaj(nodeCount, nodeCount);
             AMatrix = new DMatrixRMaj(nodeCount, nodeCount);
             currentMatrix = new DMatrixRMaj(nodeCount, 1);
@@ -278,12 +277,19 @@ public class ElectricalNetwork {
 
             // Conductance and coupling matrices need to be fully rebuild only after a state size change,
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
-            PowerGrid.LOGGER.debug("Populating parameter matrices.");
             populateConductanceMatrix();
             populateCurrentMatrix();
         }
 
+        if(printState) {
+            System.out.println(AMatrix);
+            System.out.println(currentMatrix);
+        }
+
         var result = solver.solve(AMatrix, currentMatrix);
+        if(printResult) {
+            System.out.println(result);
+        }
         for(var node : nodes) {
             if(node instanceof IElectricNode enode) {
                 float value = (float) result.get(node.getIndex(), 0);
@@ -304,5 +310,9 @@ public class ElectricalNetwork {
                 }
             }
         }
+    }
+
+    public void calculate() {
+        calculate(false, false);
     }
 }
