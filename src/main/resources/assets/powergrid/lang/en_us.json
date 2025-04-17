@@ -13,7 +13,14 @@
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
 
-  "generic.positive_terminal": "Positive",
-  "generic.negative_terminal": "Negative",
-  "generic.terminal": "Connector"
+  "powergrid.generic.positive_terminal": "Positive",
+  "powergrid.generic.negative_terminal": "Negative",
+  "powergrid.generic.terminal": "Connector",
+
+  "powergrid.message.connection_failed": "Failed to create a new connection",
+  "powergrid.message.connection_exists": "These terminals are already connected",
+  "powergrid.message.connection_next": "Select second connection point",
+  "powergrid.message.connection_reset": "Connection reset",
+  "powergrid.message.connection_missing_items": "You don't have enough items to make this connection",
+  "powergrid.message.connection_too_long": "This terminal is too far away"
 }

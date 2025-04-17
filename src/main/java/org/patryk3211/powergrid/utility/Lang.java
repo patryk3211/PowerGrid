@@ -22,4 +22,8 @@ public class Lang extends com.simibubi.create.foundation.utility.Lang {
     public static LangBuilder builder() {
         return com.simibubi.create.foundation.utility.Lang.builder(PowerGrid.MOD_ID);
     }
+
+    public static LangBuilder translate(String langKey, Object... args) {
+        return builder().translate(langKey, args);
+    }
 }

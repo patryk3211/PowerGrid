@@ -17,4 +17,5 @@ package org.patryk3211.powergrid.electricity.wire;
 
 public interface IWire {
     float getResistance();
+    float getMaximumLength();
 }

@@ -22,14 +22,21 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.utility.Lang;
 
 public class WireItem extends Item implements IWire {
+    float resistance;
+    float maxLength;
+
     public WireItem(Settings settings) {
         super(settings);
+        resistance = 0.1f;
+        maxLength = 16f;
     }
 
     @Override
@@ -51,6 +58,8 @@ public class WireItem extends Item implements IWire {
         var stack = user.getStackInHand(hand);
         if(stack.hasNbt() && user.isSneaking()) {
             stack.setNbt(null);
+            if(!world.isClient)
+                user.sendMessage(Lang.translate("message.connection_reset").style(Formatting.GRAY).component(), true);
             return TypedActionResult.success(stack, true);
         }
         return super.use(world, user, hand);
@@ -58,11 +67,17 @@ public class WireItem extends Item implements IWire {
 
     public static ItemEntry<WireItem> register(Registrate registrate) {
         return registrate.item("wire", WireItem::new)
+                .transform(WireProperties.setAll(0.005f, 16))
                 .register();
     }
 
     @Override
     public float getResistance() {
-        return 0.01f;
+        return resistance;
+    }
+
+    @Override
+    public float getMaximumLength() {
+        return maxLength;
     }
 }
