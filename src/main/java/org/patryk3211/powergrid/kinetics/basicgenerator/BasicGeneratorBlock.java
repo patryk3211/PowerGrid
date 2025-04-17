@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.generator;
+package org.patryk3211.powergrid.kinetics.basicgenerator;
 
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
@@ -37,7 +37,7 @@ import org.patryk3211.powergrid.electricity.base.INamedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
-public class GeneratorBlock extends HorizontalKineticBlock implements IBE<GeneratorBlockEntity>, IElectric {
+public class BasicGeneratorBlock extends HorizontalKineticBlock implements IBE<BasicGeneratorBlockEntity>, IElectric {
     private static final TerminalBoundingBox NORTH_TERMINAL_1 =
             new TerminalBoundingBox(INamedTerminal.POSITIVE, 3, 12, 13, 5, 16, 16, 0.5)
                     .withOrigin(4, 15, 14.5);
@@ -82,12 +82,12 @@ public class GeneratorBlock extends HorizontalKineticBlock implements IBE<Genera
             WEST_TERMINAL_2.getShape()
     );
 
-    public GeneratorBlock(Settings settings) {
+    public BasicGeneratorBlock(Settings settings) {
         super(settings);
     }
 
-    public static BlockEntry<GeneratorBlock> register(final Registrate registrate) {
-        return registrate.block("generator", GeneratorBlock::new)
+    public static BlockEntry<BasicGeneratorBlock> register(final Registrate registrate) {
+        return registrate.block("basic_generator", BasicGeneratorBlock::new)
                 .transform(BlockStressDefaults.setImpact(4.0))
                 .simpleItem()
                 .register();
@@ -112,13 +112,13 @@ public class GeneratorBlock extends HorizontalKineticBlock implements IBE<Genera
     }
 
     @Override
-    public Class<GeneratorBlockEntity> getBlockEntityClass() {
-        return GeneratorBlockEntity.class;
+    public Class<BasicGeneratorBlockEntity> getBlockEntityClass() {
+        return BasicGeneratorBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends GeneratorBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.GENERATOR.get();
+    public BlockEntityType<? extends BasicGeneratorBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.BASIC_GENERATOR.get();
     }
 
     @Override

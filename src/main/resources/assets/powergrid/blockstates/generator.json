@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "facing=north": { "model": "powergrid:block/generator" },
-    "facing=south": { "model": "powergrid:block/generator", "y": 180 },
-    "facing=east": { "model": "powergrid:block/generator", "y": 90 },
-    "facing=west": { "model": "powergrid:block/generator", "y": -90 }
-  }
-}

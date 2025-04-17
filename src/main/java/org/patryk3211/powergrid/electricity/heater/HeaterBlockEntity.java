@@ -28,8 +28,6 @@ import java.util.Collection;
 import java.util.List;
 
 public class HeaterBlockEntity extends ElectricBlockEntity {
-    private static final float RESISTANCE = 10;
-
     public enum State {
         COLD,
         SMOKING,
@@ -49,7 +47,7 @@ public class HeaterBlockEntity extends ElectricBlockEntity {
     public void tick() {
         super.tick();
         float voltage = Math.abs(node1.getVoltage() - node2.getVoltage());
-        float power = voltage * voltage / RESISTANCE;
+        float power = voltage * voltage / ModdedConfigs.server().electricity.heaterResistance.getF();
         if(power < ModdedConfigs.server().electricity.heaterSmokingPower.get()) {
             updateState(State.COLD);
         } else if(power < ModdedConfigs.server().electricity.heaterBlastingPower.get()) {
@@ -85,6 +83,6 @@ public class HeaterBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void addInternalWires(Collection<ElectricWire> wires) {
-        wires.add(new ElectricWire(RESISTANCE, node1, node2));
+        wires.add(new ElectricWire(ModdedConfigs.server().electricity.heaterResistance.getF(), node1, node2));
     }
 }

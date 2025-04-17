@@ -22,13 +22,13 @@ import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
-import org.patryk3211.powergrid.kinetics.generator.GeneratorBlock;
+import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 
 public class ModdedBlocks {
     public static final Registrate REGISTRATE = Registrate.create(PowerGrid.MOD_ID)
             .defaultCreativeTab(PowerGrid.ITEM_GROUP_KEY);
 
-    public static final BlockEntry<GeneratorBlock> GENERATOR = GeneratorBlock.register(REGISTRATE);
+    public static final BlockEntry<BasicGeneratorBlock> BASIC_GENERATOR = BasicGeneratorBlock.register(REGISTRATE);
     public static final BlockEntry<ConnectorBlock> WIRE_CONNECTOR = ConnectorBlock.register(REGISTRATE);
     public static final BlockEntry<BatteryBlock> BATTERY = BatteryBlock.register(REGISTRATE);
     public static final BlockEntry<VoltageGaugeBlock> VOLTAGE_METER = VoltageGaugeBlock.register(REGISTRATE);

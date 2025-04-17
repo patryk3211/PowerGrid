@@ -13,25 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.generator;
+package org.patryk3211.powergrid.kinetics.basicgenerator;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.Collection;
 import java.util.List;
 
-public class GeneratorBlockEntity extends ElectricKineticBlockEntity {
+public class BasicGeneratorBlockEntity extends ElectricKineticBlockEntity {
     private VoltageSourceNode sourceNode;
     private IElectricNode positive;
     private IElectricNode negative;
     private ICouplingNode coupling;
 
-    public GeneratorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
+    public BasicGeneratorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
 
@@ -40,18 +41,22 @@ public class GeneratorBlockEntity extends ElectricKineticBlockEntity {
         super.tick();
     }
 
+    private static float ratio() {
+        return ModdedConfigs.server().kinetics.basicGeneratorConversionRatio.getF();
+    }
+
     @Override
     protected void read(NbtCompound compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         if(clientPacket) {
-            sourceNode.setVoltage(getSpeed() * 0.5f);
+            sourceNode.setVoltage(getSpeed() * ratio());
         }
     }
 
     @Override
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
-        sourceNode.setVoltage(getSpeed() * 0.5f);
+        sourceNode.setVoltage(getSpeed() * ratio());
     }
 
     @Override
@@ -59,7 +64,7 @@ public class GeneratorBlockEntity extends ElectricKineticBlockEntity {
         sourceNode = new VoltageSourceNode();
         positive = new FloatingNode();
         negative = new FloatingNode();
-        coupling = TransformerCoupling.create(1, sourceNode, positive, negative);
+        coupling = TransformerCoupling.create(1, ModdedConfigs.server().kinetics.basicGeneratorResistance.getF(), sourceNode, positive, negative);
     }
 
     @Override

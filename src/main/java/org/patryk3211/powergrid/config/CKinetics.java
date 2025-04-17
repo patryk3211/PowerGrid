@@ -17,17 +17,17 @@ package org.patryk3211.powergrid.config;
 
 import com.simibubi.create.foundation.config.ConfigBase;
 
-public class CServer extends ConfigBase {
-    public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
-    public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
+public class CKinetics extends ConfigBase {
+    public final ConfigFloat basicGeneratorConversionRatio = f(0.25f, 0, "basicGeneratorRatio", Comments.basicGeneratorConversionRatio);
+    public final ConfigFloat basicGeneratorResistance = f(0.1f, 0, "basicGeneratorResistance", Comments.basicGeneratorResistance);
 
     @Override
     public String getName() {
-        return "server";
+        return "kinetics";
     }
 
     private static class Comments {
-        public static final String electricity = "All things related to purely electrical devices";
-        public static final String kinetics = "Things related to kinetic and electrokinetic devices";
+        public static final String basicGeneratorConversionRatio = "Basic generator rotational speed to voltage conversion ratio";
+        public static final String basicGeneratorResistance = "Basic generator source resistance (limits maximum current drawn)";
     }
 }

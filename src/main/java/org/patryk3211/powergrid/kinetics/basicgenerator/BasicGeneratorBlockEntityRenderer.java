@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.generator;
+package org.patryk3211.powergrid.kinetics.basicgenerator;
 
-import com.jozufozu.flywheel.backend.Backend;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
 import com.simibubi.create.foundation.utility.AnimationTickHolder;
-import com.simibubi.create.foundation.utility.Iterate;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
@@ -30,13 +28,13 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class GeneratorBlockEntityRenderer extends KineticBlockEntityRenderer<GeneratorBlockEntity> {
-    public GeneratorBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
+public class BasicGeneratorBlockEntityRenderer extends KineticBlockEntityRenderer<BasicGeneratorBlockEntity> {
+    public BasicGeneratorBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
         super(context);
     }
 
     @Override
-    protected void renderSafe(GeneratorBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
+    protected void renderSafe(BasicGeneratorBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
 //        if (!Backend.canUseInstancing(be.getWorld())) {
             Direction facing = be.getCachedState().get(Properties.HORIZONTAL_FACING);
             BlockPos pos = be.getPos();
