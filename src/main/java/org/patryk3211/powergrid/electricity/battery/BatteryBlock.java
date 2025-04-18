@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.electricity.battery;
 
 import com.simibubi.create.foundation.block.IBE;
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -26,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
+import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalPlacement;
@@ -44,7 +44,7 @@ public class BatteryBlock extends ElectricBlock implements IBE<BatteryBlockEntit
         super(settings);
     }
 
-    public static BlockEntry<BatteryBlock> register(Registrate registrate) {
+    public static BlockEntry<BatteryBlock> register(PowerGridRegistrate registrate) {
         return registrate.block("battery", BatteryBlock::new)
                 .simpleItem()
                 .register();

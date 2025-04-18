@@ -15,9 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
@@ -27,9 +25,9 @@ import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntity;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntityRenderer;
 
-public class ModdedBlockEntities {
-    public static final Registrate REGISTRATE = Registrate.create(PowerGrid.MOD_ID);
+import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
+public class ModdedBlockEntities {
     public static final BlockEntityEntry<BasicGeneratorBlockEntity> BASIC_GENERATOR =
             REGISTRATE.blockEntity("basic_generator", BasicGeneratorBlockEntity::new)
                     .validBlock(ModdedBlocks.BASIC_GENERATOR)
@@ -62,4 +60,7 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("heating_coil", HeaterBlockEntity::new)
                     .validBlock(ModdedBlocks.HEATING_COIL)
                     .register();
+
+    @SuppressWarnings("EmptyMethod")
+    public static void register() { /* Initialize static fields. */ }
 }

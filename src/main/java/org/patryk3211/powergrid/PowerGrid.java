@@ -15,6 +15,11 @@
  */
 package org.patryk3211.powergrid;
 
+import com.simibubi.create.foundation.item.ItemDescription;
+import com.simibubi.create.foundation.item.KineticStats;
+import com.simibubi.create.foundation.item.TooltipHelper;
+import com.simibubi.create.foundation.item.TooltipModifier;
+import com.tterrag.registrate.Registrate;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -28,6 +33,7 @@ import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
+import org.patryk3211.powergrid.electricity.info.ElectricProperties;
 import org.patryk3211.powergrid.network.ServerBoundPackets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +49,8 @@ public class PowerGrid implements ModInitializer {
 			.build();
 	public static RegistryKey<ItemGroup> ITEM_GROUP_KEY;
 
+	public static PowerGridRegistrate REGISTRATE;
+
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
@@ -50,17 +58,24 @@ public class PowerGrid implements ModInitializer {
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
 		ITEM_GROUP_KEY = Registries.ITEM_GROUP.getKey(ITEM_GROUP).get();
 
-		ModdedBlocks.REGISTRATE.register();
-		ModdedItems.REGISTRATE.register();
-		ModdedBlockEntities.REGISTRATE.register();
-		ModdedEntities.REGISTRATE.register();
+		REGISTRATE = PowerGridRegistrate.create(MOD_ID)
+				.defaultCreativeTab(ITEM_GROUP_KEY)
+				.setTooltipModifierFactory(item ->
+						new ItemDescription.Modifier(item, TooltipHelper.Palette.STANDARD_CREATE)
+								.andThen(TooltipModifier.mapNull(KineticStats.create(item)))
+								.andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
+				);
 
+		ModdedBlocks.register();
+		ModdedItems.register();
+		ModdedBlockEntities.register();
+		ModdedEntities.register();
 		HeaterFanProcessingTypes.register();
-
 		ModdedConfigs.register();
 
-		GlobalElectricNetworks.init();
+		REGISTRATE.register();
 
+		GlobalElectricNetworks.init();
 		ServerBoundPackets.init();
 	}
 

@@ -16,28 +16,36 @@
 package org.patryk3211.powergrid.electricity.heater;
 
 import com.simibubi.create.foundation.block.IBE;
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.INamedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 
-public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity> {
+import java.util.List;
+
+public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>, IHaveElectricProperties {
     private static final TerminalBoundingBox NORTH_TERMINAL1 = new TerminalBoundingBox(INamedTerminal.CONNECTOR, 12, 12, 7, 15, 15, 10, 0.5);
     private static final TerminalBoundingBox NORTH_TERMINAL2 = new TerminalBoundingBox(INamedTerminal.CONNECTOR, 1, 12, 7, 4, 15, 10, 0.5);
 
@@ -78,7 +86,7 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
         super(settings);
     }
 
-    public static BlockEntry<HeaterBlock> register(Registrate registrate) {
+    public static BlockEntry<HeaterBlock> register(PowerGridRegistrate registrate) {
         return registrate.block("heating_coil", HeaterBlock::new)
                 .simpleItem()
                 .register();
@@ -147,5 +155,14 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
     @Override
     public BlockEntityType<? extends HeaterBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.HEATING_COIL.get();
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        Resistance.series(resistance(), player, tooltip);
+    }
+
+    public static float resistance() {
+        return ModdedConfigs.server().electricity.heaterResistance.getF();
     }
 }

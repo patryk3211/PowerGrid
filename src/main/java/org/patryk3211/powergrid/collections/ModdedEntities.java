@@ -15,18 +15,19 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.EntityEntry;
 import net.minecraft.entity.SpawnGroup;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.electricity.wire.WireRenderer;
 
-public class ModdedEntities {
-    public static final Registrate REGISTRATE = Registrate.create(PowerGrid.MOD_ID);
+import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
+public class ModdedEntities {
     public static final EntityEntry<WireEntity> WIRE =
             REGISTRATE.entity("wire", WireEntity::new, SpawnGroup.MISC)
                     .renderer(() -> WireRenderer::new)
                     .register();
+
+    @SuppressWarnings("EmptyMethod")
+    public static void register() { /* Initialize static fields. */ }
 }

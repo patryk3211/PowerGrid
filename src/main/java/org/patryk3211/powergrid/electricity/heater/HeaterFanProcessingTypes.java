@@ -21,7 +21,6 @@ public class HeaterFanProcessingTypes {
     public static final HeaterBlastingType BLASTING = FanProcessingTypeAccessor.invokeRegister("heater_blasting", new HeaterBlastingType());
     public static final HeaterSmokingType SMOKING = FanProcessingTypeAccessor.invokeRegister("heater_smoking", new HeaterSmokingType());
 
-    public static void register() {
-        // Init static fields
-    }
+    @SuppressWarnings("EmptyMethod")
+    public static void register() { /* Initialize static fields. */ }
 }

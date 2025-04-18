@@ -57,7 +57,6 @@ public class ModdedRenderLayers {
         return DEBUG_LINES;
     }
 
-    public static void init() {
-        // Init static parameters.
-    }
+    @SuppressWarnings("EmptyMethod")
+    public static void register() { /* Initialize static fields. */ }
 }

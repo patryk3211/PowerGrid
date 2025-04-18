@@ -83,6 +83,6 @@ public class HeaterBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void addInternalWires(Collection<ElectricWire> wires) {
-        wires.add(new ElectricWire(ModdedConfigs.server().electricity.heaterResistance.getF(), node1, node2));
+        wires.add(new ElectricWire(HeaterBlock.resistance(), node1, node2));
     }
 }

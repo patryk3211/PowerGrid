@@ -29,7 +29,6 @@ public class ModdedPartialModels {
         return new PartialModel(PowerGrid.asResource("block/" + path));
     }
 
-    public static void init() {
-        // Initializes static variables.
-    }
+    @SuppressWarnings("EmptyMethod")
+    public static void register() { /* Initialize static fields. */ }
 }

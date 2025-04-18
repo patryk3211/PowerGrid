@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -26,6 +25,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -65,7 +65,7 @@ public class WireItem extends Item implements IWire {
         return super.use(world, user, hand);
     }
 
-    public static ItemEntry<WireItem> register(Registrate registrate) {
+    public static ItemEntry<WireItem> register(PowerGridRegistrate registrate) {
         return registrate.item("wire", WireItem::new)
                 .transform(WireProperties.setAll(0.005f, 16))
                 .register();

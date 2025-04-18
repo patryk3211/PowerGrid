@@ -64,7 +64,7 @@ public class BasicGeneratorBlockEntity extends ElectricKineticBlockEntity {
         sourceNode = new VoltageSourceNode();
         positive = new FloatingNode();
         negative = new FloatingNode();
-        coupling = TransformerCoupling.create(1, ModdedConfigs.server().kinetics.basicGeneratorResistance.getF(), sourceNode, positive, negative);
+        coupling = TransformerCoupling.create(1, BasicGeneratorBlock.resistance(), sourceNode, positive, negative);
     }
 
     @Override

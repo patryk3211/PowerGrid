@@ -18,26 +18,36 @@ package org.patryk3211.powergrid.kinetics.basicgenerator;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldView;
+import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.INamedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 
-public class BasicGeneratorBlock extends HorizontalKineticBlock implements IBE<BasicGeneratorBlockEntity>, IElectric {
+import java.util.List;
+
+public class BasicGeneratorBlock extends HorizontalKineticBlock implements IBE<BasicGeneratorBlockEntity>, IElectric, IHaveElectricProperties {
     private static final TerminalBoundingBox NORTH_TERMINAL_1 =
             new TerminalBoundingBox(INamedTerminal.POSITIVE, 3, 12, 13, 5, 16, 16, 0.5)
                     .withOrigin(4, 15, 14.5);
@@ -86,7 +96,7 @@ public class BasicGeneratorBlock extends HorizontalKineticBlock implements IBE<B
         super(settings);
     }
 
-    public static BlockEntry<BasicGeneratorBlock> register(final Registrate registrate) {
+    public static BlockEntry<BasicGeneratorBlock> register(final PowerGridRegistrate registrate) {
         return registrate.block("basic_generator", BasicGeneratorBlock::new)
                 .transform(BlockStressDefaults.setImpact(4.0))
                 .simpleItem()
@@ -162,5 +172,14 @@ public class BasicGeneratorBlock extends HorizontalKineticBlock implements IBE<B
             };
             default -> null;
         };
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        Resistance.series(resistance(), player, tooltip);
+    }
+
+    public static float resistance() {
+        return ModdedConfigs.server().kinetics.basicGeneratorResistance.getF();
     }
 }

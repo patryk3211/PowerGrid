@@ -16,6 +16,11 @@
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
+  "powergrid.generic.unit.ohm": "Ω",
+
+  "powergrid.tooltip.resistance.series": "Series resistance:",
+  "powergrid.tooltip.voltage.max": "Maximum voltage:",
+  "powergrid.tooltip.current.max": "Maximum current:",
 
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
