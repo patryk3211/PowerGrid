@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "powergrid:block/gauge/andesite/base"
+    },
+    "facing=south": {
+      "model": "powergrid:block/gauge/andesite/base",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "powergrid:block/gauge/andesite/base",
+      "y": -90
+    },
+    "facing=west": {
+      "model": "powergrid:block/gauge/andesite/base",
+      "y": 90
+    }
+  }
+}

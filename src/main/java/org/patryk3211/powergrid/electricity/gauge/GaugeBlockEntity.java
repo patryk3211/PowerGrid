@@ -58,17 +58,6 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
 
     public abstract float getValue();
 
-    protected Formatting measurementColor(float value) {
-        if(value < maxValue * 0.01)
-            return Formatting.DARK_GRAY;
-        else if(value < maxValue * 0.5)
-            return Formatting.GREEN;
-        else if(value < maxValue * 0.75)
-            return Formatting.YELLOW;
-        else
-            return Formatting.RED;
-    }
-
     @Override
     public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
         // Use default Create header here.

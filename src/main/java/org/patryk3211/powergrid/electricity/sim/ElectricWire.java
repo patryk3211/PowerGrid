@@ -52,10 +52,10 @@ public class ElectricWire {
 
     public float potentialDifference() {
         if(node1 == null)
-            return node2.getVoltage();
+            return -node2.getVoltage();
         if(node2 == null)
             return node1.getVoltage();
-        return Math.abs(node1.getVoltage() - node2.getVoltage());
+        return node1.getVoltage() - node2.getVoltage();
     }
 
     public float current() {

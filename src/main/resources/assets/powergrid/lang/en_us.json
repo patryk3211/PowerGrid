@@ -1,6 +1,9 @@
 {
   "block.powergrid.wire_connector": "Connector",
-  "block.powergrid.voltage_meter": "Voltage Gauge",
+  "block.powergrid.andesite_voltage_meter": "Andesite Voltage Gauge",
+  "block.powergrid.brass_voltage_meter": "Brass Voltage Gauge",
+  "block.powergrid.andesite_current_meter": "Andesite Current Gauge",
+  "block.powergrid.brass_current_meter": "Brass Current Gauge",
   "block.powergrid.battery": "Battery",
   "block.powergrid.heating_coil": "Heating Coil",
 
@@ -9,6 +12,7 @@
   "itemGroup.powergrid.main": "Create: Power Grid",
 
   "powergrid.gui.voltage_meter.title": "Measured voltage",
+  "powergrid.gui.current_meter.title": "Measured current",
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",

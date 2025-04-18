@@ -19,6 +19,8 @@ import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
+import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
+import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
@@ -31,6 +33,29 @@ public class ModdedBlocks {
     public static final BlockEntry<BasicGeneratorBlock> BASIC_GENERATOR = BasicGeneratorBlock.register(REGISTRATE);
     public static final BlockEntry<ConnectorBlock> WIRE_CONNECTOR = ConnectorBlock.register(REGISTRATE);
     public static final BlockEntry<BatteryBlock> BATTERY = BatteryBlock.register(REGISTRATE);
-    public static final BlockEntry<VoltageGaugeBlock> VOLTAGE_METER = VoltageGaugeBlock.register(REGISTRATE);
     public static final BlockEntry<HeaterBlock> HEATING_COIL = HeaterBlock.register(REGISTRATE);
+
+    public static final BlockEntry<VoltageGaugeBlock> ANDESITE_VOLTAGE_METER = REGISTRATE.block("andesite_voltage_gauge", VoltageGaugeBlock::new)
+            .transform(GaugeBlock.setMaxValue(20))
+            .transform(GaugeBlock.setMaterial(GaugeBlock.Material.ANDESITE))
+            .simpleItem()
+            .register();
+    public static final BlockEntry<VoltageGaugeBlock> BRASS_VOLTAGE_METER = REGISTRATE.block("brass_voltage_gauge", VoltageGaugeBlock::new)
+            .transform(GaugeBlock.setMaxValue(200))
+            .transform(GaugeBlock.setMaterial(GaugeBlock.Material.BRASS))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<CurrentGaugeBlock> ANDESITE_CURRENT_METER = REGISTRATE.block("andesite_current_gauge", CurrentGaugeBlock::new)
+            .transform(GaugeBlock.setMaxValue(5))
+            .transform(GaugeBlock.setMaterial(GaugeBlock.Material.ANDESITE))
+            .transform(CurrentGaugeBlock.setResistance(0.25f))
+            .simpleItem()
+            .register();
+    public static final BlockEntry<CurrentGaugeBlock> BRASS_CURRENT_METER = REGISTRATE.block("brass_current_gauge", CurrentGaugeBlock::new)
+            .transform(GaugeBlock.setMaxValue(25))
+            .transform(GaugeBlock.setMaterial(GaugeBlock.Material.BRASS))
+            .transform(CurrentGaugeBlock.setResistance(0.05f))
+            .simpleItem()
+            .register();
 }

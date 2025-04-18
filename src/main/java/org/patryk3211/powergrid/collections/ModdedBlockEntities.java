@@ -19,6 +19,7 @@ import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
+import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
@@ -47,7 +48,13 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<VoltageGaugeBlockEntity> VOLTAGE_METER =
             REGISTRATE.blockEntity("voltage_meter", VoltageGaugeBlockEntity::new)
-                    .validBlock(ModdedBlocks.VOLTAGE_METER)
+                    .validBlocks(ModdedBlocks.ANDESITE_VOLTAGE_METER, ModdedBlocks.BRASS_VOLTAGE_METER)
+                    .renderer(() -> GaugeRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CurrentGaugeBlockEntity> CURRENT_METER =
+            REGISTRATE.blockEntity("current_meter", CurrentGaugeBlockEntity::new)
+                    .validBlocks(ModdedBlocks.ANDESITE_CURRENT_METER, ModdedBlocks.BRASS_CURRENT_METER)
                     .renderer(() -> GaugeRenderer::new)
                     .register();
 

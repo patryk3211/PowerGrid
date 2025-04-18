@@ -19,7 +19,11 @@ import com.jozufozu.flywheel.core.PartialModel;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPartialModels {
-    public static final PartialModel VOLTAGE_METER_HEAD = block("gauge/voltage_head");
+    public static final PartialModel ANDESITE_VOLTAGE_HEAD = block("gauge/andesite/voltage_head");
+    public static final PartialModel BRASS_VOLTAGE_HEAD = block("gauge/brass/voltage_head");
+    public static final PartialModel ANDESITE_CURRENT_HEAD = block("gauge/andesite/current_head");
+    public static final PartialModel BRASS_CURRENT_HEAD = block("gauge/brass/current_head");
+    public static final PartialModel BRASS_GAUGE_DIAL = block("gauge/brass/dial");
 
     private static PartialModel block(String path) {
         return new PartialModel(PowerGrid.asResource("block/" + path));

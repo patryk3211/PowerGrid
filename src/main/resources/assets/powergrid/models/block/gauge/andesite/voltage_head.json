@@ -1,0 +1,6 @@
+{
+  "parent": "powergrid:block/gauge/voltage_head",
+  "textures": {
+    "2": "powergrid:block/andesite_gauge"
+  }
+}

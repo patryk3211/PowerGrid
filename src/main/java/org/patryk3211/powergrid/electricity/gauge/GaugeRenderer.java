@@ -21,6 +21,7 @@ import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRender
 import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
 import com.simibubi.create.foundation.utility.Iterate;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -28,6 +29,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
@@ -37,12 +39,10 @@ public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
     @Override
     protected void renderSafe(GaugeBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
 //        if (Backend.canUseInstancing(be.getWorld())) return;
-
         var gaugeState = be.getCachedState();
 
-        PartialModel partialModel = ModdedPartialModels.VOLTAGE_METER_HEAD;
-        SuperByteBuffer headBuffer = CachedBufferer.partial(partialModel, gaugeState);
-        SuperByteBuffer dialBuffer = CachedBufferer.partial(AllPartialModels.GAUGE_DIAL, gaugeState);
+        SuperByteBuffer headBuffer = CachedBufferer.partial(getHeadModel(gaugeState, be), gaugeState);
+        SuperByteBuffer dialBuffer = CachedBufferer.partial(getDialModel(gaugeState), gaugeState);
 
         float progress = MathHelper.lerp(partialTicks, be.prevDialState, be.dialState);
 
@@ -64,5 +64,37 @@ public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
 
     protected SuperByteBuffer rotateBufferTowards(SuperByteBuffer buffer, Direction target) {
         return buffer.rotateCentered(Direction.UP, (float) ((-target.asRotation() - 90) / 180 * Math.PI));
+    }
+
+    public static PartialModel getHeadModel(BlockState state, GaugeBlockEntity entity) {
+        var block = state.getBlock();
+        if(block instanceof GaugeBlock<?> gaugeBlock) {
+            return switch(gaugeBlock.material) {
+                case ANDESITE -> {
+                    if(entity instanceof CurrentGaugeBlockEntity)
+                        yield ModdedPartialModels.ANDESITE_CURRENT_HEAD;
+                    else
+                        yield ModdedPartialModels.ANDESITE_VOLTAGE_HEAD;
+                }
+                case BRASS -> {
+                    if(entity instanceof CurrentGaugeBlockEntity)
+                        yield ModdedPartialModels.BRASS_CURRENT_HEAD;
+                    else
+                        yield ModdedPartialModels.BRASS_VOLTAGE_HEAD;
+                }
+            };
+        }
+        throw new IllegalArgumentException("Unknown block type");
+    }
+
+    public static PartialModel getDialModel(BlockState state) {
+        var block = state.getBlock();
+        if(block instanceof GaugeBlock<?> gaugeBlock) {
+            return switch(gaugeBlock.material) {
+                case ANDESITE -> AllPartialModels.GAUGE_DIAL;
+                case BRASS -> ModdedPartialModels.BRASS_GAUGE_DIAL;
+            };
+        }
+        throw new IllegalArgumentException("Unknown block type");
     }
 }
