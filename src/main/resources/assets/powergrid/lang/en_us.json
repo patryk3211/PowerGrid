@@ -1,9 +1,9 @@
 {
   "block.powergrid.wire_connector": "Connector",
-  "block.powergrid.andesite_voltage_meter": "Andesite Voltage Gauge",
-  "block.powergrid.brass_voltage_meter": "Brass Voltage Gauge",
-  "block.powergrid.andesite_current_meter": "Andesite Current Gauge",
-  "block.powergrid.brass_current_meter": "Brass Current Gauge",
+  "block.powergrid.andesite_voltage_gauge": "Andesite Voltage Gauge",
+  "block.powergrid.brass_voltage_gauge": "Brass Voltage Gauge",
+  "block.powergrid.andesite_current_gauge": "Andesite Current Gauge",
+  "block.powergrid.brass_current_gauge": "Brass Current Gauge",
   "block.powergrid.battery": "Battery",
   "block.powergrid.heating_coil": "Heating Coil",
 
