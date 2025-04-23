@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;

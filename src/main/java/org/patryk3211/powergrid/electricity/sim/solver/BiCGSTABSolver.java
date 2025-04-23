@@ -44,10 +44,10 @@ public class BiCGSTABSolver implements ISolver {
     private DMatrixRMaj s;
     private DMatrixRMaj t;
 
-    private final double targetDistance;
+    private final double targetPrecision;
 
-    public BiCGSTABSolver(double targetDistance) {
-        this.targetDistance = targetDistance;
+    public BiCGSTABSolver(double targetPrecision) {
+        this.targetPrecision = targetPrecision;
         this.random = new Random();
     }
 
@@ -107,11 +107,12 @@ public class BiCGSTABSolver implements ISolver {
         double dot = CommonOps_DDRM.dot(hatResidual, residual);
         if(USE_RANDOM_HAT_RESIDUAL) {
             if(dot == 0)
-                hatResidual = residual;
+                hatResidual.setTo(residual);
         }
         p.setTo(residual);
 
         int iters = 0;
+        double norm = 0;
         while(iters++ < MAX_ITERATIONS) {
             // v = A * p
             CommonOps_DDRM.mult(A, p, v);
@@ -122,8 +123,8 @@ public class BiCGSTABSolver implements ISolver {
             // s = r - alpha * v
             CommonOps_DDRM.add(residual, -alpha, v, s);
 
-            double norm = NormOps_DDRM.normP1(s);
-            if(norm <= targetDistance) {
+            norm = NormOps_DDRM.normP2(s);
+            if(norm <= targetPrecision) {
                 guess.setTo(h);
                 break;
             }
@@ -137,8 +138,8 @@ public class BiCGSTABSolver implements ISolver {
             // r = s - omega * t
             CommonOps_DDRM.add(s, -omega, t, residual);
 
-            norm = NormOps_DDRM.normP1(residual);
-            if(norm <= targetDistance) {
+            norm = NormOps_DDRM.normP2(residual);
+            if(norm <= targetPrecision) {
                 break;
             }
 
@@ -148,6 +149,10 @@ public class BiCGSTABSolver implements ISolver {
             // p = r + β(p − ωv)
             CommonOps_DDRM.add(p, -omega, v, t);
             CommonOps_DDRM.add(residual, beta, t, p);
+        }
+
+        if(iters >= MAX_ITERATIONS) {
+            System.out.printf("Solver iteration limit, final precision: %f\n", norm);
         }
 
         return guess;

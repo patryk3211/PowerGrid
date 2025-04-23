@@ -1,0 +1,195 @@
+/*
+ * Copyright 2025 patryk3211
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.patryk3211.powergrid.kinetics.generator.coil;
+
+import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.EnumProperty;
+import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.electricity.base.ElectricBlock;
+import org.patryk3211.powergrid.electricity.base.INamedTerminal;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+
+public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
+    public static final EnumProperty<Direction> FACING = Properties.FACING;
+
+    private static final TerminalBoundingBox UP_TERMINAL_1 =
+            new TerminalBoundingBox(INamedTerminal.POSITIVE, 2, 0, 2, 5, 2, 5, 0.5);
+    private static final TerminalBoundingBox UP_TERMINAL_2 =
+            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 11, 0, 11, 14, 2, 14, 0.5);
+    private static final TerminalBoundingBox DOWN_TERMINAL_1 =
+            new TerminalBoundingBox(INamedTerminal.POSITIVE, 11, 14, 2, 14, 16, 5, 0.5);
+    private static final TerminalBoundingBox DOWN_TERMINAL_2 =
+            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 2, 14, 11, 5, 16, 14, 0.5);
+
+    private static final TerminalBoundingBox NORTH_TERMINAL_1 =
+            new TerminalBoundingBox(INamedTerminal.POSITIVE, 2, 2, 14, 5, 5, 16, 0.5);
+    private static final TerminalBoundingBox NORTH_TERMINAL_2 =
+            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 11, 11, 14, 14, 14, 16, 0.5);
+
+    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.SOUTH);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.SOUTH);
+    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.EAST);
+    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.EAST);
+    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.WEST);
+    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.WEST);
+
+    private static final VoxelShape SHAPE_UP = VoxelShapes.union(
+            createCuboidShape(0, 2, 0,16, 14, 16),
+            UP_TERMINAL_1.getShape(),
+            UP_TERMINAL_2.getShape()
+    );
+    private static final VoxelShape SHAPE_DOWN = VoxelShapes.union(
+            createCuboidShape(0, 2, 0,16, 14, 16),
+            DOWN_TERMINAL_1.getShape(),
+            DOWN_TERMINAL_2.getShape()
+    );
+    private static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
+            createCuboidShape(0, 0, 2, 16, 16, 14),
+            NORTH_TERMINAL_1.getShape(),
+            NORTH_TERMINAL_2.getShape()
+    );
+    private static final VoxelShape SHAPE_SOUTH = VoxelShapes.union(
+            createCuboidShape(0, 0, 2, 16, 16, 14),
+            SOUTH_TERMINAL_1.getShape(),
+            SOUTH_TERMINAL_2.getShape()
+    );
+    private static final VoxelShape SHAPE_EAST = VoxelShapes.union(
+            createCuboidShape(2, 0, 0, 14, 16, 16),
+            EAST_TERMINAL_1.getShape(),
+            EAST_TERMINAL_2.getShape()
+    );
+    private static final VoxelShape SHAPE_WEST = VoxelShapes.union(
+            createCuboidShape(2, 0, 0, 14, 16, 16),
+            WEST_TERMINAL_1.getShape(),
+            WEST_TERMINAL_2.getShape()
+    );
+
+    public CoilBlock(Settings settings) {
+        super(settings);
+    }
+
+    @Override
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        super.onStateReplaced(state, world, pos, newState, moved);
+        if(newState.isOf(this)) {
+            var behaviour = BlockEntityBehaviour.get(world, pos, CoilBehaviour.TYPE);
+            if(behaviour != null) {
+                behaviour.blockEntity.setCachedState(newState);
+                behaviour.grabRotor();
+            }
+        }
+    }
+
+    @Override
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+        super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+        var behaviour = BlockEntityBehaviour.get(world, pos, CoilBehaviour.TYPE);
+        if(behaviour != null)
+            behaviour.onNeighborChanged(sourcePos);
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        super.appendProperties(builder);
+        builder.add(FACING);
+    }
+
+    @Override
+    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
+        var direction = ctx.getPlayerLookDirection();
+        return getDefaultState()
+                .with(FACING, ctx.getPlayer() == null || ctx.getPlayer().isSneaking() ? direction : direction.getOpposite());
+    }
+
+    @Override
+    public int terminalCount() {
+        return 2;
+    }
+
+    @Override
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return switch(state.get(FACING)) {
+            case UP -> SHAPE_UP;
+            case DOWN -> SHAPE_DOWN;
+            case NORTH -> SHAPE_NORTH;
+            case SOUTH -> SHAPE_SOUTH;
+            case EAST -> SHAPE_EAST;
+            case WEST -> SHAPE_WEST;
+        };
+    }
+
+    @Override
+    public ITerminalPlacement terminal(BlockState state, int index) {
+        return switch(state.get(FACING)) {
+            case UP -> switch(index) {
+                case 0 -> UP_TERMINAL_1;
+                case 1 -> UP_TERMINAL_2;
+                default -> null;
+            };
+            case DOWN -> switch(index) {
+                case 0 -> DOWN_TERMINAL_1;
+                case 1 -> DOWN_TERMINAL_2;
+                default -> null;
+            };
+            case NORTH -> switch(index) {
+                case 0 -> NORTH_TERMINAL_1;
+                case 1 -> NORTH_TERMINAL_2;
+                default -> null;
+            };
+            case SOUTH -> switch(index) {
+                case 0 -> SOUTH_TERMINAL_1;
+                case 1 -> SOUTH_TERMINAL_2;
+                default -> null;
+            };
+            case EAST -> switch(index) {
+                case 0 -> EAST_TERMINAL_1;
+                case 1 -> EAST_TERMINAL_2;
+                default -> null;
+            };
+            case WEST -> switch(index) {
+                case 0 -> WEST_TERMINAL_1;
+                case 1 -> WEST_TERMINAL_2;
+                default -> null;
+            };
+        };
+    }
+
+    @Override
+    public Class<CoilBlockEntity> getBlockEntityClass() {
+        return CoilBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends CoilBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.COIL.get();
+    }
+}

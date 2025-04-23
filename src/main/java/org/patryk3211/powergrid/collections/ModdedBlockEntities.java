@@ -24,6 +24,9 @@ import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntity;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntityRenderer;
+import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -59,6 +62,16 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<HeaterBlockEntity> HEATING_COIL =
             REGISTRATE.blockEntity("heating_coil", HeaterBlockEntity::new)
                     .validBlock(ModdedBlocks.HEATING_COIL)
+                    .register();
+
+    public static final BlockEntityEntry<RotorBlockEntity> ROTOR =
+            REGISTRATE.blockEntity("rotor", RotorBlockEntity::new)
+                    .validBlock(ModdedBlocks.ROTOR)
+                    .renderer(() -> RotorRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<CoilBlockEntity> COIL =
+            REGISTRATE.blockEntity("coil", CoilBlockEntity::new)
+                    .validBlock(ModdedBlocks.COIL)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

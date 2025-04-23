@@ -24,6 +24,9 @@ public class ModdedPartialModels {
     public static final PartialModel ANDESITE_CURRENT_HEAD = block("gauge/andesite/current_head");
     public static final PartialModel BRASS_CURRENT_HEAD = block("gauge/brass/current_head");
     public static final PartialModel BRASS_GAUGE_DIAL = block("gauge/brass/dial");
+    public static final PartialModel SHAFT_BIT = block("shaft_bit");
+    public static final PartialModel ROTOR_FULL = block("rotor/rotor_none");
+    public static final PartialModel ROTOR_SHAFT = block("rotor/rotor_shaft");
 
     private static PartialModel block(String path) {
         return new PartialModel(PowerGrid.asResource("block/" + path));

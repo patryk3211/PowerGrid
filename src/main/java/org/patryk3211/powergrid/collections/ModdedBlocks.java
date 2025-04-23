@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
@@ -23,6 +24,8 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
+import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
+import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -53,6 +56,15 @@ public class ModdedBlocks {
             .transform(GaugeBlock.setMaxValue(25))
             .transform(GaugeBlock.setMaterial(GaugeBlock.Material.BRASS))
             .transform(CurrentGaugeBlock.setResistance(0.05f))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<RotorBlock> ROTOR = REGISTRATE.block("rotor", RotorBlock::new)
+            .transform(BlockStressDefaults.setImpact(4))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<CoilBlock> COIL = REGISTRATE.block("coil", CoilBlock::new)
             .simpleItem()
             .register();
 

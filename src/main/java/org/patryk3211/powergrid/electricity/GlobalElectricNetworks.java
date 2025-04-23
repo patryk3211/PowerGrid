@@ -68,7 +68,8 @@ public class GlobalElectricNetworks {
         if(node1.getNetwork() == null && node2.getNetwork() == null) {
             network = GlobalElectricNetworks.createNetwork(behaviour1.getWorld());
             behaviour1.joinNetwork(network);
-            behaviour2.joinNetwork(network);
+            if(behaviour1 != behaviour2)
+                behaviour2.joinNetwork(network);
         } else if(node1.getNetwork() == null) {
             network = node2.getNetwork();
             behaviour1.joinNetwork(network);

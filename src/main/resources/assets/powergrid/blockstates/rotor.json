@@ -1,0 +1,15 @@
+{
+  "variants": {
+    "axis=z,shaft=none": { "model": "block/air" },
+    "axis=x,shaft=none": { "model": "block/air" },
+    "axis=y,shaft=none": { "model": "block/air" },
+
+    "axis=z,shaft=positive": { "model": "powergrid:block/rotor/rotor_plate" },
+    "axis=x,shaft=positive": { "model": "powergrid:block/rotor/rotor_plate", "y": -90 },
+    "axis=y,shaft=positive": { "model": "powergrid:block/rotor/rotor_plate", "x": 90 },
+
+    "axis=z,shaft=negative": { "model": "powergrid:block/rotor/rotor_plate", "y": 180 },
+    "axis=x,shaft=negative": { "model": "powergrid:block/rotor/rotor_plate", "y": 90 },
+    "axis=y,shaft=negative": { "model": "powergrid:block/rotor/rotor_plate", "x": -90 }
+  }
+}

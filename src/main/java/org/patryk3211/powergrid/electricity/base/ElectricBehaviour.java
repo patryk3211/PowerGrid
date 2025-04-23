@@ -63,6 +63,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void joinNetwork(ElectricalNetwork network) {
+        assert externalNodes.isEmpty() || externalNodes.get(0).getNetwork() == null;
         internalNodes.forEach(network::addNode);
         externalNodes.forEach(network::addNode);
         internalWires.forEach(network::addWire);
@@ -171,6 +172,19 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return null;
     }
 
+    private void removeConnectionEntity(Connection connection) {
+        var world = getWorld();
+        if(!world.isClient) {
+            var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), connection.target).expand(1));
+            for(var entity : entities) {
+                if(entity.getUuid().equals(connection.wireEntityId) && !entity.isRemoved()) {
+                    entity.kill();
+                    break;
+                }
+            }
+        }
+    }
+
     public void removeConnection(int sourceTerminal, BlockPos target, int targetTerminal) {
         if(destroying)
             return;
@@ -179,17 +193,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             if(connection.target.equals(target) && connection.targetTerminal == targetTerminal) {
                 sourceConnections.remove(connection);
                 blockEntity.notifyUpdate();
-                // Remove wire entity
-                var world = getWorld();
-                if(!world.isClient) {
-                    var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), target).expand(1));
-                    for(var entity : entities) {
-                        if(entity.getUuid().equals(connection.wireEntityId) && !entity.isRemoved()) {
-                            entity.kill();
-                            break;
-                        }
-                    }
-                }
+                removeConnectionEntity(connection);
                 if(connection.wire != null) {
                     connection.wire.remove();
                 }
@@ -326,6 +330,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                         continue;
                     // Remove the complementary connection.
                     behaviour.removeConnection(connection.targetTerminal, getPos(), sourceTerminal);
+                    if(behaviour == this)
+                        removeConnectionEntity(connection);
                 }
                 if(connection.wire != null)
                     connection.wire.remove();
