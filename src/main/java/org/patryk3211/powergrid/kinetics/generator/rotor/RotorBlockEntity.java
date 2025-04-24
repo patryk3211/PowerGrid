@@ -45,13 +45,15 @@ public class RotorBlockEntity extends KineticBlockEntity {
     public void tick() {
         super.tick();
         var angularVelocity = rotorBehaviour.getAngularVelocity();
-//        var totalForce = -Math.signum(angularVelocity) * 2f;
+
+        float delta = getTheoreticalSpeed() - angularVelocity;
+        if(getTheoreticalSpeed() < 0)
+            delta = -delta;
+        delta = Math.max(0, delta);
+        float theoreticalForce = delta * 20f * rotorBehaviour.getInertia();
 
         float maxForce = 20f;
         if(hasNetwork()) {
-            var delta = Math.abs(getTheoreticalSpeed() - angularVelocity);
-            float theoreticalForce = delta * 20f * rotorBehaviour.getInertia();
-
             var network = getOrCreateNetwork();
             var newImpact = currentImpact;
             if(theoreticalForce <= maxForce / 4) {
@@ -69,10 +71,9 @@ public class RotorBlockEntity extends KineticBlockEntity {
         }
 
         var speed = getSpeed();
-        var delta = speed - angularVelocity;
-        if((speed > 0 && angularVelocity < speed) || (speed < 0 && angularVelocity > speed)) {
+        if(delta > 0 && !isOverStressed()) {
             var force = delta * 20f * rotorBehaviour.getInertia();
-            force = Math.min(Math.abs(force), maxForce) * Math.signum(force);
+            force = Math.min(Math.abs(force), maxForce) * Math.signum(speed);
             rotorBehaviour.applyTickForce(force);
         }
     }
