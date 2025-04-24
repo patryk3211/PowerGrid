@@ -2,14 +2,13 @@
 	"schemaVersion": 1,
 	"id": "powergrid",
 	"version": "${version}",
-	"name": "Create Power Grid",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "Create: Power Grid",
+	"description": "Providing electricity to a world near you.",
 	"authors": [
 		"patryk3211"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/patryk3211/PowerGrid"
 	},
 	"license": "Apache-2.0",
 	"icon": "assets/powergrid/icon.png",
