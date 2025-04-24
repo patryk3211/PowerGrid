@@ -18,11 +18,11 @@ package org.patryk3211.powergrid.electricity.sim;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 public class ElectricWire {
-    private float resistance;
+    protected float resistance;
     public final IElectricNode node1;
     public final IElectricNode node2;
 
-    private ElectricalNetwork network;
+    protected ElectricalNetwork network;
 
     public ElectricWire(float resistance, IElectricNode node1, IElectricNode node2) {
         this.resistance = resistance;

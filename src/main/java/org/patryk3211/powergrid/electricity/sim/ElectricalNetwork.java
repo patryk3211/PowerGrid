@@ -129,7 +129,7 @@ public class ElectricalNetwork {
         updateConductance(wire, wire.conductance());
     }
 
-    private void updateConductance(ElectricWire wire, double change) {
+    public void updateConductance(ElectricWire wire, double change) {
         if(conductanceMatrix == null || dirty)
             return;
 
