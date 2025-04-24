@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.collections;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
@@ -65,6 +66,10 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CoilBlock> COIL = REGISTRATE.block("coil", CoilBlock::new)
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<SwitchBlock> SWITCH = REGISTRATE.block("switch", SwitchBlock::new)
             .simpleItem()
             .register();
 

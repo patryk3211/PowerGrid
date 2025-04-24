@@ -45,6 +45,10 @@ public class SwitchedWire extends ElectricWire {
         }
     }
 
+    public boolean getState() {
+        return this.state;
+    }
+
     @Override
     public void setResistance(float resistance) {
         if(state) {

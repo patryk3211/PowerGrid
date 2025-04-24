@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.collections;
 
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
+import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
@@ -72,6 +73,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CoilBlockEntity> COIL =
             REGISTRATE.blockEntity("coil", CoilBlockEntity::new)
                     .validBlock(ModdedBlocks.COIL)
+                    .register();
+
+    public static final BlockEntityEntry<SwitchBlockEntity> SWITCH =
+            REGISTRATE.blockEntity("switch", SwitchBlockEntity::new)
+                    .validBlock(ModdedBlocks.SWITCH)
                     .register();
 
     @SuppressWarnings("EmptyMethod")
