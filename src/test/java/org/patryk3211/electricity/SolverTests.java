@@ -17,37 +17,20 @@ package org.patryk3211.electricity;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 
-public class SolverTests {
-    static FloatingNode N() {
-        return new FloatingNode();
-    }
-
-    static VoltageSourceNode V(float voltage) {
-        return new VoltageSourceNode(voltage);
-    }
-
-    static ElectricWire W(float R, IElectricNode N1, IElectricNode N2) {
-        return new ElectricWire(R, N1, N2);
-    }
-
+public class SolverTests extends TestHelper {
     @Test
     void testResistorDivider() {
-        var network = new ElectricalNetwork();
+        var Net = new Network();
 
-        var V1 = new VoltageSourceNode(5);
+        var V1 = Net.V(5);
+        var N1 = Net.N();
 
-        var N1 = new FloatingNode();
+        Net.W(10.0f, V1, N1);
+        Net.W(20.0f, N1, null);
 
-        network.addNodes(V1, N1);
-
-        network.addWire(new ElectricWire(10, V1, N1));
-        network.addWire(new ElectricWire(20, N1, null));
-
-        network.calculate();
+        Net.calculate();
 
         Assertions.assertEquals(5f * 20 / (10 + 20), N1.getVoltage(), 1e-6, "Resistor divider node has incorrect voltage");
         Assertions.assertEquals(5f / 30, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
@@ -55,24 +38,18 @@ public class SolverTests {
 
     @Test
     void testTwoTransformedSources() {
-        var network = new ElectricalNetwork();
+        var Net = new Network();
 
-        VoltageSourceNode V1 = V(5), V2 = V(4);
-        FloatingNode V1P = N(), V1N = N(), V2P = N(), V2N = N();
+        VoltageSourceNode V1 = Net.V(5), V2 = Net.V(4);
+        FloatingNode V1P = Net.N(), V1N = Net.N(), V2P = Net.N(), V2N = Net.N();
 
-        CouplingNode V1C = TransformerCoupling.create(1, V1, V1P, V1N);
-        CouplingNode V2C = TransformerCoupling.create(1, V2, V2P, V2N);
+        Net.TR(1, V1, V1P, V1N);
+        Net.TR(1, V2, V2P, V2N);
 
-        network.addNodes(V1, V1P, V1N);
-        network.addNode(V1C);
+        Net.W(5.0f, V1N, V2N);
+        Net.W(5.0f, V1P, V2P);
 
-        network.addNodes(V2, V2P, V2N);
-        network.addNode(V2C);
-
-        network.addWire(W(5f, V1N, V2N));
-        network.addWire(W(5f, V1P, V2P));
-
-        network.calculate();
+        Net.calculate();
 
         Assertions.assertEquals( 1f / 10, V1.getCurrent(), 1e-6, "Voltage source 1 current is incorrect");
         Assertions.assertEquals(-1f / 10, V2.getCurrent(), 1e-6, "Voltage source 2 current is incorrect");

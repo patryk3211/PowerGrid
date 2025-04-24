@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.ejml.data.DMatrixRMaj;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;

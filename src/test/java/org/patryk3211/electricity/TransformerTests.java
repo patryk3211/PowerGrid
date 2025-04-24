@@ -15,97 +15,78 @@
  */
 package org.patryk3211.electricity;
 
-import org.ejml.data.DMatrixRMaj;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.CouplingNode;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
-public class TransformerTests {
+public class TransformerTests extends TestHelper {
     @Test
     void transformer1P1S() {
-        var network = new ElectricalNetwork();
+        var Net = new Network();
 
-        var V1 = new VoltageSourceNode(5);
-        var secondary = new FloatingNode();
+        var V1 = Net.V(5);
+        var Sec = Net.N();
 
-        var transformer = TransformerCoupling.create(2, V1, secondary);
+        Net.TR(2, V1, Sec);
 
-        network.addNodes(V1, secondary);
-        network.addNode(transformer);
+        Net.W(10, Sec, null);
 
-        network.addWire(new ElectricWire(10, secondary, null));
+        Net.calculate();
 
-        network.calculate();
-
-        Assertions.assertEquals(5 * 2, secondary.getVoltage(), 1e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(5 * 2, Sec.getVoltage(), 1e-6, "Transformer secondary has incorrect voltage");
         Assertions.assertEquals((double) (5 * 2) / 10 * 2, V1.getCurrent(), 1e-6, "Voltage source has incorrect current");
     }
 
     @Test
     void transformer1P2S() {
-        var network = new ElectricalNetwork();
+        var Net = new Network();
 
-        var V1 = new VoltageSourceNode(5);
-        var secondary1 = new FloatingNode();
-        var secondary2 = new FloatingNode();
+        var V1 = Net.V(5);
+        var S1 = Net.N();
+        var S2 = Net.N();
 
-        var transformer = TransformerCoupling.create(1, V1, secondary1, secondary2);
+        Net.TR(1, V1, S1, S2);
 
-        network.addNodes(V1, secondary1, secondary2);
-        network.addNode(transformer);
+        var Load = Net.W(10, S1, null);
 
-        var wire = new ElectricWire(10, secondary1, null);
-        network.addWire(wire);
-
-        network.calculate();
+        Net.calculate();
 
         Assertions.assertEquals(0, V1.getCurrent(), 1e-6, "Voltage source has incorrect current");
-        Assertions.assertEquals(0, secondary1.getVoltage(), 2e-6, "Transformer secondary has incorrect voltage");
-        Assertions.assertEquals(-5, secondary2.getVoltage(), 2e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(0, S1.getVoltage(), 2e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(-5, S2.getVoltage(), 2e-6, "Transformer secondary has incorrect voltage");
 
-        network.removeWire(wire);
-        wire = new ElectricWire(10, secondary2, null);
-        network.addWire(wire);
+        Load.remove();
+        Load = Net.W(10, S2, null);
 
-        network.calculate();
+        Net.calculate();
 
         Assertions.assertEquals(0, V1.getCurrent(), 1e-6, "Voltage source has incorrect current");
-        Assertions.assertEquals(5, secondary1.getVoltage(), 2e-6, "Transformer secondary has incorrect voltage");
-        Assertions.assertEquals(0, secondary2.getVoltage(), 2e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(5, S1.getVoltage(), 2e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(0, S2.getVoltage(), 2e-6, "Transformer secondary has incorrect voltage");
 
-        network.removeWire(wire);
-        wire = new ElectricWire(10, secondary1, secondary2);
-        network.addWire(wire);
+        Load.remove();
+        Load = Net.W(10, S1, S2);
 
-        network.calculate();
+        Net.calculate();
 
         Assertions.assertEquals(5f / 10, V1.getCurrent(), 1e-6, "Voltage source has incorrect current");
-        Assertions.assertEquals(5, Math.abs(secondary1.getVoltage() - secondary2.getVoltage()), 1e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(5, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary has incorrect voltage");
     }
 
     @Test
     void transformer2P2S() {
-        var network = new ElectricalNetwork();
+        var Net = new Network();
 
-        var V1 = new VoltageSourceNode(5);
-        var V2 = new VoltageSourceNode(2);
+        var V1 = Net.V(5);
+        var V2 = Net.V(2);
 
-        var S1 = new FloatingNode();
-        var S2 = new FloatingNode();
+        var S1 = Net.N();
+        var S2 = Net.N();
 
-        network.addNodes(V1, V2, S1, S2);
+        Net.TR(2, V1, V2, S1, S2);
 
-        var transformer = TransformerCoupling.create(2.0f, V1, V2, S1, S2);
-        network.addNode(transformer);
+        Net.W(10, S1, S2);
 
-        network.addWire(new ElectricWire(10.0f, S1, S2));
-
-        network.calculate();
+        Net.calculate();
 
         Assertions.assertEquals((5 - 2) * 2, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary has incorrect voltage");
         Assertions.assertEquals(V1.getCurrent(), -V2.getCurrent(), 1e-6, "Voltage source currents are not balanced");
@@ -113,23 +94,19 @@ public class TransformerTests {
 
     @Test
     void transformerImpedance() {
-        var network = new ElectricalNetwork();
+        var Net = new Network();
 
-        var V1 = new VoltageSourceNode(5);
-        var secondary1 = new FloatingNode();
-        var secondary2 = new FloatingNode();
+        var V1 = Net.V(5);
+        var S1 = Net.N();
+        var S2 = Net.N();
 
-        var transformer = TransformerCoupling.create(2, 10, V1, secondary1, secondary2);
+        Net.TR(2, 10, V1, S1, S2);
 
-        network.addNodes(V1, secondary1, secondary2);
-        network.addNode(transformer);
+        Net.W(10, S1, S2);
 
-        var wire = new ElectricWire(10, secondary1, secondary2);
-        network.addWire(wire);
-
-        network.calculate();
+        Net.calculate();
 
         Assertions.assertEquals(((5f * 2) / 20f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
-        Assertions.assertEquals(5f, Math.abs(secondary1.getVoltage() - secondary2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
+        Assertions.assertEquals(5f, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
     }
 }
