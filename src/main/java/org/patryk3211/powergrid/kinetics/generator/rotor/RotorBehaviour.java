@@ -225,9 +225,14 @@ public class RotorBehaviour extends SegmentedBehaviour {
             angularVelocity -= Math.signum(velocity) * friction / 20f / inertia;
 
             angle = (angle + velocity * 0.3f) % 360;
+            if(Float.isNaN(angle)) {
+                angle = 0;
+            }
 
-            if(Math.abs(angularVelocity) < 0.01)
+            if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity)) {
                 angularVelocity = 0;
+                prevAngularVelocity = 0;
+            }
 
             blockEntity.markDirty();
         }

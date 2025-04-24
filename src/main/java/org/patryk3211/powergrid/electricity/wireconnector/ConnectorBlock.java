@@ -31,12 +31,12 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.INamedTerminal;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class ConnectorBlock extends ElectricBlock implements IBE<ConnectorBlockEntity> {
-    private static final ITerminalPlacement TERMINAL = new TerminalBoundingBox(INamedTerminal.CONNECTOR, 0, 0, 0, 16, 16, 16);
+    private static final ITerminalPlacement TERMINAL = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 0, 0, 16, 16, 16);
 
     private static final VoxelShape NORTH_SHAPE = createCuboidShape(5, 5, 0, 11, 11, 9);
     private static final VoxelShape SOUTH_SHAPE = createCuboidShape(5, 5, 7, 11, 11, 16);

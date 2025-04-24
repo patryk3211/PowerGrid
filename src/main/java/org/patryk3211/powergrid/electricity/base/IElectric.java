@@ -31,24 +31,32 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.utility.Lang;
 
 public interface IElectric extends IWrenchable {
     /**
-     * Get terminal located at the given position.
+     * Get terminal index located at the given position.
      * @param pos Position inside the block.
      * @return Terminal index as defined in the block entity, -1 if there is no terminal at this position.
      */
-    default int terminalAt(BlockState state, Vec3d pos) {
+    default int terminalIndexAt(BlockState state, Vec3d pos) {
         for(int i = 0; i < terminalCount(); ++i) {
             var terminal = terminal(state, i);
             if(terminal.check(pos))
                 return i;
         }
         return -1;
+    }
+
+    default ITerminalPlacement terminalAt(BlockState state, Vec3d pos) {
+        for(int i = 0; i < terminalCount(); ++i) {
+            var terminal = terminal(state, i);
+            if(terminal.check(pos))
+                return terminal;
+        }
+        return null;
     }
 
     int terminalCount();
@@ -64,7 +72,7 @@ public interface IElectric extends IWrenchable {
     default ActionResult onWire(BlockState state, ItemUsageContext context) {
         var stack = context.getStack();
         var pos = context.getBlockPos();
-        var terminal = terminalAt(state, context.getHitPos().subtract(pos.getX(), pos.getY(), pos.getZ()));
+        var terminal = terminalIndexAt(state, context.getHitPos().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if(terminal >= 0) {
             if(stack.hasNbt()) {
                 // Continuing a connection.

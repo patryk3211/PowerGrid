@@ -18,8 +18,6 @@ package org.patryk3211.powergrid.kinetics.basicgenerator;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
-import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -29,6 +27,7 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -39,7 +38,7 @@ import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.IElectric;
-import org.patryk3211.powergrid.electricity.base.INamedTerminal;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -49,20 +48,22 @@ import java.util.List;
 
 public class BasicGeneratorBlock extends HorizontalKineticBlock implements IBE<BasicGeneratorBlockEntity>, IElectric, IHaveElectricProperties {
     private static final TerminalBoundingBox NORTH_TERMINAL_1 =
-            new TerminalBoundingBox(INamedTerminal.POSITIVE, 3, 12, 13, 5, 16, 16, 0.5)
-                    .withOrigin(4, 15, 14.5);
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 3, 12, 13, 5, 16, 16)
+                    .withOrigin(4, 15, 14.5)
+                    .withColor(IDecoratedTerminal.RED);
     private static final TerminalBoundingBox NORTH_TERMINAL_2 =
-            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 11, 12, 13, 13, 16, 16, 0.5)
-                    .withOrigin(12, 15, 14.5);
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 11, 12, 13, 13, 16, 16)
+                    .withOrigin(12, 15, 14.5)
+                    .withColor(IDecoratedTerminal.BLUE);
 
-    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.SOUTH);
-    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.SOUTH);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_180);
 
-    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.EAST);
-    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.EAST);
+    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
 
-    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.WEST);
-    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.WEST);
+    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
 
     private static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
             createCuboidShape(1, 0, 0, 15, 2, 16),

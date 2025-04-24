@@ -25,6 +25,7 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -34,7 +35,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.INamedTerminal;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
@@ -42,25 +43,32 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
     public static final EnumProperty<Direction> FACING = Properties.FACING;
 
     private static final TerminalBoundingBox UP_TERMINAL_1 =
-            new TerminalBoundingBox(INamedTerminal.POSITIVE, 2, 0, 2, 5, 2, 5, 0.5);
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 2, 0, 2, 5, 2, 5)
+                    .withColor(IDecoratedTerminal.RED);
     private static final TerminalBoundingBox UP_TERMINAL_2 =
-            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 11, 0, 11, 14, 2, 14, 0.5);
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 11, 0, 11, 14, 2, 14)
+                    .withColor(IDecoratedTerminal.BLUE);
+
     private static final TerminalBoundingBox DOWN_TERMINAL_1 =
-            new TerminalBoundingBox(INamedTerminal.POSITIVE, 11, 14, 2, 14, 16, 5, 0.5);
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 11, 14, 2, 14, 16, 5)
+                    .withColor(IDecoratedTerminal.RED);
     private static final TerminalBoundingBox DOWN_TERMINAL_2 =
-            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 2, 14, 11, 5, 16, 14, 0.5);
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 2, 14, 11, 5, 16, 14)
+                    .withColor(IDecoratedTerminal.BLUE);
 
     private static final TerminalBoundingBox NORTH_TERMINAL_1 =
-            new TerminalBoundingBox(INamedTerminal.POSITIVE, 2, 2, 14, 5, 5, 16, 0.5);
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 2, 2, 14, 5, 5, 16)
+                    .withColor(IDecoratedTerminal.RED);
     private static final TerminalBoundingBox NORTH_TERMINAL_2 =
-            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 11, 11, 14, 14, 14, 16, 0.5);
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 11, 11, 14, 14, 14, 16)
+                    .withColor(IDecoratedTerminal.BLUE);
 
-    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.SOUTH);
-    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.SOUTH);
-    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.EAST);
-    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.EAST);
-    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.WEST);
-    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.WEST);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
 
     private static final VoxelShape SHAPE_UP = VoxelShapes.union(
             createCuboidShape(0, 2, 0,16, 14, 16),

@@ -27,8 +27,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -37,7 +37,7 @@ import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.INamedTerminal;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -46,17 +46,17 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import java.util.List;
 
 public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>, IHaveElectricProperties {
-    private static final TerminalBoundingBox NORTH_TERMINAL1 = new TerminalBoundingBox(INamedTerminal.CONNECTOR, 12, 12, 7, 15, 15, 10, 0.5);
-    private static final TerminalBoundingBox NORTH_TERMINAL2 = new TerminalBoundingBox(INamedTerminal.CONNECTOR, 1, 12, 7, 4, 15, 10, 0.5);
+    private static final TerminalBoundingBox NORTH_TERMINAL1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 12, 12, 7, 15, 15, 10);
+    private static final TerminalBoundingBox NORTH_TERMINAL2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 1, 12, 7, 4, 15, 10);
 
-    private static final TerminalBoundingBox SOUTH_TERMINAL1 = NORTH_TERMINAL1.rotated(Direction.SOUTH);
-    private static final TerminalBoundingBox SOUTH_TERMINAL2 = NORTH_TERMINAL2.rotated(Direction.SOUTH);
+    private static final TerminalBoundingBox SOUTH_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(BlockRotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox SOUTH_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(BlockRotation.CLOCKWISE_180);
 
-    private static final TerminalBoundingBox EAST_TERMINAL1 = NORTH_TERMINAL1.rotated(Direction.EAST);
-    private static final TerminalBoundingBox EAST_TERMINAL2 = NORTH_TERMINAL2.rotated(Direction.EAST);
+    private static final TerminalBoundingBox EAST_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox EAST_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(BlockRotation.CLOCKWISE_90);
 
-    private static final TerminalBoundingBox WEST_TERMINAL1 = NORTH_TERMINAL1.rotated(Direction.WEST);
-    private static final TerminalBoundingBox WEST_TERMINAL2 = NORTH_TERMINAL2.rotated(Direction.WEST);
+    private static final TerminalBoundingBox WEST_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
 
     private static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
             createCuboidShape(0, 0, 5, 16, 12, 11),

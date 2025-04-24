@@ -21,10 +21,10 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -32,28 +32,29 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.INamedTerminal;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBlock implements IBE<BE>, IGaugeBlock {
     private static final TerminalBoundingBox NORTH_TERMINAL_1 =
-            new TerminalBoundingBox(INamedTerminal.POSITIVE, 13, 12, 7, 16, 16, 9, 0.5)
-                    .withOrigin(14.5, 15, 8);
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 13, 12, 7, 16, 16, 9)
+                    .withOrigin(14.5, 15, 8)
+                    .withColor(IDecoratedTerminal.RED);
     private static final TerminalBoundingBox NORTH_TERMINAL_2 =
-            new TerminalBoundingBox(INamedTerminal.NEGATIVE, 0, 12, 7, 3, 16, 9, 0.5)
-                    .withOrigin(1.5, 15, 8);
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 0, 12, 7, 3, 16, 9)
+                    .withOrigin(1.5, 15, 8)
+                    .withColor(IDecoratedTerminal.BLUE);
 
-    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.SOUTH);
-    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.SOUTH);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_180);
 
-    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.EAST);
-    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.EAST);
+    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
 
-    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotated(Direction.WEST);
-    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotated(Direction.WEST);
+    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
 
     private static final VoxelShape SHAPE_NORTH_SOUTH = VoxelShapes.union(
             createCuboidShape(1, 0, 2, 15, 14, 14),
