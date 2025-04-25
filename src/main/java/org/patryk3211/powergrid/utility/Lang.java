@@ -15,10 +15,16 @@
  */
 package org.patryk3211.powergrid.utility;
 
+import com.simibubi.create.foundation.utility.Components;
 import com.simibubi.create.foundation.utility.LangBuilder;
+import net.minecraft.text.MutableText;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class Lang extends com.simibubi.create.foundation.utility.Lang {
+    public static MutableText translateDirect(String key, Object... args) {
+        return Components.translatable(PowerGrid.MOD_ID + "." + key, resolveBuilders(args));
+    }
+
     public static LangBuilder builder() {
         return com.simibubi.create.foundation.utility.Lang.builder(PowerGrid.MOD_ID);
     }

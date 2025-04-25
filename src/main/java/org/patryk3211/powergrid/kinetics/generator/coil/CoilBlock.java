@@ -22,9 +22,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -41,6 +44,7 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
     public static final EnumProperty<Direction> FACING = Properties.FACING;
+    public static final BooleanProperty HAS_TERMINALS = BooleanProperty.of("terminals");
 
     private static final TerminalBoundingBox UP_TERMINAL_1 =
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 2, 0, 2, 5, 2, 5)
@@ -108,13 +112,32 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
     @Override
     public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
         super.onStateReplaced(state, world, pos, newState, moved);
-        if(newState.isOf(this)) {
-            var behaviour = BlockEntityBehaviour.get(world, pos, CoilBehaviour.TYPE);
+    }
+
+    @Override
+    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
+        if(context.getSide() == state.get(FACING).getOpposite()) {
+            var world = context.getWorld();
+            if(!world.isClient) {
+                boolean hasTerminals = !state.get(HAS_TERMINALS);
+                if (world.getBlockEntity(context.getBlockPos()) instanceof CoilBlockEntity coil) {
+                    if (hasTerminals) {
+                        coil.getAggregate().makeOutput(coil);
+                    } else {
+                        coil.getAggregate().removeOutput(coil);
+                    }
+                }
+                return ActionResult.SUCCESS;
+            }
+        }
+        var result = super.onWrenched(state, context);
+        if(result == ActionResult.SUCCESS && !context.getWorld().isClient) {
+            var behaviour = BlockEntityBehaviour.get(context.getWorld(), context.getBlockPos(), CoilBehaviour.TYPE);
             if(behaviour != null) {
-                behaviour.blockEntity.setCachedState(newState);
                 behaviour.grabRotor();
             }
         }
+        return result;
     }
 
     @Override
@@ -123,19 +146,23 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
         var behaviour = BlockEntityBehaviour.get(world, pos, CoilBehaviour.TYPE);
         if(behaviour != null)
             behaviour.onNeighborChanged(sourcePos);
+        if(sourceBlock == this && world.getBlockEntity(pos) instanceof CoilBlockEntity coil) {
+            coil.rebuildAggregate();
+        }
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(FACING);
+        builder.add(FACING, HAS_TERMINALS);
     }
 
     @Override
     public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
         var direction = ctx.getPlayerLookDirection();
         return getDefaultState()
-                .with(FACING, ctx.getPlayer() == null || ctx.getPlayer().isSneaking() ? direction : direction.getOpposite());
+                .with(FACING, ctx.getPlayer() == null || ctx.getPlayer().isSneaking() ? direction : direction.getOpposite())
+                .with(HAS_TERMINALS, false);
     }
 
     @Override
@@ -157,6 +184,8 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
 
     @Override
     public ITerminalPlacement terminal(BlockState state, int index) {
+        if(!state.get(HAS_TERMINALS))
+            return null;
         return switch(state.get(FACING)) {
             case UP -> switch(index) {
                 case 0 -> UP_TERMINAL_1;
@@ -191,6 +220,11 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
         };
     }
 
+    public static boolean canConnect(BlockState state, World world, BlockPos neighborPos) {
+        var neighbor = world.getBlockState(neighborPos);
+        return neighbor.isOf(state.getBlock()) && state.get(FACING) == neighbor.get(FACING);
+    }
+
     @Override
     public Class<CoilBlockEntity> getBlockEntityClass() {
         return CoilBlockEntity.class;
@@ -199,5 +233,9 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
     @Override
     public BlockEntityType<? extends CoilBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.COIL.get();
+    }
+
+    public static float resistance() {
+        return 0.1f;
     }
 }

@@ -33,5 +33,9 @@
   "powergrid.message.connection_next": "Select second connection point",
   "powergrid.message.connection_reset": "Connection reset",
   "powergrid.message.connection_missing_items": "You don't have enough items to make this connection",
-  "powergrid.message.connection_too_long": "This terminal is too far away"
+  "powergrid.message.connection_too_long": "This terminal is too far away",
+
+  "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
+  "create.aggregate_type.series": "Series",
+  "create.aggregate_type.parallel": "Parallel"
 }

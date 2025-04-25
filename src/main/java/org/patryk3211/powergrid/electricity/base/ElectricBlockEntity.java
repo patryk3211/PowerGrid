@@ -36,9 +36,15 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
         behaviours.add(electricBehaviour);
     }
 
+    public ElectricBehaviour getElectricBehaviour() {
+        return electricBehaviour;
+    }
+
     @Override
     public void remove() {
         super.remove();
-        electricBehaviour.breakConnections();
+        if(electricBehaviour != null) {
+            electricBehaviour.breakConnections();
+        }
     }
 }

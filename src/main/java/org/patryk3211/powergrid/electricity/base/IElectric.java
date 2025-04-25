@@ -44,6 +44,8 @@ public interface IElectric extends IWrenchable {
     default int terminalIndexAt(BlockState state, Vec3d pos) {
         for(int i = 0; i < terminalCount(); ++i) {
             var terminal = terminal(state, i);
+            if(terminal == null)
+                continue;
             if(terminal.check(pos))
                 return i;
         }
@@ -53,6 +55,8 @@ public interface IElectric extends IWrenchable {
     default ITerminalPlacement terminalAt(BlockState state, Vec3d pos) {
         for(int i = 0; i < terminalCount(); ++i) {
             var terminal = terminal(state, i);
+            if(terminal == null)
+                continue;
             if(terminal.check(pos))
                 return terminal;
         }
@@ -129,6 +133,7 @@ public interface IElectric extends IWrenchable {
         var behaviour2 = getBehaviour(world, pos2);
         if(behaviour1 == null || behaviour2 == null) {
             sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
+            PowerGrid.LOGGER.error("Connection failed, at least one behaviour is null");
             return ActionResult.FAIL;
         }
 
@@ -136,6 +141,7 @@ public interface IElectric extends IWrenchable {
         var node2 = behaviour2.getTerminal(terminal2);
         if(node1 == null || node2 == null || node1 == node2) {
             sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
+            PowerGrid.LOGGER.error("Connection failed, nodes: ({}, {})", node1, node2);
             return ActionResult.FAIL;
         }
 

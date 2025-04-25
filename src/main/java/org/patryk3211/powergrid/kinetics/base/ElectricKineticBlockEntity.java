@@ -42,6 +42,8 @@ public abstract class ElectricKineticBlockEntity extends KineticBlockEntity impl
     @Override
     public void remove() {
         super.remove();
-        electricBehaviour.breakConnections();
+        if(electricBehaviour != null) {
+            electricBehaviour.breakConnections();
+        }
     }
 }

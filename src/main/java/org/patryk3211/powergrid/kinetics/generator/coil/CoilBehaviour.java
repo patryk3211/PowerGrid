@@ -18,9 +18,11 @@ package org.patryk3211.powergrid.kinetics.generator.coil;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
+import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
 public class CoilBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<CoilBehaviour> TYPE = new BehaviourType<>("coil");
@@ -46,6 +48,7 @@ public class CoilBehaviour extends BlockEntityBehaviour {
         var state = blockEntity.getCachedState();
         var facing = state.get(CoilBlock.FACING);
         rotor = get(getWorld(), getPos().offset(facing), RotorBehaviour.TYPE);
+        blockEntity.sendData();
     }
 
     @Override
@@ -56,6 +59,35 @@ public class CoilBehaviour extends BlockEntityBehaviour {
         var facing = state.get(CoilBlock.FACING);
         if(neighborPos.equals(getPos().offset(facing))) {
             rotor = get(getWorld(), neighborPos, RotorBehaviour.TYPE);
+            blockEntity.sendData();
+        }
+    }
+
+    @Override
+    public void read(NbtCompound nbt, boolean clientPacket) {
+        super.read(nbt, clientPacket);
+        if(clientPacket) {
+            if(nbt.contains("Rotor")) {
+                var posArray = nbt.getIntArray("Rotor");
+                var pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
+                var rotor = get(getWorld(), pos, RotorBehaviour.TYPE);
+                if(rotor != null) {
+                    this.rotor = rotor;
+                } else {
+                    PowerGrid.LOGGER.error("Client received rotor position which doesn't correspond to a rotor entity");
+                }
+            } else {
+                rotor = null;
+            }
+        }
+    }
+
+    @Override
+    public void write(NbtCompound nbt, boolean clientPacket) {
+        super.write(nbt, clientPacket);
+        if(clientPacket && rotor != null) {
+            var pos = rotor.getPos();
+            nbt.putIntArray("Rotor", new int[] { pos.getX(), pos.getY(), pos.getZ() });
         }
     }
 
