@@ -6,6 +6,8 @@
   "block.powergrid.brass_current_gauge": "Brass Current Gauge",
   "block.powergrid.battery": "Battery",
   "block.powergrid.heating_coil": "Heating Coil",
+  "block.powergrid.coil": "Generator Coil",
+  "block.powergrid.rotor": "Generator Rotor",
 
   "item.powergrid.wire": "Wire",
 

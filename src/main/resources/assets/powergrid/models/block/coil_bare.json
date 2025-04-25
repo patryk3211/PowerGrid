@@ -1,0 +1,22 @@
+{
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"0": "powergrid:block/coil",
+		"particle": "powergrid:block/coil"
+	},
+	"elements": [
+		{
+			"from": [0, 2, 0],
+			"to": [16, 14, 16],
+			"faces": {
+				"north": {"uv": [8, 2, 16, 8], "texture": "#0"},
+				"east": {"uv": [8, 2, 16, 8], "texture": "#0"},
+				"south": {"uv": [8, 2, 16, 8], "texture": "#0"},
+				"west": {"uv": [8, 2, 16, 8], "texture": "#0"},
+				"up": {"uv": [0, 0, 8, 8], "texture": "#0"},
+				"down": {"uv": [0, 0, 8, 8], "texture": "#0"}
+			}
+		}
+	]
+}
