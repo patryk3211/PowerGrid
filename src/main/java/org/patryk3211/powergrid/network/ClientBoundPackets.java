@@ -18,11 +18,16 @@ package org.patryk3211.powergrid.network;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 public class ClientBoundPackets {
     public static void init() {
+        entityDataPacket();
+    }
+
+    private static void entityDataPacket() {
         ClientPlayNetworking.registerGlobalReceiver(ModdedPackets.ENTITY_DATA_PACKET, (client, handler, buf, response) -> {
-            var packet = new EntityDataPacket(buf);
+            var packet = new EntityDataS2CPacket(buf);
             packet.buffer.retain();
             client.execute(() -> {
                 if(client.world == null) {
@@ -30,7 +35,7 @@ public class ClientBoundPackets {
                     return;
                 }
                 var entity = client.world.getEntityById(packet.entityId);
-                if(entity instanceof EntityDataPacket.IConsumer consumer) {
+                if(entity instanceof EntityDataS2CPacket.IConsumer consumer) {
                     consumer.onEntityDataPacket(packet);
                 }
                 packet.buffer.release();

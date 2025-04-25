@@ -25,8 +25,10 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -37,10 +39,7 @@ import net.minecraft.world.WorldView;
 import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.electricity.base.IElectric;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
-import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
-import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 
@@ -102,6 +101,14 @@ public class BasicGeneratorBlock extends HorizontalKineticBlock implements IBE<B
                 .transform(BlockStressDefaults.setImpact(4.0))
                 .simpleItem()
                 .register();
+    }
+
+    @Override
+    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
+        var result = super.onWrenched(state, context);
+        if(result == ActionResult.SUCCESS && !context.getWorld().isClient)
+            ElectricBlock.refreshConnectionEntities(context.getWorld(), context.getBlockPos());
+        return result;
     }
 
     @Override

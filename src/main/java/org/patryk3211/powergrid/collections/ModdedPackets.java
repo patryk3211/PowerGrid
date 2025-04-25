@@ -19,5 +19,5 @@ import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPackets {
-    public static final Identifier ENTITY_DATA_PACKET = Identifier.of(PowerGrid.MOD_ID, "entity_data");
+    public static final Identifier ENTITY_DATA_PACKET = new Identifier(PowerGrid.MOD_ID, "entity_data");
 }

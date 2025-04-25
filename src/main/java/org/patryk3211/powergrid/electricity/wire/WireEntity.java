@@ -39,12 +39,12 @@ import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
-import org.patryk3211.powergrid.network.EntityDataPacket;
+import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 import java.util.List;
 
-public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IComplexRaycast {
+public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer, IComplexRaycast {
     private static final Vec3d UP = new Vec3d(0, 1, 0);
 
     private static final float THICKNESS = 0.1f;
@@ -78,20 +78,12 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
         entity.electricBlockPos2 = pos2;
         entity.electricTerminal1 = terminal1;
         entity.electricTerminal2 = terminal2;
-        entity.terminalPos1 = IElectric.getTerminalPos(pos1, world.getBlockState(pos1), terminal1);
-        entity.terminalPos2 = IElectric.getTerminalPos(pos2, world.getBlockState(pos2), terminal2);
         entity.item = item;
 
-        var vect = entity.terminalPos2.subtract(entity.terminalPos1);
-        var facing = vect.crossProduct(UP);
-        float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
-
-        entity.refreshPositionAndAngles(
-                (entity.terminalPos1.x + entity.terminalPos2.x) * 0.5,
-                (entity.terminalPos1.y + entity.terminalPos2.y) * 0.5,
-                (entity.terminalPos1.z + entity.terminalPos2.z) * 0.5,
-               facingAngle, 0);
-        entity.updateRenderParams();
+        entity.refreshTerminalPositions();
+        entity.setPitch(0);
+        entity.resetPosition();
+        entity.refreshPosition();
         return entity;
     }
 
@@ -118,7 +110,7 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
     @Override
     public Packet<ClientPlayPacketListener> createSpawnPacket() {
         var base = super.createSpawnPacket();
-        var extra = new EntityDataPacket(this);
+        var extra = new EntityDataS2CPacket(this, 0);
         var tag = new NbtCompound();
         writeCustomDataToNbt(tag);
         extra.buffer.writeNbt(tag);
@@ -131,10 +123,17 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
     }
 
     @Override
-    public void onEntityDataPacket(EntityDataPacket packet) {
-        var tag = packet.buffer.readNbt();
-        if(tag != null)
-            readCustomDataFromNbt(tag);
+    public void onEntityDataPacket(EntityDataS2CPacket packet) {
+        if(packet.type == 0) {
+            var tag = packet.buffer.readNbt();
+            if (tag != null)
+                readCustomDataFromNbt(tag);
+        } else if(packet.type == 1) {
+            var buffer = packet.buffer;
+            terminalPos1 = new Vec3d(buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
+            terminalPos2 = new Vec3d(buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
+            updateRenderParams();
+        }
     }
 
     @Override
@@ -151,7 +150,9 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
             item = ItemStack.fromNbt(nbt.getCompound("item"));
 
         var world = getWorld();
-        if(world != null) {
+        if(!world.isClient) {
+            refreshTerminalPositions();
+        } else {
             terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
             terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
             updateRenderParams();
@@ -274,5 +275,39 @@ public class WireEntity extends Entity implements EntityDataPacket.IConsumer, IC
             }
         }
         return null;
+    }
+
+    public void refreshTerminalPositions() {
+        var world = getWorld();
+        if(world != null && !world.isClient) {
+            terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
+            terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
+
+            var vect = terminalPos2.subtract(terminalPos1);
+            var facing = vect.crossProduct(UP);
+            float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
+
+            setPosition(
+                    (terminalPos1.x + terminalPos2.x) * 0.5,
+                    (terminalPos1.y + terminalPos2.y) * 0.5,
+                    (terminalPos1.z + terminalPos2.z) * 0.5
+            );
+            setYaw(facingAngle);
+
+            // I guess we have to do position update like that because otherwise,
+            // the update method would have to go into the tick function
+            // and that is probably slower.
+            var packet = new EntityDataS2CPacket(this, 1);
+            var buffer = packet.buffer;
+            buffer.writeFloat((float) terminalPos1.x);
+            buffer.writeFloat((float) terminalPos1.y);
+            buffer.writeFloat((float) terminalPos1.z);
+            buffer.writeFloat((float) terminalPos2.x);
+            buffer.writeFloat((float) terminalPos2.y);
+            buffer.writeFloat((float) terminalPos2.z);
+            packet.send();
+
+            // TODO: There should be some line-of-sight check here to forbid wires going through blocks (it should also be in the entity's tick function).
+        }
     }
 }

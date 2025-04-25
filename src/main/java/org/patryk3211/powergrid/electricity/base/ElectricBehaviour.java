@@ -97,6 +97,15 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
     }
 
+    public void refreshConnectionEntities() {
+        for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
+            for(var connection : connections.get(sourceTerminal)) {
+                var entity = getConnectionEntity(connection);
+                entity.refreshTerminalPositions();
+            }
+        }
+    }
+
     private boolean buildConnection(int sourceTerminal, Connection connection) {
         if(connection.wire != null)
             return true;
@@ -172,16 +181,23 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return null;
     }
 
+    public WireEntity getConnectionEntity(Connection connection) {
+        var world = getWorld();
+        var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), connection.target).expand(1));
+        for(var entity : entities) {
+            if(entity.getUuid().equals(connection.wireEntityId) && !entity.isRemoved()) {
+                return entity;
+            }
+        }
+        return null;
+    }
+
     private void removeConnectionEntity(Connection connection) {
         var world = getWorld();
         if(!world.isClient) {
-            var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), connection.target).expand(1));
-            for(var entity : entities) {
-                if(entity.getUuid().equals(connection.wireEntityId) && !entity.isRemoved()) {
-                    entity.kill();
-                    break;
-                }
-            }
+            var entity = getConnectionEntity(connection);
+            if(entity != null)
+                entity.kill();
         }
     }
 

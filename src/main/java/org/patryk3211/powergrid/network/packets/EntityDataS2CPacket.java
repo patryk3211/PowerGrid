@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.network;
+package org.patryk3211.powergrid.network.packets;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
@@ -23,18 +24,24 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 
-public class EntityDataPacket {
+public class EntityDataS2CPacket {
+    private Entity entity;
     public final int entityId;
     public final PacketByteBuf buffer;
+    public final byte type;
 
-    public EntityDataPacket(Entity entity) {
+    public EntityDataS2CPacket(Entity entity, int type) {
+        this.entity = entity;
+        this.type = (byte) type;
         buffer = PacketByteBufs.create();
         entityId = entity.getId();
         buffer.writeInt(entityId);
+        buffer.writeByte(type);
     }
 
-    public EntityDataPacket(PacketByteBuf buffer) {
+    public EntityDataS2CPacket(PacketByteBuf buffer) {
         entityId = buffer.readInt();
+        type = buffer.readByte();
         this.buffer = buffer;
     }
 
@@ -42,7 +49,15 @@ public class EntityDataPacket {
         return ServerPlayNetworking.createS2CPacket(ModdedPackets.ENTITY_DATA_PACKET, this.buffer);
     }
 
+    public void send() {
+        if(entity == null)
+            throw new IllegalStateException();
+        for(var player : PlayerLookup.tracking(entity)) {
+            ServerPlayNetworking.send(player, ModdedPackets.ENTITY_DATA_PACKET, buffer);
+        }
+    }
+
     public interface IConsumer {
-        void onEntityDataPacket(EntityDataPacket packet);
+        void onEntityDataPacket(EntityDataS2CPacket packet);
     }
 }

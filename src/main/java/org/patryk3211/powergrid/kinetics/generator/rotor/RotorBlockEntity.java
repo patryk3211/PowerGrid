@@ -44,6 +44,9 @@ public class RotorBlockEntity extends KineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
+        if(getTheoreticalSpeed() == 0)
+            return;
+
         var angularVelocity = rotorBehaviour.getAngularVelocity();
 
         float delta = getTheoreticalSpeed() - angularVelocity;
@@ -70,10 +73,9 @@ public class RotorBlockEntity extends KineticBlockEntity {
             }
         }
 
-        var speed = getSpeed();
         if(delta > 0 && !isOverStressed()) {
             var force = delta * 20f * rotorBehaviour.getInertia();
-            force = Math.min(Math.abs(force), maxForce) * Math.signum(speed);
+            force = Math.min(Math.abs(force), maxForce) * Math.signum(getSpeed());
             rotorBehaviour.applyTickForce(force);
         }
     }
