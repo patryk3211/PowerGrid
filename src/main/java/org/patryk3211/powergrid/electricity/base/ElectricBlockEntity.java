@@ -24,12 +24,21 @@ import net.minecraft.util.math.BlockPos;
 import java.util.List;
 
 public abstract class ElectricBlockEntity extends SmartBlockEntity implements IElectricEntity {
+    protected ElectricBehaviour electricBehaviour;
+
     public ElectricBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        behaviours.add(new ElectricBehaviour(this));
+        electricBehaviour = new ElectricBehaviour(this);
+        behaviours.add(electricBehaviour);
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        electricBehaviour.breakConnections();
     }
 }

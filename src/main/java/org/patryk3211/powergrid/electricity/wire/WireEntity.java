@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.wire;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -275,6 +276,11 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
             }
         }
         return null;
+    }
+
+    @Override
+    public PistonBehavior getPistonBehavior() {
+        return PistonBehavior.IGNORE;
     }
 
     public void refreshTerminalPositions() {

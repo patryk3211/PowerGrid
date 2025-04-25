@@ -26,6 +26,8 @@ import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import java.util.List;
 
 public abstract class ElectricKineticBlockEntity extends KineticBlockEntity implements IElectricEntity {
+    protected ElectricBehaviour electricBehaviour;
+
     public ElectricKineticBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
@@ -33,6 +35,13 @@ public abstract class ElectricKineticBlockEntity extends KineticBlockEntity impl
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        behaviours.add(new ElectricBehaviour(this));
+        electricBehaviour = new ElectricBehaviour(this);
+        behaviours.add(electricBehaviour);
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        electricBehaviour.breakConnections();
     }
 }

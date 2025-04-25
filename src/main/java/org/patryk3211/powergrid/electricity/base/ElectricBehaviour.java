@@ -123,7 +123,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             return false;
 
         var targetConnection = targetBehaviour.getConnection(connection.targetTerminal, getPos(), sourceTerminal);
-        if(targetConnection != null && targetConnection.wire != null) {
+        if(targetConnection == null)
+            return false;
+
+        if(targetConnection.wire != null) {
             // Everything should be fine if the other connection already has a wire.
             connection.wire = targetConnection.wire;
             return true;
@@ -137,11 +140,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         var wire = GlobalElectricNetworks.makeConnection(this, getTerminal(sourceTerminal), targetBehaviour, targetNode, R);
 
         connection.wire = wire;
-        if(targetConnection != null) {
-            targetConnection.wire = wire;
-        } else {
-            targetBehaviour.addConnection(connection.targetTerminal, new Connection(getPos(), sourceTerminal, wire, connection.wireEntityId));
-        }
+        targetConnection.wire = wire;
         return true;
     }
 
@@ -333,7 +332,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return connections;
     }
 
-    private void breakConnections() {
+    public void breakConnections() {
         if(destroying)
             return;
         destroying = true;
@@ -355,12 +354,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             sourceConnections.clear();
         }
         blockEntity.notifyUpdate();
-    }
-
-    @Override
-    public void destroy() {
-        breakConnections();
-        super.destroy();
+        destroying = false;
     }
 
     public static class Connection {
