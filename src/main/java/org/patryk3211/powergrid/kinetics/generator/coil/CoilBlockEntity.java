@@ -118,6 +118,8 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     }
 
     public float sourceNodeCurrent() {
+        if(sourceNode == null)
+            return 0;
         return sourceNode.getCurrent();
     }
 
@@ -175,6 +177,11 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
             electricBehaviour.breakConnections();
             electricBehaviour = null;
             removeBehaviour(ElectricBehaviour.TYPE);
+            // Drop nodes
+            positive = null;
+            negative = null;
+            sourceNode = null;
+            coupling = null;
             notifyUpdate();
         }
     }
