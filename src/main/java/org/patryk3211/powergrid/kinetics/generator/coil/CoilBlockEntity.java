@@ -25,6 +25,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.node.*;
@@ -200,9 +201,8 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     }
 
     public enum AggregateType implements INamedIconOptions {
-        // TODO: Add icons
-        SERIES(AllIcons.I_ADD),
-        PARALLEL(AllIcons.I_CENTERED);
+        SERIES(ModIcons.I_SERIES),
+        PARALLEL(ModIcons.I_PARALLEL);
 
         private final AllIcons icon;
         private final String translationKey;
