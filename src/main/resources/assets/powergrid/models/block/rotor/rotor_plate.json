@@ -3,7 +3,7 @@
 	"parent": "block/block",
 	"textures": {
 		"0": "create:block/gearbox",
-		"particle": "#0"
+		"particle": "create:block/gearbox"
 	},
 	"elements": [
 		{
