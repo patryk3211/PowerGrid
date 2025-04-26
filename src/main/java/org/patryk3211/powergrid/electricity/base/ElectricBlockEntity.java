@@ -20,11 +20,13 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public abstract class ElectricBlockEntity extends SmartBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
+    protected ThermalBehaviour thermalBehaviour;
 
     public ElectricBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -34,6 +36,20 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
+
+        thermalBehaviour = specifyThermalBehaviour();
+        if(thermalBehaviour != null)
+            behaviours.add(thermalBehaviour);
+    }
+
+    @Nullable
+    public ThermalBehaviour specifyThermalBehaviour() {
+        return null;
+    }
+
+    protected void applyLostPower(float power) {
+        if(thermalBehaviour != null)
+            thermalBehaviour.applyTickPower(power);
     }
 
     public ElectricBehaviour getElectricBehaviour() {

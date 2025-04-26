@@ -37,5 +37,8 @@
 
   "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
   "create.aggregate_type.series": "Series",
-  "create.aggregate_type.parallel": "Parallel"
+  "create.aggregate_type.parallel": "Parallel",
+
+  "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
+  "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s"
 }
