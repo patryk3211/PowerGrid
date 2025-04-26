@@ -70,7 +70,7 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
     public void updateRenderParams() {
         if(!getWorld().isClient)
             return;
-        renderParams = new WireRenderer.CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS, getPos());
+        renderParams = new WireRenderer.CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS);
     }
 
     public static WireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item) {
@@ -295,7 +295,7 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
 
             setPosition(
                     (terminalPos1.x + terminalPos2.x) * 0.5,
-                    (terminalPos1.y + terminalPos2.y) * 0.5,
+                    terminalPos1.y,
                     (terminalPos1.z + terminalPos2.z) * 0.5
             );
             setYaw(facingAngle);

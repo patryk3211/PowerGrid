@@ -40,7 +40,7 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
 
         // Catenary parameter calculation implemented according to:
         // https://math.stackexchange.com/questions/3557767/how-to-construct-a-catenary-of-a-specified-length-through-two-specified-points
-        public CurveParameters(Vec3d t1, Vec3d t2, double horizontalCoefficient, double verticalCoefficient, double thickness, Vec3d entityPos) {
+        public CurveParameters(Vec3d t1, Vec3d t2, double horizontalCoefficient, double verticalCoefficient, double thickness) {
             var direction = new Vec3d(t2.x - t1.x, 0, t2.z - t1.z);
             double dy = t2.y - t1.y;
             dx = (float) direction.length();
@@ -64,8 +64,7 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
             a = dx / (2 * A);
             double z = dy / L;
             b = -a * 0.5 * Math.log((1 + z) / (1 - z));
-            double y1 = t1.y - entityPos.y;
-            c = y1 - a * Math.cosh((-(dx / 2) - b) / a);
+            c = 0.5 * (dy - L / Math.tanh(A));
 
             // Calculate cross parameters
             direction = new Vec3d(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
