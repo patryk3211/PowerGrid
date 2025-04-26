@@ -339,14 +339,15 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
             var sourceConnections = connections.get(sourceTerminal);
             for(var connection : sourceConnections) {
+                if(connection.target.equals(getPos())) {
+                    removeConnectionEntity(connection);
+                }
                 if(getWorld().getBlockEntity(connection.target) instanceof SmartBlockEntity entity) {
                     var behaviour = entity.getBehaviour(TYPE);
                     if(behaviour == null)
                         continue;
                     // Remove the complementary connection.
                     behaviour.removeConnection(connection.targetTerminal, getPos(), sourceTerminal);
-                    if(behaviour == this)
-                        removeConnectionEntity(connection);
                 }
                 if(connection.wire != null)
                     connection.wire.remove();
