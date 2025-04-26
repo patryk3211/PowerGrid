@@ -167,6 +167,18 @@ public class ElectricalNetwork {
         }
     }
 
+    public void alterConductanceMatrix(int row, int column, double change) {
+        if(conductanceMatrix == null || dirty)
+            return;
+        conductanceMatrix.add(row, column, change);
+        if(!voltageSources[column]) {
+            AMatrix.add(row, column, change);
+        } else {
+            var U = ((VoltageSourceNode) nodes.get(column)).getVoltage();
+            currentMatrix.add(column, 0, U * -change);
+        }
+    }
+
     public void removeWire(ElectricWire wire) {
         if(!wires.contains(wire))
             return;

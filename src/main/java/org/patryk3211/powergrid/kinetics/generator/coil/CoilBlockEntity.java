@@ -40,7 +40,7 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     private CoilAggregate aggregate;
 
     private VoltageSourceNode sourceNode;
-    private ICouplingNode coupling;
+    private TransformerCoupling coupling;
     private FloatingNode positive;
     private FloatingNode negative;
 
@@ -63,9 +63,16 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
         coilBehaviour = new CoilBehaviour(this);
         behaviours.add(coilBehaviour);
         aggregateType = new ScrollOptionBehaviour<>(AggregateType.class, Lang.translateDirect("devices.coil.aggregate_type"), this, new CoilValueBoxTransform());
-        aggregateType.withCallback(i -> aggregate.setType(aggregateType.get()));
-        aggregateType.withClientCallback(i -> aggregate.setType(aggregateType.get()));
+        aggregateType.withCallback(this::aggregateTypeChange);
+        aggregateType.withClientCallback(this::aggregateTypeChange);
         behaviours.add(aggregateType);
+    }
+
+    private void aggregateTypeChange(int i) {
+        aggregate.setType(aggregateType.get());
+        if(coupling != null) {
+            coupling.setResistance(aggregate.totalResistance());
+        }
     }
 
     public CoilBehaviour getCoilBehaviour() {
@@ -78,6 +85,9 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
 
     public void setAggregate(CoilAggregate aggregate) {
         this.aggregate = aggregate;
+        if(coupling != null) {
+            coupling.setResistance(aggregate.totalResistance());
+        }
     }
 
     @Override
@@ -85,7 +95,7 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
         sourceNode = new VoltageSourceNode();
         positive = new FloatingNode();
         negative = new FloatingNode();
-        coupling = TransformerCoupling.create(1, CoilBlock.resistance(), sourceNode, positive, negative);
+        coupling = TransformerCoupling.create(1, aggregate != null ? aggregate.totalResistance() : CoilBlock.resistance(), sourceNode, positive, negative);
     }
 
     @Override
@@ -108,6 +118,8 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     }
 
     public float sourceNodeCurrent() {
+        if(sourceNode == null)
+            return 0;
         return sourceNode.getCurrent();
     }
 
@@ -165,6 +177,11 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
             electricBehaviour.breakConnections();
             electricBehaviour = null;
             removeBehaviour(ElectricBehaviour.TYPE);
+            // Drop nodes
+            positive = null;
+            negative = null;
+            sourceNode = null;
+            coupling = null;
             notifyUpdate();
         }
     }

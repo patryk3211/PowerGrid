@@ -109,4 +109,34 @@ public class TransformerTests extends TestHelper {
         Assertions.assertEquals(((5f * 2) / 20f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
         Assertions.assertEquals(5f, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
     }
+
+    @Test
+    void transformerImpedanceChange() {
+        var Net = new Network();
+
+        var V1 = Net.V(5);
+        var S1 = Net.N();
+        var S2 = Net.N();
+
+        var TR = Net.TR(2, 0, V1, S1, S2);
+
+        Net.W(10, S1, S2);
+
+        Net.calculate();
+
+        Assertions.assertEquals(((5f * 2) / 10f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+        Assertions.assertEquals(5f * 2, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
+
+        TR.setResistance(10);
+        Net.calculate();
+
+        Assertions.assertEquals(((5f * 2) / 20f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+        Assertions.assertEquals((5f * 2) * (10f / 20f), Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
+
+        TR.setResistance(5);
+        Net.calculate();
+
+        Assertions.assertEquals(((5f * 2) / 15f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+        Assertions.assertEquals((5f * 2) * (10f / 15f), Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
+    }
 }

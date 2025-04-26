@@ -61,6 +61,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<RotorBlock> ROTOR = REGISTRATE.block("rotor", RotorBlock::new)
+            .properties(settings -> settings.nonOpaque())
             .transform(BlockStressDefaults.setImpact(4))
             .simpleItem()
             .register();
