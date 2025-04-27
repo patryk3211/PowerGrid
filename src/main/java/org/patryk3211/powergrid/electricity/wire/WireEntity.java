@@ -21,6 +21,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -28,6 +29,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -40,15 +42,22 @@ import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
+
 public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer, IComplexRaycast {
     private static final Vec3d UP = new Vec3d(0, 1, 0);
 
     private static final float THICKNESS = 0.1f;
+
+    // TODO: These have to be taken from the used item.
+    public static final float DISSIPATION_FACTOR = 0.2f;
+    public static final float THERMAL_MASS = 1f;
 
     private BlockPos electricBlockPos1;
     private BlockPos electricBlockPos2;
@@ -61,10 +70,16 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
 
     private ItemStack item;
 
+    private ElectricWire wire;
+    private float temperature;
+    private int overheatingTicks;
+
     public Object renderParams;
 
     public WireEntity(EntityType<?> type, World world) {
         super(type, world);
+        temperature = BASE_TEMPERATURE;
+        overheatingTicks = 0;
     }
 
     public void updateRenderParams() {
@@ -88,6 +103,10 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
         return entity;
     }
 
+    public void setWire(ElectricWire wire) {
+        this.wire = wire;
+    }
+
     @Override
     protected Box calculateBoundingBox() {
         if(terminalPos1 != null && terminalPos2 != null) {
@@ -100,6 +119,57 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
     @Override
     protected void initDataTracker() {
 
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        // Dissipate energy
+        float energy = 0;
+        if(wire != null) {
+            var voltage = wire.potentialDifference();
+            energy += voltage * voltage / wire.getResistance() / 20f;
+        }
+        energy -= DISSIPATION_FACTOR * (temperature - BASE_TEMPERATURE);
+        temperature += energy / THERMAL_MASS;
+
+        if(isOverheating()) {
+            var world = getWorld();
+            var pos = getPos();
+            if(world.isClient && renderParams != null) {
+                var curvePoint = ((WireRenderer.CurveParameters) renderParams).getRandomPoint(random);
+                double x = curvePoint.x + pos.x;
+                double y = curvePoint.y + pos.y;
+                double z = curvePoint.z + pos.z;
+                world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+            }
+
+            if(overheatingTicks == 39 && world.isClient && renderParams != null) {
+                var curveParams = (WireRenderer.CurveParameters) renderParams;
+                var dx = curveParams.getCurveSpan();
+                var normal = curveParams.getNormal();
+                int pointCount = Math.round(dx / 0.25f);
+                for(int i = 0; i < pointCount; ++i) {
+                    float localX = ((float) i / pointCount - 0.5f) * dx;
+                    var x = pos.x + localX * normal.x;
+                    var y = pos.y + curveParams.apply(localX);
+                    var z = pos.z + localX * normal.z;
+                    world.addParticle(ParticleTypes.FLAME, x, y, z, 0.0f, 0.00f, 0.0f);
+                }
+            }
+            if(++overheatingTicks > 40 && !world.isClient) {
+                // Break without dropping items.
+                discard();
+            }
+        } else {
+            if(overheatingTicks > 0)
+                --overheatingTicks;
+        }
+    }
+
+    public boolean isOverheating() {
+        // TODO: This should also be taken from the used item.
+        return temperature >= BASE_TEMPERATURE + 150f;
     }
 
     @Override
@@ -139,16 +209,23 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
 
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
-        var posArr1 = nbt.getIntArray("pos1");
+        var posArr1 = nbt.getIntArray("Pos1");
         electricBlockPos1 = new BlockPos(posArr1[0], posArr1[1], posArr1[2]);
-        var posArr2 = nbt.getIntArray("pos2");
+        var posArr2 = nbt.getIntArray("Pos2");
         electricBlockPos2 = new BlockPos(posArr2[0], posArr2[1], posArr2[2]);
 
-        electricTerminal1 = nbt.getInt("terminal1");
-        electricTerminal2 = nbt.getInt("terminal2");
+        electricTerminal1 = nbt.getInt("Terminal1");
+        electricTerminal2 = nbt.getInt("Terminal2");
 
-        if(nbt.contains("item"))
-            item = ItemStack.fromNbt(nbt.getCompound("item"));
+        if(nbt.contains("Item"))
+            item = ItemStack.fromNbt(nbt.getCompound("Item"));
+
+        temperature = nbt.getFloat("Temperature");
+        if(nbt.contains("Overheating")) {
+            overheatingTicks = nbt.getInt("Overheating");
+        } else {
+            overheatingTicks = 0;
+        }
 
         var world = getWorld();
         if(!world.isClient) {
@@ -162,12 +239,16 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
 
     @Override
     protected void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putIntArray("pos1", new int[] { electricBlockPos1.getX(), electricBlockPos1.getY(), electricBlockPos1.getZ() });
-        nbt.putIntArray("pos2", new int[] { electricBlockPos2.getX(), electricBlockPos2.getY(), electricBlockPos2.getZ() });
-        nbt.putInt("terminal1", electricTerminal1);
-        nbt.putInt("terminal2", electricTerminal2);
+        nbt.putIntArray("Pos1", new int[] { electricBlockPos1.getX(), electricBlockPos1.getY(), electricBlockPos1.getZ() });
+        nbt.putIntArray("Pos2", new int[] { electricBlockPos2.getX(), electricBlockPos2.getY(), electricBlockPos2.getZ() });
+        nbt.putInt("Terminal1", electricTerminal1);
+        nbt.putInt("Terminal2", electricTerminal2);
         if(item != null)
-            nbt.put("item", item.writeNbt(new NbtCompound()));
+            nbt.put("Item", item.writeNbt(new NbtCompound()));
+
+        nbt.putFloat("Temperature", temperature);
+        if(overheatingTicks > 0)
+            nbt.putInt("Overheating", overheatingTicks);
     }
 
     @Override
@@ -210,6 +291,11 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
 
     @Override
     public void setOnFire(boolean onFire) {
+    }
+
+    @Override
+    public boolean damage(DamageSource source, float amount) {
+        return super.damage(source, amount);
     }
 
     @Override

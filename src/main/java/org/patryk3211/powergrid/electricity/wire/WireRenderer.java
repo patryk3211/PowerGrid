@@ -24,6 +24,7 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import org.joml.Matrix4f;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
@@ -73,11 +74,11 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
             cross2 = cross1.crossProduct(direction).normalize().multiply(thickness * 0.5);
         }
 
-        float apply(float x) {
+        public float apply(float x) {
             return (float) (a * Math.cosh((x - b) / a) + c);
         }
 
-        void runForSegments(ISegmentConsumer consumer) {
+        public void runForSegments(ISegmentConsumer consumer) {
             int segmentCount = Math.max((int) Math.round(L / SEGMENT_SIZE), 5);
 
             float prevX = -dx / 2;
@@ -96,12 +97,22 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
             }
         }
 
+        public Vec3d getRandomPoint(Random random) {
+            float x = random.nextFloat() * dx - dx / 2;
+            float y = apply(x);
+            return new Vec3d(normal.x * x, y, normal.z * x);
+        }
+
         /**
          * Get length of the span (-dx/2, dx) in which the curve is defined.
          * @return Curve span
          */
-        float getCurveSpan() {
+        public float getCurveSpan() {
             return dx;
+        }
+
+        public Vec3d getNormal() {
+            return normal;
         }
 
         /**
@@ -110,7 +121,7 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
          * @param y1 Second point coordinate
          * @return First coordinate of closest curve point (x, f(x))
          */
-        double findClosestPoint(double x1, double y1) {
+        public double findClosestPoint(double x1, double y1) {
             // f(x) = square distance between cosh(x) and a point (in 2D space)
             // f(x) = (x - P.x)^2 + (cosh(x) - P.y)^2
             // f'(x) = 2(cosh(x) - P.y) * sinh(x) + 2(x - P.x)
