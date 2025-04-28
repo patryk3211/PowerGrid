@@ -16,9 +16,13 @@
   "powergrid.gui.voltage_meter.title": "Measured voltage",
   "powergrid.gui.current_meter.title": "Measured current",
 
+  "powergrid.gui.heater.info_header": "Heating coil information",
+  "powergrid.gui.heater.title": "Coil temperature",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
+  "powergrid.generic.unit.temperature": "°C",
 
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",

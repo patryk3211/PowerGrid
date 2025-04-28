@@ -120,6 +120,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         return TYPE;
     }
 
+    public float getTemperature() {
+        return temperature;
+    }
+
     public static class MachineOverloadDamageSource extends DamageSource {
         private final Block machine;
 

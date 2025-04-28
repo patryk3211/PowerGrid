@@ -15,19 +15,24 @@
  */
 package org.patryk3211.powergrid.electricity.heater;
 
+import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.Collection;
 import java.util.List;
 
-public class HeaterBlockEntity extends ElectricBlockEntity {
+public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     public enum State {
         COLD,
         SMOKING,
@@ -36,6 +41,7 @@ public class HeaterBlockEntity extends ElectricBlockEntity {
 
     private IElectricNode node1;
     private IElectricNode node2;
+    private ElectricWire wire;
     private State state;
 
     public HeaterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -46,15 +52,23 @@ public class HeaterBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        float voltage = Math.abs(node1.getVoltage() - node2.getVoltage());
-        float power = voltage * voltage / ModdedConfigs.server().electricity.heaterResistance.getF();
-        if(power < ModdedConfigs.server().electricity.heaterSmokingPower.get()) {
+        float voltage = wire.potentialDifference();
+        float power = voltage * voltage / HeaterBlock.resistance();
+        applyLostPower(power);
+
+        var temperature = thermalBehaviour.getTemperature();
+        if(temperature < 200f) {
             updateState(State.COLD);
-        } else if(power < ModdedConfigs.server().electricity.heaterBlastingPower.get()) {
+        } else if(temperature < 400f) {
             updateState(State.SMOKING);
         } else {
             updateState(State.BLASTING);
         }
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return new ThermalBehaviour(this, 1.0f, 0.3f, 550f);
     }
 
     private void updateState(State state) {
@@ -73,6 +87,7 @@ public class HeaterBlockEntity extends ElectricBlockEntity {
     public void initializeNodes() {
         node1 = new FloatingNode();
         node2 = new FloatingNode();
+        wire = new ElectricWire(HeaterBlock.resistance(), node1, node2);
     }
 
     @Override
@@ -83,6 +98,38 @@ public class HeaterBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void addInternalWires(Collection<ElectricWire> wires) {
-        wires.add(new ElectricWire(HeaterBlock.resistance(), node1, node2));
+        wires.add(wire);
+    }
+
+    protected Formatting temperatureColor(float value) {
+        if(value < 200f)
+            return Formatting.DARK_GRAY;
+        else if(value < 400f)
+            return Formatting.GREEN;
+        else if(value < 500f)
+            return Formatting.YELLOW;
+        else
+            return Formatting.RED;
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+        Lang.translate("gui.heater.info_header").forGoggles(tooltip);
+        Lang.builder().translate("gui.heater.title")
+                .style(Formatting.GRAY)
+                .forGoggles(tooltip);
+
+        var temperature = thermalBehaviour.getTemperature();
+        temperature = Math.round(temperature * 100f) / 100f;
+        var temperatureText = String.format("%.2f", temperature);
+        var unit = Lang.builder().translate("generic.unit.temperature");
+        Lang.builder()
+                .text(temperatureText)
+                .add(Text.of(" "))
+                .add(unit)
+                .style(temperatureColor(temperature))
+                .forGoggles(tooltip, 1);
+
+        return true;
     }
 }
