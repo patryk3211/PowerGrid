@@ -77,6 +77,7 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
 
     private ElectricWire wire;
     private float overheatTemperature = 175f;
+    private int spawnTime = 0;
     private int despawnTime = 0;
     private boolean particlesSpawned = false;
 
@@ -129,6 +130,12 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
         var temperature = dataTracker.get(TEMPERATURE);
         if(getWorld().isClient)
             return temperature;
+
+        if(spawnTime < 2) {
+            // Wait 2 ticks before applying temperature to let the solver balance all voltages.
+            ++spawnTime;
+            return temperature;
+        }
 
         float energy = 0;
         if (wire != null) {
