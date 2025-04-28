@@ -29,12 +29,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CoilAggregate {
-    protected final World world;
-    protected final Set<CoilBlockEntity> coils = new HashSet<>();
-    protected CoilBlockEntity.AggregateType type;
+    private final World world;
+    private final Set<CoilBlockEntity> coils = new HashSet<>();
+    private CoilBlockEntity.AggregateType type;
 
     @Nullable
-    protected CoilBlockEntity outputCoil;
+    private CoilBlockEntity outputCoil;
 
     public CoilAggregate(World world) {
         this.type = CoilBlockEntity.AggregateType.SERIES;
