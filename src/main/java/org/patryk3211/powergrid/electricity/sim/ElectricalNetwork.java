@@ -16,10 +16,7 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.ejml.data.DMatrixRMaj;
-import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.INode;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.BiCGSTABSolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolver;
 
@@ -70,7 +67,7 @@ public class ElectricalNetwork {
         nodes.add(node);
         setDirty();
 
-        if(node instanceof VoltageSourceNode)
+        if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode)
             ++sourceCount;
     }
 
@@ -97,7 +94,7 @@ public class ElectricalNetwork {
 
         if(node instanceof ICouplingNode)
             couplings.remove(node);
-        if(node instanceof VoltageSourceNode)
+        if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode)
             --sourceCount;
 
         setDirty();
@@ -214,6 +211,14 @@ public class ElectricalNetwork {
         }
     }
 
+    public void updateCurrent(CurrentSourceNode node, float oldCurrent) {
+        if(currentMatrix == null || dirty)
+            return;
+
+        var diff = node.getCurrent() - oldCurrent;
+        currentMatrix.add(node.getIndex(), 0, diff);
+    }
+
     private void populateConductanceMatrix() {
         conductanceMatrix.zero();
         for(var wire : wires) {
@@ -252,6 +257,10 @@ public class ElectricalNetwork {
                 }
                 AMatrix.set(index, index, -1);
                 voltageSources[nodeIndex] = true;
+            } else if(node instanceof final CurrentSourceNode source) {
+                var I = source.getCurrent();
+                currentMatrix.add(node.getIndex(), 0, I);
+                voltageSources[nodeIndex] = false;
             } else {
                 voltageSources[nodeIndex] = false;
             }
