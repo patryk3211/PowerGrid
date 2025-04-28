@@ -22,6 +22,9 @@ import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -59,6 +62,8 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
     public static final float DISSIPATION_FACTOR = 0.2f;
     public static final float THERMAL_MASS = 1f;
 
+    private static final TrackedData<Float> TEMPERATURE = DataTracker.registerData(WireEntity.class, TrackedDataHandlerRegistry.FLOAT);
+
     private BlockPos electricBlockPos1;
     private BlockPos electricBlockPos2;
 
@@ -71,15 +76,14 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
     private ItemStack item;
 
     private ElectricWire wire;
-    private float temperature;
-    private int overheatingTicks;
+    private float overheatTemperature = 175f;
+    private int despawnTime = 0;
+    private boolean particlesSpawned = false;
 
     public Object renderParams;
 
     public WireEntity(EntityType<?> type, World world) {
         super(type, world);
-        temperature = BASE_TEMPERATURE;
-        overheatingTicks = 0;
     }
 
     public void updateRenderParams() {
@@ -118,33 +122,52 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
 
     @Override
     protected void initDataTracker() {
+        dataTracker.startTracking(TEMPERATURE, BASE_TEMPERATURE);
+    }
 
+    private float temperatureUpdate() {
+        var temperature = dataTracker.get(TEMPERATURE);
+        if(getWorld().isClient)
+            return temperature;
+
+        float energy = 0;
+        if (wire != null) {
+            var voltage = wire.potentialDifference();
+            energy += voltage * voltage / wire.getResistance() / 20f;
+        }
+        if(temperature < overheatTemperature) {
+            // If wire is overheated it is considered dead.
+            energy -= DISSIPATION_FACTOR * (temperature - BASE_TEMPERATURE) / 20f;
+        }
+        temperature += energy / THERMAL_MASS;
+        dataTracker.set(TEMPERATURE, temperature);
+
+        return temperature;
+    }
+
+    public boolean isOverheated() {
+        return dataTracker.get(TEMPERATURE) >= overheatTemperature;
     }
 
     @Override
     public void tick() {
         super.tick();
-        // Dissipate energy
-        float energy = 0;
-        if(wire != null) {
-            var voltage = wire.potentialDifference();
-            energy += voltage * voltage / wire.getResistance() / 20f;
-        }
-        energy -= DISSIPATION_FACTOR * (temperature - BASE_TEMPERATURE);
-        temperature += energy / THERMAL_MASS;
+        var world = getWorld();
+        var temperature = temperatureUpdate();
 
-        if(isOverheating()) {
-            var world = getWorld();
-            var pos = getPos();
-            if(world.isClient && renderParams != null) {
-                var curvePoint = ((WireRenderer.CurveParameters) renderParams).getRandomPoint(random);
-                double x = curvePoint.x + pos.x;
-                double y = curvePoint.y + pos.y;
-                double z = curvePoint.z + pos.z;
-                world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+        var pos = getPos();
+        if(isOverheated()) {
+            if(wire != null) {
+                // Remove to prevent power transfer in the 5 particle ticks.
+                wire.remove();
+                wire = null;
             }
-
-            if(overheatingTicks == 39 && world.isClient && renderParams != null) {
+            if(!world.isClient) {
+                if(++despawnTime >= 5) {
+                    // Break without dropping items.
+                    discard();
+                }
+            } else if(!particlesSpawned) {
                 var curveParams = (WireRenderer.CurveParameters) renderParams;
                 var dx = curveParams.getCurveSpan();
                 var normal = curveParams.getNormal();
@@ -156,20 +179,15 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
                     var z = pos.z + localX * normal.z;
                     world.addParticle(ParticleTypes.FLAME, x, y, z, 0.0f, 0.00f, 0.0f);
                 }
+                particlesSpawned = true;
             }
-            if(++overheatingTicks > 40 && !world.isClient) {
-                // Break without dropping items.
-                discard();
-            }
-        } else {
-            if(overheatingTicks > 0)
-                --overheatingTicks;
+        } else if(temperature >= overheatTemperature - 50 && world.isClient && renderParams != null) {
+            var curvePoint = ((WireRenderer.CurveParameters) renderParams).getRandomPoint(random);
+            double x = curvePoint.x + pos.x;
+            double y = curvePoint.y + pos.y;
+            double z = curvePoint.z + pos.z;
+            world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
         }
-    }
-
-    public boolean isOverheating() {
-        // TODO: This should also be taken from the used item.
-        return temperature >= BASE_TEMPERATURE + 150f;
     }
 
     @Override
@@ -220,12 +238,7 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
         if(nbt.contains("Item"))
             item = ItemStack.fromNbt(nbt.getCompound("Item"));
 
-        temperature = nbt.getFloat("Temperature");
-        if(nbt.contains("Overheating")) {
-            overheatingTicks = nbt.getInt("Overheating");
-        } else {
-            overheatingTicks = 0;
-        }
+        dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
 
         var world = getWorld();
         if(!world.isClient) {
@@ -246,9 +259,7 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
         if(item != null)
             nbt.put("Item", item.writeNbt(new NbtCompound()));
 
-        nbt.putFloat("Temperature", temperature);
-        if(overheatingTicks > 0)
-            nbt.putInt("Overheating", overheatingTicks);
+        nbt.putFloat("Temperature", dataTracker.get(TEMPERATURE));
     }
 
     @Override
@@ -286,6 +297,7 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
             kill();
             return ActionResult.SUCCESS;
         }
+        System.out.printf("Temperature: %f\n", dataTracker.get(TEMPERATURE));
         return super.interact(player, hand);
     }
 

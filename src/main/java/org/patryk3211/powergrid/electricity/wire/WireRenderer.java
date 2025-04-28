@@ -177,6 +177,10 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
             return;
         }
 
+        if(entity.isOverheated())
+            // Don't render since it's dead and only there to spawn particles.
+            return;
+
         var buffer = vertexConsumers.getBuffer(ModdedRenderLayers.getWireLayer());
         assert entity.renderParams instanceof CurveParameters;
         CurveParameters rp = (CurveParameters) entity.renderParams;
