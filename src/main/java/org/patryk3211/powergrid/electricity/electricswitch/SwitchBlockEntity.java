@@ -18,7 +18,9 @@ package org.patryk3211.powergrid.electricity.electricswitch;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
@@ -36,6 +38,18 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
         super(type, pos, state);
     }
 
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return new ThermalBehaviour(this, 0.5f, 0.1f);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        var voltage = wire.potentialDifference();
+        applyLostPower(voltage * voltage / wire.getResistance());
+    }
+
     public void setState(boolean state) {
         wire.setState(state);
     }
@@ -44,7 +58,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     public void initializeNodes() {
         node1 = new FloatingNode();
         node2 = new FloatingNode();
-        wire = new SwitchedWire(0.01f, node1, node2, false);
+        wire = new SwitchedWire(0.01f, node1, node2, !getCachedState().get(SwitchBlock.OPEN));
     }
 
     @Override

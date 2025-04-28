@@ -20,6 +20,8 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -45,7 +47,17 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
         } else {
             dialTarget = current / maxValue;
         }
+
+        float voltage = wire.potentialDifference();
+        float power = voltage * voltage / wire.getResistance();
+        applyLostPower(power);
+
         super.tick();
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return new ThermalBehaviour(this, 5.0f, 0.1f);
     }
 
     @Override

@@ -19,7 +19,7 @@ import com.simibubi.create.foundation.config.ConfigBase;
 
 public class CKinetics extends ConfigBase {
     public final ConfigFloat basicGeneratorConversionRatio = f(0.25f, 0, "basicGeneratorRatio", Comments.basicGeneratorConversionRatio);
-    public final ConfigFloat basicGeneratorResistance = f(0.1f, 0, "basicGeneratorResistance", Comments.basicGeneratorResistance);
+    public final ConfigFloat basicGeneratorResistance = f(1.5f, 0, "basicGeneratorResistance", Comments.basicGeneratorResistance);
 
     @Override
     public String getName() {

@@ -139,6 +139,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         float R = connection.resistance;
         var wire = GlobalElectricNetworks.makeConnection(this, getTerminal(sourceTerminal), targetBehaviour, targetNode, R);
 
+        var entity = getConnectionEntity(connection);
+        if(entity != null)
+            entity.setWire(wire);
         connection.wire = wire;
         targetConnection.wire = wire;
         return true;

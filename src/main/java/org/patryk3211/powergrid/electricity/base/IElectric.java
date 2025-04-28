@@ -187,6 +187,7 @@ public interface IElectric extends IWrenchable {
         var wire = GlobalElectricNetworks.makeConnection(behaviour1, node1, behaviour2, node2, R);
         behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(pos2, terminal2, wire, entity.getUuid()));
         behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(pos1, terminal1, wire, entity.getUuid()));
+        entity.setWire(wire);
         return ActionResult.SUCCESS;
     }
 }

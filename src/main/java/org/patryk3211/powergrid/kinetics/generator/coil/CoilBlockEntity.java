@@ -25,9 +25,11 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -52,27 +54,27 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
 
     @Override
     public void initialize() {
-        super.initialize();
         rebuildAggregate();
+        super.initialize();
     }
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        if(getCachedState().get(CoilBlock.HAS_TERMINALS))
-            super.addBehaviours(behaviours);
+        if(getCachedState().get(CoilBlock.HAS_TERMINALS)) {
+            electricBehaviour = new ElectricBehaviour(this);
+            behaviours.add(electricBehaviour);
+        }
+
+        thermalBehaviour = specifyThermalBehaviour();
+        if(thermalBehaviour != null)
+            behaviours.add(thermalBehaviour);
+
         coilBehaviour = new CoilBehaviour(this);
         behaviours.add(coilBehaviour);
-        aggregateType = new ScrollOptionBehaviour<>(AggregateType.class, Lang.translateDirect("devices.coil.aggregate_type"), this, new CoilValueBoxTransform());
-        aggregateType.withCallback(this::aggregateTypeChange);
-        aggregateType.withClientCallback(this::aggregateTypeChange);
-        behaviours.add(aggregateType);
-    }
 
-    private void aggregateTypeChange(int i) {
-        aggregate.setType(aggregateType.get());
-        if(coupling != null) {
-            coupling.setResistance(aggregate.totalResistance());
-        }
+        aggregateType = new ScrollOptionBehaviour<>(AggregateType.class, Lang.translateDirect("devices.coil.aggregate_type"), this, new CoilValueBoxTransform());
+        aggregateType.withCallback(i -> aggregate.setType(aggregateType.get()));
+        behaviours.add(aggregateType);
     }
 
     public CoilBehaviour getCoilBehaviour() {
@@ -126,13 +128,31 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     @Override
     public void tick() {
         super.tick();
+
+        var outputCurrent = windingCurrent();
+        var powerDrop = outputCurrent * outputCurrent * CoilBlock.resistance();
+        if(powerDrop > 0) {
+            // Coil is acting like a source
+            applyLostPower(powerDrop);
+        } else {
+            // Coil is acting like a sink.
+        }
+
         if(sourceNode != null && aggregate != null) {
             sourceNode.setVoltage(aggregate.totalVoltage());
         }
     }
 
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return new ThermalBehaviour(this, 2.0f, 0.1f);
+    }
+
     public void propagateType(AggregateType type) {
         this.aggregateType.setValue(type.ordinal());
+        if(coupling != null) {
+            coupling.setResistance(aggregate.totalResistance());
+        }
     }
 
     private List<CoilBlockEntity> getNeighbors() {
@@ -152,7 +172,7 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
 
     public void rebuildAggregate() {
         assert world != null;
-        var newAggregate = new CoilAggregate();
+        var newAggregate = new CoilAggregate(world);
         List<CoilBlockEntity> toProcess = new LinkedList<>();
         toProcess.add(this);
         while(!toProcess.isEmpty()) {
@@ -192,9 +212,13 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
             if(tag.contains("HasOutput")) {
                 if(tag.getBoolean("HasOutput")) {
                     // Must have electric behaviour.
+                    if(aggregate != null)
+                        aggregate.makeOutput(this);
                     addElectricBehaviour();
                 } else {
                     // Cannot have electric behaviour.
+                    if(aggregate != null)
+                        aggregate.removeOutput(this);
                     removeElectricBehaviour();
                 }
             }
