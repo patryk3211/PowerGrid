@@ -20,13 +20,16 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
 import java.util.List;
 
 public abstract class ElectricKineticBlockEntity extends KineticBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
+    protected ThermalBehaviour thermalBehaviour;
 
     public ElectricKineticBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -37,6 +40,20 @@ public abstract class ElectricKineticBlockEntity extends KineticBlockEntity impl
         super.addBehaviours(behaviours);
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
+
+        thermalBehaviour = specifyThermalBehaviour();
+        if(thermalBehaviour != null)
+            behaviours.add(thermalBehaviour);
+    }
+
+    @Nullable
+    public ThermalBehaviour specifyThermalBehaviour() {
+        return null;
+    }
+
+    protected void applyLostPower(float power) {
+        if(thermalBehaviour != null)
+            thermalBehaviour.applyTickPower(power);
     }
 
     @Override

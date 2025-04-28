@@ -19,7 +19,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
@@ -39,6 +41,15 @@ public class BasicGeneratorBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
+
+        var outputCurrent = sourceNode.getCurrent();
+        var powerDrop = outputCurrent * outputCurrent * BasicGeneratorBlock.resistance();
+        applyLostPower(powerDrop);
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return new ThermalBehaviour(this, 2.0f, 0.1f);
     }
 
     private static float ratio() {
@@ -48,9 +59,7 @@ public class BasicGeneratorBlockEntity extends ElectricKineticBlockEntity {
     @Override
     protected void read(NbtCompound compound, boolean clientPacket) {
         super.read(compound, clientPacket);
-        if(clientPacket) {
-            sourceNode.setVoltage(getSpeed() * ratio());
-        }
+        sourceNode.setVoltage(getSpeed() * ratio());
     }
 
     @Override

@@ -128,11 +128,9 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     @Override
     public void tick() {
         super.tick();
-//        var nodeVoltage = sourceNode.getVoltage();
-        var outputCurrent = windingCurrent();
 
-        var voltageDrop = outputCurrent * CoilBlock.resistance();
-        var powerDrop = voltageDrop * outputCurrent;
+        var outputCurrent = windingCurrent();
+        var powerDrop = outputCurrent * outputCurrent * CoilBlock.resistance();
         if(powerDrop > 0) {
             // Coil is acting like a source
             applyLostPower(powerDrop);
@@ -147,7 +145,7 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 5.0f, 0.1f);
+        return new ThermalBehaviour(this, 2.0f, 0.1f);
     }
 
     public void propagateType(AggregateType type) {
