@@ -159,9 +159,9 @@ public class RotorBehaviour extends SegmentedBehaviour {
     public void applyTickForce(float force) {
         var controller = (RotorBehaviour) getControllerOrThis();
         if(controller != null && Math.abs(force) > 0.001f) {
-            angularVelocity += force / inertia / 20f;
-            if(Float.isNaN(angularVelocity))
-                angularVelocity = 0;
+            controller.angularVelocity += force / controller.inertia / 20f;
+            if(Float.isNaN(controller.angularVelocity))
+                controller.angularVelocity = 0;
         }
     }
 
@@ -172,7 +172,7 @@ public class RotorBehaviour extends SegmentedBehaviour {
     public float getAngularVelocity() {
         var controller = (RotorBehaviour) getControllerOrThis();
         if(controller != null)
-            return (controller.angularVelocity + controller.prevAngularVelocity) / 2f;
+            return controller.angularVelocity; //(controller.angularVelocity + controller.prevAngularVelocity) / 2f;
         return 0;
     }
 

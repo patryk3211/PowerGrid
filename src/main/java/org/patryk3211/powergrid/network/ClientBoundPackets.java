@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.network;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.PowerGrid;
@@ -24,6 +26,7 @@ import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlockEntity;
 import org.patryk3211.powergrid.network.packets.AggregateCoilsS2CPacket;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
+@Environment(EnvType.CLIENT)
 public class ClientBoundPackets {
     public static void init() {
         entityDataPacket();
@@ -33,7 +36,7 @@ public class ClientBoundPackets {
     private static void aggregateCoilsPacket() {
         ClientPlayNetworking.registerGlobalReceiver(AggregateCoilsS2CPacket.TYPE, (packet, player, sender) -> {
             var world = player.getWorld();
-            var aggregate = new CoilAggregate();
+            var aggregate = new CoilAggregate(world);
             for(BlockPos pos : packet.coilPositions) {
                 if(!(world.getBlockEntity(pos) instanceof CoilBlockEntity coil)) {
                     PowerGrid.LOGGER.warn("Client block entity is not a coil entity and cannot be aggregated.");

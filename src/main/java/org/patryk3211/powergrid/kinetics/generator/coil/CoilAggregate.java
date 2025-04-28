@@ -15,10 +15,13 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.coil;
 
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.network.packets.AggregateCoilsS2CPacket;
 
@@ -26,13 +29,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CoilAggregate {
-    private final Set<CoilBlockEntity> coils = new HashSet<>();
-    private CoilBlockEntity.AggregateType type;
-    @Nullable
-    private CoilBlockEntity outputCoil;
+    protected final World world;
+    protected final Set<CoilBlockEntity> coils = new HashSet<>();
+    protected CoilBlockEntity.AggregateType type;
 
-    public CoilAggregate() {
+    @Nullable
+    protected CoilBlockEntity outputCoil;
+
+    public CoilAggregate(World world) {
         this.type = CoilBlockEntity.AggregateType.SERIES;
+        this.world = world;
     }
 
     public boolean addCoil(CoilBlockEntity coil) {
@@ -41,15 +47,28 @@ public class CoilAggregate {
 
     public void apply() {
         coils.forEach(coil -> coil.setAggregate(this));
+        if(!world.isClient) {
+            // Send aggregate to clients
+            var packet = new AggregateCoilsS2CPacket(coils);
+            sendToTrackers(packet);
+        }
         makeOutput(null);
     }
 
+    private <T extends FabricPacket> void sendToTrackers(T packet) {
+        assert !world.isClient;
+        Set<ServerPlayerEntity> trackers = new HashSet<>();
+        coils.forEach(coil -> trackers.addAll(PlayerLookup.tracking(coil)));
+        for(var player : trackers) {
+            ServerPlayNetworking.send(player, packet);
+        }
+    }
+
     public void makeOutput(@Nullable CoilBlockEntity outputCoil) {
-        World world = outputCoil != null ? outputCoil.getWorld() : null;
+        if(coils.isEmpty())
+            throw new IllegalStateException("Cannot set output coil of an empty aggregate");
+
         for(var coil : coils) {
-            if(world == null)
-                world = coil.getWorld();
-            assert world != null;
             if(coil == outputCoil) {
                 world.setBlockState(coil.getPos(), coil.getCachedState().with(CoilBlock.HAS_TERMINALS, true), Block.NOTIFY_LISTENERS);
                 coil.addElectricBehaviour();
@@ -68,23 +87,14 @@ public class CoilAggregate {
         if(outputCoil != null) {
             setType(outputCoil.getAggregateType());
         }
-        if(world != null && !world.isClient && !coils.isEmpty()) {
-            var coil = coils.iterator().next();
-            var packet = new AggregateCoilsS2CPacket(coils);
-            for(var player : PlayerLookup.tracking(coil)) {
-                ServerPlayNetworking.send(player, packet);
-            }
-        }
     }
 
-    public void removeOutput(CoilBlockEntity outputCoil) {
-        var world = outputCoil.getWorld();
-        assert world != null;
+    public void removeOutput(@NotNull CoilBlockEntity outputCoil) {
         world.setBlockState(outputCoil.getPos(), outputCoil.getCachedState().with(CoilBlock.HAS_TERMINALS, false), Block.NOTIFY_LISTENERS);
 
         if(this.outputCoil != outputCoil)
             return;
-        outputCoil.removeElectricBehaviour();
+        this.outputCoil.removeElectricBehaviour();
         this.outputCoil = null;
     }
 
@@ -129,15 +139,16 @@ public class CoilAggregate {
 
     public float coilCurrent() {
         var nodeCurrent = outputCoil != null ? outputCoil.sourceNodeCurrent() : 0;
-        if(type == CoilBlockEntity.AggregateType.PARALLEL)
-            // Current is spread out over all the nodes.
-            return nodeCurrent / coils.size();
-        return nodeCurrent;
+        // Current is always spread out over all the nodes.
+        // The only difference is how it affects the load.
+        return nodeCurrent / coils.size();
     }
 
     public void setType(CoilBlockEntity.AggregateType type) {
-        this.type = type;
-        coils.forEach(coil -> coil.propagateType(type));
+        if(this.type != type) {
+            this.type = type;
+            coils.forEach(coil -> coil.propagateType(type));
+        }
     }
 
     public CoilBlockEntity.AggregateType getType() {
