@@ -74,18 +74,20 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
     @Override
     public void initializeNodes() {
+        positive = new FloatingNode();
+        negative = new FloatingNode();
         if(getCachedState().isOf(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
             voltageSource = true;
             sourceNode = new VoltageSourceNode();
+            coupling = TransformerCoupling.create(1, sourceNode, positive, negative);
         } else if(getCachedState().isOf(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
             voltageSource = false;
             sourceNode = new CurrentSourceNode();
+            // Transformer needs some resistance for solver to work correctly with the current source.
+            coupling = TransformerCoupling.create(1, 1e-6f, sourceNode, positive, negative);
         } else {
             throw new IllegalArgumentException();
         }
-        positive = new FloatingNode();
-        negative = new FloatingNode();
-        coupling = TransformerCoupling.create(1, sourceNode, positive, negative);
     }
 
     @Override
