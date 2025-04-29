@@ -15,6 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.sim.node;
 
+/**
+ * Warning! Current source nodes cannot be directly connected to transformer couplings.
+ */
 public class CurrentSourceNode extends ElectricNode {
     public CurrentSourceNode() {
 

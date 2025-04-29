@@ -258,8 +258,7 @@ public class ElectricalNetwork {
                 AMatrix.set(index, index, -1);
                 voltageSources[nodeIndex] = true;
             } else if(node instanceof final CurrentSourceNode source) {
-                var I = source.getCurrent();
-                currentMatrix.add(node.getIndex(), 0, I);
+                currentMatrix.add(node.getIndex(), 0, source.getCurrent());
                 voltageSources[nodeIndex] = false;
             } else {
                 voltageSources[nodeIndex] = false;

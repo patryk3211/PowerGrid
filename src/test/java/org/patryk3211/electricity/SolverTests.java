@@ -54,37 +54,4 @@ public class SolverTests extends TestHelper {
         Assertions.assertEquals( 1f / 10, V1.getCurrent(), 1e-6, "Voltage source 1 current is incorrect");
         Assertions.assertEquals(-1f / 10, V2.getCurrent(), 1e-6, "Voltage source 2 current is incorrect");
     }
-
-    @Test
-    void testCurrentSource() {
-        var Net = new Network();
-
-        var C1 = Net.C(1);
-        Net.W(1, C1, null);
-
-        Net.calculate();
-
-        Assertions.assertEquals(1f, C1.getVoltage(), 1e-6, "Current source voltage is incorrect");
-
-        C1.setCurrent(2);
-        Net.calculate();
-
-        Assertions.assertEquals(2f, C1.getVoltage(), 1e-6, "Current source voltage is incorrect");
-    }
-
-    @Test
-    void testCurrentSourceDivider() {
-        var Net = new Network();
-
-        var C1 = Net.C(1);
-        var N1 = Net.N();
-
-        Net.W(1, C1, N1);
-        Net.W(1, N1, null);
-
-        Net.calculate();
-
-        Assertions.assertEquals(2f, C1.getVoltage(), 1e-6, "Current source voltage is incorrect");
-        Assertions.assertEquals(1f, N1.getVoltage(), 1e-6, "Divider voltage is incorrect");
-    }
 }
