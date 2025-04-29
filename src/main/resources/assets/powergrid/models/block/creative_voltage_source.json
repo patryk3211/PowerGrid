@@ -1,0 +1,6 @@
+{
+  "parent": "powergrid:block/creative_source",
+  "textures": {
+    "0": "powergrid:block/creative_voltage_source"
+  }
+}

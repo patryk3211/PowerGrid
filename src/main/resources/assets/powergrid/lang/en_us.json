@@ -8,6 +8,8 @@
   "block.powergrid.heating_coil": "Heating Coil",
   "block.powergrid.coil": "Generator Coil",
   "block.powergrid.rotor": "Generator Rotor",
+  "block.powergrid.creative_current_source": "Creative Current Source",
+  "block.powergrid.creative_voltage_source": "Creative Voltage Source",
 
   "item.powergrid.wire": "Wire",
 
@@ -18,6 +20,10 @@
 
   "powergrid.gui.heater.info_header": "Heating coil information",
   "powergrid.gui.heater.title": "Coil temperature",
+
+  "powergrid.gui.creative_source.info_header": "Creative source information",
+  "powergrid.gui.creative_source.voltage": "Source voltage",
+  "powergrid.gui.creative_source.current": "Source current",
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
@@ -40,6 +46,9 @@
   "powergrid.message.connection_too_long": "This terminal is too far away",
 
   "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
+  "powergrid.devices.creative.voltage": "Output voltage",
+  "powergrid.devices.creative.current": "Output current",
+
   "create.aggregate_type.series": "Series",
   "create.aggregate_type.parallel": "Parallel",
 
