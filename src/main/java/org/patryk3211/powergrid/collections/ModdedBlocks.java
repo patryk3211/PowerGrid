@@ -18,6 +18,8 @@ package org.patryk3211.powergrid.collections;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
+import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
+import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
@@ -71,6 +73,16 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<SwitchBlock> SWITCH = REGISTRATE.block("switch", SwitchBlock::new)
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)
+            .simpleItem()
+            .register();
+    public static final BlockEntry<CreativeSourceBlock> CREATIVE_CURRENT_SOURCE = REGISTRATE.block("creative_current_source", CreativeSourceBlock::new)
+            .simpleItem()
+            .register();
+    public static final BlockEntry<CreativeResistorBlock> CREATIVE_RESISTOR = REGISTRATE.block("creative_resistor", CreativeResistorBlock::new)
             .simpleItem()
             .register();
 
