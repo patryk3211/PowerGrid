@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Collection;
 import java.util.List;
@@ -122,11 +123,10 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         var temperature = thermalBehaviour.getTemperature();
         temperature = Math.round(temperature * 100f) / 100f;
         var temperatureText = String.format("%.2f", temperature);
-        var unit = Lang.builder().translate("generic.unit.temperature");
         Lang.builder()
                 .text(temperatureText)
                 .add(Text.of(" "))
-                .add(unit)
+                .add(Unit.TEMPERATURE.get())
                 .style(temperatureColor(temperature))
                 .forGoggles(tooltip, 1);
 

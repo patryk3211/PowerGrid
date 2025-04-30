@@ -33,6 +33,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Collection;
 import java.util.List;
@@ -156,10 +157,10 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
         var voltage = sourceNode.getVoltage();
         var voltageText = String.format("%.2f", voltage);
-        var volt = Lang.builder().translate("generic.unit.volt");
         Lang.builder()
                 .text(voltageText)
-                .add(volt)
+                .add(Text.of(" "))
+                .add(Unit.VOLTAGE.get())
                 .style(Formatting.BLUE)
                 .forGoggles(tooltip, 1);
 
@@ -169,10 +170,10 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
         var current = sourceNode.getCurrent();
         var currentText = String.format("%.2f", current);
-        var amp = Lang.builder().translate("generic.unit.amp");
         Lang.builder()
                 .text(currentText)
-                .add(amp)
+                .add(Text.of(" "))
+                .add(Unit.CURRENT.get())
                 .style(Formatting.GREEN)
                 .forGoggles(tooltip, 1);
 

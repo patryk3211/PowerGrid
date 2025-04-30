@@ -21,6 +21,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
@@ -32,7 +33,6 @@ public class Resistance {
         if(!hasGoggles)
             return;
 
-        LangBuilder unit = Lang.translate("generic.unit.ohm");
         Lang.translate("tooltip.resistance.series")
                 .style(Formatting.GRAY).addTo(tooltip);
         LangBuilder valueText = Lang.builder().add(Text.of(" "));
@@ -40,19 +40,19 @@ public class Resistance {
             // Millis
             valueText.add(Lang.number(value * 1000))
                     .add(Text.of(" m"))
-                    .add(unit);
+                    .add(Unit.RESISTANCE.get());
         } else if(value < 1000) {
             valueText.add(Lang.number(value))
                     .add(Text.of(" "))
-                    .add(unit);
+                    .add(Unit.RESISTANCE.get());
         } else if(value < 1000000) {
             valueText.add(Lang.number(value / 1000))
                     .add(Text.of(" k"))
-                    .add(unit);
+                    .add(Unit.RESISTANCE.get());
         } else {
             valueText.add(Lang.number(value / 1000000))
                     .add(Text.of(" M"))
-                    .add(unit);
+                    .add(Unit.RESISTANCE.get());
         }
         valueText.style(Formatting.DARK_AQUA).addTo(tooltip);
     }
