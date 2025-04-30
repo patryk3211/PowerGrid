@@ -18,10 +18,7 @@ package org.patryk3211.electricity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.sim.node.*;
 
 public abstract class TestHelper {
     protected static class Network {
@@ -39,6 +36,12 @@ public abstract class TestHelper {
 
         public VoltageSourceNode V(float voltage) {
             var node = new VoltageSourceNode(voltage);
+            network.addNode(node);
+            return node;
+        }
+
+        public CurrentSourceNode C(float current) {
+            var node = new CurrentSourceNode(current);
             network.addNode(node);
             return node;
         }
