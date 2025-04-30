@@ -34,6 +34,7 @@ import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Collection;
 import java.util.List;
@@ -99,7 +100,8 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
         var resistanceText = PreciseNumberFormat.format(resistance);
         Lang.builder()
                 .text(resistanceText)
-                .add(Lang.unit("ohm"))
+                .add(Text.of(" "))
+                .add(Unit.RESISTANCE.get())
                 .style(Formatting.BLUE)
                 .forGoggles(tooltip, 1);
 
@@ -111,7 +113,8 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
         var currentText = PreciseNumberFormat.format(current);
         Lang.builder()
                 .text(currentText)
-                .add(Lang.unit("amp"))
+                .add(Text.of(" "))
+                .add(Unit.CURRENT.get())
                 .style(Formatting.GREEN)
                 .forGoggles(tooltip, 1);
 
@@ -122,7 +125,8 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
         var power = PreciseNumberFormat.format(current * current * resistance);
         Lang.builder()
                 .text(power)
-                .add(Lang.unit("watt"))
+                .add(Text.of(" "))
+                .add(Unit.POWER.get())
                 .style(Formatting.YELLOW)
                 .forGoggles(tooltip, 1);
         return true;

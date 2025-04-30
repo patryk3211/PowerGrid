@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Collection;
 import java.util.List;
@@ -113,10 +114,10 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
                 currentText = String.format("< %.2f", -maxValue);
         }
 
-        var unit = Lang.builder().translate("generic.unit.amp");
         Lang.builder()
                 .text(currentText)
-                .add(unit)
+                .add(Text.of(" "))
+                .add(Unit.CURRENT.get())
                 .style(measurementColor(Math.abs(current)))
                 .forGoggles(tooltip, 1);
 

@@ -36,4 +36,8 @@ public class Lang extends com.simibubi.create.foundation.utility.Lang {
     public static LangBuilder unit(String unit) {
         return builder().translate("generic.unit." + unit);
     }
+
+    public static LangBuilder unit(Unit unit) {
+        return builder().translate(unit.getTranslationKey());
+    }
 }

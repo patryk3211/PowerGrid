@@ -24,6 +24,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Collection;
 import java.util.List;
@@ -99,10 +100,10 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
                 voltageText = String.format("< %.2f", -maxValue);
         }
 
-        var unit = Lang.builder().translate("generic.unit.volt");
         Lang.builder()
                 .text(voltageText)
-                .add(unit)
+                .add(Text.of(" "))
+                .add(Unit.VOLTAGE.get())
                 .style(measurementColor(Math.abs(potential)))
                 .forGoggles(tooltip, 1);
 
