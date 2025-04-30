@@ -30,6 +30,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -128,6 +129,15 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
     public void addExternalNodes(List<IElectricNode> nodes) {
         nodes.add(positive);
         nodes.add(negative);
+    }
+
+    @Override
+    public void addInternalWires(Collection<ElectricWire> wires) {
+        if(!voltageSource) {
+            // 1 Mega-ohm wire between output nodes to prevent the solver from
+            // exploding when nothing is connected.
+            wires.add(new ElectricWire(1e+6f, positive, negative));
+        }
     }
 
     @Override
