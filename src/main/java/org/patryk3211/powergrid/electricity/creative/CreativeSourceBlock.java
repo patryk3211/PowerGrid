@@ -20,6 +20,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
@@ -29,6 +30,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
@@ -63,6 +65,11 @@ public class CreativeSourceBlock extends ElectricBlock implements IBE<CreativeSo
 
     public CreativeSourceBlock(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
+        return getDefaultState().with(HORIZONTAL_AXIS, ctx.getHorizontalPlayerFacing().rotateYClockwise().getAxis());
     }
 
     @Override

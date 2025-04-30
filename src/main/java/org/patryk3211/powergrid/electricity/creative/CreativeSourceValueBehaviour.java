@@ -26,7 +26,6 @@ import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import org.patryk3211.powergrid.utility.Lang;
 
