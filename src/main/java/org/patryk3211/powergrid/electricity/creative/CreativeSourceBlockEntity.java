@@ -45,6 +45,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
     private FloatingNode positive;
     private FloatingNode negative;
 
+    private boolean overwrite = false;
     private boolean voltageSource;
 
     public CreativeSourceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -67,9 +68,11 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
             multiplier = 0.0f;
         }
 
-        value = new ScrollValueBehaviour(label, this, new CreativeSourceBoxTransform());
-        value.between(-250, 250).withFormatter(i -> String.format("%.1f", i * multiplier));
-        value.withCallback(i -> setValue(i * multiplier));
+        value = new CreativeSourceValueBehaviour(label, this, multiplier, new CreativeSourceBoxTransform()); //new ScrollValueBehaviour(label, this, new CreativeSourceBoxTransform());
+        value.withCallback(i -> {
+            if(!overwrite)
+                setValue(i * multiplier);
+        });
         behaviours.add(value);
     }
 
@@ -94,12 +97,16 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
     @Override
     protected void read(NbtCompound tag, boolean clientPacket) {
         super.read(tag, clientPacket);
+        if(tag.contains("Overwrite"))
+            overwrite = tag.getBoolean("Overwrite");
         setValue(tag.getFloat("NodeValue"));
     }
 
     @Override
     protected void write(NbtCompound tag, boolean clientPacket) {
         super.write(tag, clientPacket);
+        if(overwrite)
+            tag.putBoolean("Overwrite", true);
         tag.putFloat("NodeValue", getValue());
     }
 
