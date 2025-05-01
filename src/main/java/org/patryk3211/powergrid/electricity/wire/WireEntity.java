@@ -16,8 +16,6 @@
 package org.patryk3211.powergrid.electricity.wire;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -32,93 +30,45 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
-import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
-public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer, IComplexRaycast {
-    private static final Vec3d UP = new Vec3d(0, 1, 0);
-
-    private static final float THICKNESS = 0.1f;
-
+public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
     // TODO: These have to be taken from the used item.
     public static final float DISSIPATION_FACTOR = 0.2f;
     public static final float THERMAL_MASS = 1f;
 
-    private static final TrackedData<Float> TEMPERATURE = DataTracker.registerData(WireEntity.class, TrackedDataHandlerRegistry.FLOAT);
+    protected static final TrackedData<Float> TEMPERATURE = DataTracker.registerData(WireEntity.class, TrackedDataHandlerRegistry.FLOAT);
 
-    private BlockPos electricBlockPos1;
-    private BlockPos electricBlockPos2;
+    protected BlockPos electricBlockPos1;
+    protected BlockPos electricBlockPos2;
 
-    private int electricTerminal1;
-    private int electricTerminal2;
+    protected int electricTerminal1;
+    protected int electricTerminal2;
 
-    public Vec3d terminalPos1;
-    public Vec3d terminalPos2;
-
-    private ItemStack item;
+    protected ItemStack item;
 
     private ElectricWire wire;
-    private float overheatTemperature = 175f;
+    protected float overheatTemperature = 175f;
     private int spawnTime = 0;
     private int despawnTime = 0;
-    private boolean particlesSpawned = false;
-
-    public Object renderParams;
 
     public WireEntity(EntityType<?> type, World world) {
         super(type, world);
     }
 
-    public void updateRenderParams() {
-        if(!getWorld().isClient)
-            return;
-        renderParams = new WireRenderer.CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS);
-    }
-
-    public static WireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item) {
-        var entity = new WireEntity(ModdedEntities.WIRE.get(), world);
-        entity.electricBlockPos1 = pos1;
-        entity.electricBlockPos2 = pos2;
-        entity.electricTerminal1 = terminal1;
-        entity.electricTerminal2 = terminal2;
-        entity.item = item;
-
-        entity.refreshTerminalPositions();
-        entity.setPitch(0);
-        entity.resetPosition();
-        entity.refreshPosition();
-        return entity;
-    }
-
     public void setWire(ElectricWire wire) {
         this.wire = wire;
-    }
-
-    @Override
-    protected Box calculateBoundingBox() {
-        if(terminalPos1 != null && terminalPos2 != null) {
-            var box = new Box(terminalPos1, terminalPos2);
-            return box.expand(0.1f);
-        } else
-            return super.calculateBoundingBox();
     }
 
     @Override
@@ -156,13 +106,16 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
         return dataTracker.get(TEMPERATURE) >= overheatTemperature;
     }
 
+    public float getTemperature() {
+        return dataTracker.get(TEMPERATURE);
+    }
+
     @Override
     public void tick() {
         super.tick();
         var world = getWorld();
-        var temperature = temperatureUpdate();
+        temperatureUpdate();
 
-        var pos = getPos();
         if(isOverheated()) {
             if(wire != null) {
                 // Remove to prevent power transfer in the 5 particle ticks.
@@ -174,33 +127,8 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
                     // Break without dropping items.
                     discard();
                 }
-            } else if(!particlesSpawned) {
-                var curveParams = (WireRenderer.CurveParameters) renderParams;
-                var dx = curveParams.getCurveSpan();
-                var normal = curveParams.getNormal();
-                int pointCount = Math.round(dx / 0.25f);
-                for(int i = 0; i < pointCount; ++i) {
-                    float localX = ((float) i / pointCount - 0.5f) * dx;
-                    var x = pos.x + localX * normal.x;
-                    var y = pos.y + curveParams.apply(localX);
-                    var z = pos.z + localX * normal.z;
-                    world.addParticle(ParticleTypes.FLAME, x, y, z, 0.0f, 0.00f, 0.0f);
-                }
-                particlesSpawned = true;
             }
-        } else if(temperature >= overheatTemperature - 50 && world.isClient && renderParams != null) {
-            var curvePoint = ((WireRenderer.CurveParameters) renderParams).getRandomPoint(random);
-            double x = curvePoint.x + pos.x;
-            double y = curvePoint.y + pos.y;
-            double z = curvePoint.z + pos.z;
-            world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
         }
-    }
-
-    @Override
-    public boolean canHit() {
-        // Hits get handled by IComplexRaycast
-        return false;
     }
 
     @Override
@@ -224,11 +152,6 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
             var tag = packet.buffer.readNbt();
             if (tag != null)
                 readCustomDataFromNbt(tag);
-        } else if(packet.type == 1) {
-            var buffer = packet.buffer;
-            terminalPos1 = new Vec3d(buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
-            terminalPos2 = new Vec3d(buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
-            updateRenderParams();
         }
     }
 
@@ -246,15 +169,6 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
             item = ItemStack.fromNbt(nbt.getCompound("Item"));
 
         dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
-
-        var world = getWorld();
-        if(!world.isClient) {
-            refreshTerminalPositions();
-        } else {
-            terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
-            terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
-            updateRenderParams();
-        }
     }
 
     @Override
@@ -318,107 +232,7 @@ public class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer,
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
-    public @Nullable Vec3d raycast(Vec3d min, Vec3d max) {
-        if(renderParams instanceof WireRenderer.CurveParameters params) {
-            Vec3d ray = max.subtract(min);
-            var rayLength = ray.lengthSquared();
-            ray = ray.normalize();
-            Vec3d planeOrigin = getPos();
-            Vec3d planeNormal = getRotationVec(1);
-            Vec3d planeOriginVector = planeOrigin.subtract(min);
-
-            var planeYVector = new Vec3d(0, 1, 0);
-            var planeXVector = planeNormal.crossProduct(planeYVector);
-            if(ray.x * ray.x + ray.z * ray.z < ray.y * ray.y * 0.25) {
-                double planeDistance = planeOriginVector.dotProduct(planeYVector);
-
-                double hitDistance = planeDistance / planeYVector.dotProduct(ray);
-                if(hitDistance * hitDistance < rayLength) {
-                    Vec3d hit = min.add(ray.multiply(hitDistance));
-
-                    var hitOriginVector = hit.subtract(planeOrigin);
-
-                    var parallelDistance = Math.abs(planeXVector.dotProduct(hitOriginVector));
-                    var perpendicularDistance = Math.abs(planeNormal.dotProduct(hitOriginVector));
-
-                    if(parallelDistance < params.getCurveSpan() / 2 && perpendicularDistance < THICKNESS / 2) {
-                        // Hit
-                        return hit;
-                    } else {
-                        // Miss
-                        return null;
-                    }
-                }
-            } else {
-                double planeDistance = planeOriginVector.dotProduct(planeNormal);
-
-                double hitDistance = planeDistance / planeNormal.dotProduct(ray);
-                if (hitDistance > 0 && hitDistance * hitDistance < rayLength) {
-                    Vec3d hit = min.add(ray.multiply(hitDistance));
-
-                    var hitOriginVector = hit.subtract(planeOrigin);
-                    double x = planeXVector.dotProduct(hitOriginVector);
-                    // We can do that since the entity never has any pitch.
-                    double y = hitOriginVector.y;
-
-                    double closeX = params.findClosestPoint(x, y);
-                    double span = params.getCurveSpan() / 2;
-                    closeX = Math.min(Math.max(closeX, -span), span);
-
-                    double dX = x - closeX;
-                    double dY = y - params.apply((float) closeX);
-
-                    double squareDistance = dX * dX + dY * dY;
-                    if(squareDistance < THICKNESS * THICKNESS) {
-                        // Hit
-                        return hit;
-                    } else {
-                        // Miss
-                        return null;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
     public PistonBehavior getPistonBehavior() {
         return PistonBehavior.IGNORE;
-    }
-
-    public void refreshTerminalPositions() {
-        var world = getWorld();
-        if(world != null && !world.isClient) {
-            terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
-            terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
-
-            var vect = terminalPos2.subtract(terminalPos1);
-            var facing = vect.crossProduct(UP);
-            float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
-
-            setPosition(
-                    (terminalPos1.x + terminalPos2.x) * 0.5,
-                    terminalPos1.y,
-                    (terminalPos1.z + terminalPos2.z) * 0.5
-            );
-            setYaw(facingAngle);
-
-            // I guess we have to do position update like that because otherwise,
-            // the update method would have to go into the tick function
-            // and that is probably slower.
-            var packet = new EntityDataS2CPacket(this, 1);
-            var buffer = packet.buffer;
-            buffer.writeFloat((float) terminalPos1.x);
-            buffer.writeFloat((float) terminalPos1.y);
-            buffer.writeFloat((float) terminalPos1.z);
-            buffer.writeFloat((float) terminalPos2.x);
-            buffer.writeFloat((float) terminalPos2.y);
-            buffer.writeFloat((float) terminalPos2.z);
-            packet.send();
-
-            // TODO: There should be some line-of-sight check here to forbid wires going through blocks (it should also be in the entity's tick function).
-        }
     }
 }

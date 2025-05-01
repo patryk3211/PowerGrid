@@ -29,7 +29,7 @@ import org.joml.Matrix4f;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
 @Environment(EnvType.CLIENT)
-public class WireRenderer extends EntityRenderer<WireEntity> {
+public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
     private static final double SEGMENT_SIZE = 0.5;
 
     public static class CurveParameters {
@@ -157,17 +157,17 @@ public class WireRenderer extends EntityRenderer<WireEntity> {
         }
     }
 
-    public WireRenderer(EntityRendererFactory.Context ctx) {
+    public HangingWireRenderer(EntityRendererFactory.Context ctx) {
         super(ctx);
     }
 
     @Override
-    public Identifier getTexture(WireEntity entity) {
+    public Identifier getTexture(HangingWireEntity entity) {
         return null;
     }
 
     @Override
-    public void render(WireEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    public void render(HangingWireEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         if(entity.renderParams == null) {
             // TODO: Do something better about invalid entities (probably discard them, idk).
             var buffer = vertexConsumers.getBuffer(ModdedRenderLayers.getWireLayer());

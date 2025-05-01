@@ -32,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.IWire;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.utility.Lang;
 
 public interface IElectric extends IWrenchable {
@@ -174,7 +174,7 @@ public interface IElectric extends IWrenchable {
             return ActionResult.FAIL;
         }
 
-        var entity = WireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount));
+        var entity = HangingWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount));
         if (!serverWorld.spawnNewEntityAndPassengers(entity)) {
             PowerGrid.LOGGER.error("Failed to spawn new connection wire entity.");
             sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
