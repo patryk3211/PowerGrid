@@ -208,6 +208,7 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
             var nbt = new NbtCompound();
             this.writeController(nbt, false);
             first.readController(nbt, false);
+            first.blockEntity.sendData();
         }
     }
 
