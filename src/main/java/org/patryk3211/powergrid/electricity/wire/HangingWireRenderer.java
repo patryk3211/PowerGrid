@@ -207,19 +207,6 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                 x2 - cross2.x, y2 - cross2.y, z2 - cross2.z);
     }
 
-    public static void debugLine(MatrixStack ms, VertexConsumer buffer, int light, int color,
-                                 Vec3d v1, Vec3d v2) {
-        var matrix = ms.peek().getPositionMatrix();
-        buffer.vertex(matrix, (float) v1.x, (float) v1.y, (float) v1.z)
-                .color(color)
-                .light(light)
-                .next();
-        buffer.vertex(matrix, (float) v2.x, (float) v2.y, (float) v2.z)
-                .color(color)
-                .light(light)
-                .next();
-    }
-
     public static void quad(Matrix4f matrix, VertexConsumer buffer, int light,
                             double x1, double y1, double z1, double x2, double y2, double z2,
                             double x3, double y3, double z3, double x4, double y4, double z4) {

@@ -16,11 +16,11 @@
 package org.patryk3211.powergrid;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
+import org.patryk3211.powergrid.electricity.wire.BlockWirePreview;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
 
 public class PowerGridClient implements ClientModInitializer {
@@ -34,6 +34,7 @@ public class PowerGridClient implements ClientModInitializer {
 		ClientElectricNetwork.init();
 		TerminalHandler.init();
 		ClientBoundPackets.init();
+		BlockWirePreview.init();
 	}
 
 	public void registerOverlays() {

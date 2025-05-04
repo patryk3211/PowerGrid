@@ -20,9 +20,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -34,8 +31,6 @@ import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
-
-import java.util.List;
 
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     private static final Vec3d UP = new Vec3d(0, 1, 0);
@@ -61,7 +56,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public static HangingWireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item) {
-        var entity = new HangingWireEntity(ModdedEntities.WIRE.get(), world);
+        var entity = new HangingWireEntity(ModdedEntities.HANGING_WIRE.get(), world);
         entity.electricBlockPos1 = pos1;
         entity.electricBlockPos2 = pos2;
         entity.electricTerminal1 = terminal1;
@@ -119,16 +114,6 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public boolean canHit() {
         // Hits get handled by IComplexRaycast
         return false;
-    }
-
-    @Override
-    public Packet<ClientPlayPacketListener> createSpawnPacket() {
-        var base = super.createSpawnPacket();
-        var extra = new EntityDataS2CPacket(this, 0);
-        var tag = new NbtCompound();
-        writeCustomDataToNbt(tag);
-        extra.buffer.writeNbt(tag);
-        return new BundleS2CPacket(List.of(base, extra.packet()));
     }
 
     @Override

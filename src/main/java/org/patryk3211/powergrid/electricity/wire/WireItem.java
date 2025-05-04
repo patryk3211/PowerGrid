@@ -20,13 +20,19 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtFloat;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 
 public class WireItem extends Item implements IWire {
@@ -41,9 +47,49 @@ public class WireItem extends Item implements IWire {
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
+        if(context.getPlayer() != null && context.getPlayer().isSneaking())
+            return super.useOnBlock(context);
+
         var blockState = context.getWorld().getBlockState(context.getBlockPos());
         if(blockState.getBlock() instanceof IElectric electric) {
             return electric.onWire(blockState, context);
+        } else if(context.getStack().hasNbt()) {
+            // This will result in the connection being a block wire (instead of a hanging wire)
+            var tag = context.getStack().getNbt();
+            NbtList list;
+            Vec3d lastPoint;
+            if(tag.contains("Segments")) {
+                list = tag.getList("Segments", NbtElement.COMPOUND_TYPE);
+
+                var lastPointList = tag.getList("LastPoint", NbtElement.FLOAT_TYPE);
+                lastPoint = new Vec3d(
+                        lastPointList.getFloat(0),
+                        lastPointList.getFloat(1),
+                        lastPointList.getFloat(2)
+                );
+            } else {
+                list = new NbtList();
+                tag.put("Segments", list);
+
+                var posArray = tag.getIntArray("Position");
+                var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
+                var firstTerminal = tag.getInt("Terminal");
+                lastPoint = IElectric.getTerminalPos(firstPosition, context.getWorld().getBlockState(firstPosition), firstTerminal);
+            }
+
+            var hitPoint = context.getHitPos();
+            var newPoints = BlockTrace.findPath(context.getWorld(), lastPoint, hitPoint, null);
+            if(newPoints != null) {
+                newPoints.forEach(point -> list.add(point.serialize()));
+
+                var lastPointList = new NbtList();
+                lastPointList.add(NbtFloat.of((float) hitPoint.x));
+                lastPointList.add(NbtFloat.of((float) hitPoint.y));
+                lastPointList.add(NbtFloat.of((float) hitPoint.z));
+                tag.put("LastPoint", lastPointList);
+
+                return ActionResult.SUCCESS;
+            }
         }
         return super.useOnBlock(context);
     }

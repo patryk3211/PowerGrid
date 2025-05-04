@@ -76,15 +76,15 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         dataTracker.startTracking(TEMPERATURE, BASE_TEMPERATURE);
     }
 
-    private float temperatureUpdate() {
+    private void temperatureUpdate() {
         var temperature = dataTracker.get(TEMPERATURE);
         if(getWorld().isClient)
-            return temperature;
+            return;
 
         if(spawnTime < 2) {
             // Wait 2 ticks before applying temperature to let the solver balance all voltages.
             ++spawnTime;
-            return temperature;
+            return;
         }
 
         float energy = 0;
@@ -99,7 +99,6 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         temperature += energy / THERMAL_MASS;
         dataTracker.set(TEMPERATURE, temperature);
 
-        return temperature;
     }
 
     public boolean isOverheated() {
