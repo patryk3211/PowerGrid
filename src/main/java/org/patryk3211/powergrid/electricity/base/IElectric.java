@@ -165,20 +165,21 @@ public interface IElectric extends IWrenchable {
         var tag = stack.getNbt();
         assert tag != null;
 
-        int requiredItemCount;
+        float distance = 0;
         if(tag.contains("Segments")) {
-            // TODO: Calculate
-            requiredItemCount = 1;
+            for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
+                distance += ((NbtCompound) entry).getFloat("Length");
+            }
         } else {
-            float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
-            // We round the exact distance between terminals for a more favourable item usage.
-            requiredItemCount = Math.max(Math.round(distance), 1);
-
+            distance = (float) terminal1Pos.distanceTo(terminal2Pos);
             if(distance > item.getMaximumLength()) {
                 sendMessage(context, Lang.translate("message.connection_too_long").style(Formatting.RED).component());
                 return ActionResult.FAIL;
             }
         }
+
+        // We round the exact distance between terminals for a more favourable item usage.
+        int requiredItemCount = Math.max(Math.round(distance), 1);
 
         if(stack.getCount() < requiredItemCount && (context.getPlayer() == null || !context.getPlayer().isCreative())) {
             sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());

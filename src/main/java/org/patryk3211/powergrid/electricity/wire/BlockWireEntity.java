@@ -16,23 +16,28 @@
 package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockWireEntity extends WireEntity {
+public class BlockWireEntity extends WireEntity implements IComplexRaycast {
+    public Box mainBoundingBox;
+    public final List<Box> boundingBoxes = new ArrayList<>();
     public final List<Point> segments = new ArrayList<>();
 
     public BlockWireEntity(EntityType<?> type, World world) {
@@ -52,6 +57,7 @@ public class BlockWireEntity extends WireEntity {
 
         if(points != null) {
             entity.segments.addAll(points);
+            entity.bakeBoundingBoxes();
         }
 
         entity.setYaw(0);
@@ -104,6 +110,68 @@ public class BlockWireEntity extends WireEntity {
     }
 
     @Override
+    protected Box calculateBoundingBox() {
+        if(mainBoundingBox != null) {
+            return mainBoundingBox.offset(getPos());
+        } else {
+            return super.calculateBoundingBox();
+        }
+    }
+
+    private void bakeBoundingBoxes() {
+        boundingBoxes.clear();
+
+        // Starting from zero will make the bounding boxes independent of entity position,
+        // but they will need to be offset before using them.
+        var currentPos = Vec3d.ZERO;
+        double minX = 0;
+        double minY = 0;
+        double minZ = 0;
+        double maxX = 0;
+        double maxY = 0;
+        double maxZ = 0;
+        for(var segment : segments) {
+            var nextPos = currentPos.add(segment.vector());
+            if(nextPos.x > maxX)
+                maxX = nextPos.x;
+            if(nextPos.y > maxY)
+                maxY = nextPos.y;
+            if(nextPos.z > maxZ)
+                maxZ = nextPos.z;
+            if(nextPos.x < minX)
+                minX = nextPos.x;
+            if(nextPos.y < minY)
+                minY = nextPos.y;
+            if(nextPos.z < minZ)
+                minZ = nextPos.z;
+
+            boundingBoxes.add(new Box(currentPos, nextPos).expand(0.0625f));
+            currentPos = nextPos;
+        }
+
+        mainBoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ).expand(0.0625f);
+    }
+
+    @Override
+    public @Nullable ItemEntity dropStack(ItemStack stack, float yOffset) {
+        if (stack.isEmpty()) {
+            return null;
+        } else if (this.getWorld().isClient) {
+            return null;
+        } else {
+            var center = mainBoundingBox.getCenter();
+            ItemEntity itemEntity = new ItemEntity(this.getWorld(),
+                    this.getX() + center.x,
+                    this.getY() + (double)yOffset + center.y,
+                    this.getZ() + center.z,
+                    stack);
+            itemEntity.setToDefaultPickupDelay();
+            this.getWorld().spawnEntity(itemEntity);
+            return itemEntity;
+        }
+    }
+
+    @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
 
@@ -113,6 +181,8 @@ public class BlockWireEntity extends WireEntity {
             var point = new Point((NbtCompound) segment);
             segments.add(point);
         }
+
+        bakeBoundingBoxes();
     }
 
     @Override
@@ -124,6 +194,25 @@ public class BlockWireEntity extends WireEntity {
             segmentList.add(segment.serialize());
         }
         nbt.put("Segments", segmentList);
+    }
+
+    @Override
+    public @Nullable Vec3d raycast(Vec3d min, Vec3d max) {
+        Vec3d closestHit = null;
+        min = min.subtract(getPos());
+        max = max.subtract(getPos());
+        double distance = max.squaredDistanceTo(min);
+        for(var bb : boundingBoxes) {
+            var hit = bb.raycast(min, max);
+            if(hit.isEmpty())
+                continue;
+            var hitDistance = hit.get().squaredDistanceTo(min);
+            if(hitDistance < distance) {
+                distance = hitDistance;
+                closestHit = hit.get().add(getPos());
+            }
+        }
+        return closestHit;
     }
 
     public static class Point {

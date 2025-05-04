@@ -29,6 +29,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -101,7 +102,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
             for(var connection : connections.get(sourceTerminal)) {
                 var entity = getConnectionEntity(connection);
-                entity.refreshTerminalPositions();
+                if(entity instanceof HangingWireEntity wire)
+                    wire.refreshTerminalPositions();
             }
         }
     }
@@ -183,9 +185,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return null;
     }
 
-    public HangingWireEntity getConnectionEntity(Connection connection) {
+    public WireEntity getConnectionEntity(Connection connection) {
         var world = getWorld();
-        var entities = world.getNonSpectatingEntities(HangingWireEntity.class, new Box(getPos(), connection.target).expand(1));
+        var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), connection.target).expand(1));
         for(var entity : entities) {
             if(entity.getUuid().equals(connection.wireEntityId) && !entity.isRemoved()) {
                 return entity;
