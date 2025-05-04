@@ -205,7 +205,9 @@ public interface IElectric extends IWrenchable {
                     lastPointList.getFloat(1),
                     lastPointList.getFloat(2)
             );
-            var finalPoints = BlockTrace.findPath(world, lastPoint, terminal2Pos, world.getBlockState(pos2));
+            var electric = (IElectric) world.getBlockState(pos2).getBlock();
+            var terminal = electric.terminal(world.getBlockState(pos2), terminal2);
+            var finalPoints = BlockTrace.findPath(world, lastPoint, terminal2Pos, terminal);
             if(finalPoints == null) {
                 sendMessage(context, Lang.translate("message.connection_no_path").style(Formatting.RED).component());
                 return ActionResult.FAIL;

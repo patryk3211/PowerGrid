@@ -14,6 +14,9 @@
 
   "item.powergrid.wire": "Wire",
 
+  "entity.powergrid.block_wire": "Wire",
+  "entity.powergrid.hanging_wire": "Wire",
+
   "itemGroup.powergrid.main": "Create: Power Grid",
 
   "powergrid.gui.voltage_meter.title": "Measured voltage",

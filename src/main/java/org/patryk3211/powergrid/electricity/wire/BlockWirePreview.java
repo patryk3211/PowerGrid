@@ -31,6 +31,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
 
 public class BlockWirePreview {
@@ -74,7 +75,7 @@ public class BlockWirePreview {
         }
 
         var hitPoint = target.getPos();
-        BlockState passThrough = null;
+        ITerminalPlacement passThrough = null;
         if(target.getType() == HitResult.Type.BLOCK) {
             var blockTarget = (BlockHitResult) target;
             var state = world.getBlockState(blockTarget.getBlockPos());
@@ -83,17 +84,26 @@ public class BlockWirePreview {
                 var terminal = electric.terminalAt(state, hitPoint.subtract(pos.getX(), pos.getY(), pos.getZ()));
                 if(terminal != null) {
                     hitPoint = terminal.getOrigin().add(pos.getX(), pos.getY(), pos.getZ());
-                    passThrough = state;
+                    passThrough = terminal;
                 }
             }
         }
 
-        var points = BlockTrace.findPath(world, currentPos, hitPoint, passThrough);
-        if(points != null) {
-            for (var p : points) {
-                var nextPos = currentPos.add(p.vector());
-                BlockWireRenderer.debugLine(matrixStack, consumer, 255, 0xFF00FF00, currentPos, nextPos);
-                currentPos = nextPos;
+        var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, passThrough);
+        if(output != null) {
+            var state = output.getLeft();
+            for(BlockTrace.TraceCell cell : state.states.values()) {
+                if(cell.backtrace != null) {
+                    BlockWireRenderer.debugLine(matrixStack, consumer, 255, 0xFFFF0000, state.transform(cell.position), state.transform(cell.backtrace.position));
+                }
+            }
+
+            if(output.getRight() != null) {
+                for (var p : output.getRight()) {
+                    var nextPos = currentPos.add(p.vector());
+                    BlockWireRenderer.debugLine(matrixStack, consumer, 255, 0xFF00FF00, currentPos, nextPos);
+                    currentPos = nextPos;
+                }
             }
         }
     }
