@@ -52,7 +52,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(!getWorld().isClient)
             return;
         this.setBoundingBox(this.calculateBoundingBox());
-        renderParams = new HangingWireRenderer.CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS);
+        renderParams = new CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS);
     }
 
     public static HangingWireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item) {
@@ -88,7 +88,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var pos = getPos();
         if(isOverheated()) {
             if(world.isClient && !particlesSpawned) {
-                var curveParams = (HangingWireRenderer.CurveParameters) renderParams;
+                var curveParams = (CurveParameters) renderParams;
                 var dx = curveParams.getCurveSpan();
                 var normal = curveParams.getNormal();
                 int pointCount = Math.round(dx / 0.25f);
@@ -102,7 +102,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 particlesSpawned = true;
             }
         } else if(temperature >= overheatTemperature - 50 && world.isClient && renderParams != null) {
-            var curvePoint = ((HangingWireRenderer.CurveParameters) renderParams).getRandomPoint(random);
+            var curvePoint = ((CurveParameters) renderParams).getRandomPoint(random);
             double x = curvePoint.x + pos.x;
             double y = curvePoint.y + pos.y;
             double z = curvePoint.z + pos.z;
@@ -145,7 +145,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     @Environment(EnvType.CLIENT)
     public @Nullable Vec3d raycast(Vec3d min, Vec3d max) {
-        if(renderParams instanceof HangingWireRenderer.CurveParameters params) {
+        if(renderParams instanceof CurveParameters params) {
             Vec3d ray = max.subtract(min);
             var rayLength = ray.lengthSquared();
             ray = ray.normalize();
