@@ -18,9 +18,10 @@ package org.patryk3211.powergrid.electricity.wire;
 import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ItemStack;
@@ -29,21 +30,14 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
 
-public class BlockWirePreview {
+public class WirePreview {
     public static void init() {
-        WorldRenderEvents.BEFORE_ENTITIES.register(BlockWirePreview::render);
-//        InteractEvents.USE.register(BlockWirePreview::onUse);
+        WorldRenderEvents.BEFORE_ENTITIES.register(WirePreview::render);
     }
-
-//    private static ActionResult onUse(MinecraftClient client, HitResult hit, Hand hand) {
-//
-//        return ActionResult.PASS;
-//    }
 
     private static void render(SuperRenderTypeBuffer buffer, MatrixStack matrixStack, ClientWorld world, ClientPlayerEntity player, HitResult target) {
         ItemStack wireStack;
@@ -58,20 +52,24 @@ public class BlockWirePreview {
         }
 
         var tag = wireStack.getNbt();
-        var consumer = buffer.getBuffer(ModdedRenderLayers.getDebugLines());
+        // TODO: Use correct texture for the used item.
+        var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(BlockWireRenderer.TEXTURE));
+        float thickness = 1/16f;
 
         var posArray = tag.getIntArray("Position");
         var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
         var firstTerminal = tag.getInt("Terminal");
 
         var currentPos = IElectric.getTerminalPos(firstPosition, world.getBlockState(firstPosition), firstTerminal);
+        boolean hasSegments = false;
         if(tag.contains("Segments")) {
             for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
                 var point = new BlockWireEntity.Point((NbtCompound) entry);
                 var nextPos = currentPos.add(point.vector());
-                BlockWireRenderer.debugLine(matrixStack, consumer, 255, 0xFFFF00FF, currentPos, nextPos);
+                BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x60AAFFFF, currentPos, point.direction, thickness, point.length, 0);
                 currentPos = nextPos;
             }
+            hasSegments = true;
         }
 
         var hitPoint = target.getPos();
@@ -89,22 +87,17 @@ public class BlockWirePreview {
             }
         }
 
-        var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, passThrough);
-        if(output != null) {
-            var state = output.getLeft();
-            for(BlockTrace.TraceCell cell : state.states.values()) {
-                if(cell.backtrace != null) {
-                    BlockWireRenderer.debugLine(matrixStack, consumer, 255, 0xFFFF0000, state.transform(cell.position), state.transform(cell.backtrace.position));
-                }
-            }
-
-            if(output.getRight() != null) {
-                for (var p : output.getRight()) {
+        if(hasSegments || passThrough == null) {
+            var points = BlockTrace.findPath(world, currentPos, hitPoint, passThrough);
+            if (points != null) {
+                for (var p : points) {
                     var nextPos = currentPos.add(p.vector());
-                    BlockWireRenderer.debugLine(matrixStack, consumer, 255, 0xFF00FF00, currentPos, nextPos);
+                    BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA, currentPos, p.direction, thickness, p.length, 0);
                     currentPos = nextPos;
                 }
             }
+        } else {
+            HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA);
         }
     }
 

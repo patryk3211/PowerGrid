@@ -35,7 +35,7 @@ import org.patryk3211.powergrid.utility.IComplexRaycast;
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     private static final Vec3d UP = new Vec3d(0, 1, 0);
 
-    private static final float THICKNESS = 0.1f;
+    private static final float THICKNESS = 1 / 16f;
 
     public Vec3d terminalPos1;
     public Vec3d terminalPos2;
