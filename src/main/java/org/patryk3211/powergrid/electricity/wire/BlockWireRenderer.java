@@ -35,28 +35,27 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
 
     @Override
     public void render(BlockWireEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+        if(entity.isOverheated())
+            return;
+
         var currentPos = Vec3d.ZERO;
         var buffer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(TEXTURE));
         var pos = entity.getPos();
 
-        try {
-            for (var segment : entity.segments) {
-                var normal = segment.direction.getVector();
-                var newPos = currentPos.add(normal.getX() * segment.length, normal.getY() * segment.length, normal.getZ() * segment.length);
+        for (var segment : entity.segments) {
+            var normal = segment.direction.getVector();
+            var newPos = currentPos.add(normal.getX() * segment.length, normal.getY() * segment.length, normal.getZ() * segment.length);
 
-                var blockPos = BlockPos.ofFloored(
-                        newPos.x + pos.x,
-                        newPos.y + pos.y,
-                        newPos.z + pos.z
-                );
-                var blockLight = entity.getWorld().getLightLevel(LightType.BLOCK, blockPos);
-                var skyLight = entity.getWorld().getLightLevel(LightType.SKY, blockPos);
+            var blockPos = BlockPos.ofFloored(
+                    newPos.x + pos.x,
+                    newPos.y + pos.y,
+                    newPos.z + pos.z
+            );
+            var blockLight = entity.getWorld().getLightLevel(LightType.BLOCK, blockPos);
+            var skyLight = entity.getWorld().getLightLevel(LightType.SKY, blockPos);
 
-                renderSegment(matrices, buffer, LightmapTextureManager.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, 1.0f / 16, segment.length, entity.getId());
-                currentPos = newPos;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            renderSegment(matrices, buffer, LightmapTextureManager.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, 1.0f / 16, segment.length, entity.getId());
+            currentPos = newPos;
         }
     }
 
@@ -131,7 +130,6 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
         x2 += x1 + thickness;
         y2 += y1 + thickness;
         z2 += z1 + thickness;
-//        float x2 = x1 + thickness, y2 = y1 + thickness, z2 = z1 + thickness;
 
         if(dir.getDirection() == Direction.AxisDirection.NEGATIVE) {
             float xb = x1, yb = y1, zb = z1;

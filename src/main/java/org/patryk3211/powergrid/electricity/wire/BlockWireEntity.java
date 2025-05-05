@@ -21,6 +21,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -39,6 +40,8 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     public Box mainBoundingBox;
     public final List<Box> boundingBoxes = new ArrayList<>();
     public final List<Point> segments = new ArrayList<>();
+
+    private boolean particlesSpawned = false;
 
     public BlockWireEntity(EntityType<?> type, World world) {
         super(type, world);
@@ -67,48 +70,6 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         return entity;
     }
 
-    public static BlockWireEntity createFromPositions(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, List<Vec3d> points) {
-        var entity = create(world, pos1, terminal1, pos2, terminal2, item, null);
-
-        var lastPoint = entity.getPos();
-        for(var point : points) {
-            var vector = point.subtract(lastPoint);
-            var lenX = Math.abs(vector.x);
-            var lenY = Math.abs(vector.y);
-            var lenZ = Math.abs(vector.z);
-
-            Direction dir;
-            float length;
-            if(lenX > lenY && lenX > lenZ) {
-                length = (float) lenX;
-                if(vector.x > 0) {
-                    dir = Direction.EAST;
-                } else {
-                    dir = Direction.WEST;
-                }
-            } else if(lenY > lenZ) {
-                length = (float) lenY;
-                if(vector.y > 0) {
-                    dir = Direction.UP;
-                } else {
-                    dir = Direction.DOWN;
-                }
-            } else {
-                length = (float) lenZ;
-                if(vector.z > 0) {
-                    dir = Direction.SOUTH;
-                } else {
-                    dir = Direction.NORTH;
-                }
-            }
-            entity.segments.add(new Point(dir, length));
-
-            lastPoint = point;
-        }
-
-        return entity;
-    }
-
     @Override
     protected Box calculateBoundingBox() {
         if(mainBoundingBox != null) {
@@ -131,6 +92,8 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         double maxY = 0;
         double maxZ = 0;
         for(var segment : segments) {
+            if(segment.start == null)
+                segment.start = currentPos.add(getPos());
             var nextPos = currentPos.add(segment.vector());
             if(nextPos.x > maxX)
                 maxX = nextPos.x;
@@ -150,6 +113,39 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         }
 
         mainBoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ).expand(0.0625f);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        var world = getWorld();
+        var temperature = getTemperature();
+
+        var pos = getPos();
+        if(isOverheated()) {
+            if(world.isClient && !particlesSpawned) {
+                for(var segment : segments) {
+                    var dir = segment.vector();
+                    int pointCount = Math.round(segment.length / 0.25f);
+                    for(int i = 0; i < pointCount; ++i) {
+                        float r = (float) i / pointCount;
+                        double x = segment.start.x + dir.x * r;
+                        double y = segment.start.y + dir.y * r;
+                        double z = segment.start.z + dir.z * r;
+                        world.addParticle(ParticleTypes.FLAME, x, y, z, 0.0f, 0.0f, 0.0f);
+                    }
+                }
+                particlesSpawned = true;
+            }
+        } else if(temperature >= overheatTemperature - 50 && world.isClient) {
+            var segment = segments.get(random.nextInt(segments.size()));
+            var dir = segment.vector();
+            float r = random.nextFloat();
+            double x = segment.start.x + dir.x * r;
+            double y = segment.start.y + dir.y * r;
+            double z = segment.start.z + dir.z * r;
+            world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+        }
     }
 
     @Override
@@ -216,6 +212,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public static class Point {
+        public Vec3d start;
         public final Direction direction;
         public final float length;
 
