@@ -19,6 +19,8 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
+import org.patryk3211.powergrid.electricity.wire.BlockWireRenderer;
 
 import java.util.OptionalDouble;
 
@@ -35,6 +37,18 @@ public class ModdedRenderLayers {
                 .lightmap(RenderPhase.ENABLE_LIGHTMAP)
                 .build(false)
         );
+    private static final RenderLayer BLOCK_WIRES = RenderLayer.of(
+            "block_wire",
+            VertexFormats.POSITION_TEXTURE_COLOR_NORMAL,
+            VertexFormat.DrawMode.QUADS,
+            1024,
+            RenderLayer.MultiPhaseParameters.builder()
+                    .program(RenderPhase.POSITION_COLOR_TEXTURE_PROGRAM)
+                    .texture(new RenderPhase.Texture(BlockWireRenderer.TEXTURE, false, false))
+                    .cull(RenderPhase.ENABLE_CULLING)
+                    .lightmap(RenderPhase.ENABLE_LIGHTMAP)
+                    .build(false)
+    );
 
     private static final RenderLayer DEBUG_LINES = RenderLayer.of(
             "powergrid_debug_lines",
@@ -51,6 +65,10 @@ public class ModdedRenderLayers {
 
     public static RenderLayer getWireLayer() {
         return WIRES;
+    }
+
+    public static RenderLayer getBlockWireLayer() {
+        return BLOCK_WIRES;
     }
 
     public static RenderLayer getDebugLines() {

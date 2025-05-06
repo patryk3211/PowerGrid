@@ -21,6 +21,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -31,9 +32,15 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public interface IElectric extends IWrenchable {
     /**
@@ -82,16 +89,18 @@ public interface IElectric extends IWrenchable {
                 // Continuing a connection.
                 var tag = stack.getNbt();
                 assert tag != null;
-                var posArray = tag.getIntArray("position");
+                var posArray = tag.getIntArray("Position");
                 var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
-                var firstTerminal = tag.getInt("terminal");
-                stack.setNbt(null);
-                return makeConnection(context.getWorld(), firstPosition, firstTerminal, context.getBlockPos(), terminal, context);
+                var firstTerminal = tag.getInt("Terminal");
+                var result = makeConnection(context.getWorld(), firstPosition, firstTerminal, context.getBlockPos(), terminal, context);
+                if(result.isAccepted())
+                    stack.setNbt(null);
+                return result;
             } else {
                 // Must be first connection.
                 var tag = new NbtCompound();
-                tag.putIntArray("position", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-                tag.putInt("terminal", terminal);
+                tag.putIntArray("Position", new int[] { pos.getX(), pos.getY(), pos.getZ() });
+                tag.putInt("Terminal", terminal);
                 stack.setNbt(tag);
                 sendMessage(context, Lang.translate("message.connection_next").style(Formatting.GRAY).component());
                 return ActionResult.SUCCESS;
@@ -125,10 +134,6 @@ public interface IElectric extends IWrenchable {
     }
 
     static ActionResult makeConnection(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemUsageContext context) {
-        if(world.isClient)
-            return ActionResult.CONSUME;
-        ServerWorld serverWorld = (ServerWorld) world;
-
         var behaviour1 = getBehaviour(world, pos1);
         var behaviour2 = getBehaviour(world, pos2);
         if(behaviour1 == null || behaviour2 == null) {
@@ -145,37 +150,76 @@ public interface IElectric extends IWrenchable {
             return ActionResult.FAIL;
         }
 
-        var terminal1Pos = getTerminalPos(pos1, world.getBlockState(pos1), terminal1);
-        var terminal2Pos = getTerminalPos(pos2, world.getBlockState(pos2), terminal2);
-        float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
-        // We round the exact distance between terminals for a more favourable item usage.
-        int requiredItemCount = Math.max(Math.round(distance), 1);
-        var stack = context.getStack();
-        if(stack.getCount() < requiredItemCount && (context.getPlayer() == null || !context.getPlayer().isCreative())) {
-            sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());
-            return ActionResult.FAIL;
-        }
-
         // Check if there is an existing connection between these nodes.
         if(behaviour1.hasConnection(terminal1, pos2, terminal2) || behaviour2.hasConnection(terminal2, pos1, terminal1)) {
             sendMessage(context, Lang.translate("message.connection_exists").style(Formatting.RED).component());
             return ActionResult.FAIL;
         }
 
-        // Put a wire between the nodes.
+        var terminal1Pos = getTerminalPos(pos1, world.getBlockState(pos1), terminal1);
+        var terminal2Pos = getTerminalPos(pos2, world.getBlockState(pos2), terminal2);
+
+        var stack = context.getStack();
         assert stack.getItem() instanceof IWire;
         var item = (IWire) stack.getItem();
+        var tag = stack.getNbt();
+        assert tag != null;
+
+        float distance = 0;
+        if(tag.contains("Segments")) {
+            for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
+                distance += ((NbtCompound) entry).getFloat("Length");
+            }
+        } else {
+            distance = (float) terminal1Pos.distanceTo(terminal2Pos);
+            if(distance > item.getMaximumLength()) {
+                sendMessage(context, Lang.translate("message.connection_too_long").style(Formatting.RED).component());
+                return ActionResult.FAIL;
+            }
+        }
+
+        // We round the exact distance between terminals for a more favourable item usage.
+        int requiredItemCount = Math.max(Math.round(distance), 1);
+
+        if(stack.getCount() < requiredItemCount && (context.getPlayer() == null || !context.getPlayer().isCreative())) {
+            sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());
+            return ActionResult.FAIL;
+        }
+
+        if(world.isClient)
+            return ActionResult.CONSUME;
+        ServerWorld serverWorld = (ServerWorld) world;
+
         // The amount of used items dictates the resistance of a connection,
         // to make sure everything is fair.
         var R = item.getResistance() * requiredItemCount;
 
-        if(distance > item.getMaximumLength()) {
-            sendMessage(context, Lang.translate("message.connection_too_long").style(Formatting.RED).component());
-            return ActionResult.FAIL;
+        WireEntity entity;
+        if(tag.contains("Segments")) {
+            List<BlockWireEntity.Point> points = new ArrayList<>();
+            for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
+                points.add(new BlockWireEntity.Point((NbtCompound) entry));
+            }
+            var lastPointList = tag.getList("LastPoint", NbtElement.FLOAT_TYPE);
+            var lastPoint = new Vec3d(
+                    lastPointList.getFloat(0),
+                    lastPointList.getFloat(1),
+                    lastPointList.getFloat(2)
+            );
+            var electric = (IElectric) world.getBlockState(pos2).getBlock();
+            var terminal = electric.terminal(world.getBlockState(pos2), terminal2);
+            var finalPoints = BlockTrace.findPath(world, lastPoint, terminal2Pos, terminal);
+            if(finalPoints == null) {
+                sendMessage(context, Lang.translate("message.connection_no_path").style(Formatting.RED).component());
+                return ActionResult.FAIL;
+            }
+            points.addAll(finalPoints);
+            entity = BlockWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), points);
+        } else {
+            entity = HangingWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount));
         }
 
-        var entity = WireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount));
-        if (!serverWorld.spawnNewEntityAndPassengers(entity)) {
+        if(!serverWorld.spawnNewEntityAndPassengers(entity)) {
             PowerGrid.LOGGER.error("Failed to spawn new connection wire entity.");
             sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
             return ActionResult.FAIL;
