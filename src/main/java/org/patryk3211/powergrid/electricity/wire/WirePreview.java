@@ -30,11 +30,14 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
 
 public class WirePreview {
+    private static final boolean DEBUG_BLOCK_TRACING = false;
+
     public static void init() {
         WorldRenderEvents.BEFORE_ENTITIES.register(WirePreview::render);
     }
@@ -88,12 +91,24 @@ public class WirePreview {
         }
 
         if(hasSegments || passThrough == null) {
-            var points = BlockTrace.findPath(world, currentPos, hitPoint, passThrough);
-            if (points != null) {
-                for (var p : points) {
-                    var nextPos = currentPos.add(p.vector());
-                    BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA, currentPos, p.direction, thickness, p.length, 0);
-                    currentPos = nextPos;
+            var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, passThrough);
+            if(output != null) {
+                if(DEBUG_BLOCK_TRACING) {
+                    var lineBuffer = buffer.getBuffer(ModdedRenderLayers.getDebugLines());
+                    var state = output.getLeft();
+                    for (var cell : state.states.values()) {
+                        if (cell.backtrace == null)
+                            continue;
+                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0xFFFF0000, state.transform(cell.position), state.transform(cell.backtrace.position));
+                    }
+                }
+                var points = output.getRight();
+                if(points != null) {
+                    for(var p : points) {
+                        var nextPos = currentPos.add(p.vector());
+                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA, currentPos, p.direction, thickness, p.length, 0);
+                        currentPos = nextPos;
+                    }
                 }
             }
         } else {

@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.utility;
 
-import net.minecraft.block.BlockState;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -67,40 +67,10 @@ public class BlockTrace {
     }
 
     public static List<BlockWireEntity.Point> findPath(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
-        var state = new TraceState(world, start, end, terminal);
-        if(state.target.equals(state.originCell.position) || !state.getCell(state.target).isSupported)
+        var result = findPathWithState(world, start, end, terminal);
+        if(result == null)
             return null;
-
-        PriorityQueue<TraceCell> visitQueue = new PriorityQueue<>(Comparator.comparingInt(state::targetDistance));
-        visitQueue.add(state.originCell);
-
-        List<Vec3i> neighbors = new ArrayList<>();
-
-        while(!visitQueue.isEmpty()) {
-            var cell = visitQueue.poll();
-            if(cell.originDistance > 10 * 16)
-                continue;
-
-            for(var direction : Direction.values()) {
-                state.findNextPositions(cell.position, direction, neighbors);
-                for(var neighborPos : neighbors) {
-                    var neighbor = state.getCell(neighborPos);
-                    if (!neighbor.isSupported && !cell.isSupported)
-                        continue;
-                    int newDistance = cell.originDistance + cell.position.getManhattanDistance(neighborPos);
-                    if (newDistance >= neighbor.originDistance)
-                        continue;
-                    neighbor.originDistance = newDistance;
-                    neighbor.backtrace = cell;
-                    if (neighbor.position.equals(state.target))
-                        return state.traceResult(neighbor);
-                    visitQueue.add(neighbor);
-                }
-                neighbors.clear();
-            }
-        }
-
-        return null;
+        return result.getRight();
     }
 
     public static Pair<TraceState, List<BlockWireEntity.Point>> findPathWithState(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
@@ -111,29 +81,29 @@ public class BlockTrace {
         PriorityQueue<TraceCell> visitQueue = new PriorityQueue<>(Comparator.comparingInt(state::targetDistance));
         visitQueue.add(state.originCell);
 
-        List<Vec3i> neighbors = new ArrayList<>();
-
         while(!visitQueue.isEmpty()) {
             var cell = visitQueue.poll();
             if(cell.originDistance > 10 * 16)
                 continue;
 
             for(var direction : Direction.values()) {
-                state.findNextPositions(cell.position, direction, neighbors);
-                for(var neighborPos : neighbors) {
-                    var neighbor = state.getCell(neighborPos);
-                    if (!neighbor.isSupported && !cell.isSupported)
-                        continue;
-                    int newDistance = cell.originDistance + cell.position.getManhattanDistance(neighborPos);
-                    if (newDistance >= neighbor.originDistance)
-                        continue;
-                    neighbor.originDistance = newDistance;
-                    neighbor.backtrace = cell;
-                    if (neighbor.position.equals(state.target))
-                        return new Pair<>(state, state.traceResult(neighbor));
-                    visitQueue.add(neighbor);
-                }
-                neighbors.clear();
+                var neighborPos = state.findNextPosition(cell.position, direction);
+                if(neighborPos == null)
+                    continue;
+                var neighbor = state.getCell(neighborPos);
+                var distance = cell.position.getManhattanDistance(neighborPos);
+                // TODO: There needs to be a check for the total unsupported length of wire so that
+                //  small hops are permitted and the behaviour is more uniform.
+                if (!neighbor.isSupported && !cell.isSupported && distance > TraceState.GRID_SIZE / 4)
+                    continue;
+                int newDistance = cell.originDistance + distance;
+                if (newDistance >= neighbor.originDistance)
+                    continue;
+                neighbor.originDistance = newDistance;
+                neighbor.backtrace = cell;
+                if (neighbor.position.equals(state.target))
+                    return new Pair<>(state, state.traceResult(neighbor));
+                visitQueue.add(neighbor);
             }
         }
 
@@ -243,23 +213,25 @@ public class BlockTrace {
             int offset = 0;
             switch(direction) {
                 case POSITIVE -> {
-                    if(coordinate >= 0)
+                    if(coordinate >= 0) {
                         offset = GRID_SIZE - (coordinate % GRID_SIZE);
-                    else
+                    } else {
                         offset = -(coordinate % GRID_SIZE);
+                    }
                 }
                 case NEGATIVE -> {
-                    if(coordinate >= 0)
+                    if(coordinate >= 0) {
                         offset = -(coordinate % GRID_SIZE);
-                    else
+                    } else {
                         offset = -(GRID_SIZE + (coordinate % GRID_SIZE));
+                    }
                 }
             }
             return offset;
         }
 
         @Nullable
-        public Vec3i findNextPos(Vec3i currentPos, Direction dir) {
+        public Vec3i raycastNextPosition(Vec3i currentPos, Direction dir) {
             var axis = dir.getAxis();
             var axialLength = Math.abs(target.getComponentAlongAxis(axis) - currentPos.getComponentAlongAxis(axis));
 
@@ -275,16 +247,44 @@ public class BlockTrace {
                 // Try to move outside the block.
                 return currentPos.offset(axis, offset);
             }
-            return transform(hit.getPos());
+            var cellPos = transform(hit.getPos());
+            return switch(hit.getType()) {
+                case MISS -> cellPos;
+                case ENTITY -> null;
+                case BLOCK -> cellPos.offset(hit.getSide());
+            };
+        }
+
+        @Nullable
+        public Vec3i findNextPosition(Vec3i currentPos, Direction dir) {
+            var axis = dir.getAxis();
+            Vec3i castPos = raycastNextPosition(currentPos, dir);
+            if(castPos == null || currentPos.equals(castPos))
+                return null;
+
+            var axisCoordinate = currentPos.getComponentAlongAxis(axis);
+
+            var boundaryOffset = offsetToFullBlock(axisCoordinate, dir.getDirection());
+            if(boundaryOffset == 0) boundaryOffset = -GRID_SIZE;
+
+            var nextBoundary = axisCoordinate + boundaryOffset;
+            var raycastBoundary = castPos.getComponentAlongAxis(axis);
+
+            if(Math.abs(nextBoundary - axisCoordinate) > Math.abs(raycastBoundary - axisCoordinate)) {
+                return currentPos.offset(axis, raycastBoundary - axisCoordinate);
+            } else {
+                return currentPos.offset(axis, nextBoundary - axisCoordinate);
+            }
         }
 
         public void findNextPositions(Vec3i currentPos, Direction dir, Collection<Vec3i> positions) {
             var axis = dir.getAxis();
-            Vec3i endPos = findNextPos(currentPos, dir);
+            Vec3i endPos = raycastNextPosition(currentPos, dir);
             if(endPos == null || currentPos.equals(endPos))
                 return;
 
             var axisCoordinate = currentPos.getComponentAlongAxis(axis);
+
             var start = axisCoordinate + offsetToFullBlock(axisCoordinate, dir.getDirection());
             var end = endPos.getComponentAlongAxis(axis);
             if(dir.getDirection() == Direction.AxisDirection.POSITIVE) {
