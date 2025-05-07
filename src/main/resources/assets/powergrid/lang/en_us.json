@@ -8,6 +8,7 @@
   "block.powergrid.heating_coil": "Heating Coil",
   "block.powergrid.coil": "Generator Coil",
   "block.powergrid.rotor": "Generator Rotor",
+  "block.powergrid.generator_housing": "Generator Housing",
   "block.powergrid.creative_current_source": "Creative Current Source",
   "block.powergrid.creative_voltage_source": "Creative Voltage Source",
   "block.powergrid.creative_resistor": "Creative Resistor",

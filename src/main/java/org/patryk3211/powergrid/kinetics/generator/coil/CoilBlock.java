@@ -38,6 +38,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.IConnectableBlock;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -147,7 +148,7 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity>, IC
         var behaviour = BlockEntityBehaviour.get(world, pos, CoilBehaviour.TYPE);
         if(behaviour != null)
             behaviour.onNeighborChanged(sourcePos);
-        if(sourceBlock == this && world.getBlockEntity(pos) instanceof CoilBlockEntity coil) {
+        if(world.getBlockEntity(pos) instanceof CoilBlockEntity coil) {
             coil.rebuildAggregate();
         }
     }
@@ -227,6 +228,11 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity>, IC
         // Coils only connect if their facing is the same
         if(checkState.isOf(this) && state.get(FACING) == checkState.get(FACING))
             return true;
+        var housing = ModdedBlocks.GENERATOR_HOUSING.get();
+        if(checkState.isOf(housing)) {
+            // Use the housing implementation for this check.
+            return housing.connects(checkState, side.getOpposite(), state);
+        }
         return false;
     }
 
@@ -244,6 +250,8 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity>, IC
                 if(facing != null)
                     return null;
                 facing = state.get(FACING);
+                if(facing.getAxis() == dir.getAxis())
+                    facing = null;
             }
         }
         return facing;
