@@ -34,7 +34,7 @@ public class ModdedItems {
                 case ON -> ModdedPartialModels.LIGHT_BULB_ON;
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
             }))
-            .transform(LightBulb.setProperties(15, 100, 0.004f, 1200, 0.1f))
+            .transform(LightBulb.setProperties(30, 60, 30)) //LightBulb.setProperties(15, 100, 0.004f, 1200, 0.1f))
             .register();
 
     @SuppressWarnings("EmptyMethod")

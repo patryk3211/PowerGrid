@@ -23,6 +23,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
+import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
 public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBlockEntity> {
     public LightFixtureRenderer(BlockEntityRendererFactory.Context context) {
@@ -36,6 +37,8 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
             return;
         var blockState = be.getCachedState();
         var bulbState = be.getState();
+//        if(blockState.get(LightFixtureBlock.POWER) == 0)
+//            bulbState = ILightBulb.State.OFF;
         var vb = consumer.getBuffer(RenderLayer.getCutout());
 
         var model = properties.getModelProvider().get().apply(bulbState);

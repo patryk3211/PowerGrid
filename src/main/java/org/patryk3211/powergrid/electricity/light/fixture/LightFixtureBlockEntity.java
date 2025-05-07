@@ -53,7 +53,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 0.025f, 0.1f, 1700f)
+        return new ThermalBehaviour(this, 0.005f, 0.1f, 1700f)
                 .noOverheatBehaviour();
     }
 
@@ -76,17 +76,19 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
             }
         }
 
-        int powerLevel = 0;
-        if(!burned) {
-            var temperature = thermalBehaviour.getTemperature();
-            if(temperature > 1400f) {
-                powerLevel = 2;
-            } else if(temperature > 1200f) {
-                powerLevel = 1;
+        if(!world.isClient) {
+            int powerLevel = 0;
+            if(!burned) {
+                var temperature = thermalBehaviour.getTemperature();
+                if(temperature > 1400f) {
+                    powerLevel = 2;
+                } else if(temperature > 1200f) {
+                    powerLevel = 1;
+                }
             }
-        }
-        if(powerLevel != getCachedState().get(POWER)) {
-            world.setBlockState(pos, getCachedState().with(POWER, powerLevel));
+            if(powerLevel != getCachedState().get(POWER)) {
+                world.setBlockState(pos, getCachedState().with(POWER, powerLevel));
+            }
         }
     }
 
@@ -116,15 +118,12 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         return burned;
     }
 
-    public boolean isOn() {
-        return thermalBehaviour.getTemperature() > 1200f;
-    }
-
     @Nullable
     public ILightBulb.State getState() {
         if(lightBulb == null)
             return null;
-        return burned ? ILightBulb.State.BROKEN : isOn() ? ILightBulb.State.ON : ILightBulb.State.OFF;
+        var powerLevel = getCachedState().get(POWER);
+        return burned ? ILightBulb.State.BROKEN : powerLevel > 0 ? ILightBulb.State.ON : ILightBulb.State.OFF;
     }
 
     @Override

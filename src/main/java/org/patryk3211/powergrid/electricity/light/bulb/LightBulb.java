@@ -21,6 +21,7 @@ import com.tterrag.registrate.fabric.EnvExecutor;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.fabricmc.api.EnvType;
 import net.minecraft.item.Item;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -52,9 +53,19 @@ public class LightBulb extends Item implements ILightBulb {
                 item.T_mid = midpointTemperature;
                 item.R_max = maxResistance;
                 item.R_min = minResistance;
+                item.dissipationFactor = dissipationFactor;
             });
             return b;
         };
+    }
+
+    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float ratedPower, float ratedVoltage, float minResistance) {
+        float R_max = ratedVoltage * ratedVoltage / ratedPower;
+        final float operatingTemperature = 1450f;
+        final float T_mid = 750f;
+        final float k = 0.005f;
+        final float dissipationFactor = ratedPower / (operatingTemperature - ThermalBehaviour.BASE_TEMPERATURE);
+        return setProperties(minResistance, R_max, k, T_mid, dissipationFactor);
     }
 
     @Override
