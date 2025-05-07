@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=up": { "model": "powergrid:block/light_fixture" },
+    "facing=down": { "model": "powergrid:block/light_fixture", "x": 180 },
+    "facing=north": { "model": "powergrid:block/light_fixture", "x": 90 },
+    "facing=south": { "model": "powergrid:block/light_fixture", "x": 90, "y": 180 },
+    "facing=east": { "model": "powergrid:block/light_fixture", "x": 90, "y": 90 },
+    "facing=west": { "model": "powergrid:block/light_fixture", "x": 90, "y": -90 }
+  }
+}

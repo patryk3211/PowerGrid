@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.collections;
 
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
+import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -25,6 +26,15 @@ public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = WireItem.register(REGISTRATE);
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
+            .register();
+
+    public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
+            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
+                case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
+                case ON -> ModdedPartialModels.LIGHT_BULB_ON;
+                case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
+            }))
+            .transform(LightBulb.setProperties(15, 100, 0.004f, 1200, 0.1f))
             .register();
 
     @SuppressWarnings("EmptyMethod")
