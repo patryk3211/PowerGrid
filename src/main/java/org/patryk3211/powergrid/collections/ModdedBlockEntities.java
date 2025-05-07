@@ -24,6 +24,8 @@ import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntity;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntityRenderer;
@@ -89,6 +91,12 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CreativeResistorBlockEntity> CREATIVE_RESISTOR =
             REGISTRATE.blockEntity("creative_resistor", CreativeResistorBlockEntity::new)
                     .validBlock(ModdedBlocks.CREATIVE_RESISTOR)
+                    .register();
+
+    public static final BlockEntityEntry<LightFixtureBlockEntity> LIGHT_FIXTURE =
+            REGISTRATE.blockEntity("light_fixture", LightFixtureBlockEntity::new)
+                    .validBlock(ModdedBlocks.LIGHT_FIXTURE)
+                    .renderer(() -> LightFixtureRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

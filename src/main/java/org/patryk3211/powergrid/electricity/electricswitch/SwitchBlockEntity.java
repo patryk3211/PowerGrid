@@ -46,8 +46,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        var voltage = wire.potentialDifference();
-        applyLostPower(voltage * voltage / wire.getResistance());
+        var current = wire.current();
+        applyLostPower(current * current * wire.getResistance());
     }
 
     public void setState(boolean state) {

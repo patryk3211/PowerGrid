@@ -11,8 +11,10 @@
   "block.powergrid.creative_current_source": "Creative Current Source",
   "block.powergrid.creative_voltage_source": "Creative Voltage Source",
   "block.powergrid.creative_resistor": "Creative Resistor",
+  "block.powergrid.light_fixture": "Light Fixture",
 
   "item.powergrid.wire": "Wire",
+  "item.powergrid.light_bulb": "Light bulb",
 
   "entity.powergrid.block_wire": "Wire",
   "entity.powergrid.hanging_wire": "Wire",

@@ -28,6 +28,10 @@ public class ModdedPartialModels {
     public static final PartialModel ROTOR_FULL = block("rotor/rotor_none");
     public static final PartialModel ROTOR_SHAFT = block("rotor/rotor_shaft");
 
+    public static final PartialModel LIGHT_BULB_OFF = block("light_bulb");
+    public static final PartialModel LIGHT_BULB_ON = block("light_bulb_on");
+    public static final PartialModel LIGHT_BULB_BROKEN = block("light_bulb_broken");
+
     private static PartialModel block(String path) {
         return new PartialModel(PowerGrid.asResource("block/" + path));
     }

@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
@@ -83,6 +84,11 @@ public class ModdedBlocks {
             .simpleItem()
             .register();
     public static final BlockEntry<CreativeResistorBlock> CREATIVE_RESISTOR = REGISTRATE.block("creative_resistor", CreativeResistorBlock::new)
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
+            .transform(LightFixtureBlock.setBulbModelOffset(0, 0.125f, 0))
             .simpleItem()
             .register();
 

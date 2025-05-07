@@ -60,6 +60,11 @@ public class SwitchedWire extends ElectricWire {
     }
 
     @Override
+    public float current() {
+        return state ? super.current() : 0;
+    }
+
+    @Override
     public float conductance() {
         return state ? super.conductance() : 0;
     }
