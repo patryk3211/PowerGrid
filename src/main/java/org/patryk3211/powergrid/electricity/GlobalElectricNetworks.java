@@ -32,7 +32,7 @@ public class GlobalElectricNetworks {
     protected static final Map<World, List<ElectricalNetwork>> worldNetworks = new HashMap<>();
 
     public static void init() {
-        ServerTickEvents.END_WORLD_TICK.register(GlobalElectricNetworks::tick);
+        ServerTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
         ServerWorldEvents.UNLOAD.register((server, world) -> worldNetworks.remove(world));
     }
 
