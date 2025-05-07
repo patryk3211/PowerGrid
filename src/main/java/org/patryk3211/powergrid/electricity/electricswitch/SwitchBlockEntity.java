@@ -34,8 +34,6 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     private IElectricNode node2;
     private SwitchedWire wire;
 
-    private int graceTicks = 0;
-
     public SwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -48,16 +46,11 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if(graceTicks >= 2) {
-            var current = wire.current();
-            applyLostPower(current * current * wire.getResistance());
-        } else {
-            ++graceTicks;
-        }
+        var current = wire.current();
+        applyLostPower(current * current * wire.getResistance());
     }
 
     public void setState(boolean state) {
-        graceTicks = 0;
         wire.setState(state);
     }
 
