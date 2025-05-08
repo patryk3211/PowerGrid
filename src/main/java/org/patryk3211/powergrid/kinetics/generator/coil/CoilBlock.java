@@ -36,13 +36,15 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.base.IConnectableBlock;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
-public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
+public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity>, IConnectableBlock {
     public static final EnumProperty<Direction> FACING = Properties.FACING;
     public static final BooleanProperty HAS_TERMINALS = BooleanProperty.of("terminals");
 
@@ -146,7 +148,7 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
         var behaviour = BlockEntityBehaviour.get(world, pos, CoilBehaviour.TYPE);
         if(behaviour != null)
             behaviour.onNeighborChanged(sourcePos);
-        if(sourceBlock == this && world.getBlockEntity(pos) instanceof CoilBlockEntity coil) {
+        if(world.getBlockEntity(pos) instanceof CoilBlockEntity coil) {
             coil.rebuildAggregate();
         }
     }
@@ -159,9 +161,10 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
 
     @Override
     public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        var direction = ctx.getPlayerLookDirection();
+        var preferredFacing = getPreferredFacing(ctx.getBlockPos(), ctx.getWorld());
+        var facing = preferredFacing == null || ctx.getPlayer() == null || ctx.getPlayer().isSneaking() ? ctx.getPlayerLookDirection() : preferredFacing;
         return getDefaultState()
-                .with(FACING, ctx.getPlayer() == null || ctx.getPlayer().isSneaking() ? direction : direction.getOpposite())
+                .with(FACING, facing)
                 .with(HAS_TERMINALS, false);
     }
 
@@ -220,9 +223,38 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity> {
         };
     }
 
-    public static boolean canConnect(BlockState state, World world, BlockPos neighborPos) {
-        var neighbor = world.getBlockState(neighborPos);
-        return neighbor.isOf(state.getBlock()) && state.get(FACING) == neighbor.get(FACING);
+    @Override
+    public boolean connects(BlockState state, Direction side, BlockState checkState) {
+        // Coils only connect if their facing is the same
+        if(checkState.isOf(this) && state.get(FACING) == checkState.get(FACING))
+            return true;
+        var housing = ModdedBlocks.GENERATOR_HOUSING.get();
+        if(checkState.isOf(housing)) {
+            // Use the housing implementation for this check.
+            return housing.connects(checkState, side.getOpposite(), state);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean canPropagate(BlockState state, Direction direction) {
+        return state.get(FACING).getAxis() != direction.getAxis();
+    }
+
+    @Nullable
+    public Direction getPreferredFacing(BlockPos pos, World world) {
+        Direction facing = null;
+        for(var dir : Direction.values()) {
+            var state = world.getBlockState(pos.offset(dir));
+            if(state.isOf(this)) {
+                if(facing != null)
+                    return null;
+                facing = state.get(FACING);
+                if(facing.getAxis() == dir.getAxis())
+                    facing = null;
+            }
+        }
+        return facing;
     }
 
     @Override

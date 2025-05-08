@@ -29,6 +29,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
+import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -70,6 +71,10 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CoilBlock> COIL = REGISTRATE.block("coil", CoilBlock::new)
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<GeneratorHousing> GENERATOR_HOUSING = REGISTRATE.block("generator_housing", GeneratorHousing::new)
             .simpleItem()
             .register();
 

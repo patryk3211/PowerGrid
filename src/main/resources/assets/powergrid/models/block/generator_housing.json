@@ -1,0 +1,36 @@
+{
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"1": "create:block/industrial_iron_block_top",
+		"2": "powergrid:block/generator_housing",
+		"particle": "powergrid:block/industrial_iron_block_top"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 2],
+			"to": [16, 2, 14],
+			"rotation": {"angle": 0, "axis": "x", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [0, 14, 16, 16], "texture": "#1"},
+				"east": {"uv": [14, 14, 2, 16], "texture": "#2", "cullface": "east"},
+				"south": {"uv": [0, 14, 16, 16], "texture": "#1"},
+				"west": {"uv": [2, 14, 14, 16], "texture": "#2", "cullface": "west"},
+				"down": {"uv": [0, 2, 16, 14], "rotation": 180, "texture": "#1", "cullface": "down"}
+			}
+		},
+		{
+			"from": [0, 2, 2],
+			"to": [16, 14, 16],
+			"rotation": {"angle": 0, "axis": "x", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [0, 2, 16, 14], "texture": "#1"},
+				"east": {"uv": [16, 2, 2, 14], "texture": "#2", "cullface": "east"},
+				"south": {"uv": [0, 2, 16, 14], "texture": "#1", "cullface": "south"},
+				"west": {"uv": [2, 2, 16, 14], "texture": "#2", "cullface": "west"},
+				"up": {"uv": [0, 2, 16, 16], "texture": "#1"},
+				"down": {"uv": [0, 0, 16, 14], "texture": "#1"}
+			}
+		}
+	]
+}

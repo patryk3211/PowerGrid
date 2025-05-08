@@ -26,6 +26,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.base.IConnectableBlock;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -155,32 +156,15 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
         }
     }
 
-    private List<CoilBlockEntity> getNeighbors() {
-        assert world != null;
-        List<CoilBlockEntity> coils = new LinkedList<>();
-        var facing = getCachedState().get(CoilBlock.FACING);
-        for(var dir : Direction.values()) {
-            if(dir.getAxis() == facing.getAxis())
-                continue;
-            var neighborPos = pos.offset(dir);
-            if(CoilBlock.canConnect(getCachedState(), world, neighborPos) && world.getBlockEntity(neighborPos) instanceof CoilBlockEntity coil) {
-                coils.add(coil);
-            }
-        }
-        return coils;
-    }
-
     public void rebuildAggregate() {
         assert world != null;
         var newAggregate = new CoilAggregate(world);
-        List<CoilBlockEntity> toProcess = new LinkedList<>();
-        toProcess.add(this);
-        while(!toProcess.isEmpty()) {
-            var coil = toProcess.remove(0);
-            if(newAggregate.addCoil(coil)) {
-                toProcess.addAll(coil.getNeighbors());
-            }
-        }
+        var posList = IConnectableBlock.gatherBlocks(world, pos);
+        posList.forEach(pos -> {
+            var be = world.getBlockEntity(pos);
+            if(be instanceof CoilBlockEntity coil)
+                newAggregate.addCoil(coil);
+        });
         newAggregate.apply();
     }
 

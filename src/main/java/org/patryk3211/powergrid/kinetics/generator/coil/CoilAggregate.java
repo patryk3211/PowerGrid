@@ -85,7 +85,9 @@ public class CoilAggregate {
         }
         this.outputCoil = outputCoil;
         if(outputCoil != null) {
-            setType(outputCoil.getAggregateType());
+            this.type = outputCoil.getAggregateType();
+            // Force type propagation.
+            coils.forEach(coil -> coil.propagateType(type));
         }
     }
 
