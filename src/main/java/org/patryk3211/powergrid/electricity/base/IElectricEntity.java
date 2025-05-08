@@ -84,6 +84,18 @@ public interface IElectricEntity {
             }
         }
 
+        public FloatingNode addInternalNode() {
+            var node = new FloatingNode();
+            internalNodes.add(node);
+            if(network != null)
+                network.addNode(node);
+            return node;
+        }
+
+        public FloatingNode getExternalNode(int index) {
+            return (FloatingNode) externalNodes.get(index);
+        }
+
         public ElectricWire connect(float resistance, IElectricNode node1, IElectricNode node2) {
             var wire = new ElectricWire(resistance, node1, node2);
             wires.add(wire);
