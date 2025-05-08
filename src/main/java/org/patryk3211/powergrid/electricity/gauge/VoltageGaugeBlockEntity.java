@@ -20,13 +20,10 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
-import java.util.Collection;
 import java.util.List;
 
 public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
@@ -49,21 +46,11 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
     }
 
     @Override
-    public void initializeNodes() {
-        node1 = new FloatingNode();
-        node2 = new FloatingNode();
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(node1);
-        nodes.add(node2);
-    }
-
-    @Override
-    public void addInternalWires(Collection<ElectricWire> wires) {
+    public void buildCircuit(CircuitBuilder builder) {
+        node1 = builder.addExternalNode();
+        node2 = builder.addExternalNode();
         // 1 Mega-ohm "impedance".
-        wires.add(new ElectricWire(1e6f, node1, node2));
+        builder.connect(1e6f, node1, node2);
     }
 
     @Override

@@ -21,36 +21,18 @@ import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 
-import java.util.Collection;
-import java.util.List;
-
 public class BatteryBlockEntity extends ElectricBlockEntity {
     private IElectricNode sourceNode;
-    private IElectricNode positive;
-    private IElectricNode negative;
-    private ICouplingNode coupling;
 
     public BatteryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     @Override
-    public void initializeNodes() {
-        positive = new FloatingNode();
-        negative = new FloatingNode();
-        sourceNode = new VoltageSourceNode(12);
-        coupling = TransformerCoupling.create(1, sourceNode, positive, negative);
-    }
-
-    @Override
-    public void addInternalNodes(Collection<INode> nodes) {
-        nodes.add(sourceNode);
-        nodes.add(coupling);
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(positive);
-        nodes.add(negative);
+    public void buildCircuit(CircuitBuilder builder) {
+        sourceNode = builder.addInternalNode(VoltageSourceNode.class, 12);
+        var positive = builder.addExternalNode();
+        var negative = builder.addExternalNode();
+        builder.couple(1, sourceNode, positive, negative);
     }
 }

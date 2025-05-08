@@ -25,14 +25,8 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
-import java.util.Collection;
-import java.util.List;
-
 public class BasicGeneratorBlockEntity extends ElectricKineticBlockEntity {
     private VoltageSourceNode sourceNode;
-    private IElectricNode positive;
-    private IElectricNode negative;
-    private ICouplingNode coupling;
 
     public BasicGeneratorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -69,22 +63,10 @@ public class BasicGeneratorBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
-    public void initializeNodes() {
-        sourceNode = new VoltageSourceNode();
-        positive = new FloatingNode();
-        negative = new FloatingNode();
-        coupling = TransformerCoupling.create(1, BasicGeneratorBlock.resistance(), sourceNode, positive, negative);
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(positive);
-        nodes.add(negative);
-    }
-
-    @Override
-    public void addInternalNodes(Collection<INode> nodes) {
-        nodes.add(sourceNode);
-        nodes.add(coupling);
+    public void buildCircuit(CircuitBuilder builder) {
+        sourceNode = builder.addInternalNode(VoltageSourceNode.class);
+        var positive = builder.addExternalNode();
+        var negative = builder.addExternalNode();
+        builder.couple(1, BasicGeneratorBlock.resistance(), sourceNode, positive, negative);
     }
 }

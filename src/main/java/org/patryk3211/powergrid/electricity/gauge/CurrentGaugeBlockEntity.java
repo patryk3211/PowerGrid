@@ -23,17 +23,12 @@ import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
-import java.util.Collection;
 import java.util.List;
 
 public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
-    private IElectricNode node1;
-    private IElectricNode node2;
     private ElectricWire wire;
 
     public CurrentGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -62,22 +57,11 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
     }
 
     @Override
-    public void initializeNodes() {
+    public void buildCircuit(CircuitBuilder builder) {
         float resistance = ((CurrentGaugeBlock) getCachedState().getBlock()).getResistance();
-        node1 = new FloatingNode();
-        node2 = new FloatingNode();
-        wire = new ElectricWire(resistance, node1, node2);
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(node1);
-        nodes.add(node2);
-    }
-
-    @Override
-    public void addInternalWires(Collection<ElectricWire> wires) {
-        wires.add(wire);
+        var node1 = builder.addExternalNode();
+        var node2 = builder.addExternalNode();
+        wire = builder.connect(resistance, node1, node2);
     }
 
     @Override

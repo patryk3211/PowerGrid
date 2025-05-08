@@ -25,12 +25,9 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
-import java.util.Collection;
 import java.util.List;
 
 public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
@@ -40,8 +37,6 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         BLASTING
     }
 
-    private IElectricNode node1;
-    private IElectricNode node2;
     private ElectricWire wire;
     private State state;
 
@@ -85,21 +80,10 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     }
 
     @Override
-    public void initializeNodes() {
-        node1 = new FloatingNode();
-        node2 = new FloatingNode();
-        wire = new ElectricWire(HeaterBlock.resistance(), node1, node2);
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(node1);
-        nodes.add(node2);
-    }
-
-    @Override
-    public void addInternalWires(Collection<ElectricWire> wires) {
-        wires.add(wire);
+    public void buildCircuit(CircuitBuilder builder) {
+        var node1 = builder.addExternalNode();
+        var node2 = builder.addExternalNode();
+        wire = builder.connect(HeaterBlock.resistance(), node1, node2);
     }
 
     protected Formatting temperatureColor(float value) {

@@ -24,7 +24,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.IConnectableBlock;
 import org.patryk3211.powergrid.collections.ModIcons;
@@ -34,8 +33,6 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.utility.Lang;
 
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity {
@@ -44,8 +41,6 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
 
     private VoltageSourceNode sourceNode;
     private TransformerCoupling coupling;
-    private FloatingNode positive;
-    private FloatingNode negative;
 
     private CoilBehaviour coilBehaviour;
 
@@ -94,23 +89,12 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     }
 
     @Override
-    public void initializeNodes() {
-        sourceNode = new VoltageSourceNode();
-        positive = new FloatingNode();
-        negative = new FloatingNode();
-        coupling = TransformerCoupling.create(1, aggregate != null ? aggregate.totalResistance() : CoilBlock.resistance(), sourceNode, positive, negative);
-    }
+    public void buildCircuit(CircuitBuilder builder) {
+        var positive = builder.addExternalNode();
+        var negative = builder.addExternalNode();
 
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(positive);
-        nodes.add(negative);
-    }
-
-    @Override
-    public void addInternalNodes(Collection<INode> nodes) {
-        nodes.add(sourceNode);
-        nodes.add(coupling);
+        sourceNode = builder.addInternalNode(VoltageSourceNode.class);
+        coupling = builder.couple(1, aggregate != null ? aggregate.totalResistance() : CoilBlock.resistance(), sourceNode, positive, negative);
     }
 
     @Override
@@ -182,8 +166,6 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
             electricBehaviour = null;
             removeBehaviour(ElectricBehaviour.TYPE);
             // Drop nodes
-            positive = null;
-            negative = null;
             sourceNode = null;
             coupling = null;
             notifyUpdate();
