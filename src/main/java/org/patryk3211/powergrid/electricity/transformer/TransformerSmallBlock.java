@@ -24,6 +24,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
+import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockRotation;
@@ -40,6 +41,7 @@ import org.patryk3211.powergrid.utility.Lang;
 
 public class TransformerSmallBlock extends ElectricBlock implements IBE<TransformerSmallBlockEntity> {
     public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = Properties.HORIZONTAL_AXIS;
+    public static final IntProperty COILS = IntProperty.of("coils", 0, 2);
 
     private static final TerminalBoundingBox Z_TERMINAL_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 12, 2, 4, 17, 5);
     private static final TerminalBoundingBox Z_TERMINAL_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 12, 11, 4, 17, 14);
@@ -69,12 +71,13 @@ public class TransformerSmallBlock extends ElectricBlock implements IBE<Transfor
 
     public TransformerSmallBlock(Settings settings) {
         super(settings);
+        setDefaultState(getDefaultState().with(COILS, 0));
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(HORIZONTAL_AXIS);
+        builder.add(HORIZONTAL_AXIS, COILS);
     }
 
     @Override
@@ -157,10 +160,14 @@ public class TransformerSmallBlock extends ElectricBlock implements IBE<Transfor
                     IElectric.sendMessage(context, Lang.translate("message.coil_exists").style(Formatting.RED).component());
                     return ActionResult.FAIL;
                 }
-                // Put into winding mode.
-                nbt.putInt("Turns", 1);
-                nbt.remove("Position");
-                return ActionResult.SUCCESS;
+                var posArray = nbt.getIntArray("Position");
+                var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
+                if(firstPosition.equals(context.getBlockPos())) {
+                    // Put into winding mode.
+                    nbt.putInt("Turns", 1);
+                    nbt.remove("Position");
+                    return ActionResult.SUCCESS;
+                }
             }
         }
         return result;

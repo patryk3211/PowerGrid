@@ -148,6 +148,11 @@ public class TransformerSmallBlockEntity extends ElectricBlockEntity {
             secondaryCoil = new TransformerCoilParameters();
         }
 
+        if(world != null && !world.isClient) {
+            int coilCount = secondaryCoil.isDefined() ? 2 : primaryCoil.isDefined() ? 1 : 0;
+            world.setBlockState(pos, getCachedState().with(TransformerSmallBlock.COILS, coilCount));
+        }
+
         coreAl = 1.5f;
         couplingFactor = 0.9999f;
         var primaryTurns = primaryCoil.getTurns();
