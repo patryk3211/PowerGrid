@@ -16,12 +16,16 @@
 package org.patryk3211.powergrid;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.util.Window;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.utility.PlacementOverlay;
 
 public class PowerGridClient implements ClientModInitializer {
 	@Override
@@ -35,8 +39,13 @@ public class PowerGridClient implements ClientModInitializer {
 		TerminalHandler.init();
 		ClientBoundPackets.init();
 		WirePreview.init();
+		PlacementOverlay.init();
 	}
 
 	public void registerOverlays() {
+		HudRenderCallback.EVENT.register((graphics, partialTicks) -> {
+			Window window = MinecraftClient.getInstance().getWindow();
+			PlacementOverlay.renderOverlay(MinecraftClient.getInstance().inGameHud, graphics);
+        });
 	}
 }

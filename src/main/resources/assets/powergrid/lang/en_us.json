@@ -38,6 +38,9 @@
   "powergrid.gui.creative_resistor.current": "Current",
   "powergrid.gui.creative_resistor.power": "Dissipated power",
 
+  "powergrid.gui.transformer.info_header": "Transformer information",
+  "powergrid.gui.transformer.ratio": "Turns ratio",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
@@ -62,6 +65,9 @@
   "powergrid.message.coil_same_terminal": "Cannot create coil connected to a single terminal",
   "powergrid.message.coil_exists": "This terminal already has a coil connected to it",
   "powergrid.message.coil_missing_items": "You don't have enough items to wind this coil",
+  "powergrid.message.coil_winding_primary": "Winding primary coil, turns: %1$s",
+  "powergrid.message.coil_winding_secondary": "Winding secondary coil, turns: %1$s - %2$s ratio",
+  "powergrid.message.coil_max_turns": "Cannot put any more turns on this transformer",
 
   "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
   "powergrid.devices.creative.voltage": "Output voltage",

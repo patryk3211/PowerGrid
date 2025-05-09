@@ -24,43 +24,59 @@ import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
+import org.patryk3211.powergrid.utility.PlacementOverlay;
 
 public class WirePreview {
     private static final boolean DEBUG_BLOCK_TRACING = false;
+
+    public static int wireItemCount;
 
     public static void init() {
         WorldRenderEvents.BEFORE_ENTITIES.register(WirePreview::render);
     }
 
-    private static void render(SuperRenderTypeBuffer buffer, MatrixStack matrixStack, ClientWorld world, ClientPlayerEntity player, HitResult target) {
-        ItemStack wireStack;
+    @Nullable
+    public static ItemStack getUsedWireStack(PlayerEntity player) {
         var stack1 = player.getMainHandStack();
         var stack2 = player.getOffHandStack();
         if(stack1 != null && stack1.getItem() instanceof IWire && stack1.hasNbt()) {
-            wireStack = stack1;
+            return stack1;
         } else if(stack2 != null && stack2.getItem() instanceof IWire && stack2.hasNbt()) {
-            wireStack = stack2;
+            return stack2;
         } else {
-            return;
+            return null;
         }
+    }
+
+    private static void render(SuperRenderTypeBuffer buffer, MatrixStack matrixStack, ClientWorld world, ClientPlayerEntity player, HitResult target) {
+        ItemStack wireStack = getUsedWireStack(player);
+        if(wireStack == null)
+            return;
 
         var tag = wireStack.getNbt();
         // TODO: Use correct texture for the used item.
         var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(BlockWireRenderer.TEXTURE));
         float thickness = 1/16f;
 
-        if(!tag.contains("Position") || !tag.contains("Terminal"))
+        if(!tag.contains("Position") || !tag.contains("Terminal")) {
+            if(tag.contains("Turns") && !player.isCreative()) {
+                int requiredItemCount = tag.getInt("Turns");
+                PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
+            }
             return;
+        }
 
         var posArray = tag.getIntArray("Position");
         var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
@@ -68,12 +84,14 @@ public class WirePreview {
 
         var currentPos = IElectric.getTerminalPos(firstPosition, world.getBlockState(firstPosition), firstTerminal);
         boolean hasSegments = false;
+        float length = 0;
         if(tag.contains("Segments")) {
             for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
                 var point = new BlockWireEntity.Point((NbtCompound) entry);
                 var nextPos = currentPos.add(point.vector());
                 BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x60AAFFFF, currentPos, point.direction, thickness, point.length, 0);
                 currentPos = nextPos;
+                length += point.length;
             }
             hasSegments = true;
         }
@@ -111,11 +129,18 @@ public class WirePreview {
                         var nextPos = currentPos.add(p.vector());
                         BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA, currentPos, p.direction, thickness, p.length, 0);
                         currentPos = nextPos;
+                        length += p.length;
                     }
                 }
             }
         } else {
             HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA);
+            length = (float) currentPos.distanceTo(hitPoint);
+        }
+
+        if(!player.isCreative()) {
+            int requiredItemCount = Math.max(Math.round(length), 1);
+            PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
         }
     }
 

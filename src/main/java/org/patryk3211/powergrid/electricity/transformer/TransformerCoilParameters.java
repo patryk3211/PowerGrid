@@ -20,7 +20,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
-class TransformerCoilParameters {
+public class TransformerCoilParameters {
     private int turns;
     private int terminal1;
     private int terminal2;
@@ -82,5 +82,9 @@ class TransformerCoilParameters {
         this.terminal2 = terminal2;
         this.turns = turns;
         this.item = item;
+    }
+
+    public Item getItem() {
+        return item;
     }
 }

@@ -15,17 +15,24 @@
  */
 package org.patryk3211.powergrid.electricity.transformer;
 
+import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
-public class TransformerSmallBlockEntity extends ElectricBlockEntity {
+import java.util.List;
+
+public class TransformerSmallBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     private TransformerCoilParameters primaryCoil;
     private TransformerCoilParameters secondaryCoil;
 
@@ -131,6 +138,10 @@ public class TransformerSmallBlockEntity extends ElectricBlockEntity {
         return primaryCoil.isDefined();
     }
 
+    public TransformerCoilParameters getPrimary() {
+        return primaryCoil;
+    }
+
     public void makeSecondary(int terminal1, int terminal2, int turns, Item item) {
         secondaryCoil.set(terminal1, terminal2, turns, item);
         electricBehaviour.rebuildCircuit();
@@ -139,6 +150,22 @@ public class TransformerSmallBlockEntity extends ElectricBlockEntity {
 
     public boolean hasSecondary() {
         return secondaryCoil.isDefined();
+    }
+
+    public TransformerCoilParameters getSecondary() {
+        return secondaryCoil;
+    }
+
+    public void removeSecondary() {
+        secondaryCoil.clear();
+        electricBehaviour.rebuildCircuit();
+        notifyUpdate();
+    }
+
+    public void removePrimary() {
+        primaryCoil.clear();
+        electricBehaviour.rebuildCircuit();
+        notifyUpdate();
     }
 
     @Override
@@ -189,5 +216,30 @@ public class TransformerSmallBlockEntity extends ElectricBlockEntity {
             this.primaryStray = null;
             this.mutualInductance = null;
         }
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+        if(!isPlayerSneaking)
+            return false;
+
+        Lang.builder().translate("gui.transformer.info_header").forGoggles(tooltip);
+        Lang.builder().translate("gui.transformer.ratio")
+                .style(Formatting.GRAY)
+                .forGoggles(tooltip);
+
+        var primaryTurns = primaryCoil.getTurns();
+        var secondaryTurns = secondaryCoil.getTurns();
+
+        int largestCommonDenominator = 1;
+        for(int i = 2; i <= Math.max(primaryTurns, secondaryTurns); ++i) {
+            if(primaryTurns % i == 0 && secondaryTurns % i == 0)
+                largestCommonDenominator = i;
+        }
+        var n1 = Lang.number(primaryTurns / largestCommonDenominator);
+        var n2 = Lang.number(secondaryTurns / largestCommonDenominator);
+        var ratio = n1.add(Text.of(":")).add(n2);
+        ratio.style(Formatting.AQUA).forGoggles(tooltip, 1);
+        return true;
     }
 }
