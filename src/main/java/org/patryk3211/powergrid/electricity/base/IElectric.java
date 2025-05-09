@@ -127,7 +127,7 @@ public interface IElectric extends IWrenchable {
         }
     }
 
-    private static void sendMessage(ItemUsageContext context, Text text) {
+    static void sendMessage(ItemUsageContext context, Text text) {
         if(context.getPlayer() != null) {
             context.getPlayer().sendMessage(text, true);
         }

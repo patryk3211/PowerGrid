@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "axis=z": { "model": "powergrid:block/transformer/small" },
+    "axis=x": { "model": "powergrid:block/transformer/small", "y": 90 }
+  }
+}

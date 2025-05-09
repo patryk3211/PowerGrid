@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
@@ -26,6 +27,8 @@ import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
+import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
@@ -95,6 +98,12 @@ public class ModdedBlocks {
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
             .transform(LightFixtureBlock.setBulbModelOffset(0, 0.125f, 0))
             .simpleItem()
+            .register();
+
+    public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
+            .simpleItem()
+            .register();
+    public static final BlockEntry<TransformerSmallBlock> TRANSFORMER_SMALL = REGISTRATE.block("transformer_small", TransformerSmallBlock::new)
             .register();
 
     @SuppressWarnings("EmptyMethod")

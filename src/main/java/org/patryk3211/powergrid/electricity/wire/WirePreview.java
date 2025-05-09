@@ -59,6 +59,9 @@ public class WirePreview {
         var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(BlockWireRenderer.TEXTURE));
         float thickness = 1/16f;
 
+        if(!tag.contains("Position") || !tag.contains("Terminal"))
+            return;
+
         var posArray = tag.getIntArray("Position");
         var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
         var firstTerminal = tag.getInt("Terminal");
