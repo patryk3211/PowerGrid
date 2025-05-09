@@ -70,18 +70,12 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public void rebuildCircuit() {
         var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
-        int externalCount = externalNodes.size();
         if(!externalNodes.isEmpty()) {
             builder.with(externalNodes.get(0).getNetwork());
         }
+        builder.alterExternal(false);
         builder.clear();
         element.buildCircuit(builder);
-        if(externalCount != externalNodes.size()) {
-            breakConnections();
-            connections.clear();
-            for(int i = 0; i < externalNodes.size(); ++i)
-                connections.add(new ArrayList<>());
-        }
     }
 
     @Override
