@@ -192,7 +192,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public WireEntity getConnectionEntity(Connection connection) {
         var world = getWorld();
-        var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), connection.target).expand(1));
+        // TODO: For multi-block transformers the expand value must be larger than 1 to cover the entire structure.
+        //  Figure something out to make this more efficient perhaps.
+        var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(getPos(), connection.target).expand(2));
         for(var entity : entities) {
             if(entity.getUuid().equals(connection.wireEntityId) && !entity.isRemoved()) {
                 return entity;
