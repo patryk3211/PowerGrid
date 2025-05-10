@@ -35,7 +35,6 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     public static final float BASE_TEMPERATURE = 22.0f;
 
     private float temperature;
-    private int overheatingTicks;
 
     // thermalMass = ΔE/ΔT
     private final float thermalMass;
@@ -44,6 +43,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     private final float overheatTemperature;
 
     private boolean noOverheatBehaviour = false;
+    private boolean firstTick = true;
 
     public ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor, float overheatTemperature) {
         super(be);
@@ -52,7 +52,6 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         this.overheatTemperature = overheatTemperature;
 
         this.temperature = BASE_TEMPERATURE;
-        this.overheatingTicks = 0;
     }
 
     public ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor) {
@@ -75,6 +74,12 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     @Override
     public void tick() {
         super.tick();
+
+        if(firstTick) {
+            firstTick = false;
+            return;
+        }
+
         // Dissipate energy
         float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
         temperature -= dissipatedPower / 20f / thermalMass;
@@ -121,19 +126,12 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     public void read(NbtCompound nbt, boolean clientPacket) {
         super.read(nbt, clientPacket);
         temperature = nbt.getFloat("Temperature");
-        if(nbt.contains("Overheating")) {
-            overheatingTicks = nbt.getInt("Overheating");
-        } else {
-            overheatingTicks = 0;
-        }
     }
 
     @Override
     public void write(NbtCompound nbt, boolean clientPacket) {
         super.write(nbt, clientPacket);
         nbt.putFloat("Temperature", temperature);
-        if(overheatingTicks > 0)
-            nbt.putInt("Overheating", overheatingTicks);
     }
 
     @Override

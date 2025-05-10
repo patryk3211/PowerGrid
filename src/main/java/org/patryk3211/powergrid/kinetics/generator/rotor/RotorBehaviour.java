@@ -31,14 +31,14 @@ public class RotorBehaviour extends SegmentedBehaviour {
     protected float angularVelocity = 0;
     private float fieldStrength = 0.3f;
 
-    private float prevAngularVelocity = 0;
-
     // Segment count and inertia get calculated from added segments every time.
     private float inertia = 0;
     private int segmentCount = 0;
 
     // Angle is only for rendering and doesn't have to be saved.
     private float angle = 0;
+
+    private boolean ticked = false;
 
     public RotorBehaviour(SmartBlockEntity be) {
         super(be);
@@ -143,10 +143,12 @@ public class RotorBehaviour extends SegmentedBehaviour {
     @Override
     public void segmentAdded(SegmentedBehaviour behaviour) {
         super.segmentAdded(behaviour);
-        // Treat the new segment as it having 0 velocity.
-        angularVelocity *= (float) Math.sqrt(inertia / (inertia + ROTOR_INERTIA));
-        inertia += ROTOR_INERTIA;
-        segmentCount += 1;
+        if(ticked) {
+            // Treat the new segment as it having 0 velocity.
+            angularVelocity *= (float) Math.sqrt(inertia / (inertia + ROTOR_INERTIA));
+            inertia += ROTOR_INERTIA;
+            segmentCount += 1;
+        }
     }
 
     @Override
@@ -218,7 +220,6 @@ public class RotorBehaviour extends SegmentedBehaviour {
         super.tick();
         if(isController()) {
             var velocity = getAngularVelocity();
-            prevAngularVelocity = angularVelocity;
 
             float friction = Math.abs(velocity * 20f * inertia);
             friction = Math.min(friction, segmentCount * 1f);
@@ -231,10 +232,10 @@ public class RotorBehaviour extends SegmentedBehaviour {
 
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity)) {
                 angularVelocity = 0;
-                prevAngularVelocity = 0;
             }
 
             blockEntity.markDirty();
         }
+        ticked = true;
     }
 }

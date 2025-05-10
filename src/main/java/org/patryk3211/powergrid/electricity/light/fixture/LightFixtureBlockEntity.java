@@ -26,19 +26,11 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-
-import java.util.Collection;
-import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock.POWER;
 
 public class LightFixtureBlockEntity extends ElectricBlockEntity {
-    private FloatingNode node1;
-    private FloatingNode node2;
     private SwitchedWire filament;
 
     private ItemStack lightBulb;
@@ -153,21 +145,10 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void initializeNodes() {
-        node1 = new FloatingNode();
-        node2 = new FloatingNode();
-        filament = new SwitchedWire(1, node1, node2, false);
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(node1);
-        nodes.add(node2);
-    }
-
-    @Override
-    public void addInternalWires(Collection<ElectricWire> wires) {
-        wires.add(filament);
+    public void buildCircuit(CircuitBuilder builder) {
+        var node1 = builder.addExternalNode();
+        var node2 = builder.addExternalNode();
+        filament = builder.connectSwitch(1, node1, node2, false);
     }
 
     public boolean replaceBulb(PlayerEntity player, Hand hand, ItemStack usedStack) {

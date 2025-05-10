@@ -30,21 +30,16 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
-import java.util.Collection;
 import java.util.List;
 
 public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     private ScrollValueBehaviour value;
 
     private ElectricNode sourceNode;
-    private CouplingNode coupling;
-    private FloatingNode positive;
-    private FloatingNode negative;
 
     private boolean overwrite = false;
     private boolean voltageSource;
@@ -78,18 +73,19 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
     }
 
     @Override
-    public void initializeNodes() {
-        positive = new FloatingNode();
-        negative = new FloatingNode();
+    public void buildCircuit(CircuitBuilder builder) {
+        var positive = builder.addExternalNode();
+        var negative = builder.addExternalNode();
+
         if(getCachedState().isOf(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
             voltageSource = true;
-            sourceNode = new VoltageSourceNode();
-            coupling = TransformerCoupling.create(1, sourceNode, positive, negative);
+            sourceNode = builder.addInternalNode(VoltageSourceNode.class);
+            builder.couple(1, sourceNode, positive, negative);
         } else if(getCachedState().isOf(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
             voltageSource = false;
-            sourceNode = new CurrentSourceNode();
+            sourceNode = builder.addInternalNode(CurrentSourceNode.class);
             // Transformer needs some resistance for solver to work correctly with the current source.
-            coupling = TransformerCoupling.create(1, 1e-6f, sourceNode, positive, negative);
+            builder.couple(1, 1e-6f, sourceNode, positive, negative);
         } else {
             throw new IllegalArgumentException();
         }
@@ -127,26 +123,26 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         }
     }
 
-    @Override
-    public void addInternalNodes(Collection<INode> nodes) {
-        nodes.add(sourceNode);
-        nodes.add(coupling);
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(positive);
-        nodes.add(negative);
-    }
-
-    @Override
-    public void addInternalWires(Collection<ElectricWire> wires) {
-        if(!voltageSource) {
-            // 1 Mega-ohm wire between output nodes to prevent the solver from
-            // exploding when nothing is connected.
-            wires.add(new ElectricWire(1e+6f, positive, negative));
-        }
-    }
+//    @Override
+//    public void addInternalNodes(Collection<INode> nodes) {
+//        nodes.add(sourceNode);
+//        nodes.add(coupling);
+//    }
+//
+//    @Override
+//    public void addExternalNodes(List<IElectricNode> nodes) {
+//        nodes.add(positive);
+//        nodes.add(negative);
+//    }
+//
+//    @Override
+//    public void addInternalWires(Collection<ElectricWire> wires) {
+//        if(!voltageSource) {
+//            // 1 Mega-ohm wire between output nodes to prevent the solver from
+//            // exploding when nothing is connected.
+//            wires.add(new ElectricWire(1e+6f, positive, negative));
+//        }
+//    }
 
     @Override
     public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {

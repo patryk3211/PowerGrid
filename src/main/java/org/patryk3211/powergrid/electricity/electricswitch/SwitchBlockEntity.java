@@ -21,17 +21,9 @@ import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-
-import java.util.Collection;
-import java.util.List;
 
 public class SwitchBlockEntity extends ElectricBlockEntity {
-    private IElectricNode node1;
-    private IElectricNode node2;
     private SwitchedWire wire;
 
     public SwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -55,20 +47,9 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void initializeNodes() {
-        node1 = new FloatingNode();
-        node2 = new FloatingNode();
-        wire = new SwitchedWire(0.01f, node1, node2, !getCachedState().get(SwitchBlock.OPEN));
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(node1);
-        nodes.add(node2);
-    }
-
-    @Override
-    public void addInternalWires(Collection<ElectricWire> wires) {
-        wires.add(wire);
+    public void buildCircuit(CircuitBuilder builder) {
+        var node1 = builder.addExternalNode();
+        var node2 = builder.addExternalNode();
+        wire = builder.connectSwitch(0.01f, node1, node2, !getCachedState().get(SwitchBlock.OPEN));
     }
 }

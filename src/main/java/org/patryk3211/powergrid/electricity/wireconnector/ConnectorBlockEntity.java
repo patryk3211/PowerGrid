@@ -19,25 +19,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-
-import java.util.List;
 
 public class ConnectorBlockEntity extends ElectricBlockEntity {
-    private IElectricNode node;
-
     public ConnectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     @Override
-    public void initializeNodes() {
-        node = new FloatingNode();
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(node);
+    public void buildCircuit(CircuitBuilder builder) {
+        builder.addExternalNode();
     }
 }

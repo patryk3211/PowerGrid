@@ -30,20 +30,15 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
 import org.patryk3211.powergrid.utility.Unit;
 
-import java.util.Collection;
 import java.util.List;
 
 public class CreativeResistorBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     private ScrollValueBehaviour value;
 
-    private FloatingNode terminal1;
-    private FloatingNode terminal2;
     private ElectricWire wire;
 
     public CreativeResistorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -60,21 +55,10 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
     }
 
     @Override
-    public void initializeNodes() {
-        terminal1 = new FloatingNode();
-        terminal2 = new FloatingNode();
-        wire = new ElectricWire(100f, terminal1, terminal2);
-    }
-
-    @Override
-    public void addExternalNodes(List<IElectricNode> nodes) {
-        nodes.add(terminal1);
-        nodes.add(terminal2);
-    }
-
-    @Override
-    public void addInternalWires(Collection<ElectricWire> wires) {
-        wires.add(wire);
+    public void buildCircuit(CircuitBuilder builder) {
+        var terminal1 = builder.addExternalNode();
+        var terminal2 = builder.addExternalNode();
+        wire = builder.connect(100f, terminal1, terminal2);
     }
 
     @Override

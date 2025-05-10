@@ -53,14 +53,12 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         super(be);
         this.element = be;
 
-        element.initializeNodes();
-        element.addExternalNodes(externalNodes);
-        element.addInternalNodes(internalNodes);
-        element.addInternalWires(internalWires);
+        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        element.buildCircuit(builder);
 
         connections = new ArrayList<>();
         for(int i = 0; i < externalNodes.size(); ++i)
-            connections.add(new LinkedList<>());
+            connections.add(new ArrayList<>());
     }
 
     public void joinNetwork(ElectricalNetwork network) {
@@ -68,6 +66,16 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         internalNodes.forEach(network::addNode);
         externalNodes.forEach(network::addNode);
         internalWires.forEach(network::addWire);
+    }
+
+    public void rebuildCircuit() {
+        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        if(!externalNodes.isEmpty()) {
+            builder.with(externalNodes.get(0).getNetwork());
+        }
+        builder.alterExternal(false);
+        builder.clear();
+        element.buildCircuit(builder);
     }
 
     @Override
