@@ -15,27 +15,19 @@
  */
 package org.patryk3211.powergrid.electricity.transformer;
 
-import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
-public class TransformerSmallBlockEntity extends TransformerBlockEntity implements IHaveGoggleInformation {
-    public TransformerSmallBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+public class TransformerMediumBlockEntity extends TransformerBlockEntity {
+    public TransformerMediumBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 2.0f, 0.5f);
-    }
-
-    @Override
-    public void updateCoilBlockState() {
-        assert world != null;
-        int coilCount = secondaryCoil.isDefined() ? 2 : primaryCoil.isDefined() ? 1 : 0;
-        world.setBlockState(pos, getCachedState().with(TransformerSmallBlock.COILS, coilCount));
+        return new ThermalBehaviour(this, 8.0f, 2.5f);
     }
 }

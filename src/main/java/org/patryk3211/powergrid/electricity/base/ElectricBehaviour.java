@@ -23,6 +23,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.world.World;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -124,11 +125,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             // Keep the connection but don't build a wire.
             return true;
 
-        var target = getWorld().getBlockEntity(connection.target);
-        if(!(target instanceof SmartBlockEntity smartEntity))
-            return false;
-
-        var targetBehaviour = smartEntity.getBehaviour(TYPE);
+        var targetBehaviour = connection.getTargetBehaviour(world);
         if(targetBehaviour == null)
             return false;
 
@@ -235,12 +232,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             connection.wire.setResistance(resistance);
         connection.resistance = resistance;
 
-        var targetEntity = getWorld().getBlockEntity(connection.target);
-        if(targetEntity instanceof SmartBlockEntity smartEntity) {
-            var behaviour = smartEntity.getBehaviour(TYPE);
-            var complementaryConnection = behaviour.getConnection(connection.targetTerminal, getPos(), sourceTerminal);
+        var behaviour = connection.getTargetBehaviour(getWorld());
+        var complementaryConnection = behaviour.getConnection(connection.targetTerminal, getPos(), sourceTerminal);
+        if(complementaryConnection != null)
             complementaryConnection.resistance = resistance;
-        }
     }
 
     @Override
@@ -355,13 +350,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 if(connection.target.equals(getPos())) {
                     removeConnectionEntity(connection);
                 }
-                if(getWorld().getBlockEntity(connection.target) instanceof SmartBlockEntity entity) {
-                    var behaviour = entity.getBehaviour(TYPE);
-                    if(behaviour == null)
-                        continue;
-                    // Remove the complementary connection.
-                    behaviour.removeConnection(connection.targetTerminal, getPos(), sourceTerminal);
-                }
+                var behaviour = connection.getTargetBehaviour(getWorld());
+                if(behaviour == null)
+                    continue;
+                // Remove the complementary connection.
+                behaviour.removeConnection(connection.targetTerminal, getPos(), sourceTerminal);
                 if(connection.wire != null)
                     connection.wire.remove();
             }
@@ -404,6 +397,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
         public boolean isEquivalent(Connection other) {
             return other.target.equals(target) && other.targetTerminal == targetTerminal;
+        }
+
+        public ElectricBehaviour getTargetBehaviour(World world) {
+            var state = world.getBlockState(target);
+            if(!(state.getBlock() instanceof IElectric electric))
+                return null;
+
+            return electric.getBehaviour(world, target, state);
         }
 
         public static Connection fromNbt(NbtCompound tag) {

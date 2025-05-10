@@ -29,6 +29,10 @@ repositories {
 	maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
 }
 
+configurations {
+	extraLibs
+}
+
 configurations.configureEach {
 	resolutionStrategy {
 		// Make sure the desired version of loader is used. Sometimes old versions are pulled in transitively.
@@ -56,7 +60,8 @@ fabricApi {
 }
 
 dependencies {
-	implementation "org.ejml:ejml-all:0.44.0"
+	extraLibs "org.ejml:ejml-all:0.44.0"
+//	implementation "org.ejml:ejml-all:0.44.0"
 
 	minecraft "net.minecraft:minecraft:${project.minecraft_version}"
 //	mappings(loom.layered {
@@ -76,6 +81,8 @@ dependencies {
 	// Development QOL
 	modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
 	modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+
+	configurations.implementation.extendsFrom(configurations.extraLibs)
 }
 
 processResources {
@@ -110,6 +117,10 @@ jar {
 
 	from("NOTICE") {
 		rename { "${it}_${inputs.properties.archivesName}" }
+	}
+
+	from {
+		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
 	}
 }
 

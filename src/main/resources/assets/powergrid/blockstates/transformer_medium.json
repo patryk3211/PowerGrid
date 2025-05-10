@@ -1,0 +1,37 @@
+{
+  "multipart": [
+    {
+      "when": { "AND": [ { "axis": "z" }, { "part": 0 } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_bottom" }
+    },
+    {
+      "when": { "AND": [ { "axis": "z" }, { "part": 1 } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_bottom", "y": 180 }
+    },
+    {
+      "when": { "AND": [ { "axis": "z" }, { "part": 2 } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_top" }
+    },
+    {
+      "when": { "AND": [ { "axis": "z" }, { "part": 3 } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_top", "y": 180 }
+    },
+
+    {
+      "when": { "AND": [ { "axis": "x" }, { "part": 0 } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_bottom", "y": -90 }
+    },
+    {
+      "when": { "AND": [ { "axis": "x" }, { "part": 1 } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_bottom", "y": 90 }
+    },
+    {
+      "when": { "AND": [ { "axis": "x" }, { "part": 2 } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_top", "y": -90 }
+    },
+    {
+      "when": { "AND": [ { "axis": "x" }, { "part": 3 } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_top", "y": 90 }
+    }
+  ]
+}

@@ -32,6 +32,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.transformer.TransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.mixin.client.BlueprintOverlayRendererAccessor;
@@ -99,9 +100,15 @@ public class PlacementOverlay {
         var world = player.getWorld();
         var posArray = tag.getIntArray("Initiator");
         var initiatorPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
-        var be = world.getBlockEntity(initiatorPos);
-        if(!(be instanceof TransformerSmallBlockEntity transformer))
+
+        var state = world.getBlockState(initiatorPos);
+        if(!(state.getBlock() instanceof TransformerBlock transformerBlock))
             return null;
+
+        var transformerOpt = transformerBlock.getBlockEntity(world, initiatorPos, state);
+        if(transformerOpt.isEmpty())
+            return null;
+        var transformer = transformerOpt.get();
 
         var turns = tag.getInt("Turns");
         if(!transformer.hasPrimary()) {

@@ -36,6 +36,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
@@ -182,15 +183,24 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(reason.shouldDestroy()) {
             var world = getWorld();
 
-            if(world.getBlockEntity(electricBlockPos1) instanceof SmartBlockEntity smartEntity) {
-                var behaviour = smartEntity.getBehaviour(ElectricBehaviour.TYPE);
-                behaviour.removeConnection(electricTerminal1, electricBlockPos2, electricTerminal2);
+            var state1 = world.getBlockState(electricBlockPos1);
+            ElectricBehaviour behaviour1 = null, behaviour2 = null;
+            if(state1.getBlock() instanceof IElectric electric) {
+                behaviour1 = electric.getBehaviour(world, electricBlockPos1, state1);
             }
 
-            // This isn't really needed but just to be safe we try to remove from both sides.
-            if(world.getBlockEntity(electricBlockPos2) instanceof SmartBlockEntity smartEntity) {
-                var behaviour = smartEntity.getBehaviour(ElectricBehaviour.TYPE);
-                behaviour.removeConnection(electricTerminal2, electricBlockPos1, electricTerminal1);
+            var state2 = world.getBlockState(electricBlockPos2);
+            if(state2.getBlock() instanceof IElectric electric) {
+                behaviour2 = electric.getBehaviour(world, electricBlockPos2, state2);
+            }
+
+            if(behaviour1 != null && behaviour2 != null) {
+                behaviour1.removeConnection(electricTerminal1, behaviour2.getPos(), electricTerminal2);
+                behaviour2.removeConnection(electricTerminal2, behaviour1.getPos(), electricTerminal1);
+            } else if(behaviour1 != null) {
+                behaviour1.removeConnection(electricTerminal1, electricBlockPos2, electricTerminal2);
+            } else if(behaviour2 != null) {
+                behaviour2.removeConnection(electricTerminal2, electricBlockPos1, electricTerminal1);
             }
         }
     }
