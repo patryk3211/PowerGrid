@@ -26,6 +26,8 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
+import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
+import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntity;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntityRenderer;
@@ -97,6 +99,16 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("light_fixture", LightFixtureBlockEntity::new)
                     .validBlock(ModdedBlocks.LIGHT_FIXTURE)
                     .renderer(() -> LightFixtureRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<TransformerSmallBlockEntity> TRANSFORMER_SMALL =
+            REGISTRATE.blockEntity("transformer_small", TransformerSmallBlockEntity::new)
+                    .validBlock(ModdedBlocks.TRANSFORMER_SMALL)
+                    .register();
+
+    public static final BlockEntityEntry<TransformerMediumBlockEntity> TRANSFORMER_MEDIUM =
+            REGISTRATE.blockEntity("transformer_medium", TransformerMediumBlockEntity::new)
+                    .validBlock(ModdedBlocks.TRANSFORMER_MEDIUM)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

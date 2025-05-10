@@ -1,0 +1,24 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "powergrid:block/transformer/medium_cover",
+		"1": "powergrid:block/transformer/medium_cover_side",
+		"particle": "powergrid:block/transformer/medium_cover"
+	},
+	"elements": [
+		{
+			"from": [-2, 4, 4],
+			"to": [18, 24, 28],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 4, 4]},
+			"faces": {
+				"north": {"uv": [0, 0, 10, 10], "texture": "#1"},
+				"east": {"uv": [0, 0, 12, 10], "rotation": 180, "texture": "#0"},
+				"south": {"uv": [0, 0, 10, 10], "texture": "#1"},
+				"west": {"uv": [0, 0, 12, 10], "texture": "#0"},
+				"up": {"uv": [0, 0, 12, 10], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [0, 0, 12, 10], "rotation": 270, "texture": "#0"}
+			}
+		}
+	]
+}

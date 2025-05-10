@@ -29,7 +29,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
@@ -109,8 +108,7 @@ public interface IElectric extends IWrenchable {
         return ActionResult.PASS;
     }
 
-    @Nullable
-    static ElectricBehaviour getBehaviour(World world, BlockPos pos) {
+    default ElectricBehaviour getBehaviour(World world, BlockPos pos, BlockState state) {
         var blockEntity = world.getBlockEntity(pos);
         if(blockEntity instanceof SmartBlockEntity smartEntity)
             return smartEntity.getBehaviour(ElectricBehaviour.TYPE);
@@ -120,6 +118,8 @@ public interface IElectric extends IWrenchable {
     static Vec3d getTerminalPos(BlockPos position, BlockState state, int terminalIndex) {
         if(state.getBlock() instanceof IElectric electric) {
             var terminal = electric.terminal(state, terminalIndex);
+            if(terminal == null)
+                return position.toCenterPos();
             var origin = terminal.getOrigin();
             return new Vec3d(position.getX() + origin.x, position.getY() + origin.y, position.getZ() + origin.z);
         } else {
@@ -127,15 +127,18 @@ public interface IElectric extends IWrenchable {
         }
     }
 
-    private static void sendMessage(ItemUsageContext context, Text text) {
+    static void sendMessage(ItemUsageContext context, Text text) {
         if(context.getPlayer() != null) {
             context.getPlayer().sendMessage(text, true);
         }
     }
 
     static ActionResult makeConnection(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemUsageContext context) {
-        var behaviour1 = getBehaviour(world, pos1);
-        var behaviour2 = getBehaviour(world, pos2);
+        var state1 = world.getBlockState(pos1);
+        var state2 = world.getBlockState(pos2);
+
+        var behaviour1 = ((IElectric) state1.getBlock()).getBehaviour(world, pos1, state1);
+        var behaviour2 = ((IElectric) state2.getBlock()).getBehaviour(world, pos2, state2);
         if(behaviour1 == null || behaviour2 == null) {
             sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
             PowerGrid.LOGGER.error("Connection failed, at least one behaviour is null");
@@ -156,8 +159,8 @@ public interface IElectric extends IWrenchable {
             return ActionResult.FAIL;
         }
 
-        var terminal1Pos = getTerminalPos(pos1, world.getBlockState(pos1), terminal1);
-        var terminal2Pos = getTerminalPos(pos2, world.getBlockState(pos2), terminal2);
+        var terminal1Pos = getTerminalPos(pos1, state1, terminal1);
+        var terminal2Pos = getTerminalPos(pos2, state2, terminal2);
 
         var stack = context.getStack();
         assert stack.getItem() instanceof IWire;
@@ -206,8 +209,8 @@ public interface IElectric extends IWrenchable {
                     lastPointList.getFloat(1),
                     lastPointList.getFloat(2)
             );
-            var electric = (IElectric) world.getBlockState(pos2).getBlock();
-            var terminal = electric.terminal(world.getBlockState(pos2), terminal2);
+            var electric = (IElectric) state2.getBlock();
+            var terminal = electric.terminal(state2, terminal2);
             var finalPoints = BlockTrace.findPath(world, lastPoint, terminal2Pos, terminal);
             if(finalPoints == null) {
                 sendMessage(context, Lang.translate("message.connection_no_path").style(Formatting.RED).component());
@@ -229,8 +232,8 @@ public interface IElectric extends IWrenchable {
             stack.decrement(requiredItemCount);
 
         var wire = GlobalElectricNetworks.makeConnection(behaviour1, node1, behaviour2, node2, R);
-        behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(pos2, terminal2, wire, entity.getUuid()));
-        behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(pos1, terminal1, wire, entity.getUuid()));
+        behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(behaviour2.blockEntity.getPos(), terminal2, wire, entity.getUuid()));
+        behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(behaviour1.blockEntity.getPos(), terminal1, wire, entity.getUuid()));
         entity.setWire(wire);
         return ActionResult.SUCCESS;
     }

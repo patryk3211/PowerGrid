@@ -3,7 +3,8 @@
   "package": "org.patryk3211.powergrid.mixin.client",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "ComplexEntityRaycastMixin"
+    "ComplexEntityRaycastMixin",
+    "BlueprintOverlayRendererAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
