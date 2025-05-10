@@ -19,9 +19,11 @@ import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.BiCGSTABSolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolver;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ElectricalNetwork {
@@ -40,6 +42,8 @@ public class ElectricalNetwork {
 
     private boolean dirty;
     private boolean recalculating;
+
+    public static Logger LOGGER = null;
 
     public ElectricalNetwork() {
         solver = new BiCGSTABSolver(PRECISION);
@@ -221,11 +225,18 @@ public class ElectricalNetwork {
 
     private void populateConductanceMatrix() {
         conductanceMatrix.zero();
+        List<ElectricWire> staleWires = new ArrayList<>();
         for(var wire : wires) {
             var G = wire.conductance();
             if(wire.node1 != null && wire.node2 != null) {
                 var index1 = wire.node1.getIndex();
                 var index2 = wire.node2.getIndex();
+                if(!nodes.contains(wire.node1) || !nodes.contains(wire.node2)) {
+                    if(LOGGER != null)
+                        LOGGER.warn("Dropped a stale wire (wire nodes not part of this network).");
+                    staleWires.add(wire);
+                    continue;
+                }
                 conductanceMatrix.add(index1, index1, G);
                 conductanceMatrix.add(index2, index2, G);
                 conductanceMatrix.add(index1, index2, -G);
@@ -236,6 +247,7 @@ public class ElectricalNetwork {
             }
         }
 
+        staleWires.forEach(wires::remove);
         for(var node : couplings) {
             node.couple(conductanceMatrix);
         }

@@ -22,6 +22,8 @@ import org.ejml.dense.row.RandomMatrices_DDRM;
 
 import java.util.Random;
 
+import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
+
 /*
  * Biconjugate Gradient Stabilized method
  * algorithm implemented according to https://en.wikipedia.org/wiki/Biconjugate_gradient_stabilized_method
@@ -151,8 +153,8 @@ public class BiCGSTABSolver implements ISolver {
             CommonOps_DDRM.add(residual, beta, t, p);
         }
 
-        if(iters >= MAX_ITERATIONS) {
-            System.out.printf("Solver iteration limit, final precision: %f\n", norm);
+        if(iters >= MAX_ITERATIONS && LOGGER != null) {
+            LOGGER.warn("Solver iteration limit, final precision: {}", norm);
         }
 
         return guess;
