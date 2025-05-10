@@ -19,6 +19,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -38,6 +39,7 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 import java.util.Optional;
 
 public abstract class TransformerBlock extends ElectricBlock {
+    public static final IntProperty COILS = IntProperty.of("coils", 0, 2);
     private final int maxTurns;
 
     public TransformerBlock(Settings settings, int maxTurns) {

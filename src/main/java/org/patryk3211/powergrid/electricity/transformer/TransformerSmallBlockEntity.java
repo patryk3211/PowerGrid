@@ -36,6 +36,6 @@ public class TransformerSmallBlockEntity extends TransformerBlockEntity implemen
     public void updateCoilBlockState() {
         assert world != null;
         int coilCount = secondaryCoil.isDefined() ? 2 : primaryCoil.isDefined() ? 1 : 0;
-        world.setBlockState(pos, getCachedState().with(TransformerSmallBlock.COILS, coilCount));
+        world.setBlockState(pos, getCachedState().with(TransformerBlock.COILS, coilCount));
     }
 }

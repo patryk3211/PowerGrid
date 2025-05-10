@@ -73,12 +73,13 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
 
     public TransformerMediumBlock(Settings settings) {
         super(settings, 240);
+        setDefaultState(getDefaultState().with(COILS, 0));
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(HORIZONTAL_AXIS, PART);
+        builder.add(HORIZONTAL_AXIS, PART, COILS);
     }
 
     @Override

@@ -32,6 +32,39 @@
     {
       "when": { "AND": [ { "axis": "x" }, { "part": 3 } ] },
       "apply": { "model": "powergrid:block/transformer/medium_top", "y": 90 }
+    },
+
+    {
+      "when": { "AND": [ { "axis": "z" }, { "part": 0 }, { "coils": "1|2" } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_coil1" }
+    },
+    {
+      "when": { "AND": [ { "axis": "z" }, { "part": 1 }, { "coils": "1|2" } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_coil1", "y": 180 }
+    },
+    {
+      "when": { "AND": [ { "axis": "z" }, { "part": 2 }, { "coils": "2" } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_coil2" }
+    },
+    {
+      "when": { "AND": [ { "axis": "z" }, { "part": 3 }, { "coils": "2" } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_coil2", "y": 180 }
+    },
+    {
+      "when": { "AND": [ { "axis": "x" }, { "part": 0 }, { "coils": "1|2" } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_coil1", "y": -90 }
+    },
+    {
+      "when": { "AND": [ { "axis": "x" }, { "part": 1 }, { "coils": "1|2" } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_coil1", "y": 90 }
+    },
+    {
+      "when": { "AND": [ { "axis": "x" }, { "part": 2 }, { "coils": "2" } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_coil2", "y": -90 }
+    },
+    {
+      "when": { "AND": [ { "axis": "x" }, { "part": 3 }, { "coils": "2" } ] },
+      "apply": { "model": "powergrid:block/transformer/medium_coil2", "y": 90 }
     }
   ]
 }
