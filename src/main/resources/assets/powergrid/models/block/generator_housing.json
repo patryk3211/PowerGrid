@@ -4,7 +4,7 @@
 	"textures": {
 		"1": "create:block/industrial_iron_block_top",
 		"2": "powergrid:block/generator_housing",
-		"particle": "powergrid:block/industrial_iron_block_top"
+		"particle": "create:block/industrial_iron_block_top"
 	},
 	"elements": [
 		{
