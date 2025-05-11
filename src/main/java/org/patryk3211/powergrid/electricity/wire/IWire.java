@@ -31,4 +31,14 @@ public interface IWire extends IHaveElectricProperties {
     default void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
         Resistance.series(getResistance(), player, tooltip);
     }
+
+    static boolean holdsWire(PlayerEntity player) {
+        var stack1 = player.getMainHandStack();
+        if(stack1 != null && !stack1.isEmpty() && stack1.getItem() instanceof IWire)
+            return true;
+        var stack2 = player.getOffHandStack();
+        if(stack2 != null && !stack2.isEmpty() && stack2.getItem() instanceof IWire)
+            return true;
+        return false;
+    }
 }

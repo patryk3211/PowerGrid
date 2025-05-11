@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.electricswitch;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -44,6 +45,23 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
 
     public void setState(boolean state) {
         wire.setState(state);
+        notifyUpdate();
+    }
+
+    @Override
+    protected void read(NbtCompound tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        if(clientPacket) {
+            wire.setState(tag.getBoolean("State"));
+        }
+    }
+
+    @Override
+    protected void write(NbtCompound tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        if(clientPacket) {
+            tag.putBoolean("State", wire.getState());
+        }
     }
 
     @Override

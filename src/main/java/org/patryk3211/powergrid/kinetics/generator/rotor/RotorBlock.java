@@ -96,7 +96,7 @@ public class RotorBlock extends RotatedPillarKineticBlock implements IBE<RotorBl
 
     @Override
     public Direction.Axis getRotationAxis(BlockState blockState) {
-        return blockState.get(AXIS);
+        return blockState.get(SHAFT_DIRECTION) == ShaftDirection.NONE ? null : blockState.get(AXIS);
     }
 
     @Override

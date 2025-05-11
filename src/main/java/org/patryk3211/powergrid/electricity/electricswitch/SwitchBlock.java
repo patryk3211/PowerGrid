@@ -42,6 +42,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.wire.IWire;
 
 public class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity> {
     public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
@@ -97,20 +98,10 @@ public class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity>
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if(newState.isOf(this)) {
-            if(world.getBlockEntity(pos) instanceof SwitchBlockEntity entity) {
-                entity.setState(!newState.get(OPEN));
-            }
-        }
-        super.onStateReplaced(state, world, pos, newState, moved);
-    }
-
-    @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if(!player.isSneaking()) {
             var hitPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
-            if(hitPos.x >= 0.125f && hitPos.z >= 0.125f && hitPos.x <= 0.875f && hitPos.z <= 0.875f) {
+            if(!IWire.holdsWire(player) || (hitPos.x >= 0.125f && hitPos.z >= 0.125f && hitPos.x <= 0.875f && hitPos.z <= 0.875f)) {
                 var isOpen = !state.get(OPEN);
                 world.setBlockState(pos, state.with(OPEN, isOpen));
                 if(world.getBlockEntity(pos) instanceof SwitchBlockEntity entity) {
