@@ -46,9 +46,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-//        thermalBehaviour = specifyThermalBehaviour();
-//        if(thermalBehaviour != null)
-//            behaviours.add(thermalBehaviour);
+        thermalBehaviour = new ThermalBehaviour(this, 3.5f, 0.75f);
+        behaviours.add(thermalBehaviour);
     }
 
     protected void applyLostPower(float power) {
@@ -69,6 +68,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         super.read(compound, clientPacket);
         generatedSpeed = compound.getFloat("GeneratedSpeed");
         updateGeneratedRotation();
+        updateDissipation();
     }
 
     @Override
@@ -81,9 +81,15 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     public void tick() {
         super.tick();
 
+        var voltage = coil.potentialDifference();
+        applyLostPower(voltage * voltage / coil.getResistance());
         if(!world.isClient) {
-            var voltage = coil.potentialDifference();
             var newSpeed = Math.round(voltage * 2.0f);
+            // Max speed constraints.
+            if(newSpeed > 256)
+                newSpeed = 256;
+            if(newSpeed < -256)
+                newSpeed = -256;
 
             // Update speed from average applied voltage.
             var diffPercentage = Math.abs((newSpeed - generatedSpeed) / generatedSpeed);
@@ -94,6 +100,17 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
                 updateGeneratedRotation();
             }
         }
+    }
+
+    @Override
+    public void onSpeedChanged(float previousSpeed) {
+        super.onSpeedChanged(previousSpeed);
+        updateDissipation();
+    }
+
+    public void updateDissipation() {
+        // Simulate a fan moving more air and providing more cooling
+        thermalBehaviour.setDissipationFactor(Math.max(Math.abs(getSpeed()) * 0.2f, 0.3f));
     }
 
     @Override
