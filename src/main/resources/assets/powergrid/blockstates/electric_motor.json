@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=north": { "model": "powergrid:block/electric_motor" },
+    "facing=south": { "model": "powergrid:block/electric_motor", "y": 180 },
+    "facing=east": { "model": "powergrid:block/electric_motor", "y": 90 },
+    "facing=west": { "model": "powergrid:block/electric_motor", "y": -90 },
+    "facing=up": { "model": "powergrid:block/electric_motor_vertical", "x": -90 },
+    "facing=down": { "model": "powergrid:block/electric_motor_vertical", "x": 90 }
+  }
+}

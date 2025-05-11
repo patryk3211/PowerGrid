@@ -16,6 +16,7 @@
   "block.powergrid.transformer_core": "Transformer Core",
   "block.powergrid.transformer_small": "Small Transformer",
   "block.powergrid.transformer_medium": "Medium Transformer",
+  "block.powergrid.electric_motor": "Electric Motor",
 
   "item.powergrid.wire": "Wire",
   "item.powergrid.light_bulb": "Light bulb",

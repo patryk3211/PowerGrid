@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.content.kinetics.base.HalfShaftInstance;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
@@ -34,6 +35,8 @@ import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntit
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
+import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
+import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -109,6 +112,13 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<TransformerMediumBlockEntity> TRANSFORMER_MEDIUM =
             REGISTRATE.blockEntity("transformer_medium", TransformerMediumBlockEntity::new)
                     .validBlock(ModdedBlocks.TRANSFORMER_MEDIUM)
+                    .register();
+
+    public static final BlockEntityEntry<ElectricMotorBlockEntity> ELECTRIC_MOTOR =
+            REGISTRATE.blockEntity("electric_motor", ElectricMotorBlockEntity::new)
+                    .instance(() -> HalfShaftInstance::new)
+                    .validBlock(ModdedBlocks.ELECTRIC_MOTOR)
+                    .renderer(() -> ElectricMotorRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")
