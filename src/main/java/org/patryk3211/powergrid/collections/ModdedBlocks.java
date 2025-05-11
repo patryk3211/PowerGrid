@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
+import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -107,6 +108,11 @@ public class ModdedBlocks {
     public static final BlockEntry<TransformerSmallBlock> TRANSFORMER_SMALL = REGISTRATE.block("transformer_small", TransformerSmallBlock::new)
             .register();
     public static final BlockEntry<TransformerMediumBlock> TRANSFORMER_MEDIUM = REGISTRATE.block("transformer_medium", TransformerMediumBlock::new)
+            .register();
+
+    public static final BlockEntry<ElectricMotorBlock> ELECTRIC_MOTOR = REGISTRATE.block("electric_motor", ElectricMotorBlock::new)
+            .transform(BlockStressDefaults.setCapacity(64))
+            .simpleItem()
             .register();
 
     @SuppressWarnings("EmptyMethod")
