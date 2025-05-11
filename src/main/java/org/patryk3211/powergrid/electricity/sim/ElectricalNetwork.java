@@ -119,6 +119,10 @@ public class ElectricalNetwork {
         return nodes.isEmpty();
     }
 
+    public boolean isDirty() {
+        return dirty;
+    }
+
     public void addWire(ElectricWire wire) {
         if((wire.node1 != null && !nodes.contains(wire.node1)) || (wire.node2 != null && !nodes.contains(wire.node2)))
             // If node of a wire is not null it must be in the network's node set.

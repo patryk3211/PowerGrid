@@ -46,6 +46,11 @@ public class GlobalElectricNetworks {
                 removed.add(network);
                 continue;
             }
+            if(network.isDirty()) {
+                // Two more recalculations to make sure the network is stable.
+                network.calculate();
+                network.calculate();
+            }
             network.calculate();
         }
         networks.removeAll(removed);
