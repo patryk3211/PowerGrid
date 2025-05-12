@@ -19,7 +19,6 @@ import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.item.TooltipModifier;
-import com.tterrag.registrate.Registrate;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -30,6 +29,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
+import org.patryk3211.powergrid.chemistry.reagent.Reagents;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
@@ -57,6 +58,8 @@ public class PowerGrid implements ModInitializer {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
 		ElectricalNetwork.LOGGER = LOGGER;
 
+		ReagentRegistry.init();
+
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
 		ITEM_GROUP_KEY = Registries.ITEM_GROUP.getKey(ITEM_GROUP).get();
 
@@ -76,6 +79,9 @@ public class PowerGrid implements ModInitializer {
 		ModdedConfigs.register();
 
 		REGISTRATE.register();
+
+		// TODO: Consider moving reagents into the REGISTRATE.
+		Reagents.register();
 
 		GlobalElectricNetworks.init();
 		ServerBoundPackets.init();
