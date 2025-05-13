@@ -15,7 +15,9 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
+import com.google.gson.JsonObject;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 
@@ -23,6 +25,9 @@ public class ReagentStack {
     public static final ReagentStack EMPTY = new ReagentStack(Reagents.EMPTY, 0);
 
     private Reagent reagent;
+    // Amount is an integer to avoid rounding errors and imprecise reagent usage.
+    // This also dictates the minimum amount of reagent.
+    // TODO: This might have to become a long
     private int amount;
     private float temperature;
 
@@ -62,6 +67,10 @@ public class ReagentStack {
         return isEmpty() ? Reagents.EMPTY : reagent;
     }
 
+    /**
+     * Get the amount of reagent in this stack. The unit is one one-thousandth of a mole.
+     * @return Moles of the reagent * 1000
+     */
     public int getAmount() {
         return amount;
     }
@@ -96,6 +105,10 @@ public class ReagentStack {
         return new ReagentStack(reagent, amount, temperature);
     }
 
+    public ReagentState getState() {
+        return reagent.properties.getState(temperature);
+    }
+
     public NbtCompound serialize() {
         var tag = new NbtCompound();
         var id = ReagentRegistry.REGISTRY.getId(reagent);
@@ -103,6 +116,25 @@ public class ReagentStack {
         tag.putInt("Amount", amount);
         tag.putFloat("Temperature", temperature);
         return tag;
+    }
+
+    public static ReagentStack read(JsonObject json) {
+        var reagentId = json.get("reagent").getAsString();
+        var amount = json.get("amount").getAsInt();
+        var reagent = ReagentRegistry.REGISTRY.get(new Identifier(reagentId));
+        return new ReagentStack(reagent, amount);
+    }
+
+    public static ReagentStack read(PacketByteBuf buf) {
+        var rId = buf.readIdentifier();
+        var amount = buf.readInt();
+        return new ReagentStack(ReagentRegistry.REGISTRY.get(rId), amount);
+    }
+
+    public void write(PacketByteBuf buf) {
+        var id = ReagentRegistry.REGISTRY.getId(reagent);
+        buf.writeIdentifier(id);
+        buf.writeInt(amount);
     }
 
     public boolean isOf(Reagent reagent) {
@@ -115,5 +147,10 @@ public class ReagentStack {
             return stack.reagent == reagent && stack.amount == amount;
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return amount + " " + reagent + "(T=" + temperature + ")";
     }
 }

@@ -34,6 +34,11 @@ public class Reagent {
         return properties.heatCapacity;
     }
 
+    @Override
+    public String toString() {
+        return ReagentRegistry.REGISTRY.getId(this).getPath();
+    }
+
     public static class Properties {
         public static final Properties EMPTY = new Properties();
         public static final Properties WATER = new Properties().meltingPoint(0).boilingPoint(100).heatCapacity(75.38f);
