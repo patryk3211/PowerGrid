@@ -31,6 +31,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 import org.patryk3211.powergrid.chemistry.reagent.Reagents;
+import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
+import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipeSerializer;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
@@ -62,6 +64,9 @@ public class PowerGrid implements ModInitializer {
 
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
 		ITEM_GROUP_KEY = Registries.ITEM_GROUP.getKey(ITEM_GROUP).get();
+
+		Registry.register(Registries.RECIPE_SERIALIZER, ReactionRecipeSerializer.ID, ReactionRecipeSerializer.INSTANCE);
+		Registry.register(Registries.RECIPE_TYPE, ReactionRecipe.ID, ReactionRecipe.TYPE);
 
 		REGISTRATE = PowerGridRegistrate.create(MOD_ID)
 				.defaultCreativeTab(ITEM_GROUP_KEY)

@@ -1,0 +1,16 @@
+{
+  "id": "powergrid:reactions/water_h2o",
+  "type": "powergrid:reaction",
+  "ingredients": [
+    { "reagent": "powergrid:hydrogen", "amount": 2 },
+    { "reagent": "powergrid:oxygen", "amount": 1 }
+  ],
+  "conditions": [
+    { "type": "temperature", "min": 22, "max": 500 }
+  ],
+  "results": [
+    { "reagent": "powergrid:water", "amount": 1 }
+  ],
+  "energy": 286,
+  "rate": 1
+}
