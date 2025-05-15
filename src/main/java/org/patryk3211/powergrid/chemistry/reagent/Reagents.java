@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
+import net.minecraft.fluid.Fluids;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
@@ -24,7 +25,11 @@ public class Reagents {
 
     public static final Reagent OXYGEN = register("oxygen", new Reagent(Reagent.Properties.OXYGEN));
     public static final Reagent HYDROGEN = register("hydrogen", new Reagent(Reagent.Properties.HYDROGEN));
-    public static final Reagent WATER = register("water", new Reagent(Reagent.Properties.WATER));
+    public static final Reagent WATER = register("water", new Reagent(Reagent.Properties.WATER).withFluid(Fluids.WATER));
+    public static final Reagent NITROGEN = register("nitrogen", new Reagent(Reagent.Properties.NITROGEN));
+
+    public static final Reagent SULFUR = register("sulfur", new Reagent(Reagent.Properties.SULFUR));
+    public static final Reagent SULFUR_DIOXIDE = register("sulfur_dioxide", new Reagent(Reagent.Properties.SULFUR_DIOXIDE));
 
     private static Reagent register(String name, Reagent reagent) {
         return Registry.register(ReagentRegistry.REGISTRY, new Identifier(PowerGrid.MOD_ID, name), reagent);

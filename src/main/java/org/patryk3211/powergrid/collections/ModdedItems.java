@@ -52,6 +52,9 @@ public class ModdedItems {
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
 
+    public static final ItemEntry<Item> SULFUR = REGISTRATE.item("sulfur", Item::new)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 
