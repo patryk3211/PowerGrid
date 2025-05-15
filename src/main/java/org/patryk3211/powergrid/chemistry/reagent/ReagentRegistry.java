@@ -27,7 +27,7 @@ public class ReagentRegistry {
     public static final RegistryKey<Registry<Reagent>> REGISTRY_KEY = RegistryKey.ofRegistry(new Identifier(PowerGrid.MOD_ID, "reagents"));
     public static final Registry<Reagent> REGISTRY = FabricRegistryBuilder
             .createDefaulted(REGISTRY_KEY, DEFAULT_ID)
-            .attribute(RegistryAttribute.SYNCED)
+            .attribute(RegistryAttribute.PERSISTED)
             .buildAndRegister();
 
     public static Reagent DEFAULT;

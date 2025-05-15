@@ -1,0 +1,18 @@
+{
+  "id": "powergrid:combustion/sulfur",
+  "type": "powergrid:reaction",
+  "ingredients": [
+    { "reagent": "powergrid:sulfur", "amount": 1 },
+    { "reagent": "powergrid:oxygen", "amount": 2 }
+  ],
+  "conditions": [
+    { "type": "temperature", "min": 232 },
+    { "type": "concentration", "reagent": "powergrid:oxygen", "min": 0.1 }
+  ],
+  "results": [
+    { "reagent": "powergrid:sulfur_dioxide", "amount": 1 }
+  ],
+  "flags": [ "combustion" ],
+  "energy": 297,
+  "rate": 10
+}

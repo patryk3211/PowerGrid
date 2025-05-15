@@ -29,6 +29,7 @@ import org.patryk3211.powergrid.chemistry.reagent.ReagentMixture;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -44,6 +45,7 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
     private final List<ReagentIngredient> ingredients;
     private final List<IReactionCondition> conditions;
     private final List<ReagentStack> results;
+    private final BitSet flags;
     private final int energy;
     private final int rate;
 
@@ -52,6 +54,7 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         this.ingredients = params.ingredients;
         this.conditions = params.conditions;
         this.results = params.results;
+        this.flags = params.flags;
         this.energy = params.energy;
         this.rate = params.rate;
 
@@ -122,13 +125,25 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         return results;
     }
 
+    public BitSet getFlagBits() {
+        return flags;
+    }
+
+    public boolean hasFlag(ReactionFlag flag) {
+        return flags.get(flag.getBit());
+    }
+
     @Override
     public boolean test(ReagentMixture mixture) {
         for(var ingredient : ingredients) {
             if(mixture.getAmount(ingredient.getReagent()) < ingredient.getRequiredAmount())
                 return false;
         }
+        boolean burning = mixture.isBurning();
         for(var condition : conditions) {
+            // Temperature condition doesn't apply to burning mixtures and combustion reactions.
+            if(condition instanceof RecipeTemperatureCondition && hasFlag(ReactionFlag.COMBUSTION) && burning)
+                continue;
             if(!condition.test(mixture))
                 return false;
         }
@@ -139,6 +154,7 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         public final List<ReagentIngredient> ingredients = new ArrayList<>();
         public final List<IReactionCondition> conditions = new ArrayList<>();
         public final List<ReagentStack> results = new ArrayList<>();
+        public BitSet flags = new BitSet();
         public int energy = 0;
         public int rate = 0;
 

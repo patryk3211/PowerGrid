@@ -26,6 +26,8 @@ public interface IReactionCondition extends Predicate<ReagentMixture> {
     static void write(IReactionCondition reaction, PacketByteBuf buf) {
         if(reaction instanceof RecipeTemperatureCondition)
             buf.writeByte(0);
+        if(reaction instanceof RecipeConcentrationCondition)
+            buf.writeByte(1);
         reaction.write(buf);
     }
 
@@ -33,6 +35,7 @@ public interface IReactionCondition extends Predicate<ReagentMixture> {
         var id = buf.readByte();
         return switch(id) {
             case 0 -> new RecipeTemperatureCondition(buf);
+            case 1 -> new RecipeConcentrationCondition(buf);
             default -> throw new IllegalStateException("Unexpected reaction condition id received: " + id);
         };
     }

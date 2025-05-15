@@ -21,7 +21,6 @@ import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentIngredient;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
 
 public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe> {
@@ -49,6 +48,7 @@ public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe
             var condition = element.getAsJsonObject();
             var conditionObj = switch(condition.get("type").getAsString()) {
                 case "temperature" -> new RecipeTemperatureCondition(condition);
+                case "concentration" -> new RecipeConcentrationCondition(condition);
                 default -> null;
             };
             if(conditionObj == null) {
@@ -66,6 +66,16 @@ public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe
                 recipeParameters.results.add(ReagentStack.read(result));
             } else {
                 PowerGrid.LOGGER.warn("Recipe '{}' contains an invalid result entry", id);
+            }
+        }
+
+        // Parse flags
+        if(json.has("flags")) {
+            var flags = json.getAsJsonArray("flags");
+            for(var element : flags) {
+                var flagName = element.getAsString();
+                var flag = ReactionFlag.fromString(flagName);
+                recipeParameters.flags.set(flag.getBit(), true);
             }
         }
 
@@ -103,6 +113,8 @@ public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe
             params.results.add(ReagentStack.read(buf));
         }
 
+        params.flags = buf.readBitSet();
+
         return new ReactionRecipe(id, params);
     }
 
@@ -128,5 +140,7 @@ public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe
         for(var result : results) {
             result.write(buf);
         }
+
+        buf.writeBitSet(recipe.getFlagBits());
     }
 }

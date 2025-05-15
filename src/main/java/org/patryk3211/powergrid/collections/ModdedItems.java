@@ -37,6 +37,9 @@ public class ModdedItems {
             .transform(LightBulb.setProperties(30, 60, 30)) //LightBulb.setProperties(15, 100, 0.004f, 1200, 0.1f))
             .register();
 
+    public static final ItemEntry<Item> SULFUR = REGISTRATE.item("sulfur", Item::new)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }

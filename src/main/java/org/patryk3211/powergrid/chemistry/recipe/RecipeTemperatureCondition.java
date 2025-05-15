@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.chemistry.recipe;
 
 import com.google.gson.JsonObject;
 import net.minecraft.network.PacketByteBuf;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentMixture;
 
 public class RecipeTemperatureCondition implements IReactionCondition {
@@ -42,7 +41,7 @@ public class RecipeTemperatureCondition implements IReactionCondition {
         if(json.has("max")) {
             max = json.get("max").getAsFloat();
             if(max < min) {
-                PowerGrid.LOGGER.error("Invalid reaction temperature condition (min > max)");
+                throw new IllegalArgumentException("Minimum reaction temperature must be smaller than the maximum temperature");
             }
         } else {
             max = null;

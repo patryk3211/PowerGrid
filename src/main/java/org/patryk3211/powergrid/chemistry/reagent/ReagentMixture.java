@@ -19,6 +19,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
+import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
 
 import java.util.HashMap;
@@ -27,15 +28,17 @@ import java.util.Set;
 
 public class ReagentMixture {
     private final Map<Reagent, Integer> reagents = new HashMap<>();
-    private int totalAmount;
+    private boolean burning;
+    private float energy;
 
     private float heatMass;
-    private float energy;
+    private int totalAmount;
 
     public ReagentMixture() {
         totalAmount = 0;
         heatMass = 0;
         energy = 0;
+        burning = false;
     }
 
     /**
@@ -60,25 +63,38 @@ public class ReagentMixture {
         return (energy / heatMass) - 273.15f;
     }
 
-    public void add(ReagentStack stack) {
-        energy += stackEnergy(stack.getTemperature(), stack.getAmount(), stack.getReagent());
-        heatMass += stackHeatMass(stack.getAmount(), stack.getReagent());
-        totalAmount += stack.getAmount();
-        reagents.compute(stack.getReagent(), (reagent, currentAmount) -> currentAmount == null ? stack.getAmount() : currentAmount + stack.getAmount());
+    /**
+     * Add a stack of reagent to the mixture.
+     * @param stack Stack to be added
+     * @return Amount actually added
+     */
+    public final int add(ReagentStack stack) {
+        return addInternal(stack.getReagent(), stack.getAmount(), stack.getTemperature(), true);
     }
 
-    protected void add(ReagentStack stack, float temperature, int rate) {
-        var amount = stack.getAmount() * rate;
-        energy += stackEnergy(temperature, amount, stack.getReagent());
-        heatMass += stackHeatMass(amount, stack.getReagent());
+    protected final int addInternal(Reagent reagent, int amount) {
+        return addInternal(reagent, amount, 0, false);
+    }
+
+    protected int addInternal(Reagent reagent, int amount, float temperature, boolean affectEnergy) {
+        if(affectEnergy) {
+            energy += stackEnergy(temperature, amount, reagent);
+        }
+        heatMass += stackHeatMass(amount, reagent);
         totalAmount += amount;
-        reagents.compute(stack.getReagent(), (reagent, currentAmount) -> currentAmount == null ? amount : currentAmount + amount);
+        reagents.compute(reagent, (key, currentAmount) -> currentAmount == null ? amount : currentAmount + amount);
+        return amount;
     }
 
     public Set<Reagent> getReagents() {
         return reagents.keySet();
     }
 
+    /**
+     * Get the amount of reagent of the given type contained in this mixture.
+     * @param reagent Reagent type
+     * @return Amount of reagent in moles * 1000
+     */
     public int getAmount(Reagent reagent) {
         var amount = reagents.get(reagent);
         return amount == null ? 0 : amount;
@@ -92,49 +108,54 @@ public class ReagentMixture {
         return getAmount(reagent) > 0;
     }
 
+    /**
+     * Get the concentration of reagent of the given type in this mixture.
+     * @param reagent Reagent type
+     * @return Concentration in [0; 1] range
+     */
     public float getConcentration(Reagent reagent) {
-        var amount = reagents.get(reagent);
-        if(amount == null)
-            return 0;
+        var amount = getAmount(reagent);
         return (float) amount / totalAmount;
     }
 
-    public ReagentStack remove(Reagent reagent, int amount) {
+    /**
+     * Remove an amount of a specific reagent from this mixture.
+     * @param reagent Reagent type
+     * @param amount Amount of reagent to remove in moles * 1000
+     * @return Removed reagent stack
+     */
+    public final ReagentStack remove(Reagent reagent, int amount) {
+        var temperature = getTemperature();
+        var removed = removeInternal(reagent, amount, true);
+        return new ReagentStack(reagent, removed, temperature);
+    }
+
+    protected int removeInternal(Reagent reagent, int amount, boolean affectEnergy) {
         var invAmount = getAmount(reagent);
         if(invAmount == 0)
-            return ReagentStack.EMPTY;
+            return 0;
         if(amount >= invAmount) {
             amount = invAmount;
             reagents.remove(reagent);
         } else {
             reagents.put(reagent, invAmount - amount);
         }
-        var temperature = getTemperature();
-        energy -= stackEnergy(temperature, amount, reagent);
-        heatMass -= stackHeatMass(amount, reagent);
-        totalAmount -= amount;
-        return new ReagentStack(reagent, amount, temperature);
-    }
-
-    protected void remove(ReagentIngredient ingredient, int rate) {
-        var reagent = ingredient.getReagent();
-        var amount = ingredient.getRequiredAmount() * rate;
-
-        var invAmount = getAmount(reagent);
-        if(invAmount == 0)
-            return;
-        if(amount >= invAmount) {
-            amount = invAmount;
-            reagents.remove(reagent);
-        } else {
-            reagents.put(reagent, invAmount - amount);
+        if(affectEnergy) {
+            var temperature = getTemperature();
+            energy -= stackEnergy(temperature, amount, reagent);
         }
-        var temperature = getTemperature();
-        energy -= stackEnergy(temperature, amount, reagent);
         heatMass -= stackHeatMass(amount, reagent);
         totalAmount -= amount;
+        return amount;
     }
 
+    /**
+     * Remove a given amount of reagents from this mixture.
+     * Specific reagent amounts are calculated so that the concentration in
+     * the result mixture is preserved.
+     * @param requestedAmount Amount to remove in moles * 1000
+     * @return Removed reagent mixture
+     */
     public ReagentMixture remove(int requestedAmount) {
         var extractedMixture = new ReagentMixture();
         int extractedAmount = 0;
@@ -156,6 +177,14 @@ public class ReagentMixture {
         return extractedMixture;
     }
 
+    /**
+     * Calculates the amount of reagent that this mixture can accept from the given stack.
+     * @return Accepted amount of reagent
+     */
+    public int accepts(ReagentStack stack) {
+        return stack.getAmount();
+    }
+
     public void addEnergy(float energy) {
         this.energy += energy;
     }
@@ -173,12 +202,21 @@ public class ReagentMixture {
         return energy - baseEnergy;
     }
 
+    public boolean isBurning() {
+        return burning;
+    }
+
+    public void setBurning(boolean burning) {
+        this.burning = burning;
+    }
+
     /**
+     * Applies a given recipe to the mixture. This method applies the reaction at the maximum
+     * possible rate given by the recipe and conditions inside the mixture.
      * Warning! This function assumes that the recipe was previously tested and all the required conditions match.
      * @param reaction Reaction recipe to apply to this mixture.
      */
     public void applyReaction(ReactionRecipe reaction) {
-        var temperature = getTemperature();
         // First calculate the reaction rate.
         int reactionRate = reaction.getReactionRate();
         for(var ingredient : reaction.getReagentIngredients()) {
@@ -186,13 +224,24 @@ public class ReagentMixture {
             reactionRate = Math.min(amount / ingredient.getRequiredAmount(), reactionRate);
         }
         // Then apply the reaction at the calculated rate.
+        var temperature = getTemperature();
+        float ingredientEnergy = 0;
         for(var ingredient : reaction.getReagentIngredients()) {
-            remove(ingredient, reactionRate);
+            ingredientEnergy += stackEnergy(temperature, ingredient.getRequiredAmount() * reactionRate, ingredient.getReagent());
+            removeInternal(ingredient.getReagent(), ingredient.getRequiredAmount() * reactionRate, true);
         }
+        float resultHeatMass = 0;
         for(var result : reaction.getReagentResults()) {
-            add(result, temperature, reactionRate);
+            resultHeatMass += stackHeatMass(result.getAmount(), result.getReagent());
         }
-        addEnergy(reaction.getReactionEnergy() * reactionRate);
+        float resultEnergy = ingredientEnergy + reaction.getReactionEnergy() * reactionRate;
+        for(var result : reaction.getReagentResults()) {
+            addInternal(result.getReagent(), result.getAmount() * reactionRate, resultEnergy / resultHeatMass, true);
+        }
+        if(reaction.hasFlag(ReactionFlag.COMBUSTION)) {
+            // If recipe is a combustion recipe we can set the burning flag so that other things burn too.
+            setBurning(true);
+        }
     }
 
     public void write(NbtCompound tag) {
@@ -208,6 +257,9 @@ public class ReagentMixture {
 
         tag.put("Reagents", reagentList);
         tag.putFloat("Energy", energy);
+        if(burning) {
+            tag.putBoolean("Burning", true);
+        }
     }
 
     public void read(NbtCompound tag) {
@@ -224,6 +276,11 @@ public class ReagentMixture {
             reagents.put(reagent, amount);
             totalAmount += amount;
             heatMass += stackHeatMass(amount, reagent);
+        }
+        if(tag.contains("Burning")) {
+            burning = tag.getBoolean("Burning");
+        } else {
+            burning = false;
         }
     }
 
