@@ -1,0 +1,12 @@
+{
+	"parent": "block/cube",
+	"textures": {
+		"north": "powergrid:block/vat/side",
+		"south": "powergrid:block/vat/side",
+		"east": "powergrid:block/vat/side",
+		"west": "powergrid:block/vat/side",
+		"up": "powergrid:block/vat/top",
+		"down": "powergrid:block/vat/bottom",
+		"particle": "powergrid:block/vat/side"
+	}
+}

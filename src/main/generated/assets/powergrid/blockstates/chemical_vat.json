@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "open=true": { "model": "powergrid:block/vat/base" },
+    "open=false": { "model": "powergrid:block/vat/closed" }
+  }
+}

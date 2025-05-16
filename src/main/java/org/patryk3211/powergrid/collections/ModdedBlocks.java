@@ -19,6 +19,7 @@ import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
+import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
@@ -32,6 +33,8 @@ import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
@@ -353,6 +356,11 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_motor_item")))
                 .build()
+            .register();
+
+    public static final BlockEntry<ChemicalVatBlock> CHEMICAL_VAT = REGISTRATE.block("chemical_vat", ChemicalVatBlock::new)
+            .onRegister(CreateRegistrate.connectedTextures(ChemicalVatCTBehaviour::new))
+            .simpleItem()
             .register();
 
     @SuppressWarnings("EmptyMethod")
