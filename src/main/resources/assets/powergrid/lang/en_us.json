@@ -17,9 +17,11 @@
   "block.powergrid.transformer_small": "Small Transformer",
   "block.powergrid.transformer_medium": "Medium Transformer",
   "block.powergrid.electric_motor": "Electric Motor",
+  "block.powergrid.chemical_vat": "Chemical Vat",
 
   "item.powergrid.wire": "Wire",
   "item.powergrid.light_bulb": "Light bulb",
+  "item.powergrid.sulfur": "Sulfur",
 
   "entity.powergrid.block_wire": "Wire",
   "entity.powergrid.hanging_wire": "Wire",

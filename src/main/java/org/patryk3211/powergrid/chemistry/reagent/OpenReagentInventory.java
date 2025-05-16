@@ -47,22 +47,11 @@ public class OpenReagentInventory extends ReagentMixture {
     }
 
     @Override
-    protected int addInternal(Reagent reagent, int amount, float temperature, boolean affectEnergy) {
+    protected int addInternal(Reagent reagent, int amount, double temperature, boolean affectEnergy) {
         if(getState(reagent) == ReagentState.GAS) {
             // Reagent is "added" but it escapes into the "atmosphere".
             return amount;
         }
         return super.addInternal(reagent, amount, temperature, affectEnergy);
-    }
-
-    @Override
-    protected int removeInternal(Reagent reagent, int amount, boolean affectEnergy) {
-        if(getState(reagent) == ReagentState.GAS) {
-            // Only oxygen and nitrogen are available in gas form.
-            if(reagent == Reagents.OXYGEN || reagent == Reagents.NITROGEN)
-                return amount;
-            return 0;
-        }
-        return super.removeInternal(reagent, amount, affectEnergy);
     }
 }

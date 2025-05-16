@@ -18,17 +18,12 @@ package org.patryk3211.powergrid.chemistry.reagent.source;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
-import net.fabricmc.fabric.api.event.registry.DynamicRegistrySetupCallback;
-import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class ReagentSourceRegistry {
     public static final RegistryKey<Registry<ReagentSource>> REGISTRY_KEY = RegistryKey.ofRegistry(new Identifier(PowerGrid.MOD_ID, "reagent_sources"));
@@ -39,22 +34,7 @@ public class ReagentSourceRegistry {
             Codec.INT.fieldOf("amount").forGetter(ReagentSource::amount)
     ).apply(instance, ReagentSource::new));
 
-    public static final Map<Item, ReagentSource> ITEM_SOURCES = new HashMap<>();
-
     public static void init() {
         DynamicRegistries.registerSynced(REGISTRY_KEY, CODEC);
-
-        DynamicRegistrySetupCallback.EVENT.register(view -> {
-            view.registerEntryAdded(REGISTRY_KEY, (rawId, id, object) -> {
-                var previous = ITEM_SOURCES.put(object.item(), object);
-                if(previous != null) {
-                    PowerGrid.LOGGER.warn("Warning item '{}' reagent source mapping has been changed ('{} {}' -> '{} {}')",
-                            object.item(), previous.reagent(), previous.amount(), object.reagent(), object.amount());
-                }
-            });
-            view.registerEntryRemoved(REGISTRY_KEY, (rawId, id, object) -> {
-                ITEM_SOURCES.remove(object.item());
-            });
-        });
     }
 }

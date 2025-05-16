@@ -19,7 +19,13 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Reagent {
+    public static final double FLUID_MOLE_RATIO = 81000.0 / 1000.0;
+    private static final Map<Fluid, Reagent> FLUID_MAP = new HashMap<>();
+
     public final Properties properties;
     private Item item;
     private Fluid fluid;
@@ -39,6 +45,7 @@ public class Reagent {
         var copy = new Reagent(properties);
         copy.item = item;
         copy.fluid = fluid;
+        FLUID_MAP.put(fluid, copy);
         return copy;
     }
 
@@ -67,6 +74,10 @@ public class Reagent {
     @Nullable
     public Item asItem() {
         return item;
+    }
+
+    public static Reagent getReagent(Fluid fluid) {
+        return FLUID_MAP.get(fluid);
     }
 
     public static class Properties {

@@ -16,8 +16,10 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
@@ -112,6 +114,11 @@ public class ModdedBlocks {
 
     public static final BlockEntry<ElectricMotorBlock> ELECTRIC_MOTOR = REGISTRATE.block("electric_motor", ElectricMotorBlock::new)
             .transform(BlockStressDefaults.setCapacity(64))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<ChemicalVatBlock> CHEMICAL_VAT = REGISTRATE.block("chemical_vat", ChemicalVatBlock::new)
+            .onRegister(CreateRegistrate.connectedTextures(ChemicalVatCTBehaviour::new))
             .simpleItem()
             .register();
 

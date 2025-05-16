@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.chemistry.reagent;
 
 import com.google.gson.JsonObject;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
