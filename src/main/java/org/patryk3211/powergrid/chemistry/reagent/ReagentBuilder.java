@@ -18,12 +18,19 @@ package org.patryk3211.powergrid.chemistry.reagent;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
+import com.tterrag.registrate.fabric.RegistryObject;
+import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.entry.FluidEntry;
+import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.item.Item;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.PowerGridRegistrate;
 
 import java.util.function.Supplier;
 
@@ -47,12 +54,37 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
         return this;
     }
 
+    public ReagentBuilder<T, P> item(ItemEntry<?> item, int amount) {
+        onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(item.get(), amount));
+        return this;
+    }
+
+    public ReagentBuilder<T, P> item(Item item, int amount) {
+        onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(item, amount));
+        return this;
+    }
+
+    public ReagentBuilder<T, P> fluid(FluidEntry<?> fluid) {
+        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid.get()));
+        return this;
+    }
+
+    public ReagentBuilder<T, P> fluid(Fluid fluid) {
+        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid));
+        return this;
+    }
+
     @NotNull
     @Override
     protected Reagent createEntry() {
         var properties = propertiesSupplier.get();
         properties = propertiesModifier.apply(properties);
         return this.factory.apply(properties);
+    }
+
+    @Override
+    protected RegistryEntry<Reagent> createEntryWrapper(RegistryObject<Reagent> delegate) {
+        return new ReagentEntry<>(getOwner(), delegate);
     }
 
     @NotNull

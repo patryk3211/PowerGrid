@@ -16,24 +16,51 @@
 package org.patryk3211.powergrid.chemistry.reagent;
 
 import net.minecraft.fluid.Fluids;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
-import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedItems;
+
+import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class Reagents {
     public static final Reagent EMPTY = ReagentRegistry.DEFAULT;
 
-    public static final Reagent OXYGEN = register("oxygen", new Reagent(Reagent.Properties.OXYGEN));
-    public static final Reagent HYDROGEN = register("hydrogen", new Reagent(Reagent.Properties.HYDROGEN));
-    public static final Reagent WATER = register("water", new Reagent(Reagent.Properties.WATER).withFluid(Fluids.WATER));
-    public static final Reagent NITROGEN = register("nitrogen", new Reagent(Reagent.Properties.NITROGEN));
-
-    public static final Reagent SULFUR = register("sulfur", new Reagent(Reagent.Properties.SULFUR));
-    public static final Reagent SULFUR_DIOXIDE = register("sulfur_dioxide", new Reagent(Reagent.Properties.SULFUR_DIOXIDE));
-
-    private static Reagent register(String name, Reagent reagent) {
-        return Registry.register(ReagentRegistry.REGISTRY, new Identifier(PowerGrid.MOD_ID, name), reagent);
-    }
+    public static final ReagentEntry<Reagent> OXYGEN = REGISTRATE.reagent("oxygen", Reagent::new)
+            .properties(properties -> properties
+                    .meltingPoint(-218.8f)
+                    .boilingPoint(-182.9f)
+                    .heatCapacity(29.37f))
+            .register();
+    public static final ReagentEntry<Reagent> HYDROGEN = REGISTRATE.reagent("hydrogen", Reagent::new)
+            .properties(properties -> properties
+                    .meltingPoint(-259.2f)
+                    .boilingPoint(-252.8f)
+                    .heatCapacity(28.84f))
+            .register();
+    public static final ReagentEntry<Reagent> WATER = REGISTRATE.reagent("water", Reagent::new)
+            .properties(properties -> properties
+                    .meltingPoint(0.0f)
+                    .boilingPoint(100.0f)
+                    .heatCapacity(75.38f))
+            .fluid(Fluids.WATER)
+            .register();
+    public static final ReagentEntry<Reagent> NITROGEN = REGISTRATE.reagent("nitrogen", Reagent::new)
+            .properties(properties -> properties
+                    .meltingPoint(-209.8f)
+                    .boilingPoint(-195.7f)
+                    .heatCapacity(29.12f))
+            .register();
+    public static final ReagentEntry<Reagent> SULFUR = REGISTRATE.reagent("sulfur", Reagent::new)
+            .properties(properties -> properties
+                    .meltingPoint(115.2f)
+                    .boilingPoint(444.6f)
+                    .heatCapacity(22.75f))
+            .item(ModdedItems.SULFUR, 250)
+            .register();
+    public static final ReagentEntry<Reagent> SULFUR_DIOXIDE = REGISTRATE.reagent("sulfur_dioxide", Reagent::new)
+            .properties(properties -> properties
+                    .meltingPoint(-72.0f)
+                    .boilingPoint(10.0f)
+                    .heatCapacity(42.5f))
+            .register();
 
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }

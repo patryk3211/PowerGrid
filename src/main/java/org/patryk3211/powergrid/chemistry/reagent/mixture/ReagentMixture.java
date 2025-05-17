@@ -13,34 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.chemistry.reagent;
+package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
 import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.chemistry.reagent.Reagent;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-@SuppressWarnings("UnstableApiUsage")
 public class ReagentMixture {
-    private final Map<Reagent, Integer> reagents = new HashMap<>();
+    protected final Map<Reagent, Integer> reagents = new HashMap<>();
     private boolean burning;
-    private double energy;
+    protected double energy;
 
     private double heatMass;
     private int totalAmount;
+
+    private MixtureFluidView fluidView;
+    private MixtureItemView itemView;
 
     public ReagentMixture() {
         totalAmount = 0;
@@ -72,11 +74,15 @@ public class ReagentMixture {
     }
 
     private double getTemperaturePrecise() {
-        return (energy / heatMass) - 273.15;
+        return (energy / getHeatMass()) - 273.15;
     }
 
     public int getTotalAmount() {
         return totalAmount;
+    }
+
+    public double getHeatMass() {
+        return heatMass;
     }
 
     public int getVolume() {
@@ -86,12 +92,9 @@ public class ReagentMixture {
     /**
      * Add a stack of reagent to the mixture.
      * @param stack Stack to be added
+     * @param transaction Transaction context
      * @return Amount actually added
      */
-    public final int add(ReagentStack stack) {
-        return addInternal(stack.getReagent(), stack.getAmount(), stack.getTemperature(), true);
-    }
-
     public final int add(ReagentStack stack, TransactionContext transaction) {
         var maxTransfer = accepts(stack);
         TransactionCallback.onSuccess(transaction, () -> addInternal(stack.getReagent(), maxTransfer, stack.getTemperature(), true));
@@ -101,6 +104,7 @@ public class ReagentMixture {
     protected int addInternal(Reagent reagent, int amount, double temperature, boolean affectEnergy) {
         if(affectEnergy) {
             energy += stackEnergy(temperature, amount, reagent);
+            energyChanged();
         }
         heatMass += stackHeatMass(amount, reagent);
         totalAmount += amount;
@@ -144,15 +148,9 @@ public class ReagentMixture {
      * Remove an amount of a specific reagent from this mixture.
      * @param reagent Reagent type
      * @param amount Amount of reagent to remove in moles * 1000
+     * @param transaction Transaction context
      * @return Removed reagent stack
      */
-    public final ReagentStack remove(Reagent reagent, int amount) {
-        var temperature = getTemperature();
-        var removed = Math.min(getAmount(reagent), amount);
-        removeInternal(reagent, removed, true);
-        return new ReagentStack(reagent, removed, temperature);
-    }
-
     public final ReagentStack remove(Reagent reagent, int amount, TransactionContext transaction) {
         var temperature = getTemperature();
         var removed = Math.min(getAmount(reagent), amount);
@@ -160,10 +158,10 @@ public class ReagentMixture {
         return new ReagentStack(reagent, removed, temperature);
     }
 
-    protected void removeInternal(Reagent reagent, int amount, boolean affectEnergy) {
+    protected int removeInternal(Reagent reagent, int amount, boolean affectEnergy) {
         var invAmount = getAmount(reagent);
         if(invAmount == 0)
-            return;
+            return 0;
         if(amount >= invAmount) {
             amount = invAmount;
             reagents.remove(reagent);
@@ -173,9 +171,26 @@ public class ReagentMixture {
         if(affectEnergy) {
             var temperature = getTemperaturePrecise();
             energy -= stackEnergy(temperature, amount, reagent);
+            energyChanged();
         }
         heatMass -= stackHeatMass(amount, reagent);
         totalAmount -= amount;
+        return amount;
+    }
+
+    /**
+     * Add a mixture of reagents to this mixture.
+     * @param mixture Mixture to add
+     * @param transaction Transaction context
+     * @return Total added amount
+     */
+    public int add(ReagentMixture mixture, TransactionContext transaction) {
+        int total = 0;
+        for(var entry : mixture.reagents.entrySet()) {
+            var stack = new ReagentStack(entry.getKey(), entry.getValue(), mixture.getTemperature());
+            total += add(stack, transaction);
+        }
+        return total;
     }
 
     /**
@@ -183,26 +198,23 @@ public class ReagentMixture {
      * Specific reagent amounts are calculated so that the concentration in
      * the result mixture is preserved.
      * @param requestedAmount Amount to remove in moles * 1000
+     * @param reagents Set of reagents to extract
+     * @param transaction Transaction context
      * @return Removed reagent mixture
      */
-    public ReagentMixture remove(int requestedAmount) {
-        var extractedMixture = new ReagentMixture();
-        int extractedAmount = 0;
-        var temperature = getTemperaturePrecise();
-        for(var entry : reagents.entrySet()) {
-            float concentration = (float) entry.getValue() / totalAmount;
-            int reagentAmount = Math.round(requestedAmount * concentration);
-            var reagentHeatMass = stackHeatMass(reagentAmount, entry.getKey());
-            var reagentEnergy = stackEnergy(temperature, reagentAmount, entry.getKey());
-            energy -= reagentEnergy;
-            heatMass -= reagentHeatMass;
-            extractedAmount += requestedAmount;
-            extractedMixture.energy += reagentEnergy;
-            extractedMixture.heatMass += reagentHeatMass;
-            extractedMixture.totalAmount += requestedAmount;
-            extractedMixture.reagents.put(entry.getKey(), reagentAmount);
+    public ReagentMixture remove(int requestedAmount, Set<Reagent> reagents, TransactionContext transaction) {
+        int total = 0;
+        for(var reagent : reagents) {
+            total += getAmount(reagent);
         }
-        totalAmount -= extractedAmount;
+        var temperature = getTemperature();
+        var extractedMixture = new ReagentMixture();
+        for(var reagent : reagents) {
+            double concentration = (double) getAmount(reagent) / total;
+            int reagentAmount = (int) Math.round(requestedAmount * concentration);
+            extractedMixture.addInternal(reagent, reagentAmount, temperature, true);
+            TransactionCallback.onSuccess(transaction, () -> removeInternal(reagent, reagentAmount, true));
+        }
         return extractedMixture;
     }
 
@@ -216,18 +228,21 @@ public class ReagentMixture {
 
     public void addEnergy(float energy) {
         this.energy += energy;
+        energyChanged();
     }
 
     public void removeEnergy(float energy) {
         addEnergy(-energy);
     }
 
+    protected void energyChanged() { }
+
     public float getEnergy() {
         return (float) energy;
     }
 
     public float getEnergy(float minTemperature) {
-        var baseEnergy = (minTemperature + 273.15f) * heatMass;
+        var baseEnergy = (minTemperature + 273.15f) * getHeatMass();
         return (float) (energy - baseEnergy);
     }
 
@@ -289,6 +304,7 @@ public class ReagentMixture {
         if(burning) {
             tag.putBoolean("Burning", true);
         }
+        energyChanged();
     }
 
     public void read(NbtCompound tag) {
@@ -302,9 +318,13 @@ public class ReagentMixture {
             var id = obj.getString("Id");
             var amount = obj.getInt("Amount");
             var reagent = ReagentRegistry.REGISTRY.get(new Identifier(id));
-            reagents.put(reagent, amount);
-            totalAmount += amount;
-            heatMass += stackHeatMass(amount, reagent);
+            if(reagent != null) {
+                reagents.put(reagent, amount);
+                totalAmount += amount;
+                heatMass += stackHeatMass(amount, reagent);
+            } else {
+                PowerGrid.LOGGER.warn("Invalid reagent id in mixture nbt: '{}'", id);
+            }
         }
         if(tag.contains("Burning")) {
             burning = tag.getBoolean("Burning");
@@ -328,105 +348,15 @@ public class ReagentMixture {
         return str + "])";
     }
 
-    public FluidView getFluidView() {
-        return new FluidView(this);
+    public MixtureFluidView getFluidView() {
+        if(fluidView == null)
+            fluidView = new MixtureFluidView(this);
+        return fluidView;
     }
 
-    public static class FluidView implements Storage<FluidVariant> {
-        private final ReagentMixture mixture;
-
-        public FluidView(ReagentMixture mixture) {
-            this.mixture = mixture;
-        }
-
-        @Override
-        public long insert(FluidVariant fluid, long amount, TransactionContext transaction) {
-            var reagent = Reagent.getReagent(fluid.getFluid());
-            if(reagent == null)
-                return 0;
-            var stack = new ReagentStack(reagent, (int) (amount / Reagent.FLUID_MOLE_RATIO));
-            if(fluid.hasNbt()) {
-                var nbt = fluid.getNbt();
-                if(nbt.contains("Temperature"))
-                    stack.setTemperature(nbt.getFloat("Temperature"));
-            }
-            var added = mixture.add(stack, transaction);
-            return amount * added / stack.getAmount();
-        }
-
-        @Override
-        public long extract(FluidVariant fluid, long amount, TransactionContext transaction) {
-            if(!fluid.hasNbt())
-                return 0;
-            var tag = fluid.getNbt();
-            var temperature = tag.getFloat("Temperature");
-            if(Math.round(temperature) != Math.round(mixture.getTemperature()))
-                return 0;
-            var reagent = Reagent.getReagent(fluid.getFluid());
-            if(reagent == null)
-                return 0;
-            var stack = mixture.remove(reagent, (int) (amount / Reagent.FLUID_MOLE_RATIO), transaction);
-            return (long) (stack.getAmount() * Reagent.FLUID_MOLE_RATIO);
-        }
-
-        @NotNull
-        @Override
-        public Iterator<StorageView<FluidVariant>> iterator() {
-            return mixture.getReagents().stream()
-                    .filter(reagent -> mixture.getState(reagent) == ReagentState.LIQUID)
-                    .map(reagent -> (StorageView<FluidVariant>) new SingleFluidView(mixture, reagent))
-                    .iterator();
-        }
-    }
-
-    public static class SingleFluidView implements StorageView<FluidVariant> {
-        private final ReagentMixture mixture;
-        private final Reagent reagent;
-        private final FluidVariant resource;
-
-        public SingleFluidView(ReagentMixture mixture, Reagent reagent) {
-            this.mixture = mixture;
-            this.reagent = reagent;
-            var fluid = reagent.asFluid();
-            if(fluid != null) {
-                var tag = new NbtCompound();
-                tag.putFloat("Temperature", mixture.getTemperature());
-                this.resource = FluidVariant.of(fluid, tag);
-            } else {
-                this.resource = null;
-            }
-        }
-
-        @Override
-        public long extract(FluidVariant fluid, long amount, TransactionContext transaction) {
-            if(Reagent.getReagent(fluid.getFluid()) != reagent)
-                return 0;
-            if(!fluid.hasNbt())
-                return 0;
-            if(Math.round(mixture.getTemperature()) != Math.round(fluid.getNbt().getFloat("Temperature")))
-                return 0;
-            var removedStack = mixture.remove(reagent, (int) Math.ceil(amount / Reagent.FLUID_MOLE_RATIO), transaction);
-            return (long) (removedStack.getAmount() * Reagent.FLUID_MOLE_RATIO);
-        }
-
-        @Override
-        public boolean isResourceBlank() {
-            return resource == null;
-        }
-
-        @Override
-        public FluidVariant getResource() {
-            return resource;
-        }
-
-        @Override
-        public long getAmount() {
-            return mixture.getAmount(reagent);
-        }
-
-        @Override
-        public long getCapacity() {
-            return mixture.getVolume();
-        }
+    public MixtureItemView getItemView() {
+        if(itemView == null)
+            itemView = new MixtureItemView(this);
+        return itemView;
     }
 }

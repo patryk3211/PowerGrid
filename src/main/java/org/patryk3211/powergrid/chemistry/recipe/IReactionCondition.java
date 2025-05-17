@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.chemistry.recipe;
 
 import net.minecraft.network.PacketByteBuf;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentMixture;
+import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
 
 import java.util.function.Predicate;
 
