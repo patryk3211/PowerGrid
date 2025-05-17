@@ -84,11 +84,9 @@ public class PowerGrid implements ModInitializer {
 		ModdedEntities.register();
 		HeaterFanProcessingTypes.register();
 		ModdedConfigs.register();
+		Reagents.register();
 
 		REGISTRATE.register();
-
-		// TODO: Consider moving reagents into the REGISTRATE.
-		Reagents.register();
 
 		GlobalElectricNetworks.init();
 		ServerBoundPackets.init();

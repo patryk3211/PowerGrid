@@ -25,28 +25,28 @@ import java.util.Map;
 public class Reagent {
     public static final double FLUID_MOLE_RATIO = 81000.0 / 1000.0;
     private static final Map<Fluid, Reagent> FLUID_MAP = new HashMap<>();
+    private static final Map<Item, Reagent> ITEM_MAP = new HashMap<>();
 
     public final Properties properties;
     private Item item;
+    private int itemAmount;
     private Fluid fluid;
 
     public Reagent(Properties properties) {
         this.properties = properties;
     }
 
-    public Reagent withItem(Item item) {
-        var copy = new Reagent(properties);
-        copy.item = item;
-        copy.fluid = fluid;
-        return copy;
+    public Reagent withItem(Item item, int amount) {
+        this.item = item;
+        this.itemAmount = amount;
+        ITEM_MAP.put(item, this);
+        return this;
     }
 
     public Reagent withFluid(Fluid fluid) {
-        var copy = new Reagent(properties);
-        copy.item = item;
-        copy.fluid = fluid;
-        FLUID_MAP.put(fluid, copy);
-        return copy;
+        this.fluid = fluid;
+        FLUID_MAP.put(fluid, this);
+        return this;
     }
 
     public float getMeltingPoint() {
@@ -76,19 +76,20 @@ public class Reagent {
         return item;
     }
 
+    public int getItemAmount() {
+        return itemAmount;
+    }
+
     public static Reagent getReagent(Fluid fluid) {
         return FLUID_MAP.get(fluid);
     }
 
+    public static Reagent getReagent(Item item) {
+        return ITEM_MAP.get(item);
+    }
+
     public static class Properties {
         public static final Properties EMPTY = new Properties();
-        public static final Properties WATER = new Properties().meltingPoint(0).boilingPoint(100).heatCapacity(75.38f);
-        public static final Properties OXYGEN = new Properties().meltingPoint(-218.8f).boilingPoint(-182.9f).heatCapacity(29.37f);
-        public static final Properties HYDROGEN = new Properties().meltingPoint(-259.2f).boilingPoint(-252.8f).heatCapacity(28.84f);
-        public static final Properties NITROGEN = new Properties().meltingPoint(-209.8f).boilingPoint(-195.7f).heatCapacity(29.12f);
-
-        public static final Properties SULFUR = new Properties().meltingPoint(115.2f).boilingPoint(444.6f).heatCapacity(22.75f);
-        public static final Properties SULFUR_DIOXIDE = new Properties().meltingPoint(-72.0f).boilingPoint(10.0f).heatCapacity(42.5f);
 
         // Note: At the moment these are independent of pressure,
         // should this change, I need to remember that the boiling point

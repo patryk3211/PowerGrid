@@ -25,7 +25,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentIngredient;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentMixture;
+import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
 
 import java.util.ArrayList;

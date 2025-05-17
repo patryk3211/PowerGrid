@@ -19,7 +19,7 @@ import com.google.gson.JsonObject;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentMixture;
+import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 
 public class RecipeConcentrationCondition implements IReactionCondition {

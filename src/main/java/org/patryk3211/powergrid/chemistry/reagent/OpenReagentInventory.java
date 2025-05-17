@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
+import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
+
 public class OpenReagentInventory extends ReagentMixture {
     public static final int ATMOSPHERIC_MOLES = 10000;
     public static final int ATMOSPHERIC_OXYGEN = (int) (ATMOSPHERIC_MOLES * 0.21f);
@@ -38,9 +40,9 @@ public class OpenReagentInventory extends ReagentMixture {
     @Override
     public int getAmount(Reagent reagent) {
         if(getState(reagent) == ReagentState.GAS) {
-            if (reagent == Reagents.OXYGEN)
+            if (reagent == Reagents.OXYGEN.get())
                 return ATMOSPHERIC_OXYGEN;
-            if (reagent == Reagents.NITROGEN)
+            if (reagent == Reagents.NITROGEN.get())
                 return ATMOSPHERIC_NITROGEN;
         }
         return super.getAmount(reagent);
