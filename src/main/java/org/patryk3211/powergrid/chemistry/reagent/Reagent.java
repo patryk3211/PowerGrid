@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Reagent {
-    public static final double FLUID_MOLE_RATIO = 81000.0 / 1000.0;
+    public static final double FLUID_MOLE_RATIO = 81000.0 / 4000.0;
     private static final Map<Fluid, Reagent> FLUID_MAP = new HashMap<>();
     private static final Map<Item, Reagent> ITEM_MAP = new HashMap<>();
 
