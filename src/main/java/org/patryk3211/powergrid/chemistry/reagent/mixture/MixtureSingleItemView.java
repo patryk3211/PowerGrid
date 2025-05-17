@@ -32,9 +32,7 @@ public class MixtureSingleItemView implements StorageView<ItemVariant> {
         this.reagent = reagent;
         var item = reagent.asItem();
         if (item != null) {
-            var tag = new NbtCompound();
-            tag.putFloat("Temperature", mixture.getTemperature());
-            this.resource = ItemVariant.of(item, tag);
+            this.resource = ItemVariant.of(item, null);
         } else {
             this.resource = null;
         }
@@ -43,10 +41,6 @@ public class MixtureSingleItemView implements StorageView<ItemVariant> {
     @Override
     public long extract(ItemVariant item, long amount, TransactionContext transaction) {
         if(Reagent.getReagent(item.getItem()) != reagent)
-            return 0;
-        if(!item.hasNbt())
-            return 0;
-        if(Math.round(mixture.getTemperature()) != Math.round(item.getNbt().getFloat("Temperature")))
             return 0;
 
         int itemCount = 0;

@@ -32,9 +32,7 @@ public class MixtureSingleFluidView implements StorageView<FluidVariant> {
         this.reagent = reagent;
         var fluid = reagent.asFluid();
         if(fluid != null) {
-            var tag = new NbtCompound();
-            tag.putFloat("Temperature", mixture.getTemperature());
-            this.resource = FluidVariant.of(fluid, tag);
+            this.resource = FluidVariant.of(fluid, null);
         } else {
             this.resource = null;
         }
@@ -43,10 +41,6 @@ public class MixtureSingleFluidView implements StorageView<FluidVariant> {
     @Override
     public long extract(FluidVariant fluid, long amount, TransactionContext transaction) {
         if(Reagent.getReagent(fluid.getFluid()) != reagent)
-            return 0;
-        if(!fluid.hasNbt())
-            return 0;
-        if(Math.round(mixture.getTemperature()) != Math.round(fluid.getNbt().getFloat("Temperature")))
             return 0;
         var removedStack = mixture.remove(reagent, (int) Math.ceil(amount / Reagent.FLUID_MOLE_RATIO), transaction);
         return (long) (removedStack.getAmount() * Reagent.FLUID_MOLE_RATIO);
@@ -64,11 +58,11 @@ public class MixtureSingleFluidView implements StorageView<FluidVariant> {
 
     @Override
     public long getAmount() {
-        return mixture.getAmount(reagent);
+        return (long) (mixture.getAmount(reagent) * Reagent.FLUID_MOLE_RATIO);
     }
 
     @Override
     public long getCapacity() {
-        return mixture.getVolume();
+        return (long) (mixture.getVolume() * Reagent.FLUID_MOLE_RATIO);
     }
 }
