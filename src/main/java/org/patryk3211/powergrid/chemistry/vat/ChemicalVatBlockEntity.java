@@ -46,7 +46,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     public ChemicalVatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
 
-        reagentInventory = new VolumeReagentInventory(1000 * 8);
+        reagentInventory = new VolumeReagentInventory(1000 * 32);
     }
 
     @Override
