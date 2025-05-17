@@ -40,23 +40,12 @@ public class MixtureFluidView implements Storage<FluidVariant> {
         if(reagent == null)
             return 0;
         var stack = new ReagentStack(reagent, (int) (amount / Reagent.FLUID_MOLE_RATIO));
-        if(fluid.hasNbt()) {
-            var nbt = fluid.getNbt();
-            if (nbt.contains("Temperature"))
-                stack.setTemperature(nbt.getFloat("Temperature"));
-        }
         var added = mixture.add(stack, transaction);
         return amount * added / stack.getAmount();
     }
 
     @Override
     public long extract(FluidVariant fluid, long amount, TransactionContext transaction) {
-        if(!fluid.hasNbt())
-            return 0;
-        var tag = fluid.getNbt();
-        var temperature = tag.getFloat("Temperature");
-        if(Math.round(temperature) != Math.round(mixture.getTemperature()))
-            return 0;
         var reagent = Reagent.getReagent(fluid.getFluid());
         if(reagent == null)
             return 0;

@@ -39,11 +39,6 @@ public class MixtureItemView implements Storage<ItemVariant> {
         if(reagent == null)
             return 0;
         var stack = new ReagentStack(reagent, (int) (amount * reagent.getItemAmount()));
-        if(item.hasNbt()) {
-            var nbt = item.getNbt();
-            if(nbt.contains("Temperature"))
-                stack.setTemperature(nbt.getFloat("Temperature"));
-        }
         // Calculate accepted item count.
         int added;
         try(var inner = transaction.openNested()) {
@@ -59,12 +54,6 @@ public class MixtureItemView implements Storage<ItemVariant> {
 
     @Override
     public long extract(ItemVariant item, long amount, TransactionContext transaction) {
-        if(!item.hasNbt())
-            return 0;
-        var tag = item.getNbt();
-        var temperature = tag.getFloat("Temperature");
-        if(Math.round(temperature) != Math.round(mixture.getTemperature()))
-            return 0;
         var reagent = Reagent.getReagent(item.getItem());
         if(reagent == null)
             return 0;
