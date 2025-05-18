@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/gauge/brass/base",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/gauge/brass/base"
+    },
+    "facing=south": {
+      "model": "powergrid:block/gauge/brass/base",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/gauge/brass/base",
+      "y": 270
+    }
+  }
+}

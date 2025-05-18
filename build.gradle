@@ -128,6 +128,10 @@ runClient {
 	enableAssertions = true
 }
 
+runDatagen {
+	jvmArgs("-Dfabric-api.datagen.modid=powergrid", "-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
+}
+
 test {
 	useJUnitPlatform()
 }

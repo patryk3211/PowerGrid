@@ -49,12 +49,6 @@ public class ConnectorBlock extends ElectricBlock implements IBE<ConnectorBlockE
         super(settings);
     }
 
-    public static BlockEntry<ConnectorBlock> register(final PowerGridRegistrate registrate) {
-        return registrate.block("wire_connector", ConnectorBlock::new)
-                .simpleItem()
-                .register();
-    }
-
     @Override
     public Class<ConnectorBlockEntity> getBlockEntityClass() {
         return ConnectorBlockEntity.class;

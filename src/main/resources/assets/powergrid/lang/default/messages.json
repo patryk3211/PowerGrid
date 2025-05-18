@@ -1,0 +1,19 @@
+{
+  "powergrid.message.connection_failed": "Failed to create a new connection",
+  "powergrid.message.connection_exists": "These terminals are already connected",
+  "powergrid.message.connection_next": "Select second connection point",
+  "powergrid.message.connection_reset": "Connection reset",
+  "powergrid.message.connection_missing_items": "You don't have enough items to make this connection",
+  "powergrid.message.connection_too_long": "This terminal is too far away",
+  "powergrid.message.connection_no_path": "No valid path found to this terminal",
+
+  "powergrid.message.coil_same_terminal": "Cannot create coil connected to a single terminal",
+  "powergrid.message.coil_exists": "This terminal already has a coil connected to it",
+  "powergrid.message.coil_missing_items": "You don't have enough items to wind this coil",
+  "powergrid.message.coil_winding_primary": "Winding primary coil, turns: %1$s",
+  "powergrid.message.coil_winding_secondary": "Winding secondary coil, turns: %1$s - %2$s ratio",
+  "powergrid.message.coil_max_turns": "Cannot put any more turns on this transformer",
+
+  "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
+  "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s"
+}

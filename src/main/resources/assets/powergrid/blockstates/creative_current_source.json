@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "axis=x": { "model": "powergrid:block/creative_current_source", "y": 90 },
-    "axis=z": { "model": "powergrid:block/creative_current_source" }
-  }
-}

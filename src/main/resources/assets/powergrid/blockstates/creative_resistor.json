@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "axis=x": { "model": "powergrid:block/creative_resistor", "y": 90 },
-    "axis=z": { "model": "powergrid:block/creative_resistor" }
-  }
-}

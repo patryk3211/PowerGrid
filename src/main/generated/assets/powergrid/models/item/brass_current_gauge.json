@@ -1,0 +1,6 @@
+{
+  "parent": "powergrid:block/gauge/item_current",
+  "textures": {
+    "2": "powergrid:block/brass_gauge"
+  }
+}
