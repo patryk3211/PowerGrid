@@ -111,12 +111,6 @@ public class WireItem extends Item implements IWire {
         return super.use(world, user, hand);
     }
 
-    public static ItemEntry<WireItem> register(PowerGridRegistrate registrate) {
-        return registrate.item("wire", WireItem::new)
-                .transform(WireProperties.setAll(0.005f, 16))
-                .register();
-    }
-
     @Override
     public float getResistance() {
         return resistance;

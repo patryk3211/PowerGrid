@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:iron_plates"
+    },
+    "W": {
+      "tag": "powergrid:coil_wire"
+    }
+  },
+  "pattern": [
+    "WWW",
+    "WIW",
+    "WIW"
+  ],
+  "result": {
+    "item": "powergrid:coil"
+  },
+  "show_notification": true
+}

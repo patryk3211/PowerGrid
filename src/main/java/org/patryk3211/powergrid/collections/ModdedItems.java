@@ -15,15 +15,24 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
+import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
+import org.patryk3211.powergrid.electricity.wire.WireProperties;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedItems {
-    public static final ItemEntry<WireItem> WIRE = WireItem.register(REGISTRATE);
+    public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
+            .transform(WireProperties.setAll(0.005f, 16))
+            .tag(ModdedTags.Item.COIL_WIRE.tag)
+            .register();
+    public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
+            .transform(WireProperties.setAll(0.01f, 32))
+            .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
             .register();
@@ -38,6 +47,15 @@ public class ModdedItems {
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/light_bulb")))
             .register();
 
+    public static final ItemEntry<Item> RESISTIVE_COIL = REGISTRATE.item("resistive_coil", Item::new)
+            .register();
+
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
+
+    private static ItemEntry<SequencedAssemblyItem> sequencedIngredient(String name) {
+        return REGISTRATE.item(name, SequencedAssemblyItem::new).register();
+    }
 }

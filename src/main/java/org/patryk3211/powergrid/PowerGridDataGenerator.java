@@ -20,6 +20,9 @@ import com.tterrag.registrate.providers.ProviderType;
 import io.github.fabricators_of_create.porting_lib.data.ExistingFileHelper;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import org.patryk3211.powergrid.recipes.CraftingRecipes;
+import org.patryk3211.powergrid.recipes.CuttingRecipes;
+import org.patryk3211.powergrid.recipes.SequencedAssemblyRecipes;
 
 import java.util.function.BiConsumer;
 
@@ -29,6 +32,10 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		var pack = generator.createPack();
 		var helper = ExistingFileHelper.withResourcesFromArg();
 		PowerGrid.REGISTRATE.setupDatagen(pack, helper);
+
+		pack.addProvider(SequencedAssemblyRecipes::new);
+		pack.addProvider(CuttingRecipes::new);
+		pack.addProvider(CraftingRecipes::new);
 
 		PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;
