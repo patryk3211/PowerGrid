@@ -32,14 +32,14 @@ public class ReagentStack {
     private int amount;
     private float temperature;
 
-    public ReagentStack(Reagent reagent, int amount) {
-        this.reagent = reagent;
+    public ReagentStack(ReagentConvertible reagent, int amount) {
+        this.reagent = reagent.asReagent();
         this.amount = amount;
         this.temperature = 22.0f;
     }
 
-    public ReagentStack(Reagent reagent, int amount, float temperature) {
-        this.reagent = reagent;
+    public ReagentStack(ReagentConvertible reagent, int amount, float temperature) {
+        this.reagent = reagent.asReagent();
         this.amount = amount;
         this.temperature = temperature;
     }
