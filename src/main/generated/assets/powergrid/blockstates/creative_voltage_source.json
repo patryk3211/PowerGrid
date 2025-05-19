@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "powergrid:block/creative_voltage_source",
+      "y": 90
+    },
+    "axis=z": {
+      "model": "powergrid:block/creative_voltage_source"
+    }
+  }
+}

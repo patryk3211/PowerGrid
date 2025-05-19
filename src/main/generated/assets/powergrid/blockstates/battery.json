@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powergrid:block/battery"
+    }
+  }
+}

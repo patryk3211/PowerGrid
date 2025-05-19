@@ -96,13 +96,6 @@ public class BasicGeneratorBlock extends HorizontalKineticBlock implements IBE<B
         super(settings);
     }
 
-    public static BlockEntry<BasicGeneratorBlock> register(final PowerGridRegistrate registrate) {
-        return registrate.block("basic_generator", BasicGeneratorBlock::new)
-                .transform(BlockStressDefaults.setImpact(4.0))
-                .simpleItem()
-                .register();
-    }
-
     @Override
     public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
         var result = super.onWrenched(state, context);

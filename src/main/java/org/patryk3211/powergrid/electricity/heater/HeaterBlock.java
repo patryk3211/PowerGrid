@@ -86,12 +86,6 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
         super(settings);
     }
 
-    public static BlockEntry<HeaterBlock> register(PowerGridRegistrate registrate) {
-        return registrate.block("heating_coil", HeaterBlock::new)
-                .simpleItem()
-                .register();
-    }
-
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);

@@ -1,0 +1,27 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "C": {
+      "item": "create:andesite_casing"
+    },
+    "M": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "create:shaft"
+    }
+  },
+  "pattern": [
+    " C ",
+    "AMA",
+    "MSM",
+    " M "
+  ],
+  "result": {
+    "item": "powergrid:rotor"
+  }
+}

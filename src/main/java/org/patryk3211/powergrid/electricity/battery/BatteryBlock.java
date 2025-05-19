@@ -44,12 +44,6 @@ public class BatteryBlock extends ElectricBlock implements IBE<BatteryBlockEntit
         super(settings);
     }
 
-    public static BlockEntry<BatteryBlock> register(PowerGridRegistrate registrate) {
-        return registrate.block("battery", BatteryBlock::new)
-                .simpleItem()
-                .register();
-    }
-
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         return SHAPE_NORTH;

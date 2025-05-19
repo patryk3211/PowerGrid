@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:iron_plates"
+    }
+  },
+  "pattern": [
+    "II",
+    " I"
+  ],
+  "result": {
+    "item": "powergrid:generator_housing"
+  },
+  "show_notification": true
+}
