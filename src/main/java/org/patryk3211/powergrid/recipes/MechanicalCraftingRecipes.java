@@ -33,7 +33,7 @@ import java.util.function.UnaryOperator;
 public class MechanicalCraftingRecipes extends CreateRecipeProvider {
     GeneratedRecipe
 
-        ELECTRIC_MOTOR = create(ModdedBlocks.ELECTRIC_MOTOR::get)
+    ELECTRIC_MOTOR = create(ModdedBlocks.ELECTRIC_MOTOR::get)
             .recipe(b -> b
                     .key('C', ModdedItems.COPPER_COIL)
                     .key('M', Items.IRON_INGOT) // TODO: This should be a magnet.
@@ -42,6 +42,18 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .patternLine(" ICI ")
                     .patternLine("CMSMC")
                     .patternLine(" ICI ")
+            ),
+
+    GENERATOR_ROTOR = create(ModdedBlocks.ROTOR::get)
+            .recipe(b -> b
+                    .key('A', AllItems.ANDESITE_ALLOY)
+                    .key('M', Items.IRON_INGOT) // TODO: This should be a magnet.
+                    .key('S', AllBlocks.SHAFT)
+                    .key('C', AllBlocks.ANDESITE_CASING)
+                    .patternLine(" C ")
+                    .patternLine("AMA")
+                    .patternLine("MSM")
+                    .patternLine(" M ")
             )
 
             ;
