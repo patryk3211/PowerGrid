@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -359,8 +360,19 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<ChemicalVatBlock> CHEMICAL_VAT = REGISTRATE.block("chemical_vat", ChemicalVatBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
+                            ConfiguredModel.builder().modelFile(state.get(ChemicalVatBlock.OPEN) ?
+                                    modModel(prov, "block/vat/base") : modModel(prov, "block/vat/closed"))
+                                    .build()
+                    ))
+            .initialProperties(AllBlocks.BASIN)
             .onRegister(CreateRegistrate.connectedTextures(ChemicalVatCTBehaviour::new))
-            .simpleItem()
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/vat/base")))
+                .build()
             .register();
 
     @SuppressWarnings("EmptyMethod")

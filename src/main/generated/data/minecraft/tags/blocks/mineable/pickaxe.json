@@ -17,6 +17,7 @@
     "powergrid:transformer_core",
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
-    "powergrid:electric_motor"
+    "powergrid:electric_motor",
+    "powergrid:chemical_vat"
   ]
 }
