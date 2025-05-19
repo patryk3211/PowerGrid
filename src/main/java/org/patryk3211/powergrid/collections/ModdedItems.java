@@ -31,7 +31,7 @@ public class ModdedItems {
             .tag(ModdedTags.Item.COIL_WIRE.tag)
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
-            .transform(WireProperties.setAll(0.01f, 32))
+            .transform(WireProperties.setAll(0.015f, 32))
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
@@ -43,12 +43,12 @@ public class ModdedItems {
                 case ON -> ModdedPartialModels.LIGHT_BULB_ON;
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
             }))
-            .transform(LightBulb.setProperties(30, 60, 30)) //LightBulb.setProperties(15, 100, 0.004f, 1200, 0.1f))
+            .transform(LightBulb.setProperties(30, 60, 30))
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/light_bulb")))
             .register();
 
-    public static final ItemEntry<Item> RESISTIVE_COIL = REGISTRATE.item("resistive_coil", Item::new)
-            .register();
+    public static final ItemEntry<Item> RESISTIVE_COIL = ingredient("resistive_coil");
+    public static final ItemEntry<Item> COPPER_COIL = ingredient("copper_coil");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
 
@@ -57,5 +57,9 @@ public class ModdedItems {
 
     private static ItemEntry<SequencedAssemblyItem> sequencedIngredient(String name) {
         return REGISTRATE.item(name, SequencedAssemblyItem::new).register();
+    }
+
+    private static ItemEntry<Item> ingredient(String name) {
+        return REGISTRATE.item(name, Item::new).register();
     }
 }

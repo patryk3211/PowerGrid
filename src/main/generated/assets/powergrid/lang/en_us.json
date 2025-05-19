@@ -25,6 +25,7 @@
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
   "entity.powergrid.block_wire": "Block Wire",
   "entity.powergrid.hanging_wire": "Hanging Wire",
+  "item.powergrid.copper_coil": "Copper Coil",
   "item.powergrid.incomplete_transformer_core": "Incomplete Transformer Core",
   "item.powergrid.iron_wire": "Iron Wire",
   "item.powergrid.light_bulb": "Light Bulb",

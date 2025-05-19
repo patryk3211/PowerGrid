@@ -33,22 +33,18 @@ import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.function.UnaryOperator;
-
-import static com.simibubi.create.AllTags.forgeItemTag;
 
 public class CraftingRecipes extends CreateRecipeProvider {
     GeneratedRecipe
 
-        GENERATOR_COIL = create(ModdedBlocks.COIL)
+    GENERATOR_COIL = create(ModdedBlocks.COIL)
             .unlockedBy(ModdedItems.WIRE::get)
             .shaped(b -> b
-                    .pattern("WWW")
-                    .pattern("WIW")
-                    .pattern("WIW")
-                    .input('W', ModdedTags.Item.COIL_WIRE.tag)
+                    .pattern("CIC")
+                    .pattern("CIC")
+                    .input('C', ModdedItems.COPPER_COIL)
                     .input('I', RecipeTags.ironSheet())
             ),
 
@@ -76,6 +72,13 @@ public class CraftingRecipes extends CreateRecipeProvider {
             .unlockedBy(ModdedItems.IRON_WIRE::get)
             .shapeless(b -> b
                     .input(ModdedItems.IRON_WIRE, 4)
+                    .input(Items.STICK, 1)
+            ),
+
+    COPPER_COIL = create(ModdedItems.COPPER_COIL)
+            .unlockedBy(ModdedItems.WIRE::get)
+            .shapeless(b -> b
+                    .input(ModdedItems.WIRE, 4)
                     .input(Items.STICK, 1)
             ),
 
@@ -161,6 +164,11 @@ public class CraftingRecipes extends CreateRecipeProvider {
 
     protected RecipeBuilder create(ItemConvertible result) {
         return new RecipeBuilder(() -> result);
+    }
+
+    @Override
+    public String getName() {
+        return "Power Grid's Crafting Recipes";
     }
 
     /**

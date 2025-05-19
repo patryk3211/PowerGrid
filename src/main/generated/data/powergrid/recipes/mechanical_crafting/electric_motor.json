@@ -1,0 +1,26 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "C": {
+      "item": "powergrid:copper_coil"
+    },
+    "I": {
+      "tag": "c:iron_plates"
+    },
+    "M": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "create:shaft"
+    }
+  },
+  "pattern": [
+    " ICI ",
+    "CMSMC",
+    " ICI "
+  ],
+  "result": {
+    "item": "powergrid:electric_motor"
+  }
+}

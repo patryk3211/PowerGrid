@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import org.patryk3211.powergrid.recipes.CraftingRecipes;
 import org.patryk3211.powergrid.recipes.CuttingRecipes;
+import org.patryk3211.powergrid.recipes.MechanicalCraftingRecipes;
 import org.patryk3211.powergrid.recipes.SequencedAssemblyRecipes;
 
 import java.util.function.BiConsumer;
@@ -36,6 +37,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(SequencedAssemblyRecipes::new);
 		pack.addProvider(CuttingRecipes::new);
 		pack.addProvider(CraftingRecipes::new);
+		pack.addProvider(MechanicalCraftingRecipes::new);
 
 		PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;
