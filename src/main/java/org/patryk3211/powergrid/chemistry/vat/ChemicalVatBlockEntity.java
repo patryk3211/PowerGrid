@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.vat;
 
+import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -25,21 +26,27 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
+import org.patryk3211.powergrid.chemistry.reagent.mixture.ConstantReagentMixture;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
+import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity {
-    public static final int DIFFUSION_RATE = 100;
+public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
+    public static final int DIFFUSION_RATE = 1000;
+    private static final float ATMOSPHERIC_PRESSURE = 1.02f;
 
     private final VolumeReagentInventory reagentInventory;
 
@@ -52,34 +59,70 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     @Override
     public void tick() {
         super.tick();
+//        if(world.isClient)
+//            return;
 
         moveReagents();
 
-        var recipes = ReactionGetter.getValidRecipes(world.getRecipeManager(), reagentInventory);
-        if(recipes.isEmpty()) {
-            reagentInventory.setBurning(false);
-            return;
-        }
-
         boolean stillBurning = false;
-        var random = world.getRandom();
-        for(int i = recipes.size(); i > 0; --i) {
-            // Pick random recipe and apply it.
-            int reactionIndex = i == 1 ? 0 : random.nextInt(i);
-            var reaction = recipes.get(reactionIndex);
-            // Test if the reaction is still valid.
-            if(reaction.test(reagentInventory)) {
-                reagentInventory.applyReaction(reaction);
-                if(reaction.hasFlag(ReactionFlag.COMBUSTION)) {
-                    stillBurning = true;
+        var recipes = ReactionGetter.getValidRecipes(world.getRecipeManager(), reagentInventory);
+        if(!recipes.isEmpty()) {
+            var random = world.getRandom();
+            for(int i = recipes.size(); i > 0; --i) {
+                // Pick random recipe and apply it.
+                int reactionIndex = i == 1 ? 0 : random.nextInt(i);
+                var reaction = recipes.get(reactionIndex);
+                // Test if the reaction is still valid.
+                if(reaction.test(reagentInventory)) {
+                    reagentInventory.applyReaction(reaction);
+                    if(reaction.hasFlag(ReactionFlag.COMBUSTION)) {
+                        stillBurning = true;
+                    }
                 }
             }
+        }
+
+        if(getCachedState().get(ChemicalVatBlock.OPEN)) {
+            reagentInventory.setOpen(true);
+
+            // Allow gasses in and out
+            var availableVolume = Math.max(reagentInventory.getFreeVolume(), 1000);
+            var vatPressure = (float) reagentInventory.getGasAmount() / availableVolume;
+
+            var difference = ATMOSPHERIC_PRESSURE - vatPressure;
+            var moveAmount = (int) (difference * availableVolume);
+            int diffuseAmount = DIFFUSION_RATE - Math.abs(moveAmount);
+
+            // TODO: I'm not sure if I implemented transactions correctly (probably not) so this is split in two.
+            try(var transaction = Transaction.openOuter()) {
+                if (diffuseAmount > 0) {
+                    var removed = reagentInventory.remove(diffuseAmount, ReagentState.GAS, transaction);
+                    reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(removed.getTotalAmount()), transaction);
+                }
+                transaction.commit();
+            }
+
+            try(var transaction = Transaction.openOuter()) {
+                if(moveAmount < 0) {
+                    if(moveAmount < -100000)
+                        moveAmount = -100000;
+                    reagentInventory.remove(-moveAmount, ReagentState.GAS, transaction);
+                } else {
+                    if(moveAmount > 100000)
+                        moveAmount = 100000;
+                    reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(moveAmount), transaction);
+                }
+                transaction.commit();
+            }
+        } else {
+            reagentInventory.setOpen(false);
         }
 
         if(!stillBurning) {
             reagentInventory.setBurning(false);
         }
-        markDirty();
+        // TODO: That cannot be good for network traffic.
+        sendData();
     }
 
     public void moveReagents() {
@@ -128,8 +171,8 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 continue;
             } else {
                 // Gasses can go anywhere.
-                var gasPressure1 = reagentInventory.getGasAmount() / reagentInventory.getFreeVolume();
-                var gasPressure2 = vat.reagentInventory.getGasAmount() / vat.reagentInventory.getFreeVolume();
+                var gasPressure1 = (float) reagentInventory.getGasAmount() / reagentInventory.getFreeVolume();
+                var gasPressure2 = (float) vat.reagentInventory.getGasAmount() / vat.reagentInventory.getFreeVolume();
                 var targetPressure = (gasPressure1 + gasPressure2) * 0.5f;
 
                 float moveFraction = gasPressure1 - targetPressure;
@@ -141,8 +184,6 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 }
             }
         }
-
-        markDirty();
     }
 
     private void diffuse(Set<Reagent> thisReagents, ReagentState state, ChemicalVatBlockEntity target, int amount) {
@@ -212,6 +253,23 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     public void light() {
         reagentInventory.setBurning(true);
         markDirty();
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+        Lang.translate("gui.chemical_vat.info_header").forGoggles(tooltip);
+        Lang.builder().translate("gui.chemical_vat.temperature")
+                .style(Formatting.GRAY)
+                .forGoggles(tooltip);
+
+        var temperatureText = String.format("%.2f", reagentInventory.getTemperature());
+        Lang.builder()
+                .text(temperatureText)
+                .add(Text.of(" "))
+                .add(Unit.TEMPERATURE.get())
+                .style(Formatting.YELLOW)
+                .forGoggles(tooltip, 1);
+        return true;
     }
 
     @Override

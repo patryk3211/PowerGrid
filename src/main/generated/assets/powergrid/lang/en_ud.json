@@ -47,6 +47,8 @@
   "powergrid.generic.unit.temperature": "Ɔ°",
   "powergrid.generic.unit.volt": "Λ",
   "powergrid.generic.unit.watt": "M",
+  "powergrid.gui.chemical_vat.info_header": "uoıʇɐɯɹoɟuı ʇɐΛ",
+  "powergrid.gui.chemical_vat.temperature": "ǝɹnʇɐɹǝdɯǝʇ ʇuǝbɐǝᴚ",
   "powergrid.gui.creative_resistor.current": "ʇuǝɹɹnƆ",
   "powergrid.gui.creative_resistor.info_header": "uoıʇɐɯɹoɟuı ɹoʇsısǝɹ ǝʌıʇɐǝɹƆ",
   "powergrid.gui.creative_resistor.power": "ɹǝʍod pǝʇɐdıssıᗡ",

@@ -24,9 +24,15 @@ public class VolumeReagentInventory extends ReagentMixture {
     private int usedVolume;
     private int solidVolume;
     private int gasAmount;
+    private boolean isOpen;
 
     public VolumeReagentInventory(int volume) {
         this.volume = volume;
+        isOpen = false;
+    }
+
+    public void setOpen(boolean open) {
+        this.isOpen = open;
     }
 
     public final int getFreeVolume() {
@@ -75,7 +81,7 @@ public class VolumeReagentInventory extends ReagentMixture {
     protected int accepts(Reagent reagent, int amount) {
         if(getState(reagent) == ReagentState.GAS) {
             // If there is space above the liquid level we accept any amount of gas.
-            if(usedVolume < volume)
+            if(usedVolume < volume || isOpen)
                 return amount;
             return 0;
         }

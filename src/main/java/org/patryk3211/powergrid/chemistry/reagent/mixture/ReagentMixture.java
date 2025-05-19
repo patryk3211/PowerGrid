@@ -22,14 +22,12 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.chemistry.reagent.Reagent;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
+import org.patryk3211.powergrid.chemistry.reagent.*;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -102,6 +100,8 @@ public class ReagentMixture {
     }
 
     protected int addInternal(Reagent reagent, int amount, double temperature, boolean affectEnergy) {
+        if(amount == 0 || reagent == Reagents.EMPTY)
+            return 0;
         if(affectEnergy) {
             energy += stackEnergy(temperature, amount, reagent);
             energyChanged();
@@ -207,6 +207,8 @@ public class ReagentMixture {
         for(var reagent : reagents) {
             total += getAmount(reagent);
         }
+        if(total < requestedAmount)
+            requestedAmount = total;
         var temperature = getTemperature();
         var extractedMixture = new ReagentMixture();
         for(var reagent : reagents) {
@@ -216,6 +218,16 @@ public class ReagentMixture {
             TransactionCallback.onSuccess(transaction, () -> removeInternal(reagent, reagentAmount, true));
         }
         return extractedMixture;
+    }
+
+    public ReagentMixture remove(int requestedAmount, ReagentState state, TransactionContext transaction) {
+        var reagents = new HashSet<Reagent>();
+        for(var reagent : this.reagents.keySet()) {
+            if(getState(reagent) != state)
+                continue;
+            reagents.add(reagent);
+        }
+        return remove(requestedAmount, reagents, transaction);
     }
 
     /**
@@ -286,6 +298,22 @@ public class ReagentMixture {
             // If recipe is a combustion recipe we can set the burning flag so that other things burn too.
             setBurning(true);
         }
+    }
+
+    public ReagentMixture scaledBy(float scale) {
+        var result = new ReagentMixture();
+        for(var entry : reagents.entrySet()) {
+            var amount = (int) (entry.getValue() * scale);
+            result.reagents.put(entry.getKey(), amount);
+            result.totalAmount += amount;
+            result.heatMass += stackHeatMass(amount, entry.getKey());
+        }
+        result.energy = (getTemperaturePrecise() + 273.15) * result.heatMass;
+        return result;
+    }
+
+    public ReagentMixture scaledTo(int size) {
+        return scaledBy((float) size / totalAmount);
     }
 
     public void write(NbtCompound tag) {
