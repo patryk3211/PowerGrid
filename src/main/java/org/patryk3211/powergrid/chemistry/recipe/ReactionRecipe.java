@@ -27,10 +27,15 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentIngredient;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
+import org.patryk3211.powergrid.chemistry.recipe.condition.IReactionCondition;
+import org.patryk3211.powergrid.chemistry.recipe.condition.RecipeTemperatureCondition;
+import org.patryk3211.powergrid.chemistry.recipe.equation.ConstEquation;
+import org.patryk3211.powergrid.chemistry.recipe.equation.ReactionEquation;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixture> {
@@ -41,13 +46,13 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         }
     };
 
-    private final Identifier id;
+    private Identifier id;
     private final List<ReagentIngredient> ingredients;
     private final List<IReactionCondition> conditions;
     private final List<ReagentStack> results;
     private final BitSet flags;
-    private final int energy;
-    private final int rate;
+    private final float energy;
+    private final ReactionEquation rate;
 
     public ReactionRecipe(Identifier id, RecipeConstructorParameters params) {
         this.id = id;
@@ -66,8 +71,12 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
             }
         }
         if(!hasTemperature) {
-            conditions.add(new RecipeTemperatureCondition());
+            conditions.add(new RecipeTemperatureCondition(Optional.of(0.0f), Optional.empty()));
         }
+    }
+
+    public void setId(Identifier id) {
+        this.id = id;
     }
 
     @Override
@@ -105,11 +114,11 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         return TYPE;
     }
 
-    public int getReactionEnergy() {
+    public float getReactionEnergy() {
         return energy;
     }
 
-    public int getReactionRate() {
+    public ReactionEquation getReactionRate() {
         return rate;
     }
 
@@ -127,6 +136,15 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
 
     public BitSet getFlagBits() {
         return flags;
+    }
+
+    public List<ReactionFlag> getFlagList() {
+        var list = new ArrayList<ReactionFlag>();
+        for(var flag : ReactionFlag.values()) {
+            if(hasFlag(flag))
+                list.add(flag);
+        }
+        return list;
     }
 
     public boolean hasFlag(ReactionFlag flag) {
@@ -151,12 +169,12 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
     }
 
     public static class RecipeConstructorParameters {
-        public final List<ReagentIngredient> ingredients = new ArrayList<>();
-        public final List<IReactionCondition> conditions = new ArrayList<>();
-        public final List<ReagentStack> results = new ArrayList<>();
+        public List<ReagentIngredient> ingredients = new ArrayList<>();
+        public List<IReactionCondition> conditions = new ArrayList<>();
+        public List<ReagentStack> results = new ArrayList<>();
         public BitSet flags = new BitSet();
-        public int energy = 0;
-        public int rate = 0;
+        public float energy = 0;
+        public ReactionEquation rate = new ConstEquation(1);
 
         public RecipeConstructorParameters() { }
     }

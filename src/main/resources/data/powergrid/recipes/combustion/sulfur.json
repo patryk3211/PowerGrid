@@ -14,5 +14,7 @@
   ],
   "flags": [ "combustion" ],
   "energy": 297,
-  "rate": 3
+  "rate": {
+    "multiply": [ 15, "concentration#powergrid:oxygen" ]
+  }
 }

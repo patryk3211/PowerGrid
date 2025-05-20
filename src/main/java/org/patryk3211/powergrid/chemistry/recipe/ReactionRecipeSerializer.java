@@ -16,131 +16,68 @@
 package org.patryk3211.powergrid.chemistry.recipe;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentIngredient;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
+import org.patryk3211.powergrid.chemistry.recipe.condition.IReactionCondition;
+import org.patryk3211.powergrid.chemistry.recipe.equation.ReactionEquation;
+
+import java.util.Optional;
 
 public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe> {
     public static final Identifier ID = new Identifier(PowerGrid.MOD_ID, "reaction");
     public static final ReactionRecipeSerializer INSTANCE = new ReactionRecipeSerializer();
 
+    public static final Codec<ReagentStack> RESULT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ReagentRegistry.REGISTRY.getCodec().fieldOf("reagent").forGetter(ReagentStack::getReagent),
+            Codec.optionalField("amount", Codec.INT).forGetter(r -> r.getAmount() == 1 ? Optional.empty() : Optional.of(r.getAmount()))
+    ).apply(instance, (reagent, amount) -> new ReagentStack(reagent, amount.orElse(1))));
+
+    public static final Codec<ReactionRecipe> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.list(ReagentIngredient.CODEC).fieldOf("ingredients").forGetter(ReactionRecipe::getReagentIngredients),
+            Codec.list(RESULT_CODEC).fieldOf("results").forGetter(ReactionRecipe::getReagentResults),
+            Codec.list(IReactionCondition.CODEC).fieldOf("conditions").forGetter(ReactionRecipe::getReactionConditions),
+            Codec.optionalField("flags", Codec.list(ReactionFlag.CODEC)).forGetter(recipe -> {
+                var flags = recipe.getFlagList();
+                return flags.isEmpty() ? Optional.empty() : Optional.of(flags);
+            }),
+            Codec.FLOAT.fieldOf("energy").forGetter(ReactionRecipe::getReactionEnergy),
+            ReactionEquation.CODEC.fieldOf("rate").forGetter(ReactionRecipe::getReactionRate)
+//            Codec.FLOAT.fieldOf("rate").forGetter(ReactionRecipe::getReactionRate)
+    ).apply(instance, (ingredients, results, conditions, flags, energy, rate) -> {
+        var params = new ReactionRecipe.RecipeConstructorParameters();
+        params.ingredients = ingredients;
+        params.results = results;
+        params.conditions = conditions;
+        flags.ifPresent(flagList -> flagList.forEach(flag -> params.flags.set(flag.getBit())));
+        params.energy = energy;
+        params.rate = rate;
+        return new ReactionRecipe(null, params);
+    }));
+
     @Override
     public ReactionRecipe read(Identifier id, JsonObject json) {
-        var recipeParameters = new ReactionRecipe.RecipeConstructorParameters();
-
-        // Parse ingredients
-        var ingredients = json.getAsJsonArray("ingredients");
-        for(var element : ingredients) {
-            var ingredient = element.getAsJsonObject();
-            if(ingredient.has("reagent")) {
-                recipeParameters.ingredients.add(ReagentIngredient.read(ingredient));
-            } else {
-                PowerGrid.LOGGER.warn("Recipe '{}' contains an invalid ingredient entry", id);
-            }
-        }
-
-        // Parse conditions
-        var conditions = json.getAsJsonArray("conditions");
-        for(var element : conditions) {
-            var condition = element.getAsJsonObject();
-            var conditionObj = switch(condition.get("type").getAsString()) {
-                case "temperature" -> new RecipeTemperatureCondition(condition);
-                case "concentration" -> new RecipeConcentrationCondition(condition);
-                default -> null;
-            };
-            if(conditionObj == null) {
-                PowerGrid.LOGGER.warn("Recipe '{}' contains an invalid condition entry", id);
-                continue;
-            }
-            recipeParameters.conditions.add(conditionObj);
-        }
-
-        // Parse results
-        var results = json.getAsJsonArray("results");
-        for(var element : results) {
-            var result = element.getAsJsonObject();
-            if(result.has("reagent")) {
-                recipeParameters.results.add(ReagentStack.read(result));
-            } else {
-                PowerGrid.LOGGER.warn("Recipe '{}' contains an invalid result entry", id);
-            }
-        }
-
-        // Parse flags
-        if(json.has("flags")) {
-            var flags = json.getAsJsonArray("flags");
-            for(var element : flags) {
-                var flagName = element.getAsString();
-                var flag = ReactionFlag.fromString(flagName);
-                recipeParameters.flags.set(flag.getBit(), true);
-            }
-        }
-
-        // Reaction energy
-        if(json.has("energy")) {
-            recipeParameters.energy = json.get("energy").getAsInt();
-        }
-
-        // Maximum reaction rate
-        if(json.has("rate")) {
-            recipeParameters.rate = json.get("rate").getAsInt();
-        }
-
-        return new ReactionRecipe(id, recipeParameters);
+        var recipe = CODEC.decode(JsonOps.INSTANCE, json).getOrThrow(false, PowerGrid.LOGGER::error).getFirst();
+        recipe.setId(id);
+        return recipe;
     }
 
     @Override
     public ReactionRecipe read(Identifier id, PacketByteBuf buf) {
-        var params = new ReactionRecipe.RecipeConstructorParameters();
-        params.energy = buf.readInt();
-        params.rate = buf.readInt();
-
-        int count = buf.readInt();
-        for(int i = 0; i < count; ++i) {
-            params.ingredients.add(ReagentIngredient.read(buf));
-        }
-
-        count = buf.readInt();
-        for(int i = 0; i < count; ++i) {
-            params.conditions.add(IReactionCondition.read(buf));
-        }
-
-        count = buf.readInt();
-        for(int i = 0; i < count; ++i) {
-            params.results.add(ReagentStack.read(buf));
-        }
-
-        params.flags = buf.readBitSet();
-
-        return new ReactionRecipe(id, params);
+        var recipe = buf.decodeAsJson(CODEC);
+        recipe.setId(id);
+        return recipe;
     }
 
     @Override
     public void write(PacketByteBuf buf, ReactionRecipe recipe) {
-        buf.writeInt(recipe.getReactionEnergy());
-        buf.writeInt(recipe.getReactionRate());
-
-        var ingredients = recipe.getReagentIngredients();
-        buf.writeInt(ingredients.size());
-        for(var ingredient : ingredients) {
-            ingredient.write(buf);
-        }
-
-        var conditions = recipe.getReactionConditions();
-        buf.writeInt(conditions.size());
-        for(var condition : conditions) {
-            IReactionCondition.write(condition, buf);
-        }
-
-        var results = recipe.getReagentResults();
-        buf.writeInt(results.size());
-        for(var result : results) {
-            result.write(buf);
-        }
-
-        buf.writeBitSet(recipe.getFlagBits());
+        buf.encodeAsJson(CODEC, recipe);
     }
 }

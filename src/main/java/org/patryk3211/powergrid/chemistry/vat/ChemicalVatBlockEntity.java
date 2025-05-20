@@ -37,6 +37,7 @@ import org.patryk3211.powergrid.chemistry.reagent.mixture.ConstantReagentMixture
 import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
+import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -49,18 +50,18 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     private static final float ATMOSPHERIC_PRESSURE = 1.02f;
 
     private final VolumeReagentInventory reagentInventory;
+    private final RecipeProgressStore progressStore;
 
     public ChemicalVatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
 
         reagentInventory = new VolumeReagentInventory(1000 * 32);
+        progressStore = new RecipeProgressStore();
     }
 
     @Override
     public void tick() {
         super.tick();
-//        if(world.isClient)
-//            return;
 
         moveReagents();
 
@@ -74,13 +75,14 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 var reaction = recipes.get(reactionIndex);
                 // Test if the reaction is still valid.
                 if(reaction.test(reagentInventory)) {
-                    reagentInventory.applyReaction(reaction);
+                    reagentInventory.applyReaction(reaction, progressStore);
                     if(reaction.hasFlag(ReactionFlag.COMBUSTION)) {
                         stillBurning = true;
                     }
                 }
             }
         }
+        progressStore.filter(recipes);
 
         if(getCachedState().get(ChemicalVatBlock.OPEN)) {
             reagentInventory.setOpen(true);
@@ -252,7 +254,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     public void light() {
         reagentInventory.setBurning(true);
-        markDirty();
+        sendData();
     }
 
     @Override
@@ -262,7 +264,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 .style(Formatting.GRAY)
                 .forGoggles(tooltip);
 
-        var temperatureText = String.format("%.2f", reagentInventory.getTemperature());
+        var temperatureText = String.format("%.2f", reagentInventory.temperature());
         Lang.builder()
                 .text(temperatureText)
                 .add(Text.of(" "))

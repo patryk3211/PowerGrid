@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.chemistry.reagent;
 
 import net.minecraft.fluid.Fluids;
+import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -61,7 +62,19 @@ public class Reagents {
                     .boilingPoint(10.0f)
                     .heatCapacity(42.5f))
             .register();
+    public static final ReagentEntry<Reagent> SULFUR_TRIOXIDE = simpleReagent("sulfur_trioxide", 16.9f, 45.0f, 61.5f)
+            .register();
+    public static final ReagentEntry<Reagent> SULFURIC_ACID = simpleReagent("sulfuric_acid", 10.3f, 337.0f, 100.8f)
+            .register();
 
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
+
+    private static ReagentBuilder<Reagent, PowerGridRegistrate> simpleReagent(String name, float meltingPoint, float boilingPoint, float heatCapacity) {
+        return REGISTRATE.reagent(name, Reagent::new)
+                .properties(properties -> properties
+                        .meltingPoint(meltingPoint)
+                        .boilingPoint(boilingPoint)
+                        .heatCapacity(heatCapacity));
+    }
 }

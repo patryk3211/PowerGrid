@@ -20,6 +20,8 @@ import net.minecraft.util.StringIdentifiable;
 public enum ReactionFlag implements StringIdentifiable {
     COMBUSTION("combustion", 0);
 
+    public static final com.mojang.serialization.Codec<ReactionFlag> CODEC = StringIdentifiable.createCodec(ReactionFlag::values);
+
     private final String name;
     private final int bit;
 

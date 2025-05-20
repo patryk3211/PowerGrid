@@ -16,13 +16,26 @@
 package org.patryk3211.powergrid.chemistry.reagent;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class ReagentIngredient implements Predicate<ReagentStack> {
     public static final ReagentIngredient EMPTY = new ReagentIngredient();
+
+    public static final Codec<ReagentIngredient> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ReagentRegistry.REGISTRY.getCodec().fieldOf("reagent").forGetter(ReagentIngredient::getReagent),
+            Codec.optionalField("amount", Codec.INT).forGetter(i -> i.amountRequired == 1 ? Optional.empty() : Optional.of(i.amountRequired))
+    ).apply(instance, (reagent, amount) -> {
+        var ingredient = new ReagentIngredient();
+        ingredient.reagent = reagent;
+        ingredient.amountRequired = amount.orElse(1);
+        return ingredient;
+    }));
 
     private Reagent reagent;
     private int amountRequired;

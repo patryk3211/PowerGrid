@@ -23,15 +23,17 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.reagent.*;
+import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
+import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ReagentMixture {
+public class ReagentMixture implements ReagentConditions {
     protected final Map<Reagent, Integer> reagents = new HashMap<>();
     private boolean burning;
     protected double energy;
@@ -67,7 +69,8 @@ public class ReagentMixture {
      * Get temperature of the mixture
      * @return Temperature in Celsius
      */
-    public float getTemperature() {
+    @Override
+    public float temperature() {
         return (float) Math.round(getTemperaturePrecise() * 100) / 100;
     }
 
@@ -127,7 +130,7 @@ public class ReagentMixture {
     }
 
     public ReagentState getState(Reagent reagent) {
-        return reagent.properties.getState(getTemperature());
+        return reagent.properties.getState(temperature());
     }
 
     public boolean hasReagent(Reagent reagent) {
@@ -139,8 +142,9 @@ public class ReagentMixture {
      * @param reagent Reagent type
      * @return Concentration in [0; 1] range
      */
-    public float getConcentration(Reagent reagent) {
-        var amount = getAmount(reagent);
+    @Override
+    public float concentration(ReagentConvertible reagent) {
+        var amount = getAmount(reagent.asReagent());
         return (float) amount / totalAmount;
     }
 
@@ -152,7 +156,7 @@ public class ReagentMixture {
      * @return Removed reagent stack
      */
     public final ReagentStack remove(Reagent reagent, int amount, TransactionContext transaction) {
-        var temperature = getTemperature();
+        var temperature = temperature();
         var removed = Math.min(getAmount(reagent), amount);
         TransactionCallback.onSuccess(transaction, () -> removeInternal(reagent, removed, true));
         return new ReagentStack(reagent, removed, temperature);
@@ -187,7 +191,7 @@ public class ReagentMixture {
     public int add(ReagentMixture mixture, TransactionContext transaction) {
         int total = 0;
         for(var entry : mixture.reagents.entrySet()) {
-            var stack = new ReagentStack(entry.getKey(), entry.getValue(), mixture.getTemperature());
+            var stack = new ReagentStack(entry.getKey(), entry.getValue(), mixture.temperature());
             total += add(stack, transaction);
         }
         return total;
@@ -209,7 +213,7 @@ public class ReagentMixture {
         }
         if(total < requestedAmount)
             requestedAmount = total;
-        var temperature = getTemperature();
+        var temperature = temperature();
         var extractedMixture = new ReagentMixture();
         for(var reagent : reagents) {
             double concentration = (double) getAmount(reagent) / total;
@@ -272,9 +276,9 @@ public class ReagentMixture {
      * Warning! This function assumes that the recipe was previously tested and all the required conditions match.
      * @param reaction Reaction recipe to apply to this mixture.
      */
-    public void applyReaction(ReactionRecipe reaction) {
+    public void applyReaction(ReactionRecipe reaction, RecipeProgressStore progressStore) {
         // First calculate the reaction rate.
-        int reactionRate = reaction.getReactionRate();
+        float reactionRate = reaction.getReactionRate().evaluate(this) + progressStore.getProgress(reaction);
         for(var ingredient : reaction.getReagentIngredients()) {
             var amount = getAmount(ingredient.getReagent());
             reactionRate = Math.min(amount / ingredient.getRequiredAmount(), reactionRate);
@@ -282,22 +286,25 @@ public class ReagentMixture {
         // Then apply the reaction at the calculated rate.
         var temperature = getTemperaturePrecise();
         double ingredientEnergy = 0;
+        int quantReactionRate = (int) reactionRate;
         for(var ingredient : reaction.getReagentIngredients()) {
-            ingredientEnergy += stackEnergy(temperature, ingredient.getRequiredAmount() * reactionRate, ingredient.getReagent());
-            removeInternal(ingredient.getReagent(), ingredient.getRequiredAmount() * reactionRate, true);
+            ingredientEnergy += stackEnergy(temperature, ingredient.getRequiredAmount() * quantReactionRate, ingredient.getReagent());
+            removeInternal(ingredient.getReagent(), ingredient.getRequiredAmount() * quantReactionRate, true);
         }
         double resultHeatMass = 0;
         for(var result : reaction.getReagentResults()) {
             resultHeatMass += stackHeatMass(result.getAmount(), result.getReagent());
         }
-        double resultEnergy = ingredientEnergy + reaction.getReactionEnergy() * reactionRate;
+        double resultEnergy = ingredientEnergy + reaction.getReactionEnergy() * quantReactionRate;
         for(var result : reaction.getReagentResults()) {
-            addInternal(result.getReagent(), result.getAmount() * reactionRate, resultEnergy / resultHeatMass, true);
+            addInternal(result.getReagent(), result.getAmount() * quantReactionRate, resultEnergy / resultHeatMass, true);
         }
         if(reaction.hasFlag(ReactionFlag.COMBUSTION)) {
             // If recipe is a combustion recipe we can set the burning flag so that other things burn too.
             setBurning(true);
         }
+        float remainder = reactionRate - quantReactionRate;
+        progressStore.setProgress(reaction, remainder);
     }
 
     public ReagentMixture scaledBy(float scale) {
@@ -363,7 +370,7 @@ public class ReagentMixture {
 
     @Override
     public String toString() {
-        StringBuilder str = new StringBuilder("ReagentMixture(T=" + getTemperature() + ",reagents=[");
+        StringBuilder str = new StringBuilder("ReagentMixture(T=" + temperature() + ",reagents=[");
         boolean first = true;
         for(var entry : reagents.entrySet()) {
             if(first) {
