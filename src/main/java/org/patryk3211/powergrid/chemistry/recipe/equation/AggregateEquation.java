@@ -15,16 +15,20 @@
  */
 package org.patryk3211.powergrid.chemistry.recipe.equation;
 
+import com.mojang.serialization.Codec;
+
 import java.util.List;
 
-public abstract class AggregateEquation extends ReactionEquation {
-    protected final List<ReactionEquation> equations;
+public abstract class AggregateEquation implements IReactionEquation {
+    public static final Codec<List<IReactionEquation>> CODEC = Codec.list(EquationCodec.CODEC);
 
-    public AggregateEquation(List<ReactionEquation> equations) {
+    protected final List<IReactionEquation> equations;
+
+    public AggregateEquation(List<IReactionEquation> equations) {
         this.equations = equations;
     }
 
-    public List<ReactionEquation> getEquations() {
+    public List<IReactionEquation> getEquations() {
         return equations;
     }
 }

@@ -15,6 +15,23 @@
  */
 package org.patryk3211.powergrid.chemistry.recipe.equation;
 
-public interface INamedEquationPart {
-    String name();
+import com.mojang.serialization.Codec;
+import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
+
+public interface IReactionEquation {
+    Codec<IReactionEquation> CODEC = EquationCodec.CODEC;
+
+    float evaluate(ReagentConditions conditions);
+
+    Type<?> getType();
+
+    class Type<T extends IReactionEquation> {
+        public final String name;
+        public final Codec<T> codec;
+
+        public Type(String name, Codec<T> codec) {
+            this.name = name;
+            this.codec = codec;
+        }
+    }
 }

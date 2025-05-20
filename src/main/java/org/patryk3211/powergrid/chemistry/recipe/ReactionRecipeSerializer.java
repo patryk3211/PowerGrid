@@ -27,7 +27,7 @@ import org.patryk3211.powergrid.chemistry.reagent.ReagentIngredient;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
 import org.patryk3211.powergrid.chemistry.recipe.condition.IReactionCondition;
-import org.patryk3211.powergrid.chemistry.recipe.equation.ReactionEquation;
+import org.patryk3211.powergrid.chemistry.recipe.equation.IReactionEquation;
 
 import java.util.Optional;
 
@@ -49,7 +49,7 @@ public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe
                 return flags.isEmpty() ? Optional.empty() : Optional.of(flags);
             }),
             Codec.FLOAT.fieldOf("energy").forGetter(ReactionRecipe::getReactionEnergy),
-            ReactionEquation.CODEC.fieldOf("rate").forGetter(ReactionRecipe::getReactionRate)
+            IReactionEquation.CODEC.fieldOf("rate").forGetter(ReactionRecipe::getReactionRate)
 //            Codec.FLOAT.fieldOf("rate").forGetter(ReactionRecipe::getReactionRate)
     ).apply(instance, (ingredients, results, conditions, flags, energy, rate) -> {
         var params = new ReactionRecipe.RecipeConstructorParameters();

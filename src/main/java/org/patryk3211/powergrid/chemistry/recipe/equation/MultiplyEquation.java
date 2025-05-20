@@ -15,29 +15,16 @@
  */
 package org.patryk3211.powergrid.chemistry.recipe.equation;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 
 import java.util.List;
 
-public class MultiplyEquation extends AggregateEquation implements INamedEquationPart {
-    public static final Codec<MultiplyEquation> CODEC = Codec.of(new Encoder<>() {
-        @Override
-        public <T> DataResult<T> encode(MultiplyEquation equation, DynamicOps<T> dynamicOps, T t) {
-            return EquationCodec.LIST_CODEC.encode(equation.getEquations(), dynamicOps, t);
-        }
-    }, new Decoder<>() {
-        @Override
-        public <T> DataResult<Pair<MultiplyEquation, T>> decode(DynamicOps<T> dynamicOps, T t) {
-            var list = EquationCodec.LIST_CODEC.decode(dynamicOps, t);
-            if(list.result().isEmpty())
-                return DataResult.error(() -> "Failed to decode list");
-            return DataResult.success(Pair.of(new MultiplyEquation(list.result().get().getFirst()), t));
-        }
-    });
+public class MultiplyEquation extends AggregateEquation {
+    public static final Codec<MultiplyEquation> CODEC = AggregateEquation.CODEC.xmap(MultiplyEquation::new, MultiplyEquation::getEquations);
+    public static final Type<MultiplyEquation> TYPE = new Type<>("multiply", CODEC);
 
-    public MultiplyEquation(List<ReactionEquation> equations) {
+    public MultiplyEquation(List<IReactionEquation> equations) {
         super(equations);
     }
 
@@ -51,7 +38,7 @@ public class MultiplyEquation extends AggregateEquation implements INamedEquatio
     }
 
     @Override
-    public String name() {
-        return "multiply";
+    public Type<?> getType() {
+        return TYPE;
     }
 }

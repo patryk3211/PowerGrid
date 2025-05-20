@@ -15,9 +15,14 @@
  */
 package org.patryk3211.powergrid.chemistry.recipe.equation;
 
+import com.mojang.serialization.*;
 import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 
-public class ConstEquation extends ReactionEquation {
+public class ConstEquation implements IReactionEquation {
+    public static final Codec<ConstEquation> CODEC = Codec.FLOAT.xmap(ConstEquation::new, ConstEquation::getValue);
+
+    public static final Type<ConstEquation> TYPE = new Type<>("const", CODEC);
+
     private final float value;
 
     public ConstEquation(float value) {
@@ -31,5 +36,10 @@ public class ConstEquation extends ReactionEquation {
     @Override
     public float evaluate(ReagentConditions conditions) {
         return value;
+    }
+
+    @Override
+    public Type<ConstEquation> getType() {
+        return TYPE;
     }
 }

@@ -20,7 +20,9 @@ import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 
-public class ConcentrationEquation extends ReactionEquation {
+public class ConcentrationEquation implements IReactionEquation {
+    public static final Type<IReactionEquation> TYPE = new Type<>("Conc", VarEquation.CODEC);
+
     private final Reagent reagent;
 
     public ConcentrationEquation(String reagentId) {
@@ -34,5 +36,10 @@ public class ConcentrationEquation extends ReactionEquation {
     @Override
     public float evaluate(ReagentConditions conditions) {
         return conditions.concentration(reagent);
+    }
+
+    @Override
+    public Type<?> getType() {
+        return TYPE;
     }
 }
