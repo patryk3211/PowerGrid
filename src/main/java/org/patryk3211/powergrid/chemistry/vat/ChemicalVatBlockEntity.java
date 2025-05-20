@@ -57,6 +57,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         reagentInventory = new VolumeReagentInventory(1000 * 32);
         progressStore = new RecipeProgressStore();
+        setLazyTickRate(20);
     }
 
     @Override
@@ -123,7 +124,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         if(!stillBurning) {
             reagentInventory.setBurning(false);
         }
-        // TODO: That cannot be good for network traffic.
+    }
+
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
         sendData();
     }
 
@@ -283,12 +288,14 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     protected void read(NbtCompound tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         reagentInventory.read(tag);
+        progressStore.read(tag);
     }
 
     @Override
     protected void write(NbtCompound tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         reagentInventory.write(tag);
+        progressStore.write(tag);
     }
 
     @Nullable

@@ -15,28 +15,36 @@
  */
 package org.patryk3211.powergrid.chemistry.recipe;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 public class RecipeProgressStore {
-    private final Map<ReactionRecipe, Progress> progressMap = new HashMap<>();
+    private final Map<Identifier, Progress> progressMap = new HashMap<>();
 
     @NotNull
     public Progress get(ReactionRecipe recipe) {
-        var progress = progressMap.get(recipe);
+        return get(recipe.getId());
+    }
+
+    @NotNull
+    public Progress get(Identifier id) {
+        var progress = progressMap.get(id);
         if(progress != null)
             return progress;
 
         progress = new Progress();
-        progressMap.put(recipe, progress);
+        progressMap.put(id, progress);
         return progress;
     }
 
     public float getProgress(ReactionRecipe recipe) {
-        var progress = progressMap.get(recipe);
+        var progress = progressMap.get(recipe.getId());
         if(progress != null)
             return progress.value;
         return 0;
@@ -44,37 +52,36 @@ public class RecipeProgressStore {
 
     public void setProgress(ReactionRecipe recipe, float progress) {
         if(progress == 0) {
-            progressMap.remove(recipe);
+            progressMap.remove(recipe.getId());
             return;
         }
         get(recipe).value = progress;
     }
 
     public void filter(List<ReactionRecipe> recipes) {
+        var ids = new HashSet<Identifier>();
+        recipes.forEach(recipe -> ids.add(recipe.getId()));
         progressMap.keySet().stream()
-                .filter(recipe -> !recipes.contains(recipe))
+                .filter(id -> !ids.contains(id))
                 .forEach(progressMap::remove);
     }
 
-//    public void write(NbtCompound tag) {
-//        var map = new NbtCompound();
-//        progressMap.forEach((recipe, progress) -> {
-//            map.putFloat(recipe.getId().toString(), progress.value);
-//        });
-//        tag.put("Progress", map);
-//    }
-//
-//    public void read(World world, NbtCompound tag) {
-//        progressMap.clear();
-//        var map = tag.getCompound("Progress");
-//        var recipeManager = world.getRecipeManager();
-//        for(var recipeId : map.getKeys()) {
-//            var recipe = recipeManager.get(new Identifier(recipeId));
-//            if(recipe.isEmpty() || !(recipe.get() instanceof ReactionRecipe reaction))
-//                continue;
-//            get(reaction).value = map.getFloat(recipeId);
-//        }
-//    }
+    public void write(NbtCompound tag) {
+        var map = new NbtCompound();
+        progressMap.forEach((id, progress) -> {
+            map.putFloat(id.toString(), progress.value);
+        });
+        tag.put("Progress", map);
+    }
+
+    public void read(NbtCompound tag) {
+        progressMap.clear();
+        var map = tag.getCompound("Progress");
+        for(var recipeId : map.getKeys()) {
+            var id = new Identifier(recipeId);
+            get(id).value = map.getFloat(recipeId);
+        }
+    }
 
     public static class Progress {
         private float value = 0.0f;

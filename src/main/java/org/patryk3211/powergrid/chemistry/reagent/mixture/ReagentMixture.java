@@ -346,7 +346,7 @@ public class ReagentMixture implements ReagentConditions {
         reagents.clear();
         totalAmount = 0;
         heatMass = 0;
-        energy = tag.getFloat("Energy");
+        energy = tag.getDouble("Energy");
         var reagentList = tag.getList("Reagents", NbtElement.COMPOUND_TYPE);
         for(var entry : reagentList) {
             var obj = (NbtCompound) entry;
