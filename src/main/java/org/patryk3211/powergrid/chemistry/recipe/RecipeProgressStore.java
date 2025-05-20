@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class RecipeProgressStore {
     private final Map<Identifier, Progress> progressMap = new HashMap<>();
@@ -61,9 +62,8 @@ public class RecipeProgressStore {
     public void filter(List<ReactionRecipe> recipes) {
         var ids = new HashSet<Identifier>();
         recipes.forEach(recipe -> ids.add(recipe.getId()));
-        progressMap.keySet().stream()
-                .filter(id -> !ids.contains(id))
-                .forEach(progressMap::remove);
+        var staleKeys = progressMap.keySet().stream().filter(id -> !ids.contains(id)).toList();
+        staleKeys.forEach(progressMap::remove);
     }
 
     public void write(NbtCompound tag) {

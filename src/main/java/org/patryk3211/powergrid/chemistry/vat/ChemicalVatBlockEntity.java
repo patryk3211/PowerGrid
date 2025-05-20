@@ -46,8 +46,9 @@ import java.util.List;
 import java.util.Set;
 
 public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
-    public static final int DIFFUSION_RATE = 1000;
-    private static final float ATMOSPHERIC_PRESSURE = 1.02f;
+    public static final int DIFFUSION_RATE = 500;
+    public static final float ATMOSPHERIC_PRESSURE = 1.02f;
+    public static final float DISSIPATION_FACTOR = 300f;
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
@@ -120,6 +121,9 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         } else {
             reagentInventory.setOpen(false);
         }
+
+        var tempDiff = reagentInventory.temperature() - 22f;
+        reagentInventory.removeEnergy(tempDiff * DISSIPATION_FACTOR * 0.05f);
 
         if(!stillBurning) {
             reagentInventory.setBurning(false);
