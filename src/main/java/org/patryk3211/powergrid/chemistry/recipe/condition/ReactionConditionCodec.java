@@ -35,5 +35,6 @@ public class ReactionConditionCodec {
     static {
         addConditionType(RecipeConcentrationCondition.TYPE);
         addConditionType(RecipeTemperatureCondition.TYPE);
+        addConditionType(RecipeCatalyzerCondition.TYPE);
     }
 }

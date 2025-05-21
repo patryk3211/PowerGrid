@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.recipe;
 
+import com.google.common.collect.ImmutableCollection;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Recipe;
@@ -57,21 +58,28 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
     public ReactionRecipe(Identifier id, RecipeConstructorParameters params) {
         this.id = id;
         this.ingredients = params.ingredients;
-        this.conditions = params.conditions;
         this.results = params.results;
         this.flags = params.flags;
         this.energy = params.energy;
         this.rate = params.rate;
 
         var hasTemperature = false;
-        for(var condition : conditions) {
+        for(var condition : params.conditions) {
             if(condition instanceof RecipeTemperatureCondition) {
                 hasTemperature = true;
                 break;
             }
         }
+
         if(!hasTemperature) {
+            if(params.conditions instanceof ImmutableCollection) {
+                conditions = new ArrayList<>(params.conditions);
+            } else {
+                conditions = params.conditions;
+            }
             conditions.add(new RecipeTemperatureCondition(Optional.of(0.0f), Optional.empty()));
+        } else {
+            conditions = params.conditions;
         }
     }
 

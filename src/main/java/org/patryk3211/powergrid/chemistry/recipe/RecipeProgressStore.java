@@ -52,7 +52,7 @@ public class RecipeProgressStore {
     }
 
     public void setProgress(ReactionRecipe recipe, float progress) {
-        if(progress == 0) {
+        if(progress <= 0) {
             progressMap.remove(recipe.getId());
             return;
         }

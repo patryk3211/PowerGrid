@@ -25,7 +25,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
@@ -114,19 +113,7 @@ public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntit
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        var stack = player.getStackInHand(hand);
-        if(stack.isOf(Items.FLINT_AND_STEEL)) {
-            if(!world.isClient) {
-                var be = getBlockEntity(world, pos);
-                if (be != null) {
-                    if (!player.isCreative())
-                        stack.damage(1, player, v -> {});
-                    be.light();
-                }
-            }
-            return ActionResult.SUCCESS;
-        }
-        return ActionResult.PASS;
+        return onBlockEntityUse(world, pos, be -> be.use(player, hand, hit));
     }
 
     @Override

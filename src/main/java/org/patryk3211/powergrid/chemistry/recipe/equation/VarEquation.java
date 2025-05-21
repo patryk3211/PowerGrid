@@ -54,5 +54,12 @@ public abstract class VarEquation {
                 Pair.of(ConcentrationEquation::new, eq -> ((ConcentrationEquation) eq).getArg());
         CODECS.put("concentration", p);
         CODECS.put("Conc", p);
+
+        var catInst = new CatalyzerEquation();
+        Pair<Function<String, IReactionEquation>, Function<IReactionEquation, String>> cat =
+                Pair.of($ -> catInst, null);
+        CODECS.put("catalyzerStrength", cat);
+        CODECS.put("catalyzer", cat);
+        CODECS.put("Cat", cat);
     }
 }

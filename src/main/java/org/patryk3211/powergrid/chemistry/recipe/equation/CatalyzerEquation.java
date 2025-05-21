@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.chemistry.recipe;
+package org.patryk3211.powergrid.chemistry.recipe.equation;
 
-import org.patryk3211.powergrid.chemistry.reagent.ReagentConvertible;
+import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 
-public interface ReagentConditions {
-    float temperature();
-    float concentration(ReagentConvertible reagent);
-    float catalyzer();
+public class CatalyzerEquation implements IReactionEquation {
+    public static final IReactionEquation.Type<IReactionEquation> TYPE = new IReactionEquation.Type<>("Cat", CODEC);
+
+    @Override
+    public float evaluate(ReagentConditions conditions) {
+        return conditions.catalyzer();
+    }
+
+    @Override
+    public IReactionEquation.Type<?> getType() {
+        return TYPE;
+    }
 }

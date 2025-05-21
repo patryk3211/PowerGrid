@@ -12,5 +12,5 @@
     { "reagent": "powergrid:sulfuric_acid", "amount": 1 }
   ],
   "energy": 101,
-  "rate": 100
+  "rate": 10
 }

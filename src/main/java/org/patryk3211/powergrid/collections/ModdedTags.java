@@ -30,7 +30,8 @@ public class ModdedTags {
         SILVER_ORES(FORGE_NAMESPACE, "silver_ores"),
         RAW_ORES(FORGE_NAMESPACE, "raw_ores"),
         PLATES(FORGE_NAMESPACE, "plates"),
-        WIRES("wires")
+        WIRES("wires"),
+        CATALYZERS("catalyzers")
         ;
 
         public final TagKey<net.minecraft.item.Item> tag;

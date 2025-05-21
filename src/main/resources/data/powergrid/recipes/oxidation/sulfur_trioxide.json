@@ -1,0 +1,16 @@
+{
+  "id": "powergrid:oxidation/sulfur_trioxide",
+  "type": "powergrid:reaction",
+  "ingredients": [
+    { "reagent": "powergrid:sulfur_dioxide", "amount": 1 },
+    { "reagent": "powergrid:oxygen", "amount": 1 }
+  ],
+  "conditions": [
+    { "type": "catalyzer", "strength": 1 }
+  ],
+  "results": [
+    { "reagent": "powergrid:sulfur_trioxide", "amount": 1 }
+  ],
+  "energy": 198,
+  "rate": 3
+}

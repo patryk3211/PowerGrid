@@ -41,6 +41,8 @@ public class ReagentMixture implements ReagentConditions {
     private double heatMass;
     private int totalAmount;
 
+    private float catalyzer;
+
     private MixtureFluidView fluidView;
     private MixtureItemView itemView;
 
@@ -48,6 +50,7 @@ public class ReagentMixture implements ReagentConditions {
         totalAmount = 0;
         heatMass = 0;
         energy = 0;
+        catalyzer = 0;
         burning = false;
     }
 
@@ -88,6 +91,10 @@ public class ReagentMixture implements ReagentConditions {
 
     public int getVolume() {
         return Integer.MAX_VALUE;
+    }
+
+    public void setCatalyzer(float catalyzer) {
+        this.catalyzer = catalyzer;
     }
 
     /**
@@ -146,6 +153,11 @@ public class ReagentMixture implements ReagentConditions {
     public float concentration(ReagentConvertible reagent) {
         var amount = getAmount(reagent.asReagent());
         return (float) amount / totalAmount;
+    }
+
+    @Override
+    public float catalyzer() {
+        return catalyzer;
     }
 
     /**
@@ -279,6 +291,8 @@ public class ReagentMixture implements ReagentConditions {
     public void applyReaction(ReactionRecipe reaction, RecipeProgressStore progressStore) {
         // First calculate the reaction rate.
         float reactionRate = reaction.getReactionRate().evaluate(this) + progressStore.getProgress(reaction);
+        if(reactionRate <= 0)
+            return;
         for(var ingredient : reaction.getReagentIngredients()) {
             var amount = getAmount(ingredient.getReagent());
             reactionRate = Math.min(amount / ingredient.getRequiredAmount(), reactionRate);

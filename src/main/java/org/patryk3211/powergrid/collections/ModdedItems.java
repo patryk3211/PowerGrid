@@ -75,6 +75,7 @@ public class ModdedItems {
             .tag(ModdedTags.Item.PLATES.tag, forgeItemTag("silver_plates"))
             .register();
     public static final ItemEntry<Item> SILVER_MESH = REGISTRATE.item("silver_mesh", Item::new)
+            .tag(ModdedTags.Item.CATALYZERS.tag)
             .register();
 
     @SuppressWarnings("EmptyMethod")

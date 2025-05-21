@@ -25,11 +25,18 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
@@ -38,6 +45,7 @@ import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
+import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -52,12 +60,15 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
+    @NotNull
+    private ItemStack catalyzer;
 
     public ChemicalVatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
 
         reagentInventory = new VolumeReagentInventory(1000 * 32);
         progressStore = new RecipeProgressStore();
+        catalyzer = ItemStack.EMPTY;
         setLazyTickRate(20);
     }
 
@@ -261,8 +272,48 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         return null;
     }
 
+    public ActionResult use(PlayerEntity player, Hand hand, BlockHitResult hit) {
+        assert world != null;
+        var stack = player.getStackInHand(hand);
+        if(stack.isOf(Items.FLINT_AND_STEEL)) {
+            if(!world.isClient) {
+                if (!player.isCreative())
+                    stack.damage(1, player, v -> {});
+                light();
+            }
+            return ActionResult.SUCCESS;
+        } else if(stack.isIn(ModdedTags.Item.CATALYZERS.tag)) {
+            if(!catalyzer.isEmpty())
+                return ActionResult.FAIL;
+            if(!world.isClient) {
+                catalyzer = stack.copyWithCount(1);
+                stack.decrement(1);
+                updateCatalyzer();
+            }
+            return ActionResult.SUCCESS;
+        } else if(stack.isEmpty()) {
+            if(catalyzer.isEmpty())
+                return ActionResult.FAIL;
+            if(!world.isClient) {
+                player.setStackInHand(hand, catalyzer);
+                catalyzer = ItemStack.EMPTY;
+                updateCatalyzer();
+            }
+            return ActionResult.SUCCESS;
+        }
+        return ActionResult.FAIL;
+    }
+
     public void light() {
         reagentInventory.setBurning(true);
+        sendData();
+    }
+
+    private void updateCatalyzer() {
+        if(!catalyzer.isEmpty())
+            reagentInventory.setCatalyzer(1.0f);
+        else
+            reagentInventory.setCatalyzer(0.0f);
         sendData();
     }
 
@@ -293,6 +344,10 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         super.read(tag, clientPacket);
         reagentInventory.read(tag);
         progressStore.read(tag);
+        if(tag.contains("Catalyzer")) {
+            catalyzer = ItemStack.fromNbt(tag.getCompound("Catalyzer"));
+        }
+        updateCatalyzer();
     }
 
     @Override
@@ -300,6 +355,9 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         super.write(tag, clientPacket);
         reagentInventory.write(tag);
         progressStore.write(tag);
+        if(!catalyzer.isEmpty()) {
+            tag.put("Catalyzer", catalyzer.serializeNBT());
+        }
     }
 
     @Nullable
