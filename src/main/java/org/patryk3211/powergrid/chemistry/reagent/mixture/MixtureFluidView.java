@@ -49,7 +49,7 @@ public class MixtureFluidView implements Storage<FluidVariant> {
         var reagent = Reagent.getReagent(fluid.getFluid());
         if(reagent == null)
             return 0;
-        var stack = mixture.remove(reagent, (int) (amount / Reagent.FLUID_MOLE_RATIO), transaction);
+        var stack = mixture.remove(reagent, (int) Math.ceil(amount / Reagent.FLUID_MOLE_RATIO), transaction);
         return (long) (stack.getAmount() * Reagent.FLUID_MOLE_RATIO);
     }
 

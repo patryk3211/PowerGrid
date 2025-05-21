@@ -34,7 +34,7 @@ public class ConstantReagentMixture extends ReagentMixture {
 
     public ConstantReagentMixture(float temperature, ReagentStack... reagents) {
         this(reagents);
-        energy = (temperature + 273.15) * getHeatMass();
+        energy = (temperature + 273.15) * heatMass();
     }
 
     @Override

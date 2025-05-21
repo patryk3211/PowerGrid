@@ -89,7 +89,10 @@ public class MapAggregateEquation extends AggregateEquation {
         registerOp(SubtractEquation.TYPE);
         registerOp(MultiplyEquation.TYPE);
         registerOp(DivideEquation.TYPE);
+
         registerOp(MinEquation.TYPE);
         registerOp(MaxEquation.TYPE);
+
+        registerOp(PolynomialEquation.TYPE);
     }
 }

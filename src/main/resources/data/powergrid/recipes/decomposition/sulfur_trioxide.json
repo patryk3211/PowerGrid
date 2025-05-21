@@ -1,0 +1,22 @@
+{
+  "id": "powergrid:decomposition/sulfur_trioxide",
+  "type": "powergrid:reaction",
+  "ingredients": [
+    { "reagent": "powergrid:sulfur_trioxide", "amount": 1 }
+  ],
+  "conditions": [
+    { "type": "temperature", "min": 300 }
+  ],
+  "results": [
+    { "reagent": "powergrid:sulfur_dioxide", "amount": 1 },
+    { "reagent": "powergrid:oxygen", "amount": 1 }
+  ],
+  "energy": -198,
+  "rate": {
+    "polynomial": [
+      "temperature",
+      0.005,
+      -1.5
+    ]
+  }
+}

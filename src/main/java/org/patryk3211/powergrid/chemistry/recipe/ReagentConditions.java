@@ -21,4 +21,6 @@ public interface ReagentConditions {
     float temperature();
     float concentration(ReagentConvertible reagent);
     float catalyzer();
+
+    double heatMass();
 }

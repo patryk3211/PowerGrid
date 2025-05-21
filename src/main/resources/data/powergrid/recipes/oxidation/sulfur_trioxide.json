@@ -6,11 +6,17 @@
     { "reagent": "powergrid:oxygen", "amount": 1 }
   ],
   "conditions": [
-    { "type": "catalyzer", "strength": 1 }
+    { "type": "catalyzer", "strength": 1 },
+    { "type": "temperature", "min": 100, "max": 810 }
   ],
   "results": [
     { "reagent": "powergrid:sulfur_trioxide", "amount": 1 }
   ],
   "energy": 198,
-  "rate": 3
+  "rate": { "polynomial": [
+    "temperature",
+    -0.00005,
+    0.0465,
+    -5.0
+  ] }
 }

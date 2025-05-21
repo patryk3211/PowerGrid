@@ -56,6 +56,10 @@ public class VolumeReagentInventory extends ReagentMixture {
         return gasAmount;
     }
 
+    public int getLiquidAmount() {
+        return usedVolume - solidVolume;
+    }
+
     @Override
     protected void energyChanged() {
         super.energyChanged();

@@ -49,14 +49,13 @@ import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
-    public static final int DIFFUSION_RATE = 500;
+    public static final float DIFFUSION_RATE = 0.05f;
     public static final float ATMOSPHERIC_PRESSURE = 1.02f;
-    public static final float DISSIPATION_FACTOR = 300f;
+    // TODO: Balance this value.
+    public static final float DISSIPATION_FACTOR = 200f;
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
@@ -76,16 +75,12 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     public void tick() {
         super.tick();
 
-        moveReagents();
-
         boolean stillBurning = false;
         var recipes = ReactionGetter.getValidRecipes(world.getRecipeManager(), reagentInventory);
         if(!recipes.isEmpty()) {
-            var random = world.getRandom();
-            for(int i = recipes.size(); i > 0; --i) {
-                // Pick random recipe and apply it.
-                int reactionIndex = i == 1 ? 0 : random.nextInt(i);
-                var reaction = recipes.get(reactionIndex);
+            Collections.shuffle(recipes);
+            for(int i = 0; i < recipes.size(); ++i) {
+                var reaction = recipes.get(i);
                 // Test if the reaction is still valid.
                 if(reaction.test(reagentInventory)) {
                     reagentInventory.applyReaction(reaction, progressStore);
@@ -96,6 +91,12 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             }
         }
         progressStore.filter(recipes);
+        if(!stillBurning) {
+            reagentInventory.setBurning(false);
+        }
+
+        // Moving has to occur after recipe processing so that the burning flag is valid.
+        moveReagents();
 
         if(getCachedState().get(ChemicalVatBlock.OPEN)) {
             reagentInventory.setOpen(true);
@@ -106,7 +107,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
             var difference = ATMOSPHERIC_PRESSURE - vatPressure;
             var moveAmount = (int) (difference * availableVolume);
-            int diffuseAmount = DIFFUSION_RATE - Math.abs(moveAmount);
+            int diffuseAmount = (int) (DIFFUSION_RATE * reagentInventory.getGasAmount()) - Math.abs(moveAmount);
 
             // TODO: I'm not sure if I implemented transactions correctly (probably not) so this is split in two.
             try(var transaction = Transaction.openOuter()) {
@@ -135,10 +136,6 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         var tempDiff = reagentInventory.temperature() - 22f;
         reagentInventory.removeEnergy(tempDiff * DISSIPATION_FACTOR * 0.05f);
-
-        if(!stillBurning) {
-            reagentInventory.setBurning(false);
-        }
     }
 
     @Override
@@ -164,11 +161,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             var vat = getVat(pos.offset(dir));
             if(vat == null)
                 continue;
-            if(dir == Direction.DOWN) {
+            if(dir == Direction.DOWN && !solids.isEmpty()) {
                 // Solids can only go down.
                 moveReagents(solids, vat, reagentInventory.getTotalAmount());
             }
-            if(dir != Direction.UP) {
+            if(dir != Direction.UP && !liquids.isEmpty()) {
                 // Liquids cannot go up.
                 var liquidLevel1 = reagentInventory.getFillLevel();
                 var liquidLevel2 = vat.reagentInventory.getFillLevel();
@@ -176,7 +173,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
                 float moveFraction = liquidLevel1 - targetLevel;
                 int moveAmount = (int) (moveFraction * reagentInventory.getVolume());
-                int diffuseAmount = DIFFUSION_RATE - moveAmount;
+                int diffuseAmount = (int) (reagentInventory.getLiquidAmount() * DIFFUSION_RATE) - moveAmount;
                 moveReagents(liquids, vat, moveAmount);
                 if(diffuseAmount > 0) {
                     diffuse(liquids, ReagentState.LIQUID, vat, diffuseAmount);
@@ -191,7 +188,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             } else if(vat.reagentInventory.getFreeVolume() == 0) {
                 // Cannot move gas into a full inventory.
                 continue;
-            } else {
+            } else if(!gasses.isEmpty()) {
                 // Gasses can go anywhere.
                 var gasPressure1 = (float) reagentInventory.getGasAmount() / reagentInventory.getFreeVolume();
                 var gasPressure2 = (float) vat.reagentInventory.getGasAmount() / vat.reagentInventory.getFreeVolume();
@@ -199,11 +196,16 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
                 float moveFraction = gasPressure1 - targetPressure;
                 int moveAmount = (int) (moveFraction * reagentInventory.getFreeVolume());
-                int diffuseAmount = DIFFUSION_RATE - moveAmount;
+                int diffuseAmount = (int) (reagentInventory.getGasAmount() * DIFFUSION_RATE) - moveAmount;
                 moveReagents(gasses, vat, moveAmount);
                 if(diffuseAmount > 0) {
                     diffuse(gasses, ReagentState.GAS, vat, diffuseAmount);
                 }
+            }
+
+            if(reagentInventory.isBurning()) {
+                // Propagate burning effects.
+                vat.reagentInventory.setBurning(true);
             }
         }
     }
@@ -220,21 +222,16 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         while(amount > 0) {
             try(var transaction = Transaction.openOuter()) {
                 var mix1 = reagentInventory.remove(amount, thisReagents, transaction);
-                amount = mix1.getTotalAmount();
-                var mix2 = target.reagentInventory.remove(amount, otherReagents, transaction);
-                if(mix2.getTotalAmount() != amount) {
-                    amount = mix2.getTotalAmount();
-                    transaction.abort();
-                    continue;
-                }
+                var mix2 = target.reagentInventory.remove(mix1.getTotalAmount(), otherReagents, transaction);
+
                 int added = reagentInventory.add(mix2, transaction);
-                if(added != amount) {
+                if(added != mix2.getTotalAmount()) {
                     amount = added;
                     transaction.abort();
                     continue;
                 }
                 added = target.reagentInventory.add(mix1, transaction);
-                if(added != amount) {
+                if(added != mix1.getTotalAmount()) {
                     amount = added;
                     transaction.abort();
                     continue;

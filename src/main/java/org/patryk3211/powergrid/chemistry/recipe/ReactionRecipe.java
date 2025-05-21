@@ -24,6 +24,7 @@ import net.minecraft.recipe.RecipeType;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentIngredient;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
@@ -55,6 +56,9 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
     private final float energy;
     private final IReactionEquation rate;
 
+    @NotNull
+    private RecipeTemperatureCondition temperatureCondition;
+
     public ReactionRecipe(Identifier id, RecipeConstructorParameters params) {
         this.id = id;
         this.ingredients = params.ingredients;
@@ -63,21 +67,22 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         this.energy = params.energy;
         this.rate = params.rate;
 
-        var hasTemperature = false;
+        temperatureCondition = null;
         for(var condition : params.conditions) {
-            if(condition instanceof RecipeTemperatureCondition) {
-                hasTemperature = true;
+            if(condition instanceof RecipeTemperatureCondition tempCond) {
+                temperatureCondition = tempCond;
                 break;
             }
         }
 
-        if(!hasTemperature) {
+        if(temperatureCondition == null) {
             if(params.conditions instanceof ImmutableCollection) {
                 conditions = new ArrayList<>(params.conditions);
             } else {
                 conditions = params.conditions;
             }
-            conditions.add(new RecipeTemperatureCondition(Optional.of(0.0f), Optional.empty()));
+            temperatureCondition = new RecipeTemperatureCondition(Optional.of(0.0f), Optional.empty());
+            conditions.add(temperatureCondition);
         } else {
             conditions = params.conditions;
         }
@@ -174,6 +179,22 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
                 return false;
         }
         return true;
+    }
+
+    public float calculateRate(ReagentConditions conditions, float progressOffset) {
+        var maxRate = rate.evaluate(conditions) + progressOffset;
+        if(maxRate <= 0)
+            return 0;
+        if(energy > 0 && temperatureCondition.getMax().isPresent()) {
+            var maxDiff = temperatureCondition.getMax().get() - conditions.temperature();
+            var deltaT = energy / conditions.heatMass();
+            maxRate = (float) Math.min(maxRate, maxDiff / deltaT);
+        } else if(energy < 0 && temperatureCondition.getMin().isPresent()) {
+            var maxDiff = temperatureCondition.getMin().get() - conditions.temperature();
+            var deltaT = energy / conditions.heatMass();
+            maxRate = (float) Math.min(maxRate, maxDiff / deltaT);
+        }
+        return maxRate <= 0 ? 0 : maxRate;
     }
 
     public static class RecipeConstructorParameters {

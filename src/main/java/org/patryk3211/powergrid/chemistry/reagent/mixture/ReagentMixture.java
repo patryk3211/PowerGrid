@@ -78,14 +78,15 @@ public class ReagentMixture implements ReagentConditions {
     }
 
     private double getTemperaturePrecise() {
-        return (energy / getHeatMass()) - 273.15;
+        return (energy / heatMass()) - 273.15;
     }
 
     public int getTotalAmount() {
         return totalAmount;
     }
 
-    public double getHeatMass() {
+    @Override
+    public double heatMass() {
         return heatMass;
     }
 
@@ -270,7 +271,7 @@ public class ReagentMixture implements ReagentConditions {
     }
 
     public float getEnergy(float minTemperature) {
-        var baseEnergy = (minTemperature + 273.15f) * getHeatMass();
+        var baseEnergy = (minTemperature + 273.15f) * heatMass();
         return (float) (energy - baseEnergy);
     }
 
@@ -290,15 +291,20 @@ public class ReagentMixture implements ReagentConditions {
      */
     public void applyReaction(ReactionRecipe reaction, RecipeProgressStore progressStore) {
         // First calculate the reaction rate.
-        float reactionRate = reaction.getReactionRate().evaluate(this) + progressStore.getProgress(reaction);
+        float reactionRate = reaction.calculateRate(this, progressStore.getProgress(reaction));
         if(reactionRate <= 0)
             return;
         for(var ingredient : reaction.getReagentIngredients()) {
             var amount = getAmount(ingredient.getReagent());
             reactionRate = Math.min(amount / ingredient.getRequiredAmount(), reactionRate);
         }
-        // Then apply the reaction at the calculated rate.
+        var reactionEnergy = reaction.getReactionEnergy();
         var temperature = getTemperaturePrecise();
+        if(reactionEnergy > 0) {
+            // Check energy remaining to max temperature
+        }
+
+        // Then apply the reaction at the calculated rate.
         double ingredientEnergy = 0;
         int quantReactionRate = (int) reactionRate;
         for(var ingredient : reaction.getReagentIngredients()) {
@@ -309,7 +315,7 @@ public class ReagentMixture implements ReagentConditions {
         for(var result : reaction.getReagentResults()) {
             resultHeatMass += stackHeatMass(result.getAmount(), result.getReagent());
         }
-        double resultEnergy = ingredientEnergy + reaction.getReactionEnergy() * quantReactionRate;
+        double resultEnergy = ingredientEnergy + reactionEnergy * quantReactionRate;
         for(var result : reaction.getReagentResults()) {
             addInternal(result.getReagent(), result.getAmount() * quantReactionRate, resultEnergy / resultHeatMass, true);
         }

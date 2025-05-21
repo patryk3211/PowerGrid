@@ -20,16 +20,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
 public class EquationCodec implements Codec<IReactionEquation> {
     public static final Codec<IReactionEquation> CODEC = new EquationCodec();
 
-    private EquationCodec() {
-
-    }
+    private EquationCodec() { }
 
     @Override
     public <T> DataResult<Pair<IReactionEquation, T>> decode(DynamicOps<T> ops, T input) {
@@ -55,10 +49,5 @@ public class EquationCodec implements Codec<IReactionEquation> {
     public <T> DataResult<T> encode(IReactionEquation equation, DynamicOps<T> ops, T input) {
         var type = (IReactionEquation.Type<IReactionEquation>) equation.getType();
         return type.codec.encode(equation, ops, input);
-
-//        if(equation instanceof MultiplyEquation eq) {
-//            return MultiplyEquation.CODEC.encode(eq, ops, input);
-//        }
-//        return DataResult.error(() -> "Given element type is not supported");
     }
 }
