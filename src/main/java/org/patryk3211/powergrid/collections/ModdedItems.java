@@ -15,23 +15,34 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.AllTags;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
+import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 
+import static com.simibubi.create.AllTags.forgeItemTag;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
             .transform(WireProperties.setAll(0.005f, 16))
-            .tag(ModdedTags.Item.COIL_WIRE.tag)
+            .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag)
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(WireProperties.setAll(0.015f, 32))
+            .tag(ModdedTags.Item.WIRES.tag)
+            .register();
+    public static final ItemEntry<WireItem> SILVER_WIRE = REGISTRATE.item("silver_wire", WireItem::new)
+            .transform(WireProperties.setAll(0.003f, 8))
+            .tag(ModdedTags.Item.WIRES.tag)
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
@@ -53,6 +64,17 @@ public class ModdedItems {
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
 
     public static final ItemEntry<Item> SULFUR = REGISTRATE.item("sulfur", Item::new)
+            .register();
+    public static final ItemEntry<Item> RAW_SILVER = REGISTRATE.item("raw_silver", Item::new)
+            .tag(forgeItemTag("raw_silver_ores"), ModdedTags.Item.RAW_ORES.tag)
+            .register();
+    public static final ItemEntry<Item> SILVER_INGOT = REGISTRATE.item("silver_ingot", Item::new)
+            .tag(ModdedTags.Item.SILVER_INGOTS.tag)
+            .register();
+    public static final ItemEntry<Item> SILVER_SHEET = REGISTRATE.item("silver_sheet", Item::new)
+            .tag(ModdedTags.Item.PLATES.tag, forgeItemTag("silver_plates"))
+            .register();
+    public static final ItemEntry<Item> SILVER_MESH = REGISTRATE.item("silver_mesh", Item::new)
             .register();
 
     @SuppressWarnings("EmptyMethod")

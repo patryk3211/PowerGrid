@@ -1,0 +1,13 @@
+{
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "tag": "c:silver_ingots"
+    }
+  ],
+  "results": [
+    {
+      "item": "powergrid:silver_sheet"
+    }
+  ]
+}

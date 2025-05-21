@@ -16,21 +16,30 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
+import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.simibubi.create.foundation.data.CreateRegistrate;
+import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
 import io.github.fabricators_of_create.porting_lib.models.generators.ModelFile;
 import io.github.fabricators_of_create.porting_lib.models.generators.block.MultiPartBlockStateBuilder;
+import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.function.ApplyBonusLootFunction;
 import net.minecraft.loot.function.SetCountLootFunction;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
@@ -58,8 +67,7 @@ import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 
 import java.util.function.Function;
 
-import static com.simibubi.create.foundation.data.TagGen.axeOrPickaxe;
-import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
+import static com.simibubi.create.foundation.data.TagGen.*;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedBlocks {
@@ -374,6 +382,34 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/vat/base")))
                 .build()
+            .register();
+
+    public static final BlockEntry<Block> SILVER_ORE = REGISTRATE.block("silver_ore", Block::new)
+            .defaultBlockstate()
+            .initialProperties(() -> Blocks.GOLD_ORE)
+            .transform(pickaxeOnly())
+            .loot((lt, b) -> lt.addDrop(b,
+                    RegistrateBlockLootTables.dropsWithSilkTouch(b,
+                            lt.applyExplosionDecay(b, ItemEntry.builder(ModdedItems.RAW_SILVER.get())
+                                    .apply(ApplyBonusLootFunction.oreDrops(Enchantments.FORTUNE))))))
+            .tag(BlockTags.NEEDS_IRON_TOOL, Tags.Blocks.ORES)
+            .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/stone"))
+            .tag(Tags.Items.ORES)
+            .build()
+            .register();
+
+    public static final BlockEntry<Block> DEEPSLATE_SILVER_ORE = REGISTRATE.block("deepslate_silver_ore", Block::new)
+            .defaultBlockstate()
+            .initialProperties(() -> Blocks.DEEPSLATE_GOLD_ORE)
+            .transform(pickaxeOnly())
+            .loot((lt, b) -> lt.addDrop(b,
+                    RegistrateBlockLootTables.dropsWithSilkTouch(b,
+                            lt.applyExplosionDecay(b, ItemEntry.builder(ModdedItems.RAW_SILVER.get())
+                                    .apply(ApplyBonusLootFunction.oreDrops(Enchantments.FORTUNE))))))
+            .tag(BlockTags.NEEDS_IRON_TOOL, Tags.Blocks.ORES)
+            .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/deepslate"))
+            .tag(Tags.Items.ORES)
+            .build()
             .register();
 
     @SuppressWarnings("EmptyMethod")

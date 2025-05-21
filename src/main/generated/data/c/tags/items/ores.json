@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powergrid:silver_ore",
+    "powergrid:deepslate_silver_ore"
+  ]
+}
