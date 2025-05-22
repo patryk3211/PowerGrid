@@ -52,9 +52,9 @@ public class ReagentIngredient implements Predicate<ReagentStack> {
         return amountRequired;
     }
 
-    public static ReagentIngredient fromReagent(Reagent reagent, int amount) {
+    public static ReagentIngredient fromReagent(ReagentConvertible reagent, int amount) {
         var ingredient = new ReagentIngredient();
-        ingredient.reagent = reagent;
+        ingredient.reagent = reagent.asReagent();
         ingredient.amountRequired = amount;
         return ingredient;
     }

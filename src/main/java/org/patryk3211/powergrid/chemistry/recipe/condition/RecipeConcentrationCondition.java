@@ -19,6 +19,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
 import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 
 import java.util.Optional;
@@ -27,7 +28,8 @@ public class RecipeConcentrationCondition implements IReactionCondition {
     public static final Codec<RecipeConcentrationCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ReagentRegistry.REGISTRY.getCodec().fieldOf("reagent").forGetter(RecipeConcentrationCondition::getReagent),
             Codec.optionalField("min", Codec.FLOAT).forGetter(RecipeConcentrationCondition::getMin),
-            Codec.optionalField("max", Codec.FLOAT).forGetter(RecipeConcentrationCondition::getMax)
+            Codec.optionalField("max", Codec.FLOAT).forGetter(RecipeConcentrationCondition::getMax),
+            Codec.optionalField("in", ReagentState.CODEC).forGetter(RecipeConcentrationCondition::getState)
     ).apply(instance, RecipeConcentrationCondition::new));
 
     public static final Type<RecipeConcentrationCondition> TYPE = new Type<>("concentration", CODEC);
@@ -36,10 +38,13 @@ public class RecipeConcentrationCondition implements IReactionCondition {
     private final Float min;
     private final Float max;
 
-    public RecipeConcentrationCondition(Reagent reagent, Optional<Float> min, Optional<Float> max) {
+    private final ReagentState inState;
+
+    public RecipeConcentrationCondition(Reagent reagent, Optional<Float> min, Optional<Float> max, Optional<ReagentState> state) {
         this.reagent = reagent;
         this.min = min.orElse(null);
         this.max = max.orElse(null);
+        this.inState = state.orElse(null);
 
         if(min.isPresent() && max.isPresent()) {
             if(min.get() > max.get()) {
@@ -74,9 +79,13 @@ public class RecipeConcentrationCondition implements IReactionCondition {
         return Optional.ofNullable(max);
     }
 
+    public Optional<ReagentState> getState() {
+        return Optional.ofNullable(inState);
+    }
+
     @Override
     public boolean test(ReagentConditions conditions) {
-        var concentration = conditions.concentration(reagent);
+        var concentration = inState == null ? conditions.concentration(reagent) : conditions.concentration(reagent, inState);
         if(min != null && concentration < min)
             return false;
         if(max != null && concentration > max)

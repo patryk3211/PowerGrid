@@ -29,6 +29,10 @@ public class ConcentrationEquation implements IReactionEquation {
         reagent = ReagentRegistry.REGISTRY.get(new Identifier(reagentId));
     }
 
+    public ConcentrationEquation(Reagent reagent) {
+        this.reagent = reagent;
+    }
+
     public String getArg() {
         return ReagentRegistry.REGISTRY.getId(reagent).toString();
     }

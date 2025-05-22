@@ -15,6 +15,23 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
-public enum ReagentState {
-    SOLID, LIQUID, GAS
+import net.minecraft.util.StringIdentifiable;
+
+public enum ReagentState implements StringIdentifiable {
+    SOLID("solid"),
+    LIQUID("liquid"),
+    GAS("gas");
+
+    public static final com.mojang.serialization.Codec<ReagentState> CODEC = StringIdentifiable.createCodec(ReagentState::values);
+
+    private final String name;
+
+    ReagentState(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String asString() {
+        return name;
+    }
 }

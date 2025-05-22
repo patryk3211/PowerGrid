@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.chemistry.recipe.equation;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,7 @@ public abstract class VarEquation {
     private static final Map<String, Pair<Function<String, IReactionEquation>, Function<IReactionEquation, String>>> CODECS = new HashMap<>();
 
     public static final Codec<IReactionEquation> CODEC = Codec.STRING.xmap(str -> {
+        prepare();
         int index = str.indexOf('#');
         String name, arg;
         if (index == -1) {
@@ -37,29 +39,31 @@ public abstract class VarEquation {
         }
         return CODECS.get(name).getFirst().apply(arg);
     }, eq -> {
+        prepare();
         var type = eq.getType();
         var from = CODECS.get(type.name).getSecond();
         return from == null ? type.name : type.name + "#" + from.apply(eq);
     });
 
-    static {
-        var tInst = new TemperatureEquation();
-        Pair<Function<String, IReactionEquation>, Function<IReactionEquation, String>> t =
-                Pair.of($ -> tInst, null);
-        CODECS.put("temperature", t);
-        CODECS.put("temp", t);
-        CODECS.put("T", t);
+    private static void add(IReactionEquation.Type<?> type, Function<String, IReactionEquation> to, @Nullable Function<IReactionEquation, String> from, String... aliases) {
+        if(type.codec != CODEC)
+            throw new IllegalArgumentException("Variable equation types must have the VarEquation codec");
+        var pair = Pair.of(to, from);
 
-        Pair<Function<String, IReactionEquation>, Function<IReactionEquation, String>> p =
-                Pair.of(ConcentrationEquation::new, eq -> ((ConcentrationEquation) eq).getArg());
-        CODECS.put("concentration", p);
-        CODECS.put("Conc", p);
+        CODECS.put(type.name, pair);
+        for(var alias : aliases)
+            CODECS.put(alias, pair);
+    }
 
-        var catInst = new CatalyzerEquation();
-        Pair<Function<String, IReactionEquation>, Function<IReactionEquation, String>> cat =
-                Pair.of($ -> catInst, null);
-        CODECS.put("catalyzerStrength", cat);
-        CODECS.put("catalyzer", cat);
-        CODECS.put("Cat", cat);
+    private static void prepare() {
+        if(CODECS.isEmpty()) {
+            var tInst = new TemperatureEquation();
+            add(TemperatureEquation.TYPE, $ -> tInst, null, "temperature", "temp");
+
+            add(ConcentrationEquation.TYPE, ConcentrationEquation::new, eq -> ((ConcentrationEquation) eq).getArg(), "concentration");
+
+            var catInst = new CatalyzerEquation();
+            add(CatalyzerEquation.TYPE, $ -> catInst, null, "catalyzerStrength", "catalyzer");
+        }
     }
 }

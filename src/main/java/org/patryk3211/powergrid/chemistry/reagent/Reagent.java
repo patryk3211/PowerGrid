@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.chemistry.reagent;
 
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -27,6 +29,7 @@ public class Reagent implements ReagentConvertible {
     private static final Map<Fluid, Reagent> FLUID_MAP = new HashMap<>();
     private static final Map<Item, Reagent> ITEM_MAP = new HashMap<>();
 
+    private RegistryEntry<Reagent> registryEntry;
     public final Properties properties;
     private Item item;
     private int itemAmount;
@@ -34,6 +37,16 @@ public class Reagent implements ReagentConvertible {
 
     public Reagent(Properties properties) {
         this.properties = properties;
+    }
+
+    public RegistryEntry<Reagent> getRegistryEntry() {
+        if(registryEntry == null)
+            registryEntry = ReagentRegistry.REGISTRY.getEntry(this);
+        return registryEntry;
+    }
+
+    public boolean isIn(TagKey<Reagent> tag) {
+        return getRegistryEntry().isIn(tag);
     }
 
     public Reagent withItem(Item item, int amount) {
@@ -107,6 +120,14 @@ public class Reagent implements ReagentConvertible {
             meltingPoint = -273.15f;
             boilingPoint = -273.15f;
             heatCapacity = 1;
+        }
+
+        public Properties copy() {
+            var properties = new Properties();
+            properties.meltingPoint = meltingPoint;
+            properties.boilingPoint = boilingPoint;
+            properties.heatCapacity = heatCapacity;
+            return properties;
         }
 
         public Properties heatCapacity(float heatCapacity) {

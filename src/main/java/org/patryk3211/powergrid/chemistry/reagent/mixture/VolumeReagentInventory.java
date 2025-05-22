@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentConvertible;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
 
@@ -58,6 +59,10 @@ public class VolumeReagentInventory extends ReagentMixture {
 
     public int getLiquidAmount() {
         return usedVolume - solidVolume;
+    }
+
+    public int getSolidAmount() {
+        return solidVolume;
     }
 
     @Override
@@ -104,6 +109,18 @@ public class VolumeReagentInventory extends ReagentMixture {
         var result = super.removeInternal(reagent, amount, affectEnergy);
         refreshUsedVolume();
         return result;
+    }
+
+    @Override
+    public float concentration(ReagentConvertible reagent, ReagentState state) {
+        if(getState(reagent.asReagent()) != state)
+            return 0;
+        var total = switch(state) {
+            case GAS -> getGasAmount();
+            case LIQUID -> getLiquidAmount();
+            case SOLID -> getSolidAmount();
+        };
+        return (float) getAmount(reagent.asReagent()) / total;
     }
 
     @Override

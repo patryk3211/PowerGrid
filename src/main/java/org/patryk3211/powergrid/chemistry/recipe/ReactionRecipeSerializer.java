@@ -51,7 +51,6 @@ public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe
             }),
             Codec.FLOAT.fieldOf("energy").forGetter(ReactionRecipe::getReactionEnergy),
             IReactionEquation.CODEC.fieldOf("rate").forGetter(ReactionRecipe::getReactionRate)
-//            Codec.FLOAT.fieldOf("rate").forGetter(ReactionRecipe::getReactionRate)
     ).apply(instance, (ingredients, results, conditions, flags, energy, rate) -> {
         var params = new ReactionRecipe.RecipeConstructorParameters();
         params.ingredients = ingredients;

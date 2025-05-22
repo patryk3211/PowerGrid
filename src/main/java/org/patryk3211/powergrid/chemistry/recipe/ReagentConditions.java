@@ -16,10 +16,12 @@
 package org.patryk3211.powergrid.chemistry.recipe;
 
 import org.patryk3211.powergrid.chemistry.reagent.ReagentConvertible;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
 
 public interface ReagentConditions {
     float temperature();
     float concentration(ReagentConvertible reagent);
+    float concentration(ReagentConvertible reagent, ReagentState state);
     float catalyzer();
 
     double heatMass();

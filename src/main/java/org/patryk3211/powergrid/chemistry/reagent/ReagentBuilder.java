@@ -19,10 +19,13 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.fabric.RegistryObject;
-import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.fluid.Fluid;
@@ -31,10 +34,11 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.chemistry.recipe.RegistrateReactionRecipeProvider;
 
 import java.util.function.Supplier;
 
-public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagent, Reagent, P, ReagentBuilder<T, P>> {
+public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagent, T, P, ReagentBuilder<T, P>> {
     private final NonNullFunction<Reagent.Properties, T> factory;
     private Supplier<Reagent.Properties> propertiesSupplier;
     private NonNullUnaryOperator<Reagent.Properties> propertiesModifier = NonNullUnaryOperator.identity();
@@ -47,6 +51,11 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
 
     public static <T extends Reagent, P> ReagentBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Reagent.Properties, T> factory) {
         return new ReagentBuilder<>(owner, parent, name, callback, ReagentRegistry.REGISTRY_KEY, factory);
+    }
+
+    public ReagentBuilder<T, P> initialProperties(Supplier<Reagent> supplier) {
+        this.propertiesSupplier = () -> supplier.get().properties.copy();
+        return this;
     }
 
     public ReagentBuilder<T, P> properties(NonNullUnaryOperator<Reagent.Properties> func) {
@@ -74,21 +83,26 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
         return this;
     }
 
+    public ReagentBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Reagent, T>, RegistrateRecipeProvider> cons) {
+        return this.setData(ProviderType.RECIPE, cons);
+    }
+
     @NotNull
     @Override
-    protected Reagent createEntry() {
+    protected T createEntry() {
         var properties = propertiesSupplier.get();
         properties = propertiesModifier.apply(properties);
         return this.factory.apply(properties);
     }
 
+    @NotNull
     @Override
-    protected RegistryEntry<Reagent> createEntryWrapper(RegistryObject<Reagent> delegate) {
+    protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
         return new ReagentEntry<>(getOwner(), delegate);
     }
 
     @NotNull
-    public ReagentEntry<Reagent> register() {
-        return (ReagentEntry<Reagent>) super.register();
+    public ReagentEntry<T> register() {
+        return (ReagentEntry<T>) super.register();
     }
 }

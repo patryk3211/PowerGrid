@@ -157,6 +157,21 @@ public class ReagentMixture implements ReagentConditions {
     }
 
     @Override
+    public float concentration(ReagentConvertible reagent, ReagentState state) {
+        if(getState(reagent.asReagent()) != state)
+            return 0;
+
+        var total = 0;
+        for(var key : reagents.keySet()) {
+            if(getState(key) != state)
+                continue;
+            total += getAmount(key);
+        }
+
+        return (float) getAmount(reagent.asReagent()) / total;
+    }
+
+    @Override
     public float catalyzer() {
         return catalyzer;
     }
@@ -313,7 +328,7 @@ public class ReagentMixture implements ReagentConditions {
         }
         double resultHeatMass = 0;
         for(var result : reaction.getReagentResults()) {
-            resultHeatMass += stackHeatMass(result.getAmount(), result.getReagent());
+            resultHeatMass += stackHeatMass(result.getAmount() * quantReactionRate, result.getReagent());
         }
         double resultEnergy = ingredientEnergy + reactionEnergy * quantReactionRate;
         for(var result : reaction.getReagentResults()) {

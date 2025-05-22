@@ -18,7 +18,7 @@ package org.patryk3211.powergrid.chemistry.recipe.equation;
 import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 
 public class CatalyzerEquation implements IReactionEquation {
-    public static final IReactionEquation.Type<IReactionEquation> TYPE = new IReactionEquation.Type<>("Cat", CODEC);
+    public static final IReactionEquation.Type<IReactionEquation> TYPE = new IReactionEquation.Type<>("Cat", VarEquation.CODEC);
 
     @Override
     public float evaluate(ReagentConditions conditions) {
