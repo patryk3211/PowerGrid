@@ -60,7 +60,7 @@ public class Reagents {
                     .meltingPoint(115.2f)
                     .boilingPoint(444.6f)
                     .heatCapacity(22.75f))
-            .item(ModdedItems.SULFUR, 250)
+            .item(ModdedItems.SULFUR, 1000)
             .register();
     public static final ReagentEntry<Reagent> SULFUR_DIOXIDE = REGISTRATE.reagent("sulfur_dioxide", Reagent::new)
             .properties(properties -> properties
@@ -71,10 +71,11 @@ public class Reagents {
     public static final ReagentEntry<Reagent> SULFUR_TRIOXIDE = simpleReagent("sulfur_trioxide", 16.9f, 45.0f, 61.5f)
             .register();
     public static final ReagentEntry<Reagent> SULFURIC_ACID = simpleReagent("sulfuric_acid", 10.3f, 337.0f, 135.8f)
+            .simpleFluid(0xFFFFEE80)
             .register();
 
     public static final ReagentEntry<Reagent> REDSTONE = simpleReagent("redstone", 325f, 452f, 53.4f)
-            .item(Items.REDSTONE, 250)
+            .item(Items.REDSTONE, 1000)
             .register();
 
     public static final ReagentEntry<Reagent> REDSTONE_SULFATE = simpleReagent("redstone_sulfate", 236f, 352f, 174.2f)
@@ -82,6 +83,7 @@ public class Reagents {
 
     public static final ReagentEntry<Reagent> DISSOLVED_REDSTONE_SULFATE = dissolvedReagent("redstone_sulfate_in_water", REDSTONE_SULFATE, WATER)
             .lang("Dissolved Redstone Sulfate")
+            .simpleFluid(0xFFFF2020)
             .register();
 
     @SuppressWarnings("EmptyMethod")

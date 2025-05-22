@@ -15,10 +15,12 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
+import com.simibubi.create.AllTags;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.fabric.RegistryObject;
+import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
@@ -28,11 +30,20 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
+import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributeHandler;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.scoreboard.ScoreboardCriterion;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
@@ -73,13 +84,29 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
     }
 
     public ReagentBuilder<T, P> fluid(FluidEntry<?> fluid) {
-        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid.get()));
+        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid.get().getStill()));
         return this;
     }
 
     public ReagentBuilder<T, P> fluid(Fluid fluid) {
         onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid));
         return this;
+    }
+
+    public ReagentBuilder<T, P> simpleFluid(int tint) {
+        var fluidEntry = getOwner().fluid(getName(), SimpleFluidRenderHandler.WATER_STILL, SimpleFluidRenderHandler.WATER_FLOWING)
+                .renderType(() -> RenderLayer::getTranslucent)
+                .tag(AllTags.AllFluidTags.HONEY.tag, FluidTags.WATER) // Fabric: water tag controls physics
+                .source(SimpleFlowableFluid.Source::new) // TODO: remove when Registrate fixes FluidBuilder
+                .fluidAttributes(() -> new FluidVariantAttributeHandler() { })
+                .register();
+        // TODO: This is a HACK to prevent our renderer from getting overwritten by the fluid builder's onRegister setting the default renderer.
+        onRegisterAfter(RegistryKeys.FLUID, reagent -> {
+            var fluid = fluidEntry.get();
+            var handler = SimpleFluidRenderHandler.coloredWater(tint);
+            FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
+        });
+        return fluid(fluidEntry);
     }
 
     public ReagentBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Reagent, T>, RegistrateRecipeProvider> cons) {

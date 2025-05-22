@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powergrid:block/redstone_sulfate_in_water"
+    }
+  }
+}

@@ -7,7 +7,7 @@
   ],
   "conditions": [
     { "type": "temperature", "min": 0 },
-    { "type": "concentration", "reagent": "powergrid:sulfuric_acid", "min": 0.5, "in": "liquid" },
+    { "type": "concentration", "reagent": "powergrid:sulfuric_acid", "min": 0.25, "in": "liquid" },
     { "type": "concentration", "reagent": "powergrid:water", "min": 0.25, "in": "liquid" }
   ],
   "results": [
