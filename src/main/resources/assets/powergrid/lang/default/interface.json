@@ -21,6 +21,7 @@
 
   "powergrid.gui.chemical_vat.info_header": "Vat information",
   "powergrid.gui.chemical_vat.temperature": "Reagent temperature",
+  "powergrid.gui.chemical_vat.reagents": "Contents:",
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",

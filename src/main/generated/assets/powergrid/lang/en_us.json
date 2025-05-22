@@ -55,6 +55,7 @@
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.watt": "W",
   "powergrid.gui.chemical_vat.info_header": "Vat information",
+  "powergrid.gui.chemical_vat.reagents": "Reagents",
   "powergrid.gui.chemical_vat.temperature": "Reagent temperature",
   "powergrid.gui.creative_resistor.current": "Current",
   "powergrid.gui.creative_resistor.info_header": "Creative resistor information",
@@ -84,5 +85,16 @@
   "powergrid.message.connection_too_long": "This terminal is too far away",
   "powergrid.tooltip.current.max": "Maximum current:",
   "powergrid.tooltip.resistance.series": "Series resistance:",
-  "powergrid.tooltip.voltage.max": "Maximum voltage:"
+  "powergrid.tooltip.voltage.max": "Maximum voltage:",
+  "reagent.powergrid.hydrogen": "Hydrogen",
+  "reagent.powergrid.nitrogen": "Nitrogen",
+  "reagent.powergrid.oxygen": "Oxygen",
+  "reagent.powergrid.redstone": "Redstone",
+  "reagent.powergrid.redstone_sulfate": "Redstone Sulfate",
+  "reagent.powergrid.redstone_sulfate_in_water": "Dissolved Redstone Sulfate",
+  "reagent.powergrid.sulfur": "Sulfur",
+  "reagent.powergrid.sulfur_dioxide": "Sulfur Dioxide",
+  "reagent.powergrid.sulfur_trioxide": "Sulfur Trioxide",
+  "reagent.powergrid.sulfuric_acid": "Sulfuric Acid",
+  "reagent.powergrid.water": "Water"
 }

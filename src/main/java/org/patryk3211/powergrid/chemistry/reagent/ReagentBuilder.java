@@ -34,7 +34,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.chemistry.recipe.RegistrateReactionRecipeProvider;
 
 import java.util.function.Supplier;
 
@@ -50,7 +49,7 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
     }
 
     public static <T extends Reagent, P> ReagentBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Reagent.Properties, T> factory) {
-        return new ReagentBuilder<>(owner, parent, name, callback, ReagentRegistry.REGISTRY_KEY, factory);
+        return new ReagentBuilder<>(owner, parent, name, callback, ReagentRegistry.REGISTRY_KEY, factory).defaultLang();
     }
 
     public ReagentBuilder<T, P> initialProperties(Supplier<Reagent> supplier) {
@@ -85,6 +84,14 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
 
     public ReagentBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Reagent, T>, RegistrateRecipeProvider> cons) {
         return this.setData(ProviderType.RECIPE, cons);
+    }
+
+    public ReagentBuilder<T, P> defaultLang() {
+        return this.lang(Reagent::getTranslationKey);
+    }
+
+    public ReagentBuilder<T, P> lang(String name) {
+        return this.lang(Reagent::getTranslationKey, name);
     }
 
     @NotNull

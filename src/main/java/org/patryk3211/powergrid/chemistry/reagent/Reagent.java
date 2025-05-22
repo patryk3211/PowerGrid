@@ -19,6 +19,7 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -34,6 +35,7 @@ public class Reagent implements ReagentConvertible {
     private Item item;
     private int itemAmount;
     private Fluid fluid;
+    private String translationKey;
 
     public Reagent(Properties properties) {
         this.properties = properties;
@@ -104,6 +106,20 @@ public class Reagent implements ReagentConvertible {
     @Override
     public Reagent asReagent() {
         return this;
+    }
+
+    protected String getOrCreateTranslationKey() {
+        if(this.translationKey == null)
+            this.translationKey = Util.createTranslationKey("reagent", ReagentRegistry.REGISTRY.getId(this));
+        return this.translationKey;
+    }
+
+    public String getTranslationKey() {
+        return this.getOrCreateTranslationKey();
+    }
+
+    public String getTranslationKey(ReagentStack stack) {
+        return this.getOrCreateTranslationKey();
     }
 
     public static class Properties {

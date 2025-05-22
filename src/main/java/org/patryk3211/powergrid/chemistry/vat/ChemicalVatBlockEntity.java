@@ -270,6 +270,9 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     }
 
     public ActionResult use(PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if(hand == Hand.OFF_HAND)
+            return ActionResult.PASS;
+
         assert world != null;
         var stack = player.getStackInHand(hand);
         if(stack.isOf(Items.FLINT_AND_STEEL)) {
@@ -316,6 +319,9 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     @Override
     public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+        if(reagentInventory.getReagents().isEmpty())
+            return false;
+
         Lang.translate("gui.chemical_vat.info_header").forGoggles(tooltip);
         Lang.builder().translate("gui.chemical_vat.temperature")
                 .style(Formatting.GRAY)
@@ -328,6 +334,38 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 .add(Unit.TEMPERATURE.get())
                 .style(Formatting.YELLOW)
                 .forGoggles(tooltip, 1);
+
+        tooltip.add(Text.empty());
+        Lang.builder().translate("gui.chemical_vat.reagents").forGoggles(tooltip);
+        for (var reagent : reagentInventory.getReagents()) {
+            var state = reagentInventory.getState(reagent);
+            var amount = reagentInventory.getAmount(reagent);
+            Text amountText;
+            if(state != ReagentState.SOLID) {
+                var mb = (amount * Reagent.FLUID_MOLE_RATIO / 81);
+                String str;
+                if(mb < 1) {
+                    str = "<1mB";
+                } else {
+                    str = String.format("%dmB", (int) mb);
+                }
+                amountText = Text.literal(str).formatted(Formatting.BLUE);
+            } else {
+                String str;
+                if(reagent.asItem() != null) {
+                    var count = (float) amount / reagent.getItemAmount();
+                    str = "x" + count;
+                } else {
+                    str = String.format("%.3f", (float) amount / 1000);
+                }
+                amountText = Text.literal(str).formatted(Formatting.GREEN);
+            }
+            Lang.builder()
+                    .add(Text.translatable(reagent.getTranslationKey()).formatted(Formatting.GRAY))
+                    .add(Text.of(" "))
+                    .add(amountText)
+                    .forGoggles(tooltip, 1);
+        }
         return true;
     }
 

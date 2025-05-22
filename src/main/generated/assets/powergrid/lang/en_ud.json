@@ -55,6 +55,7 @@
   "powergrid.generic.unit.volt": "Λ",
   "powergrid.generic.unit.watt": "M",
   "powergrid.gui.chemical_vat.info_header": "uoıʇɐɯɹoɟuı ʇɐΛ",
+  "powergrid.gui.chemical_vat.reagents": "sʇuǝbɐǝᴚ",
   "powergrid.gui.chemical_vat.temperature": "ǝɹnʇɐɹǝdɯǝʇ ʇuǝbɐǝᴚ",
   "powergrid.gui.creative_resistor.current": "ʇuǝɹɹnƆ",
   "powergrid.gui.creative_resistor.info_header": "uoıʇɐɯɹoɟuı ɹoʇsısǝɹ ǝʌıʇɐǝɹƆ",
@@ -84,5 +85,16 @@
   "powergrid.message.connection_too_long": "ʎɐʍɐ ɹɐɟ ooʇ sı ןɐuıɯɹǝʇ sıɥ⟘",
   "powergrid.tooltip.current.max": ":ʇuǝɹɹnɔ ɯnɯıxɐW",
   "powergrid.tooltip.resistance.series": ":ǝɔuɐʇsısǝɹ sǝıɹǝS",
-  "powergrid.tooltip.voltage.max": ":ǝbɐʇןoʌ ɯnɯıxɐW"
+  "powergrid.tooltip.voltage.max": ":ǝbɐʇןoʌ ɯnɯıxɐW",
+  "reagent.powergrid.hydrogen": "uǝboɹpʎH",
+  "reagent.powergrid.nitrogen": "uǝboɹʇıN",
+  "reagent.powergrid.oxygen": "uǝbʎxO",
+  "reagent.powergrid.redstone": "ǝuoʇspǝᴚ",
+  "reagent.powergrid.redstone_sulfate": "ǝʇɐɟןnS ǝuoʇspǝᴚ",
+  "reagent.powergrid.redstone_sulfate_in_water": "ǝʇɐɟןnS ǝuoʇspǝᴚ pǝʌןossıᗡ",
+  "reagent.powergrid.sulfur": "ɹnɟןnS",
+  "reagent.powergrid.sulfur_dioxide": "ǝpıxoıᗡ ɹnɟןnS",
+  "reagent.powergrid.sulfur_trioxide": "ǝpıxoıɹ⟘ ɹnɟןnS",
+  "reagent.powergrid.sulfuric_acid": "pıɔⱯ ɔıɹnɟןnS",
+  "reagent.powergrid.water": "ɹǝʇɐM"
 }
