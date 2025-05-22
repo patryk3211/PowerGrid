@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
@@ -49,6 +50,7 @@ public class MixtureItemView implements Storage<ItemVariant> {
         stack.setAmount(itemCount * reagent.getItemAmount());
         // Add accepted reagent.
         mixture.add(stack, transaction);
+        TransactionCallback.onSuccess(transaction, mixture::setAltered);
         return itemCount;
     }
 
@@ -65,6 +67,7 @@ public class MixtureItemView implements Storage<ItemVariant> {
             inner.abort();
         }
         mixture.remove(reagent, removed * reagent.getItemAmount(), transaction);
+        TransactionCallback.onSuccess(transaction, mixture::setAltered);
         return removed;
     }
 

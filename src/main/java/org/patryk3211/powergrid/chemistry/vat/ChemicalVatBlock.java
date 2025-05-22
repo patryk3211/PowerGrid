@@ -17,11 +17,15 @@ package org.patryk3211.powergrid.chemistry.vat;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.EntityShapeContext;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemUsageContext;
@@ -50,6 +54,8 @@ public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntit
             createCuboidShape(0, 2, 0, 14, 16, 2),
             createCuboidShape(0, 2, 14, 14, 16, 16)
     );
+
+    private static final VoxelShape COLLISION_SHAPE = createCuboidShape(0, 0, 0, 16, 14, 16);
 
     public ChemicalVatBlock(Settings settings) {
         super(settings);
@@ -102,8 +108,40 @@ public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntit
     }
 
     @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        if(!state.get(OPEN))
+            return VoxelShapes.fullCube();
+        if(context instanceof EntityShapeContext entityContext && entityContext.getEntity() instanceof ItemEntity)
+            return COLLISION_SHAPE;
+        return getOutlineShape(state, world, pos, context);
+    }
+
+    @Override
     public void onEntityLand(BlockView world, Entity entity) {
         super.onEntityLand(world, entity);
+        if(!world.getBlockState(entity.getBlockPos()).isOf(this))
+            return;
+        if(!(entity instanceof ItemEntity itemEntity))
+            return;
+        if(!entity.isAlive())
+            return;
+
+        withBlockEntityDo(world, entity.getBlockPos(), be -> {
+            var inventory = be.getItemStorage(null);
+            var stack = itemEntity.getStack().copy();
+
+            try(var transaction = Transaction.openOuter()) {
+                var inserted = inventory.insert(ItemVariant.of(stack), stack.getCount(), transaction);
+                transaction.commit();
+                if(inserted == stack.getCount()) {
+                    itemEntity.discard();
+                    return;
+                }
+
+                stack.decrement((int) inserted);
+                itemEntity.setStack(stack);
+            }
+        });
     }
 
     @Override

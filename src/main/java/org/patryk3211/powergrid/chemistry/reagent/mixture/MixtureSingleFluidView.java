@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import net.minecraft.nbt.NbtCompound;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -43,6 +43,7 @@ public class MixtureSingleFluidView implements StorageView<FluidVariant> {
         if(Reagent.getReagent(fluid.getFluid()) != reagent)
             return 0;
         var removedStack = mixture.remove(reagent, (int) Math.ceil(amount / Reagent.FLUID_MOLE_RATIO), transaction);
+        TransactionCallback.onSuccess(transaction, mixture::setAltered);
         return (long) (removedStack.getAmount() * Reagent.FLUID_MOLE_RATIO);
     }
 

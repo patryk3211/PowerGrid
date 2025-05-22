@@ -46,6 +46,8 @@ public class ReagentMixture implements ReagentConditions {
     private MixtureFluidView fluidView;
     private MixtureItemView itemView;
 
+    private boolean altered;
+
     public ReagentMixture() {
         totalAmount = 0;
         heatMass = 0;
@@ -243,11 +245,13 @@ public class ReagentMixture implements ReagentConditions {
             requestedAmount = total;
         var temperature = temperature();
         var extractedMixture = new ReagentMixture();
+        int extractedAmount = 0;
         for(var reagent : reagents) {
             double concentration = (double) getAmount(reagent) / total;
-            int reagentAmount = (int) Math.round(requestedAmount * concentration);
+            int reagentAmount = Math.min(Math.max((int) Math.round(requestedAmount * concentration), 1), requestedAmount - extractedAmount);
             extractedMixture.addInternal(reagent, reagentAmount, temperature, true);
             TransactionCallback.onSuccess(transaction, () -> removeInternal(reagent, reagentAmount, true));
+            extractedAmount += reagentAmount;
         }
         return extractedMixture;
     }
@@ -428,5 +432,15 @@ public class ReagentMixture implements ReagentConditions {
         if(itemView == null)
             itemView = new MixtureItemView(this);
         return itemView;
+    }
+
+    public void setAltered() {
+        this.altered = true;
+    }
+
+    public boolean wasAltered() {
+        boolean state = altered;
+        altered = false;
+        return state;
     }
 }

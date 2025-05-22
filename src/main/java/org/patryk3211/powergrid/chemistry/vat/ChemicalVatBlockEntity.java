@@ -47,6 +47,7 @@ import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.PreciseNumberFormat;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.*;
@@ -136,6 +137,9 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         var tempDiff = reagentInventory.temperature() - 22f;
         reagentInventory.removeEnergy(tempDiff * DISSIPATION_FACTOR * 0.05f);
+
+        if(reagentInventory.wasAltered())
+            sendData();
     }
 
     @Override
@@ -354,7 +358,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 String str;
                 if(reagent.asItem() != null) {
                     var count = (float) amount / reagent.getItemAmount();
-                    str = "x" + count;
+                    str = "x" + PreciseNumberFormat.format(count);
                 } else {
                     str = String.format("%.3f", (float) amount / 1000);
                 }

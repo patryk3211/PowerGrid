@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
@@ -41,6 +42,7 @@ public class MixtureFluidView implements Storage<FluidVariant> {
             return 0;
         var stack = new ReagentStack(reagent, (int) (amount / Reagent.FLUID_MOLE_RATIO));
         var added = mixture.add(stack, transaction);
+        TransactionCallback.onSuccess(transaction, mixture::setAltered);
         return amount * added / stack.getAmount();
     }
 
@@ -50,6 +52,7 @@ public class MixtureFluidView implements Storage<FluidVariant> {
         if(reagent == null)
             return 0;
         var stack = mixture.remove(reagent, (int) Math.ceil(amount / Reagent.FLUID_MOLE_RATIO), transaction);
+        TransactionCallback.onSuccess(transaction, mixture::setAltered);
         return (long) (stack.getAmount() * Reagent.FLUID_MOLE_RATIO);
     }
 

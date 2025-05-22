@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import net.minecraft.nbt.NbtCompound;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -43,13 +43,14 @@ public class MixtureSingleItemView implements StorageView<ItemVariant> {
         if(Reagent.getReagent(item.getItem()) != reagent)
             return 0;
 
-        int itemCount = 0;
+        int itemCount;
         try(var inner = transaction.openNested()) {
             var removedStack = mixture.remove(reagent, (int) (amount * reagent.getItemAmount()), inner);
             itemCount = removedStack.getAmount() / reagent.getItemAmount();
             inner.abort();
         }
         mixture.remove(reagent, itemCount * reagent.getItemAmount(), transaction);
+        TransactionCallback.onSuccess(transaction, mixture::setAltered);
         return itemCount;
     }
 
