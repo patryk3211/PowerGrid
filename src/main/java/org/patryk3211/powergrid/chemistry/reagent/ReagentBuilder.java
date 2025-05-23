@@ -114,6 +114,11 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
         return coloredWaterFluid(tint).build();
     }
 
+    public ReagentBuilder<T, P> particleColor(int rgb) {
+        onRegister(reagent -> reagent.withParticleColor(rgb));
+        return this;
+    }
+
     public ReagentBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Reagent, T>, RegistrateRecipeProvider> cons) {
         return this.setData(ProviderType.RECIPE, cons);
     }

@@ -37,6 +37,7 @@ public class Reagent implements ReagentConvertible {
     private int itemAmount;
     private Fluid fluid;
     private String translationKey;
+    private int particleColor = 0;
 
     public Reagent(Properties properties) {
         this.properties = properties;
@@ -63,6 +64,10 @@ public class Reagent implements ReagentConvertible {
         this.fluid = fluid;
         FLUID_MAP.put(fluid, this);
         return this;
+    }
+
+    public void withParticleColor(int color) {
+        this.particleColor = color;
     }
 
     public float getMeltingPoint() {
@@ -94,6 +99,10 @@ public class Reagent implements ReagentConvertible {
 
     public int getItemAmount() {
         return itemAmount;
+    }
+
+    public int getParticleColor() {
+        return particleColor;
     }
 
     public static Reagent getReagent(Fluid fluid) {

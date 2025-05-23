@@ -48,6 +48,7 @@ public class Reagents {
                     .boilingPoint(100.0f)
                     .heatCapacity(75.38f))
             .fluid(Fluids.WATER)
+            .particleColor(0xEEEEEE)
             .register();
     public static final ReagentEntry<Reagent> NITROGEN = REGISTRATE.reagent("nitrogen", Reagent::new)
             .properties(properties -> properties
@@ -67,8 +68,10 @@ public class Reagents {
                     .meltingPoint(-72.0f)
                     .boilingPoint(10.0f)
                     .heatCapacity(42.5f))
+            .particleColor(0xDDDDDD)
             .register();
     public static final ReagentEntry<Reagent> SULFUR_TRIOXIDE = simpleReagent("sulfur_trioxide", 16.9f, 45.0f, 61.5f)
+            .particleColor(0xDDDDDD)
             .register();
     public static final ReagentEntry<Reagent> SULFURIC_ACID = simpleReagent("sulfuric_acid", 10.3f, 337.0f, 135.8f)
             .simpleFluid(0xFFFFEE80)

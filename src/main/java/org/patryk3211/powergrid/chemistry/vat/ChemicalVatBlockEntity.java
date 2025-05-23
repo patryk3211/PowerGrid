@@ -33,6 +33,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -42,9 +44,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.ConstantReagentMixture;
+import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
@@ -115,10 +119,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             int diffuseAmount = (int) (DIFFUSION_RATE * reagentInventory.getGasAmount()) - Math.abs(moveAmount);
 
             // TODO: I'm not sure if I implemented transactions correctly (probably not) so this is split in two.
+            ReagentMixture diffused = null, moved = null;
             try(var transaction = Transaction.openOuter()) {
                 if (diffuseAmount > 0) {
-                    var removed = reagentInventory.remove(diffuseAmount, ReagentState.GAS, transaction);
-                    reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(removed.getTotalAmount()), transaction);
+                    diffused = reagentInventory.remove(diffuseAmount, ReagentState.GAS, transaction);
+                    reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(diffused.getTotalAmount()), transaction);
                 }
                 transaction.commit();
             }
@@ -127,13 +132,28 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 if(moveAmount < 0) {
                     if(moveAmount < -100000)
                         moveAmount = -100000;
-                    reagentInventory.remove(-moveAmount, ReagentState.GAS, transaction);
+                    moved = reagentInventory.remove(-moveAmount, ReagentState.GAS, transaction);
                 } else {
                     if(moveAmount > 100000)
                         moveAmount = 100000;
                     reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(moveAmount), transaction);
                 }
                 transaction.commit();
+            }
+
+            if(world.isClient) {
+                if(diffused != null && moved != null) {
+                    try(var transaction = Transaction.openOuter()) {
+                        diffused.add(moved, transaction);
+                        transaction.commit();
+                    }
+                } else if(diffused == null) {
+                    diffused = moved;
+                }
+
+                if(diffused != null) {
+                    createGasParticles(diffused);
+                }
             }
         } else {
             reagentInventory.setOpen(false);
@@ -315,6 +335,30 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             world.addImportantParticle(
                     new FluidParticleData(AllParticleTypes.BASIN_FLUID.get(), new FluidStack(fluid)),
                     x, surface, z, 0, 0, 0);
+        }
+    }
+
+    private void createGasParticles(ReagentMixture mixture) {
+        var r = world.random;
+        var x = pos.getX() + 2 / 16f;
+        var surface = pos.getY() + 14 / 16f; //+ reagentInventory.getFillLevel();
+        var z = pos.getZ() + 2 / 16f;
+
+        for(var reagent : mixture.getReagents()) {
+            var color = reagent.getParticleColor();
+            if(color == 0)
+                continue;
+            var amount = mixture.getAmount(reagent);
+
+            float chance = amount / 10f;
+            while(r.nextFloat() < chance) {
+                float red = ((color >> 16) & 0xFF) / 255f;
+                float green = ((color >> 8) & 0xFF) / 255f;
+                float blue = (color & 0xFF) / 255f;
+                world.addParticle(new DustParticleEffect(new Vector3f(red, green, blue), 1.0f),
+                        x + r.nextFloat() * 12 / 16f, surface, z + r.nextFloat() * 12 / 16f, 0, 0.5f, 0);
+                chance -= 1;
+            }
         }
     }
 
