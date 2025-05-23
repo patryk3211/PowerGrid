@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -26,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Reagent implements ReagentConvertible {
-    public static final double FLUID_MOLE_RATIO = 81000.0 / 4000.0;
+    public static final double FLUID_MOLE_RATIO = FluidConstants.BLOCK / 4000.0;
     private static final Map<Fluid, Reagent> FLUID_MAP = new HashMap<>();
     private static final Map<Item, Reagent> ITEM_MAP = new HashMap<>();
 

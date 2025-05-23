@@ -9,7 +9,7 @@
   "energy": 5.0,
   "ingredients": [
     {
-      "reagent": "powergrid:redstone_sulfate_in_water"
+      "reagent": "powergrid:dissolved_redstone_sulfate"
     }
   ],
   "rate": 10.0,

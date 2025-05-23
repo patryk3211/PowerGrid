@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.collections;
 import com.simibubi.create.content.kinetics.base.HalfShaftInstance;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlockEntity;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatRenderer;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
@@ -125,6 +126,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<ChemicalVatBlockEntity> CHEMICAL_VAT =
             REGISTRATE.blockEntity("chemical_vat", ChemicalVatBlockEntity::new)
                     .validBlock(ModdedBlocks.CHEMICAL_VAT)
+                    .renderer(() -> ChemicalVatRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

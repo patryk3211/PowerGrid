@@ -15,12 +15,16 @@
  */
 package org.patryk3211.powergrid.chemistry.vat;
 
+import com.simibubi.create.AllParticleTypes;
 import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.content.fluids.particle.FluidParticleData;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
@@ -133,6 +137,10 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             }
         } else {
             reagentInventory.setOpen(false);
+        }
+
+        if(world.isClient) {
+            createFluidParticles();
         }
 
         var tempDiff = reagentInventory.temperature() - 22f;
@@ -261,6 +269,52 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 transaction.abort();
                 amount = added;
             }
+        }
+    }
+
+    private void createFluidParticles() {
+        var r = world.random;
+        if(r.nextFloat() > 1 / 12f)
+            return;
+
+        int segments = 0;
+        StorageView<FluidVariant> maxFluid = null;
+        for(var fluid : getFluidStorage(null)) {
+            if(fluid.isResourceBlank())
+                continue;
+            if(fluid.getAmount() <= 0)
+                continue;
+            if(maxFluid != null) {
+                if(maxFluid.getAmount() < fluid.getAmount()) {
+                    maxFluid = fluid;
+                }
+            } else {
+                maxFluid = fluid;
+            }
+            ++segments;
+        }
+
+        if(segments < 2)
+            return;
+
+        float fluidLevel = (float) getFluidAmount() / getFluidCapacity();
+        float rim = 2 / 16f;
+        float space = 12 / 16f;
+        float surface = pos.getY() + rim + 13 / 16f * fluidLevel + 1 / 32f;
+
+        for(var fluid : getFluidStorage(null)) {
+            if(fluid.isResourceBlank())
+                continue;
+            if(fluid.getAmount() <= 0)
+                continue;
+            if(fluid.getResource() == maxFluid.getResource())
+                continue;
+
+            float x = pos.getX() + rim + space * r.nextFloat();
+            float z = pos.getZ() + rim + space * r.nextFloat();
+            world.addImportantParticle(
+                    new FluidParticleData(AllParticleTypes.BASIN_FLUID.get(), new FluidStack(fluid)),
+                    x, surface, z, 0, 0, 0);
         }
     }
 
@@ -409,5 +463,13 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     @Override
     public Storage<FluidVariant> getFluidStorage(@Nullable Direction side) {
         return reagentInventory.getFluidView();
+    }
+
+    public long getFluidAmount() {
+        return (long) (reagentInventory.getLiquidAmount() * Reagent.FLUID_MOLE_RATIO);
+    }
+
+    public long getFluidCapacity() {
+        return (long) (reagentInventory.getVolume() * Reagent.FLUID_MOLE_RATIO);
     }
 }

@@ -19,7 +19,7 @@
   "rate": 10.0,
   "results": [
     {
-      "reagent": "powergrid:redstone_sulfate_in_water"
+      "reagent": "powergrid:dissolved_redstone_sulfate"
     }
   ]
 }

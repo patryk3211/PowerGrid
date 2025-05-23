@@ -19,6 +19,7 @@ import com.simibubi.create.AllTags;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
+import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.fabric.RegistryObject;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -93,20 +94,24 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
         return this;
     }
 
-    public ReagentBuilder<T, P> simpleFluid(int tint) {
-        var fluidEntry = getOwner().fluid(getName(), SimpleFluidRenderHandler.WATER_STILL, SimpleFluidRenderHandler.WATER_FLOWING)
+    public FluidBuilder<SimpleFlowableFluid.Flowing, ReagentBuilder<T, P>> coloredWaterFluid(int tint) {
+        var fluidBuilder = getOwner().fluid(this, getName(), SimpleFluidRenderHandler.WATER_STILL, SimpleFluidRenderHandler.WATER_FLOWING)
                 .renderType(() -> RenderLayer::getTranslucent)
-                .tag(AllTags.AllFluidTags.HONEY.tag, FluidTags.WATER) // Fabric: water tag controls physics
+                .tag(FluidTags.WATER) // Fabric: water tag controls physics
                 .source(SimpleFlowableFluid.Source::new) // TODO: remove when Registrate fixes FluidBuilder
-                .fluidAttributes(() -> new FluidVariantAttributeHandler() { })
-                .register();
+                .fluidAttributes(() -> new FluidVariantAttributeHandler() { });
         // TODO: This is a HACK to prevent our renderer from getting overwritten by the fluid builder's onRegister setting the default renderer.
         onRegisterAfter(RegistryKeys.FLUID, reagent -> {
-            var fluid = fluidEntry.get();
+            var fluid = fluidBuilder.get().get();
             var handler = SimpleFluidRenderHandler.coloredWater(tint);
             FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
+            reagent.withFluid(fluid.getStill());
         });
-        return fluid(fluidEntry);
+        return fluidBuilder;
+    }
+
+    public ReagentBuilder<T, P> simpleFluid(int tint) {
+        return coloredWaterFluid(tint).build();
     }
 
     public ReagentBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Reagent, T>, RegistrateRecipeProvider> cons) {

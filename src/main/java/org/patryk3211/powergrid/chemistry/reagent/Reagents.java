@@ -81,8 +81,7 @@ public class Reagents {
     public static final ReagentEntry<Reagent> REDSTONE_SULFATE = simpleReagent("redstone_sulfate", 236f, 352f, 174.2f)
             .register();
 
-    public static final ReagentEntry<Reagent> DISSOLVED_REDSTONE_SULFATE = dissolvedReagent("redstone_sulfate_in_water", REDSTONE_SULFATE, WATER)
-            .lang("Dissolved Redstone Sulfate")
+    public static final ReagentEntry<Reagent> DISSOLVED_REDSTONE_SULFATE = dissolvedReagent("dissolved_redstone_sulfate", REDSTONE_SULFATE, WATER)
             .simpleFluid(0xFFFF2020)
             .register();
 
