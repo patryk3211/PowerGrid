@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -35,6 +34,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -42,6 +42,7 @@ import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 import java.util.List;
 
+import static com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour.get;
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
@@ -58,6 +59,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     protected int electricTerminal2;
 
     protected ItemStack item;
+    protected float resistance;
 
     private ElectricWire wire;
     protected float overheatTemperature = 175f;
@@ -69,6 +71,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     public void setWire(ElectricWire wire) {
         this.wire = wire;
+    }
+
+    public ElectricWire getWire() {
+        return this.wire;
     }
 
     @Override
@@ -162,6 +168,37 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             item = ItemStack.fromNbt(nbt.getCompound("Item"));
 
         dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
+        resistance = nbt.getFloat("Resistance");
+
+        makeWire();
+    }
+
+    protected void makeWire() {
+        if(wire != null) {
+            wire.remove();
+        }
+
+        var eb1 = get(getWorld(), electricBlockPos1, ElectricBehaviour.TYPE);
+        var eb2 = get(getWorld(), electricBlockPos2, ElectricBehaviour.TYPE);
+
+        var et1 = eb1.getTerminal(electricTerminal1);
+        var et2 = eb2.getTerminal(electricTerminal2);
+        wire = GlobalElectricNetworks.makeConnection(eb1, et1, eb2, et2, resistance);
+    }
+
+    public void dropWire() {
+        if(wire != null) {
+            wire.remove();
+            wire = null;
+        }
+    }
+
+    public boolean isConnectedTo(BlockPos pos, int terminal) {
+        if(pos.equals(electricBlockPos1) && terminal == electricTerminal1)
+            return true;
+        if(pos.equals(electricBlockPos2) && terminal == electricTerminal2)
+            return true;
+        return false;
     }
 
     @Override
@@ -174,6 +211,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             nbt.put("Item", item.writeNbt(new NbtCompound()));
 
         nbt.putFloat("Temperature", dataTracker.get(TEMPERATURE));
+        nbt.putFloat("Resistance", resistance);
     }
 
     @Override
@@ -194,13 +232,12 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 behaviour2 = electric.getBehaviour(world, electricBlockPos2, state2);
             }
 
-            if(behaviour1 != null && behaviour2 != null) {
-                behaviour1.removeConnection(electricTerminal1, behaviour2.getPos(), electricTerminal2);
-                behaviour2.removeConnection(electricTerminal2, behaviour1.getPos(), electricTerminal1);
-            } else if(behaviour1 != null) {
-                behaviour1.removeConnection(electricTerminal1, electricBlockPos2, electricTerminal2);
-            } else if(behaviour2 != null) {
-                behaviour2.removeConnection(electricTerminal2, electricBlockPos1, electricTerminal1);
+            dropWire();
+            if(behaviour1 != null) {
+                behaviour1.removeConnection(electricTerminal1, getUuid());
+            }
+            if(behaviour2 != null) {
+                behaviour2.removeConnection(electricTerminal2, getUuid());
             }
         }
     }
