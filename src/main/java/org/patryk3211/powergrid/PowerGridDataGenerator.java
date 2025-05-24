@@ -43,6 +43,8 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 			BiConsumer<String, String> langConsumer = provider::add;
 			provideDefaultLang("interface", langConsumer);
 			provideDefaultLang("messages", langConsumer);
+
+			providePonderLang(langConsumer);
 		});
 	}
 
@@ -61,5 +63,18 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 			var value = entry.getValue().getAsString();
 			consumer.accept(key, value);
 		}
+	}
+
+	private static void providePonderLang(BiConsumer<String, String> consumer) {
+		// TODO: Figure out if I need this.
+		// Register these since FMLClientSetupEvent does not run during datagen
+//		AllPonderTags.register();
+//		PonderIndex.register();
+
+//		SharedText.gatherText();
+//		PonderLocalization.generateSceneLang();
+
+//		GeneralText.provideLang(consumer);
+//		PonderLocalization.provideLang(Create.ID, consumer);
 	}
 }

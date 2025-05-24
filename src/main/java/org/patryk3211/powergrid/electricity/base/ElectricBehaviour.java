@@ -189,6 +189,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         var sourceConnections = connections.get(sourceTerminal);
         for(var connection : sourceConnections) {
             var entity = connection.getEntity(getWorld());
+            if(entity == null)
+                return false;
             if(entity.isConnectedTo(targetPos, targetTerminal))
                 return true;
         }

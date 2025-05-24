@@ -189,7 +189,7 @@ public interface IElectric extends IWrenchable {
         }
 
         if(world.isClient)
-            return ActionResult.CONSUME;
+            return ActionResult.SUCCESS;
         ServerWorld serverWorld = (ServerWorld) world;
 
         // The amount of used items dictates the resistance of a connection,
@@ -230,8 +230,6 @@ public interface IElectric extends IWrenchable {
         if(context.getPlayer() == null || !context.getPlayer().isCreative())
             stack.decrement(requiredItemCount);
 
-        behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(entity.getBlockPos(), entity.getUuid()));
-        behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(entity.getBlockPos(), entity.getUuid()));
         return ActionResult.SUCCESS;
     }
 }

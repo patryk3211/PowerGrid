@@ -184,6 +184,9 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         var et1 = eb1.getTerminal(electricTerminal1);
         var et2 = eb2.getTerminal(electricTerminal2);
         wire = GlobalElectricNetworks.makeConnection(eb1, et1, eb2, et2, resistance);
+
+        eb1.addConnection(electricTerminal1, new ElectricBehaviour.Connection(getBlockPos(), getUuid()));
+        eb2.addConnection(electricTerminal2, new ElectricBehaviour.Connection(getBlockPos(), getUuid()));
     }
 
     public void dropWire() {
