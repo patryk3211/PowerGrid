@@ -43,29 +43,29 @@ public class GaugeScenes {
         scene.title(voltage ? "voltage_gauge" : "current_gauge", title);
         scene.configureBasePlate(0, 0, 5);
 
-        BlockPos sourcePos = util.grid.at(2, 0, 2);
-        BlockPos gaugePos = util.grid.at(2, 2, 2);
+        BlockPos sourcePos = util.grid.at(2, 1, 4);
+        BlockPos gaugePos = util.grid.at(2, 1, 2);
         if(!voltage) {
             scene.world.setBlock(gaugePos, ModdedBlocks.ANDESITE_CURRENT_METER.getDefaultState(), false);
         }
 
-        scene.world.showSection(util.select.layer(1), Direction.UP);
+        scene.showBasePlate();
         scene.idle(5);
 
+        scene.world.showSection(util.select.position(0, 1, 2), Direction.DOWN);
         scene.world.showSection(util.select.position(0, 2, 2), Direction.DOWN);
-        scene.world.showSection(util.select.position(0, 3, 2), Direction.DOWN);
         scene.idle(2);
+        scene.world.showSection(util.select.position(4, 1, 2), Direction.DOWN);
         scene.world.showSection(util.select.position(4, 2, 2), Direction.DOWN);
-        scene.world.showSection(util.select.position(4, 3, 2), Direction.DOWN);
         scene.idle(2);
 
         scene.world.showSection(util.select.position(gaugePos), Direction.DOWN);
         scene.idle(2);
 
-        electric.connect(util.grid.at(0, 3, 2), 0, gaugePos, 1);
-        var wire2 = electric.connect(util.grid.at(4, 3, 2), 0, gaugePos, 0);
-        electric.connectInvisible(util.grid.at(0, 3, 2), 0, sourcePos, 0);
-        electric.connectInvisible(util.grid.at(4, 3, 2), 0, sourcePos, 1);
+        electric.connect(util.grid.at(0, 2, 2), 0, gaugePos, 1);
+        var wire2 = electric.connect(util.grid.at(4, 2, 2), 0, gaugePos, 0);
+        electric.connectInvisible(util.grid.at(0, 2, 2), 0, sourcePos, 0);
+        electric.connectInvisible(util.grid.at(4, 2, 2), 0, sourcePos, 1);
         scene.idle(2);
 
         if(voltage) {
@@ -96,16 +96,16 @@ public class GaugeScenes {
             electric.removeWire(wire2);
             scene.idle(10);
 
-            var heater1Pos = util.grid.at(3, 2, 1);
-            var heater2Pos = util.grid.at(3, 2, 3);
+            var heater1Pos = util.grid.at(3, 1, 1);
+            var heater2Pos = util.grid.at(3, 1, 3);
             scene.world.setBlock(heater1Pos, ModdedBlocks.HEATING_COIL.getDefaultState(), true);
             scene.world.setBlock(heater2Pos, ModdedBlocks.HEATING_COIL.getDefaultState(), true);
             scene.world.showSection(util.select.position(heater1Pos), Direction.DOWN);
             scene.world.showSection(util.select.position(heater2Pos), Direction.DOWN);
             scene.idle(5);
 
-            electric.connect(util.grid.at(4, 3,2), 0, heater1Pos, 0);
-            electric.connect(util.grid.at(4, 3,2), 0, heater2Pos, 0);
+            electric.connect(util.grid.at(4, 2,2), 0, heater1Pos, 0);
+            electric.connect(util.grid.at(4, 2,2), 0, heater2Pos, 0);
             electric.connect(gaugePos, 0, heater1Pos, 1);
             electric.connect(gaugePos, 0, heater2Pos, 1);
 

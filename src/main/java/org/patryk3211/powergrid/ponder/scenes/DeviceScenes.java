@@ -39,22 +39,23 @@ public class DeviceScenes {
         scene.title("heating_coil_basic", "Warming up the atmosphere");
         scene.configureBasePlate(0, 0, 5);
 
-        scene.world.showSection(util.select.layer(1), Direction.UP);
-        scene.world.showSection(util.select.fromTo(4, 2, 1, 5, 2, 3), Direction.UP);
-        scene.world.showSection(util.select.position(0, 2, 2), Direction.UP);
+        scene.showBasePlate();
+        scene.world.showSection(util.select.fromTo(4, 1, 1, 5, 1, 3), Direction.UP);
+        scene.world.showSection(util.select.position(0, 1, 2), Direction.UP);
+        scene.world.showSection(util.select.position(5, 1, 2), Direction.UP);
         scene.idle(5);
 
-        var heatingCoil = util.grid.at(3, 2, 2);
-        var voltageSource = util.grid.at(3, 0, 2);
-        scene.world.showSection(util.select.position(4, 3, 1), Direction.DOWN);
-        scene.world.showSection(util.select.position(4, 3, 3), Direction.DOWN);
+        var heatingCoil = util.grid.at(3, 1, 2);
+        var voltageSource = util.grid.at(6, 2, 2);
+        scene.world.showSection(util.select.position(4, 2, 1), Direction.DOWN);
+        scene.world.showSection(util.select.position(4, 2, 3), Direction.DOWN);
         scene.world.showSection(util.select.position(heatingCoil), Direction.DOWN);
         scene.idle(10);
 
-        electric.connect(util.grid.at(4, 3, 1), 0, heatingCoil, 0);
-        electric.connect(util.grid.at(4, 3, 3), 0, heatingCoil, 1);
-        electric.connectInvisible(util.grid.at(4, 3, 1), 0, voltageSource, 0);
-        electric.connectInvisible(util.grid.at(4, 3, 3), 0, voltageSource, 1);
+        electric.connect(util.grid.at(4, 2, 1), 0, heatingCoil, 0);
+        electric.connect(util.grid.at(4, 2, 3), 0, heatingCoil, 1);
+        electric.connectInvisible(util.grid.at(4, 2, 1), 0, voltageSource, 0);
+        electric.connectInvisible(util.grid.at(4, 2, 3), 0, voltageSource, 1);
         scene.idle(5);
 
         scene.overlay.showText(60)
@@ -86,28 +87,29 @@ public class DeviceScenes {
         scene.title("heating_coil_speed", "Electrified bulk processing");
         scene.configureBasePlate(0, 0, 5);
 
-        scene.world.showSection(util.select.layer(1), Direction.UP);
-        scene.world.showSection(util.select.fromTo(0, 2, 4, 3, 2, 5), Direction.UP);
-        scene.world.showSection(util.select.fromTo(1, 2, 0, 3, 2, 0), Direction.UP);
+        scene.showBasePlate();
+        scene.world.showSection(util.select.fromTo(0, 1, 4, 3, 1, 5), Direction.UP);
+        scene.world.showSection(util.select.fromTo(1, 1, 0, 3, 1, 0), Direction.UP);
+        scene.world.showSection(util.select.position(2, 0, 5), Direction.UP);
         scene.idle(5);
 
-        var heatingCoil = util.grid.at(1, 2, 3);
-        var voltageSource = util.grid.at(1, 0, 4);
-        scene.world.showSection(util.select.position(0, 3, 4), Direction.DOWN);
-        scene.world.showSection(util.select.position(2, 3, 4), Direction.DOWN);
+        var heatingCoil = util.grid.at(1, 1, 3);
+        var voltageSource = util.grid.at(2, 1, 6);
+        scene.world.showSection(util.select.position(0, 2, 4), Direction.DOWN);
+        scene.world.showSection(util.select.position(2, 2, 4), Direction.DOWN);
         scene.world.showSection(util.select.position(heatingCoil), Direction.DOWN);
         scene.idle(10);
 
-        electric.connect(util.grid.at(0, 3, 4), 0, heatingCoil, 1);
-        electric.connect(util.grid.at(2, 3, 4), 0, heatingCoil, 0);
-        electric.connectInvisible(util.grid.at(0, 3, 4), 0, voltageSource, 0);
-        electric.connectInvisible(util.grid.at(2, 3, 4), 0, voltageSource, 1);
+        electric.connect(util.grid.at(0, 2, 4), 0, heatingCoil, 1);
+        electric.connect(util.grid.at(2, 2, 4), 0, heatingCoil, 0);
+        electric.connectInvisible(util.grid.at(0, 2, 4), 0, voltageSource, 0);
+        electric.connectInvisible(util.grid.at(2, 2, 4), 0, voltageSource, 1);
         electric.setSource(voltageSource, 32);
         electric.tickFor(10);
         scene.idle(10);
 
-        scene.world.setBlock(util.grid.at(3, 2, 3), Blocks.FIRE.getDefaultState(), false);
-        scene.world.showSection(util.select.position(3, 2, 3), Direction.WEST);
+        scene.world.setBlock(util.grid.at(3, 1, 3), Blocks.FIRE.getDefaultState(), false);
+        scene.world.showSection(util.select.position(3, 1, 3), Direction.WEST);
 
         scene.overlay.showText(60)
                 .text("The heating coil allows for faster bulk processing")
@@ -119,14 +121,14 @@ public class DeviceScenes {
         var stack = new ItemStack(Items.BEEF);
         var cooked = new ItemStack(Items.COOKED_BEEF);
 
-        var heaterEntity = scene.world.createItemEntity(util.vector.centerOf(1, 3, 1), util.vector.of(0, 0.1, 0), stack);
-        var fireEntity = scene.world.createItemEntity(util.vector.centerOf(3, 3, 1), util.vector.of(0, 0.1, 0), stack);
+        var heaterEntity = scene.world.createItemEntity(util.vector.centerOf(1, 2, 1), util.vector.of(0, 0.1, 0), stack);
+        var fireEntity = scene.world.createItemEntity(util.vector.centerOf(3, 2, 1), util.vector.of(0, 0.1, 0), stack);
         scene.idle(10);
         scene.world.modifyEntity(heaterEntity, e -> e.setVelocity(0, 0, -0.2f));
         scene.world.modifyEntity(fireEntity, e -> e.setVelocity(0, 0, -0.2f));
 
-        var item1Vec = util.vector.blockSurface(util.grid.at(1, 2, 0), Direction.SOUTH).add(0, 0, 0.1);
-        var item2Vec = util.vector.blockSurface(util.grid.at(3, 2, 0), Direction.SOUTH).add(0, 0, 0.1);
+        var item1Vec = util.vector.blockSurface(util.grid.at(1, 1, 0), Direction.SOUTH).add(0, 0, 0.1);
+        var item2Vec = util.vector.blockSurface(util.grid.at(3, 1, 0), Direction.SOUTH).add(0, 0, 0.1);
 
         scene.effects.emitParticles(item1Vec.add(0, 0.2f, 0), EmitParticlesInstruction.Emitter.simple(ParticleTypes.LARGE_SMOKE, Vec3d.ZERO), 1, 60);
         scene.effects.emitParticles(item2Vec.add(0, 0.2f, 0), EmitParticlesInstruction.Emitter.simple(ParticleTypes.LARGE_SMOKE, Vec3d.ZERO), 1, 100);

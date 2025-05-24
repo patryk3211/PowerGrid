@@ -20,6 +20,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.ponder.scenes.DeviceScenes;
 import org.patryk3211.powergrid.ponder.scenes.GaugeScenes;
+import org.patryk3211.powergrid.ponder.scenes.GeneratorScenes;
 
 public class PonderIndex {
     static final PonderRegistrationHelper HELPER = new PonderRegistrationHelper(PowerGrid.MOD_ID);
@@ -33,5 +34,15 @@ public class PonderIndex {
         HELPER.forComponents(ModdedBlocks.HEATING_COIL)
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic)
                 .addStoryBoard("heating_coil/speed", DeviceScenes::heatingCoilSpeed);
+
+        HELPER.forComponents(ModdedBlocks.ROTOR)
+                .addStoryBoard("generator/rotor", GeneratorScenes::rotor)
+                .addStoryBoard("generator/generator", GeneratorScenes::generator);
+
+        HELPER.forComponents(ModdedBlocks.COIL)
+                .addStoryBoard("generator/coil", GeneratorScenes::coil)
+                .addStoryBoard("generator/generator", GeneratorScenes::generator);
+
+        HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing);
     }
 }
