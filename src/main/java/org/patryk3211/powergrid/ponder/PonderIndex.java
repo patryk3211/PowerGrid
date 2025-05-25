@@ -48,12 +48,19 @@ public class PonderIndex {
 
         HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing);
 
-        HELPER.forComponents(ModdedItems.WIRE)
+        HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE)
                 .addStoryBoard("wire/simple", WireScenes::simple)
                 .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
 
         HELPER.forComponents(ModdedBlocks.TRANSFORMER_CORE)
                 .addStoryBoard("transformer/sizes", DeviceScenes::transformerSizes)
                 .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding);
+
+        HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB)
+                .addStoryBoard("lightbulb", DeviceScenes::light);
+
+        HELPER.addStoryBoard(ModdedBlocks.WIRE_CONNECTOR, "wire/connector", WireScenes::connector);
+
+        HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor);
     }
 }

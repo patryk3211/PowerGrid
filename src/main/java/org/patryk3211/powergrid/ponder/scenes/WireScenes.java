@@ -19,6 +19,7 @@ import com.simibubi.create.foundation.ponder.SceneBuilder;
 import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
 import com.simibubi.create.foundation.ponder.instruction.EmitParticlesInstruction;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
@@ -125,6 +126,57 @@ public class WireScenes {
             scene.effects.emitParticles(util.vector.of(0.75f + i * 0.5f, 1.3, 2.5), EmitParticlesInstruction.Emitter.simple(ParticleTypes.SMOKE, Vec3d.ZERO), 0.2f, 60);
             scene.effects.emitParticles(util.vector.of(0.75f + i * 0.5f, 1.3, 4.5), EmitParticlesInstruction.Emitter.simple(ParticleTypes.SMOKE, Vec3d.ZERO), 0.2f, 60);
         }
+        scene.idle(70);
+
+        scene.markAsFinished();
+        electric.unload();
+    }
+
+    public static void connector(SceneBuilder scene, SceneBuildingUtil util) {
+        var electric = ElectricInstructions.of(scene);
+        scene.title("wire_connector", "Wires on poles");
+        scene.configureBasePlate(0, 0, 7);
+
+        scene.showBasePlate();
+        scene.idle(5);
+
+        var positions = new BlockPos[] {
+                util.grid.at(1, 1, 1),
+                util.grid.at(3, 1, 2),
+                util.grid.at(1, 1, 4),
+                util.grid.at(5, 1, 2),
+                util.grid.at(4, 1, 4),
+                util.grid.at(3, 1, 5),
+                util.grid.at(6, 1, 0),
+                util.grid.at(0, 1, 5)
+        };
+
+        for(var pos : positions) {
+            scene.world.showSection(util.select.position(pos), Direction.DOWN);
+            scene.idle(5);
+        }
+
+        electric.connect(positions[0], 0, positions[1], 0);
+        scene.idle(5);
+        electric.connect(positions[0], 0, positions[2], 0);
+        scene.idle(5);
+        electric.connect(positions[1], 0, positions[6], 0);
+        scene.idle(5);
+
+        scene.overlay.showText(80)
+                .text("Wire connectors can be used as attachment points for wires")
+                .attachKeyFrame()
+                .placeNearTarget();
+
+        electric.connect(positions[1], 0, positions[3], 0);
+        scene.idle(5);
+        electric.connect(positions[3], 0, positions[4], 0);
+        scene.idle(5);
+        electric.connect(positions[4], 0, positions[5], 0);
+        scene.idle(5);
+        electric.connect(positions[1], 0, positions[4], 0);
+        scene.idle(5);
+        electric.connect(positions[5], 0, positions[7], 0);
         scene.idle(70);
 
         scene.markAsFinished();

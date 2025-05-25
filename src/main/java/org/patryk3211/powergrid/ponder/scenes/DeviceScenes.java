@@ -15,25 +15,22 @@
  */
 package org.patryk3211.powergrid.ponder.scenes;
 
-import com.simibubi.create.foundation.ponder.ElementLink;
-import com.simibubi.create.foundation.ponder.PonderPalette;
 import com.simibubi.create.foundation.ponder.SceneBuilder;
 import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
-import com.simibubi.create.foundation.ponder.element.EntityElement;
 import com.simibubi.create.foundation.ponder.element.InputWindowElement;
 import com.simibubi.create.foundation.ponder.instruction.EmitParticlesInstruction;
 import com.simibubi.create.foundation.utility.Pointing;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.MinecartItem;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
@@ -260,5 +257,118 @@ public class DeviceScenes {
         scene.idle(90);
 
         scene.markAsFinished();
+    }
+
+    public static void light(SceneBuilder scene, SceneBuildingUtil util) {
+        var electric = ElectricInstructions.of(scene);
+        scene.title("light", "Lighting up the world with electricity");
+        scene.configureBasePlate(0, 0, 5);
+
+//        var source = util.grid.at(2, 1, 3);
+//        electric.setSource(source, 60);
+//        electric.connectInvisible(source, 0, util.grid.at(0, 2, 2), 0);
+//        electric.connectInvisible(source, 1, util.grid.at(4, 2, 2), 0);
+
+        var light = util.grid.at(2, 2, 2);
+        scene.showBasePlate();
+        scene.idle(5);
+
+        scene.world.showSection(util.select.fromTo(0, 1, 2, 4, 1, 2), Direction.NORTH);
+        scene.idle(5);
+
+        scene.world.showSection(util.select.position(0, 2, 2), Direction.DOWN);
+        scene.world.showSection(util.select.position(4, 2, 2), Direction.DOWN);
+        scene.idle(5);
+
+        scene.world.showSection(util.select.position(light), Direction.DOWN);
+        scene.idle(5);
+
+        electric.connect(util.grid.at(0, 2, 2), 0, light, 0);
+        electric.connect(util.grid.at(4, 2, 2), 0, light, 1);
+        scene.idle(15);
+
+        scene.overlay.showText(80)
+                .text("When light bulbs are inserted into fixtures and powered on they turn electricity into light")
+                .attachKeyFrame()
+                .pointAt(util.vector.topOf(light).subtract(0, 0.5, 0))
+                .placeNearTarget();
+        scene.idle(40);
+        scene.world.modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 2), false);
+        scene.idle(70);
+
+        scene.overlay.showText(80)
+                .text("If the voltage is not high enough, the light bulb will be dimmer")
+                .attachKeyFrame()
+                .pointAt(util.vector.topOf(light).subtract(0, 0.5, 0))
+                .placeNearTarget();
+        scene.idle(40);
+        scene.world.modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 1), false);
+        scene.idle(50);
+
+        scene.markAsFinished();
+        electric.unload();
+    }
+
+    public static void motor(SceneBuilder scene, SceneBuildingUtil util) {
+        var electric = ElectricInstructions.of(scene);
+        scene.title("electric_motor", "Turning electricity into rotation");
+        scene.configureBasePlate(1, 0, 5);
+
+        var source = util.grid.at(4, 1, 4);
+        var motor = util.grid.at(4, 1, 2);
+        var gauge = util.grid.at(5, 2, 2);
+        electric.connectInvisible(source, 0, util.grid.at(5, 1, 1), 0);
+        electric.connectInvisible(source, 1, util.grid.at(5, 1, 3), 0);
+
+        scene.showBasePlate();
+        scene.world.showSection(util.select.position(gauge.down()), Direction.UP);
+        scene.idle(5);
+
+        scene.world.showSection(util.select.position(gauge), Direction.DOWN);
+        scene.world.showSection(util.select.position(5, 1, 1), Direction.DOWN);
+        scene.world.showSection(util.select.position(5, 1, 3), Direction.DOWN);
+        scene.idle(5);
+
+        scene.world.showSection(util.select.position(0, 0, 3), Direction.EAST);
+        scene.world.showSection(util.select.fromTo(0, 1, 2, 1, 1, 2), Direction.EAST);
+        scene.world.showSection(util.select.fromTo(2, 1, 2, 3, 1, 2), Direction.DOWN);
+        scene.idle(5);
+
+        scene.world.showSection(util.select.position(motor), Direction.DOWN);
+        scene.idle(5);
+
+        electric.connect(util.grid.at(5, 1, 1), 0, gauge, 0);
+        electric.connect(util.grid.at(5, 1, 1), 0, motor, 1);
+        electric.connect(util.grid.at(5, 1, 3), 0, gauge, 1);
+        electric.connect(util.grid.at(5, 1, 3), 0, motor, 0);
+        electric.setSource(source, 50);
+        electric.tickFor(10);
+
+        scene.world.setKineticSpeed(util.select.fromTo(0, 1, 2, 4, 1, 2), 64);
+        scene.world.setKineticSpeed(util.select.position(0, 0, 3), -32);
+        scene.effects.rotationSpeedIndicator(motor.west());
+        scene.idle(15);
+
+        scene.overlay.showText(80)
+                .text("The electric motor lets you convert electricity into rotation")
+                .attachKeyFrame()
+                .pointAt(util.vector.topOf(motor))
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.overlay.showText(80)
+                .text("The speed of the motor depends on the voltage you provide")
+                .attachKeyFrame()
+                .pointAt(util.vector.blockSurface(gauge, Direction.WEST))
+                .placeNearTarget();
+        scene.idle(40);
+        electric.setSource(source, 100);
+        electric.tickFor(10);
+        scene.world.multiplyKineticSpeed(util.select.everywhere(), 2.0f);
+        scene.effects.rotationSpeedIndicator(motor.west());
+        scene.idle(50);
+
+        scene.markAsFinished();
+        electric.unload();
     }
 }
