@@ -22,7 +22,6 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.fabricmc.api.EnvType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -39,75 +38,32 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
-import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
 public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixtureBlockEntity> {
     public static final EnumProperty<Direction> FACING = Properties.FACING;
     public static final IntProperty POWER = IntProperty.of("power", 0, 2);
+    public static final BooleanProperty ALONG_FIRST_AXIS = BooleanProperty.of("axis_along_first");
 
-    private static final TerminalBoundingBox UP_TERMINAL_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 3, 0, 7, 5, 3, 9);
-    private static final TerminalBoundingBox UP_TERMINAL_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 0, 7, 13, 3, 9);
+    private static final TerminalBoundingBox[] UP_TERMINALS = new TerminalBoundingBox[] {
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 3, 0, 7, 5, 3, 9),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 0, 7, 13, 3, 9)
+    };
 
-    private static final TerminalBoundingBox DOWN_TERMINAL_1 = UP_TERMINAL_1.rotateAroundX(BlockRotation.CLOCKWISE_180);
-    private static final TerminalBoundingBox DOWN_TERMINAL_2 = UP_TERMINAL_2.rotateAroundX(BlockRotation.CLOCKWISE_180);
-
-    private static final TerminalBoundingBox NORTH_TERMINAL_1 = UP_TERMINAL_1.rotateAroundX(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox NORTH_TERMINAL_2 = UP_TERMINAL_2.rotateAroundX(BlockRotation.CLOCKWISE_90);
-
-    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_180);
-    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_180);
-
-    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
-
-    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
-    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
-
-    private static final VoxelShape SHAPE_UP = VoxelShapes.union(
-            createCuboidShape(3.5, 0, 3.5, 12.5, 4, 12.5),
-            UP_TERMINAL_1.getShape(),
-            UP_TERMINAL_2.getShape()
-    );
-
-    private static final VoxelShape SHAPE_DOWN = VoxelShapes.union(
-            createCuboidShape(3.5, 12, 3.5, 12.5, 16, 12.5),
-            DOWN_TERMINAL_1.getShape(),
-            DOWN_TERMINAL_2.getShape()
-    );
-
-    private static final VoxelShape SHAPE_SOUTH = VoxelShapes.union(
-            createCuboidShape(3.5, 3.5, 0, 12.5, 12.5, 4),
-            SOUTH_TERMINAL_1.getShape(),
-            SOUTH_TERMINAL_2.getShape()
-    );
-
-    private static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
-            createCuboidShape(3.5, 3.5, 12, 12.5, 12.5, 16),
-            NORTH_TERMINAL_1.getShape(),
-            NORTH_TERMINAL_2.getShape()
-    );
-
-    private static final VoxelShape SHAPE_EAST = VoxelShapes.union(
-            createCuboidShape(0, 3.5, 3.5, 4, 12.5, 12.5),
-            EAST_TERMINAL_1.getShape(),
-            EAST_TERMINAL_2.getShape()
-    );
-
-    private static final VoxelShape SHAPE_WEST = VoxelShapes.union(
-            createCuboidShape(12, 3.5, 3.5, 16, 12.5, 12.5),
-            WEST_TERMINAL_1.getShape(),
-            WEST_TERMINAL_2.getShape()
-    );
+    private static final VoxelShape SHAPE_UP = createCuboidShape(3.5, 0, 3.5, 12.5, 4, 12.5);
+    private static final VoxelShape SHAPE_DOWN = createCuboidShape(3.5, 12, 3.5, 12.5, 16, 12.5);
+    private static final VoxelShape SHAPE_SOUTH = createCuboidShape(3.5, 3.5, 0, 12.5, 12.5, 4);
+    private static final VoxelShape SHAPE_NORTH = createCuboidShape(3.5, 3.5, 12, 12.5, 12.5, 16);
+    private static final VoxelShape SHAPE_EAST = createCuboidShape(0, 3.5, 3.5, 4, 12.5, 12.5);
+    private static final VoxelShape SHAPE_WEST = createCuboidShape(12, 3.5, 3.5, 16, 12.5, 12.5);
 
     Vec3d modelOffset;
 
@@ -119,6 +75,31 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
         }));
         modelOffset = Vec3d.ZERO;
         setDefaultState(getDefaultState().with(POWER, 0));
+
+        setTerminalCollection(BlockStateTerminalCollection.builder(this)
+                .forAllStatesExcept(state -> BlockStateTerminalCollection.each(UP_TERMINALS, terminal -> {
+                    var facing = state.get(FACING);
+                    terminal = switch(facing) {
+                        case UP -> terminal;
+                        case DOWN -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_180);
+                        case NORTH -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_90);
+                        case SOUTH -> terminal.rotateAroundX(BlockRotation.COUNTERCLOCKWISE_90);
+                        case EAST -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_90).rotateAroundY(BlockRotation.CLOCKWISE_90);
+                        case WEST -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_90).rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+                    };
+                    if(!state.get(ALONG_FIRST_AXIS)) {
+                        terminal = terminal.rotate(facing.getAxis(), BlockRotation.CLOCKWISE_90);
+                    }
+                    return terminal;
+                }), POWER)
+                .withShapeMapper(state -> switch(state.get(FACING)) {
+                    case UP -> SHAPE_UP;
+                    case DOWN -> SHAPE_DOWN;
+                    case EAST -> SHAPE_EAST;
+                    case WEST -> SHAPE_WEST;
+                    case NORTH -> SHAPE_NORTH;
+                    case SOUTH -> SHAPE_SOUTH;
+                }).build());
     }
 
     public static <B extends LightFixtureBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setBulbModelOffset(Vec3d modelOffset) {
@@ -138,66 +119,27 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(FACING, POWER);
+        builder.add(FACING, POWER, ALONG_FIRST_AXIS);
     }
 
     @Override
     public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return getDefaultState()
-                .with(FACING, ctx.getSide());
-    }
+        var facing = ctx.getSide();
+        boolean along = true;
+        if(facing.getAxis() == Direction.Axis.Y) {
+            var player = ctx.getHorizontalPlayerFacing();
+            if(player.getAxis() == Direction.Axis.X)
+                along = false;
+        }
 
-    @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch(state.get(FACING)) {
-            case UP -> SHAPE_UP;
-            case DOWN -> SHAPE_DOWN;
-            case NORTH -> SHAPE_NORTH;
-            case SOUTH -> SHAPE_SOUTH;
-            case EAST -> SHAPE_EAST;
-            case WEST -> SHAPE_WEST;
-        };
+        return getDefaultState()
+                .with(FACING, facing)
+                .with(ALONG_FIRST_AXIS, along);
     }
 
     @Override
     public int terminalCount() {
         return 2;
-    }
-
-    @Override
-    public ITerminalPlacement terminal(BlockState state, int index) {
-        return switch(state.get(FACING)) {
-            case UP -> switch(index) {
-                case 0 -> UP_TERMINAL_1;
-                case 1 -> UP_TERMINAL_2;
-                default -> null;
-            };
-            case DOWN -> switch(index) {
-                case 0 -> DOWN_TERMINAL_1;
-                case 1 -> DOWN_TERMINAL_2;
-                default -> null;
-            };
-            case SOUTH -> switch(index) {
-                case 0 -> SOUTH_TERMINAL_1;
-                case 1 -> SOUTH_TERMINAL_2;
-                default -> null;
-            };
-            case NORTH -> switch(index) {
-                case 0 -> NORTH_TERMINAL_1;
-                case 1 -> NORTH_TERMINAL_2;
-                default -> null;
-            };
-            case EAST -> switch(index) {
-                case 0 -> EAST_TERMINAL_1;
-                case 1 -> EAST_TERMINAL_2;
-                default -> null;
-            };
-            case WEST -> switch(index) {
-                case 0 -> WEST_TERMINAL_1;
-                case 1 -> WEST_TERMINAL_2;
-                default -> null;
-            };
-        };
     }
 
     @Override

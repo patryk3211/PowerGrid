@@ -264,14 +264,21 @@ public class ModdedBlocks {
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStatesExcept(state -> {
                         var builder = ConfiguredModel.builder().modelFile(modModel(prov, "block/light_fixture"));
-                        switch(state.get(LightFixtureBlock.FACING)) {
-                            case DOWN -> builder.rotationX(180);
-                            case NORTH -> builder.rotationX(90);
-                            case SOUTH -> builder.rotationX(90).rotationY(180);
-                            case EAST -> builder.rotationX(90).rotationY(90);
-                            case WEST -> builder.rotationX(90).rotationY(-90);
+                        int x = 0, y = 0;
+                        var facing = state.get(LightFixtureBlock.FACING);
+                        switch(facing) {
+                            case DOWN -> x = 180;
+                            case NORTH -> x = 90;
+                            case SOUTH -> x = -90;
+                            case EAST -> { x = 90; y = 90; }
+                            case WEST -> { x = 90; y = -90; }
                         }
-                        return builder.build();
+                        if(!state.get(LightFixtureBlock.ALONG_FIRST_AXIS)) {
+                            if(facing.getAxis() == Direction.Axis.Y)
+                                y = 90;
+                            // Other states would need a different model.
+                        }
+                        return builder.rotationX(x).rotationY(y).build();
                     }, LightFixtureBlock.POWER))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())

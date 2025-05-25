@@ -34,7 +34,7 @@ public class RotatedTerminalCollection {
         return terminals[dir.ordinal()][index];
     }
 
-    public static class Builder extends TerminalCollectionBuilder<Builder, RotatedTerminalCollection> {
+    public static class Builder extends SimpleTerminalCollectionBuilder<Builder, RotatedTerminalCollection> {
         private final ITerminalRotator rotator;
         private final List<Direction> directions = new ArrayList<>();
 
