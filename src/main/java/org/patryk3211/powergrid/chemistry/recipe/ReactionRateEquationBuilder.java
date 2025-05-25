@@ -94,6 +94,17 @@ public class ReactionRateEquationBuilder<P extends ReactionRateEquationBuilder.P
         return this;
     }
 
+    public ReactionRateEquationBuilder<P> constant(float number) {
+        return this.number(number);
+    }
+
+    public ReactionRateEquationBuilder<P> constant(float... numbers) {
+        for(var number : numbers) {
+            this.number(number);
+        }
+        return this;
+    }
+
     public ReactionRateEquationBuilder<P> temperature() {
         this.elements.add(new TemperatureEquation());
         return this;

@@ -1,0 +1,36 @@
+{
+  "type": "powergrid:reaction",
+  "conditions": [
+    {
+      "type": "temperature",
+      "max": 810.0,
+      "min": 100.0
+    },
+    {
+      "type": "catalyzer",
+      "strength": 1.0
+    }
+  ],
+  "energy": 198.0,
+  "ingredients": [
+    {
+      "reagent": "powergrid:sulfur_dioxide"
+    },
+    {
+      "reagent": "powergrid:oxygen"
+    }
+  ],
+  "rate": {
+    "polynomial": [
+      "T",
+      -5.0E-5,
+      0.465,
+      -5.0
+    ]
+  },
+  "results": [
+    {
+      "reagent": "powergrid:sulfur_trioxide"
+    }
+  ]
+}

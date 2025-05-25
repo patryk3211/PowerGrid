@@ -1,0 +1,40 @@
+{
+  "type": "powergrid:reaction",
+  "conditions": [
+    {
+      "type": "temperature",
+      "min": 0.0
+    },
+    {
+      "type": "concentration",
+      "in": "liquid",
+      "min": 0.25,
+      "reagent": "powergrid:sulfuric_acid"
+    },
+    {
+      "type": "concentration",
+      "in": "liquid",
+      "min": 0.25,
+      "reagent": "powergrid:water"
+    }
+  ],
+  "energy": 0.0,
+  "ingredients": [
+    {
+      "reagent": "powergrid:redstone"
+    },
+    {
+      "reagent": "powergrid:sulfuric_acid"
+    }
+  ],
+  "rate": 1.0,
+  "results": [
+    {
+      "reagent": "powergrid:redstone_sulfate"
+    },
+    {
+      "amount": 2,
+      "reagent": "powergrid:hydrogen"
+    }
+  ]
+}

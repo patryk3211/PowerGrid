@@ -38,6 +38,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(MechanicalCraftingRecipes::new);
 		pack.addProvider(MixingRecipes::new);
 		pack.addProvider(PressingRecipes::new);
+		pack.addProvider(ReactionRecipes::new);
 
 		PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;
