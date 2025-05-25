@@ -15,6 +15,22 @@
  */
 package org.patryk3211.powergrid.electricity.base.terminals;
 
-public interface TerminalCollectionBuilder<C> {
-    C build();
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public abstract class SimpleTerminalCollectionBuilder<B extends SimpleTerminalCollectionBuilder<?, C>, C> implements TerminalCollectionBuilder<C> {
+    protected final List<TerminalBoundingBox> terminals = new ArrayList<>();
+
+    public B add(TerminalBoundingBox terminal) {
+        terminals.add(terminal);
+        return (B) this;
+    }
+
+    public B add(TerminalBoundingBox... terminals) {
+        Collections.addAll(this.terminals, terminals);
+        return (B) this;
+    }
 }
