@@ -28,9 +28,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.MinecartItem;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
+import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
 
 public class DeviceScenes {
@@ -143,5 +148,117 @@ public class DeviceScenes {
         scene.idle(20);
         scene.markAsFinished();
         electric.unload();
+    }
+
+    public static void transformerSizes(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("transformer_sizes", "Transformers");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(5);
+
+        var smallTr = util.grid.at(2, 1, 1);
+        scene.world.showSection(util.select.position(smallTr), Direction.DOWN);
+        scene.idle(20);
+
+        scene.overlay.showControls(new InputWindowElement(util.vector.blockSurface(smallTr, Direction.NORTH), Pointing.RIGHT).withWrench(), 30);
+        scene.idle(20);
+        scene.world.setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
+        scene.idle(20);
+
+        var mediumTr = util.grid.at(2, 1, 3);
+        scene.world.showSection(util.select.fromTo(mediumTr, mediumTr.west().up()), Direction.DOWN);
+        scene.idle(20);
+
+        scene.overlay.showControls(new InputWindowElement(util.vector.blockSurface(mediumTr.up(), Direction.NORTH), Pointing.RIGHT).withWrench(), 30);
+        scene.idle(20);
+        scene.world.setBlock(mediumTr, ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .with(TransformerMediumBlock.PART, 1), false);
+        scene.world.setBlock(mediumTr.west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .with(TransformerMediumBlock.PART, 0), false);
+        scene.world.setBlock(mediumTr.up(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .with(TransformerMediumBlock.PART, 3), false);
+        scene.world.setBlock(mediumTr.up().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .with(TransformerMediumBlock.PART, 2), false);
+        scene.idle(20);
+
+        scene.overlay.showText(80)
+                .text("Transformers come in different sizes, each of them offering different power capabilities and winding capacities")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void transformerWinding(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("transformer_winding", "Winding a transformer");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(10);
+
+        var tr = util.grid.at(2, 1, 2);
+        scene.world.showSection(util.select.position(tr), Direction.DOWN);
+        scene.idle(15);
+
+        scene.overlay.showText(80)
+                .text("To wind a transformer, first select the starting terminal for your winding")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        var stack = new ItemStack(ModdedItems.WIRE, 1);
+        scene.overlay.showControls(new InputWindowElement(util.vector.of(2.8, 1.9, 2.0), Pointing.RIGHT).withItem(stack), 30);
+        scene.idle(30);
+
+        var side = util.vector.blockSurface(tr, Direction.NORTH);
+        scene.overlay.showText(80)
+                .text("Next, click on the transformer body and pick the number of turn you want to add")
+                .attachKeyFrame()
+                .pointAt(side)
+                .placeNearTarget();
+        scene.idle(50);
+        scene.overlay.showControls(new InputWindowElement(side, Pointing.UP).withItem(stack), 30);
+        scene.idle(40);
+
+        scene.overlay.showText(80)
+                .text("Lastly, select the end terminal for your winding")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.overlay.showControls(new InputWindowElement(util.vector.of(2.2, 1.9, 2.0), Pointing.LEFT).withItem(stack), 30);
+        scene.idle(20);
+        scene.world.setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
+                .with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .with(TransformerSmallBlock.COILS, 1), false);
+        scene.idle(10);
+
+        scene.effects.indicateSuccess(tr);
+        scene.idle(10);
+
+        scene.overlay.showText(60)
+                .text("Repeat for the secondary winding")
+                .placeNearTarget();
+        scene.idle(50);
+
+        scene.world.setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
+                .with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .with(TransformerSmallBlock.COILS, 2), false);
+        scene.effects.indicateSuccess(tr);
+        scene.idle(30);
+
+        scene.overlay.showText(80)
+                .text("Your transformer will now transform voltage with the ratio you wound")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.markAsFinished();
     }
 }

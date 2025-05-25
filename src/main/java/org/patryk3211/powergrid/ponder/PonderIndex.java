@@ -17,10 +17,13 @@ package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.foundation.ponder.PonderRegistrationHelper;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.ponder.scenes.DeviceScenes;
 import org.patryk3211.powergrid.ponder.scenes.GaugeScenes;
 import org.patryk3211.powergrid.ponder.scenes.GeneratorScenes;
+import org.patryk3211.powergrid.ponder.scenes.WireScenes;
 
 public class PonderIndex {
     static final PonderRegistrationHelper HELPER = new PonderRegistrationHelper(PowerGrid.MOD_ID);
@@ -44,5 +47,13 @@ public class PonderIndex {
                 .addStoryBoard("generator/generator", GeneratorScenes::generator);
 
         HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing);
+
+        HELPER.forComponents(ModdedItems.WIRE)
+                .addStoryBoard("wire/simple", WireScenes::simple)
+                .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
+
+        HELPER.forComponents(ModdedBlocks.TRANSFORMER_CORE)
+                .addStoryBoard("transformer/sizes", DeviceScenes::transformerSizes)
+                .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding);
     }
 }
