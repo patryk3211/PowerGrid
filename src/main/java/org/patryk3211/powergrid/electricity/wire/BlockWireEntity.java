@@ -47,13 +47,14 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         super(type, world);
     }
 
-    public static BlockWireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, @Nullable List<Point> points) {
+    public static BlockWireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, float resistance, @Nullable List<Point> points) {
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
         entity.electricBlockPos1 = pos1;
         entity.electricBlockPos2 = pos2;
         entity.electricTerminal1 = terminal1;
         entity.electricTerminal2 = terminal2;
         entity.item = item;
+        entity.resistance = resistance;
 
         var terminal1Pos = IElectric.getTerminalPos(pos1, world.getBlockState(pos1), terminal1);
         entity.setPos(terminal1Pos.x, terminal1Pos.y, terminal1Pos.z);
@@ -67,6 +68,8 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         entity.setPitch(0);
         entity.resetPosition();
         entity.refreshPosition();
+
+        entity.makeWire();
         return entity;
     }
 

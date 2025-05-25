@@ -227,9 +227,11 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         var secondaryTurns = secondaryCoil.getTurns();
 
         int largestCommonDenominator = 1;
-        for(int i = 2; i <= Math.max(primaryTurns, secondaryTurns); ++i) {
-            if(primaryTurns % i == 0 && secondaryTurns % i == 0)
-                largestCommonDenominator = i;
+        if(primaryTurns > 0 && secondaryTurns > 0) {
+            for (int i = 2; i <= Math.max(primaryTurns, secondaryTurns); ++i) {
+                if (primaryTurns % i == 0 && secondaryTurns % i == 0)
+                    largestCommonDenominator = i;
+            }
         }
         var n1 = Lang.number(primaryTurns / largestCommonDenominator);
         var n2 = Lang.number(secondaryTurns / largestCommonDenominator);

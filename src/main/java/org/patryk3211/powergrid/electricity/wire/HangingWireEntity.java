@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.simibubi.create.foundation.ponder.PonderWorld;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -55,18 +55,21 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         renderParams = new CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS);
     }
 
-    public static HangingWireEntity create(ServerWorld world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item) {
+    public static HangingWireEntity create(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, float resistance) {
         var entity = new HangingWireEntity(ModdedEntities.HANGING_WIRE.get(), world);
         entity.electricBlockPos1 = pos1;
         entity.electricBlockPos2 = pos2;
         entity.electricTerminal1 = terminal1;
         entity.electricTerminal2 = terminal2;
         entity.item = item;
+        entity.resistance = resistance;
 
         entity.refreshTerminalPositions();
         entity.setPitch(0);
         entity.resetPosition();
         entity.refreshPosition();
+
+        entity.makeWire();
         return entity;
     }
 
@@ -210,7 +213,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     public void refreshTerminalPositions() {
         var world = getWorld();
-        if(world != null && !world.isClient) {
+        if(world != null && (!world.isClient || world instanceof PonderWorld)) {
             terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
             terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
 
@@ -225,18 +228,20 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             );
             setYaw(facingAngle);
 
-            // I guess we have to do position update like that because otherwise,
-            // the update method would have to go into the tick function
-            // and that is probably slower.
-            var packet = new EntityDataS2CPacket(this, 1);
-            var buffer = packet.buffer;
-            buffer.writeFloat((float) terminalPos1.x);
-            buffer.writeFloat((float) terminalPos1.y);
-            buffer.writeFloat((float) terminalPos1.z);
-            buffer.writeFloat((float) terminalPos2.x);
-            buffer.writeFloat((float) terminalPos2.y);
-            buffer.writeFloat((float) terminalPos2.z);
-            packet.send();
+            if(!world.isClient) {
+                // I guess we have to do position update like that because otherwise,
+                // the update method would have to go into the tick function
+                // and that is probably slower.
+                var packet = new EntityDataS2CPacket(this, 1);
+                var buffer = packet.buffer;
+                buffer.writeFloat((float) terminalPos1.x);
+                buffer.writeFloat((float) terminalPos1.y);
+                buffer.writeFloat((float) terminalPos1.z);
+                buffer.writeFloat((float) terminalPos2.x);
+                buffer.writeFloat((float) terminalPos2.y);
+                buffer.writeFloat((float) terminalPos2.z);
+                packet.send();
+            }
 
             // TODO: There should be some line-of-sight check here to forbid wires going through blocks (it should also be in the entity's tick function).
         }

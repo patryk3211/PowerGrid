@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.ponder.PonderIndex;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
 
 public class PowerGridClient implements ClientModInitializer {
@@ -40,6 +41,8 @@ public class PowerGridClient implements ClientModInitializer {
 		ClientBoundPackets.init();
 		WirePreview.init();
 		PlacementOverlay.init();
+
+		PonderIndex.register();
 	}
 
 	public void registerOverlays() {

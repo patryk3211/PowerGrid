@@ -44,7 +44,7 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
     @Override
     public void initialize() {
         super.initialize();
-        if(!getWorld().isClient) {
+        if(!getWorld().isClient || blockEntity.isVirtual()) {
             grabController();
         } else {
             if(controllerPos != null && controller == null) {

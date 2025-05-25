@@ -30,7 +30,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -190,7 +189,7 @@ public interface IElectric extends IWrenchable {
         }
 
         if(world.isClient)
-            return ActionResult.CONSUME;
+            return ActionResult.SUCCESS;
         ServerWorld serverWorld = (ServerWorld) world;
 
         // The amount of used items dictates the resistance of a connection,
@@ -217,9 +216,9 @@ public interface IElectric extends IWrenchable {
                 return ActionResult.FAIL;
             }
             points.addAll(finalPoints);
-            entity = BlockWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), points);
+            entity = BlockWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R, points);
         } else {
-            entity = HangingWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount));
+            entity = HangingWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R);
         }
 
         if(!serverWorld.spawnNewEntityAndPassengers(entity)) {
@@ -231,10 +230,6 @@ public interface IElectric extends IWrenchable {
         if(context.getPlayer() == null || !context.getPlayer().isCreative())
             stack.decrement(requiredItemCount);
 
-        var wire = GlobalElectricNetworks.makeConnection(behaviour1, node1, behaviour2, node2, R);
-        behaviour1.addConnection(terminal1, new ElectricBehaviour.Connection(behaviour2.blockEntity.getPos(), terminal2, wire, entity.getUuid()));
-        behaviour2.addConnection(terminal2, new ElectricBehaviour.Connection(behaviour1.blockEntity.getPos(), terminal1, wire, entity.getUuid()));
-        entity.setWire(wire);
         return ActionResult.SUCCESS;
     }
 }
