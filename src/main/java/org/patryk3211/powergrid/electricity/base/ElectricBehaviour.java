@@ -141,40 +141,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     @Override
-    public void read(NbtCompound nbt, boolean clientPacket) {
-        var connTag = nbt.getCompound("Connections");
-        for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
-            var sourceConnections = connections.get(sourceTerminal);
-            sourceConnections.clear();
-
-            var nbtConnList = connTag.getList(Integer.toString(sourceTerminal), NbtElement.COMPOUND_TYPE);
-            if(nbtConnList == null)
-                continue;
-
-            for(int j = 0; j < nbtConnList.size(); ++j) {
-                var nbtConnection = Connection.fromNbt(nbtConnList.getCompound(j));
-                sourceConnections.add(nbtConnection);
-            }
-        }
-    }
-
-    @Override
-    public void write(NbtCompound nbt, boolean clientPacket) {
-        var nbtConnectionMap = new NbtCompound();
-        for (int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
-            var sourceConnections = connections.get(sourceTerminal);
-            if (sourceConnections.isEmpty())
-                continue;
-            var connectionTagList = new NbtList();
-            for (var connection : sourceConnections) {
-                connectionTagList.add(connection.serialize());
-            }
-            nbtConnectionMap.put(Integer.toString(sourceTerminal), connectionTagList);
-        }
-        nbt.put("Connections", nbtConnectionMap);
-    }
-
-    @Override
     public BehaviourType<?> getType() {
         return TYPE;
     }
