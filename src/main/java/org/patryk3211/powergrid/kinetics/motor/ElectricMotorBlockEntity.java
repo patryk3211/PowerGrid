@@ -83,8 +83,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
         var voltage = coil.potentialDifference();
         applyLostPower(voltage * voltage / coil.getResistance());
-        if(!world.isClient) {
-            var newSpeed = Math.round(voltage * 2.0f);
+        if(!world.isClient || isVirtual()) {
+            var newSpeed = (int) Math.floor(voltage * 2.0f);
             // Max speed constraints.
             if(newSpeed > 256)
                 newSpeed = 256;

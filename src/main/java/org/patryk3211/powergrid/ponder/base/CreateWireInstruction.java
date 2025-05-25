@@ -13,8 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.base.terminals;
+package org.patryk3211.powergrid.ponder.base;
 
-public interface TerminalCollectionBuilder<C> {
-    C build();
+import com.simibubi.create.foundation.ponder.instruction.FadeIntoSceneInstruction;
+import net.minecraft.util.math.Direction;
+
+public class CreateWireInstruction extends FadeIntoSceneInstruction<WireElement> {
+    public CreateWireInstruction(int fadeInTicks, Direction fadeInFrom, WireElement element) {
+        super(fadeInTicks, fadeInFrom, element);
+    }
+
+    @Override
+    protected Class<WireElement> getElementClass() {
+        return WireElement.class;
+    }
 }

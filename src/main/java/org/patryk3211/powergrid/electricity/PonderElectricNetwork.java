@@ -13,8 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.base.terminals;
+package org.patryk3211.powergrid.electricity;
 
-public interface TerminalCollectionBuilder<C> {
-    C build();
+import com.simibubi.create.foundation.ponder.PonderWorld;
+
+public class PonderElectricNetwork extends GlobalElectricNetworks {
+    public static void tickWorldNetworks(PonderWorld world) {
+        GlobalElectricNetworks.tick(world);
+    }
+
+    public static void removeWorldEntry(PonderWorld world) {
+        worldNetworks.remove(world);
+    }
 }

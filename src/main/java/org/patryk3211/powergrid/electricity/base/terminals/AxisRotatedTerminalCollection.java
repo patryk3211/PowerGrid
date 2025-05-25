@@ -34,7 +34,7 @@ public class AxisRotatedTerminalCollection {
         return terminals[rotation.ordinal()][index];
     }
 
-    public static class Builder extends TerminalCollectionBuilder<Builder, AxisRotatedTerminalCollection> {
+    public static class Builder extends SimpleTerminalCollectionBuilder<Builder, AxisRotatedTerminalCollection> {
         private final List<BlockRotation> rotations = new ArrayList<>();
         private final Direction.Axis axis;
 

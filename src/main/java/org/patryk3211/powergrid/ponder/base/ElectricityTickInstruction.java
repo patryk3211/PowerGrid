@@ -13,8 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.base.terminals;
+package org.patryk3211.powergrid.ponder.base;
 
-public interface TerminalCollectionBuilder<C> {
-    C build();
+import com.simibubi.create.foundation.ponder.PonderScene;
+import com.simibubi.create.foundation.ponder.instruction.TickingInstruction;
+import org.patryk3211.powergrid.electricity.PonderElectricNetwork;
+
+public class ElectricityTickInstruction extends TickingInstruction {
+    public ElectricityTickInstruction(int ticks) {
+        super(false, ticks);
+    }
+
+    @Override
+    public void tick(PonderScene scene) {
+        PonderElectricNetwork.tickWorldNetworks(scene.getWorld());
+    }
 }
