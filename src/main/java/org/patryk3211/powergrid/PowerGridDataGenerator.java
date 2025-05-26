@@ -15,11 +15,14 @@
  */
 package org.patryk3211.powergrid;
 
+import com.simibubi.create.foundation.ponder.PonderLocalization;
 import com.simibubi.create.foundation.utility.FilesHelper;
+import com.simibubi.create.infrastructure.ponder.SharedText;
 import com.tterrag.registrate.providers.ProviderType;
 import io.github.fabricators_of_create.porting_lib.data.ExistingFileHelper;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import org.patryk3211.powergrid.ponder.PonderIndex;
 import org.patryk3211.powergrid.recipes.*;
 
 import java.util.function.BiConsumer;
@@ -67,15 +70,11 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 	}
 
 	private static void providePonderLang(BiConsumer<String, String> consumer) {
-		// TODO: Figure out if I need this.
-		// Register these since FMLClientSetupEvent does not run during datagen
-//		AllPonderTags.register();
-//		PonderIndex.register();
+		PonderIndex.register();
 
-//		SharedText.gatherText();
-//		PonderLocalization.generateSceneLang();
+		SharedText.gatherText();
+		PonderLocalization.generateSceneLang();
 
-//		GeneralText.provideLang(consumer);
-//		PonderLocalization.provideLang(Create.ID, consumer);
+		PonderLocalization.provideLang(PowerGrid.MOD_ID, consumer);
 	}
 }
