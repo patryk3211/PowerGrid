@@ -15,7 +15,7 @@
       "type": "concentration",
       "in": "liquid",
       "min": 0.25,
-      "reagent": "powergrid:water"
+      "reagent": "powergrid:liquid_water"
     }
   ],
   "energy": 0.0,

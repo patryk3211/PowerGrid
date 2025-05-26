@@ -42,14 +42,13 @@ public class Reagents {
                     .boilingPoint(-252.8f)
                     .heatCapacity(28.84f))
             .register();
-    public static final ReagentEntry<Reagent> WATER = REGISTRATE.reagent("water", Reagent::new)
-            .properties(properties -> properties
-                    .meltingPoint(0.0f)
-                    .boilingPoint(100.0f)
-                    .heatCapacity(75.38f))
-            .fluid(Fluids.WATER)
-            .particleColor(0xEEEEEE)
-            .register();
+    public static final ReagentTriplet<Reagent, Reagent, Reagent> WATER =
+            ReagentTripletBuilder.create("water", simpleProperties(0.0f, 100.0f, 75.38f))
+                    .gas(b -> b.lang("Steam").particleColor(0xEEEEEE))
+                    .liquid(b -> b.lang("Water").fluid(Fluids.WATER, 22f))
+                    .solid(b -> b.lang("Ice").item(Items.ICE, Reagent.BLOCK_MOLE_AMOUNT, -10f))
+                    .recipes(333.55f, 40.65f)
+                    .register();
     public static final ReagentEntry<Reagent> NITROGEN = REGISTRATE.reagent("nitrogen", Reagent::new)
             .properties(properties -> properties
                     .meltingPoint(-209.8f)
@@ -61,7 +60,7 @@ public class Reagents {
                     .meltingPoint(115.2f)
                     .boilingPoint(444.6f)
                     .heatCapacity(22.75f))
-            .item(ModdedItems.SULFUR, 1000)
+            .item(ModdedItems.SULFUR, 1000, 22f)
             .register();
     public static final ReagentEntry<Reagent> SULFUR_DIOXIDE = REGISTRATE.reagent("sulfur_dioxide", Reagent::new)
             .properties(properties -> properties
@@ -74,18 +73,18 @@ public class Reagents {
             .particleColor(0xDDDDDD)
             .register();
     public static final ReagentEntry<Reagent> SULFURIC_ACID = simpleReagent("sulfuric_acid", 10.3f, 337.0f, 135.8f)
-            .simpleFluid(0xFFFFEE80)
+            .simpleFluid(0xFFFFEE80, 22f)
             .register();
 
     public static final ReagentEntry<Reagent> REDSTONE = simpleReagent("redstone", 325f, 452f, 53.4f)
-            .item(Items.REDSTONE, 1000)
+            .item(Items.REDSTONE, 1000, 22f)
             .register();
 
     public static final ReagentEntry<Reagent> REDSTONE_SULFATE = simpleReagent("redstone_sulfate", 236f, 352f, 174.2f)
             .register();
 
-    public static final ReagentEntry<Reagent> DISSOLVED_REDSTONE_SULFATE = dissolvedReagent("dissolved_redstone_sulfate", REDSTONE_SULFATE, WATER)
-            .simpleFluid(0xFFFF2020)
+    public static final ReagentEntry<Reagent> DISSOLVED_REDSTONE_SULFATE = dissolvedReagent("dissolved_redstone_sulfate", REDSTONE_SULFATE, WATER.liquid())
+            .simpleFluid(0xFFFF2020, 22f)
             .register();
 
     @SuppressWarnings("EmptyMethod")
@@ -102,6 +101,7 @@ public class Reagents {
     public static ReagentBuilder<Reagent, PowerGridRegistrate> dissolvedReagent(String name, Supplier<Reagent> dissolved, Supplier<Reagent> dissolver) {
         return REGISTRATE.reagent(name, Reagent::new)
                 .initialProperties(dissolver)
+                .fixedState(ReagentState.LIQUID)
                 .properties(properties -> properties.heatCapacity(dissolved.get().getHeatCapacity() + dissolver.get().getHeatCapacity()))
                 .recipe((ctx, prov) -> dissolvedRecipes(ctx, prov, dissolved, dissolver));
     }
@@ -128,5 +128,12 @@ public class Reagents {
                 .energy(5)
                 .rate(10)
         );
+    }
+
+    public static Reagent.Properties simpleProperties(float meltingPoint, float boilingPoint, float heatCapacity) {
+        return new Reagent.Properties()
+                .meltingPoint(meltingPoint)
+                .boilingPoint(boilingPoint)
+                .heatCapacity(heatCapacity);
     }
 }

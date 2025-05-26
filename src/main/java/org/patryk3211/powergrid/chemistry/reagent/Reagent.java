@@ -27,7 +27,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Reagent implements ReagentConvertible {
-    public static final double FLUID_MOLE_RATIO = FluidConstants.BLOCK / 4000.0;
+    public static final int BLOCK_MOLE_AMOUNT = 4000;
+    public static final int FLUID_MOLE_AMOUNT = BLOCK_MOLE_AMOUNT;
+
+    public static final double FLUID_MOLE_RATIO = (double) FluidConstants.BLOCK / FLUID_MOLE_AMOUNT;
+
     private static final Map<Fluid, Reagent> FLUID_MAP = new HashMap<>();
     private static final Map<Item, Reagent> ITEM_MAP = new HashMap<>();
 
@@ -35,9 +39,12 @@ public class Reagent implements ReagentConvertible {
     public final Properties properties;
     private Item item;
     private int itemAmount;
+    private float itemTemperature;
     private Fluid fluid;
+    private float fluidTemperature;
     private String translationKey;
     private int particleColor = 0;
+    private ReagentState fixedState = null;
 
     public Reagent(Properties properties) {
         this.properties = properties;
@@ -53,17 +60,23 @@ public class Reagent implements ReagentConvertible {
         return getRegistryEntry().isIn(tag);
     }
 
-    public Reagent withItem(Item item, int amount) {
+    public Reagent withItem(Item item, int amount, float temperature) {
         this.item = item;
         this.itemAmount = amount;
+        this.itemTemperature = temperature;
         ITEM_MAP.put(item, this);
         return this;
     }
 
-    public Reagent withFluid(Fluid fluid) {
+    public Reagent withFluid(Fluid fluid, float temperature) {
         this.fluid = fluid;
+        this.fluidTemperature = temperature;
         FLUID_MAP.put(fluid, this);
         return this;
+    }
+
+    public void withFixedState(ReagentState state) {
+        this.fixedState = state;
     }
 
     public void withParticleColor(int color) {
@@ -92,6 +105,10 @@ public class Reagent implements ReagentConvertible {
         return fluid;
     }
 
+    public float getFluidTemperature() {
+        return fluidTemperature;
+    }
+
     @Nullable
     public Item asItem() {
         return item;
@@ -99,6 +116,10 @@ public class Reagent implements ReagentConvertible {
 
     public int getItemAmount() {
         return itemAmount;
+    }
+
+    public float getItemTemperature() {
+        return itemTemperature;
     }
 
     public int getParticleColor() {
@@ -122,6 +143,12 @@ public class Reagent implements ReagentConvertible {
         if(this.translationKey == null)
             this.translationKey = Util.createTranslationKey("reagent", ReagentRegistry.REGISTRY.getId(this));
         return this.translationKey;
+    }
+
+    public ReagentState getState(float temperature) {
+        if(fixedState != null)
+            return fixedState;
+        return properties.getState(temperature);
     }
 
     public String getTranslationKey() {
@@ -171,12 +198,20 @@ public class Reagent implements ReagentConvertible {
             return this;
         }
 
-        public ReagentState getState(float temperature) {
+        protected ReagentState getState(float temperature) {
             if(temperature >= boilingPoint)
                 return ReagentState.GAS;
             if(temperature >= meltingPoint)
                 return ReagentState.LIQUID;
             return ReagentState.SOLID;
+        }
+
+        public float getMeltingPoint() {
+            return meltingPoint;
+        }
+
+        public float getBoilingPoint() {
+            return boilingPoint;
         }
     }
 }

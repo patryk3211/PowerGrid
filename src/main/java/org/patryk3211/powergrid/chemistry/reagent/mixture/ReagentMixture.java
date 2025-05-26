@@ -140,7 +140,7 @@ public class ReagentMixture implements ReagentConditions {
     }
 
     public ReagentState getState(Reagent reagent) {
-        return reagent.properties.getState(temperature());
+        return reagent.getState(temperature());
     }
 
     public boolean hasReagent(Reagent reagent) {

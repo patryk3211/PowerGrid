@@ -13,7 +13,7 @@
       "reagent": "powergrid:redstone_sulfate"
     },
     {
-      "reagent": "powergrid:water"
+      "reagent": "powergrid:liquid_water"
     }
   ],
   "rate": 10.0,

@@ -3,22 +3,19 @@
   "conditions": [
     {
       "type": "temperature",
-      "min": 0.0
+      "max": 0.0
     }
   ],
-  "energy": 101.0,
+  "energy": 333.55,
   "ingredients": [
-    {
-      "reagent": "powergrid:sulfur_trioxide"
-    },
     {
       "reagent": "powergrid:liquid_water"
     }
   ],
-  "rate": 10.0,
+  "rate": 100.0,
   "results": [
     {
-      "reagent": "powergrid:sulfuric_acid"
+      "reagent": "powergrid:solid_water"
     }
   ]
 }

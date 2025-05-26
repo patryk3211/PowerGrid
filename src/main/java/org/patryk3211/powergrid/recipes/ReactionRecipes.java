@@ -62,7 +62,7 @@ public class ReactionRecipes extends ReactionRecipeProvider {
     SULFURIC_ACID_SO3 = create("acid/so3_sulfuric_acid", b -> b
             .result(Reagents.SULFURIC_ACID, 1)
             .ingredient(Reagents.SULFUR_TRIOXIDE, 1)
-            .ingredient(Reagents.WATER, 1)
+            .ingredient(Reagents.WATER.liquid(), 1)
             .minimumTemperatureCondition(0)
             .energy(101)
             .rate(10)
@@ -75,7 +75,7 @@ public class ReactionRecipes extends ReactionRecipeProvider {
             .ingredient(Reagents.SULFURIC_ACID, 1)
             .minimumTemperatureCondition(0)
             .concentrationCondition(Reagents.SULFURIC_ACID, 0.25f, null, ReagentState.LIQUID)
-            .concentrationCondition(Reagents.WATER, 0.25f, null, ReagentState.LIQUID)
+            .concentrationCondition(Reagents.WATER.liquid(), 0.25f, null, ReagentState.LIQUID)
     )
     ;
 

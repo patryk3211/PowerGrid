@@ -39,7 +39,7 @@ public class RecipeTemperatureCondition implements IReactionCondition {
     @Override
     public boolean test(ReagentConditions conditions) {
         var temperature = conditions.temperature();
-        if(temperature < min)
+        if(min != null && temperature < min)
             return false;
         if(max != null) {
             return temperature < max;

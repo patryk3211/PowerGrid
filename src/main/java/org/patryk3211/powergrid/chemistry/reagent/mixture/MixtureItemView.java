@@ -39,7 +39,7 @@ public class MixtureItemView implements Storage<ItemVariant> {
         var reagent = Reagent.getReagent(item.getItem());
         if(reagent == null)
             return 0;
-        var stack = new ReagentStack(reagent, (int) (amount * reagent.getItemAmount()));
+        var stack = new ReagentStack(reagent, (int) (amount * reagent.getItemAmount()), reagent.getItemTemperature());
         // Calculate accepted item count.
         int added;
         try(var inner = transaction.openNested()) {

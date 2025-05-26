@@ -3,20 +3,17 @@
   "conditions": [
     {
       "type": "temperature",
-      "min": 100.0
+      "max": 100.0
     }
   ],
-  "energy": 5.0,
+  "energy": 40.65,
   "ingredients": [
     {
-      "reagent": "powergrid:dissolved_redstone_sulfate"
+      "reagent": "powergrid:water_gas"
     }
   ],
-  "rate": 10.0,
+  "rate": 100.0,
   "results": [
-    {
-      "reagent": "powergrid:redstone_sulfate"
-    },
     {
       "reagent": "powergrid:liquid_water"
     }

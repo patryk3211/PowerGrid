@@ -94,13 +94,15 @@
   "powergrid.tooltip.voltage.max": ":ǝbɐʇןoʌ ɯnɯıxɐW",
   "reagent.powergrid.dissolved_redstone_sulfate": "ǝʇɐɟןnS ǝuoʇspǝᴚ pǝʌןossıᗡ",
   "reagent.powergrid.hydrogen": "uǝboɹpʎH",
+  "reagent.powergrid.liquid_water": "ɹǝʇɐM",
   "reagent.powergrid.nitrogen": "uǝboɹʇıN",
   "reagent.powergrid.oxygen": "uǝbʎxO",
   "reagent.powergrid.redstone": "ǝuoʇspǝᴚ",
   "reagent.powergrid.redstone_sulfate": "ǝʇɐɟןnS ǝuoʇspǝᴚ",
+  "reagent.powergrid.solid_water": "ǝɔI",
   "reagent.powergrid.sulfur": "ɹnɟןnS",
   "reagent.powergrid.sulfur_dioxide": "ǝpıxoıᗡ ɹnɟןnS",
   "reagent.powergrid.sulfur_trioxide": "ǝpıxoıɹ⟘ ɹnɟןnS",
   "reagent.powergrid.sulfuric_acid": "pıɔⱯ ɔıɹnɟןnS",
-  "reagent.powergrid.water": "ɹǝʇɐM"
+  "reagent.powergrid.water_gas": "ɯɐǝʇS"
 }

@@ -69,32 +69,37 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
         return this;
     }
 
+    public ReagentBuilder<T, P> initialProperties(Reagent.Properties properties) {
+        this.propertiesSupplier = () -> properties;
+        return this;
+    }
+
     public ReagentBuilder<T, P> properties(NonNullUnaryOperator<Reagent.Properties> func) {
         propertiesModifier = propertiesModifier.andThen(func);
         return this;
     }
 
-    public ReagentBuilder<T, P> item(ItemEntry<?> item, int amount) {
-        onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(item.get(), amount));
+    public ReagentBuilder<T, P> item(ItemEntry<?> item, int amount, float temperature) {
+        onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(item.get(), amount, temperature));
         return this;
     }
 
-    public ReagentBuilder<T, P> item(Item item, int amount) {
-        onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(item, amount));
+    public ReagentBuilder<T, P> item(Item item, int amount, float temperature) {
+        onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(item, amount, temperature));
         return this;
     }
 
-    public ReagentBuilder<T, P> fluid(FluidEntry<?> fluid) {
-        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid.get().getStill()));
+    public ReagentBuilder<T, P> fluid(FluidEntry<?> fluid, float temperature) {
+        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid.get().getStill(), temperature));
         return this;
     }
 
-    public ReagentBuilder<T, P> fluid(Fluid fluid) {
-        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid));
+    public ReagentBuilder<T, P> fluid(Fluid fluid, float temperature) {
+        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid, temperature));
         return this;
     }
 
-    public FluidBuilder<SimpleFlowableFluid.Flowing, ReagentBuilder<T, P>> coloredWaterFluid(int tint) {
+    public FluidBuilder<SimpleFlowableFluid.Flowing, ReagentBuilder<T, P>> coloredWaterFluid(int tint, float temperature) {
         var fluidBuilder = getOwner().fluid(this, getName(), SimpleFluidRenderHandler.WATER_STILL, SimpleFluidRenderHandler.WATER_FLOWING)
                 .renderType(() -> RenderLayer::getTranslucent)
                 .tag(FluidTags.WATER) // Fabric: water tag controls physics
@@ -105,13 +110,18 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
             var fluid = fluidBuilder.get().get();
             var handler = SimpleFluidRenderHandler.coloredWater(tint);
             FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
-            reagent.withFluid(fluid.getStill());
+            reagent.withFluid(fluid.getStill(), temperature);
         });
         return fluidBuilder;
     }
 
-    public ReagentBuilder<T, P> simpleFluid(int tint) {
-        return coloredWaterFluid(tint).build();
+    public ReagentBuilder<T, P> fixedState(ReagentState state) {
+        onRegister(r -> r.withFixedState(state));
+        return this;
+    }
+
+    public ReagentBuilder<T, P> simpleFluid(int tint, float temperature) {
+        return coloredWaterFluid(tint, temperature).build();
     }
 
     public ReagentBuilder<T, P> particleColor(int rgb) {

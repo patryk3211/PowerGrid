@@ -94,13 +94,15 @@
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "reagent.powergrid.dissolved_redstone_sulfate": "Dissolved Redstone Sulfate",
   "reagent.powergrid.hydrogen": "Hydrogen",
+  "reagent.powergrid.liquid_water": "Water",
   "reagent.powergrid.nitrogen": "Nitrogen",
   "reagent.powergrid.oxygen": "Oxygen",
   "reagent.powergrid.redstone": "Redstone",
   "reagent.powergrid.redstone_sulfate": "Redstone Sulfate",
+  "reagent.powergrid.solid_water": "Ice",
   "reagent.powergrid.sulfur": "Sulfur",
   "reagent.powergrid.sulfur_dioxide": "Sulfur Dioxide",
   "reagent.powergrid.sulfur_trioxide": "Sulfur Trioxide",
   "reagent.powergrid.sulfuric_acid": "Sulfuric Acid",
-  "reagent.powergrid.water": "Water"
+  "reagent.powergrid.water_gas": "Steam"
 }
