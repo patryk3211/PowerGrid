@@ -4,7 +4,7 @@
       "model": "powergrid:block/vat/closed"
     },
     "open=true": {
-      "model": "powergrid:block/vat/base"
+      "model": "powergrid:chemical_vat_connected"
     }
   }
 }

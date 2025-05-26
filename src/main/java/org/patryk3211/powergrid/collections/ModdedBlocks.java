@@ -42,9 +42,12 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatModel;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
@@ -378,7 +381,7 @@ public class ModdedBlocks {
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
                             ConfiguredModel.builder().modelFile(state.get(ChemicalVatBlock.OPEN) ?
-                                    modModel(prov, "block/vat/base") : modModel(prov, "block/vat/closed"))
+                                    unchecked("chemical_vat_connected") : modModel(prov, "block/vat/closed"))
                                     .build()
                     ))
             .initialProperties(SharedProperties::stone)
@@ -459,6 +462,10 @@ public class ModdedBlocks {
 
     public static ModelFile.ExistingModelFile modModel(RegistrateBlockstateProvider prov, String name) {
         return prov.models().getExistingFile(prov.modLoc(name));
+    }
+
+    private static ModelFile.UncheckedModelFile unchecked(String name) {
+        return new ModelFile.UncheckedModelFile(PowerGrid.asResource(name));
     }
 
     private static void transformerMedium(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, Direction.Axis axis) {

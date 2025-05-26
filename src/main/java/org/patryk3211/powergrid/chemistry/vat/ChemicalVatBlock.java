@@ -34,6 +34,7 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -47,13 +48,26 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntity>, IWrenchable {
     public static final BooleanProperty OPEN = Properties.OPEN;
 
-    private static final VoxelShape OPEN_SHAPE = VoxelShapes.union(
-            createCuboidShape(0, 0, 0, 16, 2, 16),
-            createCuboidShape(0, 2, 0, 2, 16, 16),
-            createCuboidShape(14, 2, 0, 16, 16, 16),
-            createCuboidShape(0, 2, 0, 14, 16, 2),
-            createCuboidShape(0, 2, 14, 14, 16, 16)
-    );
+    private static final float CORNER = 2 / 16f;
+    private static final float SIDE = 12 / 16f;
+
+    private static final VoxelShape OPEN_NORTH = VoxelShapes.cuboid(CORNER, CORNER, 0.0f, CORNER + SIDE, 1.0f, CORNER);
+    private static final VoxelShape OPEN_SOUTH = VoxelShapes.cuboid(CORNER, CORNER, CORNER + SIDE, CORNER + SIDE, 1.0f, 1.0f);
+    private static final VoxelShape OPEN_WEST = VoxelShapes.cuboid(0.0f, CORNER, CORNER, CORNER, 1.0f, CORNER + SIDE);
+    private static final VoxelShape OPEN_EAST = VoxelShapes.cuboid(CORNER + SIDE, CORNER, CORNER, 1.0f, 1.0f, CORNER + SIDE);
+
+    private static final VoxelShape OPEN_NW = VoxelShapes.cuboid(0.0f, CORNER, 0.0f, CORNER, 1.0f, CORNER);
+    private static final VoxelShape OPEN_SW = VoxelShapes.cuboid(0.0f, CORNER, CORNER + SIDE, CORNER, 1.0f, 1.0f);
+    private static final VoxelShape OPEN_NE = VoxelShapes.cuboid(CORNER + SIDE, CORNER, 0.0f, 1.0f, 1.0f, CORNER);
+    private static final VoxelShape OPEN_SE = VoxelShapes.cuboid(CORNER + SIDE, CORNER, CORNER + SIDE, 1.0f, 1.0f, 1.0f);
+
+    private static final VoxelShape[] shapeLookup = new VoxelShape[] {
+            OPEN_NW, OPEN_NORTH, OPEN_NE,
+            OPEN_WEST, null, OPEN_EAST,
+            OPEN_SW, OPEN_SOUTH, OPEN_SE
+    };
+
+    private static final VoxelShape BOTTOM = VoxelShapes.cuboid(0.0f, 0.0f, 0.0f, 1.0f, CORNER, 1.0f);
 
     private static final VoxelShape COLLISION_SHAPE = createCuboidShape(0, 0, 0, 16, 14, 16);
 
@@ -98,12 +112,41 @@ public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntit
         }
     }
 
+    public static boolean checkState(Block block, BlockState state) {
+        return !(state.isOf(block) && state.get(ChemicalVatBlock.OPEN));
+    }
+
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         if(!state.get(OPEN)) {
             return VoxelShapes.fullCube();
         } else {
-            return OPEN_SHAPE;
+            VoxelShape shape = BOTTOM;
+
+            for(int x = -1; x <= 1; ++x) {
+                for(int z = -1; z <= 1; ++z) {
+                    if(x == 0 && z == 0)
+                        continue;
+                    int index = x + 1 + (z + 1) * 3;
+                    if(x == 0 || z == 0) {
+                        var neighbor = world.getBlockState(pos.add(x, 0, z));
+                        if(checkState(state.getBlock(), neighbor)) {
+                            shape = VoxelShapes.combine(shape, shapeLookup[index], BooleanBiFunction.OR);
+                        }
+                    } else {
+                        var neighbor1 = world.getBlockState(pos.add(x, 0, 0));
+                        var neighbor2 = world.getBlockState(pos.add(0, 0, z));
+                        var corner = world.getBlockState(pos.add(x, 0, z));
+
+                        var block = state.getBlock();
+                        if(checkState(block, neighbor1) || checkState(block, neighbor2) || checkState(block, corner)) {
+                            shape = VoxelShapes.combine(shape, shapeLookup[index], BooleanBiFunction.OR);
+                        }
+                    }
+                }
+            }
+
+            return shape;
         }
     }
 

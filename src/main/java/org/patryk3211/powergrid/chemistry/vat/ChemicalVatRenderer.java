@@ -17,10 +17,14 @@ package org.patryk3211.powergrid.chemistry.vat;
 
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import com.simibubi.create.foundation.fluid.FluidRenderer;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Direction;
+import org.patryk3211.powergrid.utility.Directions;
+
+import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.checkState;
 
 public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBlockEntity> {
     public ChemicalVatRenderer(BlockEntityRendererFactory.Context context) {
@@ -35,9 +39,43 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
                     yMin = 2 / 16f, yMax = yMin + 13 / 16f * fluidLevel,
                     zMin = 2 / 16f, zMax = 14 / 16f;
 
+            var pos = be.getPos();
+            var world = be.getWorld();
+            var block = be.getCachedState().getBlock();
+            if(!checkState(block, world.getBlockState(pos.west())))
+                xMin = 0.0f;
+            if(!checkState(block, world.getBlockState(pos.east())))
+                xMax = 1.0f;
+            if(!checkState(block, world.getBlockState(pos.north())))
+                zMin = 0.0f;
+            if(!checkState(block, world.getBlockState(pos.south())))
+                zMax = 1.0f;
+
             var rendered = be.getRenderedFluid();
             if(rendered != null) {
-                FluidRenderer.renderFluidBox(new FluidStack(rendered), xMin, yMin, zMin, xMax, yMax, zMax, bufferSource, ms, light, false);
+                var variant = rendered.getResource();
+                var sprites = FluidVariantRendering.getSprites(variant);
+                var fluidTexture = sprites != null ? sprites[0] : null;
+                if (fluidTexture == null)
+                    return;
+
+                int color = FluidVariantRendering.getColor(variant);
+                var buffer = FluidRenderer.getFluidBuilder(bufferSource);
+                FluidRenderer.renderStillTiledFace(Direction.UP, xMin, zMin, xMax, zMax, yMax, buffer, ms, light, color, fluidTexture);
+
+                for(var dir : Directions.HORIZONTAL) {
+                    var nBE = world.getBlockEntity(pos.offset(dir));
+                    if(!(nBE instanceof ChemicalVatBlockEntity vat))
+                        continue;
+                    float neighborLevel = (float) vat.getFluidAmount() / vat.getFluidCapacity();
+                    float levelDiff = (fluidLevel - neighborLevel) * 13 / 16f;
+                    if(levelDiff < 0)
+                        continue;
+                    float depth = 0.0f;
+                    if(dir.getDirection() == Direction.AxisDirection.POSITIVE)
+                        depth = 1.0f;
+                    FluidRenderer.renderStillTiledFace(dir, 0.0f, yMax - levelDiff, 1.0f, yMax, depth, buffer, ms, light, color, fluidTexture);
+                }
             }
         }
     }

@@ -16,9 +16,11 @@
 package org.patryk3211.powergrid;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatModel;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
@@ -28,9 +30,13 @@ import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.ponder.PonderIndex;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
 
-public class PowerGridClient implements ClientModInitializer {
+import java.util.Objects;
+
+public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin {
 	@Override
 	public void onInitializeClient() {
+		ModelLoadingPlugin.register(this);
+
 		ModdedPartialModels.register();
 		ModdedRenderLayers.register();
 
@@ -50,5 +56,24 @@ public class PowerGridClient implements ClientModInitializer {
 			Window window = MinecraftClient.getInstance().getWindow();
 			PlacementOverlay.renderOverlay(MinecraftClient.getInstance().inGameHud, graphics);
         });
+	}
+
+	@Override
+	public void onInitializeModelLoader(Context context) {
+//		context.addModels(ChemicalVatModel.MODEL_ID);
+		context.resolveModel().register(innerContext -> {
+			final var id = innerContext.id();
+			if(id != null && id.equals(ChemicalVatModel.MODEL_ID)) {
+				return new ChemicalVatModel();
+			}
+			return null;
+		});
+//		context.modifyModelOnLoad().register((original, innerContext) -> {
+//			final var id = innerContext.id();
+//			if(id != null && id.equals(ChemicalVatModel.MODEL_ID)) {
+//				return new ChemicalVatModel();
+//			}
+//			return original;
+//		});
 	}
 }
