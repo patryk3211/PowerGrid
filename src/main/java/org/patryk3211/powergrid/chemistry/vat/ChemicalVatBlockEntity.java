@@ -34,7 +34,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleEffect;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -70,6 +69,8 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     private final RecipeProgressStore progressStore;
     @NotNull
     private ItemStack catalyzer;
+
+    private StorageView<FluidVariant> maxFluid;
 
     public ChemicalVatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -160,6 +161,20 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         }
 
         if(world.isClient) {
+            for(var fluid : getFluidStorage(null)) {
+                if(fluid.isResourceBlank())
+                    continue;
+                if(fluid.getAmount() <= 0)
+                    continue;
+                if(maxFluid != null) {
+                    // Allow 5% difference to prevent flickering.
+                    if(maxFluid.getAmount() < fluid.getAmount() * 0.95f) {
+                        maxFluid = fluid;
+                    }
+                } else {
+                    maxFluid = fluid;
+                }
+            }
             createFluidParticles();
         }
 
@@ -294,27 +309,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     private void createFluidParticles() {
         var r = world.random;
-        if(r.nextFloat() > 1 / 12f)
-            return;
-
-        int segments = 0;
-        StorageView<FluidVariant> maxFluid = null;
-        for(var fluid : getFluidStorage(null)) {
-            if(fluid.isResourceBlank())
-                continue;
-            if(fluid.getAmount() <= 0)
-                continue;
-            if(maxFluid != null) {
-                if(maxFluid.getAmount() < fluid.getAmount()) {
-                    maxFluid = fluid;
-                }
-            } else {
-                maxFluid = fluid;
-            }
-            ++segments;
-        }
-
-        if(segments < 2)
+        if(r.nextFloat() > 1 / 12f || maxFluid == null)
             return;
 
         float fluidLevel = (float) getFluidAmount() / getFluidCapacity();
@@ -336,6 +331,10 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     new FluidParticleData(AllParticleTypes.BASIN_FLUID.get(), new FluidStack(fluid)),
                     x, surface, z, 0, 0, 0);
         }
+    }
+
+    public StorageView<FluidVariant> getRenderedFluid() {
+        return maxFluid;
     }
 
     private void createGasParticles(ReagentMixture mixture) {
