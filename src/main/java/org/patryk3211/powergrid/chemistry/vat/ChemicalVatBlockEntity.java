@@ -18,6 +18,8 @@ package org.patryk3211.powergrid.chemistry.vat;
 import com.simibubi.create.AllParticleTypes;
 import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.particle.FluidParticleData;
+import com.simibubi.create.content.processing.basin.BasinBlockEntity;
+import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
@@ -59,11 +61,12 @@ import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.*;
 
+@SuppressWarnings("UnstableApiUsage")
 public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
-    public static final float DIFFUSION_RATE = 0.05f;
+    public static final float DIFFUSION_RATE = 0.02f;
     public static final float ATMOSPHERIC_PRESSURE = 1.02f;
     // TODO: Balance this value.
-    public static final float DISSIPATION_FACTOR = 200f;
+    public static final float DISSIPATION_FACTOR = 100f;
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
@@ -79,6 +82,10 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         progressStore = new RecipeProgressStore();
         catalyzer = ItemStack.EMPTY;
         setLazyTickRate(20);
+    }
+
+    private float diffusionRate() {
+        return (reagentInventory.temperature() + 273.15f) * 0.000075f;
     }
 
     @Override
@@ -117,7 +124,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
             var difference = ATMOSPHERIC_PRESSURE - vatPressure;
             var moveAmount = (int) (difference * availableVolume);
-            int diffuseAmount = (int) (DIFFUSION_RATE * reagentInventory.getGasAmount()) - Math.abs(moveAmount);
+            int diffuseAmount = (int) (diffusionRate() * reagentInventory.getGasAmount()) - Math.abs(moveAmount);
 
             // TODO: I'm not sure if I implemented transactions correctly (probably not) so this is split in two.
             ReagentMixture diffused = null, moved = null;
@@ -158,9 +165,23 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             }
         } else {
             reagentInventory.setOpen(false);
+
+            var tempDiff = reagentInventory.temperature() - 22f;
+            reagentInventory.removeEnergy(tempDiff * DISSIPATION_FACTOR * 0.05f);
+        }
+
+        var heat = BasinBlockEntity.getHeatLevelOf(world.getBlockState(pos.down()));
+        if(heat.isAtLeast(BlazeBurnerBlock.HeatLevel.SEETHING)) {
+            reagentInventory.addEnergy(15000f);
+        } else if(heat.isAtLeast(BlazeBurnerBlock.HeatLevel.KINDLED)) {
+            reagentInventory.addEnergy(5000f);
+        } else if(heat.isAtLeast(BlazeBurnerBlock.HeatLevel.SMOULDERING)) {
+            reagentInventory.addEnergy(1000f);
         }
 
         if(world.isClient) {
+            if(maxFluid != null && maxFluid.getAmount() == 0)
+                maxFluid = null;
             for(var fluid : getFluidStorage(null)) {
                 if(fluid.isResourceBlank())
                     continue;
@@ -177,9 +198,6 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             }
             createFluidParticles();
         }
-
-        var tempDiff = reagentInventory.temperature() - 22f;
-        reagentInventory.removeEnergy(tempDiff * DISSIPATION_FACTOR * 0.05f);
 
         if(reagentInventory.wasAltered())
             sendData();
@@ -216,11 +234,19 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 // Liquids cannot go up.
                 var liquidLevel1 = reagentInventory.getFillLevel();
                 var liquidLevel2 = vat.reagentInventory.getFillLevel();
-                var targetLevel = (liquidLevel1 + liquidLevel2) * 0.5f;
 
-                float moveFraction = liquidLevel1 - targetLevel;
+                float moveFraction;
+                if(dir != Direction.DOWN) {
+                    // Equalize the levels.
+                    var targetLevel = (liquidLevel1 + liquidLevel2) * 0.5f;
+                    moveFraction = liquidLevel1 - targetLevel;
+                } else {
+                    // Move as much liquid down as possible.
+                    moveFraction = Math.min(1.0f - liquidLevel2, liquidLevel1);
+                }
+
                 int moveAmount = (int) (moveFraction * reagentInventory.getVolume());
-                int diffuseAmount = (int) (reagentInventory.getLiquidAmount() * DIFFUSION_RATE) - moveAmount;
+                int diffuseAmount = (int) (reagentInventory.getLiquidAmount() * diffusionRate()) - moveAmount;
                 moveReagents(liquids, vat, moveAmount);
                 if(diffuseAmount > 0) {
                     diffuse(liquids, ReagentState.LIQUID, vat, diffuseAmount);
@@ -243,7 +269,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
                 float moveFraction = gasPressure1 - targetPressure;
                 int moveAmount = (int) (moveFraction * reagentInventory.getFreeVolume());
-                int diffuseAmount = (int) (reagentInventory.getGasAmount() * DIFFUSION_RATE) - moveAmount;
+                int diffuseAmount = (int) (reagentInventory.getGasAmount() * diffusionRate()) - moveAmount;
                 moveReagents(gasses, vat, moveAmount);
                 if(diffuseAmount > 0) {
                     diffuse(gasses, ReagentState.GAS, vat, diffuseAmount);
