@@ -15,11 +15,11 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
-import com.simibubi.create.AllTags;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.FluidBuilder;
+import com.tterrag.registrate.fabric.EnvExecutor;
 import com.tterrag.registrate.fabric.RegistryObject;
 import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -31,9 +31,10 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributeHandler;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.fluid.Fluid;
@@ -42,8 +43,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
@@ -100,19 +99,26 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
     }
 
     public FluidBuilder<SimpleFlowableFluid.Flowing, ReagentBuilder<T, P>> coloredWaterFluid(int tint, float temperature) {
-        var fluidBuilder = getOwner().fluid(this, getName(), SimpleFluidRenderHandler.WATER_STILL, SimpleFluidRenderHandler.WATER_FLOWING)
+        var waterStill = new Identifier("block/water_still");
+        var waterFlowing = new Identifier("block/water_flowing");
+        var fluidBuilder = getOwner().fluid(this, getName(), waterStill, waterFlowing)
                 .renderType(() -> RenderLayer::getTranslucent)
                 .tag(FluidTags.WATER) // Fabric: water tag controls physics
                 .source(SimpleFlowableFluid.Source::new) // TODO: remove when Registrate fixes FluidBuilder
                 .fluidAttributes(() -> new FluidVariantAttributeHandler() { });
         // TODO: This is a HACK to prevent our renderer from getting overwritten by the fluid builder's onRegister setting the default renderer.
         onRegisterAfter(RegistryKeys.FLUID, reagent -> {
-            var fluid = fluidBuilder.get().get();
-            var handler = SimpleFluidRenderHandler.coloredWater(tint);
-            FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
+            var fluid = fluidBuilder.getEntry();
+            EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> registerSimpleFluidRenderer(fluid, tint));
             reagent.withFluid(fluid.getStill(), temperature);
         });
         return fluidBuilder;
+    }
+
+    @Environment(EnvType.CLIENT)
+    private static void registerSimpleFluidRenderer(SimpleFlowableFluid.Flowing fluid, int tint) {
+        var handler = SimpleFluidRenderHandler.coloredWater(tint);
+        FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
     }
 
     public ReagentBuilder<T, P> fixedState(ReagentState state) {
