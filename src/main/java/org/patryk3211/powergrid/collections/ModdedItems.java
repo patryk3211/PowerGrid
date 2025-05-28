@@ -15,15 +15,9 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.AllTags;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
-import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;

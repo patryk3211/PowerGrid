@@ -24,7 +24,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.utility.Directions;
 
-import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.checkState;
+import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.*;
 
 public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBlockEntity> {
     public ChemicalVatRenderer(BlockEntityRendererFactory.Context context) {
@@ -33,11 +33,12 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
 
     @Override
     protected void renderSafe(ChemicalVatBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
-        float fluidLevel = (float) be.getFluidAmount() / be.getFluidCapacity();
+        float fluidOffset = be.getFluidOffset();
+        float fluidLevel = be.getFluidLevel() + fluidOffset;
         if(fluidLevel > 0) {
-            float xMin = 2 / 16f, xMax = 14 / 16f,
-                    yMin = 2 / 16f, yMax = yMin + 13 / 16f * fluidLevel,
-                    zMin = 2 / 16f, zMax = 14 / 16f;
+            float xMin = CORNER, xMax = CORNER + SIDE,
+                    yMin = CORNER + FLUID_SPAN * fluidOffset, yMax = yMin + FLUID_SPAN * fluidLevel,
+                    zMin = CORNER, zMax = CORNER + SIDE;
 
             var pos = be.getPos();
             var world = be.getWorld();
@@ -67,8 +68,8 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
                     var nBE = world.getBlockEntity(pos.offset(dir));
                     if(!(nBE instanceof ChemicalVatBlockEntity vat))
                         continue;
-                    float neighborLevel = (float) vat.getFluidAmount() / vat.getFluidCapacity();
-                    float levelDiff = (fluidLevel - neighborLevel) * 13 / 16f;
+                    float neighborLevel = vat.getFluidLevel() + vat.getFluidOffset();
+                    float levelDiff = (fluidLevel - neighborLevel) * FLUID_SPAN;
                     if(levelDiff < 0)
                         continue;
                     float depth = 0.0f;

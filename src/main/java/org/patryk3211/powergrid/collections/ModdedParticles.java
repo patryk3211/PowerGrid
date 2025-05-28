@@ -1,0 +1,62 @@
+/*
+ * Copyright 2025 patryk3211
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.patryk3211.powergrid.collections;
+
+import com.simibubi.create.foundation.particle.ICustomParticleData;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.particle.ParticleManager;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatParticleData;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
+public class ModdedParticles {
+    private static final List<ParticleEntry<?>> all = new ArrayList<>();
+
+    public static final ParticleType<ChemicalVatParticleData> GAS = register("gas", ChemicalVatParticleData::new);
+
+    private static <T extends ParticleEffect> ParticleType<T> register(String name, Supplier<? extends ICustomParticleData<T>> typeFactory) {
+        var type = Registry.register(Registries.PARTICLE_TYPE, PowerGrid.asResource(name), typeFactory.get().createType());
+        all.add(new ParticleEntry<T>(type, typeFactory));
+        return type;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void registerFactories() {
+        var manager = MinecraftClient.getInstance().particleManager;
+        for(var entry : all) {
+            entry.registerFactory(manager);
+        }
+    }
+
+    @SuppressWarnings("EmptyMethod")
+    public static void register() { /* Initialize static fields. */ }
+
+    private record ParticleEntry<T extends ParticleEffect>(ParticleType<T> type, Supplier<? extends ICustomParticleData<T>> typeFactory) {
+        @Environment(EnvType.CLIENT)
+        public void registerFactory(ParticleManager particleManager) {
+            typeFactory.get().register(type, particleManager);
+        }
+    }
+}

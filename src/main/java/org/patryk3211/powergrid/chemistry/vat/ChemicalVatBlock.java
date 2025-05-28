@@ -48,8 +48,9 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntity>, IWrenchable {
     public static final BooleanProperty OPEN = Properties.OPEN;
 
-    private static final float CORNER = 2 / 16f;
-    private static final float SIDE = 12 / 16f;
+    public static final float CORNER = 2 / 16f;
+    public static final float SIDE = 12 / 16f;
+    public static final float FLUID_SPAN = 13 / 16f;
 
     private static final VoxelShape OPEN_NORTH = VoxelShapes.cuboid(CORNER, CORNER, 0.0f, CORNER + SIDE, 1.0f, CORNER);
     private static final VoxelShape OPEN_SOUTH = VoxelShapes.cuboid(CORNER, CORNER, CORNER + SIDE, CORNER + SIDE, 1.0f, 1.0f);

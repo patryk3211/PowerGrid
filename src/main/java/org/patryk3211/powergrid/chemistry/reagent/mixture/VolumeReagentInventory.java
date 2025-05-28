@@ -129,17 +129,6 @@ public class VolumeReagentInventory extends ReagentMixture {
         if(volume == 0)
             return 0;
         return (double) gasAmount * GasConstants.GAS_CONSTANT * getAbsoluteTemperature() / volume;
-//        var volume = getFreeVolume() * 0.001f;
-//        if(volume == 0)
-//            return 0;
-//        return getGasAmount() * 0.001 * GasConstants.GAS_CONSTANT * getAbsoluteTemperature() / volume;
-    }
-
-    public int nFromPressure(double p) {
-        var volume = getFreeVolume() * 0.001f;
-        if(volume == 0)
-            return 0;
-        return (int) (p * volume / (GasConstants.GAS_CONSTANT * getAbsoluteTemperature()) * 1000);
     }
 
     @Override

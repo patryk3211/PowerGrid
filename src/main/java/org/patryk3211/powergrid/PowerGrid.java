@@ -84,6 +84,8 @@ public class PowerGrid implements ModInitializer {
 		ModdedConfigs.register();
 		Reagents.register();
 
+		ModdedParticles.register();
+
 		REGISTRATE.register();
 
 		GlobalElectricNetworks.init();

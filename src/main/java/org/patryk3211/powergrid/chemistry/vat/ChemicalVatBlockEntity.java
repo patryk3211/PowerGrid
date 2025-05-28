@@ -23,6 +23,8 @@ import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -57,7 +59,6 @@ import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
-import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
@@ -65,12 +66,12 @@ import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.*;
 
+import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.*;
+
 @SuppressWarnings("UnstableApiUsage")
 public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
-    public static final float DIFFUSION_RATE = 0.02f;
-    public static final float ATMOSPHERIC_PRESSURE = 1.013f;
     // TODO: Balance this value.
-    public static final float DISSIPATION_FACTOR = 100f;
+    public static final float DISSIPATION_FACTOR = 30f;
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
@@ -84,14 +85,14 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     public ChemicalVatBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
 
-        reagentInventory = new VolumeReagentInventory(1000 * 32);
+        reagentInventory = new VolumeReagentInventory(Reagent.BLOCK_MOLE_AMOUNT * 8);
         progressStore = new RecipeProgressStore();
         catalyzer = ItemStack.EMPTY;
         setLazyTickRate(20);
     }
 
     private float diffusionRate() {
-        return (reagentInventory.temperature() + 273.15f) * 0.000075f;
+        return (reagentInventory.temperature() + 273.15f) * 0.000025f;
     }
 
     @Override
@@ -128,9 +129,9 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             reagentInventory.setOpen(true);
 
             var availableVolume = Math.max(reagentInventory.getFreeVolume(), 1000);
-            var vatPressure = reagentInventory.staticPressure(); //pressure(Direction.UP);
+            var vatPressure = reagentInventory.staticPressure();
 
-            var moveFraction = ATMOSPHERIC_PRESSURE - vatPressure;
+            var moveFraction = GasConstants.ATMOSPHERIC_PRESSURE - vatPressure;
             var moveAmount = (int) (moveFraction * availableVolume / (GasConstants.GAS_CONSTANT * reagentInventory.getAbsoluteTemperature()));
             var startAmount = reagentInventory.getGasAmount();
             if(moveAmount < 0) {
@@ -187,10 +188,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         } else {
             reagentInventory.setOpen(false);
 
-            var tempDiff = reagentInventory.temperature() - 22f;
+            var tempDiff = reagentInventory.temperature() - GasConstants.ATMOSPHERE_TEMPERATURE;
             reagentInventory.removeEnergy(tempDiff * DISSIPATION_FACTOR * 0.05f);
         }
 
+        // TODO: Improve this.
         var heat = BasinBlockEntity.getHeatLevelOf(world.getBlockState(pos.down()));
         if(heat.isAtLeast(BlazeBurnerBlock.HeatLevel.SEETHING)) {
             reagentInventory.addEnergy(15000f);
@@ -233,42 +235,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     private void calculateMomentum() {
         // Dampen momentum
-        gasMomentum.mul(0.5f);
-
-        var vat = getVat(pos.up());
-        if(vat != null || getCachedState().get(ChemicalVatBlock.OPEN)) {
-            // Calculate stack effect momentum
-            var mass = reagentInventory.getGasAmount() * 0.001f;
-            if(mass == 0)
-                return;
-
-            double temperatureDifference, outsidePressure;
-            if(vat != null) {
-                double T_o = vat.reagentInventory.getAbsoluteTemperature();
-                double T_i = reagentInventory.getAbsoluteTemperature();
-                temperatureDifference = (T_o == 0 ? 0 : 1 / T_o) - (T_i == 0 ? 0 : 1 / T_i);
-                outsidePressure = vat.reagentInventory.staticPressure();
-            } else {
-                double T_i = reagentInventory.getAbsoluteTemperature();
-                temperatureDifference = 1 / 295.15 - (T_i == 0 ? 0 : 1 / T_i);
-                outsidePressure = ATMOSPHERIC_PRESSURE;
-            }
-            var deltaP = 0.0342 * outsidePressure * temperatureDifference * 10000f;
-
-            // We need to do an inverse dynamic pressure equation to get the gas momentum for a given gradient.
-            var pressure = reagentInventory.staticPressure();
-            if(pressure == 0)
-                return;
-            var volume = reagentInventory.getFreeVolume() * 0.001f;
-
-            var x = Math.pow((pressure + deltaP) / pressure, 2.0 / 5.0);
-            var speedOfSoundSqr = pressure * volume * GasConstants.HEAT_CAPACITY_RATIO / mass;
-            var machNumberSqr = (x - 1) / GasConstants.PRESSURE_HCR_CONST;
-            var velocity = Math.sqrt(machNumberSqr * speedOfSoundSqr);
-
-            // Approach the target momentum.
-            gasMomentum.y = gasMomentum.y * 0.25 + velocity * mass * 0.75;
-        }
+        gasMomentum.mul(0.95f);
     }
 
     public void moveReagents() {
@@ -335,11 +302,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     int moveAmount = (int) (moveFraction * reagentInventory.getFreeVolume() / (GasConstants.GAS_CONSTANT * reagentInventory.getAbsoluteTemperature()));
                     moveAmount = (int) Math.min(moveAmount, reagentInventory.getGasAmount() * 0.9f);
 
-                    int diffuseAmount = (int) (reagentInventory.getGasAmount() * diffusionRate()) - moveAmount;
+                    int diffuseAmount = (int) (reagentInventory.getGasAmount() * diffusionRate()) - Math.abs(moveAmount);
                     moveAmount = MixtureHelper.moveReagents(reagentInventory, gasses, vat.reagentInventory, moveAmount);
-//                    if (diffuseAmount > 0) {
-//                        MixtureHelper.diffuse(reagentInventory, vat.reagentInventory, gasses, ReagentState.GAS, diffuseAmount);
-//                    }
+                    if (diffuseAmount > 0) {
+                        MixtureHelper.diffuse(reagentInventory, vat.reagentInventory, gasses, ReagentState.GAS, diffuseAmount);
+                    }
 
                     if(moveAmount > 0) {
                         processGasMovement(dir, moveFraction, moveAmount, vat);
@@ -405,7 +372,25 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         var machNumberSqr = velocity * velocity / speedOfSoundSqr;
         var x = (1 + GasConstants.PRESSURE_HCR_CONST * machNumberSqr);
 
-        return pressure * Math.sqrt(x * x * x * x * x);
+        var vat = getVat(pos.up());
+        double deltaP = 0;
+        if(direction == Direction.UP && (vat != null || getCachedState().get(ChemicalVatBlock.OPEN))) {
+            // Calculate stack effect pressure gradient
+            double temperatureDifference, outsidePressure;
+            if(vat != null) {
+                double T_o = vat.reagentInventory.getAbsoluteTemperature();
+                double T_i = reagentInventory.getAbsoluteTemperature();
+                temperatureDifference = (T_o == 0 ? 0 : 1 / T_o) - (T_i == 0 ? 0 : 1 / T_i);
+                outsidePressure = vat.reagentInventory.staticPressure();
+            } else {
+                double T_i = reagentInventory.getAbsoluteTemperature();
+                temperatureDifference = 1 / GasConstants.ATMOSPHERE_ABSOLUTE_TEMPERATURE - (T_i == 0 ? 0 : 1 / T_i);
+                outsidePressure = GasConstants.ATMOSPHERIC_PRESSURE;
+            }
+            deltaP = GasConstants.STACK_EFFECT_CONST * outsidePressure * temperatureDifference;
+        }
+
+        return pressure * Math.sqrt(x * x * x * x * x) + deltaP;
     }
 
     public float speedOfSound() {
@@ -416,15 +401,14 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         return pressure(direction) - reagentInventory.staticPressure();
     }
 
+    @Environment(EnvType.CLIENT)
     private void createFluidParticles() {
         var r = world.random;
         if(r.nextFloat() > 1 / 12f || maxFluid == null)
             return;
 
-        float fluidLevel = (float) getFluidAmount() / getFluidCapacity();
-        float rim = 2 / 16f;
-        float space = 12 / 16f;
-        float surface = pos.getY() + rim + 13 / 16f * fluidLevel + 1 / 32f;
+        float fluidLevel = getFluidLevel();
+        float surface = pos.getY() + CORNER + FLUID_SPAN * fluidLevel + 1 / 32f;
 
         for(var fluid : getFluidStorage(null)) {
             if(fluid.isResourceBlank())
@@ -434,8 +418,8 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             if(fluid.getResource() == maxFluid.getResource())
                 continue;
 
-            float x = pos.getX() + rim + space * r.nextFloat();
-            float z = pos.getZ() + rim + space * r.nextFloat();
+            float x = pos.getX() + CORNER + SIDE * r.nextFloat();
+            float z = pos.getZ() + CORNER + SIDE * r.nextFloat();
             world.addImportantParticle(
                     new FluidParticleData(AllParticleTypes.BASIN_FLUID.get(), new FluidStack(fluid)),
                     x, surface, z, 0, 0, 0);
@@ -455,16 +439,27 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         for(var reagent : mixture.getReagents()) {
             var color = reagent.getParticleColor();
             if(color == 0)
+//                color = 0xFFFFFF;
                 continue;
             var amount = mixture.getAmount(reagent);
 
             float chance = amount / 10f;
+            if(chance > 5)
+                chance = 5;
             while(r.nextFloat() < chance) {
                 float red = ((color >> 16) & 0xFF) / 255f;
                 float green = ((color >> 8) & 0xFF) / 255f;
                 float blue = (color & 0xFF) / 255f;
-                world.addParticle(new DustParticleEffect(new Vector3f(red, green, blue), 1.0f),
-                        x + r.nextFloat() * 12 / 16f, surface, z + r.nextFloat() * 12 / 16f, 0, 0.5f, 0);
+
+                double vX = 0, vY = 0.1f, vZ = 0;
+                float mass = reagentInventory.getGasAmount() * 0.001f;
+                if(mass > 0) {
+                    vX = gasMomentum.x / mass;
+                    vY = gasMomentum.y / mass;
+                    vZ = gasMomentum.z / mass;
+                }
+                world.addParticle(new ChemicalVatParticleData(red, green, blue),
+                        x + r.nextFloat() * 12 / 16f, surface, z + r.nextFloat() * 12 / 16f, vX, vY, vZ);
                 chance -= 1;
             }
         }
@@ -634,5 +629,13 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     public long getFluidCapacity() {
         return (long) (reagentInventory.getVolume() * Reagent.FLUID_MOLE_RATIO);
+    }
+
+    public float getFluidLevel() {
+        return (float) reagentInventory.getLiquidAmount() / reagentInventory.getVolume();
+    }
+
+    public float getFluidOffset() {
+        return (float) reagentInventory.getSolidAmount() / reagentInventory.getVolume();
     }
 }
