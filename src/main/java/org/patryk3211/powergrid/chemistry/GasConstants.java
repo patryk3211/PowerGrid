@@ -16,11 +16,11 @@
 package org.patryk3211.powergrid.chemistry;
 
 public class GasConstants {
-    public static final double GAS_CONSTANT = 0.003389; // 340.905; // 8.314*50;
+    public static final double GAS_CONSTANT = 0.010167;
     public static final double HEAT_CAPACITY_RATIO = 1.4; // Assumes a 5 dimensional gas
 
     public static final double PRESSURE_HCR_CONST = (HEAT_CAPACITY_RATIO - 1) / 2;
-    public static final double STACK_EFFECT_CONST = 342/6f;
+    public static final double STACK_EFFECT_CONST = 14.25f;
 
     public static final float ATMOSPHERIC_PRESSURE = 1.013f;
     public static final float ATMOSPHERE_TEMPERATURE = 22f;
