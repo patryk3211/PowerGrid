@@ -18,11 +18,15 @@ package org.patryk3211.powergrid.chemistry.vat;
 import com.simibubi.create.AllParticleTypes;
 import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.particle.FluidParticleData;
+import com.simibubi.create.content.fluids.transfer.GenericItemEmptying;
+import com.simibubi.create.content.fluids.transfer.GenericItemFilling;
 import com.simibubi.create.content.processing.basin.BasinBlockEntity;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.fluid.FluidHelper;
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -484,6 +488,16 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         assert world != null;
         var stack = player.getStackInHand(hand);
+
+        // Do fluid actions.
+        var direction = hit.getSide();
+        if(FluidHelper.tryEmptyItemIntoBE(world, player, hand, stack, this, direction))
+            return ActionResult.SUCCESS;
+        if(FluidHelper.tryFillItemFromBE(world, player, hand, stack, this, direction))
+            return ActionResult.SUCCESS;
+        if (GenericItemEmptying.canItemBeEmptied(world, stack) || GenericItemFilling.canItemBeFilled(world, stack))
+            return ActionResult.SUCCESS;
+
         if(stack.isOf(Items.FLINT_AND_STEEL)) {
             if(!world.isClient) {
                 if (!player.isCreative())
