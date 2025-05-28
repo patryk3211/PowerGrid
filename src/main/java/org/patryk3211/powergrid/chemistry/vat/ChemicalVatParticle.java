@@ -41,21 +41,6 @@ public class ChemicalVatParticle extends SpriteBillboardParticle {
     public void tick() {
         super.tick();
         setSpriteForAge(sprites);
-//        this.prevPosX = this.x;
-//        this.prevPosY = this.y;
-//        this.prevPosZ = this.z;
-//        if (this.age++ >= this.maxAge) {
-//            this.markDead();
-//            return;
-//        }
-//
-//        float progress = (float) Math.pow(((float) age) / maxAge, drag);
-//        float angle = (progress * 2 * 360 + twirlAngleOffset) % 360;
-//        Vec3d twirl = VecHelper.rotate(new Vec3d(0, twirlRadius, 0), angle, twirlAxis);
-//
-//        float x = (float) (MathHelper.lerp(progress, originX, targetX) + twirl.x);
-//        float y = (float) (MathHelper.lerp(progress, originY, targetY) + twirl.y);
-//        float z = (float) (MathHelper.lerp(progress, originZ, targetZ) + twirl.z);
     }
 
     @Override

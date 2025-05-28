@@ -55,7 +55,7 @@ public abstract class BasinFluidParticleMixin extends FluidStackParticle {
         if(age % 2 == 0) {
             var blockEntity = world.getBlockEntity(getBasinPos());
             if(blockEntity instanceof ChemicalVatBlockEntity vat) {
-                float level = (float) vat.getFluidAmount() / vat.getFluidCapacity();
+                float level = vat.getFluidLevel();
                 if(level <= 0)
                     return;
                 y = 2 / 16f + getBasinPos().getY() + 13 / 16f * level + getYOffset();

@@ -37,7 +37,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -48,7 +47,6 @@ import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 import org.patryk3211.powergrid.chemistry.GasConstants;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
@@ -275,7 +273,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 }
 
                 int moveAmount = (int) (moveFraction * reagentInventory.getVolume());
-                int diffuseAmount = (int) (reagentInventory.getLiquidAmount() * diffusionRate()) - moveAmount;
+                int diffuseAmount = (int) (reagentInventory.getLiquidAmount() * diffusionRate()) - Math.abs(moveAmount);
                 MixtureHelper.moveReagents(reagentInventory, liquids, vat.reagentInventory, moveAmount);
                 if(diffuseAmount > 0) {
                     MixtureHelper.diffuse(reagentInventory, vat.reagentInventory, liquids, ReagentState.LIQUID, diffuseAmount);
@@ -623,19 +621,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         return reagentInventory.getFluidView();
     }
 
-    public long getFluidAmount() {
-        return (long) (reagentInventory.getLiquidAmount() * Reagent.FLUID_MOLE_RATIO);
-    }
-
-    public long getFluidCapacity() {
-        return (long) (reagentInventory.getVolume() * Reagent.FLUID_MOLE_RATIO);
+    public ReagentMixture getReagentMixture() {
+        return reagentInventory;
     }
 
     public float getFluidLevel() {
-        return (float) reagentInventory.getLiquidAmount() / reagentInventory.getVolume();
-    }
-
-    public float getFluidOffset() {
-        return (float) reagentInventory.getSolidAmount() / reagentInventory.getVolume();
+        return reagentInventory.getFillLevel();
     }
 }

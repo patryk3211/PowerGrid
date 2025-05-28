@@ -29,6 +29,7 @@ import java.util.Map;
 public class Reagent implements ReagentConvertible {
     public static final int BLOCK_MOLE_AMOUNT = 4000;
     public static final int FLUID_MOLE_AMOUNT = BLOCK_MOLE_AMOUNT;
+    public static final int RAW_ORE_MOLE_AMOUNT = BLOCK_MOLE_AMOUNT / 9;
 
     public static final double FLUID_MOLE_RATIO = (double) FluidConstants.BLOCK / FLUID_MOLE_AMOUNT;
 
