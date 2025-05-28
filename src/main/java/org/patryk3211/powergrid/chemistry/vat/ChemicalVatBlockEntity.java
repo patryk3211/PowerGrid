@@ -130,7 +130,8 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             var vatPressure = reagentInventory.staticPressure();
 
             var moveFraction = GasConstants.ATMOSPHERIC_PRESSURE - vatPressure;
-            var moveAmount = (int) (moveFraction * availableVolume / (GasConstants.GAS_CONSTANT * reagentInventory.getAbsoluteTemperature()));
+            var moveAmount = GasConstants.calculateMoveAmount(GasConstants.ATMOSPHERIC_PRESSURE, vatPressure, availableVolume,
+                    GasConstants.ATMOSPHERE_ABSOLUTE_TEMPERATURE, (float) reagentInventory.getAbsoluteTemperature());
             var startAmount = reagentInventory.getGasAmount();
             if(moveAmount < 0) {
                 moveAmount = (int) -Math.min(-moveAmount, startAmount * 0.9f);
@@ -297,7 +298,8 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     var targetPressure = (gasPressure1 + gasPressure2) * 0.5f;
 
                     float moveFraction = (float) (gasPressure1 - targetPressure);
-                    int moveAmount = (int) (moveFraction * reagentInventory.getFreeVolume() / (GasConstants.GAS_CONSTANT * reagentInventory.getAbsoluteTemperature()));
+                    int moveAmount = GasConstants.calculateMoveAmount(gasPressure1, targetPressure, reagentInventory.getFreeVolume(),
+                            (float) reagentInventory.getAbsoluteTemperature(), (float) vat.reagentInventory.getAbsoluteTemperature());
                     moveAmount = (int) Math.min(moveAmount, reagentInventory.getGasAmount() * 0.9f);
 
                     int diffuseAmount = (int) (reagentInventory.getGasAmount() * diffusionRate()) - Math.abs(moveAmount);

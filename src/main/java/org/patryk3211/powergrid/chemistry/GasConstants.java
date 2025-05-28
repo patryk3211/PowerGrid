@@ -25,4 +25,17 @@ public class GasConstants {
     public static final float ATMOSPHERIC_PRESSURE = 1.013f;
     public static final float ATMOSPHERE_TEMPERATURE = 22f;
     public static final float ATMOSPHERE_ABSOLUTE_TEMPERATURE = ATMOSPHERE_TEMPERATURE + 273.15f;
+
+    public static int calculateMoveAmount(double p0, double p1, float availableVolume, float t0, float t1) {
+        int sign = 1;
+        if(p0 < p1) {
+            sign = -1;
+            var p = p0;
+            p0 = p1;
+            p1 = p;
+            t0 = t1;
+        }
+        var fraction = p0 - p1;
+        return (int) (fraction * availableVolume / (GAS_CONSTANT * t0)) * sign;
+    }
 }
