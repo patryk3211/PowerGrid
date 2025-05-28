@@ -79,8 +79,14 @@ public class ReagentMixture implements ReagentConditions {
         return (float) Math.round(getTemperaturePrecise() * 100) / 100;
     }
 
-    private double getTemperaturePrecise() {
-        return (energy / heatMass()) - 273.15;
+    public double getTemperaturePrecise() {
+        return getAbsoluteTemperature() - 273.15;
+    }
+    
+    public double getAbsoluteTemperature() {
+        if(heatMass() == 0)
+            return 0;
+        return energy / heatMass();
     }
 
     public int getTotalAmount() {

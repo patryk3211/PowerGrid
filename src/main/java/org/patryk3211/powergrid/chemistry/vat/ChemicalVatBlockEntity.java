@@ -45,15 +45,19 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.patryk3211.powergrid.chemistry.GasConstants;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.ConstantReagentMixture;
+import org.patryk3211.powergrid.chemistry.reagent.mixture.MixtureHelper;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
@@ -64,7 +68,7 @@ import java.util.*;
 @SuppressWarnings("UnstableApiUsage")
 public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
     public static final float DIFFUSION_RATE = 0.02f;
-    public static final float ATMOSPHERIC_PRESSURE = 1.02f;
+    public static final float ATMOSPHERIC_PRESSURE = 1.013f;
     // TODO: Balance this value.
     public static final float DISSIPATION_FACTOR = 100f;
 
@@ -72,6 +76,8 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     private final RecipeProgressStore progressStore;
     @NotNull
     private ItemStack catalyzer;
+
+    private final Vector3d gasMomentum = new Vector3d();
 
     private StorageView<FluidVariant> maxFluid;
 
@@ -112,28 +118,35 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             reagentInventory.setBurning(false);
         }
 
+        calculateMomentum();
+
         // Moving has to occur after recipe processing so that the burning flag is valid.
         moveReagents();
 
         if(getCachedState().get(ChemicalVatBlock.OPEN)) {
+            // Allow gasses in and out
             reagentInventory.setOpen(true);
 
-            // Allow gasses in and out
             var availableVolume = Math.max(reagentInventory.getFreeVolume(), 1000);
-            var vatPressure = (float) reagentInventory.getGasAmount() / availableVolume;
+            var vatPressure = reagentInventory.staticPressure(); //pressure(Direction.UP);
 
-            var difference = ATMOSPHERIC_PRESSURE - vatPressure;
-            var moveAmount = (int) (difference * availableVolume);
+            var moveFraction = ATMOSPHERIC_PRESSURE - vatPressure;
+            var moveAmount = (int) (moveFraction * availableVolume / (GasConstants.GAS_CONSTANT * reagentInventory.getAbsoluteTemperature()));
+            var startAmount = reagentInventory.getGasAmount();
+            if(moveAmount < 0) {
+                moveAmount = (int) -Math.min(-moveAmount, startAmount * 0.9f);
+            }
+
             int diffuseAmount = (int) (diffusionRate() * reagentInventory.getGasAmount()) - Math.abs(moveAmount);
 
             // TODO: I'm not sure if I implemented transactions correctly (probably not) so this is split in two.
             ReagentMixture diffused = null, moved = null;
-            try(var transaction = Transaction.openOuter()) {
-                if (diffuseAmount > 0) {
+            if(diffuseAmount > 0) {
+                try(var transaction = Transaction.openOuter()) {
                     diffused = reagentInventory.remove(diffuseAmount, ReagentState.GAS, transaction);
                     reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(diffused.getTotalAmount()), transaction);
+                    transaction.commit();
                 }
-                transaction.commit();
             }
 
             try(var transaction = Transaction.openOuter()) {
@@ -147,6 +160,14 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(moveAmount), transaction);
                 }
                 transaction.commit();
+            }
+
+            if(moveAmount > 0) {
+                var targetFractionVelocity = Math.min(moveAmount * 0.001f / 0.05f, speedOfSound());
+                gasMomentum.add(0, -targetFractionVelocity * moveAmount * 0.001f, 0);
+            } else if(moveAmount < 0) {
+                moveFraction = (float) moveAmount / startAmount;
+                processGasMovement(Direction.UP, (float) -moveFraction, -moveAmount, null);
             }
 
             if(world.isClient) {
@@ -199,6 +220,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             createFluidParticles();
         }
 
+        markDirty();
         if(reagentInventory.wasAltered())
             sendData();
     }
@@ -207,6 +229,46 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     public void lazyTick() {
         super.lazyTick();
         sendData();
+    }
+
+    private void calculateMomentum() {
+        // Dampen momentum
+        gasMomentum.mul(0.5f);
+
+        var vat = getVat(pos.up());
+        if(vat != null || getCachedState().get(ChemicalVatBlock.OPEN)) {
+            // Calculate stack effect momentum
+            var mass = reagentInventory.getGasAmount() * 0.001f;
+            if(mass == 0)
+                return;
+
+            double temperatureDifference, outsidePressure;
+            if(vat != null) {
+                double T_o = vat.reagentInventory.getAbsoluteTemperature();
+                double T_i = reagentInventory.getAbsoluteTemperature();
+                temperatureDifference = (T_o == 0 ? 0 : 1 / T_o) - (T_i == 0 ? 0 : 1 / T_i);
+                outsidePressure = vat.reagentInventory.staticPressure();
+            } else {
+                double T_i = reagentInventory.getAbsoluteTemperature();
+                temperatureDifference = 1 / 295.15 - (T_i == 0 ? 0 : 1 / T_i);
+                outsidePressure = ATMOSPHERIC_PRESSURE;
+            }
+            var deltaP = 0.0342 * outsidePressure * temperatureDifference * 10000f;
+
+            // We need to do an inverse dynamic pressure equation to get the gas momentum for a given gradient.
+            var pressure = reagentInventory.staticPressure();
+            if(pressure == 0)
+                return;
+            var volume = reagentInventory.getFreeVolume() * 0.001f;
+
+            var x = Math.pow((pressure + deltaP) / pressure, 2.0 / 5.0);
+            var speedOfSoundSqr = pressure * volume * GasConstants.HEAT_CAPACITY_RATIO / mass;
+            var machNumberSqr = (x - 1) / GasConstants.PRESSURE_HCR_CONST;
+            var velocity = Math.sqrt(machNumberSqr * speedOfSoundSqr);
+
+            // Approach the target momentum.
+            gasMomentum.y = gasMomentum.y * 0.25 + velocity * mass * 0.75;
+        }
     }
 
     public void moveReagents() {
@@ -228,7 +290,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 continue;
             if(dir == Direction.DOWN && !solids.isEmpty()) {
                 // Solids can only go down.
-                moveReagents(solids, vat, reagentInventory.getTotalAmount());
+                MixtureHelper.moveReagents(reagentInventory, solids, vat.reagentInventory, reagentInventory.getTotalAmount());
             }
             if(dir != Direction.UP && !liquids.isEmpty()) {
                 // Liquids cannot go up.
@@ -247,32 +309,41 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
                 int moveAmount = (int) (moveFraction * reagentInventory.getVolume());
                 int diffuseAmount = (int) (reagentInventory.getLiquidAmount() * diffusionRate()) - moveAmount;
-                moveReagents(liquids, vat, moveAmount);
+                MixtureHelper.moveReagents(reagentInventory, liquids, vat.reagentInventory, moveAmount);
                 if(diffuseAmount > 0) {
-                    diffuse(liquids, ReagentState.LIQUID, vat, diffuseAmount);
+                    MixtureHelper.diffuse(reagentInventory, vat.reagentInventory, liquids, ReagentState.LIQUID, diffuseAmount);
                 }
             }
-            if(reagentInventory.getFreeVolume() == 0 && vat.reagentInventory.getFreeVolume() == 0) {
-                // No free volume so no gas movement can occur.
-                continue;
-            } else if(reagentInventory.getFreeVolume() == 0) {
-                // Must move all gas from this inventory.
-                moveReagents(gasses, vat, reagentInventory.getGasAmount());
-            } else if(vat.reagentInventory.getFreeVolume() == 0) {
-                // Cannot move gas into a full inventory.
-                continue;
-            } else if(!gasses.isEmpty()) {
-                // Gasses can go anywhere.
-                var gasPressure1 = (float) reagentInventory.getGasAmount() / reagentInventory.getFreeVolume();
-                var gasPressure2 = (float) vat.reagentInventory.getGasAmount() / vat.reagentInventory.getFreeVolume();
-                var targetPressure = (gasPressure1 + gasPressure2) * 0.5f;
+            if(!gasses.isEmpty()) {
+                if(reagentInventory.getFreeVolume() == 0 && vat.reagentInventory.getFreeVolume() == 0) {
+                    // No free volume so no gas movement can occur.
+                    continue;
+                } else if(reagentInventory.getFreeVolume() == 0) {
+                    // Must move all gas from this inventory.
+                    MixtureHelper.moveReagents(reagentInventory, gasses, vat.reagentInventory, reagentInventory.getGasAmount());
+                } else if(vat.reagentInventory.getFreeVolume() == 0) {
+                    // Cannot move gas into a full inventory.
+                    continue;
+                } else {
+                    // Gasses can go anywhere.
+                    var gasPressure1 = pressure(dir);
+                    var gasPressure2 = vat.pressure(dir.getOpposite());
 
-                float moveFraction = gasPressure1 - targetPressure;
-                int moveAmount = (int) (moveFraction * reagentInventory.getFreeVolume());
-                int diffuseAmount = (int) (reagentInventory.getGasAmount() * diffusionRate()) - moveAmount;
-                moveReagents(gasses, vat, moveAmount);
-                if(diffuseAmount > 0) {
-                    diffuse(gasses, ReagentState.GAS, vat, diffuseAmount);
+                    var targetPressure = (gasPressure1 + gasPressure2) * 0.5f;
+
+                    float moveFraction = (float) (gasPressure1 - targetPressure);
+                    int moveAmount = (int) (moveFraction * reagentInventory.getFreeVolume() / (GasConstants.GAS_CONSTANT * reagentInventory.getAbsoluteTemperature()));
+                    moveAmount = (int) Math.min(moveAmount, reagentInventory.getGasAmount() * 0.9f);
+
+                    int diffuseAmount = (int) (reagentInventory.getGasAmount() * diffusionRate()) - moveAmount;
+                    moveAmount = MixtureHelper.moveReagents(reagentInventory, gasses, vat.reagentInventory, moveAmount);
+//                    if (diffuseAmount > 0) {
+//                        MixtureHelper.diffuse(reagentInventory, vat.reagentInventory, gasses, ReagentState.GAS, diffuseAmount);
+//                    }
+
+                    if(moveAmount > 0) {
+                        processGasMovement(dir, moveFraction, moveAmount, vat);
+                    }
                 }
             }
 
@@ -283,54 +354,66 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         }
     }
 
-    private void diffuse(Set<Reagent> thisReagents, ReagentState state, ChemicalVatBlockEntity target, int amount) {
-        if(thisReagents.isEmpty())
+    private void processGasMovement(Direction dir, float moveFraction, float moveAmount, @Nullable ChemicalVatBlockEntity target) {
+        if(moveFraction == 0)
             return;
-        var otherReagents = new HashSet<Reagent>();
-        for(var reagent : target.reagentInventory.getReagents()) {
-            if(target.reagentInventory.getState(reagent) == state)
-                otherReagents.add(reagent);
-        }
+        moveAmount *= 0.001f;
+        var fractionVolume = moveFraction * reagentInventory.getFreeVolume() * 0.001f;
 
-        while(amount > 0) {
-            try(var transaction = Transaction.openOuter()) {
-                var mix1 = reagentInventory.remove(amount, thisReagents, transaction);
-                var mix2 = target.reagentInventory.remove(mix1.getTotalAmount(), otherReagents, transaction);
+        var deltaMX = gasMomentum.x * moveFraction;
+        var deltaMY = gasMomentum.y * moveFraction;
+        var deltaMZ = gasMomentum.z * moveFraction;
 
-                int added = reagentInventory.add(mix2, transaction);
-                if(added != mix2.getTotalAmount()) {
-                    amount = added;
-                    transaction.abort();
-                    continue;
-                }
-                added = target.reagentInventory.add(mix1, transaction);
-                if(added != mix1.getTotalAmount()) {
-                    amount = added;
-                    transaction.abort();
-                    continue;
-                }
-                transaction.commit();
-                break;
-            }
+        gasMomentum.sub(deltaMX, deltaMY, deltaMZ);
+        if(target != null)
+            target.gasMomentum.add(deltaMX, deltaMY, deltaMZ);
+
+        var dirVect = dir.getVector();
+        var sourceFractionVelocity = Math.min(fractionVolume / 0.05f, speedOfSound());
+        gasMomentum.add(
+                dirVect.getX() * sourceFractionVelocity * moveAmount,
+                dirVect.getY() * sourceFractionVelocity * moveAmount,
+                dirVect.getZ() * sourceFractionVelocity * moveAmount
+        );
+
+        if(target != null) {
+            var targetFractionVelocity = Math.min(fractionVolume / 0.05f, speedOfSound());
+            target.gasMomentum.add(
+                    dirVect.getX() * targetFractionVelocity * moveAmount,
+                    dirVect.getY() * targetFractionVelocity * moveAmount,
+                    dirVect.getZ() * targetFractionVelocity * moveAmount
+            );
         }
     }
 
-    private void moveReagents(Set<Reagent> reagents, ChemicalVatBlockEntity target, int amount) {
-        if(reagents.isEmpty())
-            return;
-        while(amount > 0) {
-            try(var transaction = Transaction.openOuter()) {
-                var mix = reagentInventory.remove(amount, reagents, transaction);
-                amount = mix.getTotalAmount();
-                int added = target.reagentInventory.add(mix, transaction);
-                if(added == amount) {
-                    transaction.commit();
-                    break;
-                }
-                transaction.abort();
-                amount = added;
-            }
-        }
+    public double pressure(Direction direction) {
+        var dirVect = direction.getVector();
+        var mX = dirVect.getX() * gasMomentum.x;
+        var mY = dirVect.getY() * gasMomentum.y;
+        var mZ = dirVect.getZ() * gasMomentum.z;
+        // Dynamic pressure calculation is an interpretation of the compressible flow dynamic pressure equation:
+        // https://en.wikipedia.org/wiki/Dynamic_pressure#Compressible_flow
+
+        // Technically this is not mass, but it's good enough for our purposes.
+        var mass = reagentInventory.getGasAmount() * 0.001f;
+        var volume = reagentInventory.getFreeVolume() * 0.001f;
+        if(mass == 0)
+            return 0;
+        var velocity = (mX + mY + mZ) / mass;
+        var pressure = reagentInventory.staticPressure();
+        var speedOfSoundSqr = pressure * volume * GasConstants.HEAT_CAPACITY_RATIO / mass;
+        var machNumberSqr = velocity * velocity / speedOfSoundSqr;
+        var x = (1 + GasConstants.PRESSURE_HCR_CONST * machNumberSqr);
+
+        return pressure * Math.sqrt(x * x * x * x * x);
+    }
+
+    public float speedOfSound() {
+        return (float) Math.sqrt(reagentInventory.staticPressure() * reagentInventory.getFreeVolume() * 0.001f * GasConstants.HEAT_CAPACITY_RATIO / (reagentInventory.getGasAmount() * 0.001f));
+    }
+
+    public double dynamicPressure(Direction direction) {
+        return pressure(direction) - reagentInventory.staticPressure();
     }
 
     private void createFluidParticles() {
@@ -510,6 +593,12 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             catalyzer = ItemStack.fromNbt(tag.getCompound("Catalyzer"));
         }
         updateCatalyzer();
+        if(tag.contains("Momentum")) {
+            var momentum = tag.getCompound("Momentum");
+            gasMomentum.x = momentum.getDouble("X");
+            gasMomentum.y = momentum.getDouble("Y");
+            gasMomentum.z = momentum.getDouble("Z");
+        }
     }
 
     @Override
@@ -520,6 +609,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         if(!catalyzer.isEmpty()) {
             tag.put("Catalyzer", catalyzer.serializeNBT());
         }
+        var momentum = new NbtCompound();
+        momentum.putDouble("X", gasMomentum.x);
+        momentum.putDouble("Y", gasMomentum.y);
+        momentum.putDouble("Z", gasMomentum.z);
+        tag.put("Momentum", momentum);
     }
 
     @Nullable

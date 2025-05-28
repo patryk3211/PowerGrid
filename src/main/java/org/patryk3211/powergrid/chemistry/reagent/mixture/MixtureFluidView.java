@@ -41,6 +41,8 @@ public class MixtureFluidView implements Storage<FluidVariant> {
         if(reagent == null)
             return 0;
         var stack = new ReagentStack(reagent, (int) (amount / Reagent.FLUID_MOLE_RATIO), reagent.getFluidTemperature());
+        if(stack.getAmount() == 0)
+            return 0;
         var added = mixture.add(stack, transaction);
         TransactionCallback.onSuccess(transaction, mixture::setAltered);
         return amount * added / stack.getAmount();

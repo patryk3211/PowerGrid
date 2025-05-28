@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
+import org.patryk3211.powergrid.chemistry.GasConstants;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentConvertible;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
@@ -121,6 +122,24 @@ public class VolumeReagentInventory extends ReagentMixture {
             case SOLID -> getSolidAmount();
         };
         return (float) getAmount(reagent.asReagent()) / total;
+    }
+
+    public double staticPressure() {
+        var volume = getFreeVolume();
+        if(volume == 0)
+            return 0;
+        return (double) gasAmount * GasConstants.GAS_CONSTANT * getAbsoluteTemperature() / volume;
+//        var volume = getFreeVolume() * 0.001f;
+//        if(volume == 0)
+//            return 0;
+//        return getGasAmount() * 0.001 * GasConstants.GAS_CONSTANT * getAbsoluteTemperature() / volume;
+    }
+
+    public int nFromPressure(double p) {
+        var volume = getFreeVolume() * 0.001f;
+        if(volume == 0)
+            return 0;
+        return (int) (p * volume / (GasConstants.GAS_CONSTANT * getAbsoluteTemperature()) * 1000);
     }
 
     @Override
