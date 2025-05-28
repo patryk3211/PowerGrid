@@ -126,6 +126,8 @@ public class VolumeReagentInventory extends ReagentMixture {
 
     public double staticPressure() {
         var volume = getFreeVolume();
+        if(isOpen)
+            volume += 2000;
         if(volume == 0)
             return 0;
         return (double) gasAmount * GasConstants.GAS_CONSTANT * getAbsoluteTemperature() / volume;

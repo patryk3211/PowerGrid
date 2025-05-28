@@ -131,11 +131,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             // Allow gasses in and out
             reagentInventory.setOpen(true);
 
-            var availableVolume = Math.max(reagentInventory.getFreeVolume(), 1000);
+            var volume = reagentInventory.getFreeVolume() + 2000;
             var vatPressure = reagentInventory.staticPressure();
 
             var moveFraction = GasConstants.ATMOSPHERIC_PRESSURE - vatPressure;
-            var moveAmount = GasConstants.calculateMoveAmount(GasConstants.ATMOSPHERIC_PRESSURE, vatPressure, availableVolume,
+            var moveAmount = GasConstants.calculateMoveAmount(GasConstants.ATMOSPHERIC_PRESSURE, vatPressure, volume,
                     GasConstants.ATMOSPHERE_ABSOLUTE_TEMPERATURE, (float) reagentInventory.getAbsoluteTemperature());
             var startAmount = reagentInventory.getGasAmount();
             if(moveAmount < 0) {
