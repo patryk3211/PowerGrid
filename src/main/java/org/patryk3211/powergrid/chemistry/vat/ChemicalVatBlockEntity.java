@@ -117,7 +117,8 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             reagentInventory.setBurning(false);
         }
 
-        calculateMomentum();
+        // Dampen momentum
+        gasMomentum.mul(0.95f);
 
         // Moving has to occur after recipe processing so that the burning flag is valid.
         moveReagents();
@@ -191,14 +192,13 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             reagentInventory.removeEnergy(tempDiff * DISSIPATION_FACTOR * 0.05f);
         }
 
-        // TODO: Improve this.
         var heat = BasinBlockEntity.getHeatLevelOf(world.getBlockState(pos.down()));
         if(heat.isAtLeast(BlazeBurnerBlock.HeatLevel.SEETHING)) {
-            reagentInventory.addEnergy(15000f);
+            applyHeater(90000, 1300);
         } else if(heat.isAtLeast(BlazeBurnerBlock.HeatLevel.KINDLED)) {
-            reagentInventory.addEnergy(5000f);
+            applyHeater(30000, 500);
         } else if(heat.isAtLeast(BlazeBurnerBlock.HeatLevel.SMOULDERING)) {
-            reagentInventory.addEnergy(1000f);
+            applyHeater(10000, 150);
         }
 
         if(world.isClient) {
@@ -232,9 +232,13 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         sendData();
     }
 
-    private void calculateMomentum() {
-        // Dampen momentum
-        gasMomentum.mul(0.95f);
+    public void applyHeater(float power, float temperature) {
+        float diff = (float) (temperature - reagentInventory.getTemperaturePrecise());
+        float energyDiff = (float) (diff * reagentInventory.heatMass());
+        if(energyDiff < 0)
+            energyDiff = 0;
+        var maxEnergyChange = power * 0.05f;
+        reagentInventory.addEnergy(Math.min(maxEnergyChange, energyDiff));
     }
 
     public void moveReagents() {
