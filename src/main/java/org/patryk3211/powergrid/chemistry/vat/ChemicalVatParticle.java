@@ -23,16 +23,19 @@ public class ChemicalVatParticle extends SpriteBillboardParticle {
 
     public ChemicalVatParticle(ChemicalVatParticleData parameters, ClientWorld world, double x, double y, double z, double vX, double vY, double vZ, SpriteProvider sprites) {
         super(world, x, y, z, vX, vY, vZ);
-        this.velocityX = vX;
-        this.velocityY = vY;
-        this.velocityZ = vZ;
+
+        var random = world.getRandom();
+        this.velocityX = vX + random.nextFloat() * 0.05f - 0.025f;
+        this.velocityY = vY + random.nextFloat() * 0.05f - 0.025f;
+        this.velocityZ = vZ + random.nextFloat() * 0.05f - 0.025f;
         this.sprites = sprites;
 
         var color = parameters.getColor();
-        setColor(color.x, color.y, color.z);
+        var darken = random.nextFloat() * 0.3f + 0.7f;
+        setColor(color.x * darken, color.y * darken, color.z * darken);
 
         maxAge = 8;
-        age = (int) (world.getRandom().nextFloat() * 4.0f);
+        age = (int) (random.nextFloat() * 4.0f);
         scale = 0.1f;
         setSpriteForAge(sprites);
     }
