@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.collections;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
@@ -28,14 +29,17 @@ import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
             .transform(WireProperties.setAll(0.005f, 16))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
             .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag)
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(WireProperties.setAll(0.015f, 32))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f))
             .tag(ModdedTags.Item.WIRES.tag)
             .register();
     public static final ItemEntry<WireItem> SILVER_WIRE = REGISTRATE.item("silver_wire", WireItem::new)
             .transform(WireProperties.setAll(0.003f, 8))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
             .tag(ModdedTags.Item.WIRES.tag)
             .register();
 

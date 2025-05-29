@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.electricity.wire;
 
 import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
@@ -38,6 +40,7 @@ import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
 
+@Environment(EnvType.CLIENT)
 public class WirePreview {
     private static final boolean DEBUG_BLOCK_TRACING = false;
 
@@ -64,11 +67,13 @@ public class WirePreview {
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return;
+        if(!(wireStack.getItem() instanceof WireItem wireItem))
+            return;
 
         var tag = wireStack.getNbt();
         // TODO: Use correct texture for the used item.
-        var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(BlockWireRenderer.TEXTURE));
-        float thickness = 1/16f;
+        var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(wireItem.getWireTexture()));
+        float thickness = wireItem.getWireThickness();
 
         if(!tag.contains("Position") || !tag.contains("Terminal")) {
             if(tag.contains("Turns") && !player.isCreative()) {

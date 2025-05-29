@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.utility;
 
-import com.simibubi.create.foundation.mixin.fabric.GuiAccessor;
 import com.simibubi.create.foundation.utility.Color;
 import com.simibubi.create.foundation.utility.Pair;
 import net.fabricmc.api.EnvType;
@@ -33,13 +32,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.transformer.TransformerBlock;
-import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.mixin.client.BlueprintOverlayRendererAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Environment(EnvType.CLIENT)
 public class PlacementOverlay {
     private static final List<IOverlayTextProvider> overlayProviders = new ArrayList<>();
 

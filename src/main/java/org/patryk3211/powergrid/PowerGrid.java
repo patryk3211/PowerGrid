@@ -95,4 +95,8 @@ public class PowerGrid implements ModInitializer {
 	public static Identifier asResource(String path) {
 		return new Identifier(MOD_ID, path);
 	}
+
+	public static Identifier texture(String path) {
+		return asResource("textures/" + path + ".png");
+	}
 }

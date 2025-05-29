@@ -15,7 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import com.tterrag.registrate.util.entry.ItemEntry;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -23,21 +24,22 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 
 public class WireItem extends Item implements IWire {
-    float resistance;
-    float maxLength;
+    protected float resistance;
+    protected float maxLength;
+
+    protected Identifier wireTexture;
+    protected float horizontalCoefficient = 1.01f;
+    protected float verticalCoefficient = 1.2f;
+    protected float wireThickness = 1 / 16f;
 
     public WireItem(Settings settings) {
         super(settings);
@@ -119,5 +121,25 @@ public class WireItem extends Item implements IWire {
     @Override
     public float getMaximumLength() {
         return maxLength;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public Identifier getWireTexture() {
+        return wireTexture;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public float getHorizontalCoefficient() {
+        return horizontalCoefficient;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public float getVerticalCoefficient() {
+        return verticalCoefficient;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public float getWireThickness() {
+        return wireThickness;
     }
 }

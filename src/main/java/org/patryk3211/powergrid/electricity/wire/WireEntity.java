@@ -170,6 +170,12 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
         resistance = nbt.getFloat("Resistance");
 
+        // Wires with missing item stack are not allowed.
+        if(item == null) {
+            discard();
+            return;
+        }
+
         makeWire();
     }
 
@@ -262,6 +268,12 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         }
         System.out.printf("Temperature: %f\n", dataTracker.get(TEMPERATURE));
         return super.interact(player, hand);
+    }
+
+    public WireItem getWireItem() {
+        if(item != null)
+            return (WireItem) item.getItem();
+        return null;
     }
 
     @Override
