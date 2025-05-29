@@ -1,0 +1,25 @@
+{
+  "type": "powergrid:reaction",
+  "conditions": [
+    {
+      "type": "temperature",
+      "max": 100.0,
+      "min": 0.0
+    }
+  ],
+  "energy": -5.0,
+  "ingredients": [
+    {
+      "reagent": "powergrid:redstone_sulfate"
+    },
+    {
+      "reagent": "powergrid:liquid_water"
+    }
+  ],
+  "rate": 10.0,
+  "results": [
+    {
+      "reagent": "powergrid:dissolved_redstone_sulfate"
+    }
+  ]
+}

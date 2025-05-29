@@ -1,0 +1,39 @@
+{
+  "type": "powergrid:reaction",
+  "conditions": [
+    {
+      "type": "temperature",
+      "min": 232.0
+    },
+    {
+      "type": "concentration",
+      "in": "gas",
+      "min": 0.1,
+      "reagent": "powergrid:oxygen"
+    }
+  ],
+  "energy": 297.0,
+  "flags": [
+    "combustion"
+  ],
+  "ingredients": [
+    {
+      "reagent": "powergrid:sulfur"
+    },
+    {
+      "amount": 2,
+      "reagent": "powergrid:oxygen"
+    }
+  ],
+  "rate": {
+    "multiply": [
+      15.0,
+      "Conc#powergrid:oxygen"
+    ]
+  },
+  "results": [
+    {
+      "reagent": "powergrid:sulfur_dioxide"
+    }
+  ]
+}

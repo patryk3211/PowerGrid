@@ -15,31 +15,17 @@
  */
 package org.patryk3211.powergrid.recipes;
 
-import com.google.common.base.Supplier;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.AllTags;
-import com.simibubi.create.Create;
-import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
-import com.simibubi.create.foundation.data.recipe.StandardRecipeGen;
-import com.simibubi.create.foundation.utility.RegisteredObjects;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
-import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder;
-import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.Items;
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.recipe.book.RecipeCategory;
-import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
-import java.util.function.UnaryOperator;
-
-public class CraftingRecipes extends CreateRecipeProvider {
+public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
 
-    GENERATOR_COIL = create(ModdedBlocks.COIL)
+            GENERATOR_COIL = create(ModdedBlocks.COIL)
             .unlockedBy(ModdedItems.WIRE::get)
             .shaped(b -> b
                     .pattern("CIC")
@@ -114,10 +100,10 @@ public class CraftingRecipes extends CreateRecipeProvider {
     BRASS_VOLTAGE_GAUGE = create(ModdedBlocks.BRASS_VOLTAGE_METER)
             .unlockedBy(AllBlocks.BRASS_CASING::get)
             .shaped(b -> b
-            .pattern("NCN")
-            .pattern(" B ")
+                    .pattern("NCN")
+                    .pattern(" B ")
                     .input('N', RecipeTags.copperNugget())
-            .input('B', AllBlocks.BRASS_CASING)
+                    .input('B', AllBlocks.BRASS_CASING)
                     .input('C', Items.COMPASS)
             ),
 
@@ -158,86 +144,8 @@ public class CraftingRecipes extends CreateRecipeProvider {
         super(output);
     }
 
-    protected RecipeBuilder create(Supplier<ItemConvertible> result) {
-        return new RecipeBuilder(result);
-    }
-
-    protected RecipeBuilder create(ItemConvertible result) {
-        return new RecipeBuilder(() -> result);
-    }
-
     @Override
     public String getName() {
         return "Power Grid's Crafting Recipes";
-    }
-
-    /**
-     * @see StandardRecipeGen.GeneratedRecipeBuilder
-     */
-    protected class RecipeBuilder {
-        private final Supplier<ItemConvertible> result;
-        private int amount;
-        private Supplier<ItemPredicate> unlockedBy;
-        private String suffix;
-
-        public RecipeBuilder(Supplier<ItemConvertible> result) {
-            this.result = result;
-            this.amount = 1;
-            this.unlockedBy = null;
-            this.suffix = "";
-        }
-
-        public RecipeBuilder amount(int amount) {
-            this.amount = amount;
-            return this;
-        }
-
-        public RecipeBuilder suffix(String nameSuffix) {
-            this.suffix = nameSuffix;
-            return this;
-        }
-
-        public RecipeBuilder unlockedBy(Supplier<ItemConvertible> unlockedBy) {
-            this.unlockedBy = () -> ItemPredicate.Builder.create()
-                    .items(unlockedBy.get())
-                    .build();
-            return this;
-        }
-
-        public GeneratedRecipe shaped(UnaryOperator<ShapedRecipeJsonBuilder> builder) {
-            return register(consumer -> {
-                ShapedRecipeJsonBuilder b = builder.apply(ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, result.get(), amount));
-                if(unlockedBy != null)
-                    b.criterion("has_item", conditionsFromItemPredicates(unlockedBy.get()));
-                b.offerTo(consumer, createLocation("crafting"));
-            });
-        }
-
-        public GeneratedRecipe shapeless(UnaryOperator<ShapelessRecipeJsonBuilder> builder) {
-            return register(consumer -> {
-                ShapelessRecipeJsonBuilder b = builder.apply(ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, result.get(), amount));
-                if (unlockedBy != null)
-                    b.criterion("has_item", conditionsFromItemPredicates(unlockedBy.get()));
-
-                b.offerTo(result -> {
-                    consumer.accept(result);
-//                    consumer.accept(
-//                            !recipeConditions.isEmpty() ? new StandardRecipeGen.ConditionSupportingShapelessRecipeResult(result, recipeConditions)
-//                                    : result);
-                }, createLocation("crafting"));
-            });
-        }
-
-        private Identifier createSimpleLocation(String recipeType) {
-            return Create.asResource(recipeType + "/" + getRegistryName().getPath() + suffix);
-        }
-
-        private Identifier createLocation(String recipeType) {
-            return Create.asResource(recipeType + "/" + getRegistryName().getPath() + suffix);
-        }
-
-        private Identifier getRegistryName() {
-            return RegisteredObjects.getKeyOrThrow(result.get().asItem());
-        }
     }
 }

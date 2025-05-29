@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "powergrid:flowing_sulfuric_acid",
+    "powergrid:sulfuric_acid",
+    "powergrid:flowing_dissolved_redstone_sulfate",
+    "powergrid:dissolved_redstone_sulfate"
+  ]
+}

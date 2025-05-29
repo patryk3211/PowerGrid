@@ -1,0 +1,21 @@
+{
+  "type": "powergrid:reaction",
+  "conditions": [
+    {
+      "type": "temperature",
+      "max": 100.0
+    }
+  ],
+  "energy": 40.65,
+  "ingredients": [
+    {
+      "reagent": "powergrid:water_gas"
+    }
+  ],
+  "rate": 100.0,
+  "results": [
+    {
+      "reagent": "powergrid:liquid_water"
+    }
+  ]
+}

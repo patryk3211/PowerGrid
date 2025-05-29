@@ -17,7 +17,6 @@ package org.patryk3211.powergrid;
 
 import com.simibubi.create.foundation.ponder.PonderLocalization;
 import com.simibubi.create.foundation.utility.FilesHelper;
-import com.simibubi.create.infrastructure.ponder.GeneralText;
 import com.simibubi.create.infrastructure.ponder.SharedText;
 import com.tterrag.registrate.providers.ProviderType;
 import io.github.fabricators_of_create.porting_lib.data.ExistingFileHelper;
@@ -38,7 +37,11 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(SequencedAssemblyRecipes::new);
 		pack.addProvider(CuttingRecipes::new);
 		pack.addProvider(CraftingRecipes::new);
+		pack.addProvider(CookingRecipes::new);
 		pack.addProvider(MechanicalCraftingRecipes::new);
+		pack.addProvider(MixingRecipes::new);
+		pack.addProvider(PressingRecipes::new);
+		pack.addProvider(ReactionRecipes::new);
 
 		PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;

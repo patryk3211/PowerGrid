@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.recipes;
 import com.simibubi.create.AllTags;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
+import org.patryk3211.powergrid.collections.ModdedTags;
 
 public class RecipeTags {
     public static TagKey<Item> ironSheet() {
@@ -30,5 +31,13 @@ public class RecipeTags {
 
     public static TagKey<Item> copperNugget() {
         return AllTags.forgeItemTag("copper_nuggets");
+    }
+
+    public static TagKey<Item> silverSheet() {
+        return AllTags.forgeItemTag("silver_plates");
+    }
+
+    public static TagKey<Item> silverIngot() {
+        return AllTags.forgeItemTag("silver_ingots");
     }
 }

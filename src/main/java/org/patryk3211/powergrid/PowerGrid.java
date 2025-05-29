@@ -19,7 +19,6 @@ import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.item.TooltipModifier;
-import com.tterrag.registrate.Registrate;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -30,6 +29,10 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
+import org.patryk3211.powergrid.chemistry.reagent.Reagents;
+import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
+import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipeSerializer;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
@@ -57,8 +60,13 @@ public class PowerGrid implements ModInitializer {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
 		ElectricalNetwork.LOGGER = LOGGER;
 
+		ReagentRegistry.init();
+
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
 		ITEM_GROUP_KEY = Registries.ITEM_GROUP.getKey(ITEM_GROUP).get();
+
+		Registry.register(Registries.RECIPE_SERIALIZER, ReactionRecipeSerializer.ID, ReactionRecipeSerializer.INSTANCE);
+		Registry.register(Registries.RECIPE_TYPE, ReactionRecipe.ID, ReactionRecipe.TYPE);
 
 		REGISTRATE = PowerGridRegistrate.create(MOD_ID)
 				.defaultCreativeTab(ITEM_GROUP_KEY)
@@ -74,6 +82,9 @@ public class PowerGrid implements ModInitializer {
 		ModdedEntities.register();
 		HeaterFanProcessingTypes.register();
 		ModdedConfigs.register();
+		Reagents.register();
+
+		ModdedParticles.register();
 
 		REGISTRATE.register();
 

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "powergrid:block/vat/closed"
+    },
+    "open=true": {
+      "model": "powergrid:chemical_vat_connected"
+    }
+  }
+}
