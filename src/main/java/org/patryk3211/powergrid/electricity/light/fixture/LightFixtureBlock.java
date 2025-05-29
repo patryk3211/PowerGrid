@@ -26,10 +26,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
+import net.minecraft.state.property.*;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Hand;
@@ -41,6 +38,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
@@ -49,9 +47,9 @@ import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCol
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
 public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixtureBlockEntity> {
-    public static final EnumProperty<Direction> FACING = Properties.FACING;
+    public static final DirectionProperty FACING = Properties.FACING;
     public static final IntProperty POWER = IntProperty.of("power", 0, 2);
-    public static final BooleanProperty ALONG_FIRST_AXIS = BooleanProperty.of("axis_along_first");
+    public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
     private static final TerminalBoundingBox[] UP_TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 3, 0, 7, 5, 3, 9),

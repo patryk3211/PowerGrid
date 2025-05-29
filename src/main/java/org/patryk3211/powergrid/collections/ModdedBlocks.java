@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -39,18 +37,19 @@ import net.minecraft.loot.function.ApplyBonusLootFunction;
 import net.minecraft.loot.function.SetCountLootFunction;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatModel;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.SurfaceSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
@@ -68,6 +67,7 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static com.simibubi.create.foundation.data.TagGen.*;
@@ -238,19 +238,25 @@ public class ModdedBlocks {
             .simpleItem()
             .register();
 
-    public static final BlockEntry<SwitchBlock> SWITCH = REGISTRATE.block("switch", SwitchBlock::new)
+    public static final BlockEntry<LvSwitchBlock> LV_SWITCH = REGISTRATE.block("lv_switch", LvSwitchBlock::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                         var builder = ConfiguredModel.builder();
-                        if(state.get(SwitchBlock.OPEN)) {
-                            builder.modelFile(modModel(prov, "block/switch_open"));
-                        } else {
-                            builder.modelFile(modModel(prov, "block/switch"));
-                        }
-                        var facing = state.get(SwitchBlock.HORIZONTAL_FACING);
-                        return builder.rotationY(((int) facing.asRotation() + 180) % 360).build();
+                        var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
+                        surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            if(vertical) {
+                                builder.modelFile(modModel(prov, "block/switches/lv_switch" + suffix + "_v"));
+                            } else {
+                                builder.modelFile(modModel(prov, "block/switches/lv_switch" + suffix + "_h"));
+                            }
+                            builder.rotationX(x).rotationY(y);
+                        });
+                        return builder.build();
                     }))
-            .simpleItem()
+            .lang("LV Switch")
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/lv_switch_off_v")))
+                .build()
             .register();
 
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)
@@ -458,6 +464,32 @@ public class ModdedBlocks {
                         builder.rotationY(90);
                     return builder.build();
                 });
+    }
+
+    // This function needs two models. One for Y axis and one for other axis.
+    public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
+        var facing = state.get(Properties.FACING);
+        var axis_along_first = state.get(CustomProperties.ALONG_FIRST_AXIS);
+
+        int x = 0, y = 0;
+        boolean verticalModel = false;
+        switch(facing) {
+            case UP -> { x = 180; verticalModel = true; }
+            case DOWN -> verticalModel = true;
+            case WEST -> y = 180;
+            case NORTH -> y = -90;
+            case SOUTH -> y = 90;
+        };
+
+        if(!axis_along_first) {
+            if(verticalModel) {
+                y = 90;
+            } else {
+                x = -90;
+            }
+        }
+
+        transformer.accept(x, y, verticalModel);
     }
 
     public static ModelFile.ExistingModelFile modModel(RegistrateBlockstateProvider prov, String name) {

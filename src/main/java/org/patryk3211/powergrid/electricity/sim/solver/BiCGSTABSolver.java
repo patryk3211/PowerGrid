@@ -30,7 +30,7 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
-    private static final int MAX_ITERATIONS = 100;
+    private static final int MAX_ITERATIONS = 200;
 
     private final Random random;
 

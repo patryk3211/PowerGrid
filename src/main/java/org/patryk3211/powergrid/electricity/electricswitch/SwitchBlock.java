@@ -16,6 +16,9 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 import com.simibubi.create.foundation.block.IBE;
+import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.builders.ItemBuilder;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -43,65 +46,65 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.WireItem;
 
-public class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity> {
-    public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity> {
     public static final BooleanProperty OPEN = Properties.OPEN;
 
-    private static final TerminalBoundingBox NORTH_TERMINAL_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 1, 0, 10, 4, 2);
-    private static final TerminalBoundingBox NORTH_TERMINAL_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 1, 14, 10, 4, 16);
-
-    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_180);
-    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_180);
-
-    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
-
-    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
-    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
-
-    private static final VoxelShape SHAPE_NORTH_SOUTH = VoxelShapes.union(
-            createCuboidShape(3, 0, 2, 13, 7, 14),
-            NORTH_TERMINAL_1.getShape(),
-            NORTH_TERMINAL_2.getShape()
-    );
-    private static final VoxelShape SHAPE_EAST_WEST = VoxelShapes.union(
-            createCuboidShape(2, 0, 3, 14, 7, 13),
-            EAST_TERMINAL_1.getShape(),
-            EAST_TERMINAL_2.getShape()
-    );
+//    private static final TerminalBoundingBox NORTH_TERMINAL_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 1, 0, 10, 4, 2);
+//    private static final TerminalBoundingBox NORTH_TERMINAL_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 1, 14, 10, 4, 16);
+//
+//    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_180);
+//    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_180);
+//
+//    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
+//    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
+//
+//    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+//    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+//
+//    private static final VoxelShape SHAPE_NORTH_SOUTH = VoxelShapes.union(
+//            createCuboidShape(3, 0, 2, 13, 7, 14),
+//            NORTH_TERMINAL_1.getShape(),
+//            NORTH_TERMINAL_2.getShape()
+//    );
+//    private static final VoxelShape SHAPE_EAST_WEST = VoxelShapes.union(
+//            createCuboidShape(2, 0, 3, 14, 7, 13),
+//            EAST_TERMINAL_1.getShape(),
+//            EAST_TERMINAL_2.getShape()
+//    );
+    float resistance = 0.01f;
+    float maxVoltage = 200f;
 
     public SwitchBlock(Settings settings) {
         super(settings);
+        setDefaultState(getDefaultState().with(OPEN, true));
+    }
+
+    public static <B extends SwitchBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setResistance(float resistance) {
+        return b -> {
+            b.onRegister(block -> block.resistance = resistance);
+            return b;
+        };
+    }
+
+    public static <B extends SwitchBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setMaxVoltage(float voltage) {
+        return b -> {
+            b.onRegister(block -> block.maxVoltage = voltage);
+            return b;
+        };
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(HORIZONTAL_FACING, OPEN);
-    }
-
-    @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return getDefaultState()
-                .with(HORIZONTAL_FACING, ctx.getHorizontalPlayerFacing())
-                .with(OPEN, true);
-    }
-
-    @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch(state.get(HORIZONTAL_FACING)) {
-            case NORTH, SOUTH -> SHAPE_NORTH_SOUTH;
-            case EAST, WEST -> SHAPE_EAST_WEST;
-            default -> null;
-        };
+        builder.add(OPEN);
     }
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if(!player.isSneaking()) {
-            var hitPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
-            if(!IWire.holdsWire(player) || (hitPos.x >= 0.125f && hitPos.z >= 0.125f && hitPos.x <= 0.875f && hitPos.z <= 0.875f)) {
+            if(!IWire.holdsWire(player)) {
                 var isOpen = !state.get(OPEN);
                 world.setBlockState(pos, state.with(OPEN, isOpen));
                 if(world.getBlockEntity(pos) instanceof SwitchBlockEntity entity) {
@@ -114,38 +117,6 @@ public class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity>
     }
 
     @Override
-    public int terminalCount() {
-        return 2;
-    }
-
-    @Override
-    public ITerminalPlacement terminal(BlockState state, int index) {
-        return switch(state.get(HORIZONTAL_FACING)) {
-            case NORTH -> switch(index) {
-                case 0 -> NORTH_TERMINAL_1;
-                case 1 -> NORTH_TERMINAL_2;
-                default -> null;
-            };
-            case SOUTH -> switch(index) {
-                case 0 -> SOUTH_TERMINAL_1;
-                case 1 -> SOUTH_TERMINAL_2;
-                default -> null;
-            };
-            case EAST -> switch(index) {
-                case 0 -> EAST_TERMINAL_1;
-                case 1 -> EAST_TERMINAL_2;
-                default -> null;
-            };
-            case WEST -> switch(index) {
-                case 0 -> WEST_TERMINAL_1;
-                case 1 -> WEST_TERMINAL_2;
-                default -> null;
-            };
-            default -> null;
-        };
-    }
-
-    @Override
     public Class<SwitchBlockEntity> getBlockEntityClass() {
         return SwitchBlockEntity.class;
     }
@@ -153,5 +124,13 @@ public class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity>
     @Override
     public BlockEntityType<? extends SwitchBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.SWITCH.get();
+    }
+
+    public float getResistance() {
+        return resistance;
+    }
+
+    public float getMaxVoltage() {
+        return maxVoltage;
     }
 }

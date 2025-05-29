@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public class SwitchBlockEntity extends ElectricBlockEntity {
     private SwitchedWire wire;
+    private float maxVoltage;
 
     public SwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -68,6 +69,10 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     public void buildCircuit(CircuitBuilder builder) {
         var node1 = builder.addExternalNode();
         var node2 = builder.addExternalNode();
-        wire = builder.connectSwitch(0.01f, node1, node2, !getCachedState().get(SwitchBlock.OPEN));
+
+        if(!(getCachedState().getBlock() instanceof SwitchBlock block))
+            throw new IllegalArgumentException("Blocks with SwitchBlockEntity must inherit from SwitchBlock");
+        wire = builder.connectSwitch(block.resistance, node1, node2, !getCachedState().get(SwitchBlock.OPEN));
+        maxVoltage = block.getMaxVoltage();
     }
 }

@@ -151,6 +151,35 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
         };
     }
 
+    public TerminalBoundingBox rotate(Direction.Axis axis, int angle) {
+        return rotate(axis, angleToRotation(angle));
+    }
+
+    public TerminalBoundingBox rotateAroundX(int angle) {
+        return rotateAroundX(angleToRotation(angle));
+    }
+
+    public TerminalBoundingBox rotateAroundY(int angle) {
+        return rotateAroundY(angleToRotation(angle));
+    }
+
+    public TerminalBoundingBox rotateAroundZ(int angle) {
+        return rotateAroundZ(angleToRotation(angle));
+    }
+
+    private static BlockRotation angleToRotation(int angle) {
+        angle = angle % 360;
+        if(angle < 0)
+            angle += 360;
+        return switch(angle) {
+            case 0 -> BlockRotation.NONE;
+            case 90 -> BlockRotation.CLOCKWISE_90;
+            case 180 -> BlockRotation.CLOCKWISE_180;
+            case 270 -> BlockRotation.COUNTERCLOCKWISE_90;
+            default -> throw new IllegalArgumentException("Angle must be a multiple of 90 degrees");
+        };
+    }
+
     public TerminalBoundingBox withOrigin(Vec3d origin) {
         this.origin = origin.multiply(1.0 / 16.0);
         return this;
