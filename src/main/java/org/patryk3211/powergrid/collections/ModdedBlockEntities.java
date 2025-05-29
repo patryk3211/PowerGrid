@@ -88,7 +88,7 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<SwitchBlockEntity> SWITCH =
             REGISTRATE.blockEntity("switch", SwitchBlockEntity::new)
-                    .validBlock(ModdedBlocks.LV_SWITCH)
+                    .validBlocks(ModdedBlocks.LV_SWITCH, ModdedBlocks.MV_SWITCH)
                     .register();
 
     public static final BlockEntityEntry<CreativeSourceBlockEntity> CREATIVE_SOURCE =

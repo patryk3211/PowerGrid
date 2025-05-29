@@ -49,6 +49,7 @@ import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SurfaceSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
@@ -257,6 +258,27 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/lv_switch_off_v")))
                 .build()
+            .register();
+
+    public static final BlockEntry<MvSwitchBlock> MV_SWITCH = REGISTRATE.block("mv_switch", MvSwitchBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
+                        surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            if(vertical) {
+                                builder.modelFile(modModel(prov, "block/switches/mv_switch" + suffix + "_v"));
+                            } else {
+                                builder.modelFile(modModel(prov, "block/switches/mv_switch" + suffix + "_h"));
+                            }
+                            builder.rotationX(x).rotationY(y);
+                        });
+                        return builder.build();
+                    }))
+            .lang("MV Switch")
+            .item()
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/mv_switch_off_v")))
+            .build()
             .register();
 
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)

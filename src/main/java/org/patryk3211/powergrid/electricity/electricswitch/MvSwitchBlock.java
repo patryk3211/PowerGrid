@@ -22,19 +22,19 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
-public class LvSwitchBlock extends SurfaceSwitchBlock {
+public class MvSwitchBlock extends SurfaceSwitchBlock {
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 0, 1, 9, 2, 3),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 0, 13, 9, 2, 15)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 0, 10, 3, 2),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 14, 10, 3, 16)
     };
 
-    private static final VoxelShape SHAPE_DOWN = createCuboidShape(4, 0, 3, 12, 3, 13);
-    private static final VoxelShape SHAPE_DOWN_2 = createCuboidShape(3, 0, 4, 13, 3, 12);
+    private static final VoxelShape SHAPE_DOWN = createCuboidShape(3, 0, 2, 13, 4, 14);
+    private static final VoxelShape SHAPE_DOWN_2 = createCuboidShape(2, 0, 3, 14, 4, 13);
 
-    public LvSwitchBlock(Settings settings) {
+    public MvSwitchBlock(Settings settings) {
         super(settings);
-        this.maxVoltage = 120;
-        this.resistance = 0.15f;
+        this.maxVoltage = 320;
+        this.resistance = 0.05f;
 
         var shaper = VoxelShaper.forDirectional(SHAPE_DOWN, Direction.DOWN);
         var shaper2 = VoxelShaper.forDirectional(SHAPE_DOWN_2, Direction.DOWN);

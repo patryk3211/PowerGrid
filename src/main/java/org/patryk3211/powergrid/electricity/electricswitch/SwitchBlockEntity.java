@@ -27,6 +27,8 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 public class SwitchBlockEntity extends ElectricBlockEntity {
     private SwitchedWire wire;
     private float maxVoltage;
+    private boolean switchState = false;
+    private Float overvoltResistance = null;
 
     public SwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -42,10 +44,18 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
         super.tick();
         var current = wire.current();
         applyLostPower(current * current * wire.getResistance());
+        if(wire.potentialDifference() > maxVoltage && overvoltResistance == null) {
+            wire.setState(true);
+            // Pick a random resistance for failed switches to spice things up.
+            overvoltResistance = world.random.nextFloat() * 1000f;
+            wire.setResistance(overvoltResistance);
+        }
     }
 
     public void setState(boolean state) {
-        wire.setState(state);
+        switchState = state;
+        if(overvoltResistance == null)
+            wire.setState(state);
         notifyUpdate();
     }
 
@@ -53,7 +63,11 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     protected void read(NbtCompound tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if(clientPacket) {
-            wire.setState(tag.getBoolean("State"));
+            switchState = tag.getBoolean("State");
+            wire.setState(switchState);
+        }
+        if(tag.contains("Overvolted")) {
+            overvoltResistance = tag.getFloat("Overvolted");
         }
     }
 
@@ -61,7 +75,10 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     protected void write(NbtCompound tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if(clientPacket) {
-            tag.putBoolean("State", wire.getState());
+            tag.putBoolean("State", switchState);
+        }
+        if(overvoltResistance != null) {
+            tag.putFloat("Overvolted", overvoltResistance);
         }
     }
 
@@ -72,7 +89,11 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
 
         if(!(getCachedState().getBlock() instanceof SwitchBlock block))
             throw new IllegalArgumentException("Blocks with SwitchBlockEntity must inherit from SwitchBlock");
-        wire = builder.connectSwitch(block.resistance, node1, node2, !getCachedState().get(SwitchBlock.OPEN));
         maxVoltage = block.getMaxVoltage();
+        wire = builder.connectSwitch(block.getResistance(), node1, node2, !getCachedState().get(SwitchBlock.OPEN));
+        if(overvoltResistance != null) {
+            wire.setResistance(overvoltResistance);
+            wire.setState(true);
+        }
     }
 }
