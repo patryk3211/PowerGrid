@@ -84,9 +84,9 @@ public class WireItem extends Item implements IWire {
             }
 
             var hitPoint = context.getHitPos();
-            var newPoints = BlockTrace.findPath(context.getWorld(), lastPoint, hitPoint, null);
-            if(newPoints != null) {
-                newPoints.forEach(point -> list.add(point.serialize()));
+            var result = BlockTrace.findPath(context.getWorld(), lastPoint, hitPoint, null);
+            if(result != null && result.reachedTarget()) {
+                result.points().forEach(point -> list.add(point.serialize()));
 
                 var lastPointList = new NbtList();
                 lastPointList.add(NbtFloat.of((float) hitPoint.x));

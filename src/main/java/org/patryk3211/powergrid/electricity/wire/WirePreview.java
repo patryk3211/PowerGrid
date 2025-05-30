@@ -127,14 +127,20 @@ public class WirePreview {
                     for (var cell : state.states.values()) {
                         if (cell.backtrace == null)
                             continue;
-                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0xFFFF0000, state.transform(cell.position), state.transform(cell.backtrace.position));
+                        int color = 0xFFFF0000;
+                        if(!cell.isSupported)
+                            color |= 0xFF00;
+                        if(!cell.backtrace.isSupported)
+                            color |= 0xFF;
+                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightmapTextureManager.MAX_LIGHT_COORDINATE, color, state.transform(cell.position), state.transform(cell.backtrace.position));
                     }
                 }
                 var points = output.getRight();
                 if(points != null) {
-                    for(var p : points) {
+                    for(var p : points.points()) {
                         var nextPos = currentPos.add(p.vector());
-                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA, currentPos, p.direction, thickness, p.length, 0);
+                        int color = points.reachedTarget() ? 0x80AAFFAA : 0x80FFAAAA;
+                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, color, currentPos, p.direction, thickness, p.length, 0);
                         currentPos = nextPos;
                         length += p.length;
                     }

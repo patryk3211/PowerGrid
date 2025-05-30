@@ -221,11 +221,11 @@ public interface IElectric extends IWrenchable {
             var electric = (IElectric) state2.getBlock();
             var terminal = electric.terminal(state2, terminal2);
             var finalPoints = BlockTrace.findPath(world, lastPoint, terminal2Pos, terminal);
-            if(finalPoints == null) {
+            if(finalPoints == null || !finalPoints.reachedTarget()) {
                 sendMessage(context, Lang.translate("message.connection_no_path").style(Formatting.RED).component());
                 return ActionResult.FAIL;
             }
-            points.addAll(finalPoints);
+            points.addAll(finalPoints.points());
             entity = BlockWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R, points);
         } else {
             entity = HangingWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R);

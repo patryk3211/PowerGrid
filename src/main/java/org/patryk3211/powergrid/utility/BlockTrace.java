@@ -17,11 +17,7 @@ package org.patryk3211.powergrid.utility;
 
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -39,13 +35,23 @@ public class BlockTrace {
             var hit = world.raycastBlock(start, end, pos, voxelShape, blockState);
             if(hit != null && passThrough != null && passThrough.check(pos, hit.getPos()))
                 return null;
-//            if(hit != null && blockState.equals(passThrough) && hit.isInsideBlock())
-//                return null;
             return hit;
         }, (innerContext) -> {
             var heading = start.subtract(end);
             return BlockHitResult.createMissed(end, Direction.getFacing(heading.x, heading.y, heading.z), BlockPos.ofFloored(end));
         });
+    }
+
+    private static double clamp(double val, double min, double max) {
+        return Math.max(Math.min(val, max), min);
+    }
+
+    public static Vec3d closestPoint(Box box, Vec3d point) {
+        return new Vec3d(
+                clamp(point.x, box.minX, box.maxX),
+                clamp(point.y, box.minY, box.maxY),
+                clamp(point.z, box.minZ, box.maxZ)
+        );
     }
 
     private static BlockWireEntity.Point makePoint(Vec3d start, Vec3d end) {
@@ -74,20 +80,23 @@ public class BlockTrace {
         );
     }
 
-    public static List<BlockWireEntity.Point> findPath(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
+    public static TraceResult findPath(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
         var result = findPathWithState(world, start, end, terminal);
         if(result == null)
             return null;
         return result.getRight();
     }
 
-    public static Pair<TraceState, List<BlockWireEntity.Point>> findPathWithState(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
+    public static Pair<TraceState, TraceResult> findPathWithState(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
         var state = new TraceState(world, start, end, terminal);
         if(state.target.equals(state.originCell.position) || !state.getCell(state.target).isSupported)
             return null;
 
-        PriorityQueue<TraceCell> visitQueue = new PriorityQueue<>(Comparator.comparingInt(state::targetDistance));
+        PriorityQueue<TraceCell> visitQueue = new PriorityQueue<>(Comparator.comparingInt(state::score));
         visitQueue.add(state.originCell);
+
+        int bestScore = Integer.MAX_VALUE;
+        TraceCell bestCell = null;
 
         while(!visitQueue.isEmpty()) {
             var cell = visitQueue.poll();
@@ -100,34 +109,54 @@ public class BlockTrace {
                     continue;
                 var neighbor = state.getCell(neighborPos);
                 var distance = cell.position.getManhattanDistance(neighborPos);
-                // TODO: There needs to be a check for the total unsupported length of wire so that
-                //  small hops are permitted and the behaviour is more uniform.
-                if (!neighbor.isSupported && !cell.isSupported && distance > TraceState.GRID_SIZE / 4)
-                    continue;
+
                 int newDistance = cell.originDistance + distance;
-                if (newDistance >= neighbor.originDistance)
+                if(!neighbor.isSupported) {
+                    var newUnsupportedDistance = cell.unsupportedDistance + distance;
+                    if(neighbor.unsupportedDistance != 0 && newUnsupportedDistance >= neighbor.unsupportedDistance)
+                        continue;
+                    neighbor.unsupportedDistance = newUnsupportedDistance;
+                    newDistance += newUnsupportedDistance * newUnsupportedDistance;
+                }
+                if(newDistance >= neighbor.originDistance)
                     continue;
+                if(neighbor.unsupportedDistance > TraceState.GRID_SIZE)
+                    continue;
+
                 neighbor.originDistance = newDistance;
                 neighbor.backtrace = cell;
-                if (neighbor.position.equals(state.target))
-                    return new Pair<>(state, state.traceResult(neighbor));
+                if(neighbor.position.equals(state.target))
+                    return new Pair<>(state, new TraceResult(state.traceResult(neighbor), true));
+                int neighborScore = state.targetDistance(neighbor);
+                if(neighborScore < bestScore) {
+                    bestScore = neighborScore;
+                    bestCell = neighbor;
+                }
                 visitQueue.add(neighbor);
             }
         }
 
+        if(bestCell != null)
+            return new Pair<>(state, new TraceResult(state.traceResult(bestCell), false));
+
         return new Pair<>(state, null);
     }
+
+    public record TraceResult(List<BlockWireEntity.Point> points, boolean reachedTarget) { }
 
     public static class TraceCell {
         public final Vec3i position;
         public int originDistance;
         public TraceCell backtrace;
         public boolean isSupported;
+        public int unsupportedDistance;
+        public boolean isInside;
 
         public TraceCell(Vec3i position, int originDistance, boolean isSupported) {
             this.position = position;
             this.originDistance = originDistance;
             this.isSupported = isSupported;
+            this.unsupportedDistance = 0;
         }
     }
 
@@ -148,7 +177,7 @@ public class BlockTrace {
             this.world = world;
             this.origin = new Vec3d(Math.floor(origin.x), Math.floor(origin.y), Math.floor(origin.z));
             var originPos = transform(origin);
-            originCell = new TraceCell(originPos, 0, true);
+            originCell = createCell(originPos, 0);
             states.put(originPos, originCell);
             this.target = transform(target);
             this.terminal = terminal;
@@ -192,25 +221,16 @@ public class BlockTrace {
             return cell;
         }
 
-        public TraceCell isBetter(Vec3i cellPos, int pathLength) {
-            if(!states.containsKey(cellPos)) {
-                return createCell(cellPos, pathLength);
-            }
-            var cell = states.get(cellPos);
-            if(pathLength < cell.originDistance) {
-                cell.originDistance = pathLength;
-                return cell;
-            } else {
-                return null;
-            }
-        }
-
         @NotNull
         public TraceCell getCell(Vec3i cellPos) {
             if(!states.containsKey(cellPos)) {
                 return createCell(cellPos, Integer.MAX_VALUE);
             }
             return states.get(cellPos);
+        }
+
+        public int score(TraceCell cell) {
+            return cell.originDistance + targetDistance(cell);
         }
 
         public int targetDistance(TraceCell cell) {
@@ -283,28 +303,6 @@ public class BlockTrace {
             } else {
                 return currentPos.offset(axis, nextBoundary - axisCoordinate);
             }
-        }
-
-        public void findNextPositions(Vec3i currentPos, Direction dir, Collection<Vec3i> positions) {
-            var axis = dir.getAxis();
-            Vec3i endPos = raycastNextPosition(currentPos, dir);
-            if(endPos == null || currentPos.equals(endPos))
-                return;
-
-            var axisCoordinate = currentPos.getComponentAlongAxis(axis);
-
-            var start = axisCoordinate + offsetToFullBlock(axisCoordinate, dir.getDirection());
-            var end = endPos.getComponentAlongAxis(axis);
-            if(dir.getDirection() == Direction.AxisDirection.POSITIVE) {
-                for(int i = start; i < end; i += GRID_SIZE) {
-                    positions.add(currentPos.offset(axis, i - axisCoordinate));
-                }
-            } else {
-                for(int i = start; i > end; i -= GRID_SIZE) {
-                    positions.add(currentPos.offset(axis, i - axisCoordinate));
-                }
-            }
-            positions.add(endPos);
         }
 
         public List<Vec3i> traceback(TraceCell cell) {
