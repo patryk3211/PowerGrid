@@ -50,7 +50,6 @@ import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.SurfaceSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
@@ -61,6 +60,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
+import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
@@ -68,7 +68,6 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static com.simibubi.create.foundation.data.TagGen.*;
@@ -90,6 +89,14 @@ public class ModdedBlocks {
 
     public static final BlockEntry<ConnectorBlock> WIRE_CONNECTOR = REGISTRATE.block("wire_connector", ConnectorBlock::new)
             .blockstate(alternateDirectionalBlock("block/wire_connector"))
+            .initialProperties(SharedProperties::stone)
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<HeavyConnectorBlock> HEAVY_WIRE_CONNECTOR = REGISTRATE.block("heavy_wire_connector", HeavyConnectorBlock::new)
+            .blockstate(alternateDirectionalBlock("block/heavy_wire_connector"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()

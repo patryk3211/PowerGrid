@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powergrid:wire",
+    "powergrid:silver_wire"
+  ]
+}

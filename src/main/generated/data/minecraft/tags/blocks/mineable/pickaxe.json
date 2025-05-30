@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "powergrid:wire_connector",
+    "powergrid:heavy_wire_connector",
     "powergrid:heating_coil",
     "powergrid:andesite_voltage_gauge",
     "powergrid:brass_voltage_gauge",

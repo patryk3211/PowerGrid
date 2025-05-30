@@ -30,7 +30,7 @@ public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
             .transform(WireProperties.setAll(0.005f, 16))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
-            .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag)
+            .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(WireProperties.setAll(0.015f, 32))
@@ -40,7 +40,7 @@ public class ModdedItems {
     public static final ItemEntry<WireItem> SILVER_WIRE = REGISTRATE.item("silver_wire", WireItem::new)
             .transform(WireProperties.setAll(0.003f, 8))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
-            .tag(ModdedTags.Item.WIRES.tag)
+            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)

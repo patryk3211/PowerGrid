@@ -51,7 +51,7 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<ConnectorBlockEntity> WIRE_CONNECTOR =
             REGISTRATE.blockEntity("wire_connector", ConnectorBlockEntity::new)
-                    .validBlock(ModdedBlocks.WIRE_CONNECTOR)
+                    .validBlocks(ModdedBlocks.WIRE_CONNECTOR, ModdedBlocks.HEAVY_WIRE_CONNECTOR)
                     .register();
 
     public static final BlockEntityEntry<BatteryBlockEntity> BATTERY =

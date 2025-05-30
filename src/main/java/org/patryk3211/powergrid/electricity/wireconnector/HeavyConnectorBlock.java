@@ -15,16 +15,18 @@
  */
 package org.patryk3211.powergrid.electricity.wireconnector;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.shape.VoxelShapes;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
-public class ConnectorBlock extends AbstractConnectorBlock {
-    private static final TerminalBoundingBox TERMINAL_DOWN = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5, 0, 5, 11, 9, 11)
-            .withOrigin(8, 8, 8);
+public class HeavyConnectorBlock extends AbstractConnectorBlock {
+    private static final TerminalBoundingBox TERMINAL_DOWN = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5, 0, 5, 11, 13, 11)
+            .withOrigin(8, 12, 8);
 
-    public ConnectorBlock(Settings settings) {
+
+    public HeavyConnectorBlock(Settings settings) {
         super(settings);
         setTerminalCollection(BlockStateTerminalCollection
                 .builder(this)
@@ -42,5 +44,10 @@ public class ConnectorBlock extends AbstractConnectorBlock {
                 .withShapeMapper(state -> VoxelShapes.empty())
                 .build()
         );
+    }
+
+    @Override
+    public boolean accepts(ItemStack wireStack) {
+        return true;
     }
 }
