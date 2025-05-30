@@ -42,7 +42,6 @@ import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 import java.util.List;
 
-import static com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour.get;
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
@@ -184,8 +183,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             wire.remove();
         }
 
-        var eb1 = get(getWorld(), electricBlockPos1, ElectricBehaviour.TYPE);
-        var eb2 = get(getWorld(), electricBlockPos2, ElectricBehaviour.TYPE);
+        var world = getWorld();
+        ElectricBehaviour eb1 = null, eb2 = null;
+
+        var block1 = world.getBlockState(electricBlockPos1);
+        if(block1.getBlock() instanceof IElectric electric)
+            eb1 = electric.getBehaviour(world, electricBlockPos1, block1);
+
+        var block2 = world.getBlockState(electricBlockPos2);
+        if(block2.getBlock() instanceof IElectric electric)
+            eb2 = electric.getBehaviour(world, electricBlockPos2, block2);
 
         var et1 = eb1.getTerminal(electricTerminal1);
         var et2 = eb2.getTerminal(electricTerminal2);
