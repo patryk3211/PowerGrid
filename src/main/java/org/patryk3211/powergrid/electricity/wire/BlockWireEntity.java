@@ -31,6 +31,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         entity.resistance = resistance;
 
         var terminal1Pos = IElectric.getTerminalPos(pos1, world.getBlockState(pos1), terminal1);
+        terminal1Pos = BlockTrace.alignPosition(terminal1Pos);
         entity.setPos(terminal1Pos.x, terminal1Pos.y, terminal1Pos.z);
 
         if(points != null) {

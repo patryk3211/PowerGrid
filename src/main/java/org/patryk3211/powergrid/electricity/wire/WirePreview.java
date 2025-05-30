@@ -91,6 +91,7 @@ public class WirePreview {
         boolean hasSegments = false;
         float length = 0;
         if(tag.contains("Segments")) {
+            currentPos = BlockTrace.alignPosition(currentPos);
             for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
                 var point = new BlockWireEntity.Point((NbtCompound) entry);
                 var nextPos = currentPos.add(point.vector());
@@ -117,6 +118,7 @@ public class WirePreview {
         }
 
         if(hasSegments || passThrough == null) {
+            currentPos = BlockTrace.alignPosition(currentPos);
             var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, passThrough);
             if(output != null) {
                 if(DEBUG_BLOCK_TRACING) {

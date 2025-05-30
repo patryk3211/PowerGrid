@@ -54,8 +54,11 @@ public class WireItem extends Item implements IWire {
 
         var blockState = context.getWorld().getBlockState(context.getBlockPos());
         if(blockState.getBlock() instanceof IElectric electric) {
-            return electric.onWire(blockState, context);
-        } else if(context.getStack().hasNbt()) {
+            var result = electric.onWire(blockState, context);
+            if(result != ActionResult.PASS)
+                return result;
+        }
+        if(context.getStack().hasNbt()) {
             // This will result in the connection being a block wire (instead of a hanging wire)
             var tag = context.getStack().getNbt();
             NbtList list;
@@ -77,6 +80,7 @@ public class WireItem extends Item implements IWire {
                 var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
                 var firstTerminal = tag.getInt("Terminal");
                 lastPoint = IElectric.getTerminalPos(firstPosition, context.getWorld().getBlockState(firstPosition), firstTerminal);
+                lastPoint = BlockTrace.alignPosition(lastPoint);
             }
 
             var hitPoint = context.getHitPos();

@@ -66,6 +66,14 @@ public class BlockTrace {
         }
     }
 
+    public static Vec3d alignPosition(Vec3d position) {
+        return new Vec3d(
+                (int) Math.round(position.x * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE,
+                (int) Math.round(position.y * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE,
+                (int) Math.round(position.z * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE
+        );
+    }
+
     public static List<BlockWireEntity.Point> findPath(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
         var result = findPathWithState(world, start, end, terminal);
         if(result == null)
