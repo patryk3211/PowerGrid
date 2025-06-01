@@ -102,30 +102,33 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
         float u0 = uvOffset / 16f, v0 = uvOffset / 16f, t0 = uvOffset / 16f;
         float u1 = thickness + uvOffset / 16f, v1 = thickness + uvOffset / 16f, t1 = thickness + uvOffset / 16f;
 
+        float x1 = (float) start.x - thickness / 2;
+        float y1 = (float) start.y - thickness / 2;
+        float z1 = (float) start.z - thickness / 2;
+
         float x2 = 0, y2 = 0, z2 = 0;
         switch(dir.getAxis()) {
             case X -> {
                 thickness *= 0.995f;
-                x2 = length;
+                x1 += thickness;
+                x2 = length - thickness;
                 u0 = 0;
                 u1 = Math.abs(length);
             }
             case Y -> {
-                y2 = length;
+                y1 += thickness;
+                y2 = length - thickness;
                 v0 = 0;
                 v1 = Math.abs(length);
             }
             case Z -> {
                 thickness *= 1.005f;
-                z2 = length;
+                z1 += thickness;
+                z2 = length - thickness;
                 t0 = 0;
                 t1 = Math.abs(length);
             }
         }
-
-        float x1 = (float) start.x - thickness / 2;
-        float y1 = (float) start.y - thickness / 2;
-        float z1 = (float) start.z - thickness / 2;
 
         x2 += x1 + thickness;
         y2 += y1 + thickness;
