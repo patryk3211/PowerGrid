@@ -45,6 +45,10 @@ public class CoilAggregate {
         return coils.add(coil);
     }
 
+    public int size() {
+        return coils.size();
+    }
+
     public void apply() {
         coils.forEach(coil -> coil.setAggregate(this));
         if(!world.isClient) {
@@ -68,6 +72,7 @@ public class CoilAggregate {
         if(coils.isEmpty())
             throw new IllegalStateException("Cannot set output coil of an empty aggregate");
 
+        int parallel = 0, series = 0;
         for(var coil : coils) {
             if(coil == outputCoil) {
                 world.setBlockState(coil.getPos(), coil.getCachedState().with(CoilBlock.HAS_TERMINALS, true), Block.NOTIFY_LISTENERS);
@@ -82,13 +87,25 @@ public class CoilAggregate {
                 world.setBlockState(coil.getPos(), coil.getCachedState().with(CoilBlock.HAS_TERMINALS, false), Block.NOTIFY_LISTENERS);
                 coil.removeElectricBehaviour();
             }
+
+            if(coil.getAggregateType() == CoilBlockEntity.AggregateType.SERIES) {
+                ++series;
+            } else {
+                ++parallel;
+            }
         }
         this.outputCoil = outputCoil;
         if(outputCoil != null) {
             this.type = outputCoil.getAggregateType();
-            // Force type propagation.
-            coils.forEach(coil -> coil.propagateType(type));
+        } else {
+            if(series >= parallel) {
+                type = CoilBlockEntity.AggregateType.SERIES;
+            } else {
+                type = CoilBlockEntity.AggregateType.PARALLEL;
+            }
         }
+        // Force type propagation.
+        coils.forEach(coil -> coil.propagateType(type));
     }
 
     public void removeOutput(@NotNull CoilBlockEntity outputCoil) {
