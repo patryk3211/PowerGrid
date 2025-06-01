@@ -16,6 +16,7 @@
   "block.powergrid.generator_housing": "Generator Housing",
   "block.powergrid.heating_coil": "Heating Coil",
   "block.powergrid.heavy_wire_connector": "Heavy Wire Connector",
+  "block.powergrid.hv_switch": "HV Switch",
   "block.powergrid.light_fixture": "Light Fixture",
   "block.powergrid.lv_switch": "LV Switch",
   "block.powergrid.mv_switch": "MV Switch",

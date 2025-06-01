@@ -94,6 +94,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             }
         }
         internalWires.forEach(ElectricWire::remove);
+        if(externalNodes.isEmpty())
+            return;
 
         // Since every node has to have the same network we can
         // just take the network of the first external node and

@@ -48,6 +48,7 @@ import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
@@ -71,6 +72,7 @@ import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import java.util.function.Function;
 
 import static com.simibubi.create.foundation.data.TagGen.*;
+import static net.minecraft.state.property.Properties.*;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedBlocks {
@@ -288,6 +290,29 @@ public class ModdedBlocks {
             .build()
             .register();
 
+    public static final BlockEntry<HvSwitchBlock> HV_SWITCH = REGISTRATE.block("hv_switch", HvSwitchBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        var part = state.get(HvSwitchBlock.PART);
+                        if(part == 0) {
+                            builder.modelFile(modModel(prov, "block/switches/hv_switch_body"));
+                        } else {
+                            builder.modelFile(modModel(prov, "block/switches/hv_switch_receptacle"));
+                        }
+                        var facing = state.get(HORIZONTAL_FACING);
+                        builder.rotationY((int) facing.asRotation());
+                        return builder.build();
+                    }))
+            .initialProperties(SharedProperties::stone)
+            .transform(axeOrPickaxe())
+            .transform(BlockStressDefaults.setImpact(2))
+            .lang("HV Switch")
+            .item()
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/hv_switch")))
+            .build()
+            .register();
+
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)
             .blockstate(horizontalAxisBlock("block/creative_voltage_source"))
             .initialProperties(SharedProperties::stone)
@@ -474,7 +499,7 @@ public class ModdedBlocks {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
                 .forAllStates(state -> {
                     var builder = ConfiguredModel.builder().modelFile(modModel(prov, modelProvider.apply(state)));
-                    switch(state.get(Properties.FACING)) {
+                    switch(state.get(FACING)) {
                         case SOUTH -> builder.rotationY(180);
                         case EAST -> builder.rotationY(90);
                         case WEST -> builder.rotationY(-90);
@@ -497,7 +522,7 @@ public class ModdedBlocks {
 
     // This function needs two models. One for Y axis and one for other axis.
     public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
-        var facing = state.get(Properties.FACING);
+        var facing = state.get(FACING);
         var axis_along_first = state.get(CustomProperties.ALONG_FIRST_AXIS);
 
         int x = 0, y = 0;

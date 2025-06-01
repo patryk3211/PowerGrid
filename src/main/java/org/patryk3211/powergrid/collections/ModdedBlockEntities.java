@@ -22,6 +22,9 @@ import org.patryk3211.powergrid.chemistry.vat.ChemicalVatRenderer;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
+import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
+import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchInstance;
+import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
@@ -89,6 +92,13 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<SwitchBlockEntity> SWITCH =
             REGISTRATE.blockEntity("switch", SwitchBlockEntity::new)
                     .validBlocks(ModdedBlocks.LV_SWITCH, ModdedBlocks.MV_SWITCH)
+                    .register();
+
+    public static final BlockEntityEntry<HvSwitchBlockEntity> HV_SWITCH =
+            REGISTRATE.blockEntity("hv_switch", HvSwitchBlockEntity::new)
+                    .instance(() -> HvSwitchInstance::new)
+                    .validBlock(ModdedBlocks.HV_SWITCH)
+                    .renderer(() -> HvSwitchRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<CreativeSourceBlockEntity> CREATIVE_SOURCE =

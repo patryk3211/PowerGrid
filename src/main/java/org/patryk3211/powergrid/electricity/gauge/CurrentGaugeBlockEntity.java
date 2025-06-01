@@ -44,10 +44,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
             dialTarget = current / maxValue;
         }
 
-        float voltage = wire.potentialDifference();
-        float power = voltage * voltage / wire.getResistance();
-        applyLostPower(power);
-
+        applyLostPower(wire.power());
         super.tick();
     }
 

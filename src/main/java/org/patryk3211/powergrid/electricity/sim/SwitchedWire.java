@@ -50,7 +50,7 @@ public class SwitchedWire extends ElectricWire {
     }
 
     @Override
-    public void setResistance(float resistance) {
+    public void setResistance(double resistance) {
         if(state) {
             super.setResistance(resistance);
         } else {
@@ -65,7 +65,7 @@ public class SwitchedWire extends ElectricWire {
     }
 
     @Override
-    public float conductance() {
+    public double conductance() {
         return state ? super.conductance() : 0;
     }
 }

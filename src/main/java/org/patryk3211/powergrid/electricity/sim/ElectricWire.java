@@ -18,26 +18,26 @@ package org.patryk3211.powergrid.electricity.sim;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 public class ElectricWire {
-    protected float resistance;
+    protected double resistance;
     public final IElectricNode node1;
     public final IElectricNode node2;
 
     protected ElectricalNetwork network;
 
-    public ElectricWire(float resistance, IElectricNode node1, IElectricNode node2) {
+    public ElectricWire(double resistance, IElectricNode node1, IElectricNode node2) {
         this.resistance = resistance;
         this.node1 = node1;
         this.node2 = node2;
     }
 
-    public void setResistance(float resistance) {
+    public void setResistance(double resistance) {
         double old = this.resistance;
         this.resistance = resistance;
         if(network != null)
             this.network.updateResistance(this, old);
     }
 
-    public float getResistance() {
+    public double getResistance() {
         return resistance;
     }
 
@@ -59,10 +59,15 @@ public class ElectricWire {
     }
 
     public float current() {
-        return potentialDifference() / resistance;
+        return (float) (potentialDifference() / resistance);
     }
 
-    public float conductance() {
+    public float power() {
+        var I = current();
+        return (float) (I * I * resistance);
+    }
+
+    public double conductance() {
         return 1 / resistance;
     }
 }

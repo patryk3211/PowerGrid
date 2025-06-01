@@ -11,6 +11,7 @@
     "powergrid:rotor",
     "powergrid:coil",
     "powergrid:generator_housing",
+    "powergrid:hv_switch",
     "powergrid:creative_voltage_source",
     "powergrid:creative_current_source",
     "powergrid:creative_resistor",

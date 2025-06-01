@@ -32,6 +32,8 @@ public class ModdedPartialModels {
     public static final PartialModel LIGHT_BULB_ON = block("light_bulb_on");
     public static final PartialModel LIGHT_BULB_BROKEN = block("light_bulb_broken");
 
+    public static final PartialModel HV_SWITCH_ROD = block("switches/hv_switch_rod");
+
     private static PartialModel block(String path) {
         return new PartialModel(PowerGrid.asResource("block/" + path));
     }

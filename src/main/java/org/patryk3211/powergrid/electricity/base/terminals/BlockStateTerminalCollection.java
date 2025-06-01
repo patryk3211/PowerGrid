@@ -60,8 +60,11 @@ public class BlockStateTerminalCollection {
         return state -> {
             var baseShape = shapeMapper.apply(state);
             var terminals = this.terminals.get(PartialState.of(state, checkedProperties));
-            for(var terminal : terminals)
+            for(var terminal : terminals) {
+                if(terminal == null)
+                    continue;
                 baseShape = VoxelShapes.union(baseShape, terminal.getShape());
+            }
             return baseShape;
         };
     }
