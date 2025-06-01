@@ -61,6 +61,7 @@ public class PowerGrid implements ModInitializer {
 		ElectricalNetwork.LOGGER = LOGGER;
 
 		ReagentRegistry.init();
+		ModdedSoundEvents.prepare();
 
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
 		ITEM_GROUP_KEY = Registries.ITEM_GROUP.getKey(ITEM_GROUP).get();
@@ -87,6 +88,7 @@ public class PowerGrid implements ModInitializer {
 		ModdedParticles.register();
 
 		REGISTRATE.register();
+		ModdedSoundEvents.register();
 
 		GlobalElectricNetworks.init();
 		ServerBoundPackets.init();
@@ -94,5 +96,9 @@ public class PowerGrid implements ModInitializer {
 
 	public static Identifier asResource(String path) {
 		return new Identifier(MOD_ID, path);
+	}
+
+	public static Identifier texture(String path) {
+		return asResource("textures/" + path + ".png");
 	}
 }

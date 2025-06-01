@@ -33,6 +33,10 @@ public class RecipeTags {
         return AllTags.forgeItemTag("copper_nuggets");
     }
 
+    public static TagKey<Item> ironNugget() {
+        return AllTags.forgeItemTag("iron_nuggets");
+    }
+
     public static TagKey<Item> silverSheet() {
         return AllTags.forgeItemTag("silver_plates");
     }

@@ -25,12 +25,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
-import org.patryk3211.powergrid.PowerGrid;
 
 @Environment(EnvType.CLIENT)
 public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
-    public static final Identifier TEXTURE = new Identifier(PowerGrid.MOD_ID, "textures/special/wire.png");
-
     public static final double SEGMENT_SIZE = 0.5;
 
     public HangingWireRenderer(EntityRendererFactory.Context ctx) {
@@ -39,7 +36,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
 
     @Override
     public Identifier getTexture(HangingWireEntity entity) {
-        return TEXTURE;
+        return entity.getWireItem().getWireTexture();
     }
 
     @Override
@@ -51,7 +48,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             // Don't render since it's dead and only there to spawn particles.
             return;
 
-        var buffer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(TEXTURE));
+        var buffer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(getTexture(entity)));
         assert entity.renderParams instanceof CurveParameters;
         CurveParameters rp = (CurveParameters) entity.renderParams;
 

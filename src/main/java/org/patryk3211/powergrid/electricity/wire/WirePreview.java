@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.electricity.wire;
 
 import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
@@ -38,6 +40,7 @@ import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
 
+@Environment(EnvType.CLIENT)
 public class WirePreview {
     private static final boolean DEBUG_BLOCK_TRACING = false;
 
@@ -64,11 +67,13 @@ public class WirePreview {
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return;
+        if(!(wireStack.getItem() instanceof WireItem wireItem))
+            return;
 
         var tag = wireStack.getNbt();
         // TODO: Use correct texture for the used item.
-        var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(BlockWireRenderer.TEXTURE));
-        float thickness = 1/16f;
+        var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(wireItem.getWireTexture()));
+        float thickness = wireItem.getWireThickness();
 
         if(!tag.contains("Position") || !tag.contains("Terminal")) {
             if(tag.contains("Turns") && !player.isCreative()) {
@@ -86,6 +91,7 @@ public class WirePreview {
         boolean hasSegments = false;
         float length = 0;
         if(tag.contains("Segments")) {
+            currentPos = BlockTrace.alignPosition(currentPos);
             for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
                 var point = new BlockWireEntity.Point((NbtCompound) entry);
                 var nextPos = currentPos.add(point.vector());
@@ -112,6 +118,7 @@ public class WirePreview {
         }
 
         if(hasSegments || passThrough == null) {
+            currentPos = BlockTrace.alignPosition(currentPos);
             var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, passThrough);
             if(output != null) {
                 if(DEBUG_BLOCK_TRACING) {
@@ -120,14 +127,20 @@ public class WirePreview {
                     for (var cell : state.states.values()) {
                         if (cell.backtrace == null)
                             continue;
-                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0xFFFF0000, state.transform(cell.position), state.transform(cell.backtrace.position));
+                        int color = 0xFFFF0000;
+                        if(!cell.isSupported)
+                            color |= 0xFF00;
+                        if(!cell.backtrace.isSupported)
+                            color |= 0xFF;
+                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightmapTextureManager.MAX_LIGHT_COORDINATE, color, state.transform(cell.position), state.transform(cell.backtrace.position));
                     }
                 }
                 var points = output.getRight();
                 if(points != null) {
-                    for(var p : points) {
+                    for(var p : points.points()) {
                         var nextPos = currentPos.add(p.vector());
-                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA, currentPos, p.direction, thickness, p.length, 0);
+                        int color = points.reachedTarget() ? 0x80AAFFAA : 0x80FFAAAA;
+                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, color, currentPos, p.direction, thickness, p.length, 0);
                         currentPos = nextPos;
                         length += p.length;
                     }

@@ -54,8 +54,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         super.tick();
 
         if(lightBulb != null && !burned) {
-            var current = filament.current();
-            applyLostPower(current * current * filament.getResistance());
+            applyLostPower(filament.power());
 
             assert lightBulb.getItem() instanceof ILightBulb;
             var lightBulbProperties = (ILightBulb) lightBulb.getItem();

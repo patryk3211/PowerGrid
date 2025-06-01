@@ -70,7 +70,7 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
     @Override
     protected void write(NbtCompound tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        tag.putFloat("Resistance", wire.getResistance());
+        tag.putFloat("Resistance", (float) wire.getResistance());
     }
 
     @Override

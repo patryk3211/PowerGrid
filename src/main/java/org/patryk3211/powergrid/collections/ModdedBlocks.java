@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -39,18 +37,20 @@ import net.minecraft.loot.function.ApplyBonusLootFunction;
 import net.minecraft.loot.function.SetCountLootFunction;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatModel;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
@@ -61,6 +61,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
+import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
 import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
@@ -71,6 +72,7 @@ import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import java.util.function.Function;
 
 import static com.simibubi.create.foundation.data.TagGen.*;
+import static net.minecraft.state.property.Properties.*;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedBlocks {
@@ -89,6 +91,14 @@ public class ModdedBlocks {
 
     public static final BlockEntry<ConnectorBlock> WIRE_CONNECTOR = REGISTRATE.block("wire_connector", ConnectorBlock::new)
             .blockstate(alternateDirectionalBlock("block/wire_connector"))
+            .initialProperties(SharedProperties::stone)
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<HeavyConnectorBlock> HEAVY_WIRE_CONNECTOR = REGISTRATE.block("heavy_wire_connector", HeavyConnectorBlock::new)
+            .blockstate(alternateDirectionalBlock("block/heavy_wire_connector"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
@@ -238,19 +248,69 @@ public class ModdedBlocks {
             .simpleItem()
             .register();
 
-    public static final BlockEntry<SwitchBlock> SWITCH = REGISTRATE.block("switch", SwitchBlock::new)
+    public static final BlockEntry<LvSwitchBlock> LV_SWITCH = REGISTRATE.block("lv_switch", LvSwitchBlock::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                         var builder = ConfiguredModel.builder();
-                        if(state.get(SwitchBlock.OPEN)) {
-                            builder.modelFile(modModel(prov, "block/switch_open"));
-                        } else {
-                            builder.modelFile(modModel(prov, "block/switch"));
-                        }
-                        var facing = state.get(SwitchBlock.HORIZONTAL_FACING);
-                        return builder.rotationY(((int) facing.asRotation() + 180) % 360).build();
+                        var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
+                        surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            if(vertical) {
+                                builder.modelFile(modModel(prov, "block/switches/lv_switch" + suffix + "_v"));
+                            } else {
+                                builder.modelFile(modModel(prov, "block/switches/lv_switch" + suffix + "_h"));
+                            }
+                            builder.rotationX(x).rotationY(y);
+                        });
+                        return builder.build();
                     }))
-            .simpleItem()
+            .lang("LV Switch")
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/lv_switch_off_v")))
+                .build()
+            .register();
+
+    public static final BlockEntry<MvSwitchBlock> MV_SWITCH = REGISTRATE.block("mv_switch", MvSwitchBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
+                        surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            if(vertical) {
+                                builder.modelFile(modModel(prov, "block/switches/mv_switch" + suffix + "_v"));
+                            } else {
+                                builder.modelFile(modModel(prov, "block/switches/mv_switch" + suffix + "_h"));
+                            }
+                            builder.rotationX(x).rotationY(y);
+                        });
+                        return builder.build();
+                    }))
+            .lang("MV Switch")
+            .item()
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/mv_switch_off_v")))
+            .build()
+            .register();
+
+    public static final BlockEntry<HvSwitchBlock> HV_SWITCH = REGISTRATE.block("hv_switch", HvSwitchBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        var part = state.get(HvSwitchBlock.PART);
+                        if(part == 0) {
+                            builder.modelFile(modModel(prov, "block/switches/hv_switch_body"));
+                        } else {
+                            builder.modelFile(modModel(prov, "block/switches/hv_switch_receptacle"));
+                        }
+                        var facing = state.get(HORIZONTAL_FACING);
+                        builder.rotationY((int) facing.asRotation());
+                        return builder.build();
+                    }))
+            .initialProperties(SharedProperties::stone)
+            .transform(axeOrPickaxe())
+            .transform(BlockStressDefaults.setImpact(2))
+            .lang("HV Switch")
+            .item()
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/hv_switch")))
+            .build()
             .register();
 
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)
@@ -439,7 +499,7 @@ public class ModdedBlocks {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
                 .forAllStates(state -> {
                     var builder = ConfiguredModel.builder().modelFile(modModel(prov, modelProvider.apply(state)));
-                    switch(state.get(Properties.FACING)) {
+                    switch(state.get(FACING)) {
                         case SOUTH -> builder.rotationY(180);
                         case EAST -> builder.rotationY(90);
                         case WEST -> builder.rotationY(-90);
@@ -458,6 +518,32 @@ public class ModdedBlocks {
                         builder.rotationY(90);
                     return builder.build();
                 });
+    }
+
+    // This function needs two models. One for Y axis and one for other axis.
+    public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
+        var facing = state.get(FACING);
+        var axis_along_first = state.get(CustomProperties.ALONG_FIRST_AXIS);
+
+        int x = 0, y = 0;
+        boolean verticalModel = false;
+        switch(facing) {
+            case UP -> { x = 180; verticalModel = true; }
+            case DOWN -> verticalModel = true;
+            case WEST -> y = 180;
+            case NORTH -> y = -90;
+            case SOUTH -> y = 90;
+        };
+
+        if(!axis_along_first) {
+            if(verticalModel) {
+                y = 90;
+            } else {
+                x = -90;
+            }
+        }
+
+        transformer.accept(x, y, verticalModel);
     }
 
     public static ModelFile.ExistingModelFile modModel(RegistrateBlockstateProvider prov, String name) {

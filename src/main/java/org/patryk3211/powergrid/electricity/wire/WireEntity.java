@@ -29,11 +29,13 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
@@ -42,7 +44,6 @@ import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 import java.util.List;
 
-import static com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour.get;
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
@@ -170,6 +171,12 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
         resistance = nbt.getFloat("Resistance");
 
+        // Wires with missing item stack are not allowed.
+        if(item == null) {
+            discard();
+            return;
+        }
+
         makeWire();
     }
 
@@ -178,8 +185,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             wire.remove();
         }
 
-        var eb1 = get(getWorld(), electricBlockPos1, ElectricBehaviour.TYPE);
-        var eb2 = get(getWorld(), electricBlockPos2, ElectricBehaviour.TYPE);
+        var world = getWorld();
+        ElectricBehaviour eb1 = null, eb2 = null;
+
+        var block1 = world.getBlockState(electricBlockPos1);
+        if(block1.getBlock() instanceof IElectric electric)
+            eb1 = electric.getBehaviour(world, electricBlockPos1, block1);
+
+        var block2 = world.getBlockState(electricBlockPos2);
+        if(block2.getBlock() instanceof IElectric electric)
+            eb2 = electric.getBehaviour(world, electricBlockPos2, block2);
 
         var et1 = eb1.getTerminal(electricTerminal1);
         var et2 = eb2.getTerminal(electricTerminal2);
@@ -257,11 +272,18 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
         if(player.getStackInHand(hand).getItem() == ModdedItems.WIRE_CUTTER.get()) {
+            getWorld().playSoundFromEntity(null, this, ModdedSoundEvents.WIRE_CUT.getMainEvent(), SoundCategory.BLOCKS, 0.75f, 1.25f);
             kill();
             return ActionResult.SUCCESS;
         }
         System.out.printf("Temperature: %f\n", dataTracker.get(TEMPERATURE));
         return super.interact(player, hand);
+    }
+
+    public WireItem getWireItem() {
+        if(item != null)
+            return (WireItem) item.getItem();
+        return null;
     }
 
     @Override

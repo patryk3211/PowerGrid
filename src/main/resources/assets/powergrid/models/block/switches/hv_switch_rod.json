@@ -1,0 +1,22 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/switches/hv_switch",
+		"particle": "powergrid:block/switches/hv_switch"
+	},
+	"elements": [
+		{
+			"from": [6, 6, 11],
+			"to": [10, 10, 32],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 0, 0], "texture": "#0"},
+				"east": {"uv": [1.5, 0, 12, 2], "rotation": 180, "texture": "#0"},
+				"south": {"uv": [12, 0, 14, 2], "texture": "#0"},
+				"west": {"uv": [1.5, 0, 12, 2], "texture": "#0"},
+				"up": {"uv": [1.5, 0, 12, 2], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [1.5, 0, 12, 2], "rotation": 270, "texture": "#0"}
+			}
+		}
+	]
+}

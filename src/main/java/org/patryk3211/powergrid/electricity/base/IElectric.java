@@ -30,6 +30,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -70,6 +71,11 @@ public interface IElectric extends IWrenchable {
 
     int terminalCount();
 
+    default boolean accepts(ItemStack wireStack) {
+        // By default, only light wires can go directly to devices.
+        return wireStack.isIn(ModdedTags.Item.LIGHT_WIRES.tag);
+    }
+
     /**
      * Get the terminal placement of a given terminal
      * @param state Block state
@@ -83,6 +89,10 @@ public interface IElectric extends IWrenchable {
         var pos = context.getBlockPos();
         var terminal = terminalIndexAt(state, context.getHitPos().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if(terminal >= 0) {
+            if(!accepts(context.getStack())) {
+                sendMessage(context, Lang.translate("message.connection_incorrect_wire_type").style(Formatting.RED).component());
+                return ActionResult.FAIL;
+            }
             if(stack.hasNbt()) {
                 // Continuing a connection.
                 var tag = stack.getNbt();
@@ -211,11 +221,11 @@ public interface IElectric extends IWrenchable {
             var electric = (IElectric) state2.getBlock();
             var terminal = electric.terminal(state2, terminal2);
             var finalPoints = BlockTrace.findPath(world, lastPoint, terminal2Pos, terminal);
-            if(finalPoints == null) {
+            if(finalPoints == null || !finalPoints.reachedTarget()) {
                 sendMessage(context, Lang.translate("message.connection_no_path").style(Formatting.RED).component());
                 return ActionResult.FAIL;
             }
-            points.addAll(finalPoints);
+            points.addAll(finalPoints.points());
             entity = BlockWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R, points);
         } else {
             entity = HangingWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R);

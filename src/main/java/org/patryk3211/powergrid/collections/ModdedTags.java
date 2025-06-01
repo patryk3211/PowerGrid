@@ -33,7 +33,8 @@ public class ModdedTags {
         RAW_ORES(FORGE_NAMESPACE, "raw_ores"),
         PLATES(FORGE_NAMESPACE, "plates"),
         WIRES("wires"),
-        CATALYZERS("catalyzers")
+        CATALYZERS("catalyzers"),
+        LIGHT_WIRES("light_wires")
         ;
 
         public final TagKey<net.minecraft.item.Item> tag;

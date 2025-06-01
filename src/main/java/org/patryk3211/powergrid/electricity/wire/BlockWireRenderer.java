@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -24,11 +26,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
-import org.patryk3211.powergrid.PowerGrid;
 
+@Environment(EnvType.CLIENT)
 public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
-    public static final Identifier TEXTURE = new Identifier(PowerGrid.MOD_ID, "textures/special/wire.png");
-
     public BlockWireRenderer(EntityRendererFactory.Context ctx) {
         super(ctx);
     }
@@ -39,7 +39,7 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
             return;
 
         var currentPos = Vec3d.ZERO;
-        var buffer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(TEXTURE));
+        var buffer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(getTexture(entity)));
         var pos = entity.getPos();
 
         for (var segment : entity.segments) {
@@ -54,14 +54,14 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
             var blockLight = entity.getWorld().getLightLevel(LightType.BLOCK, blockPos);
             var skyLight = entity.getWorld().getLightLevel(LightType.SKY, blockPos);
 
-            renderSegment(matrices, buffer, LightmapTextureManager.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, 1.0f / 16, segment.length, entity.getId());
+            renderSegment(matrices, buffer, LightmapTextureManager.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, entity.getWireItem().getWireThickness(), segment.length, entity.getId());
             currentPos = newPos;
         }
     }
 
     @Override
     public Identifier getTexture(BlockWireEntity entity) {
-        return TEXTURE;
+        return entity.getWireItem().getWireTexture();
     }
 
     public static void debugLine(MatrixStack ms, VertexConsumer buffer, int light, int color,
@@ -102,30 +102,33 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
         float u0 = uvOffset / 16f, v0 = uvOffset / 16f, t0 = uvOffset / 16f;
         float u1 = thickness + uvOffset / 16f, v1 = thickness + uvOffset / 16f, t1 = thickness + uvOffset / 16f;
 
+        float x1 = (float) start.x - thickness / 2;
+        float y1 = (float) start.y - thickness / 2;
+        float z1 = (float) start.z - thickness / 2;
+
         float x2 = 0, y2 = 0, z2 = 0;
         switch(dir.getAxis()) {
             case X -> {
                 thickness *= 0.995f;
-                x2 = length;
+                x1 += thickness;
+                x2 = length - thickness;
                 u0 = 0;
                 u1 = Math.abs(length);
             }
             case Y -> {
-                y2 = length;
+                y1 += thickness;
+                y2 = length - thickness;
                 v0 = 0;
                 v1 = Math.abs(length);
             }
             case Z -> {
                 thickness *= 1.005f;
-                z2 = length;
+                z1 += thickness;
+                z2 = length - thickness;
                 t0 = 0;
                 t1 = Math.abs(length);
             }
         }
-
-        float x1 = (float) start.x - thickness / 2;
-        float y1 = (float) start.y - thickness / 2;
-        float z1 = (float) start.z - thickness / 2;
 
         x2 += x1 + thickness;
         y2 += y1 + thickness;

@@ -35,8 +35,6 @@ import org.patryk3211.powergrid.utility.IComplexRaycast;
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     private static final Vec3d UP = new Vec3d(0, 1, 0);
 
-    private static final float THICKNESS = 1 / 16f;
-
     public Vec3d terminalPos1;
     public Vec3d terminalPos2;
 
@@ -52,7 +50,9 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(!getWorld().isClient)
             return;
         this.setBoundingBox(this.calculateBoundingBox());
-        renderParams = new CurveParameters(terminalPos1, terminalPos2, 1.01, 1.2, THICKNESS);
+        var item = getWireItem();
+        renderParams = new CurveParameters(terminalPos1, terminalPos2,
+                item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
     }
 
     public static HangingWireEntity create(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, float resistance) {
@@ -148,6 +148,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     @Environment(EnvType.CLIENT)
     public @Nullable Vec3d raycast(Vec3d min, Vec3d max) {
+        // TODO: Sometimes this raycast is really finicky
+        var thickness = getWireItem().getWireThickness();
         if(renderParams instanceof CurveParameters params) {
             Vec3d ray = max.subtract(min);
             var rayLength = ray.lengthSquared();
@@ -170,7 +172,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                     var parallelDistance = Math.abs(planeXVector.dotProduct(hitOriginVector));
                     var perpendicularDistance = Math.abs(planeNormal.dotProduct(hitOriginVector));
 
-                    if(parallelDistance < params.getCurveSpan() / 2 && perpendicularDistance < THICKNESS / 2) {
+                    if(parallelDistance < params.getCurveSpan() / 2 && perpendicularDistance < thickness / 2) {
                         // Hit
                         return hit;
                     } else {
@@ -198,7 +200,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                     double dY = y - params.apply((float) closeX);
 
                     double squareDistance = dX * dX + dY * dY;
-                    if(squareDistance < THICKNESS * THICKNESS) {
+                    if(squareDistance < thickness * thickness) {
                         // Hit
                         return hit;
                     } else {

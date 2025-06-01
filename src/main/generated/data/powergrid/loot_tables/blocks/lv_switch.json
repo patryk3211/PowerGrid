@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powergrid:switch"
+          "name": "powergrid:lv_switch"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid:blocks/switch"
+  "random_sequence": "powergrid:blocks/lv_switch"
 }

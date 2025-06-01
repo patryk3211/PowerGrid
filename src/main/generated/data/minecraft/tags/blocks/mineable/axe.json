@@ -5,6 +5,7 @@
     "powergrid:brass_voltage_gauge",
     "powergrid:andesite_current_gauge",
     "powergrid:brass_current_gauge",
+    "powergrid:hv_switch",
     "powergrid:light_fixture"
   ]
 }

@@ -15,7 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import com.tterrag.registrate.util.entry.ItemEntry;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -23,21 +24,22 @@ import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 
 public class WireItem extends Item implements IWire {
-    float resistance;
-    float maxLength;
+    protected float resistance;
+    protected float maxLength;
+
+    protected Identifier wireTexture;
+    protected float horizontalCoefficient = 1.01f;
+    protected float verticalCoefficient = 1.2f;
+    protected float wireThickness = 1 / 16f;
 
     public WireItem(Settings settings) {
         super(settings);
@@ -52,8 +54,11 @@ public class WireItem extends Item implements IWire {
 
         var blockState = context.getWorld().getBlockState(context.getBlockPos());
         if(blockState.getBlock() instanceof IElectric electric) {
-            return electric.onWire(blockState, context);
-        } else if(context.getStack().hasNbt()) {
+            var result = electric.onWire(blockState, context);
+            if(result != ActionResult.PASS)
+                return result;
+        }
+        if(context.getStack().hasNbt()) {
             // This will result in the connection being a block wire (instead of a hanging wire)
             var tag = context.getStack().getNbt();
             NbtList list;
@@ -75,12 +80,13 @@ public class WireItem extends Item implements IWire {
                 var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
                 var firstTerminal = tag.getInt("Terminal");
                 lastPoint = IElectric.getTerminalPos(firstPosition, context.getWorld().getBlockState(firstPosition), firstTerminal);
+                lastPoint = BlockTrace.alignPosition(lastPoint);
             }
 
             var hitPoint = context.getHitPos();
-            var newPoints = BlockTrace.findPath(context.getWorld(), lastPoint, hitPoint, null);
-            if(newPoints != null) {
-                newPoints.forEach(point -> list.add(point.serialize()));
+            var result = BlockTrace.findPath(context.getWorld(), lastPoint, hitPoint, null);
+            if(result != null && result.reachedTarget()) {
+                result.points().forEach(point -> list.add(point.serialize()));
 
                 var lastPointList = new NbtList();
                 lastPointList.add(NbtFloat.of((float) hitPoint.x));
@@ -119,5 +125,25 @@ public class WireItem extends Item implements IWire {
     @Override
     public float getMaximumLength() {
         return maxLength;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public Identifier getWireTexture() {
+        return wireTexture;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public float getHorizontalCoefficient() {
+        return horizontalCoefficient;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public float getVerticalCoefficient() {
+        return verticalCoefficient;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public float getWireThickness() {
+        return wireThickness;
     }
 }

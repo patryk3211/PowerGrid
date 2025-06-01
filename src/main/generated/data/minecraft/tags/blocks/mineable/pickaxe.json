@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "powergrid:wire_connector",
+    "powergrid:heavy_wire_connector",
     "powergrid:heating_coil",
     "powergrid:andesite_voltage_gauge",
     "powergrid:brass_voltage_gauge",
@@ -10,6 +11,7 @@
     "powergrid:rotor",
     "powergrid:coil",
     "powergrid:generator_housing",
+    "powergrid:hv_switch",
     "powergrid:creative_voltage_source",
     "powergrid:creative_current_source",
     "powergrid:creative_resistor",
