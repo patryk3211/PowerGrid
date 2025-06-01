@@ -111,15 +111,14 @@ public class BlockTrace {
                 var distance = cell.position.getManhattanDistance(neighborPos);
 
                 int newDistance = cell.originDistance + distance;
+                if(newDistance >= neighbor.originDistance)
+                    continue;
                 if(!neighbor.isSupported) {
                     var newUnsupportedDistance = cell.unsupportedDistance + distance;
                     if(neighbor.unsupportedDistance != 0 && newUnsupportedDistance >= neighbor.unsupportedDistance)
                         continue;
                     neighbor.unsupportedDistance = newUnsupportedDistance;
-                    newDistance += newUnsupportedDistance * newUnsupportedDistance;
                 }
-                if(newDistance >= neighbor.originDistance)
-                    continue;
                 if(neighbor.unsupportedDistance > TraceState.GRID_SIZE)
                     continue;
 
