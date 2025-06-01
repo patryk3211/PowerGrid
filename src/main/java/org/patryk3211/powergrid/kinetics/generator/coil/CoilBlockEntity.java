@@ -129,12 +129,7 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
 
         var outputCurrent = windingCurrent();
         var powerDrop = outputCurrent * outputCurrent * CoilBlock.resistance();
-        if(powerDrop > 0) {
-            // Coil is acting like a source
-            applyLostPower(powerDrop);
-        } else {
-            // Coil is acting like a sink.
-        }
+        applyLostPower(powerDrop);
 
         if(sourceNode != null && aggregate != null) {
             sourceNode.setVoltage(aggregate.totalVoltage());
@@ -244,6 +239,9 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     }
 
     public static class CoilValueBoxTransform extends CenteredSideValueBoxTransform {
+        public CoilValueBoxTransform() {
+            super((state, dir) -> state.get(CoilBlock.FACING) != dir);
+        }
         // TODO: Add correct transformations.
     }
 }
