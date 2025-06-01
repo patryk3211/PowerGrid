@@ -19,15 +19,19 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     protected LerpedFloat rod;
     private SwitchedWire wire;
+
+    private boolean wasClosed = false;
 
     public HvSwitchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -70,6 +74,22 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
             wire.setState(false);
             wire.setResistance(getResistance());
             wire.setState(isClosed());
+        }
+    }
+
+    @Override
+    public void tickAudio() {
+        super.tickAudio();
+        var closed = rod.getValue() == 1;
+        var open = rod.getValue() == 0;
+        if(wasClosed && open) {
+            wasClosed = false;
+            world.playSoundAtBlockCenter(getPos(), ModdedSoundEvents.HV_SWITCH_DISCONNECT.getMainEvent(),
+                    SoundCategory.BLOCKS, 1, 1, true);
+        } else if(!wasClosed && closed) {
+            wasClosed = true;
+            world.playSoundAtBlockCenter(getPos(), ModdedSoundEvents.HV_SWITCH_CONNECT.getMainEvent(),
+                    SoundCategory.BLOCKS, 1, 1, true);
         }
     }
 

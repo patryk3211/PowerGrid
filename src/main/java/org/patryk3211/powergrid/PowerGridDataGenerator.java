@@ -22,6 +22,7 @@ import com.tterrag.registrate.providers.ProviderType;
 import io.github.fabricators_of_create.porting_lib.data.ExistingFileHelper;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.ponder.PonderIndex;
 import org.patryk3211.powergrid.recipes.*;
 
@@ -42,6 +43,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(MixingRecipes::new);
 		pack.addProvider(PressingRecipes::new);
 		pack.addProvider(ReactionRecipes::new);
+		pack.addProvider(ModdedSoundEvents::provider);
 
 		PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;
@@ -49,6 +51,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 			provideDefaultLang("messages", langConsumer);
 
 			providePonderLang(langConsumer);
+			ModdedSoundEvents.provideLang(langConsumer);
 		});
 	}
 

@@ -1,0 +1,47 @@
+{
+  "hv_switch_connect": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "create:contraption_disassemble"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.hv_switch_connect"
+  },
+  "hv_switch_disconnect": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "create:contraption_assemble"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.hv_switch_disconnect"
+  },
+  "lv_switch_click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.lever.click"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.lv_switch_click"
+  },
+  "mv_switch_click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.iron_trapdoor.close"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.mv_switch_click"
+  },
+  "wire_cut": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.sheep.shear"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.wire_cut"
+  }
+}

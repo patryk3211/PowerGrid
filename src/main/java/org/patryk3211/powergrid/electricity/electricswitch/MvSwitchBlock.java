@@ -16,8 +16,12 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 import com.simibubi.create.foundation.utility.VoxelShaper;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.World;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
@@ -62,5 +66,10 @@ public class MvSwitchBlock extends SurfaceSwitchBlock {
                     return prov.get(facing);
                 })
                 .build());
+    }
+
+    @Override
+    public void useSound(World world, BlockPos pos, boolean open) {
+        world.playSound(null, pos, ModdedSoundEvents.MV_SWITCH_CLICK.getMainEvent(), SoundCategory.BLOCKS, 0.3F, open ? 1.25f : 1.5f);
     }
 }

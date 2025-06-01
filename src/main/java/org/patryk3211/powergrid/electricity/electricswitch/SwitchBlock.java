@@ -20,6 +20,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
@@ -29,6 +31,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 
@@ -58,10 +61,15 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
                 if(world.getBlockEntity(pos) instanceof SwitchBlockEntity entity) {
                     entity.setState(!isOpen);
                 }
+                useSound(world, pos, isOpen);
                 return ActionResult.SUCCESS;
             }
         }
         return super.onUse(state, world, pos, player, hand, hit);
+    }
+
+    public void useSound(World world, BlockPos pos, boolean open) {
+
     }
 
     @Override
