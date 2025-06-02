@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powergrid:rotor"
+          "name": "powergrid:generator_rotor"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid:blocks/rotor"
+  "random_sequence": "powergrid:blocks/generator_rotor"
 }

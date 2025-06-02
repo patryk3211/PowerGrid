@@ -80,14 +80,14 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.HEATING_COIL)
                     .register();
 
-    public static final BlockEntityEntry<RotorBlockEntity> ROTOR =
-            REGISTRATE.blockEntity("rotor", RotorBlockEntity::new)
-                    .validBlock(ModdedBlocks.ROTOR)
+    public static final BlockEntityEntry<RotorBlockEntity> GENERATOR_ROTOR =
+            REGISTRATE.blockEntity("generator_rotor", RotorBlockEntity::new)
+                    .validBlock(ModdedBlocks.GENERATOR_ROTOR)
                     .renderer(() -> RotorRenderer::new)
                     .register();
-    public static final BlockEntityEntry<CoilBlockEntity> COIL =
-            REGISTRATE.blockEntity("coil", CoilBlockEntity::new)
-                    .validBlock(ModdedBlocks.COIL)
+    public static final BlockEntityEntry<CoilBlockEntity> GENERATOR_COIL =
+            REGISTRATE.blockEntity("generator_coil", CoilBlockEntity::new)
+                    .validBlock(ModdedBlocks.GENERATOR_COIL)
                     .register();
 
     public static final BlockEntityEntry<SwitchBlockEntity> SWITCH =

@@ -48,13 +48,13 @@ public class GeneratorScenes {
         scene.idle(2);
 
         var target = util.grid.at(4, 1, 3);
-        scene.world.setBlock(target, ModdedBlocks.ROTOR.getDefaultState()
+        scene.world.setBlock(target, ModdedBlocks.GENERATOR_ROTOR.getDefaultState()
                 .with(RotorBlock.AXIS, Direction.Axis.X).with(RotorBlock.SHAFT_DIRECTION, ShaftDirection.NEGATIVE), false);
         scene.world.showSection(util.select.position(target), Direction.DOWN);
         scene.idle(5);
 
         var secondTarget = util.grid.at(5, 1, 3);
-        scene.world.setBlock(secondTarget, ModdedBlocks.ROTOR.getDefaultState()
+        scene.world.setBlock(secondTarget, ModdedBlocks.GENERATOR_ROTOR.getDefaultState()
                 .with(RotorBlock.AXIS, Direction.Axis.X).with(RotorBlock.SHAFT_DIRECTION, ShaftDirection.NONE), false);
         scene.world.showSection(util.select.position(secondTarget), Direction.DOWN);
         scene.idle(5);
@@ -91,9 +91,9 @@ public class GeneratorScenes {
         scene.overlay.showControls(new InputWindowElement(util.vector.blockSurface(secondTarget, Direction.EAST), Pointing.RIGHT).withWrench(), 30);
         scene.idle(20);
 
-        scene.world.setBlock(target, ModdedBlocks.ROTOR.getDefaultState()
+        scene.world.setBlock(target, ModdedBlocks.GENERATOR_ROTOR.getDefaultState()
                 .with(RotorBlock.AXIS, Direction.Axis.X).with(RotorBlock.SHAFT_DIRECTION, ShaftDirection.NONE), false);
-        scene.world.setBlock(secondTarget, ModdedBlocks.ROTOR.getDefaultState()
+        scene.world.setBlock(secondTarget, ModdedBlocks.GENERATOR_ROTOR.getDefaultState()
                 .with(RotorBlock.AXIS, Direction.Axis.X).with(RotorBlock.SHAFT_DIRECTION, ShaftDirection.POSITIVE), false);
         scene.idle(70);
 
@@ -127,11 +127,11 @@ public class GeneratorScenes {
 
         scene.overlay.showControls(new InputWindowElement(util.vector.topOf(coil), Pointing.RIGHT).withWrench(), 30);
         scene.idle(20);
-        scene.world.setBlock(coil, ModdedBlocks.COIL.getDefaultState()
+        scene.world.setBlock(coil, ModdedBlocks.GENERATOR_COIL.getDefaultState()
                 .with(CoilBlock.FACING, Direction.DOWN).with(CoilBlock.HAS_TERMINALS, true), false);
         scene.idle(40);
 
-        var state = ModdedBlocks.COIL.getDefaultState()
+        var state = ModdedBlocks.GENERATOR_COIL.getDefaultState()
                 .with(CoilBlock.FACING, Direction.DOWN).with(CoilBlock.HAS_TERMINALS, false);
         var posList = new BlockPos[] {
                 coil.west(),

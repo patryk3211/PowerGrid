@@ -22,6 +22,6 @@
     " M "
   ],
   "result": {
-    "item": "powergrid:rotor"
+    "item": "powergrid:generator_rotor"
   }
 }

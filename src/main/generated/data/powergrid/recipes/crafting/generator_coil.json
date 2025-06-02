@@ -14,7 +14,7 @@
     "CIC"
   ],
   "result": {
-    "item": "powergrid:coil"
+    "item": "powergrid:generator_coil"
   },
   "show_notification": true
 }

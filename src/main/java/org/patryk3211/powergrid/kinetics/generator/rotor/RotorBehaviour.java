@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class RotorBehaviour extends SegmentedBehaviour {
-    public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("rotor");
+    public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("generator_rotor");
     private static final float ROTOR_INERTIA = 0.1f;
 
     // Energy values get loaded from NBT.

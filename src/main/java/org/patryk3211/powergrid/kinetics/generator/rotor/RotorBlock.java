@@ -115,7 +115,7 @@ public class RotorBlock extends RotatedPillarKineticBlock implements IBE<RotorBl
 
     @Override
     public BlockEntityType<? extends RotorBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.ROTOR.get();
+        return ModdedBlockEntities.GENERATOR_ROTOR.get();
     }
 
     public boolean hasPositive(World world, BlockPos pos, Direction.Axis axis) {

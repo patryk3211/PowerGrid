@@ -25,7 +25,7 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
 public class CoilBehaviour extends BlockEntityBehaviour {
-    public static final BehaviourType<CoilBehaviour> TYPE = new BehaviourType<>("coil");
+    public static final BehaviourType<CoilBehaviour> TYPE = new BehaviourType<>("generator_coil");
 
     private final ICoilEntity coilEntity;
     private RotorBehaviour rotor;

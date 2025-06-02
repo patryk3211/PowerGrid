@@ -43,7 +43,7 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .patternLine(" ICI ")
             ),
 
-    GENERATOR_ROTOR = create(ModdedBlocks.ROTOR::get)
+    GENERATOR_ROTOR = create(ModdedBlocks.GENERATOR_ROTOR::get)
             .recipe(b -> b
                     .key('A', AllItems.ANDESITE_ALLOY)
                     .key('M', ModdedItems.MAGNET)

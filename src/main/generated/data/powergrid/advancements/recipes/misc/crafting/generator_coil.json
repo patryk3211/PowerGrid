@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create:crafting/coil"
+        "recipe": "create:crafting/generator_coil"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "create:crafting/coil"
+      "create:crafting/generator_coil"
     ]
   },
   "sends_telemetry_event": false

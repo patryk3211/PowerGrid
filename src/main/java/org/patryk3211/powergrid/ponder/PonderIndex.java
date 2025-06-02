@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.foundation.ponder.PonderRegistrationHelper;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.ponder.scenes.DeviceScenes;
@@ -38,11 +37,11 @@ public class PonderIndex {
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic)
                 .addStoryBoard("heating_coil/speed", DeviceScenes::heatingCoilSpeed);
 
-        HELPER.forComponents(ModdedBlocks.ROTOR)
+        HELPER.forComponents(ModdedBlocks.GENERATOR_ROTOR)
                 .addStoryBoard("generator/rotor", GeneratorScenes::rotor)
                 .addStoryBoard("generator/generator", GeneratorScenes::generator);
 
-        HELPER.forComponents(ModdedBlocks.COIL)
+        HELPER.forComponents(ModdedBlocks.GENERATOR_COIL)
                 .addStoryBoard("generator/coil", GeneratorScenes::coil)
                 .addStoryBoard("generator/generator", GeneratorScenes::generator);
 

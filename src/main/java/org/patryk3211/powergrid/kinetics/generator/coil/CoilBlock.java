@@ -264,7 +264,7 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity>, IC
 
     @Override
     public BlockEntityType<? extends CoilBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.COIL.get();
+        return ModdedBlockEntities.GENERATOR_COIL.get();
     }
 
     public static float resistance() {

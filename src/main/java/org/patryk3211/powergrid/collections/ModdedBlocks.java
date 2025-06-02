@@ -170,7 +170,7 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    public static final BlockEntry<RotorBlock> ROTOR = REGISTRATE.block("rotor", RotorBlock::new)
+    public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                         var shaftDir = state.get(RotorBlock.SHAFT_DIRECTION);
@@ -202,14 +202,14 @@ public class ModdedBlocks {
             .lang("Generator Rotor")
             .register();
 
-    public static final BlockEntry<CoilBlock> COIL = REGISTRATE.block("coil", CoilBlock::new)
+    public static final BlockEntry<CoilBlock> GENERATOR_COIL = REGISTRATE.block("generator_coil", CoilBlock::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                         var builder = ConfiguredModel.builder();
                         if(state.get(CoilBlock.HAS_TERMINALS)) {
-                            builder.modelFile(modModel(prov, "block/coil"));
+                            builder.modelFile(modModel(prov, "block/coil/generator_coil"));
                         } else {
-                            builder.modelFile(modModel(prov, "block/coil_bare"));
+                            builder.modelFile(modModel(prov, "block/coil/generator_coil_bare"));
                         }
                         switch(state.get(CoilBlock.FACING)) {
                             case DOWN -> builder.rotationX(180);
@@ -223,7 +223,10 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .defaultLoot()
-            .simpleItem()
+            .item()
+                .model((ctx, prov) ->
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/coil/generator_coil")))
+                .build()
             .lang("Generator Coil")
             .register();
 
@@ -497,7 +500,7 @@ public class ModdedBlocks {
                         }
                         return builder.build();
                     }))
-            .initialProperties(COIL::get)
+            .initialProperties(GENERATOR_COIL::get)
             .transform(pickaxeOnly())
             .defaultLoot()
             .simpleItem()

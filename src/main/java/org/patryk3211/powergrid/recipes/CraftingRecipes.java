@@ -25,7 +25,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
 
-    GENERATOR_COIL = create(ModdedBlocks.COIL)
+    GENERATOR_COIL = create(ModdedBlocks.GENERATOR_COIL)
             .unlockedBy(ModdedItems.WIRE::get)
             .shaped(b -> b
                     .pattern("CIC")

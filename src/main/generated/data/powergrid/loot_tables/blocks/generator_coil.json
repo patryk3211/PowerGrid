@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powergrid:coil"
+          "name": "powergrid:generator_coil"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid:blocks/coil"
+  "random_sequence": "powergrid:blocks/generator_coil"
 }

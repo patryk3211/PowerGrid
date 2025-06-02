@@ -74,7 +74,7 @@ public class GeneratorHousing extends Block implements IConnectableBlock, IWrenc
     @Override
     public boolean connects(BlockState state, Direction side, BlockState checkState) {
         // Generator housing can only connect to coils.
-        if(!checkState.isOf(ModdedBlocks.COIL.get()))
+        if(!checkState.isOf(ModdedBlocks.GENERATOR_COIL.get()))
             return false;
         if(side.getAxis() == Direction.Axis.Y) {
             // Up or down side, coil facing must reflect housing facing.
