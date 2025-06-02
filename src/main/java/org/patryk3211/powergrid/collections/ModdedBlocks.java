@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -31,6 +32,7 @@ import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.function.ApplyBonusLootFunction;
@@ -53,6 +55,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
+import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
@@ -504,6 +507,28 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .defaultLoot()
             .simpleItem()
+            .register();
+
+    public static final BlockEntry<ElectricFanBlock> ELECTRIC_FAN = REGISTRATE.block("electric_fan", ElectricFanBlock::new)
+            .blockstate((ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                var builder = ConfiguredModel.builder();
+                builder.modelFile(modModel(prov, "block/electric_fan/block"));
+                switch(state.get(FACING)) {
+                    case DOWN -> builder.rotationX(180);
+                    case NORTH -> builder.rotationX(90);
+                    case SOUTH -> builder.rotationX(-90);
+                    case EAST -> builder.rotationX(90).rotationY(90);
+                    case WEST -> builder.rotationX(90).rotationY(-90);
+                }
+                return builder.build();
+            }))
+            .initialProperties(AllBlocks.ENCASED_FAN)
+            .transform(axeOrPickaxe())
+            .addLayer(() -> RenderLayer::getCutoutMipped)
+            .defaultLoot()
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_fan/item")))
+                .build()
             .register();
 
     @SuppressWarnings("EmptyMethod")

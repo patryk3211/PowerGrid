@@ -6,6 +6,7 @@
     "powergrid:andesite_current_gauge",
     "powergrid:brass_current_gauge",
     "powergrid:hv_switch",
-    "powergrid:light_fixture"
+    "powergrid:light_fixture",
+    "powergrid:electric_fan"
   ]
 }

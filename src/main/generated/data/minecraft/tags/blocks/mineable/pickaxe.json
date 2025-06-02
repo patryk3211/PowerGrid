@@ -23,6 +23,7 @@
     "powergrid:chemical_vat",
     "powergrid:silver_ore",
     "powergrid:deepslate_silver_ore",
-    "powergrid:electromagnet"
+    "powergrid:electromagnet",
+    "powergrid:electric_fan"
   ]
 }
