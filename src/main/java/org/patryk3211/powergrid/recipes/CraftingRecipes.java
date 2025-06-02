@@ -147,7 +147,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('I', RecipeTags.ironSheet())
                     .input('C', RecipeTags.copperNugget())
                     .input('A', AllBlocks.ANDESITE_CASING)
-            )
+            ),
+
+    ELECTROMAGNET = create(ModdedBlocks.ELECTROMAGNET)
+            .unlockedBy(() -> ModdedItems.COPPER_COIL)
+            .shaped(b -> b
+                    .pattern("CCC")
+                    .pattern("CIC")
+                    .pattern("CCC")
+                    .input('C', ModdedItems.COPPER_COIL)
+                    .input('I', RecipeTags.ironSheet()))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {

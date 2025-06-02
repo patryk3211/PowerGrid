@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchInstance;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
+import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
@@ -131,6 +132,11 @@ public class ModdedBlockEntities {
                     .instance(() -> HalfShaftInstance::new)
                     .validBlock(ModdedBlocks.ELECTRIC_MOTOR)
                     .renderer(() -> ElectricMotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<ElectromagnetBlockEntity> ELECTROMAGNET =
+            REGISTRATE.blockEntity("electromagnet", ElectromagnetBlockEntity::new)
+                    .validBlock(ModdedBlocks.ELECTROMAGNET)
                     .register();
 
     public static final BlockEntityEntry<ChemicalVatBlockEntity> CHEMICAL_VAT =

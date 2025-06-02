@@ -27,8 +27,8 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 public class SwitchBlockEntity extends ElectricBlockEntity {
     private SwitchedWire wire;
     private float maxVoltage;
-    private boolean switchState = false;
-    private Float overvoltResistance = null;
+    private boolean switchState;
+    private Float overvoltResistance;
 
     public SwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -42,7 +42,6 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
-//        var current = wire.current();
         applyLostPower(wire.power());
         if(wire.potentialDifference() > maxVoltage && overvoltResistance == null) {
             wire.setState(true);
@@ -68,6 +67,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
         }
         if(tag.contains("Overvolted")) {
             overvoltResistance = tag.getFloat("Overvolted");
+            wire.setResistance(overvoltResistance);
+            wire.setState(true);
         }
     }
 
@@ -90,7 +91,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
         if(!(getCachedState().getBlock() instanceof SwitchBlock block))
             throw new IllegalArgumentException("Blocks with SwitchBlockEntity must inherit from SwitchBlock");
         maxVoltage = block.getMaxVoltage();
-        wire = builder.connectSwitch(block.getResistance(), node1, node2, !getCachedState().get(SwitchBlock.OPEN));
+        switchState = !getCachedState().get(SwitchBlock.OPEN);
+        wire = builder.connectSwitch(block.getResistance(), node1, node2, switchState);
         if(overvoltResistance != null) {
             wire.setResistance(overvoltResistance);
             wire.setState(true);

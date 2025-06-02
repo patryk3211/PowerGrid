@@ -60,6 +60,11 @@ public class ModdedSoundEvents {
     WIRE_CUT = create("wire_cut").subtitle("Wire cut")
             .playExisting(SoundEvents.ENTITY_SHEEP_SHEAR, 0.75f, 1.25f)
             .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MAGNETIZING = create("magnetizing").subtitle("Magnetizing")
+            .addVariant("magnetizing")
+            .category(SoundCategory.BLOCKS)
             .build()
             ;
 
@@ -125,6 +130,11 @@ public class ModdedSoundEvents {
     public static class SoundEntryBuilder extends AllSoundEvents.SoundEntryBuilder {
         public SoundEntryBuilder(Identifier id) {
             super(id);
+        }
+
+        @Override
+        public AllSoundEvents.SoundEntryBuilder addVariant(String name) {
+            return addVariant(PowerGrid.asResource(name));
         }
 
         @Override

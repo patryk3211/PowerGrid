@@ -63,8 +63,10 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 	public void onInitializeModelLoader(Context context) {
 		context.resolveModel().register(innerContext -> {
 			final var id = innerContext.id();
-			if(id != null && id.equals(ChemicalVatModel.MODEL_ID)) {
-				return new ChemicalVatModel();
+			if(id != null) {
+				if(id.equals(ChemicalVatModel.MODEL_ID)) {
+					return new ChemicalVatModel();
+				}
 			}
 			return null;
 		});

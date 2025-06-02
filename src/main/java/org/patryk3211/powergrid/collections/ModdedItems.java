@@ -58,6 +58,7 @@ public class ModdedItems {
 
     public static final ItemEntry<Item> RESISTIVE_COIL = ingredient("resistive_coil");
     public static final ItemEntry<Item> COPPER_COIL = ingredient("copper_coil");
+    public static final ItemEntry<Item> MAGNET = ingredient("magnet");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
 

@@ -37,6 +37,7 @@ import java.util.List;
 
 public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity {
     protected ScrollOptionBehaviour<AggregateType> aggregateType;
+    private boolean hasScrollBehaviour;
     private CoilAggregate aggregate;
 
     private VoltageSourceNode sourceNode;
@@ -71,6 +72,7 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
         aggregateType = new ScrollOptionBehaviour<>(AggregateType.class, Lang.translateDirect("devices.coil.aggregate_type"), this, new CoilValueBoxTransform());
         aggregateType.withCallback(i -> aggregate.setType(aggregateType.get()));
         behaviours.add(aggregateType);
+        hasScrollBehaviour = true;
     }
 
     public CoilBehaviour getCoilBehaviour() {
@@ -85,6 +87,17 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
         this.aggregate = aggregate;
         if(coupling != null) {
             coupling.setResistance(aggregate.totalResistance());
+        }
+        if(aggregate.size() > 1) {
+            if(!hasScrollBehaviour) {
+                hasScrollBehaviour = true;
+                attachBehaviourLate(aggregateType);
+            }
+        } else {
+            if(hasScrollBehaviour) {
+                hasScrollBehaviour = false;
+                removeBehaviour(aggregateType.getType());
+            }
         }
     }
 
@@ -116,12 +129,7 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
 
         var outputCurrent = windingCurrent();
         var powerDrop = outputCurrent * outputCurrent * CoilBlock.resistance();
-        if(powerDrop > 0) {
-            // Coil is acting like a source
-            applyLostPower(powerDrop);
-        } else {
-            // Coil is acting like a sink.
-        }
+        applyLostPower(powerDrop);
 
         if(sourceNode != null && aggregate != null) {
             sourceNode.setVoltage(aggregate.totalVoltage());
@@ -231,6 +239,9 @@ public class CoilBlockEntity extends ElectricBlockEntity implements ICoilEntity 
     }
 
     public static class CoilValueBoxTransform extends CenteredSideValueBoxTransform {
+        public CoilValueBoxTransform() {
+            super((state, dir) -> state.get(CoilBlock.FACING) != dir);
+        }
         // TODO: Add correct transformations.
     }
 }

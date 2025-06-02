@@ -23,7 +23,6 @@ import com.simibubi.create.foundation.data.recipe.MechanicalCraftingRecipeBuilde
 import com.simibubi.create.foundation.utility.RegisteredObjects;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -36,7 +35,7 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
     ELECTRIC_MOTOR = create(ModdedBlocks.ELECTRIC_MOTOR::get)
             .recipe(b -> b
                     .key('C', ModdedItems.COPPER_COIL)
-                    .key('M', Items.IRON_INGOT) // TODO: This should be a magnet.
+                    .key('M', ModdedItems.MAGNET)
                     .key('I', RecipeTags.ironSheet())
                     .key('S', AllBlocks.SHAFT)
                     .patternLine(" ICI ")
@@ -47,7 +46,7 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
     GENERATOR_ROTOR = create(ModdedBlocks.ROTOR::get)
             .recipe(b -> b
                     .key('A', AllItems.ANDESITE_ALLOY)
-                    .key('M', Items.IRON_INGOT) // TODO: This should be a magnet.
+                    .key('M', ModdedItems.MAGNET)
                     .key('S', AllBlocks.SHAFT)
                     .key('C', AllBlocks.ANDESITE_CASING)
                     .patternLine(" C ")
