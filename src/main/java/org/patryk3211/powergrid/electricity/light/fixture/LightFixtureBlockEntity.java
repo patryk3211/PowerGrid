@@ -46,7 +46,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         return new ThermalBehaviour(this, 0.005f, 0.1f, 1700f)
-                .noOverheatBehaviour();
+                .noOverheatBehaviour().ignoreExtraCooling();
     }
 
     @Override

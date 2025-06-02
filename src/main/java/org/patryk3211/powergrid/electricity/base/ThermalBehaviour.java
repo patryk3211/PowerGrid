@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
+import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -42,6 +43,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     private float dissipationFactor;
     private final float overheatTemperature;
 
+    private AirCurrent coolingAir;
+    private float coolingFactorMultiplier;
+    private boolean ignoreExtraCooling;
+
     private boolean noOverheatBehaviour = false;
     private boolean firstTick = true;
 
@@ -63,12 +68,29 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         return this;
     }
 
+    public ThermalBehaviour ignoreExtraCooling() {
+        ignoreExtraCooling = true;
+        return this;
+    }
+
     public void resetTemperature() {
         this.temperature = BASE_TEMPERATURE;
     }
 
     public void setDissipationFactor(float dissipationFactor) {
         this.dissipationFactor = dissipationFactor;
+    }
+
+    public void noCooling() {
+        coolingFactorMultiplier = 1;
+        coolingAir = null;
+    }
+
+    public void setCoolingMultiplier(AirCurrent current, float value) {
+        if(ignoreExtraCooling)
+            return;
+        coolingFactorMultiplier = value;
+        coolingAir = current;
     }
 
     @Override
@@ -80,8 +102,12 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             return;
         }
 
+        if(coolingAir != null && (coolingAir.source.isSourceRemoved() || coolingAir.source.getSpeed() == 0)) {
+            noCooling();
+        }
+
         // Dissipate energy
-        float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
+        float dissipatedPower = dissipationFactor * coolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
         temperature -= dissipatedPower / 20f / thermalMass;
 
         if(!noOverheatBehaviour) {
