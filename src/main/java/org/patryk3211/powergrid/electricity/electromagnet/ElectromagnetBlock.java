@@ -20,10 +20,13 @@ import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -32,8 +35,12 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 
-public class ElectromagnetBlock extends ElectricBlock implements IBE<ElectromagnetBlockEntity> {
+import java.util.List;
+
+public class ElectromagnetBlock extends ElectricBlock implements IBE<ElectromagnetBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty FACING = Properties.FACING;
 
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
@@ -90,6 +97,11 @@ public class ElectromagnetBlock extends ElectricBlock implements IBE<Electromagn
     }
 
     public static float resistance() {
-        return 2.5f;
+        return 15f;
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        Resistance.series(resistance(), player, tooltip);
     }
 }

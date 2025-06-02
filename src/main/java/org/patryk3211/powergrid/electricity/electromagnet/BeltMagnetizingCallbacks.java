@@ -38,7 +38,7 @@ public class BeltMagnetizingCallbacks {
         if(!behaviour.specifics.tryProcessOnBelt(transported, null, true))
             return PASS;
 
-        behaviour.start(MagnetizingBehaviour.Mode.BELT);
+        behaviour.start(MagnetizingBehaviour.Mode.BELT, handler.getWorldPositionOf(transported).add(0, 0.325f, 0));
         return HOLD;
     }
 
@@ -47,7 +47,7 @@ public class BeltMagnetizingCallbacks {
             return PASS;
         if(!behaviour.running)
             return PASS;
-        if(behaviour.runningTicks != MagnetizingBehaviour.CYCLE / 2)
+        if(behaviour.runningTicks != MagnetizingBehaviour.COLLAPSE_TIME)
             return HOLD;
 
         ArrayList<ItemStack> results = new ArrayList<>();
@@ -81,6 +81,7 @@ public class BeltMagnetizingCallbacks {
             handler.handleProcessingOnItem(transported, TransportedItemStackHandlerBehaviour.TransportedResult.convertToAndLeaveHeld(collect, left));
 //        }
 
+        behaviour.updateTarget(handler.getWorldPositionOf(transported).add(0, 0.325f, 0));
         behaviour.blockEntity.sendData();
         return HOLD;
     }

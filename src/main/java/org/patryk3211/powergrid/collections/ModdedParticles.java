@@ -26,6 +26,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatParticleData;
+import org.patryk3211.powergrid.electricity.electromagnet.MagnetizationParticleData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class ModdedParticles {
     private static final List<ParticleEntry<?>> all = new ArrayList<>();
 
     public static final ParticleType<ChemicalVatParticleData> GAS = register("gas", ChemicalVatParticleData::new);
+    public static final ParticleType<MagnetizationParticleData> MAGNETIZATION = register("magnetization", MagnetizationParticleData::new);
 
     private static <T extends ParticleEffect> ParticleType<T> register(String name, Supplier<? extends ICustomParticleData<T>> typeFactory) {
         var type = Registry.register(Registries.PARTICLE_TYPE, PowerGrid.asResource(name), typeFactory.get().createType());
