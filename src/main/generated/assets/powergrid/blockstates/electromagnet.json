@@ -1,0 +1,29 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "powergrid:block/electromagnet"
+    },
+    "facing=east": {
+      "model": "powergrid:block/electromagnet",
+      "x": 90,
+      "y": -90
+    },
+    "facing=north": {
+      "model": "powergrid:block/electromagnet",
+      "x": -90
+    },
+    "facing=south": {
+      "model": "powergrid:block/electromagnet",
+      "x": 90
+    },
+    "facing=up": {
+      "model": "powergrid:block/electromagnet",
+      "x": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/electromagnet",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

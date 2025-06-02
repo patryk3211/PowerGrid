@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipeSerializer;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.info.ElectricProperties;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -68,6 +69,10 @@ public class PowerGrid implements ModInitializer {
 
 		Registry.register(Registries.RECIPE_SERIALIZER, ReactionRecipeSerializer.ID, ReactionRecipeSerializer.INSTANCE);
 		Registry.register(Registries.RECIPE_TYPE, ReactionRecipe.ID, ReactionRecipe.TYPE);
+
+		var magnetizing = MagnetizingRecipe.TYPE_INFO;
+		Registry.register(Registries.RECIPE_SERIALIZER, magnetizing.getId(), magnetizing.getSerializer());
+		Registry.register(Registries.RECIPE_TYPE, magnetizing.getId(), magnetizing.getType());
 
 		REGISTRATE = PowerGridRegistrate.create(MOD_ID)
 				.defaultCreativeTab(ITEM_GROUP_KEY)

@@ -52,6 +52,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
+import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
@@ -480,6 +481,26 @@ public class ModdedBlocks {
             .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/deepslate"))
             .tag(Tags.Items.ORES)
             .build()
+            .register();
+
+    public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        builder.modelFile(modModel(prov, "block/electromagnet"));
+                        switch(state.get(FACING)) {
+                            case UP -> builder.rotationX(180);
+                            case NORTH -> builder.rotationX(-90);
+                            case SOUTH -> builder.rotationX(90);
+                            case EAST -> builder.rotationX(90).rotationY(-90);
+                            case WEST -> builder.rotationX(90).rotationY(90);
+                        }
+                        return builder.build();
+                    }))
+            .initialProperties(COIL::get)
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .simpleItem()
             .register();
 
     @SuppressWarnings("EmptyMethod")
