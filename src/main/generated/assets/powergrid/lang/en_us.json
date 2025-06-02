@@ -153,6 +153,7 @@
   "powergrid.subtitle.hv_switch_connect": "Switch connected",
   "powergrid.subtitle.hv_switch_disconnect": "Switch disconnected",
   "powergrid.subtitle.lv_switch_click": "Switch clicks",
+  "powergrid.subtitle.magnetizing": "Magnetizing",
   "powergrid.subtitle.mv_switch_click": "Switch clicks",
   "powergrid.subtitle.wire_cut": "Wire cut",
   "powergrid.tooltip.current.max": "Maximum current:",

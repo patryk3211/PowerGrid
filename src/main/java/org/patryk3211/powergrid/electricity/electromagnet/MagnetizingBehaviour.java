@@ -27,6 +27,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 import java.util.List;
 
@@ -168,18 +169,11 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
             if(mode == Mode.WORLD)
                 applyInWorld();
 
-//            if (level.getBlockState(worldPosition.down(2)).getSoundGroup() == BlockSoundGroup.WOOL)
-//                AllSoundEvents.MECHANICAL_PRESS_ACTIVATION_ON_BELT.playOnServer(level, worldPosition);
-//            else
-//                AllSoundEvents.MECHANICAL_PRESS_ACTIVATION.playOnServer(level, worldPosition, .5f,
-//                        .75f + (Math.abs(specifics.getKineticSpeed()) / 1024f));
-
             if(!world.isClient)
                 blockEntity.sendData();
         }
 
         if(!world.isClient && runningTicks > CYCLE) {
-//            finished = true;
             running = false;
             specifics.onMagnetizationComplete();
             blockEntity.sendData();
@@ -193,6 +187,10 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
             // Pause the ticks until a packet is received
             if(world.isClient && !blockEntity.isVirtual())
                 runningTicks = -COLLAPSE_TIME;
+        }
+
+        if(prevRunningTicks < COLLAPSE_TIME - 5 && runningTicks >= COLLAPSE_TIME - 5) {
+            ModdedSoundEvents.MAGNETIZING.playOnServer(getWorld(), getPos(), 0.5f, 1);
         }
     }
 

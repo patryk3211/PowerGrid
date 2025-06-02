@@ -26,6 +26,19 @@
     ],
     "subtitle": "powergrid.subtitle.lv_switch_click"
   },
+  "magnetizing": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:magnetizing"
+      },
+      {
+        "type": "file",
+        "name": "powergrid:magnetizing"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.magnetizing"
+  },
   "mv_switch_click": {
     "sounds": [
       {
