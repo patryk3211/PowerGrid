@@ -58,8 +58,10 @@ public class MagnetizationParticle extends SpriteBillboardParticle {
             }
             jiggle();
         } else {
-            if(!behaviour.running) {
-                markDead();
+            if(!behaviour.running && !triggered) {
+                triggered = true;
+                maxAge = 10;
+                age = 0;
                 return;
             }
 

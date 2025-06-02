@@ -57,16 +57,16 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         super.tick();
         applyLostPower(wire.power());
         if(magnetizingBehaviour.running) {
-            wire.setResistance(ElectromagnetBlock.resistance());
+            wire.setResistance(ElectromagnetBlock.resistance() * 0.5f);
         } else {
-            wire.setResistance(ElectromagnetBlock.resistance() * 2);
+            wire.setResistance(ElectromagnetBlock.resistance());
         }
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        wire = builder.connect(ElectromagnetBlock.resistance() * 2, builder.terminalNode(0), builder.terminalNode(1));
+        wire = builder.connect(ElectromagnetBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 
     @Override
@@ -115,7 +115,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
 
     @Override
     public float getFieldStrength() {
-        var field = Math.abs(wire.current() * 0.2f);
+        var field = Math.abs(wire.current() * 0.1f);
         if(field < 0.25f)
             return 0;
         return field;

@@ -46,7 +46,7 @@ public class MagnetizingRecipe extends ProcessingRecipe<Inventory> implements IA
 
     @Override
     protected int getMaxOutputCount() {
-        return 1;
+        return 3;
     }
 
     @Override

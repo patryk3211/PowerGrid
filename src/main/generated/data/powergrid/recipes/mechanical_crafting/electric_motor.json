@@ -9,7 +9,7 @@
       "tag": "c:iron_plates"
     },
     "M": {
-      "item": "minecraft:iron_ingot"
+      "item": "powergrid:magnet"
     },
     "S": {
       "item": "create:shaft"

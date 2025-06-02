@@ -192,6 +192,11 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
         if(prevRunningTicks < COLLAPSE_TIME - 5 && runningTicks >= COLLAPSE_TIME - 5) {
             ModdedSoundEvents.MAGNETIZING.playOnServer(getWorld(), getPos(), 0.5f, 1);
         }
+
+        if(running && specifics.getFieldStrength() == 0) {
+            running = false;
+            blockEntity.sendData();
+        }
     }
 
     protected void applyInWorld() {
