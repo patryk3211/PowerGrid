@@ -522,7 +522,7 @@ public class ModdedBlocks {
                 }
                 return builder.build();
             }))
-            .initialProperties(AllBlocks.ENCASED_FAN)
+            .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .addLayer(() -> RenderLayer::getCutoutMipped)
             .defaultLoot()
