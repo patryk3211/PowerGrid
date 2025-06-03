@@ -71,10 +71,10 @@ public class CoilBlock extends ElectricBlock implements IBE<CoilBlockEntity>, IC
                     return switch(state.get(FACING)) {
                         case UP -> terminal;
                         case DOWN -> terminal.rotateAroundX(180);
-                        case NORTH -> terminal.rotateAroundX(-90);
-                        case SOUTH -> terminal.rotateAroundX(90);
-                        case EAST -> terminal.rotateAroundX(90).rotateAroundY(-90);
-                        case WEST -> terminal.rotateAroundX(90).rotateAroundY(90);
+                        case NORTH -> terminal.rotateAroundX(90);
+                        case SOUTH -> terminal.rotateAroundX(-90);
+                        case EAST -> terminal.rotateAroundX(90).rotateAroundY(90);
+                        case WEST -> terminal.rotateAroundX(90).rotateAroundY(-90);
                     };
                 }))
                 .withShapeMapper(state -> shaper.get(state.get(FACING)))
