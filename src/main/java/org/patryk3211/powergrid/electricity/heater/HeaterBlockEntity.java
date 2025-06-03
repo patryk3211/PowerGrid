@@ -64,7 +64,7 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 1.0f, 0.3f, 600f);
+        return new ThermalBehaviour(this, 1.5f, 0.1f, 600f);
     }
 
     private void updateState(State state) {

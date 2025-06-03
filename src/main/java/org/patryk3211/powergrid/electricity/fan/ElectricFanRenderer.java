@@ -39,8 +39,6 @@ public class ElectricFanRenderer extends SafeBlockEntityRenderer<ElectricFanBloc
         var direction = be.getCachedState().get(FACING);
         var vb = buffer.getBuffer(RenderLayer.getCutoutMipped());
 
-        int lightInFront = WorldRenderer.getLightmapCoordinates(be.getWorld(), be.getPos().offset(direction));
-
         var fan = CachedBufferer.partialFacing(AllPartialModels.ENCASED_FAN_INNER, be.getCachedState(), direction.getOpposite());
 
         float time = AnimationTickHolder.getRenderTime(be.getWorld());
@@ -54,7 +52,7 @@ public class ElectricFanRenderer extends SafeBlockEntityRenderer<ElectricFanBloc
 
 
         fan
-                .light(lightInFront)
+                .light(light)
                 .rotateCentered(Direction.get(Direction.AxisDirection.POSITIVE, direction.getAxis()), angle)
                 .renderInto(ms, vb);
     }

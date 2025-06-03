@@ -53,7 +53,7 @@ public abstract class AirCurrentMixin {
         var start = source.getAirCurrentPos();
 
         int limit = getLimit();
-        float initialStrength = source.getSpeed() * ModdedConfigs.server().kinetics.encasedFanCoolingStrength.getF();
+        float initialStrength = Math.abs(source.getSpeed()) * ModdedConfigs.server().kinetics.encasedFanCoolingStrength.getF();
         if(initialStrength == 0)
             return;
         for(int i = 1; i <= limit; ++i) {

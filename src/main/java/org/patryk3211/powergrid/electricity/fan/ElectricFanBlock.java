@@ -52,7 +52,7 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
     );
 
     public ElectricFanBlock(Settings settings) {
-        super(settings);
+        super(settings.nonOpaque());
 
         var shaper = VoxelShaper.forDirectional(SHAPE_UP, Direction.UP);
         setTerminalCollection(BlockStateTerminalCollection
