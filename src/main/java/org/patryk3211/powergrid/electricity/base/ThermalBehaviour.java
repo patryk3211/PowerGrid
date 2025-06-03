@@ -57,6 +57,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         this.overheatTemperature = overheatTemperature;
 
         this.temperature = BASE_TEMPERATURE;
+        this.coolingFactorMultiplier = 1.0f;
     }
 
     public ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor) {
