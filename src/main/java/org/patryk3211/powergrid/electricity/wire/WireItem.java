@@ -221,6 +221,8 @@ public class WireItem extends Item implements IWire {
             targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
         }
 
+        targetEntity.makeWire();
+        targetEntity.createExtraDataPacket().send();
         sourceEntity.discard();
         return TypedActionResult.success(targetEntity);
     }

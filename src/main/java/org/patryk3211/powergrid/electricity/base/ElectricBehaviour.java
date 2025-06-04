@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
@@ -181,8 +182,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         if(!world.isClient) {
             for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
                 var sourceConnections = connections.get(sourceTerminal);
-                for(var connection : sourceConnections)
-                    connection.killEntity(world);
+                var endpoint = new BlockWireEndpoint(getPos(), sourceTerminal);
+                for(var connection : sourceConnections) {
+                    connection.notifyRemoved(world, endpoint);
+                }
                 sourceConnections.clear();
             }
         }
@@ -199,13 +202,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             this.wireEntityId = wireEntityId;
         }
 
-        NbtCompound serialize() {
-            var tag = new NbtCompound();
-            tag.putIntArray("Position", new int[] { wireEntityPos.getX(), wireEntityPos.getY(), wireEntityPos.getZ() });
-            tag.putUuid("Entity", wireEntityId);
-            return tag;
-        }
-
         public WireEntity getEntity(World world) {
             var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(wireEntityPos).expand(1));
             for(var entity : entities) {
@@ -215,17 +211,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             return null;
         }
 
-        public void killEntity(World world) {
+        public void notifyRemoved(World world, IWireEndpoint endpoint) {
             var entity = getEntity(world);
-            if(entity != null)
-                entity.kill();
-        }
-
-        public static Connection fromNbt(NbtCompound tag) {
-            var posArray = tag.getIntArray("Position");
-            var pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
-            var entity = tag.getUuid("Entity");
-            return new Connection(pos, entity);
+            if(entity != null) {
+                entity.endpointRemoved(endpoint);
+            }
         }
     }
 }

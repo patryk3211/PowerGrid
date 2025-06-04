@@ -160,6 +160,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         return endpoint2;
     }
 
+    public void endpointRemoved(IWireEndpoint endpoint) {
+
+    }
+
     public EntityDataS2CPacket createExtraDataPacket() {
         var extra = new EntityDataS2CPacket(this, 0);
         var tag = new NbtCompound();
@@ -201,12 +205,6 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             setEndpoint2(WireEndpointType.deserialize(nbt.getCompound("Endpoint2")));
         } else {
             setEndpoint2(null);
-        }
-
-        if(endpoint1 == null && endpoint2 == null) {
-            // At least one endpoint must be defined
-            discard();
-            return;
         }
 
         if(nbt.contains("Item"))

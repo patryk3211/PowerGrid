@@ -112,6 +112,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
+    public void endpointRemoved(IWireEndpoint endpoint) {
+        if(endpoint.equals(getEndpoint1()) || endpoint.equals(getEndpoint2()))
+            kill();
+    }
+
+    @Override
     public boolean canHit() {
         // Hits get handled by IComplexRaycast
         return false;
@@ -132,6 +138,11 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
+
+        if(getEndpoint1() == null || getEndpoint2() == null) {
+            kill();
+            return;
+        }
 
         var world = getWorld();
         if(!world.isClient) {

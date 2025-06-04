@@ -275,6 +275,36 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         return closestHit;
     }
 
+    @Override
+    public void endpointRemoved(IWireEndpoint endpoint) {
+        Point removedSegment;
+        if(endpoint.equals(getEndpoint2())) {
+            removedSegment = segments.remove(segments.size() - 1);
+            setEndpoint2(null);
+        } else if(endpoint.equals(getEndpoint1())) {
+            removedSegment = segments.remove(0);
+            setPosition(getPos().add(removedSegment.vector()));
+            setEndpoint1(null);
+        } else {
+            return;
+        }
+        int items = (int) removedSegment.length();
+        if(items > 0 && !getWorld().isClient) {
+            var start = removedSegment.start;
+            var vector = removedSegment.vector();
+            ItemEntity itemEntity = new ItemEntity(this.getWorld(),
+                    start.x + vector.x,
+                    start.y + vector.y,
+                    start.z + vector.z,
+                    item.copyWithCount(items));
+            itemEntity.setToDefaultPickupDelay();
+            this.getWorld().spawnEntity(itemEntity);
+            item.decrement(items);
+        }
+        dropWire();
+        createExtraDataPacket().send();
+    }
+
     public BlockWireEntity flip() {
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), getWorld());
         entity.setEndpoint1(getEndpoint2());
