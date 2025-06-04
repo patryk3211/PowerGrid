@@ -23,10 +23,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEntityEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireItem;
+import org.patryk3211.powergrid.electricity.wire.*;
 
 public class BlockWireAttachC2SPacket implements FabricPacket {
     public static final PacketType<BlockWireAttachC2SPacket> TYPE = PacketType.create(ModdedPackets.BLOCK_WIRE_ATTACH, BlockWireAttachC2SPacket::new);
@@ -83,6 +80,8 @@ public class BlockWireAttachC2SPacket implements FabricPacket {
             return;
         }
 
+        var existingEndpoint = WireEndpointType.deserialize(stack.getNbt());
+
         IWireEndpoint endpoint;
         if(gridPoint == 0 && packet.index == 0) {
             // Extend wire at start.
@@ -95,7 +94,12 @@ public class BlockWireAttachC2SPacket implements FabricPacket {
             // Junction.
             endpoint = null;
         }
-        if(endpoint != null)
+        if(endpoint != null && existingEndpoint == null) {
             stack.setNbt(endpoint.serialize());
+        } else if(endpoint != null) {
+            if(WireItem.connect(player.getWorld(), stack, player, existingEndpoint, endpoint).getResult().isAccepted()) {
+                stack.setNbt(null);
+            }
+        }
     }
 }

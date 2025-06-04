@@ -17,20 +17,12 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtFloat;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
@@ -39,7 +31,7 @@ import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
-import static org.patryk3211.powergrid.electricity.base.IElectric.sendMessage;
+import java.util.ArrayList;
 
 public class WireItem extends Item implements IWire {
     protected float resistance;
@@ -94,6 +86,9 @@ public class WireItem extends Item implements IWire {
     }
 
     public static TypedActionResult<BlockWireEntity> connect(World world, ItemStack stack, PlayerEntity player, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+        if(endpoint1.type() == WireEndpointType.BLOCK_WIRE && endpoint2.type() == WireEndpointType.BLOCK_WIRE)
+            return mergeWires(world, stack, player, (BlockWireEntityEndpoint) endpoint1, (BlockWireEntityEndpoint) endpoint2);
+
         var lastPoint = endpoint1.getExactPosition(world);
         var targetPoint = endpoint2.getExactPosition(world);
 
@@ -158,6 +153,76 @@ public class WireItem extends Item implements IWire {
         }
 
         return TypedActionResult.fail(null);
+    }
+
+    public static TypedActionResult<BlockWireEntity> mergeWires(World world, ItemStack stack, PlayerEntity player, BlockWireEntityEndpoint endpoint1, BlockWireEntityEndpoint endpoint2) {
+        if(world.isClient)
+            throw new IllegalStateException("Wire merging must occur on server");
+
+        var lastPoint = endpoint1.getExactPosition(world);
+        var targetPoint = endpoint2.getExactPosition(world);
+
+        var entity1 = endpoint1.getEntity(world);
+        var entity2 = endpoint2.getEntity(world);
+        if(entity1.getWireItem() != entity2.getWireItem()) {
+            if(player != null)
+                player.sendMessage(Lang.translate("message.connection_two_wire_types").style(Formatting.RED).component(), true);
+            return TypedActionResult.fail(null);
+        }
+        if(entity1.getWireItem() != stack.getItem()) {
+            if(player != null)
+                player.sendMessage(Lang.translate("message.connection_incorrect_wire_type").style(Formatting.RED).component(), true);
+            return TypedActionResult.fail(null);
+        }
+
+        var result = BlockTrace.findPath(world, lastPoint, targetPoint, null);
+        if(result == null || !result.reachedTarget())
+            return TypedActionResult.fail(null);
+
+        float addedLength = 0;
+        for(var point : result.points())
+            addedLength += point.length();
+
+        var newItems = (int) Math.ceil(entity1.getTotalLength() + entity2.getTotalLength() + addedLength - entity1.getWireCount() - entity2.getWireCount());
+        if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+            if(player != null)
+                player.sendMessage(Lang.translate("message.connection_missing_items").style(Formatting.RED).component(), true);
+            return TypedActionResult.fail(null);
+        }
+
+        BlockWireEntity targetEntity, sourceEntity;
+        boolean flipped = false;
+        if(endpoint1.getEnd() || !endpoint2.getEnd()) {
+            // Merge endpoint2 into endpoint1
+            targetEntity = entity1;
+            if(!endpoint1.getEnd())
+                targetEntity = targetEntity.flip();
+            sourceEntity = entity2;
+            if(endpoint2.getEnd())
+                flipped = true;
+        } else {
+            // Merge endpoint1 into endpoint2
+            targetEntity = entity2;
+            sourceEntity = entity1;
+        }
+
+        // Add connecting path
+        targetEntity.extend(result.points(), newItems);
+
+        if(flipped) {
+            var segments = new ArrayList<BlockWireEntity.Point>();
+            for(var segment : sourceEntity.segments) {
+                segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
+            }
+            targetEntity.extend(segments, sourceEntity.getWireCount());
+            targetEntity.setEndpoint2(sourceEntity.getEndpoint1());
+        } else {
+            targetEntity.extend(sourceEntity.segments, sourceEntity.getWireCount());
+            targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
+        }
+
+        sourceEntity.discard();
+        return TypedActionResult.success(targetEntity);
     }
 
     @Override
