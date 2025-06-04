@@ -54,13 +54,13 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
     }
 
-    public static HangingWireEntity create(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, float resistance) {
+    public static HangingWireEntity create(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, float resistance) {
         var entity = new HangingWireEntity(ModdedEntities.HANGING_WIRE.get(), world);
         entity.item = item;
         entity.resistance = resistance;
 
-        entity.setEndpoint1(new BlockWireEndpoint(pos1, terminal1));
-        entity.setEndpoint2(new BlockWireEndpoint(pos2, terminal2));
+        entity.setEndpoint1(endpoint1);
+        entity.setEndpoint2(endpoint2);
 
         entity.refreshTerminalPositions();
         entity.setPitch(0);

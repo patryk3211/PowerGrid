@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
@@ -156,13 +157,13 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return externalNodes.get(index);
     }
 
-    public boolean hasConnection(int sourceTerminal, BlockPos targetPos, int targetTerminal) {
+    public boolean hasConnection(int sourceTerminal, BlockWireEndpoint endpoint) {
         var sourceConnections = connections.get(sourceTerminal);
         for(var connection : sourceConnections) {
             var entity = connection.getEntity(getWorld());
             if(entity == null)
                 return false;
-            if(entity.isConnectedTo(targetPos, targetTerminal))
+            if(entity.isConnectedTo(endpoint.getPos(), endpoint.getTerminal()))
                 return true;
         }
         return false;

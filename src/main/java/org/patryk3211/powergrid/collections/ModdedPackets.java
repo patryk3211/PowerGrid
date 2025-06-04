@@ -23,5 +23,5 @@ public class ModdedPackets {
     public static final Identifier AGGREGATE_COILS_PACKET = new Identifier(PowerGrid.MOD_ID, "aggregate_coils");
 
     public static final Identifier BLOCK_WIRE_CUT = PowerGrid.asResource("block_wire_cut");
-    public static final Identifier BLOCK_WIRE_BEGIN = PowerGrid.asResource("block_wire_begin");
+    public static final Identifier BLOCK_WIRE_ATTACH = PowerGrid.asResource("block_wire_attach");
 }

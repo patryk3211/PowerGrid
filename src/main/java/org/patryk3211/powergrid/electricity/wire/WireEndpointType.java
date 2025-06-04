@@ -22,7 +22,8 @@ import java.util.function.Supplier;
 public enum WireEndpointType {
     BLOCK(BlockWireEndpoint::new),
     JUNCTION(JunctionWireEndpoint::new),
-    BLOCK_WIRE(BlockWireEntityEndpoint::new)
+    BLOCK_WIRE(BlockWireEntityEndpoint::new),
+    IMAGINARY(ImaginaryWireEndpoint::new)
     ;
 
     private final Supplier<IWireEndpoint> factory;

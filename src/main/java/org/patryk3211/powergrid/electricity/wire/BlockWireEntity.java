@@ -309,18 +309,11 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     public void extend(List<Point> points, int newItems) {
         if(getWorld().isClient)
             return;
-        if(item != null)
+        if(item != null) {
             item.increment(newItems);
+            resistance += getWireItem().getResistance() * newItems;
+        }
         this.segments.addAll(points);
-//        } else {
-//            var pos = getPos();
-//            for(int i = points.size() - 1; i >= 0; --i) {
-//                var point = points.get(i);
-//                pos = pos.add(point.vector());
-//                segments.add(0, new Point(point.direction.getOpposite(), point.gridLength));
-//            }
-//            setPosition(pos);
-//        }
         bakeBoundingBoxes();
 
         var extra = createExtraDataPacket();

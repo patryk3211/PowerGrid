@@ -28,20 +28,20 @@ import org.patryk3211.powergrid.electricity.wire.BlockWireEntityEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 
-public class BlockWireBeginC2SPacket implements FabricPacket {
-    public static final PacketType<BlockWireBeginC2SPacket> TYPE = PacketType.create(ModdedPackets.BLOCK_WIRE_BEGIN, BlockWireBeginC2SPacket::new);
+public class BlockWireAttachC2SPacket implements FabricPacket {
+    public static final PacketType<BlockWireAttachC2SPacket> TYPE = PacketType.create(ModdedPackets.BLOCK_WIRE_ATTACH, BlockWireAttachC2SPacket::new);
 
     public final int entityId;
     public final int index;
     public final int gridPoint;
 
-    public BlockWireBeginC2SPacket(BlockWireEntity entity, int index, int gridPoint) {
+    public BlockWireAttachC2SPacket(BlockWireEntity entity, int index, int gridPoint) {
         this.entityId = entity.getId();
         this.index = index;
         this.gridPoint = gridPoint;
     }
 
-    public BlockWireBeginC2SPacket(PacketByteBuf buf) {
+    public BlockWireAttachC2SPacket(PacketByteBuf buf) {
         entityId = buf.readInt();
         index = buf.readInt();
         gridPoint = buf.readInt();
@@ -59,15 +59,15 @@ public class BlockWireBeginC2SPacket implements FabricPacket {
         return TYPE;
     }
 
-    public static void handler(BlockWireBeginC2SPacket packet, ServerPlayerEntity player, PacketSender response) {
+    public static void handler(BlockWireAttachC2SPacket packet, ServerPlayerEntity player, PacketSender response) {
         var entity = player.getWorld().getEntityById(packet.entityId);
         if(!(entity instanceof BlockWireEntity wire)) {
-            PowerGrid.LOGGER.error("Received block wire begin packet with invalid entity");
+            PowerGrid.LOGGER.error("Received block wire attach packet with invalid entity");
             return;
         }
         var stack = player.getStackInHand(Hand.MAIN_HAND);
         if(!(stack.getItem() instanceof WireItem)) {
-            PowerGrid.LOGGER.error("Received wire begin packet for player whose not holding a wire");
+            PowerGrid.LOGGER.error("Received wire attach packet for player whose not holding a wire");
             return;
         }
         if(packet.index < 0 || packet.index >= wire.segments.size()) {

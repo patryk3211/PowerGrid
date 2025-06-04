@@ -224,7 +224,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         makeWire();
     }
 
-    protected void makeWire() {
+    public void makeWire() {
         if(wire != null) {
             wire.remove();
         }

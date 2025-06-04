@@ -34,6 +34,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
@@ -59,6 +60,8 @@ public class WireItem extends Item implements IWire {
     public ActionResult useOnBlock(ItemUsageContext context) {
         if(context.getPlayer() != null && context.getPlayer().isSneaking())
             return super.useOnBlock(context);
+        if(context.getHand() != Hand.MAIN_HAND)
+            return super.useOnBlock(context);
 
         var blockState = context.getWorld().getBlockState(context.getBlockPos());
         if(blockState.getBlock() instanceof IElectric electric) {
@@ -74,62 +77,87 @@ public class WireItem extends Item implements IWire {
             var endpoint = WireEndpointType.deserialize(tag);
             if(endpoint == null)
                 return ActionResult.FAIL;
-            var lastPoint = endpoint.getExactPosition(world);
 
-            var hitPoint = context.getHitPos();
-            var result = BlockTrace.findPath(context.getWorld(), lastPoint, hitPoint, null);
-            if(result != null && result.reachedTarget()) {
-                float addedLength = 0;
-                for(var point : result.points())
-                    addedLength += point.length();
-
-                if(endpoint.type() != WireEndpointType.BLOCK_WIRE) {
-                    // New entity must be created.
-                    var newItems = (int) Math.ceil(addedLength);
-                    if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, newItems)) {
-                        sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());
-                        return ActionResult.FAIL;
-                    }
-                    if(!world.isClient) {
-                        var entity = BlockWireEntity.create(world, endpoint, stack.copyWithCount(newItems), result.points());
-                        if(!((ServerWorld) world).spawnNewEntityAndPassengers(entity)) {
-                            PowerGrid.LOGGER.error("Failed to spawn new block wire entity.");
-                            sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
-                            return ActionResult.FAIL;
-                        }
-                        PlayerUtilities.removeItems(context.getPlayer(), stack, newItems);
-                        endpoint = new BlockWireEntityEndpoint(entity, true);
-                        stack.setNbt(endpoint.serialize());
-                        context.getPlayer().setStackInHand(context.getHand(), stack);
-                    }
-                } else {
-                    // Entity exists, we just need to extend it.
-                    var bwEndpoint = (BlockWireEntityEndpoint) endpoint;
-                    var wire = bwEndpoint.getEntity(world);
-                    var newItems = (int) Math.ceil(wire.getTotalLength() + addedLength - wire.getWireCount());
-                    if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, newItems)) {
-                        IElectric.sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());
-                        return ActionResult.FAIL;
-                    }
-
-                    if(!context.getWorld().isClient) {
-                        if(!bwEndpoint.getEnd()) {
-                            PowerGrid.LOGGER.error("Cannot extend wire at start (must be flipped beforehand)");
-                            return ActionResult.FAIL;
-                        }
-                        wire.extend(result.points(), newItems);
-                        PlayerUtilities.removeItems(context.getPlayer(), stack, newItems);
-
-                        endpoint = new BlockWireEntityEndpoint(wire, true);
-                        stack.setNbt(endpoint.serialize());
-                        context.getPlayer().setStackInHand(context.getHand(), stack);
-                    }
+            var result = connect(world, stack, context.getPlayer(), endpoint, new ImaginaryWireEndpoint(context.getHitPos()));
+            if(result.getResult().isAccepted()) {
+                var entity = result.getValue();
+                if(entity != null) {
+                    stack.setNbt(new BlockWireEntityEndpoint(entity, true).serialize());
+                    var player = context.getPlayer();
+                    if(player != null)
+                        player.setStackInHand(context.getHand(), stack);
                 }
-
                 return ActionResult.SUCCESS;
             }
         }
         return super.useOnBlock(context);
+    }
+
+    public static TypedActionResult<BlockWireEntity> connect(World world, ItemStack stack, PlayerEntity player, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+        var lastPoint = endpoint1.getExactPosition(world);
+        var targetPoint = endpoint2.getExactPosition(world);
+
+        ITerminalPlacement terminal = null;
+        if(endpoint2 instanceof BlockWireEndpoint wireEndpoint) {
+            terminal = wireEndpoint.getTerminalPlacement(world);
+        }
+
+        var result = BlockTrace.findPath(world, lastPoint, targetPoint, terminal);
+        if(result != null && result.reachedTarget()) {
+            float addedLength = 0;
+            for(var point : result.points())
+                addedLength += point.length();
+
+            if(endpoint1.type() != WireEndpointType.BLOCK_WIRE) {
+                // New entity must be created.
+                var newItems = (int) Math.ceil(addedLength);
+                if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+                    if(player != null)
+                        player.sendMessage(Lang.translate("message.connection_missing_items").style(Formatting.RED).component(), true);
+                    return TypedActionResult.fail(null);
+                }
+                if(!world.isClient) {
+                    var entity = BlockWireEntity.create(world, endpoint1, stack.copyWithCount(newItems), result.points());
+                    if(!((ServerWorld) world).spawnNewEntityAndPassengers(entity)) {
+                        PowerGrid.LOGGER.error("Failed to spawn new block wire entity.");
+                        if(player != null)
+                            player.sendMessage(Lang.translate("message.connection_failed").style(Formatting.RED).component(), true);
+                        return TypedActionResult.fail(null);
+                    }
+                    PlayerUtilities.removeItems(player, stack, newItems);
+                    return TypedActionResult.success(entity);
+                }
+            } else {
+                // Entity exists, we just need to extend it.
+                var bwEndpoint = (BlockWireEntityEndpoint) endpoint1;
+                var wire = bwEndpoint.getEntity(world);
+                if(wire.getWireItem() != stack.getItem()) {
+                    player.sendMessage(Lang.translate("message.connection_incorrect_wire_type").style(Formatting.RED).component(), true);
+                    return TypedActionResult.fail(null);
+                }
+
+                var newItems = (int) Math.ceil(wire.getTotalLength() + addedLength - wire.getWireCount());
+                if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
+                    if(player != null)
+                        player.sendMessage(Lang.translate("message.connection_missing_items").style(Formatting.RED).component(), true);
+                    return TypedActionResult.fail(null);
+                }
+
+                if(!world.isClient) {
+                    if(!bwEndpoint.getEnd()) {
+                        PowerGrid.LOGGER.error("Cannot extend wire at start (must be flipped beforehand)");
+                        return TypedActionResult.fail(null);
+                    }
+                    wire.extend(result.points(), newItems);
+                    PlayerUtilities.removeItems(player, stack, newItems);
+                    return TypedActionResult.success(wire);
+                }
+            }
+
+            return TypedActionResult.success(null);
+        }
+
+        return TypedActionResult.fail(null);
     }
 
     @Override

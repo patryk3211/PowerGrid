@@ -26,6 +26,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
@@ -57,7 +58,7 @@ public class WireElement extends AnimatedSceneElement {
     protected void renderLast(PonderWorld world, VertexConsumerProvider buffer, MatrixStack ms, float fade, float pt) {
         EntityRenderDispatcher dispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
         if(wire == null && isVisible()) {
-            var hWire = HangingWireEntity.create(world, pos1, terminal1, pos2, terminal2, ModdedItems.WIRE.asStack(), resistance);
+            var hWire = HangingWireEntity.create(world, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
             hWire.updateRenderParams();
             wire = hWire;
         }

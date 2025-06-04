@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
@@ -126,5 +127,11 @@ public class BlockWireEndpoint implements IWireEndpoint {
             return pos.equals(other.pos) && terminal == other.terminal;
         }
         return false;
+    }
+
+    public ITerminalPlacement getTerminalPlacement(World world) {
+        var electric = getElectricBlock(world);
+        var state = world.getBlockState(pos);
+        return electric.terminal(state, terminal);
     }
 }

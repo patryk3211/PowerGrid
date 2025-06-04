@@ -25,7 +25,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
-import org.patryk3211.powergrid.network.packets.BlockWireBeginC2SPacket;
+import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -41,7 +41,7 @@ public class ClientWireInteractions {
         for(int i = 0; i < entity.boundingBoxes.size(); ++i) {
             var bb = entity.boundingBoxes.get(i);
             // Test with slightly larger bounding boxes.
-            if(bb.expand(thickness).contains(localPos)) {
+            if(bb.expand(thickness * 0.2f).contains(localPos)) {
                 // Found segment containing hit pos.
                 var segment = entity.segments.get(i);
                 int segmentPoint = switch(segment.direction.getAxis()) {
@@ -103,7 +103,7 @@ public class ClientWireInteractions {
         if(segment == null)
             return ActionResult.FAIL;
 
-        ClientPlayNetworking.send(new BlockWireBeginC2SPacket(entity, segment.getLeft(), segment.getRight()));
+        ClientPlayNetworking.send(new BlockWireAttachC2SPacket(entity, segment.getLeft(), segment.getRight()));
         return ActionResult.SUCCESS;
     }
 }
