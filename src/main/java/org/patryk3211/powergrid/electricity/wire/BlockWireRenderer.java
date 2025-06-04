@@ -42,9 +42,16 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
         var buffer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(getTexture(entity)));
         var pos = entity.getPos();
 
-        for (var segment : entity.segments) {
+        boolean first = true;
+        for(var segment : entity.segments) {
+            var length = segment.length();
+            if(first) {
+                currentPos = Vec3d.ZERO.offset(segment.direction, -1 / 16f);
+                length += 1 / 16f;
+                first = false;
+            }
             var normal = segment.direction.getVector();
-            var newPos = currentPos.add(normal.getX() * segment.length, normal.getY() * segment.length, normal.getZ() * segment.length);
+            var newPos = currentPos.add(normal.getX() * length, normal.getY() * length, normal.getZ() * length);
 
             var blockPos = BlockPos.ofFloored(
                     newPos.x + pos.x,
@@ -54,7 +61,7 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
             var blockLight = entity.getWorld().getLightLevel(LightType.BLOCK, blockPos);
             var skyLight = entity.getWorld().getLightLevel(LightType.SKY, blockPos);
 
-            renderSegment(matrices, buffer, LightmapTextureManager.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, entity.getWireItem().getWireThickness(), segment.length, entity.getId());
+            renderSegment(matrices, buffer, LightmapTextureManager.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
             currentPos = newPos;
         }
     }

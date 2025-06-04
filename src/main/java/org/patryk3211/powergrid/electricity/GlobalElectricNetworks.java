@@ -22,6 +22,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -81,6 +82,43 @@ public class GlobalElectricNetworks {
         } else if(node2.getNetwork() == null) {
             network = node1.getNetwork();
             behaviour2.joinNetwork(network);
+        } else if(node1.getNetwork() != node2.getNetwork()) {
+            if(node1.getNetwork().size() >= node2.getNetwork().size()) {
+                network = node1.getNetwork();
+                network.merge(node2.getNetwork());
+            } else {
+                network = node2.getNetwork();
+                network.merge(node1.getNetwork());
+            }
+        } else {
+            network = node1.getNetwork();
+        }
+
+        var wire = new ElectricWire(resistance, node1, node2);
+        network.addWire(wire);
+        return wire;
+    }
+
+
+    public static ElectricWire makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
+        var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
+
+        if(node1 == node2)
+            return null;
+
+        // Put both nodes into the same network.
+        ElectricalNetwork network;
+        if(node1.getNetwork() == null && node2.getNetwork() == null) {
+            network = GlobalElectricNetworks.createNetwork(world);
+            endpoint1.joinNetwork(world, network);
+            endpoint2.joinNetwork(world, network);
+        } else if(node1.getNetwork() == null) {
+            network = node2.getNetwork();
+            endpoint1.joinNetwork(world, network);
+        } else if(node2.getNetwork() == null) {
+            network = node1.getNetwork();
+            endpoint2.joinNetwork(world, network);
         } else if(node1.getNetwork() != node2.getNetwork()) {
             if(node1.getNetwork().size() >= node2.getNetwork().size()) {
                 network = node1.getNetwork();

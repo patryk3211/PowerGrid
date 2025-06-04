@@ -28,7 +28,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
-import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
@@ -57,12 +56,11 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     public static HangingWireEntity create(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, float resistance) {
         var entity = new HangingWireEntity(ModdedEntities.HANGING_WIRE.get(), world);
-        entity.electricBlockPos1 = pos1;
-        entity.electricBlockPos2 = pos2;
-        entity.electricTerminal1 = terminal1;
-        entity.electricTerminal2 = terminal2;
         entity.item = item;
         entity.resistance = resistance;
+
+        entity.setEndpoint1(new BlockWireEndpoint(pos1, terminal1));
+        entity.setEndpoint2(new BlockWireEndpoint(pos2, terminal2));
 
         entity.refreshTerminalPositions();
         entity.setPitch(0);
@@ -139,8 +137,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(!world.isClient) {
             refreshTerminalPositions();
         } else {
-            terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
-            terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
+            terminalPos1 = getEndpoint1().getExactPosition(world);
+            terminalPos2 = getEndpoint2().getExactPosition(world);
             updateRenderParams();
         }
     }
@@ -213,11 +211,23 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         return null;
     }
 
+    @Override
+    public void setPosition(double x, double y, double z) {
+        super.setPosition(x, y, z);
+        // Endpoints need to be refreshed with new entity block pos.
+        var e1 = getEndpoint1();
+        setEndpoint1(null);
+        setEndpoint1(e1);
+        var e2 = getEndpoint2();
+        setEndpoint2(null);
+        setEndpoint2(e2);
+    }
+
     public void refreshTerminalPositions() {
         var world = getWorld();
         if(world != null && (!world.isClient || world instanceof PonderWorld)) {
-            terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
-            terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
+            terminalPos1 = getEndpoint1().getExactPosition(world);
+            terminalPos2 = getEndpoint2().getExactPosition(world);
 
             var vect = terminalPos2.subtract(terminalPos1);
             var facing = vect.crossProduct(UP);

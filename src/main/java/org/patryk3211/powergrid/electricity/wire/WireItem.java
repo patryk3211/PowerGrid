@@ -17,20 +17,28 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtFloat;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
+
+import static org.patryk3211.powergrid.electricity.base.IElectric.sendMessage;
 
 public class WireItem extends Item implements IWire {
     protected float resistance;
@@ -58,41 +66,65 @@ public class WireItem extends Item implements IWire {
             if(result != ActionResult.PASS)
                 return result;
         }
-        if(context.getStack().hasNbt()) {
+        var tag = context.getStack().getNbt();
+        if(tag != null) {
             // This will result in the connection being a block wire (instead of a hanging wire)
-            var tag = context.getStack().getNbt();
-            NbtList list;
-            Vec3d lastPoint;
-            if(tag.contains("Segments")) {
-                list = tag.getList("Segments", NbtElement.COMPOUND_TYPE);
-
-                var lastPointList = tag.getList("LastPoint", NbtElement.FLOAT_TYPE);
-                lastPoint = new Vec3d(
-                        lastPointList.getFloat(0),
-                        lastPointList.getFloat(1),
-                        lastPointList.getFloat(2)
-                );
-            } else {
-                list = new NbtList();
-                tag.put("Segments", list);
-
-                var posArray = tag.getIntArray("Position");
-                var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
-                var firstTerminal = tag.getInt("Terminal");
-                lastPoint = IElectric.getTerminalPos(firstPosition, context.getWorld().getBlockState(firstPosition), firstTerminal);
-                lastPoint = BlockTrace.alignPosition(lastPoint);
-            }
+            var world = context.getWorld();
+            var stack = context.getStack();
+            var endpoint = WireEndpointType.deserialize(tag);
+            if(endpoint == null)
+                return ActionResult.FAIL;
+            var lastPoint = endpoint.getExactPosition(world);
 
             var hitPoint = context.getHitPos();
             var result = BlockTrace.findPath(context.getWorld(), lastPoint, hitPoint, null);
             if(result != null && result.reachedTarget()) {
-                result.points().forEach(point -> list.add(point.serialize()));
+                float addedLength = 0;
+                for(var point : result.points())
+                    addedLength += point.length();
 
-                var lastPointList = new NbtList();
-                lastPointList.add(NbtFloat.of((float) hitPoint.x));
-                lastPointList.add(NbtFloat.of((float) hitPoint.y));
-                lastPointList.add(NbtFloat.of((float) hitPoint.z));
-                tag.put("LastPoint", lastPointList);
+                if(endpoint.type() != WireEndpointType.BLOCK_WIRE) {
+                    // New entity must be created.
+                    var newItems = (int) Math.ceil(addedLength);
+                    if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, newItems)) {
+                        sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());
+                        return ActionResult.FAIL;
+                    }
+                    if(!world.isClient) {
+                        var entity = BlockWireEntity.create(world, endpoint, stack.copyWithCount(newItems), result.points());
+                        if(!((ServerWorld) world).spawnNewEntityAndPassengers(entity)) {
+                            PowerGrid.LOGGER.error("Failed to spawn new block wire entity.");
+                            sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
+                            return ActionResult.FAIL;
+                        }
+                        PlayerUtilities.removeItems(context.getPlayer(), stack, newItems);
+                        endpoint = new BlockWireEntityEndpoint(entity, true);
+                        stack.setNbt(endpoint.serialize());
+                        context.getPlayer().setStackInHand(context.getHand(), stack);
+                    }
+                } else {
+                    // Entity exists, we just need to extend it.
+                    var bwEndpoint = (BlockWireEntityEndpoint) endpoint;
+                    var wire = bwEndpoint.getEntity(world);
+                    var newItems = (int) Math.ceil(wire.getTotalLength() + addedLength - wire.getWireCount());
+                    if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, newItems)) {
+                        IElectric.sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());
+                        return ActionResult.FAIL;
+                    }
+
+                    if(!context.getWorld().isClient) {
+                        if(!bwEndpoint.getEnd()) {
+                            PowerGrid.LOGGER.error("Cannot extend wire at start (must be flipped beforehand)");
+                            return ActionResult.FAIL;
+                        }
+                        wire.extend(result.points(), newItems);
+                        PlayerUtilities.removeItems(context.getPlayer(), stack, newItems);
+
+                        endpoint = new BlockWireEntityEndpoint(wire, true);
+                        stack.setNbt(endpoint.serialize());
+                        context.getPlayer().setStackInHand(context.getHand(), stack);
+                    }
+                }
 
                 return ActionResult.SUCCESS;
             }

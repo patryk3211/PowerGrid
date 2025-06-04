@@ -31,12 +31,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedTags;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
-import org.patryk3211.powergrid.electricity.wire.IWire;
-import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,20 +93,18 @@ public interface IElectric extends IWrenchable {
             }
             if(stack.hasNbt()) {
                 // Continuing a connection.
-                var tag = stack.getNbt();
-                assert tag != null;
-                var posArray = tag.getIntArray("Position");
-                var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
-                var firstTerminal = tag.getInt("Terminal");
-                var result = makeConnection(context.getWorld(), firstPosition, firstTerminal, context.getBlockPos(), terminal, context);
+                var endpoint = WireEndpointType.deserialize(stack.getNbt());
+                if(endpoint.type() != WireEndpointType.BLOCK)
+                    return ActionResult.PASS;
+                var blockEndpoint = (BlockWireEndpoint) endpoint;
+                var result = makeConnection(context.getWorld(), blockEndpoint.getPos(), blockEndpoint.getTerminal(), context.getBlockPos(), terminal, context);
                 if(result.isAccepted())
                     stack.setNbt(null);
                 return result;
             } else {
                 // Must be first connection.
-                var tag = new NbtCompound();
-                tag.putIntArray("Position", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-                tag.putInt("Terminal", terminal);
+                var endpoint = new BlockWireEndpoint(pos, terminal);
+                var tag = endpoint.serialize();
                 stack.setNbt(tag);
                 sendMessage(context, Lang.translate("message.connection_next").style(Formatting.GRAY).component());
                 return ActionResult.SUCCESS;
