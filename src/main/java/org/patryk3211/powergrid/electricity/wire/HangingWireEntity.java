@@ -26,6 +26,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
@@ -55,9 +56,11 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public static HangingWireEntity create(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, float resistance) {
+        if(!(item.getItem() instanceof WireItem))
+            throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new HangingWireEntity(ModdedEntities.HANGING_WIRE.get(), world);
-        entity.item = item;
-        entity.resistance = resistance;
+        entity.item = (WireItem) item.getItem();
+        entity.itemCount = item.getCount();
 
         entity.setEndpoint1(endpoint1);
         entity.setEndpoint2(endpoint2);

@@ -21,16 +21,22 @@ import org.jetbrains.annotations.Contract;
 import java.util.function.Supplier;
 
 public enum WireEndpointType {
-    BLOCK(BlockWireEndpoint::new),
-    JUNCTION(JunctionWireEndpoint::new),
-    BLOCK_WIRE(BlockWireEntityEndpoint::new),
-    IMAGINARY(ImaginaryWireEndpoint::new)
+    BLOCK(BlockWireEndpoint::new, true),
+    JUNCTION(JunctionWireEndpoint::new, true),
+    BLOCK_WIRE(BlockWireEntityEndpoint::new, false),
+    IMAGINARY(ImaginaryWireEndpoint::new, false)
     ;
 
     private final Supplier<IWireEndpoint> factory;
+    private final boolean connectable;
 
-    WireEndpointType(Supplier<IWireEndpoint> factory) {
+    WireEndpointType(Supplier<IWireEndpoint> factory, boolean connectable) {
         this.factory = factory;
+        this.connectable = connectable;
+    }
+
+    public boolean isConnectable() {
+        return connectable;
     }
 
     public NbtCompound serialize(IWireEndpoint endpoint) {

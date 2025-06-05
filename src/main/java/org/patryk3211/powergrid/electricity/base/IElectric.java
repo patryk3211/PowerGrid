@@ -142,18 +142,17 @@ public interface IElectric extends IWrenchable {
         }
 
         var result = WireItem.connect(world, context.getStack(), context.getPlayer(), endpoint1, endpoint2);
-        if(result.getResult() == ActionResult.SUCCESS) {
-            var entity = result.getValue();
-            if(entity != null) {
-                entity.setEndpoint2(endpoint2);
-                entity.makeWire();
-                if(!world.isClient)
-                    entity.createExtraDataPacket().send();
-            }
-            return ActionResult.SUCCESS;
-        }
+        return result.getResult();
+//        if(result.getResult() == ActionResult.SUCCESS) {
+////            var entity = result.getValue();
+////            if(entity != null) {
+////                entity.setEndpoint2(endpoint2);
+////                entity.makeWire();
+////            }
+//            return ActionResult.SUCCESS;
+//        }
 
-        return ActionResult.FAIL;
+//        return ActionResult.FAIL;
     }
 
     static ActionResult makeHangingWireConnection(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemUsageContext context) {

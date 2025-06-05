@@ -113,6 +113,8 @@ public class WireItem extends Item implements IWire {
                 }
                 if(!world.isClient) {
                     var entity = BlockWireEntity.create(world, endpoint1, stack.copyWithCount(newItems), result.points());
+                    if(endpoint2.type().isConnectable())
+                        entity.setEndpoint2(endpoint2);
                     if(!((ServerWorld) world).spawnNewEntityAndPassengers(entity)) {
                         PowerGrid.LOGGER.error("Failed to spawn new block wire entity.");
                         if(player != null)
@@ -143,6 +145,8 @@ public class WireItem extends Item implements IWire {
                         PowerGrid.LOGGER.error("Cannot extend wire at start (must be flipped beforehand)");
                         return TypedActionResult.fail(null);
                     }
+                    if(endpoint2.type().isConnectable())
+                        wire.setEndpoint2(endpoint2);
                     wire.extend(result.points(), newItems);
                     PlayerUtilities.removeItems(player, stack, newItems);
                     return TypedActionResult.success(wire);
@@ -207,22 +211,21 @@ public class WireItem extends Item implements IWire {
         }
 
         // Add connecting path
-        targetEntity.extend(result.points(), newItems);
+        targetEntity.extend(result.points(), newItems, false);
 
         if(flipped) {
             var segments = new ArrayList<BlockWireEntity.Point>();
             for(var segment : sourceEntity.segments) {
                 segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
             }
-            targetEntity.extend(segments, sourceEntity.getWireCount());
             targetEntity.setEndpoint2(sourceEntity.getEndpoint1());
+            targetEntity.extend(segments, sourceEntity.getWireCount());
         } else {
-            targetEntity.extend(sourceEntity.segments, sourceEntity.getWireCount());
             targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
+            targetEntity.extend(sourceEntity.segments, sourceEntity.getWireCount());
         }
 
         targetEntity.makeWire();
-        targetEntity.createExtraDataPacket().send();
         sourceEntity.discard();
         return TypedActionResult.success(targetEntity);
     }

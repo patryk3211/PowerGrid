@@ -29,11 +29,14 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -45,7 +48,7 @@ import java.util.List;
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
-    // TODO: These have to be taken from the used item.
+    // TODO: These have to be taken from the used item and adjusted for wire length.
     public static final float DISSIPATION_FACTOR = 0.2f;
     public static final float THERMAL_MASS = 1f;
 
@@ -54,8 +57,9 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     private IWireEndpoint endpoint1;
     private IWireEndpoint endpoint2;
 
-    protected ItemStack item;
-    protected float resistance;
+    @NotNull
+    protected WireItem item;
+    protected int itemCount;
 
     private ElectricWire wire;
     protected float overheatTemperature = 175f;
@@ -85,8 +89,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
         float energy = 0;
         if (wire != null) {
-            var voltage = wire.potentialDifference();
-            energy += voltage * voltage / wire.getResistance() / 20f;
+            energy += wire.power() / 20f;
         }
         if(temperature < overheatTemperature) {
             // If wire is overheated it is considered dead.
@@ -207,19 +210,24 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             setEndpoint2(null);
         }
 
-        if(nbt.contains("Item"))
-            item = ItemStack.fromNbt(nbt.getCompound("Item"));
-
-        dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
-        resistance = nbt.getFloat("Resistance");
-
-        if(item == null) {
-            // Wires with missing item stack are not allowed.
-            discard();
-            return;
+        if(nbt.contains("Item")) {
+            var itemTag = nbt.getCompound("Item");
+            var readItem = Registries.ITEM.get(new Identifier(itemTag.getString("Id")));
+            if(!(readItem instanceof WireItem))
+                throw new IllegalStateException("WireEntity item must be a WireItem");
+            item = (WireItem) readItem;
+            itemCount = itemTag.getInt("Count");
+        } else {
+            throw new IllegalStateException("WireEntity must have an item");
         }
 
+        dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
+
         makeWire();
+    }
+
+    public float getResistance() {
+        return item.getResistance() * Math.max(itemCount, 1);
     }
 
     public void makeWire() {
@@ -232,7 +240,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             return;
 
         var world = getWorld();
-        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, resistance);
+        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, getResistance());
     }
 
     public void dropWire() {
@@ -255,11 +263,12 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(endpoint2 != null)
             nbt.put("Endpoint2", endpoint2.serialize());
 
-        if(item != null)
-            nbt.put("Item", item.writeNbt(new NbtCompound()));
+        var itemTag = new NbtCompound();
+        itemTag.putString("Id", Registries.ITEM.getId(item).toString());
+        itemTag.putInt("Count", itemCount);
+        nbt.put("Item", itemTag);
 
         nbt.putFloat("Temperature", dataTracker.get(TEMPERATURE));
-        nbt.putFloat("Resistance", resistance);
     }
 
     @Override
@@ -279,10 +288,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     @Override
     public void kill() {
-        if(item != null) {
-            dropStack(item);
-            item = null;
+        for(int i = itemCount; i > 0; i -= 64) {
+            dropStack(new ItemStack(item, Math.min(i, 64)));
         }
+        itemCount = 0;
         super.kill();
     }
 
@@ -298,15 +307,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public WireItem getWireItem() {
-        if(item != null)
-            return (WireItem) item.getItem();
-        return null;
+        return item;
     }
 
     public int getWireCount() {
-        if(item == null)
-            return 0;
-        return item.getCount();
+        return itemCount;
     }
 
     @Override

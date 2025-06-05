@@ -32,6 +32,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -54,37 +55,12 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         super(type, world);
     }
 
-    public static BlockWireEntity create(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, float resistance, @Nullable List<Point> points) {
-        var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
-        var endpoint1 = new BlockWireEndpoint(pos1, terminal1);
-        entity.item = item;
-        entity.resistance = resistance;
-
-        var terminal1Pos = endpoint1.getExactPosition(world);
-        terminal1Pos = BlockTrace.alignPosition(terminal1Pos);
-        entity.setPos(terminal1Pos.x, terminal1Pos.y, terminal1Pos.z);
-
-        if(points != null) {
-            entity.segments.addAll(points);
-            entity.bakeBoundingBoxes();
-        }
-
-        entity.setYaw(0);
-        entity.setPitch(0);
-        entity.resetPosition();
-        entity.refreshPosition();
-
-        entity.setEndpoint1(endpoint1);
-        entity.setEndpoint2(new BlockWireEndpoint(pos2, terminal2));
-
-        entity.makeWire();
-        return entity;
-    }
-
     public static BlockWireEntity create(World world, IWireEndpoint endpoint1, ItemStack item, List<Point> segments) {
+        if(!(item.getItem() instanceof WireItem))
+            throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
-        item.setNbt(null);
-        entity.item = item;
+        entity.item = (WireItem) item.getItem();
+        entity.itemCount = item.getCount();
 
         var pos = BlockTrace.alignPosition(endpoint1.getExactPosition(world));
         entity.setPos(pos.x, pos.y, pos.z);
@@ -292,14 +268,16 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         if(items > 0 && !getWorld().isClient) {
             var start = removedSegment.start;
             var vector = removedSegment.vector();
+            if(itemCount <= items)
+                items = items - 1;
             ItemEntity itemEntity = new ItemEntity(this.getWorld(),
                     start.x + vector.x,
                     start.y + vector.y,
                     start.z + vector.z,
-                    item.copyWithCount(items));
+                    new ItemStack(item, items));
             itemEntity.setToDefaultPickupDelay();
             this.getWorld().spawnEntity(itemEntity);
-            item.decrement(items);
+            itemCount -= items;
         }
         dropWire();
         createExtraDataPacket().send();
@@ -307,10 +285,10 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
     public BlockWireEntity flip() {
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), getWorld());
+        entity.item = item;
         entity.setEndpoint1(getEndpoint2());
         entity.setEndpoint2(getEndpoint1());
-        entity.item = item;
-        entity.resistance = resistance;
+        entity.getDataTracker().set(TEMPERATURE, getTemperature());
 
         var pos = getPos();
         for(int i = 0; i < segments.size(); ++i) {
@@ -336,18 +314,68 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         return entity;
     }
 
-    public void extend(List<Point> points, int newItems) {
+    public void extend(List<Point> points, int newItems, boolean notify) {
         if(getWorld().isClient)
             return;
-        if(item != null) {
-            item.increment(newItems);
-            resistance += getWireItem().getResistance() * newItems;
-        }
+        itemCount += newItems;
         this.segments.addAll(points);
         bakeBoundingBoxes();
 
-        var extra = createExtraDataPacket();
-        extra.send();
+        if(notify)
+            createExtraDataPacket().send();
+    }
+
+    public void extend(List<Point> points, int newItems) {
+        extend(points, newItems, true);
+    }
+
+    public JunctionWireEndpoint split(int segmentIndex, int segmentPoint) {
+        var world = getWorld();
+        if(world.isClient)
+            return null;
+
+        var segment = segments.get(segmentIndex);
+
+        var junctionPos = segment.start.offset(segment.direction, segmentPoint / 16f);
+        var junction = new JunctionWireEndpoint(junctionPos);
+
+        var wire2 = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
+        wire2.item = item;
+        var splitSegment = new Point(segment.direction, segment.gridLength - segmentPoint);
+        wire2.segments.add(splitSegment);
+        this.segments.set(segmentIndex, new Point(segment.direction, segmentPoint));
+        float movedLength = splitSegment.length();
+
+        int removeCount = segments.size() - segmentIndex - 1;
+        for(int i = 0; i < removeCount; ++i) {
+            var removed = segments.remove(segmentIndex + 1);
+            wire2.segments.add(removed);
+            movedLength += removed.length();
+        }
+
+        wire2.setPos(junctionPos.x, junctionPos.y, junctionPos.z);
+        wire2.bakeBoundingBoxes();
+        this.bakeBoundingBoxes();
+
+        wire2.setYaw(0);
+        wire2.setPitch(0);
+        wire2.resetPosition();
+        wire2.refreshPosition();
+
+        int items = (int) movedLength;
+        wire2.itemCount = items;
+
+        wire2.getDataTracker().set(TEMPERATURE, getTemperature());
+        wire2.setEndpoint2(getEndpoint2());
+        wire2.setEndpoint1(junction);
+        this.setEndpoint2(junction);
+        var serverWorld = (ServerWorld) world;
+        serverWorld.spawnNewEntityAndPassengers(wire2);
+
+        wire2.makeWire();
+        this.makeWire();
+        createExtraDataPacket().send();
+        return junction;
     }
 
     public static class Point {

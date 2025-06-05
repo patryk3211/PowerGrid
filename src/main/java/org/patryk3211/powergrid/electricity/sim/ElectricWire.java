@@ -25,12 +25,16 @@ public class ElectricWire {
     protected ElectricalNetwork network;
 
     public ElectricWire(double resistance, IElectricNode node1, IElectricNode node2) {
+        if(resistance == 0)
+            throw new IllegalStateException("Wire resistance must not be zero");
         this.resistance = resistance;
         this.node1 = node1;
         this.node2 = node2;
     }
 
     public void setResistance(double resistance) {
+        if(resistance == 0)
+            throw new IllegalStateException("Wire resistance must not be zero");
         double old = this.resistance;
         this.resistance = resistance;
         if(network != null)
@@ -68,6 +72,8 @@ public class ElectricWire {
     }
 
     public double conductance() {
+        if(resistance == 0)
+            throw new IllegalStateException("Wire resistance must not be zero");
         return 1 / resistance;
     }
 }

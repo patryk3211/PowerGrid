@@ -83,22 +83,37 @@ public class BlockWireAttachC2SPacket implements FabricPacket {
         var existingEndpoint = WireEndpointType.deserialize(stack.getNbt());
 
         IWireEndpoint endpoint;
-        if(gridPoint == 0 && packet.index == 0) {
+        if(gridPoint <= 1 && packet.index == 0) {
             // Extend wire at start.
-            wire = wire.flip();
-            endpoint = new BlockWireEntityEndpoint(wire, true);
-        } else if(gridPoint == segment.gridLength && packet.index == wire.segments.size() - 1){
+            if(wire.getEndpoint1() == null) {
+                wire = wire.flip();
+                endpoint = new BlockWireEntityEndpoint(wire, true);
+            } else {
+                // Possibly a junction.
+                endpoint = wire.getEndpoint1();
+            }
+        } else if(gridPoint >= segment.gridLength - 1 && packet.index == wire.segments.size() - 1){
             // Extend wire at end.
-            endpoint = new BlockWireEntityEndpoint(wire, true);
+            if(wire.getEndpoint2() == null) {
+                endpoint = new BlockWireEntityEndpoint(wire, true);
+            } else {
+                // Possibly a junction.
+                endpoint = wire.getEndpoint2();
+            }
         } else {
             // Junction.
-            endpoint = null;
+            endpoint = wire.split(packet.index, gridPoint);
         }
         if(endpoint != null && existingEndpoint == null) {
             stack.setNbt(endpoint.serialize());
         } else if(endpoint != null) {
-            if(WireItem.connect(player.getWorld(), stack, player, existingEndpoint, endpoint).getResult().isAccepted()) {
+            var result = WireItem.connect(player.getWorld(), stack, player, existingEndpoint, endpoint);
+            if(result.getResult().isAccepted()) {
                 stack.setNbt(null);
+                var wireEntity = result.getValue();
+                if(wireEntity != null) {
+                    wireEntity.makeWire();
+                }
             }
         }
     }
