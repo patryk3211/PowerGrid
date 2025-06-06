@@ -20,6 +20,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 
 public class InvisibleWireElement extends WireElement {
@@ -30,7 +31,7 @@ public class InvisibleWireElement extends WireElement {
     @Override
     protected void renderLast(PonderWorld world, VertexConsumerProvider buffer, MatrixStack ms, float fade, float pt) {
         if(wire == null && isVisible()) {
-            var hWire = HangingWireEntity.create(world, pos1, terminal1, pos2, terminal2, ModdedItems.WIRE.asStack(), resistance);
+            var hWire = HangingWireEntity.create(world, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
             hWire.updateRenderParams();
             wire = hWire;
         }

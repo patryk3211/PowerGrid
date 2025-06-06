@@ -339,7 +339,9 @@ public class BlockTrace {
             List<BlockWireEntity.Point> result = new ArrayList<>();
             var current = transform(originCell.position);
             for(var point : pathPoints) {
-                result.add(makePoint(current, point));
+                var segment = makePoint(current, point);
+                if(segment.gridLength > 0)
+                    result.add(segment);
                 current = point;
             }
             return result;

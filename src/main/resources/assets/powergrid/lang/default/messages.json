@@ -7,6 +7,7 @@
   "powergrid.message.connection_too_long": "This terminal is too far away",
   "powergrid.message.connection_no_path": "No valid path found to this terminal",
   "powergrid.message.connection_incorrect_wire_type": "This wire cannot go here",
+  "powergrid.message.connection_two_wire_types": "Cannot connect wires of different types",
 
   "powergrid.message.coil_same_terminal": "Cannot create coil connected to a single terminal",
   "powergrid.message.coil_exists": "This terminal already has a coil connected to it",

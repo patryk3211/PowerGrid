@@ -71,39 +71,42 @@ public class WirePreview {
             return;
 
         var tag = wireStack.getNbt();
-        // TODO: Use correct texture for the used item.
         var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(wireItem.getWireTexture()));
         float thickness = wireItem.getWireThickness();
 
-        if(!tag.contains("Position") || !tag.contains("Terminal")) {
-            if(tag.contains("Turns") && !player.isCreative()) {
-                int requiredItemCount = tag.getInt("Turns");
-                PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
-            }
+        var endpoint = WireEndpointType.deserialize(tag);
+        if(endpoint == null)
             return;
-        }
 
-        var posArray = tag.getIntArray("Position");
-        var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
-        var firstTerminal = tag.getInt("Terminal");
+//        if(!tag.contains("Position") || !tag.contains("Terminal")) {
+//            if(tag.contains("Turns") && !player.isCreative()) {
+//                int requiredItemCount = tag.getInt("Turns");
+//                PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
+//            }
+//            return;
+//        }
 
-        var currentPos = IElectric.getTerminalPos(firstPosition, world.getBlockState(firstPosition), firstTerminal);
-        boolean hasSegments = false;
-        float length = 0;
-        if(tag.contains("Segments")) {
-            currentPos = BlockTrace.alignPosition(currentPos);
-            for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
-                var point = new BlockWireEntity.Point((NbtCompound) entry);
-                var nextPos = currentPos.add(point.vector());
-                BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x60AAFFFF, currentPos, point.direction, thickness, point.length, 0);
-                currentPos = nextPos;
-                length += point.length;
-            }
-            hasSegments = true;
-        }
+//        var posArray = tag.getIntArray("Position");
+//        var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
+//        var firstTerminal = tag.getInt("Terminal");
+
+        var currentPos = endpoint.getExactPosition(world); //IElectric.getTerminalPos(firstPosition, world.getBlockState(firstPosition), firstTerminal);
+//        boolean hasSegments = false;
+//        float length = 0;
+//        if(tag.contains("Segments")) {
+//            currentPos = BlockTrace.alignPosition(currentPos);
+//            for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
+//                var point = new BlockWireEntity.Point((NbtCompound) entry);
+//                var nextPos = currentPos.add(point.vector());
+//                BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x60AAFFFF, currentPos, point.direction, thickness, point.length, 0);
+//                currentPos = nextPos;
+//                length += point.length;
+//            }
+//            hasSegments = true;
+//        }
 
         var hitPoint = target.getPos();
-        ITerminalPlacement passThrough = null;
+        ITerminalPlacement hitTerminal = null;
         if(target.getType() == HitResult.Type.BLOCK) {
             var blockTarget = (BlockHitResult) target;
             var state = world.getBlockState(blockTarget.getBlockPos());
@@ -112,14 +115,16 @@ public class WirePreview {
                 var terminal = electric.terminalAt(state, hitPoint.subtract(pos.getX(), pos.getY(), pos.getZ()));
                 if(terminal != null) {
                     hitPoint = terminal.getOrigin().add(pos.getX(), pos.getY(), pos.getZ());
-                    passThrough = terminal;
+                    hitTerminal = terminal;
                 }
             }
         }
 
-        if(hasSegments || passThrough == null) {
+        float length = 0;
+        boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
+        if(isBlockWire || hitTerminal == null) {
             currentPos = BlockTrace.alignPosition(currentPos);
-            var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, passThrough);
+            var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal);
             if(output != null) {
                 if(DEBUG_BLOCK_TRACING) {
                     var lineBuffer = buffer.getBuffer(ModdedRenderLayers.getDebugLines());
@@ -140,9 +145,9 @@ public class WirePreview {
                     for(var p : points.points()) {
                         var nextPos = currentPos.add(p.vector());
                         int color = points.reachedTarget() ? 0x80AAFFAA : 0x80FFAAAA;
-                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, color, currentPos, p.direction, thickness, p.length, 0);
+                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, color, currentPos, p.direction, thickness, p.length(), 0);
                         currentPos = nextPos;
-                        length += p.length;
+                        length += p.length();
                     }
                 }
             }

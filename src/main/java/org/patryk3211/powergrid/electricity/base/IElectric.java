@@ -31,12 +31,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedTags;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
-import org.patryk3211.powergrid.electricity.wire.IWire;
-import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,20 +93,15 @@ public interface IElectric extends IWrenchable {
             }
             if(stack.hasNbt()) {
                 // Continuing a connection.
-                var tag = stack.getNbt();
-                assert tag != null;
-                var posArray = tag.getIntArray("Position");
-                var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
-                var firstTerminal = tag.getInt("Terminal");
-                var result = makeConnection(context.getWorld(), firstPosition, firstTerminal, context.getBlockPos(), terminal, context);
+                var endpoint = WireEndpointType.deserialize(stack.getNbt());
+                var result = makeConnection(context.getWorld(), endpoint, new BlockWireEndpoint(pos, terminal), context);
                 if(result.isAccepted())
                     stack.setNbt(null);
                 return result;
             } else {
                 // Must be first connection.
-                var tag = new NbtCompound();
-                tag.putIntArray("Position", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-                tag.putInt("Terminal", terminal);
+                var endpoint = new BlockWireEndpoint(pos, terminal);
+                var tag = endpoint.serialize();
                 stack.setNbt(tag);
                 sendMessage(context, Lang.translate("message.connection_next").style(Formatting.GRAY).component());
                 return ActionResult.SUCCESS;
@@ -142,20 +135,37 @@ public interface IElectric extends IWrenchable {
         }
     }
 
-    static ActionResult makeConnection(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemUsageContext context) {
-        var state1 = world.getBlockState(pos1);
-        var state2 = world.getBlockState(pos2);
+    static ActionResult makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, ItemUsageContext context) {
+        if(endpoint1.type() == WireEndpointType.BLOCK && endpoint2.type() == WireEndpointType.BLOCK) {
+            // Hanging wire connection.
+            return makeHangingWireConnection(world, (BlockWireEndpoint) endpoint1, (BlockWireEndpoint) endpoint2, context);
+        }
 
-        var behaviour1 = ((IElectric) state1.getBlock()).getBehaviour(world, pos1, state1);
-        var behaviour2 = ((IElectric) state2.getBlock()).getBehaviour(world, pos2, state2);
+        var result = WireItem.connect(world, context.getStack(), context.getPlayer(), endpoint1, endpoint2);
+        return result.getResult();
+//        if(result.getResult() == ActionResult.SUCCESS) {
+////            var entity = result.getValue();
+////            if(entity != null) {
+////                entity.setEndpoint2(endpoint2);
+////                entity.makeWire();
+////            }
+//            return ActionResult.SUCCESS;
+//        }
+
+//        return ActionResult.FAIL;
+    }
+
+    static ActionResult makeHangingWireConnection(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemUsageContext context) {
+        var behaviour1 = endpoint1.getElectricBehaviour(world);
+        var behaviour2 = endpoint2.getElectricBehaviour(world);
         if(behaviour1 == null || behaviour2 == null) {
             sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
             PowerGrid.LOGGER.error("Connection failed, at least one behaviour is null");
             return ActionResult.FAIL;
         }
 
-        var node1 = behaviour1.getTerminal(terminal1);
-        var node2 = behaviour2.getTerminal(terminal2);
+        var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
         if(node1 == null || node2 == null || node1 == node2) {
             sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
             PowerGrid.LOGGER.error("Connection failed, nodes: ({}, {})", node1, node2);
@@ -163,13 +173,13 @@ public interface IElectric extends IWrenchable {
         }
 
         // Check if there is an existing connection between these nodes.
-        if(behaviour1.hasConnection(terminal1, pos2, terminal2) || behaviour2.hasConnection(terminal2, pos1, terminal1)) {
+        if(behaviour1.hasConnection(endpoint1.getTerminal(), endpoint2) || behaviour2.hasConnection(endpoint2.getTerminal(), endpoint1)) {
             sendMessage(context, Lang.translate("message.connection_exists").style(Formatting.RED).component());
             return ActionResult.FAIL;
         }
 
-        var terminal1Pos = getTerminalPos(pos1, state1, terminal1);
-        var terminal2Pos = getTerminalPos(pos2, state2, terminal2);
+        var terminal1Pos = endpoint1.getExactPosition(world);
+        var terminal2Pos = endpoint2.getExactPosition(world);
 
         var stack = context.getStack();
         assert stack.getItem() instanceof IWire;
@@ -177,23 +187,15 @@ public interface IElectric extends IWrenchable {
         var tag = stack.getNbt();
         assert tag != null;
 
-        float distance = 0;
-        if(tag.contains("Segments")) {
-            for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
-                distance += ((NbtCompound) entry).getFloat("Length");
-            }
-        } else {
-            distance = (float) terminal1Pos.distanceTo(terminal2Pos);
-            if(distance > item.getMaximumLength()) {
-                sendMessage(context, Lang.translate("message.connection_too_long").style(Formatting.RED).component());
-                return ActionResult.FAIL;
-            }
+        float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
+        if(distance > item.getMaximumLength()) {
+            sendMessage(context, Lang.translate("message.connection_too_long").style(Formatting.RED).component());
+            return ActionResult.FAIL;
         }
 
         // We round the exact distance between terminals for a more favourable item usage.
         int requiredItemCount = Math.max(Math.round(distance), 1);
-
-        if(stack.getCount() < requiredItemCount && (context.getPlayer() == null || !context.getPlayer().isCreative())) {
+        if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, requiredItemCount)) {
             sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());
             return ActionResult.FAIL;
         }
@@ -205,31 +207,7 @@ public interface IElectric extends IWrenchable {
         // The amount of used items dictates the resistance of a connection,
         // to make sure everything is fair.
         var R = item.getResistance() * requiredItemCount;
-
-        WireEntity entity;
-        if(tag.contains("Segments")) {
-            List<BlockWireEntity.Point> points = new ArrayList<>();
-            for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
-                points.add(new BlockWireEntity.Point((NbtCompound) entry));
-            }
-            var lastPointList = tag.getList("LastPoint", NbtElement.FLOAT_TYPE);
-            var lastPoint = new Vec3d(
-                    lastPointList.getFloat(0),
-                    lastPointList.getFloat(1),
-                    lastPointList.getFloat(2)
-            );
-            var electric = (IElectric) state2.getBlock();
-            var terminal = electric.terminal(state2, terminal2);
-            var finalPoints = BlockTrace.findPath(world, lastPoint, terminal2Pos, terminal);
-            if(finalPoints == null || !finalPoints.reachedTarget()) {
-                sendMessage(context, Lang.translate("message.connection_no_path").style(Formatting.RED).component());
-                return ActionResult.FAIL;
-            }
-            points.addAll(finalPoints.points());
-            entity = BlockWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R, points);
-        } else {
-            entity = HangingWireEntity.create(serverWorld, pos1, terminal1, pos2, terminal2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R);
-        }
+        var entity = HangingWireEntity.create(serverWorld, endpoint1, endpoint2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R);
 
         if(!serverWorld.spawnNewEntityAndPassengers(entity)) {
             PowerGrid.LOGGER.error("Failed to spawn new connection wire entity.");

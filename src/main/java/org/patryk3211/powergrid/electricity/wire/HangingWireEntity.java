@@ -26,9 +26,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
-import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
@@ -55,14 +55,15 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
     }
 
-    public static HangingWireEntity create(World world, BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, ItemStack item, float resistance) {
+    public static HangingWireEntity create(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, float resistance) {
+        if(!(item.getItem() instanceof WireItem))
+            throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new HangingWireEntity(ModdedEntities.HANGING_WIRE.get(), world);
-        entity.electricBlockPos1 = pos1;
-        entity.electricBlockPos2 = pos2;
-        entity.electricTerminal1 = terminal1;
-        entity.electricTerminal2 = terminal2;
-        entity.item = item;
-        entity.resistance = resistance;
+        entity.item = (WireItem) item.getItem();
+        entity.itemCount = item.getCount();
+
+        entity.setEndpoint1(endpoint1);
+        entity.setEndpoint2(endpoint2);
 
         entity.refreshTerminalPositions();
         entity.setPitch(0);
@@ -114,6 +115,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
+    public void endpointRemoved(IWireEndpoint endpoint) {
+        if(endpoint.equals(getEndpoint1()) || endpoint.equals(getEndpoint2()))
+            kill();
+    }
+
+    @Override
     public boolean canHit() {
         // Hits get handled by IComplexRaycast
         return false;
@@ -135,12 +142,17 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     protected void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
 
+        if(getEndpoint1() == null || getEndpoint2() == null) {
+            kill();
+            return;
+        }
+
         var world = getWorld();
         if(!world.isClient) {
             refreshTerminalPositions();
         } else {
-            terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
-            terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
+            terminalPos1 = getEndpoint1().getExactPosition(world);
+            terminalPos2 = getEndpoint2().getExactPosition(world);
             updateRenderParams();
         }
     }
@@ -213,11 +225,23 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         return null;
     }
 
+    @Override
+    public void setPosition(double x, double y, double z) {
+        super.setPosition(x, y, z);
+        // Endpoints need to be refreshed with new entity block pos.
+        var e1 = getEndpoint1();
+        setEndpoint1(null);
+        setEndpoint1(e1);
+        var e2 = getEndpoint2();
+        setEndpoint2(null);
+        setEndpoint2(e2);
+    }
+
     public void refreshTerminalPositions() {
         var world = getWorld();
         if(world != null && (!world.isClient || world instanceof PonderWorld)) {
-            terminalPos1 = IElectric.getTerminalPos(electricBlockPos1, world.getBlockState(electricBlockPos1), electricTerminal1);
-            terminalPos2 = IElectric.getTerminalPos(electricBlockPos2, world.getBlockState(electricBlockPos2), electricTerminal2);
+            terminalPos1 = getEndpoint1().getExactPosition(world);
+            terminalPos2 = getEndpoint2().getExactPosition(world);
 
             var vect = terminalPos2.subtract(terminalPos1);
             var facing = vect.crossProduct(UP);

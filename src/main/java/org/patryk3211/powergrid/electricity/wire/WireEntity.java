@@ -29,16 +29,17 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
@@ -47,24 +48,23 @@ import java.util.List;
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
-    // TODO: These have to be taken from the used item.
+    // TODO: These have to be taken from the used item and adjusted for wire length.
     public static final float DISSIPATION_FACTOR = 0.2f;
     public static final float THERMAL_MASS = 1f;
 
     protected static final TrackedData<Float> TEMPERATURE = DataTracker.registerData(WireEntity.class, TrackedDataHandlerRegistry.FLOAT);
 
-    protected BlockPos electricBlockPos1;
-    protected BlockPos electricBlockPos2;
+    private IWireEndpoint endpoint1;
+    private IWireEndpoint endpoint2;
 
-    protected int electricTerminal1;
-    protected int electricTerminal2;
-
-    protected ItemStack item;
-    protected float resistance;
+    @NotNull
+    protected WireItem item;
+    protected int itemCount;
 
     private ElectricWire wire;
     protected float overheatTemperature = 175f;
     private int despawnTime = 0;
+    private int dataVersion = 0;
 
     public WireEntity(EntityType<?> type, World world) {
         super(type, world);
@@ -90,8 +90,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
         float energy = 0;
         if (wire != null) {
-            var voltage = wire.potentialDifference();
-            energy += voltage * voltage / wire.getResistance() / 20f;
+            energy += wire.power() / 20f;
         }
         if(temperature < overheatTemperature) {
             // If wire is overheated it is considered dead.
@@ -131,13 +130,61 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         }
     }
 
-    @Override
-    public Packet<ClientPlayPacketListener> createSpawnPacket() {
-        var base = super.createSpawnPacket();
+    public void setEndpoint1(IWireEndpoint endpoint) {
+        if(endpoint1 != endpoint) {
+            if(endpoint1 != null)
+                endpoint1.removeWireEntity(this);
+            if(endpoint != null) {
+                if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
+                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
+                endpoint.assignWireEntity(this);
+            }
+            endpoint1 = endpoint;
+        }
+    }
+
+    public void setEndpoint2(IWireEndpoint endpoint) {
+        if(endpoint2 != endpoint) {
+            if(endpoint2 != null)
+                endpoint2.removeWireEntity(this);
+            if(endpoint != null) {
+                if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
+                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
+                endpoint.assignWireEntity(this);
+            }
+            endpoint2 = endpoint;
+        }
+    }
+
+    public IWireEndpoint getEndpoint1() {
+        return endpoint1;
+    }
+
+    public IWireEndpoint getEndpoint2() {
+        return endpoint2;
+    }
+
+    public void endpointRemoved(IWireEndpoint endpoint) {
+
+    }
+
+    private EntityDataS2CPacket createExtraDataPacket() {
         var extra = new EntityDataS2CPacket(this, 0);
+        extra.buffer.writeInt(dataVersion++);
         var tag = new NbtCompound();
         writeCustomDataToNbt(tag);
         extra.buffer.writeNbt(tag);
+        return extra;
+    }
+
+    public void sendExtraData() {
+        createExtraDataPacket().send();
+    }
+
+    @Override
+    public Packet<ClientPlayPacketListener> createSpawnPacket() {
+        var base = super.createSpawnPacket();
+        var extra = createExtraDataPacket();
         return new BundleS2CPacket(List.of(base, extra.packet()));
     }
 
@@ -149,59 +196,63 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public void onEntityDataPacket(EntityDataS2CPacket packet) {
         if(packet.type == 0) {
+            int version = packet.buffer.readInt();
+            if(version < dataVersion) {
+                // Discard outdated packet.
+                return;
+            }
             var tag = packet.buffer.readNbt();
             if (tag != null)
                 readCustomDataFromNbt(tag);
+            dataVersion = version + 1;
         }
     }
 
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
-        var posArr1 = nbt.getIntArray("Pos1");
-        electricBlockPos1 = new BlockPos(posArr1[0], posArr1[1], posArr1[2]);
-        var posArr2 = nbt.getIntArray("Pos2");
-        electricBlockPos2 = new BlockPos(posArr2[0], posArr2[1], posArr2[2]);
+        if(nbt.contains("Endpoint1")) {
+            setEndpoint1(WireEndpointType.deserialize(nbt.getCompound("Endpoint1")));
+        } else {
+            setEndpoint1(null);
+        }
 
-        electricTerminal1 = nbt.getInt("Terminal1");
-        electricTerminal2 = nbt.getInt("Terminal2");
+        if(nbt.contains("Endpoint2")) {
+            setEndpoint2(WireEndpointType.deserialize(nbt.getCompound("Endpoint2")));
+        } else {
+            setEndpoint2(null);
+        }
 
-        if(nbt.contains("Item"))
-            item = ItemStack.fromNbt(nbt.getCompound("Item"));
+        if(nbt.contains("Item")) {
+            var itemTag = nbt.getCompound("Item");
+            var readItem = Registries.ITEM.get(new Identifier(itemTag.getString("Id")));
+            if(!(readItem instanceof WireItem))
+                throw new IllegalStateException("WireEntity item must be a WireItem");
+            item = (WireItem) readItem;
+            itemCount = itemTag.getInt("Count");
+        } else {
+            throw new IllegalStateException("WireEntity must have an item");
+        }
 
         dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
-        resistance = nbt.getFloat("Resistance");
-
-        // Wires with missing item stack are not allowed.
-        if(item == null) {
-            discard();
-            return;
-        }
 
         makeWire();
     }
 
-    protected void makeWire() {
+    public float getResistance() {
+        return item.getResistance() * Math.max(itemCount, 1);
+    }
+
+    public void makeWire() {
         if(wire != null) {
             wire.remove();
         }
 
+        // Cannot make a wire unless both endpoints are valid.
+        if(endpoint1 == null || endpoint2 == null)
+            return;
+
         var world = getWorld();
-        ElectricBehaviour eb1 = null, eb2 = null;
-
-        var block1 = world.getBlockState(electricBlockPos1);
-        if(block1.getBlock() instanceof IElectric electric)
-            eb1 = electric.getBehaviour(world, electricBlockPos1, block1);
-
-        var block2 = world.getBlockState(electricBlockPos2);
-        if(block2.getBlock() instanceof IElectric electric)
-            eb2 = electric.getBehaviour(world, electricBlockPos2, block2);
-
-        var et1 = eb1.getTerminal(electricTerminal1);
-        var et2 = eb2.getTerminal(electricTerminal2);
-        wire = GlobalElectricNetworks.makeConnection(eb1, et1, eb2, et2, resistance);
-
-        eb1.addConnection(electricTerminal1, new ElectricBehaviour.Connection(getBlockPos(), getUuid()));
-        eb2.addConnection(electricTerminal2, new ElectricBehaviour.Connection(getBlockPos(), getUuid()));
+        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, getResistance());
     }
 
     public void dropWire() {
@@ -212,24 +263,24 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public boolean isConnectedTo(BlockPos pos, int terminal) {
-        if(pos.equals(electricBlockPos1) && terminal == electricTerminal1)
-            return true;
-        if(pos.equals(electricBlockPos2) && terminal == electricTerminal2)
-            return true;
-        return false;
+        var testPoint = new BlockWireEndpoint(pos, terminal);
+        return testPoint.equals(endpoint1) || testPoint.equals(endpoint2);
     }
 
     @Override
     protected void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putIntArray("Pos1", new int[] { electricBlockPos1.getX(), electricBlockPos1.getY(), electricBlockPos1.getZ() });
-        nbt.putIntArray("Pos2", new int[] { electricBlockPos2.getX(), electricBlockPos2.getY(), electricBlockPos2.getZ() });
-        nbt.putInt("Terminal1", electricTerminal1);
-        nbt.putInt("Terminal2", electricTerminal2);
-        if(item != null)
-            nbt.put("Item", item.writeNbt(new NbtCompound()));
+        if(endpoint1 != null)
+            nbt.put("Endpoint1", endpoint1.serialize());
+
+        if(endpoint2 != null)
+            nbt.put("Endpoint2", endpoint2.serialize());
+
+        var itemTag = new NbtCompound();
+        itemTag.putString("Id", Registries.ITEM.getId(item).toString());
+        itemTag.putInt("Count", itemCount);
+        nbt.put("Item", itemTag);
 
         nbt.putFloat("Temperature", dataTracker.get(TEMPERATURE));
-        nbt.putFloat("Resistance", resistance);
     }
 
     @Override
@@ -237,35 +288,20 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         super.remove(reason);
 
         if(reason.shouldDestroy()) {
-            var world = getWorld();
-
-            var state1 = world.getBlockState(electricBlockPos1);
-            ElectricBehaviour behaviour1 = null, behaviour2 = null;
-            if(state1.getBlock() instanceof IElectric electric) {
-                behaviour1 = electric.getBehaviour(world, electricBlockPos1, state1);
-            }
-
-            var state2 = world.getBlockState(electricBlockPos2);
-            if(state2.getBlock() instanceof IElectric electric) {
-                behaviour2 = electric.getBehaviour(world, electricBlockPos2, state2);
-            }
-
             dropWire();
-            if(behaviour1 != null) {
-                behaviour1.removeConnection(electricTerminal1, getUuid());
-            }
-            if(behaviour2 != null) {
-                behaviour2.removeConnection(electricTerminal2, getUuid());
-            }
+            if(endpoint1 != null)
+                endpoint1.removeWireEntity(this);
+            if(endpoint2 != null)
+                endpoint2.removeWireEntity(this);
         }
     }
 
     @Override
     public void kill() {
-        if(item != null) {
-            dropStack(item);
-            item = null;
+        for(int i = itemCount; i > 0; i -= 64) {
+            dropStack(new ItemStack(item, Math.min(i, 64)));
         }
+        itemCount = 0;
         super.kill();
     }
 
@@ -281,9 +317,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public WireItem getWireItem() {
-        if(item != null)
-            return (WireItem) item.getItem();
-        return null;
+        return item;
+    }
+
+    public int getWireCount() {
+        return itemCount;
     }
 
     @Override
