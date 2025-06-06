@@ -200,6 +200,7 @@ public class WireItem extends Item implements IWire {
             // Merge endpoint2 into endpoint1
             targetEntity = entity1;
             if(!endpoint1.getEnd())
+                // TODO: Check if spawn packet arrival doesn't break segments array or wire object.
                 targetEntity = targetEntity.flip();
             sourceEntity = entity2;
             if(endpoint2.getEnd())

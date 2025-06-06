@@ -105,19 +105,21 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void assignWireEntity(World world, BlockPos position, UUID id) {
-        var behaviour = getElectricBehaviour(world);
+    public void assignWireEntity(WireEntity entity) {
+        var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        behaviour.addConnection(terminal, new ElectricBehaviour.Connection(position, id));
+        // TODO: Since connection doesn't have to persist we can potentially store
+        //  the entity object and avoid unnecessary indirection.
+        behaviour.addConnection(terminal, new ElectricBehaviour.Connection(entity.getBlockPos(), entity.getUuid()));
     }
 
     @Override
-    public void removeWireEntity(World world, UUID id) {
-        var behaviour = getElectricBehaviour(world);
+    public void removeWireEntity(WireEntity entity) {
+        var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        behaviour.removeConnection(terminal, id);
+        behaviour.removeConnection(terminal, entity.getUuid());
     }
 
     @Override

@@ -64,6 +64,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     private ElectricWire wire;
     protected float overheatTemperature = 175f;
     private int despawnTime = 0;
+    private int dataVersion = 0;
 
     public WireEntity(EntityType<?> type, World world) {
         super(type, world);
@@ -130,27 +131,27 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public void setEndpoint1(IWireEndpoint endpoint) {
-        var world = getWorld();
-        var pos = getBlockPos();
-        var id = getUuid();
         if(endpoint1 != endpoint) {
             if(endpoint1 != null)
-                endpoint1.removeWireEntity(world, id);
-            if(endpoint != null)
-                endpoint.assignWireEntity(world, pos, id);
+                endpoint1.removeWireEntity(this);
+            if(endpoint != null) {
+                if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
+                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
+                endpoint.assignWireEntity(this);
+            }
             endpoint1 = endpoint;
         }
     }
 
     public void setEndpoint2(IWireEndpoint endpoint) {
-        var world = getWorld();
-        var pos = getBlockPos();
-        var id = getUuid();
         if(endpoint2 != endpoint) {
             if(endpoint2 != null)
-                endpoint2.removeWireEntity(world, id);
-            if(endpoint != null)
-                endpoint.assignWireEntity(world, pos, id);
+                endpoint2.removeWireEntity(this);
+            if(endpoint != null) {
+                if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
+                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
+                endpoint.assignWireEntity(this);
+            }
             endpoint2 = endpoint;
         }
     }
@@ -167,12 +168,17 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     }
 
-    public EntityDataS2CPacket createExtraDataPacket() {
+    private EntityDataS2CPacket createExtraDataPacket() {
         var extra = new EntityDataS2CPacket(this, 0);
+        extra.buffer.writeInt(dataVersion++);
         var tag = new NbtCompound();
         writeCustomDataToNbt(tag);
         extra.buffer.writeNbt(tag);
         return extra;
+    }
+
+    public void sendExtraData() {
+        createExtraDataPacket().send();
     }
 
     @Override
@@ -190,9 +196,15 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public void onEntityDataPacket(EntityDataS2CPacket packet) {
         if(packet.type == 0) {
+            int version = packet.buffer.readInt();
+            if(version < dataVersion) {
+                // Discard outdated packet.
+                return;
+            }
             var tag = packet.buffer.readNbt();
             if (tag != null)
                 readCustomDataFromNbt(tag);
+            dataVersion = version + 1;
         }
     }
 
@@ -276,13 +288,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         super.remove(reason);
 
         if(reason.shouldDestroy()) {
-            var world = getWorld();
-
             dropWire();
             if(endpoint1 != null)
-                endpoint1.removeWireEntity(world, getUuid());
+                endpoint1.removeWireEntity(this);
             if(endpoint2 != null)
-                endpoint2.removeWireEntity(world, getUuid());
+                endpoint2.removeWireEntity(this);
         }
     }
 

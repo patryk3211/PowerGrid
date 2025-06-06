@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Contract;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
@@ -76,7 +76,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
 
     @Override
     public IElectricNode getNode(World world) {
-        return getNode(world, id).node;
+        return getNode(world, id, false).node;
     }
 
     @Override
@@ -87,26 +87,109 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void assignWireEntity(World world, BlockPos position, UUID id) {
-        var entry = getNode(world, this.id);
-        entry.holders.add(id);
+    public void assignWireEntity(WireEntity entity) {
+        if(!(entity instanceof BlockWireEntity))
+            throw new IllegalArgumentException("Wire junction must receive block wire entities");
+        var entry = getNode(entity.getWorld(), this.id, false);
+        entry.holders.add(entity);
     }
 
     @Override
-    public void removeWireEntity(World world, UUID id) {
-        var entry = getNode(world, this.id);
-        entry.holders.remove(id);
-        if(entry.holders.isEmpty()) {
+    public void removeWireEntity(WireEntity entity) {
+        var entry = getNode(entity.getWorld(), this.id, true);
+        if(entry == null)
+            return;
+        entry.holders.remove(entity);
+        if(entry.holders.size() == 2) {
+            if(entity.getWorld().isClient)
+                return;
+            // Two holders remaining, we can merge them.
+            BlockWireEntity wire1 = null, wire2 = null;
+            for(var holder : entry.holders) {
+                if(wire1 == null) {
+                    wire1 = (BlockWireEntity) holder;
+                } else {
+                    wire2 = (BlockWireEntity) holder;
+                }
+            }
+            if(wire1 == null || wire2 == null) {
+                // Since holders' size was 2 we must get 2 wires, otherwise the set was altered before the loop started.
+                throw new ConcurrentModificationException();
+            }
+            assert wire1.getWireItem() == wire2.getWireItem();
+            var wire1End = this.equals(wire1.getEndpoint2());
+            var wire2End = this.equals(wire2.getEndpoint2());
+            // Preemptively remove entry since it is going to be discarded anyway.
+            entry.holders.clear();
+            removeEntry(entity.getWorld(), this.id);
+
+            boolean flipped = false, targetFlipped = false;
+            BlockWireEntity target, source;
+            if(wire1End || !wire2End) {
+                source = wire2;
+                if(!wire1End) {
+                    // New entity must be made with flipped wire1
+                    target = wire1.flip();
+                    targetFlipped = true;
+                } else {
+                    // We can append wire2 into wire1
+                    target = wire1;
+                }
+                if(wire2End)
+                    flipped = true;
+            } else {
+                // Append wire1 onto wire2
+                source = wire1;
+                target = wire2;
+            }
+
+            var lastIndex = target.segments.size() - 1;
+            var last = target.segments.get(lastIndex);
+            if(!targetFlipped)
+                target.segments.set(lastIndex, new BlockWireEntity.Point(last.direction, last.gridLength + 1));
+
+            if(flipped) {
+                var segments = new ArrayList<BlockWireEntity.Point>();
+                for(var segment : source.segments) {
+                    segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
+                }
+                target.setEndpoint2(source.getEndpoint1());
+                target.extend(segments, source.getWireCount());
+            } else {
+                target.setEndpoint2(source.getEndpoint2());
+                target.extend(source.segments, source.getWireCount());
+            }
+            source.discard();
+            target.makeWire();
+        } else if(entry.holders.size() == 1) {
+            // One holder remaining, remove junction from it and drop the entry.
+            for(var holder : entry.holders) {
+                // TODO: Use WireEntity::endpointRemoved here once block wire endpointEndpoint removed handler is improved.
+                if(this.equals(holder.getEndpoint1()))
+                    holder.setEndpoint1(null);
+                if(this.equals(holder.getEndpoint2()))
+                    holder.setEndpoint2(null);
+            }
+            // removeEntry is called by setEndpointN in holder entity.
+        } else if(entry.holders.isEmpty()) {
             // Last entity dropped this junction.
-            removeEntry(world, this.id);
+            removeEntry(entity.getWorld(), this.id);
         }
     }
 
-    private static NodeEntry getNode(World world, int id) {
+    @Contract("_, _, false -> !null")
+    private static NodeEntry getNode(World world, int id, boolean nullable) {
         if(id < 0)
             throw new IllegalArgumentException("Invalid id passed to junction node map");
-        var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new HashMap<>());
-        return worldNodeMap.computeIfAbsent(id, k -> new NodeEntry());
+        if(!nullable) {
+            var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new HashMap<>());
+            return worldNodeMap.computeIfAbsent(id, k -> new NodeEntry());
+        } else {
+            var worldNodeMap = JUNCTION_NODES.get(world);
+            if(worldNodeMap == null)
+                return null;
+            return worldNodeMap.get(id);
+        }
     }
 
     private static void removeEntry(World world, int id) {
@@ -126,8 +209,19 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         network.removeNode(entry.node);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        if(obj instanceof JunctionWireEndpoint other) {
+            // Note: We don't compare position since it might be slightly different due to imprecision.
+            return this.id == other.id;
+        }
+        return false;
+    }
+
     private static class NodeEntry {
         public final FloatingNode node = new FloatingNode();
-        public final Set<UUID> holders = new HashSet<>();
+        public final Set<WireEntity> holders = new HashSet<>();
     }
 }

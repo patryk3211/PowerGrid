@@ -102,7 +102,7 @@ public class BlockWireAttachC2SPacket implements FabricPacket {
             }
         } else {
             // Junction.
-            endpoint = wire.split(packet.index, gridPoint);
+            endpoint = new DeferredJunctionWireEndpoint(wire, packet.index, gridPoint);
         }
         if(endpoint != null && existingEndpoint == null) {
             stack.setNbt(endpoint.serialize());

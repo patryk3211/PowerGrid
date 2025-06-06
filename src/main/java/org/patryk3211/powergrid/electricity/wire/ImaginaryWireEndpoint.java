@@ -74,12 +74,12 @@ public class ImaginaryWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void assignWireEntity(World world, BlockPos position, UUID id) {
+    public void assignWireEntity(WireEntity entity) {
         throw new IllegalStateException("Cannot join network");
     }
 
     @Override
-    public void removeWireEntity(World world, UUID id) {
+    public void removeWireEntity(WireEntity entity) {
         throw new IllegalStateException("Cannot join network");
     }
 }

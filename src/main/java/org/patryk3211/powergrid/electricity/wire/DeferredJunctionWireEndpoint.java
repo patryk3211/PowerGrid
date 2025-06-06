@@ -25,71 +25,67 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 import java.util.UUID;
 
-public class BlockWireEntityEndpoint implements IWireEndpoint {
+public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     private BlockPos entityPos;
     private UUID entityId;
-    private boolean end;
+    private int segmentIndex;
+    private int segmentPoint;
 
-    public BlockWireEntityEndpoint() {
-        entityPos = null;
-        entityId = null;
-        end = false;
+    public DeferredJunctionWireEndpoint() {
+
     }
 
-    public BlockWireEntityEndpoint(BlockWireEntity entity, boolean end) {
+    public DeferredJunctionWireEndpoint(BlockWireEntity entity, int segmentIndex, int segmentPoint) {
         this.entityPos = entity.getBlockPos();
         this.entityId = entity.getUuid();
-        this.end = end;
+        this.segmentIndex = segmentIndex;
+        this.segmentPoint = segmentPoint;
     }
 
     @Override
     public WireEndpointType type() {
-        return WireEndpointType.BLOCK_WIRE;
+        return WireEndpointType.DEFERRED_JUNCTION;
     }
 
     @Override
     public void read(NbtCompound nbt) {
-        entityId = nbt.getUuid("Id");
         var posArray = nbt.getIntArray("Pos");
         entityPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
-        end = nbt.getBoolean("End");
+        entityId = nbt.getUuid("Id");
+        segmentIndex = nbt.getInt("Index");
+        segmentPoint = nbt.getInt("Point");
     }
 
     @Override
     public void write(NbtCompound nbt) {
-        nbt.putUuid("Id", entityId);
         nbt.putIntArray("Pos", new int[] { entityPos.getX(), entityPos.getY(), entityPos.getZ() });
-        nbt.putBoolean("End", end);
+        nbt.putUuid("Id", entityId);
+        nbt.putInt("Index", segmentIndex);
+        nbt.putInt("Point", segmentPoint);
     }
 
     public BlockWireEntity getEntity(World world) {
-        var entityList = world.getEntitiesByClass(BlockWireEntity.class, new Box(entityPos), e -> e.getUuid().equals(entityId));
-        if(entityList.isEmpty())
+        var entities = world.getEntitiesByClass(BlockWireEntity.class, new Box(entityPos), e -> entityId.equals(e.getUuid()));
+        if(entities.isEmpty())
             return null;
-        return entityList.get(0);
+        return entities.get(0);
     }
 
     @Override
     public Vec3d getExactPosition(World world) {
-        var entity = getEntity(world);
-        if(entity == null)
-            return entityPos.toCenterPos();
-        if(!end)
-            return entity.getPos();
-        var pos = entity.getPos();
-        for(var segment : entity.segments) {
-            pos = pos.add(segment.vector());
-        }
-        return pos;
+        var wire = getEntity(world);
+        var segment = wire.segments.get(segmentIndex);
+        return segment.start.offset(segment.direction, segmentPoint / 16f);
     }
 
-    public boolean getEnd() {
-        return end;
+    public JunctionWireEndpoint resolve(World world) {
+        var entity = getEntity(world);
+        return entity.split(segmentIndex, segmentPoint);
     }
 
     @Override
     public IElectricNode getNode(World world) {
-        return null;
+        throw new IllegalStateException("Cannot fetch node");
     }
 
     @Override
@@ -98,7 +94,12 @@ public class BlockWireEntityEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void assignWireEntity(WireEntity entity) { }
+    public void assignWireEntity(WireEntity entity) {
+        throw new IllegalStateException("Cannot assign a wire entity");
+    }
+
     @Override
-    public void removeWireEntity(WireEntity entity) { }
+    public void removeWireEntity(WireEntity entity) {
+        throw new IllegalStateException("Cannot remove a wire entity");
+    }
 }

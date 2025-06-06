@@ -24,7 +24,8 @@ public enum WireEndpointType {
     BLOCK(BlockWireEndpoint::new, true),
     JUNCTION(JunctionWireEndpoint::new, true),
     BLOCK_WIRE(BlockWireEntityEndpoint::new, false),
-    IMAGINARY(ImaginaryWireEndpoint::new, false)
+    IMAGINARY(ImaginaryWireEndpoint::new, false),
+    DEFERRED_JUNCTION(DeferredJunctionWireEndpoint::new, true)
     ;
 
     private final Supplier<IWireEndpoint> factory;

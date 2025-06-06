@@ -253,6 +253,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
     @Override
     public void endpointRemoved(IWireEndpoint endpoint) {
+        // TODO: Remove unsupported segments up to the first supported one.
         Point removedSegment;
         if(endpoint.equals(getEndpoint2())) {
             removedSegment = segments.remove(segments.size() - 1);
@@ -280,12 +281,13 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
             itemCount -= items;
         }
         dropWire();
-        createExtraDataPacket().send();
+        sendExtraData();
     }
 
     public BlockWireEntity flip() {
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), getWorld());
         entity.item = item;
+        entity.itemCount = itemCount;
         entity.setEndpoint1(getEndpoint2());
         entity.setEndpoint2(getEndpoint1());
         entity.getDataTracker().set(TEMPERATURE, getTemperature());
@@ -322,7 +324,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         bakeBoundingBoxes();
 
         if(notify)
-            createExtraDataPacket().send();
+            sendExtraData();
     }
 
     public void extend(List<Point> points, int newItems) {
@@ -343,7 +345,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         wire2.item = item;
         var splitSegment = new Point(segment.direction, segment.gridLength - segmentPoint);
         wire2.segments.add(splitSegment);
-        this.segments.set(segmentIndex, new Point(segment.direction, segmentPoint));
+        this.segments.set(segmentIndex, new Point(segment.direction, segmentPoint - 1));
         float movedLength = splitSegment.length();
 
         int removeCount = segments.size() - segmentIndex - 1;
@@ -374,7 +376,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
         wire2.makeWire();
         this.makeWire();
-        createExtraDataPacket().send();
+        sendExtraData();
         return junction;
     }
 

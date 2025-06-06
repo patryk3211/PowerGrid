@@ -35,8 +35,8 @@ public interface IWireEndpoint {
     IElectricNode getNode(World world);
     void joinNetwork(World world, ElectricalNetwork network);
 
-    void assignWireEntity(World world, BlockPos position, UUID id);
-    void removeWireEntity(World world, UUID id);
+    void assignWireEntity(WireEntity entity);
+    void removeWireEntity(WireEntity entity);
 
     default NbtCompound serialize() {
         return type().serialize(this);
