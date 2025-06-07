@@ -20,14 +20,17 @@ import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.fabric.EnvExecutor;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.item.Item;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class LightBulb extends Item implements ILightBulb {
-    Supplier<Function<State, PartialModel>> modelSupplier;
+    Supplier<Function<State, PartialModel>> modelSupplier = null;
 
     float k = 0.005f;
     float T_mid = 1200;
@@ -69,11 +72,6 @@ public class LightBulb extends Item implements ILightBulb {
     }
 
     @Override
-    public Supplier<Function<State, PartialModel>> getModelProvider() {
-        return modelSupplier;
-    }
-
-    @Override
     public float resistanceFunction(float temperature) {
         return (float) (R_min + (R_max - R_min) / (1 + Math.exp(-k * (temperature - T_mid))));
     }
@@ -81,5 +79,42 @@ public class LightBulb extends Item implements ILightBulb {
     @Override
     public float dissipationFactor() {
         return dissipationFactor;
+    }
+
+    @Override
+    public LightBulbState createState(LightFixtureBlockEntity fixture) {
+        return new SimpleState(this, fixture, modelSupplier);
+    }
+
+    public enum State {
+        OFF, LOW_POWER, ON, BROKEN
+    }
+
+    public static class SimpleState extends LightBulbState {
+        @Environment(EnvType.CLIENT)
+        public Function<State, PartialModel> modelProvider;
+
+        public <T extends Item & ILightBulb> SimpleState(T bulb, LightFixtureBlockEntity fixture, Supplier<Function<State, PartialModel>> modelProviderSupplier) {
+            super(bulb, fixture);
+            EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> modelProvider = modelProviderSupplier.get());
+        }
+
+        @Override
+        @Environment(EnvType.CLIENT)
+        public PartialModel getModel() {
+            var state = State.OFF;
+            if(burned) {
+                state = State.BROKEN;
+            } else {
+                var blockState = fixture.getCachedState();
+                var powerLevel = blockState.get(LightFixtureBlock.POWER);
+                if(powerLevel == 1) {
+                    state = State.LOW_POWER;
+                } else if(powerLevel == 2) {
+                    state = State.ON;
+                }
+            }
+            return modelProvider.apply(state);
+        }
     }
 }

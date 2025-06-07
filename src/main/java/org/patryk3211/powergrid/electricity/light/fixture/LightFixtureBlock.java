@@ -67,7 +67,7 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
 
     public LightFixtureBlock(Settings settings) {
         super(settings.luminance(state -> switch(state.get(POWER)) {
-            case 1 -> 12;
+            case 1 -> 10;
             case 2 -> 15;
             default -> 0;
         }));

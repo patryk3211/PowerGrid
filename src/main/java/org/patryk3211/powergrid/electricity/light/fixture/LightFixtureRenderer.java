@@ -23,7 +23,6 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
-import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
 public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBlockEntity> {
     public LightFixtureRenderer(BlockEntityRendererFactory.Context context) {
@@ -32,21 +31,21 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
 
     @Override
     protected void renderSafe(LightFixtureBlockEntity be, float partialTicks, MatrixStack matrices, VertexConsumerProvider consumer, int light, int overlay) {
-        var properties = be.getLightBulbProperties();
-        if(properties == null)
+        var bulbState = be.getBulbState();
+        if(bulbState == null)
             return;
-        var blockState = be.getCachedState();
-        var bulbState = be.getState();
-//        if(blockState.get(LightFixtureBlock.POWER) == 0)
-//            bulbState = ILightBulb.State.OFF;
+
+        var state = be.getCachedState();
         var vb = consumer.getBuffer(RenderLayer.getCutout());
 
-        var model = properties.getModelProvider().get().apply(bulbState);
-        var buffer = CachedBufferer.partial(model, blockState);
+        var model = bulbState.getModel();
+        if(model == null)
+            return;
+        var buffer = CachedBufferer.partial(model, state);
 
-        var facing = blockState.get(LightFixtureBlock.FACING);
+        var facing = state.get(LightFixtureBlock.FACING);
         rotateToFacing(buffer, facing)
-                .translate(((LightFixtureBlock) blockState.getBlock()).modelOffset)
+                .translate(((LightFixtureBlock) state.getBlock()).modelOffset)
                 .light(light)
                 .renderInto(matrices, vb);
     }

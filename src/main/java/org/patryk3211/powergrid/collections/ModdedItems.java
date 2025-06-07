@@ -49,7 +49,7 @@ public class ModdedItems {
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
             .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
                 case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
-                case ON -> ModdedPartialModels.LIGHT_BULB_ON;
+                case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
             }))
             .transform(LightBulb.setProperties(30, 60, 30))
