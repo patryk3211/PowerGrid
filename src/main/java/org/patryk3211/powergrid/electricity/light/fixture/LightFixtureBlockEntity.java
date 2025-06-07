@@ -50,7 +50,6 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     private void lightBulbChanged() {
         if(bulbState == null) {
             filament.setState(false);
-            return;
         } else {
             filament.setResistance(bulbState.resistance());
             filament.setState(!bulbState.isBurned());

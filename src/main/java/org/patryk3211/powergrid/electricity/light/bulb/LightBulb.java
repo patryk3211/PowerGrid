@@ -30,13 +30,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class LightBulb extends Item implements ILightBulb {
-    Supplier<Function<State, PartialModel>> modelSupplier = null;
+    protected Supplier<Function<State, PartialModel>> modelSupplier = null;
 
-    float k = 0.005f;
-    float T_mid = 1200;
-    float R_max = 100;
-    float R_min = 15;
-    float dissipationFactor = 0.1f;
+    protected float k = 0.005f;
+    protected float T_mid = 1200;
+    protected float R_max = 100;
+    protected float R_min = 15;
+    protected Properties thermalProperties;
 
     public LightBulb(Settings settings) {
         super(settings);
@@ -49,26 +49,25 @@ public class LightBulb extends Item implements ILightBulb {
         };
     }
 
-    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float minResistance, float maxResistance, float curveConstant, float midpointTemperature, float dissipationFactor) {
+    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float minResistance, float maxResistance, float curveConstant, float midpointTemperature, float dissipationFactor, float overheatTemperature, float thermalMass) {
         return b -> {
             b.onRegister(item -> {
                 item.k = curveConstant;
                 item.T_mid = midpointTemperature;
                 item.R_max = maxResistance;
                 item.R_min = minResistance;
-                item.dissipationFactor = dissipationFactor;
+                item.thermalProperties = new Properties(dissipationFactor, thermalMass, overheatTemperature);
             });
             return b;
         };
     }
 
-    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float ratedPower, float ratedVoltage, float minResistance) {
+    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float ratedPower, float ratedVoltage, float minResistance, float operatingTemperature, float thermalMass) {
         float R_max = ratedVoltage * ratedVoltage / ratedPower;
-        final float operatingTemperature = 1450f;
         final float T_mid = 750f;
         final float k = 0.005f;
         final float dissipationFactor = ratedPower / (operatingTemperature - ThermalBehaviour.BASE_TEMPERATURE);
-        return setProperties(minResistance, R_max, k, T_mid, dissipationFactor);
+        return setProperties(minResistance, R_max, k, T_mid, dissipationFactor, operatingTemperature + 250f, thermalMass);
     }
 
     @Override
@@ -77,8 +76,8 @@ public class LightBulb extends Item implements ILightBulb {
     }
 
     @Override
-    public float dissipationFactor() {
-        return dissipationFactor;
+    public Properties thermalProperties() {
+        return thermalProperties;
     }
 
     @Override

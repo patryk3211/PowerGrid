@@ -34,8 +34,9 @@ public abstract class LightBulbState {
     protected final ILightBulb bulb;
     protected final LightFixtureBlockEntity fixture;
 
-    protected final float thermalMass = 0.005f;
+    protected final float thermalMass;
     protected final float dissipationFactor;
+    protected final float overheatTemperature;
     protected float temperature;
     protected boolean burned;
 
@@ -43,7 +44,12 @@ public abstract class LightBulbState {
         this.item = bulb;
         this.bulb = bulb;
         this.fixture = fixture;
-        this.dissipationFactor = bulb.dissipationFactor();
+
+        var properties = bulb.thermalProperties();
+        thermalMass = properties.thermalMass();
+        dissipationFactor = properties.dissipationFactor();
+        overheatTemperature = properties.overheatTemperature();
+
         this.burned = false;
     }
 
@@ -60,6 +66,10 @@ public abstract class LightBulbState {
         if(newLevel != state.get(POWER)) {
             world.setBlockState(fixture.getPos(), state.with(POWER, newLevel));
         }
+    }
+
+    public int getPowerLevel() {
+        return fixture.getCachedState().get(POWER);
     }
 
     public void tick() {
@@ -90,7 +100,7 @@ public abstract class LightBulbState {
     }
 
     public boolean isOverheated() {
-        return temperature >= 1700f;
+        return temperature >= overheatTemperature;
     }
 
     public boolean isBurned() {
@@ -121,8 +131,8 @@ public abstract class LightBulbState {
 
     public void read(NbtCompound nbt) {
         var bulbItem = Registries.ITEM.get(new Identifier(nbt.getString("Bulb")));
-        if(!(bulbItem instanceof ILightBulb)) {
-            PowerGrid.LOGGER.error("Tried to use a non light bulb item for light bulb state");
+        if(bulbItem != item) {
+            PowerGrid.LOGGER.error("Bulb item validation failed");
             return;
         }
         temperature = nbt.getFloat("Temperature");
@@ -130,6 +140,8 @@ public abstract class LightBulbState {
     }
 
     public static Item getBulbItem(NbtCompound nbt) {
+        if(!nbt.contains("Bulb"))
+            return null;
         var bulbItem = Registries.ITEM.get(new Identifier(nbt.getString("Bulb")));
         if(!(bulbItem instanceof ILightBulb)) {
             PowerGrid.LOGGER.error("Tried to use a non light bulb item for light bulb state");

@@ -18,9 +18,9 @@ package org.patryk3211.powergrid.electricity.light.bulb;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
 public interface ILightBulb {
-//    record Properties(float dissipationFactor, float thermalMass, float overheatTemperature) { }
+    record Properties(float dissipationFactor, float thermalMass, float overheatTemperature) { }
 
     float resistanceFunction(float temperature);
-    float dissipationFactor();
+    Properties thermalProperties();
     LightBulbState createState(LightFixtureBlockEntity fixture);
 }
