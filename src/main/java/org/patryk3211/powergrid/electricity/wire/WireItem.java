@@ -226,7 +226,6 @@ public class WireItem extends Item implements IWire {
             targetEntity.extend(sourceEntity.segments, sourceEntity.getWireCount());
         }
 
-        targetEntity.makeWire();
         sourceEntity.discard();
         return TypedActionResult.success(targetEntity);
     }

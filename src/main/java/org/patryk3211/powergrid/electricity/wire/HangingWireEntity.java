@@ -67,7 +67,6 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         entity.resetPosition();
         entity.refreshPosition();
 
-        entity.makeWire();
         return entity;
     }
 

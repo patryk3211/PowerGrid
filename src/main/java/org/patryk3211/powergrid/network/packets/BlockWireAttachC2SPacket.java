@@ -110,10 +110,6 @@ public class BlockWireAttachC2SPacket implements FabricPacket {
             var result = WireItem.connect(player.getWorld(), stack, player, existingEndpoint, endpoint);
             if(result.getResult().isAccepted()) {
                 stack.setNbt(null);
-                var wireEntity = result.getValue();
-                if(wireEntity != null) {
-                    wireEntity.makeWire();
-                }
             }
         }
     }

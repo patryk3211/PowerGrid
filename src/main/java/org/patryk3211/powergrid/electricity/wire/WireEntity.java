@@ -143,6 +143,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 endpoint.assignWireEntity(this);
             }
             endpoint1 = endpoint;
+            makeWire();
         }
     }
 
@@ -156,6 +157,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 endpoint.assignWireEntity(this);
             }
             endpoint2 = endpoint;
+            makeWire();
         }
     }
 
@@ -213,6 +215,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
+        if(nbt.contains("Item")) {
+            var itemTag = nbt.getCompound("Item");
+            var readItem = Registries.ITEM.get(new Identifier(itemTag.getString("Id")));
+            if(!(readItem instanceof WireItem))
+                throw new IllegalStateException("WireEntity item must be a WireItem");
+            setItem((WireItem) readItem, itemTag.getInt("Count"));
+        } else {
+            throw new IllegalStateException("WireEntity must have an item");
+        }
+
         if(nbt.contains("Endpoint1")) {
             setEndpoint1(WireEndpointType.deserialize(nbt.getCompound("Endpoint1")));
         } else {
@@ -225,19 +237,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             setEndpoint2(null);
         }
 
-        if(nbt.contains("Item")) {
-            var itemTag = nbt.getCompound("Item");
-            var readItem = Registries.ITEM.get(new Identifier(itemTag.getString("Id")));
-            if(!(readItem instanceof WireItem))
-                throw new IllegalStateException("WireEntity item must be a WireItem");
-            setItem((WireItem) readItem, itemTag.getInt("Count"));
-        } else {
-            throw new IllegalStateException("WireEntity must have an item");
-        }
-
         dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
-
-        makeWire();
     }
 
     public void setItem(WireItem item, int count) {
@@ -323,7 +323,6 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             kill();
             return ActionResult.SUCCESS;
         }
-        System.out.printf("Temperature: %f\n", dataTracker.get(TEMPERATURE));
         return super.interact(player, hand);
     }
 

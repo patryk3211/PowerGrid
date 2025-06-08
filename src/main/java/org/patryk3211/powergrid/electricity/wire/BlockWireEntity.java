@@ -370,8 +370,6 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         var serverWorld = (ServerWorld) world;
         serverWorld.spawnNewEntityAndPassengers(wire2);
 
-        wire2.makeWire();
-        this.makeWire();
         sendExtraData();
         return junction;
     }
