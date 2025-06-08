@@ -18,12 +18,9 @@ package org.patryk3211.powergrid.electricity.light.bulb;
 import com.jozufozu.flywheel.core.PartialModel;
 import net.minecraft.item.Item;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -53,7 +50,8 @@ public class GrowthLamp extends LightBulb {
                 return;
 
             var world = fixture.getWorld();
-            if(world.isClient || getPowerLevel() == 0)
+            var power = getPowerLevel();
+            if(world.isClient || power == 0)
                 return;
 
             var origin = fixture.getPos();
@@ -73,7 +71,7 @@ public class GrowthLamp extends LightBulb {
 
             var serverWorld = (ServerWorld) world;
             var random = serverWorld.random;
-            if(random.nextInt(25) == 0) {
+            if(random.nextInt(50 / power) == 0) {
                 var x = random.nextBetween(xMin, xMax);
                 var y = random.nextBetween(yMin, yMax);
                 var z = random.nextBetween(zMin, zMax);

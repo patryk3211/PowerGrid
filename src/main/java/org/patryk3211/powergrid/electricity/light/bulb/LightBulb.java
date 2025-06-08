@@ -21,15 +21,23 @@ import com.tterrag.registrate.fabric.EnvExecutor;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Power;
+import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class LightBulb extends Item implements ILightBulb {
+public class LightBulb extends Item implements ILightBulb, IHaveElectricProperties {
     protected Supplier<Function<State, PartialModel>> modelSupplier = null;
 
     protected float k = 0.005f;
@@ -37,6 +45,9 @@ public class LightBulb extends Item implements ILightBulb {
     protected float R_max = 100;
     protected float R_min = 15;
     protected Properties thermalProperties;
+
+    protected float power = 0;
+    protected float voltage = 0;
 
     public LightBulb(Settings settings) {
         super(settings);
@@ -67,7 +78,14 @@ public class LightBulb extends Item implements ILightBulb {
         final float T_mid = 750f;
         final float k = 0.005f;
         final float dissipationFactor = ratedPower / (operatingTemperature - ThermalBehaviour.BASE_TEMPERATURE);
-        return setProperties(minResistance, R_max, k, T_mid, dissipationFactor, operatingTemperature + 250f, thermalMass);
+        NonNullUnaryOperator<ItemBuilder<I, P>> result = setProperties(minResistance, R_max, k, T_mid, dissipationFactor, operatingTemperature + 250f, thermalMass);
+        return result.andThen(b -> {
+            b.onRegister(item -> {
+                item.power = ratedPower;
+                item.voltage = ratedVoltage;
+            });
+            return b;
+        });
     }
 
     @Override
@@ -83,6 +101,16 @@ public class LightBulb extends Item implements ILightBulb {
     @Override
     public LightBulbState createState(LightFixtureBlockEntity fixture) {
         return new SimpleState(this, fixture, modelSupplier);
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        if(voltage > 0 && power > 0) {
+            Voltage.rated(voltage, player, tooltip);
+            Power.rated(power, player, tooltip);
+        } else {
+            Resistance.series(R_max, player, tooltip);
+        }
     }
 
     public enum State {
