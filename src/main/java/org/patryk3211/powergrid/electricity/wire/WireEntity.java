@@ -263,7 +263,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             return;
 
         var world = getWorld();
-        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, getResistance(), this);
+        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
     }
 
     public void dropWire() {

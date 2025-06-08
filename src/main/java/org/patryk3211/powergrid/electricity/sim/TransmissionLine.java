@@ -54,17 +54,17 @@ public class TransmissionLine extends ElectricWire {
     @Override
     public void remove() {
         GlobalElectricNetworks.removeTransmissionLine(this);
-        var copyHolders = Set.copyOf(holders);
+//        var copyHolders = Set.copyOf(holders);
         holders.clear();
-        for(var holder : copyHolders) {
-            holder.setWire(null);
-        }
-        // This avoids unnecessary duplicate calls if a new transmission line is created.
-        for(var holder : copyHolders) {
-            if(holder.getWire() == null && !holder.isRemoved()) {
-                holder.makeWire();
-            }
-        }
+//        for(var holder : copyHolders) {
+//            holder.setWire(null);
+//        }
+//        // This avoids unnecessary duplicate calls if a new transmission line is created.
+//        for(var holder : copyHolders) {
+//            if(holder.getWire() == null && !holder.isRemoved()) {
+//                holder.makeWire();
+//            }
+//        }
     }
 
     @Override
