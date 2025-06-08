@@ -19,10 +19,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -54,6 +54,9 @@ public class GlobalElectricNetworks {
             }
             network.calculate();
         }
+        for(final var line : networks.transmissionLines) {
+            line.tick();
+        }
         networks.removeAll(removed);
     }
 
@@ -70,21 +73,23 @@ public class GlobalElectricNetworks {
         while(!toVisit.isEmpty()) {
             var node = toVisit.remove(0);
             if(worldNetworks.globalGraph.connectionCount(node) > 2) {
-                // Line end
-                PowerGrid.LOGGER.info("Found line end");
                 continue;
             }
             var connected = worldNetworks.globalGraph.getConnectedNodes(node);
             for(var connectedNode : connected) {
                 if(!visited.add(connectedNode))
                     continue;
+                if(!worldNetworks.globalGraph.isTransmissionLinePoint(connectedNode)) {
+                    // This block cannot be a transmission line point.
+                    continue;
+                }
                 // TODO: We might be able to get away with using OwnedElectricWire again.
                 var entity = worldNetworks.globalGraph.getEntity(node, connectedNode);
                 var wire = worldNetworks.globalGraph.getWire(node, connectedNode);
                 if(wire instanceof TransmissionLine otherLine && wire != line) {
                     // This should consume all lines on the way
                     line.merge(otherLine);
-                    worldNetworks.transmissionLines.remove(otherLine);
+                    removeTransmissionLine(otherLine);
                 } else if(wire != null) {
                     wire.remove();
                 }
@@ -130,17 +135,14 @@ public class GlobalElectricNetworks {
                 continue;
             var connectedNodes = worldNetworks.globalGraph.getConnectedNodes(node);
             for(var connected : connectedNodes) {
-                var entity = worldNetworks.globalGraph.getEntity(node, connected);
                 var wire = worldNetworks.globalGraph.getWire(node, connected);
                 if(wire != line) {
                     // Not part of this transmission line
                     continue;
                 }
                 worldNetworks.globalGraph.disconnect(node, connected);
-//                worldNetworks.globalGraph.connect(node, connected, entity, null);
                 toVisit.add(connected);
             }
-//            worldNetworks.transmissionLineMap.remove(node);
             if(worldNetworks.globalGraph.connectionCount(node) == 0)
                 worldNetworks.globalGraph.removeNode(node);
         }
@@ -153,7 +155,6 @@ public class GlobalElectricNetworks {
             if(n1 == null || n2 == null || holder.isRemoved() || holder.getWire() != null)
                 continue;
             holder.makeWire();
-//            worldNetworks.globalGraph.connect(n1, n2, holder, null);
         }
     }
 
@@ -199,6 +200,28 @@ public class GlobalElectricNetworks {
         }
     }
 
+    public static void handleEdge(WorldNetworks worldNetworks, TransmissionLine line, IElectricNode node) {
+        var connectedNodes = worldNetworks.globalGraph.getConnectedNodes(node);
+        int connectionCount = 0;
+        for(var connected : connectedNodes) {
+            var wire = worldNetworks.globalGraph.getWire(node, connected);
+            if(wire == line)
+                ++connectionCount;
+        }
+        if(connectionCount != 1)
+            return;
+        // This is an edge node.
+        if(node.getNetwork() == null) {
+            var network = worldNetworks.newNetwork();
+            if(node instanceof OwnedFloatingNode ownedNode) {
+                ownedNode.endpoint.joinNetwork(worldNetworks.world, network);
+            } else {
+                node.setNetwork(network);
+            }
+        }
+        line.connect(node);
+    }
+
     @Nullable
     public static TransmissionLine makeTransmissionLine(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
         var worldNetworks = getWorldNetworks(world);
@@ -216,7 +239,6 @@ public class GlobalElectricNetworks {
         TransmissionLine line = null;
         if(nConns1 == 1) {
             // We can attach to an existing line on endpoint1
-            PowerGrid.LOGGER.info("Extending line 1");
             var connected = worldNetworks.globalGraph.getConnectedNodes(node1).get(0);
             var wire = worldNetworks.globalGraph.getWire(node1, connected);
             if(wire instanceof TransmissionLine curLine) {
@@ -232,11 +254,9 @@ public class GlobalElectricNetworks {
             if(wire instanceof TransmissionLine curLine) {
                 if(line != null) {
                     // We need to merge lines.
-                    PowerGrid.LOGGER.info("Merging lines");
                     line.merge(curLine);
-                    worldNetworks.transmissionLines.remove(curLine);
+                    removeTransmissionLine(curLine);
                 } else {
-                    PowerGrid.LOGGER.info("Extending line 2");
                     line = curLine;
                 }
             } else {
@@ -253,45 +273,20 @@ public class GlobalElectricNetworks {
         var visited = new HashSet<IElectricNode>();
         traceGraph(worldNetworks, line, visited, toVisit);
 
-//        if(nConns1 > 1 && nConns2 > 1)
-//            return null;
-
-//        var line1 = worldNetworks.getTransmissionLine(endpoint1);
-//        var line2 = worldNetworks.getTransmissionLine(endpoint2);
-
-//        TransmissionLine line;
-//        if(line1 != null && line2 != null) {
-//            PowerGrid.LOGGER.info("Merging lines");
-//            // Merge lines
-//            line1.merge(line2);
-//            line = line1;
-//        } else if(line1 != null || line2 != null) {
-//            PowerGrid.LOGGER.info("Extending line");
-//            // Extend one line
-//            line = line1 != null ? line1 : line2;
-//            var visited = new HashSet<IElectricNode>();
-//            var toVisit = new ArrayList<IElectricNode>();
-//            toVisit.add(line1 != null ? endpoint2.getNode(world) : endpoint1.getNode(world));
-//            traceGraph(worldNetworks, line, visited, toVisit);
-//        } else {
-//            PowerGrid.LOGGER.info("New line");
-//            // Completely new line
-//            line = new TransmissionLine();
-//            worldNetworks.transmissionLines.add(line);
-//            var visited = new HashSet<IElectricNode>();
-//            var toVisit = new ArrayList<IElectricNode>();
-//            toVisit.add(endpoint1.getNode(world));
-//            toVisit.add(endpoint2.getNode(world));
-//            traceGraph(worldNetworks, line, visited, toVisit);
-//        }
-
         line.addHolder(forEntity);
+        line.unassignNodes();
         for(var holder : line.holders) {
             var n1 = holder.getEndpoint1().getNode(world);
             var n2 = holder.getEndpoint2().getNode(world);
             // Make sure everything is updated.
             worldNetworks.globalGraph.connect(n1, n2, holder, line);
             holder.setWire(line);
+        }
+        for(var holder : line.holders) {
+            var n1 = holder.getEndpoint1().getNode(world);
+            var n2 = holder.getEndpoint2().getNode(world);
+            handleEdge(worldNetworks, line, n1);
+            handleEdge(worldNetworks, line, n2);
         }
         return line;
     }
@@ -365,7 +360,6 @@ public class GlobalElectricNetworks {
         public final World world;
         public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
         public final List<TransmissionLine> transmissionLines = new ArrayList<>();
-//        public final Map<IElectricNode, TransmissionLine> transmissionLineMap = new HashMap<>();
         public final NetworkGraph globalGraph = new NetworkGraph();
 
         public WorldNetworks(World world) {
@@ -397,10 +391,6 @@ public class GlobalElectricNetworks {
         public boolean isTransmissionLinePoint(IWireEndpoint endpoint) {
             return globalGraph.isTransmissionLinePoint(endpoint.getNode(world));
         }
-
-//        public TransmissionLine getTransmissionLine(IWireEndpoint endpoint) {
-//            return transmissionLineMap.get(endpoint.getNode(world));
-//        }
 
         public void removeAll(Collection<ElectricalNetwork> networks) {
             subnetworks.removeAll(networks);

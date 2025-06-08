@@ -93,7 +93,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
         float energy = 0;
         if (wire != null) {
-            energy += wire.power() / 20f;
+            // We have to use current here since the wire might be a transmission line,
+            // which needs special resistance handling.
+            var I = wire.current();
+            energy += I * I * getResistance() / 20f;
         }
         if(temperature < overheatTemperature) {
             // If wire is overheated it is considered dead.
