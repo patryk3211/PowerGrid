@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.light.fixture;
 
+import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,13 +23,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulbState;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
-public class LightFixtureBlockEntity extends ElectricBlockEntity {
+public class LightFixtureBlockEntity extends ElectricBlockEntity implements CustomRenderBoundingBoxBlockEntity {
     private SwitchedWire filament;
     private LightBulbState bulbState;
 
@@ -143,5 +145,10 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
 
     public SwitchedWire getFilament() {
         return filament;
+    }
+
+    @Override
+    public Box getRenderBoundingBox() {
+        return new Box(pos);
     }
 }

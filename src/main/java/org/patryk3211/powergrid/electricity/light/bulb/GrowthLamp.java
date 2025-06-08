@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.light.bulb;
 import com.jozufozu.flywheel.core.PartialModel;
 import net.minecraft.item.Item;
 import net.minecraft.server.world.ServerWorld;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
@@ -37,8 +38,6 @@ public class GrowthLamp extends LightBulb {
     }
 
     public static class State extends SimpleState {
-        public static final int RADIUS = 2;
-
         public <T extends Item & ILightBulb> State(T bulb, LightFixtureBlockEntity fixture, Supplier<Function<LightBulb.State, PartialModel>> modelProviderSupplier) {
             super(bulb, fixture, modelProviderSupplier);
         }
@@ -56,9 +55,10 @@ public class GrowthLamp extends LightBulb {
 
             var origin = fixture.getPos();
             var facing = fixture.getCachedState().get(FACING).getOpposite();
-            int xMin = -RADIUS, xMax = RADIUS;
-            int yMin = -RADIUS, yMax = RADIUS;
-            int zMin = -RADIUS, zMax = RADIUS;
+            final var radius = ModdedConfigs.server().electricity.growthLampRadius.get();
+            int xMin = -radius, xMax = radius;
+            int yMin = -radius, yMax = radius;
+            int zMin = -radius, zMax = radius;
 
             switch(facing) {
                 case EAST -> xMin = 0;
@@ -71,7 +71,7 @@ public class GrowthLamp extends LightBulb {
 
             var serverWorld = (ServerWorld) world;
             var random = serverWorld.random;
-            if(random.nextInt(50 / power) == 0) {
+            if(random.nextInt(ModdedConfigs.server().electricity.growthLampChance.get() / power) == 0) {
                 var x = random.nextBetween(xMin, xMax);
                 var y = random.nextBetween(yMin, yMax);
                 var z = random.nextBetween(zMin, zMax);

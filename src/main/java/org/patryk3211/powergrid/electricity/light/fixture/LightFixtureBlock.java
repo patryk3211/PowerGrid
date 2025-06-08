@@ -158,11 +158,6 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
     }
 
     @Override
-    public VoxelShape getCullingShape(BlockState state, BlockView world, BlockPos pos) {
-        return VoxelShapes.fullCube();
-    }
-
-    @Override
     public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
         super.onBroken(world, pos, state);
     }

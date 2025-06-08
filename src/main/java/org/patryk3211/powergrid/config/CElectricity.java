@@ -21,6 +21,9 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat heaterResistance = f(10, 0.1f, "heaterResistance", Comments.heaterResistance);
     public final ConfigFloat heaterFanProcessingSpeedMultiplier = f(0.75f, 0, "heaterFanProcessingSpeedMultiplier", Comments.heaterFanProcessingSpeedMultiplier);
 
+    public final ConfigInt growthLampRadius = i(2, 1, "growthLampRadius", Comments.growthLampRadius);
+    public final ConfigInt growthLampChance = i(50, 0, "growthLampChance", Comments.growthLampChance);
+
     @Override
     public String getName() {
         return "electricity";
@@ -29,5 +32,8 @@ public class CElectricity extends ConfigBase {
     private static class Comments {
         public static final String heaterResistance = "Heating coil electrical resistance";
         public static final String heaterFanProcessingSpeedMultiplier = "Multiplier of the base fan bulk processing time applied to items processed with the heating coil (lower value means faster processing)";
+
+        public static final String growthLampRadius = "Radius of the area affected by growth lamp effect";
+        public static final String growthLampChance = "Chance value for the growth lamp to tick a random block in its area (lower value = higher chance), this value is divided by lamp's power level";
     }
 }
