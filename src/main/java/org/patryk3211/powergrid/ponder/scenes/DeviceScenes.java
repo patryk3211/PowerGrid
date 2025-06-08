@@ -20,11 +20,14 @@ import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
 import com.simibubi.create.foundation.ponder.element.InputWindowElement;
 import com.simibubi.create.foundation.ponder.instruction.EmitParticlesInstruction;
 import com.simibubi.create.foundation.utility.Pointing;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
@@ -34,6 +37,9 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
+
+import java.util.Random;
+import java.util.function.UnaryOperator;
 
 public class DeviceScenes {
     public static void heatingCoilBasic(SceneBuilder scene, SceneBuildingUtil util) {
@@ -307,6 +313,44 @@ public class DeviceScenes {
 
         scene.markAsFinished();
         electric.unload();
+    }
+
+    public static void growthLamp(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("growth_lamp", "Accelerating crop growth");
+        scene.configureBasePlate(0, 0, 5);
+
+        var light = util.grid.at(2, 2, 2);
+        scene.showBasePlate();
+        scene.world.showSection(util.select.fromTo(1, 1, 1, 3, 1, 2), Direction.UP);
+        scene.idle(10);
+
+        scene.world.showSection(util.select.fromTo(2, 1, 2, 2, 3, 4), Direction.NORTH);
+        scene.idle(15);
+
+        scene.overlay.showText(80)
+                .text("The growth lamp is a special type of light bulb which accelerates crop growth in a certain area when powered on")
+                .attachKeyFrame()
+                .pointAt(util.vector.blockSurface(light, Direction.WEST))
+                .placeNearTarget();
+        scene.idle(40);
+        scene.world.modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 2), false);
+//        scene.idle(70);
+
+        var crops = new BlockPos[] {
+                util.grid.at(1, 1, 1),
+                util.grid.at(2, 1, 1),
+                util.grid.at(1, 1, 2),
+                util.grid.at(3, 1, 2)
+        };
+
+        var random = new Random();
+        UnaryOperator<BlockState> growCrop = state -> state.with(Properties.AGE_7, Math.min(state.get(Properties.AGE_7) + 1, 7));
+        for(int i = 0; i < 15; ++i) {
+            scene.world.modifyBlock(crops[random.nextInt(crops.length)], growCrop, false);
+            scene.idle(10);
+        }
+
+        scene.markAsFinished();
     }
 
     public static void motor(SceneBuilder scene, SceneBuildingUtil util) {

@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.info;
 
-import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -24,24 +23,13 @@ import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
-public class Voltage {
-    public static void max(float value, PlayerEntity player, List<Text> tooltip) {
-        boolean hasGoggles = GogglesItem.isWearingGoggles(player);
-
-        Lang.translate("tooltip.voltage.max")
-                .style(Formatting.GRAY).addTo(tooltip);
-        Lang.builder()
-                .add(Text.of(" ")).add(Lang.number(value))
-                .add(Text.of(" ")).add(Unit.VOLTAGE.get())
-                .style(Formatting.RED).addTo(tooltip);
-    }
-
+public class Power {
     public static void rated(float value, PlayerEntity player, List<Text> tooltip) {
-        Lang.translate("tooltip.voltage.rated")
+        Lang.translate("tooltip.power.rated")
                 .style(Formatting.GRAY).addTo(tooltip);
         Lang.builder()
                 .add(Text.of(" ")).add(Lang.number(value))
-                .add(Text.of(" ")).add(Unit.VOLTAGE.get())
-                .style(Formatting.DARK_AQUA).addTo(tooltip);
+                .add(Text.of(" ")).add(Unit.POWER.get())
+                .style(Formatting.YELLOW).addTo(tooltip);
     }
 }

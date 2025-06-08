@@ -33,6 +33,9 @@
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
 
+  "powergrid.tooltip.voltage.rated": "Rated voltage:",
+  "powergrid.tooltip.power.rated": "Rated power:",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",

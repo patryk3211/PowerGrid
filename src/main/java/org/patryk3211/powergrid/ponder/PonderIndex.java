@@ -57,6 +57,7 @@ public class PonderIndex {
 
         HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB)
                 .addStoryBoard("lightbulb", DeviceScenes::light);
+        HELPER.addStoryBoard(ModdedItems.GROWTH_LAMP, "growth_lamp", DeviceScenes::growthLamp);
 
         HELPER.addStoryBoard(ModdedBlocks.WIRE_CONNECTOR, "wire/connector", WireScenes::connector);
 

@@ -19,6 +19,7 @@ import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
@@ -49,11 +50,21 @@ public class ModdedItems {
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
             .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
                 case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
-                case ON -> ModdedPartialModels.LIGHT_BULB_ON;
+                case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
             }))
-            .transform(LightBulb.setProperties(30, 60, 30))
-            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/light_bulb")))
+            .transform(LightBulb.setProperties(30, 60, 30, 1450, 0.005f))
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/lamps/light_bulb")))
+            .register();
+
+    public static final ItemEntry<GrowthLamp> GROWTH_LAMP = REGISTRATE.item("growth_lamp", GrowthLamp::new)
+            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
+                case OFF -> ModdedPartialModels.GROWTH_LAMP_OFF;
+                case LOW_POWER, ON -> ModdedPartialModels.GROWTH_LAMP_ON;
+                case BROKEN -> ModdedPartialModels.GROWTH_LAMP_BROKEN;
+            }))
+            .transform(LightBulb.setProperties(120, 90, 40, 1600, 0.01f))
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/lamps/growth_lamp")))
             .register();
 
     public static final ItemEntry<Item> RESISTIVE_COIL = ingredient("resistive_coil");

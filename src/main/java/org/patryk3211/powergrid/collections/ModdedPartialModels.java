@@ -28,9 +28,13 @@ public class ModdedPartialModels {
     public static final PartialModel ROTOR_FULL = block("rotor/rotor_none");
     public static final PartialModel ROTOR_SHAFT = block("rotor/rotor_shaft");
 
-    public static final PartialModel LIGHT_BULB_OFF = block("light_bulb");
-    public static final PartialModel LIGHT_BULB_ON = block("light_bulb_on");
-    public static final PartialModel LIGHT_BULB_BROKEN = block("light_bulb_broken");
+    public static final PartialModel LIGHT_BULB_OFF = block("lamps/light_bulb");
+    public static final PartialModel LIGHT_BULB_ON = block("lamps/light_bulb_on");
+    public static final PartialModel LIGHT_BULB_BROKEN = block("lamps/light_bulb_broken");
+
+    public static final PartialModel GROWTH_LAMP_OFF = block("lamps/growth_lamp");
+    public static final PartialModel GROWTH_LAMP_ON = block("lamps/growth_lamp_on");
+    public static final PartialModel GROWTH_LAMP_BROKEN = block("lamps/growth_lamp_broken");
 
     public static final PartialModel HV_SWITCH_ROD = block("switches/hv_switch_rod");
 

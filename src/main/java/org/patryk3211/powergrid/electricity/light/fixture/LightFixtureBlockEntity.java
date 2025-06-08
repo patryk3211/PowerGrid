@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.light.fixture;
 
+import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,123 +23,69 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
+import org.patryk3211.powergrid.electricity.light.bulb.LightBulbState;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
-import static org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock.POWER;
-
-public class LightFixtureBlockEntity extends ElectricBlockEntity {
+public class LightFixtureBlockEntity extends ElectricBlockEntity implements CustomRenderBoundingBoxBlockEntity {
     private SwitchedWire filament;
-
-    private ItemStack lightBulb;
-    private boolean burned;
+    private LightBulbState bulbState;
 
     public LightFixtureBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-
-        burned = false;
-        lightBulb = null;
-    }
-
-    @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 0.005f, 0.1f, 1700f)
-                .noOverheatBehaviour().ignoreExtraCooling();
+        bulbState = null;
     }
 
     @Override
     public void tick() {
         super.tick();
 
-        if(lightBulb != null && !burned) {
-            applyLostPower(filament.power());
-
-            assert lightBulb.getItem() instanceof ILightBulb;
-            var lightBulbProperties = (ILightBulb) lightBulb.getItem();
-
-            filament.setResistance(lightBulbProperties.resistanceFunction(thermalBehaviour.getTemperature()));
-
-            if(thermalBehaviour.isOverheated()) {
-                burned = true;
-                filament.setState(false);
-            }
-        }
-
-        if(!world.isClient) {
-            int powerLevel = 0;
-            if(!burned) {
-                var temperature = thermalBehaviour.getTemperature();
-                if(temperature > 1400f) {
-                    powerLevel = 2;
-                } else if(temperature > 1200f) {
-                    powerLevel = 1;
-                }
-            }
-            if(powerLevel != getCachedState().get(POWER)) {
-                world.setBlockState(pos, getCachedState().with(POWER, powerLevel));
-            }
+        if(bulbState != null) {
+            bulbState.tick();
+            markDirty();
         }
     }
 
     private void lightBulbChanged() {
-        if(lightBulb == null) {
+        if(bulbState == null) {
             filament.setState(false);
-            notifyUpdate();
-            return;
+        } else {
+            filament.setResistance(bulbState.resistance());
+            filament.setState(!bulbState.isBurned());
         }
-
-        assert lightBulb.getItem() instanceof ILightBulb;
-        var lightBulbProperties = (ILightBulb) lightBulb.getItem();
-        filament.setResistance(lightBulbProperties.resistanceFunction(thermalBehaviour.getTemperature()));
-        thermalBehaviour.setDissipationFactor(lightBulbProperties.dissipationFactor());
-        filament.setState(!burned);
         notifyUpdate();
     }
 
     @Nullable
-    public ILightBulb getLightBulbProperties() {
-        if(lightBulb == null)
-            return null;
-        return (ILightBulb) lightBulb.getItem();
-    }
-
-    public boolean isBurned() {
-        return burned;
-    }
-
-    @Nullable
-    public ILightBulb.State getState() {
-        if(lightBulb == null)
-            return null;
-        var powerLevel = getCachedState().get(POWER);
-        return burned ? ILightBulb.State.BROKEN : powerLevel > 0 ? ILightBulb.State.ON : ILightBulb.State.OFF;
+    public LightBulbState getBulbState() {
+        return bulbState;
     }
 
     @Override
     protected void write(NbtCompound tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        if(lightBulb != null) {
-            tag.put("Item", lightBulb.serializeNBT());
-            if(burned) {
-                tag.putBoolean("Burned", true);
-            }
+        if(bulbState != null) {
+            bulbState.write(tag);
         }
     }
 
     @Override
     protected void read(NbtCompound tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        if(tag.contains("Item")) {
-            lightBulb = ItemStack.fromNbt(tag.getCompound("Item"));
-            if(tag.contains("Burned")) {
-                burned = tag.getBoolean("Burned");
+        var currentItem = bulbState != null ? bulbState.getItem() : null;
+        var nbtItem = LightBulbState.getBulbItem(tag);
+        if(currentItem != nbtItem) {
+            if(nbtItem == null) {
+                bulbState = null;
+            } else {
+                bulbState = ((ILightBulb) nbtItem).createState(this);
             }
-        } else {
-            lightBulb = null;
-            burned = false;
+        }
+        if(bulbState != null) {
+            bulbState.read(tag);
         }
         lightBulbChanged();
     }
@@ -154,7 +101,6 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         boolean result = replaceBulbInternal(player, hand, usedStack);
         if(result) {
             lightBulbChanged();
-            thermalBehaviour.resetTemperature();
         }
         return result;
     }
@@ -162,36 +108,47 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     private boolean replaceBulbInternal(PlayerEntity player, Hand hand, ItemStack usedStack) {
         assert world != null;
         if(usedStack == null || usedStack.isEmpty()) {
-            if(lightBulb == null)
+            if(bulbState == null)
                 return false;
             if(!world.isClient) {
-                if(!burned)
-                    player.setStackInHand(hand, lightBulb);
-                lightBulb = null;
+                if(!bulbState.isBurned())
+                    player.setStackInHand(hand, bulbState.toStack());
+                bulbState = null;
             }
             return true;
         } else {
-            if(lightBulb == null) {
+            if(bulbState == null) {
                 if(!world.isClient) {
-                    lightBulb = usedStack.copyWithCount(1);
-                    if(!player.isCreative())
-                        usedStack.decrement(1);
-                    burned = false;
+                    var item = usedStack.getItem();
+                    if(item instanceof ILightBulb bulb) {
+                        bulbState = bulb.createState(this);
+                        if (!player.isCreative())
+                            usedStack.decrement(1);
+                    }
                 }
                 return true;
-            } else if(burned) {
+            } else if(bulbState.isBurned()) {
                 if(!world.isClient) {
-                    lightBulb = null;
+                    bulbState = null;
                 }
                 return true;
-            } else if(lightBulb.isOf(usedStack.getItem()) && usedStack.getCount() < usedStack.getMaxCount()) {
+            } else if(bulbState.isOf(usedStack.getItem()) && usedStack.getCount() < usedStack.getMaxCount()) {
                 if(!world.isClient) {
                     usedStack.increment(1);
-                    lightBulb = null;
+                    bulbState = null;
                 }
                 return true;
             }
         }
         return false;
+    }
+
+    public SwitchedWire getFilament() {
+        return filament;
+    }
+
+    @Override
+    public Box getRenderBoundingBox() {
+        return new Box(pos);
     }
 }

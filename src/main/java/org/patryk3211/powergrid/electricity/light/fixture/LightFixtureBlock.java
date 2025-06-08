@@ -35,6 +35,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +69,7 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
 
     public LightFixtureBlock(Settings settings) {
         super(settings.luminance(state -> switch(state.get(POWER)) {
-            case 1 -> 12;
+            case 1 -> 10;
             case 2 -> 15;
             default -> 0;
         }));
