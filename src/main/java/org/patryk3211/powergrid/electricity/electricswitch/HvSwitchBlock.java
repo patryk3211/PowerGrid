@@ -31,6 +31,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -42,8 +43,12 @@ import net.minecraft.world.WorldView;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 
-public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, IBE<HvSwitchBlockEntity> {
+import java.util.List;
+
+public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, IBE<HvSwitchBlockEntity>, IHaveElectricProperties {
     public static final IntProperty PART = IntProperty.of("part", 0, 1);
 
     private static final VoxelShape SHAPE_0 = VoxelShapes.union(
@@ -205,6 +210,10 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
         return true;
     }
 
+    public static float resistance() {
+        return 0.1f;
+    }
+
     @Override
     public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
         return ActionResult.FAIL;
@@ -224,5 +233,10 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
             }
         }
         return result;
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        Resistance.series(resistance(), player, tooltip);
     }
 }

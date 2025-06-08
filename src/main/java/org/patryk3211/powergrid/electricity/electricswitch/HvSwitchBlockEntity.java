@@ -108,9 +108,9 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
 
     public float getResistance() {
         if(rod == null || !isClosed())
-            return 0.1f;
+            return HvSwitchBlock.resistance();
         var x = rod.getValue();
-        return -999 * x + 999.1f;
+        return -999 * x + 999 + HvSwitchBlock.resistance();
     }
 
     @Override

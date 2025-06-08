@@ -186,6 +186,6 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        motor = builder.connect(20f, builder.terminalNode(0), builder.terminalNode(1));
+        motor = builder.connect(ElectricFanBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 }

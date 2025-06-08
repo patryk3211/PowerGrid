@@ -20,7 +20,10 @@ import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -33,9 +36,13 @@ import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.RotatedTerminalCollection;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.utility.Directions;
 
-public class ElectricMotorBlock extends DirectionalKineticBlock implements IElectric, IBE<ElectricMotorBlockEntity> {
+import java.util.List;
+
+public class ElectricMotorBlock extends DirectionalKineticBlock implements IElectric, IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
     private static final RotatedTerminalCollection TERMINALS = RotatedTerminalCollection
             .builder(RotatedTerminalCollection::rotateNorthToFacing)
             .add(new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 0, 7, 13, 3, 9, 16))
@@ -129,5 +136,14 @@ public class ElectricMotorBlock extends DirectionalKineticBlock implements IElec
     @Override
     public BlockEntityType<? extends ElectricMotorBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.ELECTRIC_MOTOR.get();
+    }
+
+    public static float resistance() {
+        return 10f;
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        Resistance.series(resistance(), player, tooltip);
     }
 }
