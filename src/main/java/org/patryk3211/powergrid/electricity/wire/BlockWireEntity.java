@@ -27,12 +27,10 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -59,8 +57,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         if(!(item.getItem() instanceof WireItem))
             throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
-        entity.item = (WireItem) item.getItem();
-        entity.itemCount = item.getCount();
+        entity.setItem((WireItem) item.getItem(), item.getCount());
 
         var pos = BlockTrace.alignPosition(endpoint1.getExactPosition(world));
         entity.setPos(pos.x, pos.y, pos.z);
@@ -269,16 +266,16 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         if(items > 0 && !getWorld().isClient) {
             var start = removedSegment.start;
             var vector = removedSegment.vector();
-            if(itemCount <= items)
+            if(getWireCount() <= items)
                 items = items - 1;
             ItemEntity itemEntity = new ItemEntity(this.getWorld(),
                     start.x + vector.x,
                     start.y + vector.y,
                     start.z + vector.z,
-                    new ItemStack(item, items));
+                    new ItemStack(getWireItem(), items));
             itemEntity.setToDefaultPickupDelay();
             this.getWorld().spawnEntity(itemEntity);
-            itemCount -= items;
+            incrementWireCount(-items);
         }
         dropWire();
         sendExtraData();
@@ -286,8 +283,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
     public BlockWireEntity flip() {
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), getWorld());
-        entity.item = item;
-        entity.itemCount = itemCount;
+        entity.setItem(getWireItem(), getWireCount());
         entity.setEndpoint1(getEndpoint2());
         entity.setEndpoint2(getEndpoint1());
         entity.getDataTracker().set(TEMPERATURE, getTemperature());
@@ -319,7 +315,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     public void extend(List<Point> points, int newItems, boolean notify) {
         if(getWorld().isClient)
             return;
-        itemCount += newItems;
+        incrementWireCount(newItems);
         this.segments.addAll(points);
         bakeBoundingBoxes();
 
@@ -342,7 +338,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         var junction = new JunctionWireEndpoint(junctionPos);
 
         var wire2 = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
-        wire2.item = item;
+        wire2.setItem(getWireItem(), 0);
         var splitSegment = new Point(segment.direction, segment.gridLength - segmentPoint);
         wire2.segments.add(splitSegment);
         this.segments.set(segmentIndex, new Point(segment.direction, segmentPoint - 1));
@@ -365,7 +361,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         wire2.refreshPosition();
 
         int items = (int) movedLength;
-        wire2.itemCount = items;
+        wire2.incrementWireCount(items);
 
         wire2.getDataTracker().set(TEMPERATURE, getTemperature());
         wire2.setEndpoint2(getEndpoint2());
