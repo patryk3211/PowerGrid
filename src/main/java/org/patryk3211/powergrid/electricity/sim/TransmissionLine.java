@@ -15,15 +15,56 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
+
+import java.util.HashSet;
+import java.util.Set;
 
 // This is not realistic in any way, but it's good enough
 // for this purpose. It even has "capacitance".
 public class TransmissionLine extends ElectricWire {
+    public final Set<WireEntity> holders = new HashSet<>();
     private double charge = 0;
 
     public TransmissionLine(double resistance, VoltageSourceNode node1, VoltageSourceNode node2) {
         super(resistance, node1, node2);
+    }
+
+    public TransmissionLine() {
+        this(1, new VoltageSourceNode(), new VoltageSourceNode());
+        // Hack to prevent exception.
+        this.resistance = 0;
+    }
+
+    public void addHolder(WireEntity wire) {
+        holders.add(wire);
+        resistance += wire.getResistance();
+    }
+
+    public void merge(TransmissionLine line) {
+        for(var holder : line.holders) {
+            holder.setWire(this);
+            addHolder(holder);
+        }
+        line.holders.clear();
+    }
+
+    @Override
+    public void remove() {
+        GlobalElectricNetworks.removeTransmissionLine(this);
+        var copyHolders = Set.copyOf(holders);
+        holders.clear();
+        for(var holder : copyHolders) {
+            holder.setWire(null);
+        }
+        // This avoids unnecessary duplicate calls if a new transmission line is created.
+        for(var holder : copyHolders) {
+            if(holder.getWire() == null && !holder.isRemoved()) {
+                holder.makeWire();
+            }
+        }
     }
 
     @Override

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powergrid:wire_connector",
+    "powergrid:heavy_wire_connector"
+  ]
+}

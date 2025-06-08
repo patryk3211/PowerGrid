@@ -18,25 +18,17 @@ package org.patryk3211.powergrid.electricity.base;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 public class ElectricBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<ElectricBehaviour> TYPE = new BehaviourType<>();
@@ -47,7 +39,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     private final List<IElectricNode> externalNodes = new LinkedList<>();
     private final List<ElectricWire> internalWires = new LinkedList<>();
 
-    private final List<List<Connection>> connections;
+    private final List<List<WireEntity>> connections;
     private boolean destroying = false;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
@@ -91,11 +83,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void unload() {
         var world = getWorld();
         for(var terminalConnections : connections) {
-            for(var connection : terminalConnections) {
-                var entity = connection.getEntity(world);
-                if(entity != null) {
-                    entity.dropWire();
-                }
+            for(var entity : terminalConnections) {
+                entity.dropWire();
             }
         }
         internalWires.forEach(ElectricWire::remove);
@@ -117,8 +106,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public void refreshConnectionEntities() {
         for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
-            for(var connection : connections.get(sourceTerminal)) {
-                var entity = connection.getEntity(getWorld());
+            for(var entity : connections.get(sourceTerminal)) {
                 if(entity instanceof HangingWireEntity wire)
                     wire.refreshTerminalPositions();
             }
@@ -130,21 +118,15 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         super.initialize();
     }
 
-    public void addConnection(int sourceTerminal, Connection connection) {
-        connections.get(sourceTerminal).add(connection);
+    public void addConnection(int sourceTerminal, WireEntity entity) {
+        connections.get(sourceTerminal).add(entity);
         blockEntity.notifyUpdate();
     }
 
-    // Must be called from WireEntity
-    public void removeConnection(int sourceTerminal, UUID entityId) {
+    public void removeConnection(int sourceTerminal, WireEntity entity) {
         var sourceConnections = connections.get(sourceTerminal);
-        for(var conn : sourceConnections) {
-            if(conn.wireEntityId.equals(entityId)) {
-                sourceConnections.remove(conn);
-                blockEntity.notifyUpdate();
-                return;
-            }
-        }
+        sourceConnections.remove(entity);
+        blockEntity.notifyUpdate();
     }
 
     @Override
@@ -160,18 +142,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public boolean hasConnection(int sourceTerminal, BlockWireEndpoint endpoint) {
         var sourceConnections = connections.get(sourceTerminal);
-        for(var connection : sourceConnections) {
-            var entity = connection.getEntity(getWorld());
-            if(entity == null)
-                return false;
+        for(var entity : sourceConnections) {
             if(entity.isConnectedTo(endpoint.getPos(), endpoint.getTerminal()))
                 return true;
         }
         return false;
-    }
-
-    public List<List<Connection>> getConnections() {
-        return connections;
     }
 
     public void breakConnections() {
@@ -183,39 +158,13 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
                 var sourceConnections = connections.get(sourceTerminal);
                 var endpoint = new BlockWireEndpoint(getPos(), sourceTerminal);
-                for(var connection : sourceConnections) {
-                    connection.notifyRemoved(world, endpoint);
+                for(var entity : sourceConnections) {
+                    entity.endpointRemoved(endpoint);
                 }
                 sourceConnections.clear();
             }
         }
         blockEntity.notifyUpdate();
         destroying = false;
-    }
-
-    public static class Connection {
-        public final BlockPos wireEntityPos;
-        public final UUID wireEntityId;
-
-        public Connection(BlockPos wireEntityPos, UUID wireEntityId) {
-            this.wireEntityPos = wireEntityPos;
-            this.wireEntityId = wireEntityId;
-        }
-
-        public WireEntity getEntity(World world) {
-            var entities = world.getNonSpectatingEntities(WireEntity.class, new Box(wireEntityPos).expand(1));
-            for(var entity : entities) {
-                if(wireEntityId.equals(entity.getUuid()))
-                    return entity;
-            }
-            return null;
-        }
-
-        public void notifyRemoved(World world, IWireEndpoint endpoint) {
-            var entity = getEntity(world);
-            if(entity != null) {
-                entity.endpointRemoved(endpoint);
-            }
-        }
     }
 }

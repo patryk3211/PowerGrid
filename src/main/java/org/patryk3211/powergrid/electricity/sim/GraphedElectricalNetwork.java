@@ -39,7 +39,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     @Override
     public void addWire(ElectricWire wire) {
         super.addWire(wire);
-        graph.connect(wire.node1, wire.node2);
+        graph.connect(wire.node1, wire.node2, wire);
     }
 
     @Override

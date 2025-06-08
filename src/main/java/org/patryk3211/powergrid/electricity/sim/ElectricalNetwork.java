@@ -101,6 +101,7 @@ public class ElectricalNetwork {
         if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode)
             --sourceCount;
 
+        node.setNetwork(null);
         setDirty();
     }
 
@@ -188,6 +189,7 @@ public class ElectricalNetwork {
         if(!wires.contains(wire))
             return;
         wires.remove(wire);
+        wire.setNetwork(null);
 
         updateConductance(wire, -wire.conductance());
     }

@@ -109,9 +109,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        // TODO: Since connection doesn't have to persist we can potentially store
-        //  the entity object and avoid unnecessary indirection.
-        behaviour.addConnection(terminal, new ElectricBehaviour.Connection(entity.getBlockPos(), entity.getUuid()));
+        behaviour.addConnection(terminal, entity);
     }
 
     @Override
@@ -119,7 +117,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        behaviour.removeConnection(terminal, entity.getUuid());
+        behaviour.removeConnection(terminal, entity);
     }
 
     @Override
