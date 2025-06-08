@@ -18,9 +18,11 @@ package org.patryk3211.powergrid.electricity.light.bulb;
 import com.jozufozu.flywheel.core.PartialModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.command.argument.ParticleEffectArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
@@ -81,13 +83,18 @@ public abstract class LightBulbState {
         applyPower(filament.power() - dissipatedPower);
         filament.setResistance(bulb.resistanceFunction(temperature));
 
+        var world = fixture.getWorld();
         if(isOverheated()) {
             burned = true;
             filament.setState(false);
+            if(world.isClient) {
+                var pos = fixture.getPos().toCenterPos();
+                world.addParticle(ParticleTypes.FLASH, pos.x, pos.y, pos.z, 0, 0, 0);
+            }
+            updatePowerLevel(0);
             return;
         }
 
-        var world = fixture.getWorld();
         if(!world.isClient) {
             int powerLevel = 0;
             if(temperature > 1400f) {
