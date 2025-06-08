@@ -38,8 +38,6 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
-import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntity;
-import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntityRenderer;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
@@ -49,12 +47,6 @@ import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedBlockEntities {
-    public static final BlockEntityEntry<BasicGeneratorBlockEntity> BASIC_GENERATOR =
-            REGISTRATE.blockEntity("basic_generator", BasicGeneratorBlockEntity::new)
-                    .validBlock(ModdedBlocks.BASIC_GENERATOR)
-                    .renderer(() -> BasicGeneratorBlockEntityRenderer::new)
-                    .register();
-
     public static final BlockEntityEntry<ConnectorBlockEntity> WIRE_CONNECTOR =
             REGISTRATE.blockEntity("wire_connector", ConnectorBlockEntity::new)
                     .validBlocks(ModdedBlocks.WIRE_CONNECTOR, ModdedBlocks.HEAVY_WIRE_CONNECTOR)

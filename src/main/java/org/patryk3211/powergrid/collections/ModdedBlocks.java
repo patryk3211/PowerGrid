@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -66,7 +65,6 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
-import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
@@ -80,13 +78,6 @@ import static net.minecraft.state.property.Properties.*;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedBlocks {
-    public static final BlockEntry<BasicGeneratorBlock> BASIC_GENERATOR = REGISTRATE.block("basic_generator", BasicGeneratorBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.horizontalBlock(ctx.getEntry(), modModel(prov, "block/basic_generator")))
-            .transform(BlockStressDefaults.setImpact(4.0))
-            .simpleItem()
-            .register();
-
     public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
             .blockstate((ctx, prov) ->
                     prov.simpleBlock(ctx.getEntry(), modModel(prov, "block/battery")))
