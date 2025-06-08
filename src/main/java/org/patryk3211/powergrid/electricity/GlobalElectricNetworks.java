@@ -18,19 +18,13 @@ package org.patryk3211.powergrid.electricity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GlobalElectricNetworks {
-    protected static final Map<World, List<ElectricalNetwork>> worldNetworks = new HashMap<>();
+    protected static final Map<World, WorldNetworks> worldNetworks = new HashMap<>();
 
     public static void init() {
         ServerTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
@@ -42,7 +36,7 @@ public class GlobalElectricNetworks {
         if(networks == null)
             return;
         List<ElectricalNetwork> removed = new LinkedList<>();
-        for(final var network : networks) {
+        for(final var network : networks.subnetworks) {
             if(network.isEmpty()) {
                 removed.add(network);
                 continue;
@@ -58,47 +52,9 @@ public class GlobalElectricNetworks {
     }
 
     public static ElectricalNetwork createNetwork(World level) {
-        var network = new ElectricalNetwork();
-        var networkList = worldNetworks.computeIfAbsent(level, key -> new LinkedList<>());
-        networkList.add(network);
-        return network;
+        var networkList = worldNetworks.computeIfAbsent(level, WorldNetworks::new);
+        return networkList.newNetwork();
     }
-
-    public static ElectricWire makeConnection(ElectricBehaviour behaviour1, IElectricNode node1, ElectricBehaviour behaviour2, IElectricNode node2, float resistance) {
-        assert behaviour1.getWorld() == behaviour2.getWorld();
-        if(node1 == node2)
-            return null;
-
-        // Put both nodes into the same network.
-        ElectricalNetwork network;
-        if(node1.getNetwork() == null && node2.getNetwork() == null) {
-            network = GlobalElectricNetworks.createNetwork(behaviour1.getWorld());
-            behaviour1.joinNetwork(network);
-            if(behaviour1 != behaviour2)
-                behaviour2.joinNetwork(network);
-        } else if(node1.getNetwork() == null) {
-            network = node2.getNetwork();
-            behaviour1.joinNetwork(network);
-        } else if(node2.getNetwork() == null) {
-            network = node1.getNetwork();
-            behaviour2.joinNetwork(network);
-        } else if(node1.getNetwork() != node2.getNetwork()) {
-            if(node1.getNetwork().size() >= node2.getNetwork().size()) {
-                network = node1.getNetwork();
-                network.merge(node2.getNetwork());
-            } else {
-                network = node2.getNetwork();
-                network.merge(node1.getNetwork());
-            }
-        } else {
-            network = node1.getNetwork();
-        }
-
-        var wire = new ElectricWire(resistance, node1, node2);
-        network.addWire(wire);
-        return wire;
-    }
-
 
     public static ElectricWire makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
         var node1 = endpoint1.getNode(world);
@@ -134,5 +90,30 @@ public class GlobalElectricNetworks {
         var wire = new ElectricWire(resistance, node1, node2);
         network.addWire(wire);
         return wire;
+    }
+
+    public static class WorldNetworks {
+        public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
+        public final List<TransmissionLine> transmissionLines = new ArrayList<>();
+        public final NetworkGraph globalGraph = new NetworkGraph();
+        public final World world;
+
+        public WorldNetworks(World world) {
+            this.world = world;
+        }
+
+        public ElectricalNetwork newNetwork() {
+            var network = new GraphedElectricalNetwork(globalGraph);
+            subnetworks.add(network);
+            return network;
+        }
+
+        public void add(ElectricalNetwork network) {
+            subnetworks.add(network);
+        }
+
+        public void removeAll(Collection<ElectricalNetwork> networks) {
+            subnetworks.removeAll(networks);
+        }
     }
 }
