@@ -31,9 +31,11 @@ public class TransmissionLineTests extends TestHelper {
 
         var VTR1 = Net1.V(0);
         var VTR2 = Net2.V(0);
-        var TL = new TransmissionLine(0.5f, VTR1, VTR2);
-        Net1.W(0.5f, V1, VTR1);
-        Net2.W(0.5f, N2, VTR2);
+
+        var TL = new TransmissionLine();
+        TL.setResistance(1.0f);
+        TL.connectNode1(V1);
+        TL.connectNode2(N2);
 
         Net2.W(5, N2, GND);
 
@@ -43,11 +45,13 @@ public class TransmissionLineTests extends TestHelper {
             TL.tick();
 
             System.out.printf("(i = %d):\n", i);
-            System.out.printf("  TL Voltage: %f\n", TL.node1.getVoltage());
+            System.out.printf("  TL1 Voltage: %f\n", TL.node1.getVoltage());
+            System.out.printf("  TL2 Voltage: %f\n", TL.node2.getVoltage());
             System.out.printf("  N2 Voltage: %f\n", N2.getVoltage());
         }
 
         Assertions.assertEquals(4.166f, N2.getVoltage(), 1e-3, "Transmission line transferred voltage is invalid");
         Assertions.assertEquals(V1.getCurrent(), -GND.getCurrent(), 1e-3, "Transferred current is invalid");
+        Assertions.assertEquals(0.833f, TL.potentialDifference(), 1e-3, "Transmission line has invalid potential difference");
     }
 }

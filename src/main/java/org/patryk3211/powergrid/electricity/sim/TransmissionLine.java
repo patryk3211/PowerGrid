@@ -29,6 +29,12 @@ public class TransmissionLine extends ElectricWire {
     public final Set<WireEntity> holders = new HashSet<>();
     private double charge = 0;
 
+    private double prevV1 = 0;
+    private double prevV2 = 0;
+
+    private double prevI1 = 0;
+    private double prevI2 = 0;
+
     private ElectricWire node1Wire = null;
     private ElectricWire node2Wire = null;
 
@@ -60,7 +66,6 @@ public class TransmissionLine extends ElectricWire {
         GlobalElectricNetworks.removeTransmissionLine(this);
         holders.clear();
 
-        // TODO: Figure out why wires are sometimes left behind.
         if(node1Wire != null) {
             node1Wire.remove();
             node1Wire = null;
@@ -135,6 +140,26 @@ public class TransmissionLine extends ElectricWire {
 
     public void tick() {
         assert resistance != 0 : "Resistance must not be zero in transmission line tick";
+//        float impedance = (float) resistance * 0.25f;
+//
+//        var Va_Ref = prevV2;
+//        var Va_Fwd = -node1.getCurrent() * impedance;
+//        double Va = node1.getVoltage() + Va_Fwd;
+//        ((VoltageSourceNode) node1).setVoltage((float) (Va+ Va_Ref));
+//
+//        var Vb_Ref = prevV1;
+//        var Vb_Fwd = -node2.getCurrent() * impedance;
+//        double Vb = node2.getVoltage() + Vb_Fwd;
+//        ((VoltageSourceNode) node2).setVoltage((float) (Vb+ Vb_Ref));
+//
+//        prevV1 = Va_Fwd;
+//        prevV2 = Vb_Fwd;
+
+//        var V_A = node1.getVoltage() + node2.getCurrent() * resistance * 0.5f;
+//        var V_B = node2.getVoltage() + node1.getCurrent() * resistance * 0.5f;
+//        charge1 -= node2.getCurrent();
+//        charge2 -= node1.getCurrent();
+
         var deltaI = -(node1.getCurrent() + node2.getCurrent()) * 0.5f;
         charge += deltaI;
 
@@ -144,6 +169,8 @@ public class TransmissionLine extends ElectricWire {
 
     @Override
     public float potentialDifference() {
+//        var node1Voltage = node1.getVoltage() - node1.getCurrent() * resistance * 0.25f;
+//        var node2Voltage = node2.getVoltage() - node2.getCurrent() * resistance * 0.25f;
         var node1Voltage = -node1.getCurrent() * resistance * 0.5f;
         var node2Voltage = -node2.getCurrent() * resistance * 0.5f;
         return (float) (node1Voltage - node2Voltage);

@@ -54,10 +54,13 @@ public class GlobalElectricNetworks {
             }
             network.calculate();
         }
+        networks.removeAll(removed);
         for(final var line : networks.transmissionLines) {
             line.tick();
         }
-        networks.removeAll(removed);
+        for(final var network : networks.subnetworks) {
+            network.calculate();
+        }
     }
 
     public static WorldNetworks getWorldNetworks(World world) {
@@ -72,9 +75,10 @@ public class GlobalElectricNetworks {
     private static void traceGraph(WorldNetworks worldNetworks, TransmissionLine line, Set<IElectricNode> visited, List<IElectricNode> toVisit) {
         while(!toVisit.isEmpty()) {
             var node = toVisit.remove(0);
-            if(worldNetworks.globalGraph.connectionCount(node) > 2) {
+            if(worldNetworks.globalGraph.connectionCount(node) > 2)
                 continue;
-            }
+            if(!worldNetworks.globalGraph.isTransmissionLinePoint(node))
+                continue;
             var connected = worldNetworks.globalGraph.getConnectedNodes(node);
             for(var connectedNode : connected) {
                 if(!visited.add(connectedNode))
@@ -152,7 +156,7 @@ public class GlobalElectricNetworks {
         for(var holder : line.holders) {
             var n1 = holder.getEndpoint1().getNode(world);
             var n2 = holder.getEndpoint2().getNode(world);
-            if(n1 == null || n2 == null || holder.isRemoved() || holder.getWire() != null)
+            if(n1 == null || n2 == null || holder.isRemoved() || holder.getWire() != null || holder.isOverheated())
                 continue;
             holder.makeWire();
         }
