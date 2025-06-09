@@ -67,7 +67,7 @@ public class PowerGrid implements ModInitializer {
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
 		ITEM_GROUP_KEY = Registries.ITEM_GROUP.getKey(ITEM_GROUP).get();
 
-		Registry.register(Registries.RECIPE_SERIALIZER, ReactionRecipeSerializer.ID, ReactionRecipeSerializer.INSTANCE);
+		Registry.register(Registries.RECIPE_SERIALIZER, ReactionRecipe.ID, ReactionRecipeSerializer.INSTANCE);
 		Registry.register(Registries.RECIPE_TYPE, ReactionRecipe.ID, ReactionRecipe.TYPE);
 
 		var magnetizing = MagnetizingRecipe.TYPE_INFO;

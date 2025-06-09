@@ -33,7 +33,6 @@ import org.patryk3211.powergrid.chemistry.recipe.equation.IReactionEquation;
 import java.util.Optional;
 
 public class ReactionRecipeSerializer implements RecipeSerializer<ReactionRecipe> {
-    public static final Identifier ID = new Identifier(PowerGrid.MOD_ID, "reaction");
     public static final ReactionRecipeSerializer INSTANCE = new ReactionRecipeSerializer();
 
     public static final Codec<ReagentStack> RESULT_CODEC = RecordCodecBuilder.create(instance -> instance.group(

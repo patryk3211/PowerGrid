@@ -26,7 +26,6 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -42,13 +41,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.chemistry.GasConstants;
@@ -61,7 +60,6 @@ import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
-import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
 import org.patryk3211.powergrid.utility.Unit;
@@ -77,8 +75,9 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
-    @NotNull
-    private ItemStack catalyzer;
+
+    private ChemicalVatUpgrade upgrade;
+    private ItemStack upgradeStack;
 
     private final Vector3d gasMomentum = new Vector3d();
 
@@ -89,7 +88,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         reagentInventory = new VolumeReagentInventory(Reagent.BLOCK_MOLE_AMOUNT * 8);
         progressStore = new RecipeProgressStore();
-        catalyzer = ItemStack.EMPTY;
+//        catalyzer = ItemStack.EMPTY;
         setLazyTickRate(20);
     }
 
@@ -505,22 +504,23 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 light();
             }
             return ActionResult.SUCCESS;
-        } else if(stack.isIn(ModdedTags.Item.CATALYZERS.tag)) {
-            if(!catalyzer.isEmpty())
-                return ActionResult.FAIL;
+        }
+        if(this.upgrade == null && stack.getItem() instanceof ChemicalVatUpgrade upgrade) {
             if(!world.isClient) {
-                catalyzer = stack.copyWithCount(1);
+                this.upgrade = upgrade;
+                this.upgradeStack = stack.copyWithCount(1);
+                this.upgrade.applyUpgrade(this, upgradeStack);
                 stack.decrement(1);
-                updateCatalyzer();
+                sendData();
             }
             return ActionResult.SUCCESS;
-        } else if(stack.isEmpty()) {
-            if(catalyzer.isEmpty())
-                return ActionResult.FAIL;
+        } else if(stack.isEmpty() && this.upgrade != null) {
             if(!world.isClient) {
-                player.setStackInHand(hand, catalyzer);
-                catalyzer = ItemStack.EMPTY;
-                updateCatalyzer();
+                this.upgrade.removeUpgrade(this, upgradeStack);
+                this.upgrade = null;
+                player.setStackInHand(hand, upgradeStack);
+                upgradeStack = null;
+                sendData();
             }
             return ActionResult.SUCCESS;
         }
@@ -532,20 +532,22 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         sendData();
     }
 
-    private void updateCatalyzer() {
-        if(!catalyzer.isEmpty())
-            reagentInventory.setCatalyzer(1.0f);
-        else
-            reagentInventory.setCatalyzer(0.0f);
-        sendData();
-    }
-
     @Override
     public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
         if(reagentInventory.getReagents().isEmpty())
             return false;
 
         Lang.translate("gui.chemical_vat.info_header").forGoggles(tooltip);
+
+        if(upgradeStack != null) {
+            var header = Lang.builder().translate("gui.chemical_vat.upgrade_header").style(Formatting.GRAY);
+            Lang.builder()
+                    .add(header)
+                    .add(Text.of(" "))
+                    .add(Text.translatable(upgradeStack.getTranslationKey()).formatted(Formatting.GREEN))
+                    .forGoggles(tooltip);
+        }
+
         Lang.builder().translate("gui.chemical_vat.temperature")
                 .style(Formatting.GRAY)
                 .forGoggles(tooltip);
@@ -602,10 +604,18 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         super.read(tag, clientPacket);
         reagentInventory.read(tag);
         progressStore.read(tag);
-        if(tag.contains("Catalyzer")) {
-            catalyzer = ItemStack.fromNbt(tag.getCompound("Catalyzer"));
+        if(tag.contains("Upgrade")) {
+            if(upgrade != null) {
+                upgrade.removeUpgrade(this, upgradeStack);
+            }
+            upgradeStack = ItemStack.fromNbt(tag.getCompound("Upgrade"));
+            upgrade = (ChemicalVatUpgrade) upgradeStack.getItem();
+            upgrade.applyUpgrade(this, upgradeStack);
+        } else if(upgrade != null) {
+            upgrade.removeUpgrade(this, upgradeStack);
+            upgrade = null;
+            upgradeStack = null;
         }
-        updateCatalyzer();
         if(tag.contains("Momentum")) {
             var momentum = tag.getCompound("Momentum");
             gasMomentum.x = momentum.getDouble("X");
@@ -619,8 +629,8 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         super.write(tag, clientPacket);
         reagentInventory.write(tag);
         progressStore.write(tag);
-        if(!catalyzer.isEmpty()) {
-            tag.put("Catalyzer", catalyzer.serializeNBT());
+        if(upgrade != null) {
+            tag.put("Upgrade", upgradeStack.serializeNBT());
         }
         var momentum = new NbtCompound();
         momentum.putDouble("X", gasMomentum.x);

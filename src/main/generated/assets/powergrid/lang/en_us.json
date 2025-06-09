@@ -69,6 +69,7 @@
   "powergrid.gui.chemical_vat.info_header": "Vat information",
   "powergrid.gui.chemical_vat.reagents": "Contents:",
   "powergrid.gui.chemical_vat.temperature": "Reagent temperature",
+  "powergrid.gui.chemical_vat.upgrade_header": "Upgrade:",
   "powergrid.gui.creative_resistor.current": "Current",
   "powergrid.gui.creative_resistor.info_header": "Creative resistor information",
   "powergrid.gui.creative_resistor.power": "Dissipated power",
