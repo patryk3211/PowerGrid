@@ -5,7 +5,8 @@
 	"name": "Create: Power Grid",
 	"description": "Providing electricity to a world near you.",
 	"authors": [
-		"patryk3211"
+		"patryk3211",
+		"Da-Negy"
 	],
 	"contact": {
 		"sources": "https://github.com/patryk3211/PowerGrid"
