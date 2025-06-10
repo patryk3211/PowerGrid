@@ -17,22 +17,230 @@ package org.patryk3211.powergrid.electricity.electrode;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.chemistry.reagent.Reagent;
+import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlockEntity;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
+import org.patryk3211.powergrid.utility.Directions;
+
+import java.util.*;
 
 public class VatElectrodeBlockEntity extends ElectricBlockEntity {
+    private FloatingNode tieNode;
+    private List<SwitchedWire> wires;
+    private final Map<VatElectrodeBlockEntity, ElectricWire> connectedElectrodes = new HashMap<>();
+    private float resistance;
+
     public VatElectrodeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        setLazyTickRate(10);
+    }
+
+    @Override
+    public void initialize() {
+        electricBehaviour.rebuildCircuit();
+        super.initialize();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+    }
+
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        if(updateConductance()) {
+            // Is conducting.
+            scanForOtherVats();
+        } else {
+            disconnectAll();
+        }
+    }
+
+    public static float calculateConductance(ChemicalVatBlockEntity vat) {
+        var reagents = new HashSet<Reagent>();
+        int totalAmount = 0;
+        var mixture = vat.getReagentMixture();
+        for(var reagent : mixture.getReagents()) {
+            if(mixture.getState(reagent) != ReagentState.LIQUID)
+                continue;
+            totalAmount += mixture.getAmount(reagent);
+            reagents.add(reagent);
+        }
+        float conductance = 0;
+        for(var reagent : reagents) {
+            float concentration = (float) mixture.getAmount(reagent) / totalAmount;
+            conductance += reagent.getLiquidConductance() * concentration;
+        }
+        return vat.getFluidLevel() * conductance;
+    }
+
+    public boolean updateConductance() {
+        var vat = getVat();
+        if(vat == null)
+            return false;
+        float conductance = calculateConductance(vat);
+        // Half resistance since each wire goes half way.
+        resistance = conductance > 0 ? 0.5f / conductance : 1;
+
+        for(var wire : wires) {
+            wire.setState(false);
+            wire.setResistance(resistance);
+            wire.setState(conductance > 0);
+        }
+        return conductance > 0;
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        // TODO: Build based on vat conditions.
+        disconnectAll();
+        builder.setTerminalCount(4);
+        if(world == null)
+            return;
+
+        var vat = getVat();
+        if(vat == null) {
+            world.breakBlock(pos, false);
+            return;
+        }
+        tieNode = builder.addInternalNode();
+        float conductance = calculateConductance(getVat());
+        // Half resistance since each wire goes half way.
+        resistance = conductance > 0 ? 0.5f / conductance : 1;
+
+        if(wires == null)
+            wires = new ArrayList<>();
+        wires.clear();
+        var state = getCachedState();
+        for(var dir : Directions.HORIZONTAL) {
+            var present = state.get(Directions.property(dir));
+            int index = VatElectrodeBlock.getTerminalIndex(dir);
+            builder.setExternalNode(index, present);
+            if(!present)
+                continue;
+
+            var wire = builder.connectSwitch(resistance, tieNode, builder.terminalNode(index), false);
+            wires.add(wire);
+            if(conductance > 0)
+                wire.setState(true);
+        }
     }
 
+    @Nullable
     public ChemicalVatBlockEntity getVat() {
-        return world.getBlockEntity(pos.down(), ModdedBlockEntities.CHEMICAL_VAT.get()).get();
+        if(world == null)
+            return null;
+        return world.getBlockEntity(pos.down(), ModdedBlockEntities.CHEMICAL_VAT.get()).orElse(null);
+    }
+
+    private void disconnectAll() {
+        if(connectedElectrodes == null)
+            return;
+        for(var connection : connectedElectrodes.entrySet()) {
+            var be = connection.getKey();
+            be.connectedElectrodes.remove(this);
+            connection.getValue().remove();
+        }
+        connectedElectrodes.clear();
+    }
+
+    private void scanForOtherVats() {
+        var map = new HashMap<BlockPos, ScanNode>();
+        var queue = new PriorityQueue<ScanNode>((a, b) -> Float.compare(a.resistance, b.resistance));
+        var initialNode = new ScanNode(pos.down(), resistance * 2, resistance * 2);
+        map.put(pos.down(), initialNode);
+        queue.add(initialNode);
+
+        var electrodeVats = new ArrayList<ScanNode>();
+        while(!queue.isEmpty()) {
+            var node = queue.poll();
+            for(var dir : Direction.values()) {
+                var neighborPos = node.pos.offset(dir);
+                var be = world.getBlockEntity(neighborPos);
+                if(!(be instanceof ChemicalVatBlockEntity vat))
+                    continue;
+                if(vat.getFluidLevel() == 0)
+                    continue;
+
+                var neighborNode = map.get(neighborPos);
+                if(neighborNode != null) {
+                    if(neighborNode.resistance == 0)
+                        continue;
+                    float newResistance = node.totalResistance + neighborNode.resistance;
+                    if(neighborNode.totalResistance < newResistance)
+                        continue;
+                    neighborNode.totalResistance = newResistance;
+                } else {
+                    var conductance = calculateConductance(vat);
+                    if(conductance == 0) {
+                        neighborNode = new ScanNode(neighborPos, 0, 0);
+                        map.put(neighborPos, neighborNode);
+                        continue;
+                    }
+                    float resistance = 1 / conductance;
+                    neighborNode = new ScanNode(neighborPos, resistance, node.totalResistance + resistance);
+                    map.put(neighborPos, neighborNode);
+                }
+                if(world.getBlockEntity(neighborPos.up()) instanceof VatElectrodeBlockEntity) {
+                    // Electrodes above vat
+                    electrodeVats.add(neighborNode);
+                }
+                queue.add(neighborNode);
+            }
+        }
+
+        var electrodes = new HashSet<VatElectrodeBlockEntity>();
+        for(var vat : electrodeVats) {
+            var electrode = (VatElectrodeBlockEntity) world.getBlockEntity(vat.pos.up());
+            assert electrode != null;
+            electrodes.add(electrode);
+
+            var wire = connectedElectrodes.get(electrode);
+            float connectionResistance = vat.totalResistance - resistance * 0.5f - vat.resistance * 0.5f;
+            if(wire != null) {
+                // Existing connection
+                wire.setResistance(connectionResistance);
+            } else {
+                // New wire
+                if(electrode.tieNode == null)
+                    continue;
+                wire = GlobalElectricNetworks.makeConnection(electricBehaviour, tieNode, electrode.electricBehaviour, electrode.tieNode, connectionResistance);
+                connectedElectrodes.put(electrode, wire);
+                electrode.connectedElectrodes.put(this, wire);
+            }
+        }
+        var iter = connectedElectrodes.entrySet().iterator();
+        while(iter.hasNext()) {
+            var connection = iter.next();
+            if(!electrodes.contains(connection.getKey())) {
+                connection.getKey().connectedElectrodes.remove(this);
+                connection.getValue().remove();
+                iter.remove();
+            }
+        }
+    }
+
+    private static class ScanNode {
+        public final BlockPos pos;
+        public float resistance;
+        public float totalResistance;
+        public ScanNode backtrace;
+
+        public ScanNode(BlockPos pos, float resistance, float totalResistance) {
+            this.pos = pos;
+            this.resistance = resistance;
+            this.totalResistance = totalResistance;
+            this.backtrace = null;
+        }
     }
 }

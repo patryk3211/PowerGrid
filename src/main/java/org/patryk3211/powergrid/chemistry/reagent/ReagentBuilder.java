@@ -130,6 +130,11 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
         return coloredWaterFluid(tint, temperature).build();
     }
 
+    public ReagentBuilder<T, P> liquidConductance(float conductance) {
+        onRegister(reagent -> reagent.withLiquidConductance(conductance));
+        return this;
+    }
+
     public ReagentBuilder<T, P> particleColor(int rgb) {
         onRegister(reagent -> reagent.withParticleColor(rgb));
         return this;

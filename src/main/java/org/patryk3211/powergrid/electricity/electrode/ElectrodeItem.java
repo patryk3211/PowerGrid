@@ -129,6 +129,9 @@ public class ElectrodeItem extends ChemicalVatUpgrade {
         if(state.getBlock() instanceof VatElectrodeBlock) {
             // Add electrode to existing block.
             world.setBlockState(electrodePos, state.with(Directions.property(dir), true));
+            var be = world.getBlockEntity(electrodePos);
+            if(be instanceof VatElectrodeBlockEntity electrode)
+                electrode.getElectricBehaviour().rebuildCircuit();
             return;
         }
         world.setBlockState(electrodePos, placementState(dir));
@@ -145,6 +148,12 @@ public class ElectrodeItem extends ChemicalVatUpgrade {
             var newState = state.with(Directions.property(dir), false);
             newState = electrodeBlock.processState(newState);
             world.setBlockState(electrodePos, newState);
+
+            if(newState.isOf(electrodeBlock)) {
+                var be = world.getBlockEntity(electrodePos);
+                if(be instanceof VatElectrodeBlockEntity electrode)
+                    electrode.getElectricBehaviour().rebuildCircuit();
+            }
         }
     }
 

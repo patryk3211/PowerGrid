@@ -77,6 +77,16 @@ public class VatElectrodeBlock extends ElectricBlock implements IBE<VatElectrode
                 .build());
     }
 
+    public static int getTerminalIndex(Direction dir) {
+        return switch(dir) {
+            case UP, DOWN -> -1;
+            case NORTH -> 0;
+            case SOUTH -> 1;
+            case EAST -> 2;
+            case WEST -> 3;
+        };
+    }
+
     @Override
     public BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.ENTITYBLOCK_ANIMATED;
