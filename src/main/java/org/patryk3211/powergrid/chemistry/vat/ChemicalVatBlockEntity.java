@@ -36,12 +36,12 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -60,6 +60,7 @@ import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
+import org.patryk3211.powergrid.chemistry.vat.upgrade.ChemicalVatUpgrade;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
 import org.patryk3211.powergrid.utility.Unit;
@@ -76,8 +77,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
 
-    private ChemicalVatUpgrade upgrade;
-    private ItemStack upgradeStack;
+    protected final Map<Direction, ItemStack> upgrades = new HashMap<>();
 
     private final Vector3d gasMomentum = new Vector3d();
 
@@ -88,7 +88,6 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         reagentInventory = new VolumeReagentInventory(Reagent.BLOCK_MOLE_AMOUNT * 8);
         progressStore = new RecipeProgressStore();
-//        catalyzer = ItemStack.EMPTY;
         setLazyTickRate(20);
     }
 
@@ -505,26 +504,44 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             }
             return ActionResult.SUCCESS;
         }
-        if(this.upgrade == null && stack.getItem() instanceof ChemicalVatUpgrade upgrade) {
-            if(!world.isClient) {
-                this.upgrade = upgrade;
-                this.upgradeStack = stack.copyWithCount(1);
-                this.upgrade.applyUpgrade(this, upgradeStack);
-                stack.decrement(1);
-                sendData();
+        if(stack.getItem() instanceof ChemicalVatUpgrade upgrade) {
+            var upgradeSide = upgrade.isSided() ? upgrade.getSide(hit) : null;
+            if(upgrades.containsKey(upgradeSide) || !upgrade.canApply(this, upgradeSide)) {
+                // Upgrade slot taken.
+                return ActionResult.FAIL;
             }
-            return ActionResult.SUCCESS;
-        } else if(stack.isEmpty() && this.upgrade != null) {
             if(!world.isClient) {
-                this.upgrade.removeUpgrade(this, upgradeStack);
-                this.upgrade = null;
-                player.setStackInHand(hand, upgradeStack);
-                upgradeStack = null;
+                var upgradeStack = stack.copyWithCount(1);
+                upgrade.applyUpgrade(this, upgradeStack, upgradeSide);
+                upgrades.put(upgradeSide, upgradeStack);
+                stack.decrement(1);
                 sendData();
             }
             return ActionResult.SUCCESS;
         }
         return ActionResult.FAIL;
+    }
+
+    public ActionResult removeUpgrade(@Nullable PlayerEntity player, @Nullable Direction side) {
+        var stack = upgrades.remove(side);
+        if(stack == null) {
+            if(side != Direction.UP)
+                stack = upgrades.remove(null);
+            if(stack == null)
+                return ActionResult.PASS;
+        }
+        var upgrade = (ChemicalVatUpgrade) stack.getItem();
+        upgrade.removeUpgrade(this, stack, side);
+
+        if(world.isClient)
+            return ActionResult.SUCCESS;
+        sendData();
+        if(player != null && player.giveItemStack(stack))
+            return ActionResult.SUCCESS;
+        // Couldn't give to player so we spawn it in the world.
+        var itemPos = pos.toCenterPos().offset(side != null ? side : Direction.UP, 0.6f);
+        world.spawnEntity(new ItemEntity(world, itemPos.x, itemPos.y, itemPos.z, stack));
+        return ActionResult.SUCCESS;
     }
 
     public void light() {
@@ -538,15 +555,6 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             return false;
 
         Lang.translate("gui.chemical_vat.info_header").forGoggles(tooltip);
-
-        if(upgradeStack != null) {
-            var header = Lang.builder().translate("gui.chemical_vat.upgrade_header").style(Formatting.GRAY);
-            Lang.builder()
-                    .add(header)
-                    .add(Text.of(" "))
-                    .add(Text.translatable(upgradeStack.getTranslationKey()).formatted(Formatting.GREEN))
-                    .forGoggles(tooltip);
-        }
 
         Lang.builder().translate("gui.chemical_vat.temperature")
                 .style(Formatting.GRAY)
@@ -604,17 +612,23 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         super.read(tag, clientPacket);
         reagentInventory.read(tag);
         progressStore.read(tag);
-        if(tag.contains("Upgrade")) {
-            if(upgrade != null) {
-                upgrade.removeUpgrade(this, upgradeStack);
+        if(tag.contains("Upgrades")) {
+            upgrades.clear();
+            var upgradeTag = tag.getCompound("Upgrades");
+            for(var indexStr : upgradeTag.getKeys()) {
+                var index = Integer.parseInt(indexStr);
+                Direction dir = index < 0 ? null : Direction.values()[index];
+                var stack = ItemStack.fromNbt(upgradeTag.getCompound(indexStr));
+                var upgrade = (ChemicalVatUpgrade) stack.getItem();
+                upgrade.readUpgrade(this, stack, dir);
+                upgrades.put(dir, stack);
             }
-            upgradeStack = ItemStack.fromNbt(tag.getCompound("Upgrade"));
-            upgrade = (ChemicalVatUpgrade) upgradeStack.getItem();
-            upgrade.applyUpgrade(this, upgradeStack);
-        } else if(upgrade != null) {
-            upgrade.removeUpgrade(this, upgradeStack);
-            upgrade = null;
-            upgradeStack = null;
+        } else if(!upgrades.isEmpty()) {
+            // All upgrades removed
+            upgrades.forEach((dir, stack) -> {
+                var upgrade = (ChemicalVatUpgrade) stack.getItem();
+                upgrade.readRemovedUpgrade(this, stack, dir);
+            });
         }
         if(tag.contains("Momentum")) {
             var momentum = tag.getCompound("Momentum");
@@ -629,9 +643,17 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         super.write(tag, clientPacket);
         reagentInventory.write(tag);
         progressStore.write(tag);
-        if(upgrade != null) {
-            tag.put("Upgrade", upgradeStack.serializeNBT());
+
+        if(!upgrades.isEmpty()) {
+            var upgradeTag = new NbtCompound();
+            for (var upgrade : upgrades.entrySet()) {
+                var dir = upgrade.getKey();
+                var index = dir == null ? -1 : dir.ordinal();
+                upgradeTag.put(Integer.toString(index), upgrade.getValue().serializeNBT());
+            }
+            tag.put("Upgrades", upgradeTag);
         }
+
         var momentum = new NbtCompound();
         momentum.putDouble("X", gasMomentum.x);
         momentum.putDouble("Y", gasMomentum.y);

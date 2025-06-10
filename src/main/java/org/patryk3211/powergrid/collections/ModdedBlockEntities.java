@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchInstance;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
+import org.patryk3211.powergrid.electricity.electrode.VatElectrodeBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
@@ -143,6 +144,11 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("electric_fan", ElectricFanBlockEntity::new)
                     .validBlock(ModdedBlocks.ELECTRIC_FAN)
                     .renderer(() -> ElectricFanRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<VatElectrodeBlockEntity> VAT_ELECTRODE =
+            REGISTRATE.blockEntity("vat_electrode", VatElectrodeBlockEntity::new)
+                    .validBlock(ModdedBlocks.VAT_ELECTRODE)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

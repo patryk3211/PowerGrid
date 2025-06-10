@@ -38,6 +38,9 @@ public class ModdedPartialModels {
 
     public static final PartialModel HV_SWITCH_ROD = block("switches/hv_switch_rod");
 
+    public static final PartialModel VAT_COPPER_ELECTRODE = block("copper_electrode");
+    public static final PartialModel VAT_SILVER_MESH = block("silver_mesh_upgrade");
+
     private static PartialModel block(String path) {
         return new PartialModel(PowerGrid.asResource("block/" + path));
     }

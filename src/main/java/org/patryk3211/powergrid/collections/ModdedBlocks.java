@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -53,6 +54,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
+import org.patryk3211.powergrid.electricity.electrode.VatElectrodeBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
@@ -520,6 +522,18 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_fan/item")))
                 .build()
+            .register();
+
+    public static final BlockEntry<VatElectrodeBlock> VAT_ELECTRODE = REGISTRATE.block("vat_electrode", VatElectrodeBlock::new)
+            // Block state only used for particles, rendering is handled in block entity renderer
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).partialState().addModels(
+                            ConfiguredModel.builder()
+                                    .modelFile(modModel(prov, "block/copper_electrode"))
+                                    .build()
+                            ))
+            .initialProperties(SharedProperties::copperMetal)
+            .transform(pickaxeOnly())
             .register();
 
     @SuppressWarnings("EmptyMethod")

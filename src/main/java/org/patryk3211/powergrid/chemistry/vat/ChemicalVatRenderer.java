@@ -28,9 +28,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
+import org.patryk3211.powergrid.chemistry.vat.upgrade.ChemicalVatUpgrade;
 import org.patryk3211.powergrid.utility.Directions;
 
 import java.util.HashSet;
+import java.util.Map;
 
 import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.*;
 
@@ -41,6 +43,12 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
 
     @Override
     protected void renderSafe(ChemicalVatBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
+        // Render upgrades
+        for(var upgradeEntry : be.upgrades.entrySet()) {
+            var upgrade = (ChemicalVatUpgrade) upgradeEntry.getValue().getItem();
+            upgrade.render(be, partialTicks, ms, bufferSource, upgradeEntry.getValue(), upgradeEntry.getKey(), light, overlay);
+        }
+
         renderItems(be, ms, bufferSource, light, overlay);
         renderFluid(be, ms, bufferSource, light);
     }

@@ -28,7 +28,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
@@ -42,8 +45,11 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+
+import java.util.List;
 
 public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntity>, IWrenchable {
     public static final BooleanProperty OPEN = Properties.OPEN;
@@ -200,15 +206,28 @@ public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntit
 
     @Override
     public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
-        var pos = context.getBlockPos();
-        var world = context.getWorld();
-        if(world.getBlockState(pos.offset(Direction.UP)).isOf(this)) {
-            return ActionResult.FAIL;
-        }
+        var result = onBlockEntityUse(context.getWorld(), context.getBlockPos(), vat -> vat.removeUpgrade(context.getPlayer(), context.getSide()));
+        if(result == ActionResult.PASS) {
+            var pos = context.getBlockPos();
+            var world = context.getWorld();
+            if(world.getBlockState(pos.offset(Direction.UP)).isOf(this))
+                return ActionResult.FAIL;
 
-        var newState = state.with(OPEN, !state.get(OPEN));
-        newState = updateAfterWrenched(newState, context);
-        world.setBlockState(pos, newState);
-        return ActionResult.SUCCESS;
+            var newState = state.with(OPEN, !state.get(OPEN));
+            newState = updateAfterWrenched(newState, context);
+            world.setBlockState(pos, newState);
+            return ActionResult.SUCCESS;
+        }
+        return result;
+    }
+
+    @Override
+    public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
+        var stacks = super.getDroppedStacks(state, builder);
+        var be = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
+        if(be instanceof ChemicalVatBlockEntity vat) {
+            stacks.addAll(vat.upgrades.values());
+        }
+        return stacks;
     }
 }

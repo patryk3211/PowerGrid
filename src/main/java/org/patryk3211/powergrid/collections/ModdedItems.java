@@ -19,7 +19,8 @@ import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.chemistry.CatalyzerItem;
+import org.patryk3211.powergrid.chemistry.vat.upgrade.CatalyzerItem;
+import org.patryk3211.powergrid.electricity.electrode.ElectrodeItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
@@ -87,6 +88,10 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<CatalyzerItem> SILVER_MESH = REGISTRATE.item("silver_mesh", CatalyzerItem::new)
             .transform(CatalyzerItem.setStrength(1.0f))
+            .register();
+
+    public static final ItemEntry<ElectrodeItem> COPPER_ELECTRODE = REGISTRATE.item("copper_electrode", ElectrodeItem::new)
+            .transform(ElectrodeItem.setModel(() -> () -> ModdedPartialModels.VAT_COPPER_ELECTRODE))
             .register();
 
     @SuppressWarnings("EmptyMethod")
