@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
-import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ReagentMixture implements ReagentConditions {
+public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> implements ReagentConditions {
     protected final Map<Reagent, Integer> reagents = new HashMap<>();
     private boolean burning;
     protected double energy;
@@ -55,6 +55,31 @@ public class ReagentMixture implements ReagentConditions {
         energy = 0;
         catalyzer = 0;
         burning = false;
+    }
+
+    @Override
+    protected MixtureSnapshot createSnapshot() {
+        return new MixtureSnapshot(this);
+    }
+
+    @Override
+    protected void readSnapshot(MixtureSnapshot mixtureSnapshot) {
+        reagents.clear();
+        totalAmount = 0;
+        heatMass = 0;
+        energy = mixtureSnapshot.getEnergy();
+        for(var entry : mixtureSnapshot.getReagents().entrySet()) {
+            var reagent = entry.getKey();
+            var amount = entry.getValue();
+            reagents.put(reagent, amount);
+            totalAmount += amount;
+            heatMass += stackHeatMass(amount, reagent);
+        }
+    }
+
+    @Override
+    protected void onFinalCommit() {
+        altered = true;
     }
 
     /**
@@ -115,8 +140,9 @@ public class ReagentMixture implements ReagentConditions {
      */
     public final int add(ReagentStack stack, TransactionContext transaction) {
         var maxTransfer = accepts(stack);
-        TransactionCallback.onSuccess(transaction, () -> addInternal(stack.getReagent(), maxTransfer, stack.getTemperature(), true));
-        return maxTransfer;
+        updateSnapshots(transaction);
+
+        return addInternal(stack.getReagent(), maxTransfer, stack.getTemperature(), true);
     }
 
     protected int addInternal(Reagent reagent, int amount, double temperature, boolean affectEnergy) {
@@ -194,9 +220,11 @@ public class ReagentMixture implements ReagentConditions {
      */
     public final ReagentStack remove(Reagent reagent, int amount, TransactionContext transaction) {
         var temperature = temperature();
-        var removed = Math.min(getAmount(reagent), amount);
-        TransactionCallback.onSuccess(transaction, () -> removeInternal(reagent, removed, true));
-        return new ReagentStack(reagent, removed, temperature);
+
+        updateSnapshots(transaction);
+
+        int actual = removeInternal(reagent, amount, true);
+        return new ReagentStack(reagent, actual, temperature);
     }
 
     protected int removeInternal(Reagent reagent, int amount, boolean affectEnergy) {
@@ -226,10 +254,12 @@ public class ReagentMixture implements ReagentConditions {
      * @return Total added amount
      */
     public int add(ReagentMixture mixture, TransactionContext transaction) {
+        updateSnapshots(transaction);
+
         int total = 0;
         for(var entry : mixture.reagents.entrySet()) {
             var stack = new ReagentStack(entry.getKey(), entry.getValue(), mixture.temperature());
-            total += add(stack, transaction);
+            total += addInternal(stack.getReagent(), stack.getAmount(), stack.getTemperature(), true);
         }
         return total;
     }
@@ -250,14 +280,18 @@ public class ReagentMixture implements ReagentConditions {
         }
         if(total < requestedAmount)
             requestedAmount = total;
+
+        updateSnapshots(transaction);
+
         var temperature = temperature();
         var extractedMixture = new ReagentMixture();
         int extractedAmount = 0;
         for(var reagent : reagents) {
             double concentration = (double) getAmount(reagent) / total;
             int reagentAmount = Math.min(Math.max((int) Math.round(requestedAmount * concentration), 1), requestedAmount - extractedAmount);
-            extractedMixture.addInternal(reagent, reagentAmount, temperature, true);
-            TransactionCallback.onSuccess(transaction, () -> removeInternal(reagent, reagentAmount, true));
+            var removed = removeInternal(reagent, reagentAmount, true);
+            extractedMixture.addInternal(reagent, removed, temperature, true);
+
             extractedAmount += reagentAmount;
         }
         return extractedMixture;
@@ -353,8 +387,9 @@ public class ReagentMixture implements ReagentConditions {
         progressStore.setProgress(reaction, remainder);
     }
 
-    public int applyReaction(ElectrolysisRecipe recipe, float potential, ReagentMixture negativeReceiver) {
-        var rate = (int) (potential / recipe.getMinimumPotential());
+    public int applyReaction(ElectrolysisRecipe recipe, float current, ReagentMixture negativeReceiver) {
+        // TODO: Maybe add progress store here as well.
+        var rate = (int) (current * 2);
         for(var ingredient : recipe.getReagentIngredients()) {
             var amount = getAmount(ingredient.getReagent());
             rate = Math.min(amount / ingredient.getRequiredAmount(), rate);

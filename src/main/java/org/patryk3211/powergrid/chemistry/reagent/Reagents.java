@@ -86,7 +86,7 @@ public class Reagents {
 
     public static final ReagentEntry<Reagent> DISSOLVED_REDSTONE_SULFATE = dissolvedReagent("dissolved_redstone_sulfate", REDSTONE_SULFATE, WATER.liquid())
             .simpleFluid(0xFFFF2020, 22f)
-            .liquidConductance(0.05f)
+            .liquidConductance(0.2f)
             .register();
 
     @SuppressWarnings("EmptyMethod")

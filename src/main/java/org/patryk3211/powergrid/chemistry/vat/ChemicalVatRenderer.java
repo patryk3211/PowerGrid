@@ -18,8 +18,10 @@ package org.patryk3211.powergrid.chemistry.vat;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import com.simibubi.create.foundation.fluid.FluidRenderer;
+import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
@@ -123,6 +125,7 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
                     return;
 
                 int color = FluidVariantRendering.getColor(variant);
+
                 var buffer = FluidRenderer.getFluidBuilder(bufferSource);
                 FluidRenderer.renderStillTiledFace(Direction.UP, xMin, zMin, xMax, zMax, yMax, buffer, ms, light, color, fluidTexture);
 
@@ -139,6 +142,7 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
                         depth = 1.0f;
                     FluidRenderer.renderStillTiledFace(dir, 0.0f, yMax - levelDiff, 1.0f, yMax, depth, buffer, ms, light, color, fluidTexture);
                 }
+
             }
         }
     }

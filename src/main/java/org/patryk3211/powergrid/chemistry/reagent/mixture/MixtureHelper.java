@@ -27,7 +27,7 @@ public class MixtureHelper {
         if(thisReagents.isEmpty())
             return;
         var otherReagents = new HashSet<Reagent>();
-        for(var reagent : mixture1.getReagents()) {
+        for(var reagent : mixture2.getReagents()) {
             if(mixture2.getState(reagent) == state)
                 otherReagents.add(reagent);
         }

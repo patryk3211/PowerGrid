@@ -60,6 +60,8 @@ import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
+import org.patryk3211.powergrid.chemistry.vat.particles.BubbleParticleData;
+import org.patryk3211.powergrid.chemistry.vat.particles.GasParticleData;
 import org.patryk3211.powergrid.chemistry.vat.upgrade.ChemicalVatUpgrade;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
@@ -80,6 +82,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
     protected final Map<Direction, ItemStack> upgrades = new HashMap<>();
 
     private final Vector3d gasMomentum = new Vector3d();
+    private int bubbles = 0;
 
     private StorageView<FluidVariant> maxFluid;
 
@@ -226,6 +229,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         markDirty();
         if(reagentInventory.wasAltered())
             sendData();
+    }
+
+    public void addBubbles(int amount) {
+        if(world.isClient)
+            bubbles += amount;
     }
 
     @Override
@@ -409,11 +417,24 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     @Environment(EnvType.CLIENT)
     private void createFluidParticles() {
+        if(!getCachedState().get(OPEN))
+            return;
         var r = world.random;
+        float fluidLevel = getFluidLevel();
+
+        var bubbleChance = bubbles * 0.1f;
+        while(r.nextFloat() < bubbleChance) {
+            float bx = pos.getX() + CORNER + SIDE * r.nextFloat();
+            float bz = pos.getZ() + CORNER + SIDE * r.nextFloat();
+            float by = pos.getY() + CORNER + FLUID_SPAN * fluidLevel * r.nextFloat() * 0.5f;
+            world.addParticle(new BubbleParticleData(pos), bx, by, bz, 0, 0, 0);
+            bubbleChance -= 1;
+        }
+        bubbles = 0;
+
         if(r.nextFloat() > 1 / 12f || maxFluid == null)
             return;
 
-        float fluidLevel = getFluidLevel();
         float surface = pos.getY() + CORNER + FLUID_SPAN * fluidLevel + 1 / 32f;
 
         for(var fluid : getFluidStorage(null)) {
@@ -464,7 +485,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     vY = gasMomentum.y / mass;
                     vZ = gasMomentum.z / mass;
                 }
-                world.addParticle(new ChemicalVatParticleData(red, green, blue),
+                world.addParticle(new GasParticleData(red, green, blue),
                         x + r.nextFloat() * 12 / 16f, surface, z + r.nextFloat() * 12 / 16f, vX, vY, vZ);
                 chance -= 1;
             }

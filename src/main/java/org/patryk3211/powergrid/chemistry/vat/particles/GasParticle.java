@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.chemistry.vat;
+package org.patryk3211.powergrid.chemistry.vat.particles;
 
 import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 
-public class ChemicalVatParticle extends SpriteBillboardParticle {
+public class GasParticle extends SpriteBillboardParticle {
     private final SpriteProvider sprites;
 
-    public ChemicalVatParticle(ChemicalVatParticleData parameters, ClientWorld world, double x, double y, double z, double vX, double vY, double vZ, SpriteProvider sprites) {
+    public GasParticle(GasParticleData parameters, ClientWorld world, double x, double y, double z, double vX, double vY, double vZ, SpriteProvider sprites) {
         super(world, x, y, z, vX, vY, vZ);
 
         var random = world.getRandom();
@@ -51,15 +51,15 @@ public class ChemicalVatParticle extends SpriteBillboardParticle {
         return ParticleTextureSheet.PARTICLE_SHEET_OPAQUE;
     }
 
-    public static class Factory implements ParticleFactory<ChemicalVatParticleData> {
+    public static class Factory implements ParticleFactory<GasParticleData> {
         private final SpriteProvider sprites;
 
         public Factory(SpriteProvider sprites) {
             this.sprites = sprites;
         }
 
-        public Particle createParticle(ChemicalVatParticleData data, ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            return new ChemicalVatParticle(data, world, x, y, z, xSpeed, ySpeed, zSpeed, this.sprites);
+        public Particle createParticle(GasParticleData data, ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+            return new GasParticle(data, world, x, y, z, xSpeed, ySpeed, zSpeed, this.sprites);
         }
     }
 }

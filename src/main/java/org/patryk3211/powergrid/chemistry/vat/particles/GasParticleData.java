@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.chemistry.vat;
+package org.patryk3211.powergrid.chemistry.vat.particles;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -30,35 +30,35 @@ import net.minecraft.util.dynamic.Codecs;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.collections.ModdedParticles;
 
-public class ChemicalVatParticleData implements ICustomParticleDataWithSprite<ChemicalVatParticleData>, ParticleEffect {
-    public static final Codec<ChemicalVatParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codecs.VECTOR_3F.fieldOf("color").forGetter(ChemicalVatParticleData::getColor)
-    ).apply(instance, ChemicalVatParticleData::new));
-    public static final Factory<ChemicalVatParticleData> FACTORY = new Factory<>() {
+public class GasParticleData implements ICustomParticleDataWithSprite<GasParticleData>, ParticleEffect {
+    public static final Codec<GasParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codecs.VECTOR_3F.fieldOf("color").forGetter(GasParticleData::getColor)
+    ).apply(instance, GasParticleData::new));
+    public static final Factory<GasParticleData> FACTORY = new Factory<>() {
         @Override
-        public ChemicalVatParticleData read(ParticleType<ChemicalVatParticleData> type, StringReader reader) throws CommandSyntaxException {
+        public GasParticleData read(ParticleType<GasParticleData> type, StringReader reader) throws CommandSyntaxException {
             Vector3f color = AbstractDustParticleEffect.readColor(reader);
-            return new ChemicalVatParticleData(color);
+            return new GasParticleData(color);
         }
 
         @Override
-        public ChemicalVatParticleData read(ParticleType<ChemicalVatParticleData> type, PacketByteBuf buf) {
+        public GasParticleData read(ParticleType<GasParticleData> type, PacketByteBuf buf) {
             var color = buf.readVector3f();
-            return new ChemicalVatParticleData(color);
+            return new GasParticleData(color);
         }
     };
 
     private final Vector3f color;
 
-    public ChemicalVatParticleData() {
+    public GasParticleData() {
         this.color = new Vector3f();
     }
 
-    public ChemicalVatParticleData(Vector3f color) {
+    public GasParticleData(Vector3f color) {
         this.color = color;
     }
 
-    public ChemicalVatParticleData(float r, float g, float b) {
+    public GasParticleData(float r, float g, float b) {
         this.color = new Vector3f(r, g, b);
     }
 
@@ -82,17 +82,17 @@ public class ChemicalVatParticleData implements ICustomParticleDataWithSprite<Ch
     }
 
     @Override
-    public ParticleEffect.Factory<ChemicalVatParticleData> getDeserializer() {
+    public ParticleEffect.Factory<GasParticleData> getDeserializer() {
         return FACTORY;
     }
 
     @Override
-    public Codec<ChemicalVatParticleData> getCodec(ParticleType<ChemicalVatParticleData> type) {
+    public Codec<GasParticleData> getCodec(ParticleType<GasParticleData> type) {
         return CODEC;
     }
 
     @Override
-    public ParticleManager.SpriteAwareFactory<ChemicalVatParticleData> getMetaFactory() {
-        return ChemicalVatParticle.Factory::new;
+    public ParticleManager.SpriteAwareFactory<GasParticleData> getMetaFactory() {
+        return GasParticle.Factory::new;
     }
 }

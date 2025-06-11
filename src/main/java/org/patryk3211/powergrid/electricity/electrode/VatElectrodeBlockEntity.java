@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.electricity.electrode;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
@@ -42,8 +41,6 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
     private final Map<VatElectrodeBlockEntity, ElectricWire> connectedElectrodes = new HashMap<>();
     private float resistance;
 
-    private int bubbleRate = 0;
-
     public VatElectrodeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         setLazyTickRate(10);
@@ -55,14 +52,14 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
         super.initialize();
     }
 
-    private List<VatElectrodeBlockEntity> findNegativeReceivers() {
+    private List<ChemicalVatBlockEntity> findNegativeReceivers() {
         var vat = getVat();
         assert vat != null;
 
-        var negativeReceivers = new ArrayList<VatElectrodeBlockEntity>();
+        var negativeReceivers = new ArrayList<ChemicalVatBlockEntity>();
         for(var wire : wires) {
             if(calculateSurfacePotential(wire) < 0)
-                negativeReceivers.add(this);
+                negativeReceivers.add(vat);
         }
         for(var connections : connectedElectrodes.entrySet()) {
             var wire = connections.getValue();
@@ -73,7 +70,7 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
             if(wire.node2 == tieNode)
                 current = -current;
             if(current < 0)
-                negativeReceivers.add(connections.getKey());
+                negativeReceivers.add(otherVat);
         }
         return negativeReceivers;
     }
@@ -89,8 +86,7 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
 
         // Apply recipes. Only positive electrodes check for potentials and apply recipes,
         // negative electrodes only receive the results, just to simplify the code a bit.
-        List<VatElectrodeBlockEntity> negativeReceivers = null;
-        bubbleRate = 0;
+        List<ChemicalVatBlockEntity> negativeReceivers = null;
 
         for(var wire : wires) {
             var potential = calculateSurfacePotential(wire);
@@ -114,9 +110,9 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
                 continue;
             var recipe = valid.size() == 1 ? valid.get(0) : valid.get(world.random.nextInt(valid.size()));
             var negativeReceiver = negativeReceivers.get(world.random.nextInt(negativeReceivers.size()));
-            var rate = mixture.applyReaction(recipe, potential, negativeReceiver.getVat().getReagentMixture());
-            negativeReceiver.bubbleRate += rate;
-            bubbleRate += rate;
+            var rate = mixture.applyReaction(recipe, Math.abs(wire.current()), negativeReceiver.getReagentMixture());
+            negativeReceiver.addBubbles(rate);
+            vat.addBubbles(rate);
         }
     }
 
