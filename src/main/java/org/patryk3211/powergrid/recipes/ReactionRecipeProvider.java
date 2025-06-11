@@ -37,4 +37,9 @@ public abstract class ReactionRecipeProvider extends CreateRecipeProvider {
         all.add(generatedRecipe);
         return generatedRecipe;
     }
+
+    @Override
+    public String getName() {
+        return "Reaction Recipes";
+    }
 }

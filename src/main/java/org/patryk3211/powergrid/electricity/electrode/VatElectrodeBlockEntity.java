@@ -17,10 +17,12 @@ package org.patryk3211.powergrid.electricity.electrode;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisGetter;
+import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisRecipe;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlockEntity;
@@ -40,6 +42,8 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
     private final Map<VatElectrodeBlockEntity, ElectricWire> connectedElectrodes = new HashMap<>();
     private float resistance;
 
+    private int bubbleRate = 0;
+
     public VatElectrodeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         setLazyTickRate(10);
@@ -51,9 +55,91 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
         super.initialize();
     }
 
+    private List<VatElectrodeBlockEntity> findNegativeReceivers() {
+        var vat = getVat();
+        assert vat != null;
+
+        var negativeReceivers = new ArrayList<VatElectrodeBlockEntity>();
+        for(var wire : wires) {
+            if(calculateSurfacePotential(wire) < 0)
+                negativeReceivers.add(this);
+        }
+        for(var connections : connectedElectrodes.entrySet()) {
+            var wire = connections.getValue();
+            var otherVat = connections.getKey().getVat();
+            if(otherVat == null)
+                continue;
+            var current = wire.current();
+            if(wire.node2 == tieNode)
+                current = -current;
+            if(current < 0)
+                negativeReceivers.add(connections.getKey());
+        }
+        return negativeReceivers;
+    }
+
+    private void applyRecipes() {
+        var vat = getVat();
+        if(vat == null)
+            return;
+        var mixture = vat.getReagentMixture();
+        var recipes = ElectrolysisGetter.getPossibleRecipes(world.getRecipeManager(), mixture);
+        if(recipes.isEmpty())
+            return;
+
+        // Apply recipes. Only positive electrodes check for potentials and apply recipes,
+        // negative electrodes only receive the results, just to simplify the code a bit.
+        List<VatElectrodeBlockEntity> negativeReceivers = null;
+        bubbleRate = 0;
+
+        for(var wire : wires) {
+            var potential = calculateSurfacePotential(wire);
+            if(potential <= 0) {
+                // Negative electrode
+                continue;
+            }
+            if(negativeReceivers == null) {
+                negativeReceivers = findNegativeReceivers();
+                if(negativeReceivers.isEmpty())
+                    return;
+            }
+            // Filter for valid recipes
+            var valid = new ArrayList<ElectrolysisRecipe>();
+            for(var recipe : recipes) {
+                if(potential >= recipe.getMinimumPotential())
+                    valid.add(recipe);
+            }
+            // Apply random recipe
+            if(valid.isEmpty())
+                continue;
+            var recipe = valid.size() == 1 ? valid.get(0) : valid.get(world.random.nextInt(valid.size()));
+            var negativeReceiver = negativeReceivers.get(world.random.nextInt(negativeReceivers.size()));
+            var rate = mixture.applyReaction(recipe, potential, negativeReceiver.getVat().getReagentMixture());
+            negativeReceiver.bubbleRate += rate;
+            bubbleRate += rate;
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
+
+        applyRecipes();
+
+        var vat = getVat();
+        if(vat == null)
+            return;
+
+        float power = 0;
+        for(var wire : wires) {
+            power += wire.power();
+        }
+        for(var conn : connectedElectrodes.values()) {
+            power += conn.power() * 0.5f;
+        }
+
+        // Apply tick power from resistive losses
+        vat.getReagentMixture().addEnergy(power * 0.05f);
     }
 
     @Override
@@ -65,6 +151,12 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
         } else {
             disconnectAll();
         }
+    }
+
+    public static float calculateSurfacePotential(ElectricWire wire) {
+        var current = wire.current();
+        var resistance = (float) wire.getResistance() / 16f;
+        return current * resistance;
     }
 
     public static float calculateConductance(ChemicalVatBlockEntity vat) {
@@ -160,6 +252,8 @@ public class VatElectrodeBlockEntity extends ElectricBlockEntity {
         var initialNode = new ScanNode(pos.down(), resistance * 2, resistance * 2);
         map.put(pos.down(), initialNode);
         queue.add(initialNode);
+
+        // TODO: Block connection if it goes through another vat with electrodes.
 
         var electrodeVats = new ArrayList<ScanNode>();
         while(!queue.isEmpty()) {

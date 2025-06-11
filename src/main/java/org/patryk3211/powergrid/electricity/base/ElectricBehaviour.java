@@ -107,9 +107,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             if(nodeConnections.isEmpty())
                 continue;
             var endpoint = new BlockWireEndpoint(getPos(), i);
-            for(var connection : nodeConnections) {
+            var connCopy = List.copyOf(nodeConnections);
+            for(var connection : connCopy) {
                 connection.notifyRemoved(getWorld(), endpoint);
             }
+            nodeConnections.clear();
         }
 
         var world = getWorld();

@@ -22,6 +22,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisRecipe;
 import org.patryk3211.powergrid.chemistry.reagent.*;
 import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
@@ -350,6 +351,33 @@ public class ReagentMixture implements ReagentConditions {
         }
         float remainder = reactionRate - quantReactionRate;
         progressStore.setProgress(reaction, remainder);
+    }
+
+    public int applyReaction(ElectrolysisRecipe recipe, float potential, ReagentMixture negativeReceiver) {
+        var rate = (int) (potential / recipe.getMinimumPotential());
+        for(var ingredient : recipe.getReagentIngredients()) {
+            var amount = getAmount(ingredient.getReagent());
+            rate = Math.min(amount / ingredient.getRequiredAmount(), rate);
+        }
+
+        var temperature = getTemperaturePrecise();
+        double ingredientEnergy = 0;
+        for(var ingredient : recipe.getReagentIngredients()) {
+            ingredientEnergy += stackEnergy(temperature, ingredient.getRequiredAmount() * rate, ingredient.getReagent());
+            removeInternal(ingredient.getReagent(), ingredient.getRequiredAmount() * rate, true);
+        }
+
+        double resultHeatMass = 0;
+        for(var result : recipe.getReagentResults()) {
+            var stack = result.reagent();
+            resultHeatMass += stackHeatMass(stack.getAmount() * rate, stack.getReagent());
+        }
+        for(var result : recipe.getReagentResults()) {
+            var receiver = result.negative() ? negativeReceiver : this;
+            var stack = result.reagent();
+            receiver.addInternal(stack.getReagent(), stack.getAmount() * rate, ingredientEnergy / resultHeatMass, true);
+        }
+        return rate;
     }
 
     public ReagentMixture scaledBy(float scale) {
