@@ -1,0 +1,28 @@
+{
+  "type": "create:mixing",
+  "ingredients": [
+    {
+      "item": "powergrid:golden_wire"
+    },
+    {
+      "item": "powergrid:golden_wire"
+    },
+    {
+      "item": "powergrid:golden_wire"
+    },
+    {
+      "item": "powergrid:golden_wire"
+    },
+    {
+      "item": "powergrid:golden_wire"
+    },
+    {
+      "item": "powergrid:golden_wire"
+    }
+  ],
+  "results": [
+    {
+      "item": "powergrid:golden_mesh"
+    }
+  ]
+}

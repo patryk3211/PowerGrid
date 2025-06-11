@@ -2,14 +2,14 @@
   "type": "create:cutting",
   "ingredients": [
     {
-      "item": "powergrid:silver_sheet"
+      "item": "create:golden_sheet"
     }
   ],
   "processingTime": 50,
   "results": [
     {
       "count": 4,
-      "item": "powergrid:silver_wire"
+      "item": "powergrid:golden_wire"
     }
   ]
 }

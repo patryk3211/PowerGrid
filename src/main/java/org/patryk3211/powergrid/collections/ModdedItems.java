@@ -26,7 +26,6 @@ import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 
-import static com.simibubi.create.AllTags.forgeItemTag;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedItems {
@@ -40,9 +39,9 @@ public class ModdedItems {
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f))
             .tag(ModdedTags.Item.WIRES.tag)
             .register();
-    public static final ItemEntry<WireItem> SILVER_WIRE = REGISTRATE.item("silver_wire", WireItem::new)
-            .transform(WireProperties.setAll(0.003f, 8))
-            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
+    public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
+            .transform(WireProperties.setAll(0.007f, 8))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
 
@@ -77,16 +76,7 @@ public class ModdedItems {
 
     public static final ItemEntry<Item> SULFUR = REGISTRATE.item("sulfur", Item::new)
             .register();
-    public static final ItemEntry<Item> RAW_SILVER = REGISTRATE.item("raw_silver", Item::new)
-            .tag(forgeItemTag("raw_silver_ores"), ModdedTags.Item.RAW_ORES.tag)
-            .register();
-    public static final ItemEntry<Item> SILVER_INGOT = REGISTRATE.item("silver_ingot", Item::new)
-            .tag(ModdedTags.Item.SILVER_INGOTS.tag)
-            .register();
-    public static final ItemEntry<Item> SILVER_SHEET = REGISTRATE.item("silver_sheet", Item::new)
-            .tag(ModdedTags.Item.PLATES.tag, forgeItemTag("silver_plates"))
-            .register();
-    public static final ItemEntry<CatalyzerItem> SILVER_MESH = REGISTRATE.item("silver_mesh", CatalyzerItem::new)
+    public static final ItemEntry<CatalyzerItem> GOLDEN_MESH = REGISTRATE.item("golden_mesh", CatalyzerItem::new)
             .transform(CatalyzerItem.setStrength(1.0f))
             .register();
 

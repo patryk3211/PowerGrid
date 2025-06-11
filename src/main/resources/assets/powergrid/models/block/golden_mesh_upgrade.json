@@ -2,9 +2,9 @@
 	"credit": "Made with Blockbench",
 	"parent": "block/block",
 	"textures": {
-		"0": "powergrid:block/silver_mesh_upgrade",
-		"1": "powergrid:block/silver_mesh_upgrade_2",
-		"particle": "powergrid:block/silver_mesh_upgrade"
+		"0": "powergrid:block/mesh/golden_mesh_1",
+		"1": "powergrid:block/mesh/golden_mesh_2",
+		"particle": "powergrid:block/mesh/golden_mesh_1"
 	},
 	"elements": [
 		{

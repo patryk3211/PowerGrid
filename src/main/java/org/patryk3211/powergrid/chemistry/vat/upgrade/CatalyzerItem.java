@@ -54,7 +54,7 @@ public class CatalyzerItem extends ChemicalVatUpgrade {
         if(!vat.getCachedState().get(ChemicalVatBlock.OPEN))
             return;
 
-        var model = CachedBufferer.partial(ModdedPartialModels.VAT_SILVER_MESH, vat.getCachedState());
+        var model = CachedBufferer.partial(ModdedPartialModels.VAT_GOLDEN_MESH, vat.getCachedState());
         model.light(light)
                 .renderInto(ms, bufferSource.getBuffer(RenderLayer.getCutoutMipped()));
     }

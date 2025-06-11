@@ -38,8 +38,9 @@ public class CuttingRecipes extends ProcessingRecipeGen {
     IRON_WIRE = create(AllItems.IRON_SHEET::get, b ->
             b.duration(50).output(ModdedItems.IRON_WIRE.get(), 4)),
 
-    SILVER_WIRE = create(ModdedItems.SILVER_SHEET::get, b ->
-            b.duration(50).output(ModdedItems.SILVER_WIRE.get(), 4))
+    GOLD_WIRE = create(AllItems.GOLDEN_SHEET::get, b ->
+            b.duration(50).output(ModdedItems.GOLDEN_WIRE.get(), 4))
+
             ;
 
     public CuttingRecipes(FabricDataOutput output) {

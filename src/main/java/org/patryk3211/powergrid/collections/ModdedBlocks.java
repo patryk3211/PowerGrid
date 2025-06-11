@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -452,34 +451,6 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/vat/base")))
                 .build()
-            .register();
-
-    public static final BlockEntry<Block> SILVER_ORE = REGISTRATE.block("silver_ore", Block::new)
-            .defaultBlockstate()
-            .initialProperties(() -> Blocks.GOLD_ORE)
-            .transform(pickaxeOnly())
-            .loot((lt, b) -> lt.addDrop(b,
-                    RegistrateBlockLootTables.dropsWithSilkTouch(b,
-                            lt.applyExplosionDecay(b, ItemEntry.builder(ModdedItems.RAW_SILVER.get())
-                                    .apply(ApplyBonusLootFunction.oreDrops(Enchantments.FORTUNE))))))
-            .tag(BlockTags.NEEDS_IRON_TOOL, Tags.Blocks.ORES)
-            .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/stone"))
-            .tag(Tags.Items.ORES)
-            .build()
-            .register();
-
-    public static final BlockEntry<Block> DEEPSLATE_SILVER_ORE = REGISTRATE.block("deepslate_silver_ore", Block::new)
-            .defaultBlockstate()
-            .initialProperties(() -> Blocks.DEEPSLATE_GOLD_ORE)
-            .transform(pickaxeOnly())
-            .loot((lt, b) -> lt.addDrop(b,
-                    RegistrateBlockLootTables.dropsWithSilkTouch(b,
-                            lt.applyExplosionDecay(b, ItemEntry.builder(ModdedItems.RAW_SILVER.get())
-                                    .apply(ApplyBonusLootFunction.oreDrops(Enchantments.FORTUNE))))))
-            .tag(BlockTags.NEEDS_IRON_TOOL, Tags.Blocks.ORES)
-            .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/deepslate"))
-            .tag(Tags.Items.ORES)
-            .build()
             .register();
 
     public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
