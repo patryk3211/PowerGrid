@@ -75,6 +75,7 @@ import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.*;
 public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
     // TODO: Balance this value.
     public static final float DISSIPATION_FACTOR = 30f;
+    public static final float LIQUID_STACK_PRESSURE_CONSTANT = 0.02f;
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
@@ -145,17 +146,12 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
             int diffuseAmount = (int) (diffusionRate() * reagentInventory.getGasAmount()) - Math.abs(moveAmount);
 
-            // TODO: I'm not sure if I implemented transactions correctly (probably not) so this is split in two.
             ReagentMixture diffused = null, moved = null;
-            if(diffuseAmount > 0) {
-                try(var transaction = Transaction.openOuter()) {
+            try(var transaction = Transaction.openOuter()) {
+                if(diffuseAmount > 0) {
                     diffused = reagentInventory.remove(diffuseAmount, ReagentState.GAS, transaction);
                     reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(diffused.getTotalAmount()), transaction);
-                    transaction.commit();
                 }
-            }
-
-            try(var transaction = Transaction.openOuter()) {
                 if(moveAmount < 0) {
                     if(moveAmount < -100000)
                         moveAmount = -100000;
@@ -166,14 +162,14 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(moveAmount), transaction);
                 }
                 transaction.commit();
-            }
 
-            if(moveAmount > 0) {
-                var targetFractionVelocity = Math.min(moveAmount * 0.001f / 0.05f, speedOfSound());
-                gasMomentum.add(0, -targetFractionVelocity * moveAmount * 0.001f, 0);
-            } else if(moveAmount < 0) {
-                moveFraction = (float) moveAmount / startAmount;
-                processGasMovement(Direction.UP, (float) -moveFraction, -moveAmount, null);
+                if(moveAmount > 0) {
+                    var targetFractionVelocity = Math.min(moveAmount * 0.001f / 0.05f, speedOfSound());
+                    gasMomentum.add(0, -targetFractionVelocity * moveAmount * 0.001f, 0);
+                } else if(moveAmount < 0) {
+                    moveFraction = (float) moveAmount / startAmount;
+                    processGasMovement(Direction.UP, (float) -moveFraction, -moveAmount, null);
+                }
             }
 
             if(world.isClient) {
@@ -272,24 +268,30 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 // Solids can only go down.
                 MixtureHelper.moveReagents(reagentInventory, solids, vat.reagentInventory, reagentInventory.getTotalAmount());
             }
-            if(dir != Direction.UP && !liquids.isEmpty()) {
-                // Liquids cannot go up.
-                var liquidLevel1 = reagentInventory.getFillLevel();
-                var liquidLevel2 = vat.reagentInventory.getFillLevel();
+            if(!liquids.isEmpty()) {
+                var liquidPressure1 = reagentInventory.getFillLevel();
+                var liquidPressure2 = vat.reagentInventory.getFillLevel();
 
                 float moveFraction;
-                if(dir != Direction.DOWN) {
+                if(dir.getAxis() != Direction.Axis.Y) {
                     // Equalize the levels.
-                    var targetLevel = (liquidLevel1 + liquidLevel2) * 0.5f;
-                    moveFraction = liquidLevel1 - targetLevel;
+                    var targetLevel = (liquidPressure1 + liquidPressure2) * 0.5f;
+                    moveFraction = liquidPressure1 - targetLevel;
+                } else if(dir == Direction.UP) {
+                    // Move fluid above the max standard pressure.
+                    var additionalPressure = liquidPressure2 * LIQUID_STACK_PRESSURE_CONSTANT;
+                    var aboveLevel = liquidPressure1 - 1.0f - additionalPressure;
+                    moveFraction = Math.max(aboveLevel, 0);
                 } else {
                     // Move as much liquid down as possible.
-                    moveFraction = Math.min(1.0f - liquidLevel2, liquidLevel1);
+                    var additionalPressure = liquidPressure1 * LIQUID_STACK_PRESSURE_CONSTANT;
+                    var missingLevel = 1.0f - liquidPressure2 + additionalPressure;
+                    moveFraction = Math.min(missingLevel, liquidPressure1);
                 }
 
                 int moveAmount = (int) (moveFraction * reagentInventory.getVolume());
                 int diffuseAmount = (int) (reagentInventory.getLiquidAmount() * diffusionRate()) - Math.abs(moveAmount);
-                MixtureHelper.moveReagents(reagentInventory, liquids, vat.reagentInventory, moveAmount);
+                MixtureHelper.forceMoveReagents(reagentInventory, liquids, vat.reagentInventory, moveAmount);
                 if(diffuseAmount > 0) {
                     MixtureHelper.diffuse(reagentInventory, vat.reagentInventory, liquids, ReagentState.LIQUID, diffuseAmount);
                 }

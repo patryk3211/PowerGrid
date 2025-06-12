@@ -75,4 +75,17 @@ public class MixtureHelper {
         }
         return amount;
     }
+
+    public static int forceMoveReagents(ReagentMixture source, Set<Reagent> reagents, VolumeReagentInventory target, int amount) {
+        if(reagents.isEmpty())
+            return 0;
+        if(amount <= 0)
+            return 0;
+        try(var transaction = Transaction.openOuter()) {
+            var mix = source.remove(amount, reagents, transaction);
+            target.forceAdd(mix, transaction);
+            transaction.commit();
+            return mix.getTotalAmount();
+        }
+    }
 }
