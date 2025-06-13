@@ -126,6 +126,12 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         // Dampen momentum
         gasMomentum.mul(0.95f);
+        if(!Double.isFinite(gasMomentum.x))
+            gasMomentum.x = 0;
+        if(!Double.isFinite(gasMomentum.y))
+            gasMomentum.y = 0;
+        if(!Double.isFinite(gasMomentum.z))
+            gasMomentum.z = 0;
 
         // Moving has to occur after recipe processing so that the burning flag is valid.
         moveReagents();
