@@ -98,7 +98,7 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
     }
 
     private void renderFluid(ChemicalVatBlockEntity be, MatrixStack ms, VertexConsumerProvider bufferSource, int light) {
-        float fluidLevel = be.getFluidLevel();
+        float fluidLevel = Math.min(be.getFluidLevel(), 1);
         if(fluidLevel > 0) {
             float xMin = CORNER, xMax = CORNER + SIDE,
                     yMin = CORNER, yMax = yMin + FLUID_SPAN * fluidLevel,
@@ -133,7 +133,7 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
                     var nBE = world.getBlockEntity(pos.offset(dir));
                     if(!(nBE instanceof ChemicalVatBlockEntity vat))
                         continue;
-                    float neighborLevel = vat.getFluidLevel();
+                    float neighborLevel = Math.min(vat.getFluidLevel(), 1);
                     float levelDiff = (fluidLevel - neighborLevel) * FLUID_SPAN;
                     if(levelDiff < 0)
                         continue;

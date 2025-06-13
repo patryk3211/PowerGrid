@@ -41,6 +41,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -184,6 +185,31 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
                 if(diffused != null) {
                     createGasParticles(diffused);
+                }
+            }
+
+            // Spill liquids
+            var liquidLevel = reagentInventory.getFillLevel();
+            if(liquidLevel > 1) {
+                float spillVolume = liquidLevel - 1;
+                int spillAmount = (int) (spillVolume * reagentInventory.getVolume());
+                try(var transaction = Transaction.openOuter()) {
+                    var removed = reagentInventory.remove(spillAmount, ReagentState.LIQUID, transaction);
+                    if(world.isClient) {
+                        float particles = removed.getTotalAmount() / 100f;
+                        var r = world.random;
+
+                        while(r.nextFloat() < particles) {
+                            var cPos = pos.toCenterPos();
+                            var x = cPos.x + r.nextFloat() - 0.5f;
+                            var y = cPos.y + 0.5f + r.nextFloat() * 0.1f;
+                            var z = cPos.z + r.nextFloat() - 0.5f;
+
+                            world.addParticle(ParticleTypes.SPLASH, x, y, z, 0, 0, 0);
+                            particles -= 1;
+                        }
+                    }
+                    transaction.commit();
                 }
             }
         } else {
