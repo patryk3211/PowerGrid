@@ -22,5 +22,6 @@ import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedDamageTypes {
-    public static final RegistryKey<DamageType> OVERLOADED_MACHINE = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(PowerGrid.MOD_ID, "overloaded_machine"));
+    public static final RegistryKey<DamageType> OVERLOADED_MACHINE = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, PowerGrid.asResource("overloaded_machine"));
+    public static final RegistryKey<DamageType> ZAP = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, PowerGrid.asResource("zap"));
 }

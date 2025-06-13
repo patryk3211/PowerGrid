@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid;
 
+import com.simibubi.create.AllPackets;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipHelper;
@@ -94,6 +95,8 @@ public class PowerGrid implements ModInitializer {
 
 		GlobalElectricNetworks.init();
 		ServerBoundPackets.init();
+		ModdedPackets.registerPackets();
+		ModdedPackets.getChannel().initServerListener();
 	}
 
 	private static void registerRecipes() {

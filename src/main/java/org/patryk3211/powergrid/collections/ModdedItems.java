@@ -15,7 +15,10 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonItemRenderer;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
+import com.simibubi.create.foundation.data.AssetLookup;
+import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
 import org.patryk3211.powergrid.PowerGrid;
@@ -25,6 +28,8 @@ import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
+import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
+import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -82,6 +87,13 @@ public class ModdedItems {
 
     public static final ItemEntry<ElectrodeItem> COPPER_ELECTRODE = REGISTRATE.item("copper_electrode", ElectrodeItem::new)
             .transform(ElectrodeItem.setModel(() -> () -> ModdedPartialModels.VAT_COPPER_ELECTRODE))
+            .register();
+
+    public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
+            .transform(CreateRegistrate.customRenderedItem(() -> ElectroZapperItemRenderer::new))
+            .model((ctx, prov) -> prov
+                    .withExistingParent(ctx.getName(), PowerGrid.asResource("item/electrozapper/item")))
+            .lang("Electro-Zapper")
             .register();
 
     @SuppressWarnings("EmptyMethod")
