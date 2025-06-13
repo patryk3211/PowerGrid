@@ -75,7 +75,7 @@ import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.*;
 public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
     // TODO: Balance this value.
     public static final float DISSIPATION_FACTOR = 30f;
-    public static final float LIQUID_STACK_PRESSURE_CONSTANT = 0.02f;
+    public static final float LIQUID_STACK_PRESSURE_CONSTANT = 0.015f;
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
@@ -279,14 +279,17 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     moveFraction = liquidPressure1 - targetLevel;
                 } else if(dir == Direction.UP) {
                     // Move fluid above the max standard pressure.
-                    var additionalPressure = liquidPressure2 * LIQUID_STACK_PRESSURE_CONSTANT;
-                    var aboveLevel = liquidPressure1 - 1.0f - additionalPressure;
-                    moveFraction = Math.max(aboveLevel, 0);
+                    var expectedAdditionalPressure = Math.min(liquidPressure2, 1) * LIQUID_STACK_PRESSURE_CONSTANT;
+                    expectedAdditionalPressure += liquidPressure2 - 1;
+                    expectedAdditionalPressure = Math.max(expectedAdditionalPressure, 0);
+                    moveFraction = Math.max(liquidPressure1 - 1.0f - expectedAdditionalPressure, 0) * 0.5f;
                 } else {
                     // Move as much liquid down as possible.
-                    var additionalPressure = liquidPressure1 * LIQUID_STACK_PRESSURE_CONSTANT;
+                    var additionalPressure = Math.min(liquidPressure1, 1) * LIQUID_STACK_PRESSURE_CONSTANT;
+                    additionalPressure += liquidPressure1 - 1;
+                    additionalPressure = Math.max(additionalPressure, 0);
                     var missingLevel = 1.0f - liquidPressure2 + additionalPressure;
-                    moveFraction = Math.min(missingLevel, liquidPressure1);
+                    moveFraction = Math.min(missingLevel * 0.5f, liquidPressure1);
                 }
 
                 int moveAmount = (int) (moveFraction * reagentInventory.getVolume());

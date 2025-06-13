@@ -169,7 +169,7 @@ public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> impleme
      */
     public int getAmount(Reagent reagent) {
         var amount = reagents.get(reagent);
-        return amount == null ? 0 : amount;
+        return amount == null ? 0 : Math.max(amount, 0);
     }
 
     public ReagentState getState(Reagent reagent) {
@@ -232,6 +232,8 @@ public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> impleme
         if(invAmount == 0)
             return 0;
         if(amount >= invAmount) {
+            if(invAmount < 0)
+                invAmount = 0;
             amount = invAmount;
             reagents.remove(reagent);
         } else {
@@ -258,6 +260,8 @@ public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> impleme
 
         int total = 0;
         for(var entry : mixture.reagents.entrySet()) {
+            if(entry.getValue() <= 0)
+                continue;
             var stack = new ReagentStack(entry.getKey(), entry.getValue(), mixture.temperature());
             total += addInternal(stack.getReagent(), stack.getAmount(), stack.getTemperature(), true);
         }
