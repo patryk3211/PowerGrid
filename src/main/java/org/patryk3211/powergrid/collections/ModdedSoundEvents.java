@@ -65,6 +65,11 @@ public class ModdedSoundEvents {
     MAGNETIZING = create("magnetizing").subtitle("Magnetizing")
             .addVariant("magnetizing")
             .category(SoundCategory.BLOCKS)
+            .build(),
+
+    ELECTROZAPPER_SHOOT = create("electrozapper_shoot").subtitle("Electro-Zapper bzzzts")
+            .addVariant("zapper_shoot")
+            .category(SoundCategory.PLAYERS)
             .build()
             ;
 
