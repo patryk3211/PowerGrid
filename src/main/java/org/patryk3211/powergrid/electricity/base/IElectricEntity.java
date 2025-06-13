@@ -71,6 +71,7 @@ public interface IElectricEntity {
          * Add an external node to the circuit. The order in which these are added affects
          * node bindings for electric block terminal indices.
          */
+        @Deprecated
         public FloatingNode addExternalNode() {
             if(!alterExternal)
                 return null;
@@ -81,6 +82,13 @@ public interface IElectricEntity {
             return node;
         }
 
+        /**
+         * Add a new internal node of the given class.
+         * @param clazz Node class
+         * @param params Constructor parameters
+         * @return New internal node
+         * @param <T> Node type
+         */
         public <T extends INode> T addInternalNode(Class<T> clazz, Object... params) {
             try {
                 var node = clazz.getConstructor(Arrays.stream(params).map(Object::getClass).toArray(len -> new Class<?>[len])).newInstance(params);
@@ -94,6 +102,10 @@ public interface IElectricEntity {
             }
         }
 
+        /**
+         * Add a new floating internal node.
+         * @return Internal floating node
+         */
         public FloatingNode addInternalNode() {
             var node = new FloatingNode();
             internalNodes.add(node);
@@ -102,10 +114,19 @@ public interface IElectricEntity {
             return node;
         }
 
+        /**
+         * Get external node at index.
+         * @param index Index of node
+         * @return External node
+         */
         public FloatingNode terminalNode(int index) {
             return (FloatingNode) externalNodes.get(index);
         }
 
+        /**
+         * Set external node count. This should correspond to the value specified in block.
+         * @param count Number of nodes
+         */
         public void setTerminalCount(int count) {
             if(alterExternal) {
                 var currentCount = externalNodes.size();
@@ -125,6 +146,33 @@ public interface IElectricEntity {
             }
         }
 
+        /**
+         * Set if external node should be present in the external node list.
+         * This method allows for altering the external node structure even on circuit rebuilds.
+         * @param index Index of node to alter
+         * @param present Set if the node should exist
+         */
+        public void setExternalNode(int index, boolean present) {
+            var node = externalNodes.get(index);
+            if(node == null && present) {
+                node = new FloatingNode();
+                if(network != null)
+                    network.addNode(node);
+                externalNodes.set(index, node);
+            } else if(node != null && !present) {
+                if(network != null)
+                    network.removeNode(node);
+                externalNodes.set(index, null);
+            }
+        }
+
+        /**
+         * Connect two electric nodes with a simple wire.
+         * @param resistance Initial resistance of wire
+         * @param node1 First node
+         * @param node2 Second node
+         * @return Connection wire
+         */
         public ElectricWire connect(float resistance, IElectricNode node1, IElectricNode node2) {
             var wire = new ElectricWire(resistance, node1, node2);
             wires.add(wire);
@@ -133,6 +181,14 @@ public interface IElectricEntity {
             return wire;
         }
 
+        /**
+         * Connect two electric nodes with a switchable wire.
+         * @param resistance Initial resistance of wire
+         * @param node1 First node
+         * @param node2 Second node
+         * @param state Initial switch state
+         * @return Connection wire
+         */
         public SwitchedWire connectSwitch(float resistance, IElectricNode node1, IElectricNode node2, boolean state) {
             var wire = new SwitchedWire(resistance, node1, node2, state);
             wires.add(wire);
@@ -141,6 +197,13 @@ public interface IElectricEntity {
             return wire;
         }
 
+        /**
+         * Connect two electric nodes with a switchable wire with initial state set to true.
+         * @param resistance Initial resistance of wire
+         * @param node1 First node
+         * @param node2 Second node
+         * @return Connection wire
+         */
         public SwitchedWire connectSwitch(float resistance, IElectricNode node1, IElectricNode node2) {
             return connectSwitch(resistance, node1, node2, true);
         }

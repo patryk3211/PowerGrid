@@ -53,6 +53,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
+import org.patryk3211.powergrid.electricity.electrode.VatElectrodeBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
@@ -452,34 +453,6 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    public static final BlockEntry<Block> SILVER_ORE = REGISTRATE.block("silver_ore", Block::new)
-            .defaultBlockstate()
-            .initialProperties(() -> Blocks.GOLD_ORE)
-            .transform(pickaxeOnly())
-            .loot((lt, b) -> lt.addDrop(b,
-                    RegistrateBlockLootTables.dropsWithSilkTouch(b,
-                            lt.applyExplosionDecay(b, ItemEntry.builder(ModdedItems.RAW_SILVER.get())
-                                    .apply(ApplyBonusLootFunction.oreDrops(Enchantments.FORTUNE))))))
-            .tag(BlockTags.NEEDS_IRON_TOOL, Tags.Blocks.ORES)
-            .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/stone"))
-            .tag(Tags.Items.ORES)
-            .build()
-            .register();
-
-    public static final BlockEntry<Block> DEEPSLATE_SILVER_ORE = REGISTRATE.block("deepslate_silver_ore", Block::new)
-            .defaultBlockstate()
-            .initialProperties(() -> Blocks.DEEPSLATE_GOLD_ORE)
-            .transform(pickaxeOnly())
-            .loot((lt, b) -> lt.addDrop(b,
-                    RegistrateBlockLootTables.dropsWithSilkTouch(b,
-                            lt.applyExplosionDecay(b, ItemEntry.builder(ModdedItems.RAW_SILVER.get())
-                                    .apply(ApplyBonusLootFunction.oreDrops(Enchantments.FORTUNE))))))
-            .tag(BlockTags.NEEDS_IRON_TOOL, Tags.Blocks.ORES)
-            .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/deepslate"))
-            .tag(Tags.Items.ORES)
-            .build()
-            .register();
-
     public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
@@ -520,6 +493,18 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_fan/item")))
                 .build()
+            .register();
+
+    public static final BlockEntry<VatElectrodeBlock> VAT_ELECTRODE = REGISTRATE.block("vat_electrode", VatElectrodeBlock::new)
+            // Block state only used for particles, rendering is handled in block entity renderer
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).partialState().addModels(
+                            ConfiguredModel.builder()
+                                    .modelFile(modModel(prov, "block/copper_electrode"))
+                                    .build()
+                            ))
+            .initialProperties(SharedProperties::copperMetal)
+            .transform(pickaxeOnly())
             .register();
 
     @SuppressWarnings("EmptyMethod")

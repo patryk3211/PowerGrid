@@ -18,8 +18,10 @@ package org.patryk3211.powergrid.chemistry.vat;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import com.simibubi.create.foundation.fluid.FluidRenderer;
+import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
@@ -28,9 +30,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentState;
+import org.patryk3211.powergrid.chemistry.vat.upgrade.ChemicalVatUpgrade;
 import org.patryk3211.powergrid.utility.Directions;
 
 import java.util.HashSet;
+import java.util.Map;
 
 import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.*;
 
@@ -41,6 +45,12 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
 
     @Override
     protected void renderSafe(ChemicalVatBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
+        // Render upgrades
+        for(var upgradeEntry : be.upgrades.entrySet()) {
+            var upgrade = (ChemicalVatUpgrade) upgradeEntry.getValue().getItem();
+            upgrade.render(be, partialTicks, ms, bufferSource, upgradeEntry.getValue(), upgradeEntry.getKey(), light, overlay);
+        }
+
         renderItems(be, ms, bufferSource, light, overlay);
         renderFluid(be, ms, bufferSource, light);
     }
@@ -88,7 +98,7 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
     }
 
     private void renderFluid(ChemicalVatBlockEntity be, MatrixStack ms, VertexConsumerProvider bufferSource, int light) {
-        float fluidLevel = be.getFluidLevel();
+        float fluidLevel = Math.min(be.getFluidLevel(), 1);
         if(fluidLevel > 0) {
             float xMin = CORNER, xMax = CORNER + SIDE,
                     yMin = CORNER, yMax = yMin + FLUID_SPAN * fluidLevel,
@@ -115,6 +125,7 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
                     return;
 
                 int color = FluidVariantRendering.getColor(variant);
+
                 var buffer = FluidRenderer.getFluidBuilder(bufferSource);
                 FluidRenderer.renderStillTiledFace(Direction.UP, xMin, zMin, xMax, zMax, yMax, buffer, ms, light, color, fluidTexture);
 
@@ -122,7 +133,7 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
                     var nBE = world.getBlockEntity(pos.offset(dir));
                     if(!(nBE instanceof ChemicalVatBlockEntity vat))
                         continue;
-                    float neighborLevel = vat.getFluidLevel();
+                    float neighborLevel = Math.min(vat.getFluidLevel(), 1);
                     float levelDiff = (fluidLevel - neighborLevel) * FLUID_SPAN;
                     if(levelDiff < 0)
                         continue;
@@ -131,6 +142,7 @@ public class ChemicalVatRenderer extends SafeBlockEntityRenderer<ChemicalVatBloc
                         depth = 1.0f;
                     FluidRenderer.renderStillTiledFace(dir, 0.0f, yMax - levelDiff, 1.0f, yMax, depth, buffer, ms, light, color, fluidTexture);
                 }
+
             }
         }
     }

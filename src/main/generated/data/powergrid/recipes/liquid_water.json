@@ -1,0 +1,20 @@
+{
+  "type": "powergrid:electrolysis",
+  "ingredients": [
+    {
+      "reagent": "powergrid:liquid_water"
+    }
+  ],
+  "minimumPotential": 1.5,
+  "results": [
+    {
+      "amount": 2,
+      "negative": true,
+      "reagent": "powergrid:hydrogen"
+    },
+    {
+      "negative": false,
+      "reagent": "powergrid:oxygen"
+    }
+  ]
+}

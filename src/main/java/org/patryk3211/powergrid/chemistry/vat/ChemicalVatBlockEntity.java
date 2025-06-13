@@ -26,7 +26,6 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
-import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -37,10 +36,12 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SidedStorageBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -48,7 +49,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.chemistry.GasConstants;
@@ -61,7 +61,9 @@ import org.patryk3211.powergrid.chemistry.reagent.mixture.VolumeReagentInventory
 import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionGetter;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
-import org.patryk3211.powergrid.collections.ModdedTags;
+import org.patryk3211.powergrid.chemistry.vat.particles.BubbleParticleData;
+import org.patryk3211.powergrid.chemistry.vat.particles.GasParticleData;
+import org.patryk3211.powergrid.chemistry.vat.upgrade.ChemicalVatUpgrade;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
 import org.patryk3211.powergrid.utility.Unit;
@@ -74,13 +76,15 @@ import static org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock.*;
 public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedStorageBlockEntity, IHaveGoggleInformation {
     // TODO: Balance this value.
     public static final float DISSIPATION_FACTOR = 30f;
+    public static final float LIQUID_STACK_PRESSURE_CONSTANT = 0.015f;
 
     private final VolumeReagentInventory reagentInventory;
     private final RecipeProgressStore progressStore;
-    @NotNull
-    private ItemStack catalyzer;
+
+    protected final Map<Direction, ItemStack> upgrades = new HashMap<>();
 
     private final Vector3d gasMomentum = new Vector3d();
+    private int bubbles = 0;
 
     private StorageView<FluidVariant> maxFluid;
 
@@ -89,7 +93,6 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         reagentInventory = new VolumeReagentInventory(Reagent.BLOCK_MOLE_AMOUNT * 8);
         progressStore = new RecipeProgressStore();
-        catalyzer = ItemStack.EMPTY;
         setLazyTickRate(20);
     }
 
@@ -123,6 +126,12 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         // Dampen momentum
         gasMomentum.mul(0.95f);
+        if(!Double.isFinite(gasMomentum.x))
+            gasMomentum.x = 0;
+        if(!Double.isFinite(gasMomentum.y))
+            gasMomentum.y = 0;
+        if(!Double.isFinite(gasMomentum.z))
+            gasMomentum.z = 0;
 
         // Moving has to occur after recipe processing so that the burning flag is valid.
         moveReagents();
@@ -144,17 +153,12 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
             int diffuseAmount = (int) (diffusionRate() * reagentInventory.getGasAmount()) - Math.abs(moveAmount);
 
-            // TODO: I'm not sure if I implemented transactions correctly (probably not) so this is split in two.
             ReagentMixture diffused = null, moved = null;
-            if(diffuseAmount > 0) {
-                try(var transaction = Transaction.openOuter()) {
+            try(var transaction = Transaction.openOuter()) {
+                if(diffuseAmount > 0) {
                     diffused = reagentInventory.remove(diffuseAmount, ReagentState.GAS, transaction);
                     reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(diffused.getTotalAmount()), transaction);
-                    transaction.commit();
                 }
-            }
-
-            try(var transaction = Transaction.openOuter()) {
                 if(moveAmount < 0) {
                     if(moveAmount < -100000)
                         moveAmount = -100000;
@@ -165,14 +169,14 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     reagentInventory.add(ConstantReagentMixture.ATMOSPHERE.scaledTo(moveAmount), transaction);
                 }
                 transaction.commit();
-            }
 
-            if(moveAmount > 0) {
-                var targetFractionVelocity = Math.min(moveAmount * 0.001f / 0.05f, speedOfSound());
-                gasMomentum.add(0, -targetFractionVelocity * moveAmount * 0.001f, 0);
-            } else if(moveAmount < 0) {
-                moveFraction = (float) moveAmount / startAmount;
-                processGasMovement(Direction.UP, (float) -moveFraction, -moveAmount, null);
+                if(moveAmount > 0) {
+                    var targetFractionVelocity = Math.min(moveAmount * 0.001f / 0.05f, speedOfSound());
+                    gasMomentum.add(0, -targetFractionVelocity * moveAmount * 0.001f, 0);
+                } else if(moveAmount < 0) {
+                    moveFraction = (float) moveAmount / startAmount;
+                    processGasMovement(Direction.UP, (float) -moveFraction, -moveAmount, null);
+                }
             }
 
             if(world.isClient) {
@@ -187,6 +191,31 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
                 if(diffused != null) {
                     createGasParticles(diffused);
+                }
+            }
+
+            // Spill liquids
+            var liquidLevel = reagentInventory.getFillLevel();
+            if(liquidLevel > 1) {
+                float spillVolume = liquidLevel - 1;
+                int spillAmount = (int) (spillVolume * reagentInventory.getVolume());
+                try(var transaction = Transaction.openOuter()) {
+                    var removed = reagentInventory.remove(spillAmount, ReagentState.LIQUID, transaction);
+                    if(world.isClient) {
+                        float particles = removed.getTotalAmount() / 100f;
+                        var r = world.random;
+
+                        while(r.nextFloat() < particles) {
+                            var cPos = pos.toCenterPos();
+                            var x = cPos.x + r.nextFloat() - 0.5f;
+                            var y = cPos.y + 0.5f + r.nextFloat() * 0.1f;
+                            var z = cPos.z + r.nextFloat() - 0.5f;
+
+                            world.addParticle(ParticleTypes.SPLASH, x, y, z, 0, 0, 0);
+                            particles -= 1;
+                        }
+                    }
+                    transaction.commit();
                 }
             }
         } else {
@@ -230,6 +259,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             sendData();
     }
 
+    public void addBubbles(int amount) {
+        if(world.isClient)
+            bubbles += amount;
+    }
+
     @Override
     public void lazyTick() {
         super.lazyTick();
@@ -266,24 +300,33 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 // Solids can only go down.
                 MixtureHelper.moveReagents(reagentInventory, solids, vat.reagentInventory, reagentInventory.getTotalAmount());
             }
-            if(dir != Direction.UP && !liquids.isEmpty()) {
-                // Liquids cannot go up.
-                var liquidLevel1 = reagentInventory.getFillLevel();
-                var liquidLevel2 = vat.reagentInventory.getFillLevel();
+            if(!liquids.isEmpty()) {
+                var liquidPressure1 = reagentInventory.getFillLevel();
+                var liquidPressure2 = vat.reagentInventory.getFillLevel();
 
                 float moveFraction;
-                if(dir != Direction.DOWN) {
+                if(dir.getAxis() != Direction.Axis.Y) {
                     // Equalize the levels.
-                    var targetLevel = (liquidLevel1 + liquidLevel2) * 0.5f;
-                    moveFraction = liquidLevel1 - targetLevel;
+                    var targetLevel = (liquidPressure1 + liquidPressure2) * 0.5f;
+                    moveFraction = liquidPressure1 - targetLevel;
+                } else if(dir == Direction.UP) {
+                    // Move fluid above the max standard pressure.
+                    var expectedAdditionalPressure = Math.min(liquidPressure2, 1) * LIQUID_STACK_PRESSURE_CONSTANT;
+                    expectedAdditionalPressure += liquidPressure2 - 1;
+                    expectedAdditionalPressure = Math.max(expectedAdditionalPressure, 0);
+                    moveFraction = Math.max(liquidPressure1 - 1.0f - expectedAdditionalPressure, 0) * 0.5f;
                 } else {
                     // Move as much liquid down as possible.
-                    moveFraction = Math.min(1.0f - liquidLevel2, liquidLevel1);
+                    var additionalPressure = Math.min(liquidPressure1, 1) * LIQUID_STACK_PRESSURE_CONSTANT;
+                    additionalPressure += liquidPressure1 - 1;
+                    additionalPressure = Math.max(additionalPressure, 0);
+                    var missingLevel = 1.0f - liquidPressure2 + additionalPressure;
+                    moveFraction = Math.min(missingLevel * 0.5f, liquidPressure1);
                 }
 
                 int moveAmount = (int) (moveFraction * reagentInventory.getVolume());
                 int diffuseAmount = (int) (reagentInventory.getLiquidAmount() * diffusionRate()) - Math.abs(moveAmount);
-                MixtureHelper.moveReagents(reagentInventory, liquids, vat.reagentInventory, moveAmount);
+                MixtureHelper.forceMoveReagents(reagentInventory, liquids, vat.reagentInventory, moveAmount);
                 if(diffuseAmount > 0) {
                     MixtureHelper.diffuse(reagentInventory, vat.reagentInventory, liquids, ReagentState.LIQUID, diffuseAmount);
                 }
@@ -411,11 +454,24 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     @Environment(EnvType.CLIENT)
     private void createFluidParticles() {
+        if(!getCachedState().get(OPEN))
+            return;
         var r = world.random;
+        float fluidLevel = getFluidLevel();
+
+        var bubbleChance = bubbles * 0.1f;
+        while(r.nextFloat() < bubbleChance) {
+            float bx = pos.getX() + CORNER + SIDE * r.nextFloat();
+            float bz = pos.getZ() + CORNER + SIDE * r.nextFloat();
+            float by = pos.getY() + CORNER + FLUID_SPAN * fluidLevel * r.nextFloat() * 0.5f;
+            world.addParticle(new BubbleParticleData(pos), bx, by, bz, 0, 0, 0);
+            bubbleChance -= 1;
+        }
+        bubbles = 0;
+
         if(r.nextFloat() > 1 / 12f || maxFluid == null)
             return;
 
-        float fluidLevel = getFluidLevel();
         float surface = pos.getY() + CORNER + FLUID_SPAN * fluidLevel + 1 / 32f;
 
         for(var fluid : getFluidStorage(null)) {
@@ -466,7 +522,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                     vY = gasMomentum.y / mass;
                     vZ = gasMomentum.z / mass;
                 }
-                world.addParticle(new ChemicalVatParticleData(red, green, blue),
+                world.addParticle(new GasParticleData(red, green, blue),
                         x + r.nextFloat() * 12 / 16f, surface, z + r.nextFloat() * 12 / 16f, vX, vY, vZ);
                 chance -= 1;
             }
@@ -505,38 +561,49 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 light();
             }
             return ActionResult.SUCCESS;
-        } else if(stack.isIn(ModdedTags.Item.CATALYZERS.tag)) {
-            if(!catalyzer.isEmpty())
+        }
+        if(stack.getItem() instanceof ChemicalVatUpgrade upgrade) {
+            var upgradeSide = upgrade.isSided() ? upgrade.getSide(hit) : null;
+            if(upgrades.containsKey(upgradeSide) || !upgrade.canApply(this, upgradeSide)) {
+                // Upgrade slot taken.
                 return ActionResult.FAIL;
-            if(!world.isClient) {
-                catalyzer = stack.copyWithCount(1);
-                stack.decrement(1);
-                updateCatalyzer();
             }
-            return ActionResult.SUCCESS;
-        } else if(stack.isEmpty()) {
-            if(catalyzer.isEmpty())
-                return ActionResult.FAIL;
             if(!world.isClient) {
-                player.setStackInHand(hand, catalyzer);
-                catalyzer = ItemStack.EMPTY;
-                updateCatalyzer();
+                var upgradeStack = stack.copyWithCount(1);
+                upgrade.applyUpgrade(this, upgradeStack, upgradeSide);
+                upgrades.put(upgradeSide, upgradeStack);
+                stack.decrement(1);
+                sendData();
             }
             return ActionResult.SUCCESS;
         }
         return ActionResult.FAIL;
     }
 
-    public void light() {
-        reagentInventory.setBurning(true);
+    public ActionResult removeUpgrade(@Nullable PlayerEntity player, @Nullable Direction side) {
+        var stack = upgrades.remove(side);
+        if(stack == null) {
+            if(side != Direction.UP)
+                stack = upgrades.remove(null);
+            if(stack == null)
+                return ActionResult.PASS;
+        }
+        var upgrade = (ChemicalVatUpgrade) stack.getItem();
+        upgrade.removeUpgrade(this, stack, side);
+
+        if(world.isClient)
+            return ActionResult.SUCCESS;
         sendData();
+        if(player != null && player.giveItemStack(stack))
+            return ActionResult.SUCCESS;
+        // Couldn't give to player so we spawn it in the world.
+        var itemPos = pos.toCenterPos().offset(side != null ? side : Direction.UP, 0.6f);
+        world.spawnEntity(new ItemEntity(world, itemPos.x, itemPos.y, itemPos.z, stack));
+        return ActionResult.SUCCESS;
     }
 
-    private void updateCatalyzer() {
-        if(!catalyzer.isEmpty())
-            reagentInventory.setCatalyzer(1.0f);
-        else
-            reagentInventory.setCatalyzer(0.0f);
+    public void light() {
+        reagentInventory.setBurning(true);
         sendData();
     }
 
@@ -546,6 +613,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             return false;
 
         Lang.translate("gui.chemical_vat.info_header").forGoggles(tooltip);
+
         Lang.builder().translate("gui.chemical_vat.temperature")
                 .style(Formatting.GRAY)
                 .forGoggles(tooltip);
@@ -602,10 +670,24 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         super.read(tag, clientPacket);
         reagentInventory.read(tag);
         progressStore.read(tag);
-        if(tag.contains("Catalyzer")) {
-            catalyzer = ItemStack.fromNbt(tag.getCompound("Catalyzer"));
+        if(tag.contains("Upgrades")) {
+            upgrades.clear();
+            var upgradeTag = tag.getCompound("Upgrades");
+            for(var indexStr : upgradeTag.getKeys()) {
+                var index = Integer.parseInt(indexStr);
+                Direction dir = index < 0 ? null : Direction.values()[index];
+                var stack = ItemStack.fromNbt(upgradeTag.getCompound(indexStr));
+                var upgrade = (ChemicalVatUpgrade) stack.getItem();
+                upgrade.readUpgrade(this, stack, dir);
+                upgrades.put(dir, stack);
+            }
+        } else if(!upgrades.isEmpty()) {
+            // All upgrades removed
+            upgrades.forEach((dir, stack) -> {
+                var upgrade = (ChemicalVatUpgrade) stack.getItem();
+                upgrade.readRemovedUpgrade(this, stack, dir);
+            });
         }
-        updateCatalyzer();
         if(tag.contains("Momentum")) {
             var momentum = tag.getCompound("Momentum");
             gasMomentum.x = momentum.getDouble("X");
@@ -619,9 +701,17 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         super.write(tag, clientPacket);
         reagentInventory.write(tag);
         progressStore.write(tag);
-        if(!catalyzer.isEmpty()) {
-            tag.put("Catalyzer", catalyzer.serializeNBT());
+
+        if(!upgrades.isEmpty()) {
+            var upgradeTag = new NbtCompound();
+            for (var upgrade : upgrades.entrySet()) {
+                var dir = upgrade.getKey();
+                var index = dir == null ? -1 : dir.ordinal();
+                upgradeTag.put(Integer.toString(index), upgrade.getValue().serializeNBT());
+            }
+            tag.put("Upgrades", upgradeTag);
         }
+
         var momentum = new NbtCompound();
         momentum.putDouble("X", gasMomentum.x);
         momentum.putDouble("Y", gasMomentum.y);

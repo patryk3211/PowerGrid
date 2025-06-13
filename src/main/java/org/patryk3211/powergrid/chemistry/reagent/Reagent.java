@@ -38,11 +38,15 @@ public class Reagent implements ReagentConvertible {
 
     private RegistryEntry<Reagent> registryEntry;
     public final Properties properties;
+
     private Item item;
     private int itemAmount;
     private float itemTemperature;
+
     private Fluid fluid;
     private float fluidTemperature;
+    private float liquidConductance;
+
     private String translationKey;
     private int particleColor = 0;
     private ReagentState fixedState = null;
@@ -74,6 +78,10 @@ public class Reagent implements ReagentConvertible {
         this.fluidTemperature = temperature;
         FLUID_MAP.put(fluid, this);
         return this;
+    }
+
+    public void withLiquidConductance(float conductance) {
+        this.liquidConductance = conductance;
     }
 
     public void withFixedState(ReagentState state) {
@@ -125,6 +133,10 @@ public class Reagent implements ReagentConvertible {
 
     public int getParticleColor() {
         return particleColor;
+    }
+
+    public float getLiquidConductance() {
+        return liquidConductance;
     }
 
     public static Reagent getReagent(Fluid fluid) {

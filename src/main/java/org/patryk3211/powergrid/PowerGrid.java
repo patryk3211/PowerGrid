@@ -29,6 +29,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisRecipe;
+import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisRecipeSerializer;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 import org.patryk3211.powergrid.chemistry.reagent.Reagents;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
@@ -67,12 +69,7 @@ public class PowerGrid implements ModInitializer {
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
 		ITEM_GROUP_KEY = Registries.ITEM_GROUP.getKey(ITEM_GROUP).get();
 
-		Registry.register(Registries.RECIPE_SERIALIZER, ReactionRecipeSerializer.ID, ReactionRecipeSerializer.INSTANCE);
-		Registry.register(Registries.RECIPE_TYPE, ReactionRecipe.ID, ReactionRecipe.TYPE);
-
-		var magnetizing = MagnetizingRecipe.TYPE_INFO;
-		Registry.register(Registries.RECIPE_SERIALIZER, magnetizing.getId(), magnetizing.getSerializer());
-		Registry.register(Registries.RECIPE_TYPE, magnetizing.getId(), magnetizing.getType());
+		registerRecipes();
 
 		REGISTRATE = PowerGridRegistrate.create(MOD_ID)
 				.defaultCreativeTab(ITEM_GROUP_KEY)
@@ -97,6 +94,17 @@ public class PowerGrid implements ModInitializer {
 
 		GlobalElectricNetworks.init();
 		ServerBoundPackets.init();
+	}
+
+	private static void registerRecipes() {
+		Registry.register(Registries.RECIPE_SERIALIZER, ReactionRecipe.ID, ReactionRecipeSerializer.INSTANCE);
+		Registry.register(Registries.RECIPE_SERIALIZER, ElectrolysisRecipe.ID, ElectrolysisRecipeSerializer.INSTANCE);
+		Registry.register(Registries.RECIPE_TYPE, ReactionRecipe.ID, ReactionRecipe.TYPE);
+		Registry.register(Registries.RECIPE_TYPE, ElectrolysisRecipe.ID, ElectrolysisRecipe.TYPE);
+
+		var magnetizing = MagnetizingRecipe.TYPE_INFO;
+		Registry.register(Registries.RECIPE_SERIALIZER, magnetizing.getId(), magnetizing.getSerializer());
+		Registry.register(Registries.RECIPE_TYPE, magnetizing.getId(), magnetizing.getType());
 	}
 
 	public static Identifier asResource(String path) {

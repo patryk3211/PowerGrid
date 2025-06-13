@@ -15,28 +15,9 @@
  */
 package org.patryk3211.powergrid.recipes;
 
-import com.simibubi.create.AllItems;
-import com.simibubi.create.AllTags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import org.patryk3211.powergrid.collections.ModdedItems;
 
 public class CookingRecipes extends StandardRecipeProvider {
-    GeneratedRecipe
-
-    SILVER_ORE = create(ModdedItems.SILVER_INGOT)
-            .suffix("_ore")
-            .cookingTag(() -> AllTags.forgeItemTag("silver_ores"))
-            .rewardXP(1f)
-            .inBlastFurnace(),
-
-    RAW_SILVER = create(ModdedItems.SILVER_INGOT)
-            .suffix("_raw")
-            .cookingTag(() -> AllTags.forgeItemTag("raw_silver_ores"))
-            .rewardXP(.7f)
-            .inBlastFurnace(),
-
-    CRUSHED_SILVER = blastCrushedMetal(ModdedItems.SILVER_INGOT::get, AllItems.CRUSHED_SILVER::get)
-            ;
 
     public CookingRecipes(FabricDataOutput output) {
         super(output);

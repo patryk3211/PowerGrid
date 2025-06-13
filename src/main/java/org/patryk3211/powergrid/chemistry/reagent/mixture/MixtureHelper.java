@@ -27,7 +27,7 @@ public class MixtureHelper {
         if(thisReagents.isEmpty())
             return;
         var otherReagents = new HashSet<Reagent>();
-        for(var reagent : mixture1.getReagents()) {
+        for(var reagent : mixture2.getReagents()) {
             if(mixture2.getState(reagent) == state)
                 otherReagents.add(reagent);
         }
@@ -74,5 +74,18 @@ public class MixtureHelper {
             }
         }
         return amount;
+    }
+
+    public static int forceMoveReagents(ReagentMixture source, Set<Reagent> reagents, VolumeReagentInventory target, int amount) {
+        if(reagents.isEmpty())
+            return 0;
+        if(amount <= 0)
+            return 0;
+        try(var transaction = Transaction.openOuter()) {
+            var mix = source.remove(amount, reagents, transaction);
+            target.forceAdd(mix, transaction);
+            transaction.commit();
+            return mix.getTotalAmount();
+        }
     }
 }

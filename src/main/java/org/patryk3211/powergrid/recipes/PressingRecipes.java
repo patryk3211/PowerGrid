@@ -27,13 +27,6 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import java.util.function.UnaryOperator;
 
 public class PressingRecipes extends ProcessingRecipeGen {
-    GeneratedRecipe
-
-    SILVER_SHEET = create("silver_sheet", b -> b
-            .require(RecipeTags.silverIngot())
-            .output(ModdedItems.SILVER_SHEET))
-
-            ;
 
     public PressingRecipes(FabricDataOutput generator) {
         super(generator);

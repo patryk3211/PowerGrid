@@ -33,7 +33,6 @@ public class ModdedTags {
         RAW_ORES(FORGE_NAMESPACE, "raw_ores"),
         PLATES(FORGE_NAMESPACE, "plates"),
         WIRES("wires"),
-        CATALYZERS("catalyzers"),
         LIGHT_WIRES("light_wires")
         ;
 
