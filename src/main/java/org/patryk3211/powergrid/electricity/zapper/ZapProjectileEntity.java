@@ -37,7 +37,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 import org.patryk3211.powergrid.collections.ModdedEntities;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.network.packets.ZapProjectileS2CPacket;
 
 public class ZapProjectileEntity extends ProjectileEntity {
     public ZapProjectileEntity(EntityType<? extends ProjectileEntity> type, World world) {
@@ -165,8 +167,11 @@ public class ZapProjectileEntity extends ProjectileEntity {
     }
 
     @Override
-    protected void onBlockHit(BlockHitResult blockHitResult) {
-        super.onBlockHit(blockHitResult);
+    protected void onBlockHit(BlockHitResult hit) {
+        super.onBlockHit(hit);
+        if(!getWorld().isClient) {
+            ModdedPackets.getChannel().sendToClientsTracking(new ZapProjectileS2CPacket(hit), this);
+        }
         kill();
     }
 }

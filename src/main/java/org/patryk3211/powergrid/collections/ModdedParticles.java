@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.vat.particles.BubbleParticleData;
 import org.patryk3211.powergrid.chemistry.vat.particles.GasParticleData;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizationParticleData;
+import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,8 @@ public class ModdedParticles {
     public static final ParticleType<GasParticleData> GAS = register("gas", GasParticleData::new);
     public static final ParticleType<MagnetizationParticleData> MAGNETIZATION = register("magnetization", MagnetizationParticleData::new);
     public static final ParticleType<BubbleParticleData> VAT_BUBBLE = register("vat_bubble", BubbleParticleData::new);
+
+    public static final ParticleType<SparkParticleData> CUBE_SPARK = register("spark", SparkParticleData::new);
 
     private static <T extends ParticleEffect> ParticleType<T> register(String name, Supplier<? extends ICustomParticleData<T>> typeFactory) {
         var type = Registry.register(Registries.PARTICLE_TYPE, PowerGrid.asResource(name), typeFactory.get().createType());
