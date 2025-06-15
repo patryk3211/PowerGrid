@@ -17,9 +17,11 @@ package org.patryk3211.powergrid.electricity.zapper;
 
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetItemMethods;
 import com.simibubi.create.foundation.item.CustomArmPoseItem;
+import com.simibubi.create.foundation.utility.Components;
 import io.github.fabricators_of_create.porting_lib.item.EntitySwingListenerItem;
 import io.github.fabricators_of_create.porting_lib.item.ReequipAnimationItem;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.entity.LivingEntity;
@@ -27,21 +29,26 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.utility.Lang;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPoseItem, EntitySwingListenerItem, ReequipAnimationItem {
     public ElectroZapperItem(Settings settings) {
-        super(settings);
+        super(settings.maxDamage(50));
     }
 
     @Override
@@ -89,7 +96,26 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
         Function<Boolean, ElectroZapperPacket> factory = b -> new ElectroZapperPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
         ModdedPackets.getChannel().sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.getChannel().sendToClient(factory.apply(true), (ServerPlayerEntity) user);
+        stack.damage(1, user, $ -> {});
         return TypedActionResult.success(user.getStackInHand(hand));
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        tooltip.add(Components.immutableEmpty());
+        tooltip.add(Components.translatable("powergrid.electrozapper.bolt").append(Components.literal(":"))
+                .formatted(Formatting.GRAY));
+        var spacing = Components.literal(" ");
+
+        float damageF = 4;//type.getDamage() * additionalDamageMult;
+        var damage = Components.literal(damageF == MathHelper.floor(damageF) ? "" + MathHelper.floor(damageF) : "" + damageF);
+        var reloadTicks = Components.literal("10");
+
+//        damage = damage.formatted(Formatting.DARK_GREEN);
+
+        tooltip.add(spacing.copyContentOnly().append(Lang.translateDirect("electrozapper.bolt.damage", damage).formatted(Formatting.DARK_GREEN)));
+        tooltip.add(spacing.copyContentOnly().append(Lang.translateDirect("electrozapper.bolt.reload", reloadTicks).formatted(Formatting.DARK_GREEN)));
+        super.appendTooltip(stack, world, tooltip, context);
     }
 
     @Override

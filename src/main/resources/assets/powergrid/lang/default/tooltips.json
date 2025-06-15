@@ -1,0 +1,11 @@
+{
+  "item.powergrid.electrozapper.tooltip.summary": "Fires a lightning bolt that bounces off of nearby enemies, splitting the damage between them. Can be powered with _Forge Energy_ from a _Portable Battery_",
+  "item.powergrid.electrozapper.tooltip.condition1": "When R-Clicked",
+  "item.powergrid.electrozapper.tooltip.behaviour1": "_Shoots_ a lightning bolt",
+  "item.powergrid.electrozapper.tooltip.condition2": "While wearing a Portable Battery",
+  "item.powergrid.electrozapper.tooltip.behaviour2": "_No durability_ will be used. Instead, _Forge Energy_ is drained from the Battery",
+
+  "powergrid.electrozapper.bolt": "Lightning Bolt",
+  "powergrid.electrozapper.bolt.damage": "%1$s Attack Damage",
+  "powergrid.electrozapper.bolt.reload": "%1$s Reload Ticks"
+}

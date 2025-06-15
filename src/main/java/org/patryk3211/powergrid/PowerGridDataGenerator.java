@@ -53,6 +53,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 			BiConsumer<String, String> langConsumer = provider::add;
 			provideDefaultLang("interface", langConsumer);
 			provideDefaultLang("messages", langConsumer);
+			provideDefaultLang("tooltips", langConsumer);
 
 			providePonderLang(langConsumer);
 			ModdedSoundEvents.provideLang(langConsumer);
