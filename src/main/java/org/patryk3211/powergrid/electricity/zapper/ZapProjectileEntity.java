@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.zapper;
 
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
@@ -30,16 +31,17 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.collections.ModdedDamageTypes;
-import org.patryk3211.powergrid.collections.ModdedEntities;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.network.packets.ZapProjectileS2CPacket;
+
+import java.util.ArrayList;
 
 public class ZapProjectileEntity extends ProjectileEntity {
     public ZapProjectileEntity(EntityType<? extends ProjectileEntity> type, World world) {
@@ -121,10 +123,29 @@ public class ZapProjectileEntity extends ProjectileEntity {
         if(target instanceof WitherEntity wither && wither.shouldRenderOverlay())
             return;
 
-        var onServer = !getWorld().isClient;
-        if(onServer && !target.damage(causeZapDamage(), 5f)) {
+        float damage = 4;
+
+        var effectBB = new Box(target.getBlockPos()).expand(2);
+        var world = getWorld();
+        var source = causeZapDamage();
+        var affectedEntities = world.getOtherEntities(target, effectBB, e -> e instanceof LivingEntity && !e.isInvulnerableTo(source));
+
+        var onServer = !world.isClient;
+        damage /= Math.min(affectedEntities.size() + 1, 3);
+        if(onServer && !target.damage(source, damage)) {
             kill();
             return;
+        }
+
+        if(onServer) {
+            var damagedEntities = new ArrayList<Entity>();
+            for(var entity : affectedEntities) {
+                if(entity.damage(source, damage))
+                    damagedEntities.add(entity);
+                if(damagedEntities.size() >= 2)
+                    break;
+            }
+            ModdedPackets.getChannel().sendToClientsAround(new ZapProjectileS2CPacket(target, damagedEntities), (ServerWorld) getWorld(), getPos(), 50);
         }
 
         if(target.getType() == EntityType.ENDERMAN)
@@ -150,7 +171,7 @@ public class ZapProjectileEntity extends ProjectileEntity {
             EnchantmentHelper.onTargetDamaged(livingOwner, livingTarget);
         }
 
-        if(livingTarget != owner && livingTarget instanceof PlayerEntity && owner instanceof ServerPlayerEntity ownerPlayer && !this.isSilent()) {
+        if(livingTarget != owner && livingTarget instanceof PlayerEntity && owner instanceof ServerPlayerEntity ownerPlayer && !isSilent()) {
             ownerPlayer.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.PROJECTILE_HIT_PLAYER, 0.0F));
         }
 
