@@ -37,11 +37,11 @@ public class RecipeTags {
         return AllTags.forgeItemTag("iron_nuggets");
     }
 
-    public static TagKey<Item> silverSheet() {
-        return AllTags.forgeItemTag("silver_plates");
+    public static TagKey<Item> zincSheet() {
+        return AllTags.forgeItemTag("zinc_plates");
     }
 
-    public static TagKey<Item> silverIngot() {
-        return AllTags.forgeItemTag("silver_ingots");
+    public static TagKey<Item> zincIngot() {
+        return AllTags.forgeItemTag("zinc_ingots");
     }
 }
