@@ -21,12 +21,19 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.entity.passive.PandaEntity;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.function.UnaryOperator;
 
 public class PressingRecipes extends ProcessingRecipeGen {
+    GeneratedRecipe
+
+    ZINC_SHEET = create("zinc_sheet", b -> b
+            .require(RecipeTags.zincIngot())
+            .output(ModdedItems.ZINC_SHEET.get())
+    );
 
     public PressingRecipes(FabricDataOutput generator) {
         super(generator);

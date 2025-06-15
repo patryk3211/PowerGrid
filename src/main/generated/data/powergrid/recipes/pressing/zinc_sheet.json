@@ -1,0 +1,13 @@
+{
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "tag": "c:zinc_ingots"
+    }
+  ],
+  "results": [
+    {
+      "item": "powergrid:zinc_sheet"
+    }
+  ]
+}

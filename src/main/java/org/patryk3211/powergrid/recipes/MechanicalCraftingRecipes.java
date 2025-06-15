@@ -23,6 +23,7 @@ import com.simibubi.create.foundation.data.recipe.MechanicalCraftingRecipeBuilde
 import com.simibubi.create.foundation.utility.RegisteredObjects;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.item.ItemConvertible;
+import net.minecraft.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -53,6 +54,17 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .patternLine("AMA")
                     .patternLine("MSM")
                     .patternLine(" M ")
+            ),
+
+    INTEGRATED_CIRCUIT = create(ModdedItems.INTEGRATED_CIRCUIT::get)
+            .recipe(b -> b
+                    .key('L', Items.LAPIS_LAZULI)
+                    .key('R', Items.REDSTONE)
+                    .key('G', Items.GOLD_NUGGET)
+                    .key('Q', AllItems.ROSE_QUARTZ)
+                    .patternLine("  L  ")
+                    .patternLine("RRQRR")
+                    .patternLine(" GGG ")
             )
 
             ;

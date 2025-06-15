@@ -15,12 +15,13 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonItemRenderer;
+import com.simibubi.create.AllTags;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
-import com.simibubi.create.foundation.data.AssetLookup;
 import com.simibubi.create.foundation.data.CreateRegistrate;
+import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
+import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.vat.upgrade.CatalyzerItem;
 import org.patryk3211.powergrid.electricity.electrode.ElectrodeItem;
@@ -31,6 +32,7 @@ import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
 
+import static com.simibubi.create.AllTags.forgeItemTag;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedItems {
@@ -77,7 +79,12 @@ public class ModdedItems {
     public static final ItemEntry<Item> COPPER_COIL = ingredient("copper_coil");
     public static final ItemEntry<Item> MAGNET = ingredient("magnet");
 
+    public static final ItemEntry<Item> INTEGRATED_CIRCUIT = ingredient("integrated_circuit");
+    public static final ItemEntry<Item> ELECTRICAL_GIZMO = ingredient("electrical_gizmo");
+    public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag, forgeItemTag("zinc_plates"));
+
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
 
     public static final ItemEntry<Item> SULFUR = REGISTRATE.item("sulfur", Item::new)
             .register();
@@ -105,5 +112,9 @@ public class ModdedItems {
 
     private static ItemEntry<Item> ingredient(String name) {
         return REGISTRATE.item(name, Item::new).register();
+    }
+
+    private static ItemEntry<Item> ingredient(String name, TagKey<Item>... tags) {
+        return REGISTRATE.item(name, Item::new).tag(tags).register();
     }
 }

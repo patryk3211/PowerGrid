@@ -40,7 +40,23 @@ public class SequencedAssemblyRecipes extends CreateRecipeProvider {
             .addOutput(Items.IRON_INGOT, 1)
             .loops(3)
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.ironSheet()))
-            .addStep(PressingRecipe::new, rb -> rb));
+            .addStep(PressingRecipe::new, rb -> rb)),
+
+    ELECTRICAL_GIZMO = create("electrical_gizmo", b -> b.require(RecipeTags.zincSheet())
+            .transitionTo(ModdedItems.INCOMPLETE_ELECTRICAL_GIZMO)
+            .addOutput(ModdedItems.ELECTRICAL_GIZMO, 100)
+            .addOutput(ModdedItems.ZINC_SHEET, 7)
+            .addOutput(AllItems.POLISHED_ROSE_QUARTZ, 5)
+            .addOutput(Items.GOLD_NUGGET, 3)
+            .addOutput(AllItems.COPPER_NUGGET, 2)
+            .addOutput(Items.REPEATER, 3)
+            .loops(1)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.COPPER_COIL))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.ELECTRON_TUBE))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.INTEGRATED_CIRCUIT))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.GOLD_NUGGET)))
+
+            ;
 
     public SequencedAssemblyRecipes(FabricDataOutput output) {
         super(output);

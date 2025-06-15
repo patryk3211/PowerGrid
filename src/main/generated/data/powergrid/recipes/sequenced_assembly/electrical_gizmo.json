@@ -1,0 +1,102 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "tag": "c:zinc_plates"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "chance": 100.0,
+      "item": "powergrid:electrical_gizmo"
+    },
+    {
+      "chance": 7.0,
+      "item": "powergrid:zinc_sheet"
+    },
+    {
+      "chance": 5.0,
+      "item": "create:polished_rose_quartz"
+    },
+    {
+      "chance": 3.0,
+      "item": "minecraft:gold_nugget"
+    },
+    {
+      "chance": 2.0,
+      "item": "create:copper_nugget"
+    },
+    {
+      "chance": 3.0,
+      "item": "minecraft:repeater"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_electrical_gizmo"
+        },
+        {
+          "item": "powergrid:copper_coil"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_electrical_gizmo"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_electrical_gizmo"
+        },
+        {
+          "item": "create:electron_tube"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_electrical_gizmo"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_electrical_gizmo"
+        },
+        {
+          "item": "powergrid:integrated_circuit"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_electrical_gizmo"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_electrical_gizmo"
+        },
+        {
+          "item": "minecraft:gold_nugget"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_electrical_gizmo"
+        }
+      ]
+    }
+  ],
+  "transitionalItem": {
+    "item": "powergrid:incomplete_electrical_gizmo"
+  }
+}
