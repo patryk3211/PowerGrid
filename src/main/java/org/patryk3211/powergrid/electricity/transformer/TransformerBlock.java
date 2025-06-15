@@ -19,6 +19,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -33,6 +34,9 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
@@ -131,17 +135,22 @@ public abstract class TransformerBlock extends ElectricBlock {
                 if(be.isEmpty())
                     return ActionResult.FAIL;
                 var nbt = stack.getNbt();
-                if(be.get().isTerminalUsed(nbt.getInt("Terminal"))) {
+                var endpoint = WireEndpointType.deserialize(nbt);
+                if(endpoint.type() != WireEndpointType.BLOCK)
+                    return ActionResult.FAIL;
+                var blockEndpoint = (BlockWireEndpoint) endpoint;
+                if(be.get().isTerminalUsed(blockEndpoint.getTerminal())) {
                     IElectric.sendMessage(context, Lang.translate("message.coil_exists").style(Formatting.RED).component());
                     return ActionResult.FAIL;
                 }
-                var posArray = nbt.getIntArray("Position");
-                var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
-                if(isInitiator(context.getBlockPos(), state, firstPosition)) {
+                if(isInitiator(context.getBlockPos(), state, blockEndpoint.getPos())) {
                     // Put into winding mode.
+                    nbt = new NbtCompound();
                     nbt.putInt("Turns", 1);
-                    nbt.putIntArray("Initiator", posArray);
-                    nbt.remove("Position");
+                    var pos = blockEndpoint.getPos();
+                    nbt.putIntArray("Initiator", new int[] { pos.getX(), pos.getY(), pos.getZ() });
+                    nbt.putInt("Terminal", blockEndpoint.getTerminal());
+                    stack.setNbt(nbt);
                     return ActionResult.SUCCESS;
                 }
             }
