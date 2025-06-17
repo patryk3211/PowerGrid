@@ -54,6 +54,7 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.wire.IWire;
 
 import java.util.List;
 import java.util.Optional;
@@ -110,7 +111,8 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
             return ActionResult.PASS;
         if(player.isSneaking())
             return ActionResult.PASS;
-        if(player.getMainHandStack().getItem() instanceof BlockItem)
+        var heldItem = player.getMainHandStack().getItem();
+        if(heldItem instanceof BlockItem || heldItem instanceof IWire)
             return ActionResult.PASS;
         if(!player.getEquippedStack(EquipmentSlot.CHEST).isEmpty())
             return ActionResult.PASS;
