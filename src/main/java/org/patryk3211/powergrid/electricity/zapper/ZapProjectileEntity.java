@@ -73,6 +73,7 @@ public class ZapProjectileEntity extends ProjectileEntity {
 
     @Override
     public void tick() {
+        super.tick();
         var hit = ProjectileUtil.getCollision(this, this::canHit);
         if(hit.getType() != HitResult.Type.MISS) {
             this.onCollision(hit);

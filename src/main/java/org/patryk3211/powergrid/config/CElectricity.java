@@ -24,6 +24,14 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt growthLampRadius = i(2, 1, "growthLampRadius", Comments.growthLampRadius);
     public final ConfigInt growthLampChance = i(50, 0, "growthLampChance", Comments.growthLampChance);
 
+    public final ConfigFloat forgeEnergyPerVolt = f(2, 0, "forgeEnergyPerVolt", Comments.forgeEnergyPerVolt);
+
+    public final ConfigInt electroZapperFePerShot = i(100, 1, "electroZapperFePerShot", Comments.electroZapperFePerShot);
+
+    public final ConfigFloat portableBatteryResistance = f(25, 0.1f, "portableBatteryResistance", Comments.portableBatteryResistance);
+    public final ConfigInt portableBatteryBaseCapacity = i(10000, 1, "portableBatteryBaseCapacity", Comments.portableBatteryBaseCapacity);
+    public final ConfigInt portableBatteryEnchantCapacity = i(10000, 1, "portableBatteryEnchantCapacity", Comments.portableBatteryEnchantCapacity);
+
     @Override
     public String getName() {
         return "electricity";
@@ -35,5 +43,13 @@ public class CElectricity extends ConfigBase {
 
         public static final String growthLampRadius = "Radius of the area affected by growth lamp effect";
         public static final String growthLampChance = "Chance value for the growth lamp to tick a random block in its area (lower value = higher chance), this value is divided by lamp's power level";
+
+        public static final String forgeEnergyPerVolt = "Conversion rate of volts to Forge Energy";
+
+        public static final String electroZapperFePerShot = "Forge Energy used by Electro-Zapper per shot";
+
+        public static final String portableBatteryResistance = "Resistance of Portable Battery";
+        public static final String portableBatteryBaseCapacity = "Portable Battery Forge Energy capacity before enchants";
+        public static final String portableBatteryEnchantCapacity = "Portable Battery Forge Energy capacity increase per level of Capacity enchant";
     }
 }

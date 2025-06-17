@@ -15,10 +15,9 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.AllTags;
+import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
-import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
@@ -27,10 +26,12 @@ import org.patryk3211.powergrid.chemistry.vat.upgrade.CatalyzerItem;
 import org.patryk3211.powergrid.electricity.electrode.ElectrodeItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
+import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
+import org.patryk3211.powergrid.electricity.portablebattery.ZincArmorMaterial;
 
 import static com.simibubi.create.AllTags.forgeItemTag;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -101,6 +102,18 @@ public class ModdedItems {
             .model((ctx, prov) -> prov
                     .withExistingParent(ctx.getName(), PowerGrid.asResource("item/electrozapper/item")))
             .lang("Electro-Zapper")
+            .register();
+
+    public static final ItemEntry<BacktankItem.BacktankBlockItem> PORTABLE_BATTERY_PLACEABLE = REGISTRATE.item("portable_battery_placeable",
+                    p -> new BacktankItem.BacktankBlockItem(ModdedBlocks.PORTABLE_BATTERY.get(), ModdedItems.PORTABLE_BATTERY::get, p))
+            .model((c, p) -> p.withExistingParent(c.getName(), p.mcLoc("item/barrier")))
+            .register();
+
+    public static final ItemEntry<PortableBatteryItem> PORTABLE_BATTERY = REGISTRATE.item("portable_battery", p -> new PortableBatteryItem(ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
+            .model((ctx, prov) ->
+                    prov.withExistingParent(ctx.getName(), prov.modLoc("block/portable_battery/block")))
+            .properties(p -> p.maxDamage(-1))
+			.tag(forgeItemTag("chestplates"))
             .register();
 
     @SuppressWarnings("EmptyMethod")

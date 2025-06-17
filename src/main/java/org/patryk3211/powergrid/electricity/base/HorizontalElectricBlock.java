@@ -16,9 +16,29 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.Properties;
+import org.jetbrains.annotations.Nullable;
 
-public abstract class HorizontalElectricBlock extends Block implements IElectric {
+public abstract class HorizontalElectricBlock extends ElectricBlock {
+    public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+
     public HorizontalElectricBlock(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        super.appendProperties(builder);
+        builder.add(HORIZONTAL_FACING);
+    }
+
+    @Override
+    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
+        var player = ctx.getPlayer() == null || !ctx.getPlayer().isSneaking() ? ctx.getHorizontalPlayerFacing() : ctx.getHorizontalPlayerFacing().getOpposite();
+        return getDefaultState().with(HORIZONTAL_FACING, player);
     }
 }

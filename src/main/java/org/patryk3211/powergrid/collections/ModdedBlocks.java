@@ -33,9 +33,18 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.loot.LootPool;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.condition.SurvivesExplosionLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.entry.LootPoolEntry;
 import net.minecraft.loot.function.ApplyBonusLootFunction;
+import net.minecraft.loot.function.CopyNbtLootFunction;
 import net.minecraft.loot.function.SetCountLootFunction;
+import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
+import net.minecraft.loot.provider.nbt.LootNbtProvider;
+import net.minecraft.loot.provider.nbt.LootNbtProviderType;
+import net.minecraft.loot.provider.nbt.LootNbtProviderTypes;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.sound.BlockSoundGroup;
@@ -61,6 +70,8 @@ import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -505,6 +516,21 @@ public class ModdedBlocks {
                             ))
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
+            .register();
+
+    public static final BlockEntry<PortableBatteryBlock> PORTABLE_BATTERY = REGISTRATE.block("portable_battery", PortableBatteryBlock::new)
+            .blockstate((ctx, prov) -> prov.horizontalBlock(ctx.getEntry(), modModel(prov, "block/portable_battery/block")))
+            .initialProperties(() -> Blocks.IRON_BLOCK)
+            .transform(pickaxeOnly())
+            .loot((tables, block) -> {
+                tables.addDrop(block, LootTable.builder()
+                        .pool(LootPool.builder()
+                                .conditionally(SurvivesExplosionLootCondition.builder())
+                                .with(ItemEntry.builder(ModdedItems.PORTABLE_BATTERY)))
+                        .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
+                                .withOperation("Charge", "Charge", CopyNbtLootFunction.Operator.REPLACE))
+                );
+            })
             .register();
 
     @SuppressWarnings("EmptyMethod")

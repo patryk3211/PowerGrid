@@ -7,5 +7,11 @@
 
   "powergrid.electrozapper.bolt": "Lightning Bolt",
   "powergrid.electrozapper.bolt.damage": "%1$s Attack Damage",
-  "powergrid.electrozapper.bolt.reload": "%1$s Reload Ticks"
+  "powergrid.electrozapper.bolt.reload": "%1$s Reload Ticks",
+
+  "item.powergrid.portable_battery.tooltip.summary": "A _Wearable Battery_ for carrying energy",
+  "item.powergrid.portable_battery.tooltip.condition1": "When Worn",
+  "item.powergrid.portable_battery.tooltip.behaviour1": "Provides _Forge Energy_ to Equipment that requires it",
+  "item.powergrid.portable_battery.tooltip.condition2": "When placed, Powered by Electricity",
+  "item.powergrid.portable_battery.tooltip.behaviour2": "Stores energy at a rate depending on the _Supplied Voltage_"
 }

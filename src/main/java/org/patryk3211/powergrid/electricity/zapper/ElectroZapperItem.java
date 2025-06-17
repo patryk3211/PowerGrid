@@ -39,7 +39,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridClient;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.electricity.portablebattery.BatteryUtils;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
@@ -47,8 +49,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPoseItem, EntitySwingListenerItem, ReequipAnimationItem {
+    public static final int MAX_DAMAGE = 50;
+
     public ElectroZapperItem(Settings settings) {
-        super(settings.maxDamage(50));
+        super(settings.maxDamage(MAX_DAMAGE));
     }
 
     @Override
@@ -68,6 +72,25 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
     @Override
     public boolean canMine(BlockState state, World world, BlockPos pos, PlayerEntity miner) {
         return false;
+    }
+
+    @Override
+    public boolean isItemBarVisible(ItemStack stack) {
+        return BatteryUtils.isBarVisible(stack, fePerUse());
+    }
+
+    @Override
+    public int getItemBarStep(ItemStack stack) {
+        return BatteryUtils.getBarWidth(stack, fePerUse());
+    }
+
+    @Override
+    public int getItemBarColor(ItemStack stack) {
+        return BatteryUtils.getBarColor(stack, fePerUse());
+    }
+
+    public static int fePerUse() {
+        return ModdedConfigs.server().electricity.electroZapperFePerShot.get();
     }
 
     @Override
@@ -96,7 +119,8 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
         Function<Boolean, ElectroZapperPacket> factory = b -> new ElectroZapperPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
         ModdedPackets.getChannel().sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.getChannel().sendToClient(factory.apply(true), (ServerPlayerEntity) user);
-        stack.damage(1, user, $ -> {});
+        if(!BatteryUtils.drawEnergy(user, fePerUse()))
+            stack.damage(1, user, $ -> {});
         return TypedActionResult.success(user.getStackInHand(hand));
     }
 

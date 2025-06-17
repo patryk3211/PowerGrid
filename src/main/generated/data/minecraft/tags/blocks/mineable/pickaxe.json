@@ -23,6 +23,7 @@
     "powergrid:chemical_vat",
     "powergrid:electromagnet",
     "powergrid:electric_fan",
-    "powergrid:vat_electrode"
+    "powergrid:vat_electrode",
+    "powergrid:portable_battery"
   ]
 }

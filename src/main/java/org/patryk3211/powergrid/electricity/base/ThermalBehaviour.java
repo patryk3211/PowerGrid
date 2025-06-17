@@ -64,6 +64,16 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         this(be, thermalMass, dissipationFactor, 175.0f);
     }
 
+    public static ThermalBehaviour forMaxPower(SmartBlockEntity be, float thermalMass, float power) {
+        return forMaxPower(be, thermalMass, power, 175.0f);
+    }
+
+    public static ThermalBehaviour forMaxPower(SmartBlockEntity be, float thermalMass, float power, float overheatTemperature) {
+        var targetTemperature = overheatTemperature - 25;
+        var dissipation = power / (targetTemperature - BASE_TEMPERATURE);
+        return new ThermalBehaviour(be, thermalMass, dissipation, overheatTemperature);
+    }
+
     public ThermalBehaviour noOverheatBehaviour() {
         noOverheatBehaviour = true;
         return this;
