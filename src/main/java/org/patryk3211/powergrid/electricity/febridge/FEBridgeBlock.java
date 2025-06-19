@@ -17,10 +17,13 @@ package org.patryk3211.powergrid.electricity.febridge;
 
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.VoxelShaper;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.SurfaceElectricBlock;
@@ -74,6 +77,12 @@ public class FEBridgeBlock extends SurfaceElectricBlock implements IBE<FEBridgeB
                     return prov.get(facing);
                 })
                 .build());
+    }
+
+    @Override
+    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
+        var state = super.getPlacementState(ctx);
+        return state == null ? null : state.with(ALONG_FIRST_AXIS, !state.get(ALONG_FIRST_AXIS));
     }
 
     @Override
