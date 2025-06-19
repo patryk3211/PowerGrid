@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.electricity.portablebattery;
 
 import com.simibubi.create.AllEnchantments;
-import com.simibubi.create.content.equipment.armor.BacktankBlockEntity;
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.schematics.requirement.ISpecialBlockItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
@@ -31,13 +30,11 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -52,14 +49,11 @@ import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
-import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
-import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 
 import java.util.List;
-import java.util.Optional;
 
-public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE<PortableBatteryBlockEntity>, IHaveElectricProperties, ISpecialBlockItemRequirement {
+public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE<PortableBatteryBlockEntity>, ISpecialBlockItemRequirement {
     private static final VoxelShape SHAPE = VoxelShapes.union(
             createCuboidShape(4, 0, 4, 12, 9, 12),
             createCuboidShape(5, 9, 5, 11, 12, 11)
@@ -147,11 +141,6 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
 
     public static float resistance() {
         return ModdedConfigs.server().electricity.portableBatteryResistance.getF();
-    }
-
-    @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
-        Resistance.series(resistance(), player, tooltip);
     }
 
     @Override

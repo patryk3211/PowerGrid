@@ -1,0 +1,28 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "C": {
+      "tag": "c:copper_coils"
+    },
+    "G": {
+      "item": "powergrid:electrical_gizmo"
+    },
+    "I": {
+      "tag": "c:iron_ingots"
+    },
+    "Z": {
+      "tag": "c:zinc_ingots"
+    }
+  },
+  "pattern": [
+    "C",
+    "G",
+    "Z",
+    "Z",
+    "I"
+  ],
+  "result": {
+    "item": "powergrid:electrobaton"
+  }
+}

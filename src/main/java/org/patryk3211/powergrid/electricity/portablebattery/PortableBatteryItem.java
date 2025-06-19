@@ -22,14 +22,19 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 
+import java.util.List;
 import java.util.function.Supplier;
 
-public class PortableBatteryItem extends BaseArmorItem implements CapacityEnchantment.ICapacityEnchantable {
+public class PortableBatteryItem extends BaseArmorItem implements CapacityEnchantment.ICapacityEnchantable, IHaveElectricProperties {
     public static final int BAR_COLOR = 0xEFEFDE;
     private Supplier<BacktankItem.BacktankBlockItem> blockItem;
 
@@ -75,5 +80,10 @@ public class PortableBatteryItem extends BaseArmorItem implements CapacityEnchan
     public ActionResult useOnBlock(ItemUsageContext ctx) {
         return blockItem.get()
                 .useOnBlock(ctx);
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        Resistance.series(PortableBatteryBlock.resistance(), player, tooltip);
     }
 }

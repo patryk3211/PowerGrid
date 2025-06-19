@@ -20,7 +20,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 
 public class ModdedTags {
@@ -33,7 +32,8 @@ public class ModdedTags {
         RAW_ORES(FORGE_NAMESPACE, "raw_ores"),
         PLATES(FORGE_NAMESPACE, "plates"),
         WIRES("wires"),
-        LIGHT_WIRES("light_wires")
+        LIGHT_WIRES("light_wires"),
+        COILS(FORGE_NAMESPACE, "coils")
         ;
 
         public final TagKey<net.minecraft.item.Item> tag;

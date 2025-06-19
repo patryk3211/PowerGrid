@@ -19,7 +19,6 @@ import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
-import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
@@ -78,8 +77,8 @@ public class ModdedItems {
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/lamps/growth_lamp")))
             .register();
 
-    public static final ItemEntry<Item> RESISTIVE_COIL = ingredient("resistive_coil");
-    public static final ItemEntry<Item> COPPER_COIL = ingredient("copper_coil");
+    public static final ItemEntry<Item> RESISTIVE_COIL = ingredient("resistive_coil", forgeItemTag("iron_coils"), ModdedTags.Item.COILS.tag);
+    public static final ItemEntry<Item> COPPER_COIL = ingredient("copper_coil", forgeItemTag("copper_coils"), ModdedTags.Item.COILS.tag);
     public static final ItemEntry<Item> MAGNET = ingredient("magnet");
 
     public static final ItemEntry<Item> INTEGRATED_CIRCUIT = ingredient("integrated_circuit");
