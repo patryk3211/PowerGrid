@@ -19,16 +19,45 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public class FEBridgeBlockEntity extends ElectricBlockEntity {
+    private int charge;
+    private SwitchedWire wire;
+
     public FEBridgeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    private static final float VOLT_TO_FE = 2;
+    private static final float AMP_TO_FE = 10f;
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        if(wire.getState()) {
+            charge += Math.round(wire.current() * AMP_TO_FE);
+        }
+
+        // TODO: FE bridge needs Volt to FE, as well as Amp to FE ratios.
+        int maxCharge = (int) (wire.potentialDifference() * VOLT_TO_FE);
+        int missingCharge = maxCharge - charge;
+        if(missingCharge <= 0) {
+            wire.setState(false);
+            return;
+        }
+
+        float targetAmps = missingCharge / AMP_TO_FE;
+        float resistance = wire.potentialDifference() / targetAmps;
+        wire.setResistance(resistance);
+        wire.setState(true);
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-//        builder.connect()
+        wire = builder.connectSwitch(1, builder.terminalNode(0), builder.terminalNode(1));
     }
 }
 
