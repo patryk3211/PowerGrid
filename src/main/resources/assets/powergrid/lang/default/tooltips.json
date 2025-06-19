@@ -13,5 +13,9 @@
   "item.powergrid.portable_battery.tooltip.condition1": "When Worn",
   "item.powergrid.portable_battery.tooltip.behaviour1": "Provides _Forge Energy_ to Equipment that requires it",
   "item.powergrid.portable_battery.tooltip.condition2": "When placed, Powered by Electricity",
-  "item.powergrid.portable_battery.tooltip.behaviour2": "Stores energy at a rate depending on the _Supplied Voltage_"
+  "item.powergrid.portable_battery.tooltip.behaviour2": "Stores energy at a rate depending on the _Supplied Voltage_",
+
+  "item.powergrid.electrobaton.tooltip.summary": "Pushes back and stuns enemies (if they aren't too strong) when powered with _Forge Energy_ from a _Portable Battery_",
+  "item.powergrid.electrobaton.tooltip.condition1": "While wearing a Portable Battery",
+  "item.powergrid.electrobaton.tooltip.behaviour1": "Attacked enemies will be _stunned_ and _no durability_ will be used. Instead, _Forge Energy_ is drained from the Battery"
 }

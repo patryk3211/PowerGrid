@@ -19,10 +19,12 @@ import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.vat.upgrade.CatalyzerItem;
+import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.electrode.ElectrodeItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
@@ -31,7 +33,7 @@ import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
-import org.patryk3211.powergrid.electricity.portablebattery.ZincArmorMaterial;
+import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
 
 import static com.simibubi.create.AllTags.forgeItemTag;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -102,6 +104,12 @@ public class ModdedItems {
             .model((ctx, prov) -> prov
                     .withExistingParent(ctx.getName(), PowerGrid.asResource("item/electrozapper/item")))
             .lang("Electro-Zapper")
+            .register();
+
+    public static final ItemEntry<ElectroBatonItem> ELECTROBATON = REGISTRATE.item("electrobaton", ElectroBatonItem::new)
+            .model((ctx, prov) -> prov
+                    .withExistingParent(ctx.getName(), PowerGrid.asResource("item/electrobaton/item")))
+            .lang("Electro-Baton")
             .register();
 
     public static final ItemEntry<BacktankItem.BacktankBlockItem> PORTABLE_BATTERY_PLACEABLE = REGISTRATE.item("portable_battery_placeable",

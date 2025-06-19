@@ -88,8 +88,8 @@ public class BatteryUtils {
         return battery.getItemBarStep();
     }
 
-    public static int getBarColor(ItemStack stack, int usesPerTank) {
-        if(usesPerTank == 0)
+    public static int getBarColor(ItemStack stack, int fePerUse) {
+        if(fePerUse == 0)
             return 0;
         PlayerEntity player = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().player);
         if(player == null)
