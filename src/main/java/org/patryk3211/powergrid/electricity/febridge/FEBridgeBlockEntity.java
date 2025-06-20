@@ -15,9 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.febridge;
 
+import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
@@ -29,26 +31,31 @@ public class FEBridgeBlockEntity extends ElectricBlockEntity {
         super(type, pos, state);
     }
 
-    private static final float VOLT_TO_FE = 2;
-    private static final float AMP_TO_FE = 10f;
+    public static float voltToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
+    }
+
+    public static float ampToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerAmp.getF();
+    }
 
     @Override
     public void tick() {
         super.tick();
 
+        float ampToFe = ampToFE();
         if(wire.getState()) {
-            charge += Math.round(wire.current() * AMP_TO_FE);
+            charge += Math.round(wire.current() * ampToFe);
         }
 
-        // TODO: FE bridge needs Volt to FE, as well as Amp to FE ratios.
-        int maxCharge = (int) (wire.potentialDifference() * VOLT_TO_FE);
+        int maxCharge = (int) (wire.potentialDifference() * voltToFE());
         int missingCharge = maxCharge - charge;
         if(missingCharge <= 0) {
             wire.setState(false);
             return;
         }
 
-        float targetAmps = missingCharge / AMP_TO_FE;
+        float targetAmps = missingCharge / ampToFe;
         float resistance = wire.potentialDifference() / targetAmps;
         wire.setResistance(resistance);
         wire.setState(true);
