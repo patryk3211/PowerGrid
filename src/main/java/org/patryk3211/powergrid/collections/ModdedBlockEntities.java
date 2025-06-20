@@ -36,6 +36,7 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
+import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
@@ -149,6 +150,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<VatElectrodeBlockEntity> VAT_ELECTRODE =
             REGISTRATE.blockEntity("vat_electrode", VatElectrodeBlockEntity::new)
                     .validBlock(ModdedBlocks.VAT_ELECTRODE)
+                    .register();
+
+    public static final BlockEntityEntry<PortableBatteryBlockEntity> PORTABLE_BATTERY =
+            REGISTRATE.blockEntity("portable_battery", PortableBatteryBlockEntity::new)
+                    .validBlock(ModdedBlocks.PORTABLE_BATTERY)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

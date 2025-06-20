@@ -1,0 +1,28 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "C": {
+      "tag": "c:copper_coils"
+    },
+    "G": {
+      "item": "powergrid:electrical_gizmo"
+    },
+    "Z": {
+      "tag": "c:zinc_ingots"
+    }
+  },
+  "pattern": [
+    "C",
+    "G",
+    "Z",
+    "Z",
+    "A"
+  ],
+  "result": {
+    "item": "powergrid:electrobaton"
+  }
+}
