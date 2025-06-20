@@ -4,10 +4,6 @@
       {
         "type": "file",
         "name": "powergrid:electrozapper_shoot"
-      },
-      {
-        "type": "file",
-        "name": "powergrid:zapper_shoot"
       }
     ],
     "subtitle": "powergrid.subtitle.electrozapper_shoot"

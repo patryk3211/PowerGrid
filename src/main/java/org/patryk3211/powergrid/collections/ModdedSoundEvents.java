@@ -68,7 +68,7 @@ public class ModdedSoundEvents {
             .build(),
 
     ELECTROZAPPER_SHOOT = create("electrozapper_shoot").subtitle("Electro-Zapper bzzzts")
-            .addVariant("zapper_shoot")
+//            .addVariant("electrozapper_shoot")
             .category(SoundCategory.PLAYERS)
             .build()
             ;
