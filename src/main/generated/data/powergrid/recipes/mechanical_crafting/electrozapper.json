@@ -11,16 +11,19 @@
     "G": {
       "item": "powergrid:electrical_gizmo"
     },
-    "I": {
-      "tag": "c:iron_ingots"
+    "N": {
+      "tag": "c:copper_nuggets"
+    },
+    "S": {
+      "tag": "c:copper_plates"
     },
     "Z": {
       "tag": "c:zinc_ingots"
     }
   },
   "pattern": [
-    "AGZZC",
-    " I   "
+    "GCZZSN",
+    " A    "
   ],
   "result": {
     "item": "powergrid:electrozapper"

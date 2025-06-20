@@ -71,24 +71,25 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
             .recipe(b -> b
                     .key('G', ModdedItems.ELECTRICAL_GIZMO)
                     .key('Z', RecipeTags.zincIngot())
-                    .key('I', RecipeTags.ironIngot())
                     .key('C', RecipeTags.copperCoil())
+                    .key('N', RecipeTags.copperNugget())
+                    .key('S', RecipeTags.copperSheet())
                     .key('A', AllItems.ANDESITE_ALLOY)
-                    .patternLine("AGZZC")
-                    .patternLine(" I   ")
+                    .patternLine("GCZZSN")
+                    .patternLine(" A    ")
             ),
 
     ELECTROBATON = create(ModdedItems.ELECTROBATON::get)
             .recipe(b -> b
                     .key('G', ModdedItems.ELECTRICAL_GIZMO)
                     .key('Z', RecipeTags.zincIngot())
-                    .key('I', RecipeTags.ironIngot())
+                    .key('A', AllItems.ANDESITE_ALLOY)
                     .key('C', RecipeTags.copperCoil())
                     .patternLine("C")
                     .patternLine("G")
                     .patternLine("Z")
                     .patternLine("Z")
-                    .patternLine("I")
+                    .patternLine("A")
             )
             ;
 
