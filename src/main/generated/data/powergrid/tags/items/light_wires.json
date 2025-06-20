@@ -2,6 +2,6 @@
   "replace": false,
   "values": [
     "powergrid:wire",
-    "powergrid:silver_wire"
+    "powergrid:golden_wire"
   ]
 }

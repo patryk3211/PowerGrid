@@ -106,6 +106,11 @@ public class ReagentTripletBuilder<S extends Reagent, L extends Reagent, G exten
         return this;
     }
 
+    public ReagentTripletBuilder<S, L, G> liquidConductance(float conductance) {
+        liquidBuilder.liquidConductance(conductance);
+        return this;
+    }
+
     public ReagentTriplet<S, L, G> register() {
         return new ReagentTriplet<>(solidBuilder.register(), liquidBuilder.register(), gasBuilder.register());
     }

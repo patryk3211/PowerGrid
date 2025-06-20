@@ -16,11 +16,14 @@
 package org.patryk3211.powergrid.collections;
 
 import com.tterrag.registrate.util.entry.EntityEntry;
+import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.SpawnGroup;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
+import org.patryk3211.powergrid.electricity.zapper.ZapProjectileEntity;
+import org.patryk3211.powergrid.electricity.zapper.ZapProjectileRenderer;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -34,6 +37,20 @@ public class ModdedEntities {
             REGISTRATE.entity("block_wire", BlockWireEntity::new, SpawnGroup.MISC)
                     .renderer(() -> BlockWireRenderer::new)
                     .register();
+
+    public static final EntityEntry<ZapProjectileEntity> ZAP_PROJECTILE =
+            REGISTRATE.entity("zap_projectile", ZapProjectileEntity::new, SpawnGroup.MISC)
+                    .properties(builder -> builder
+                            .dimensions(EntityDimensions.fixed(0.25f, 0.25f))
+                            .trackRangeChunks(4)
+                            .trackedUpdateRate(20)
+                            .forceTrackedVelocityUpdates(true))
+                    .renderer(() -> ZapProjectileRenderer::new)
+                    .register();
+    /*
+		register("potato_projectile", PotatoProjectileEntity::new, () -> PotatoProjectileRenderer::new,
+			SpawnGroup.MISC, 4, 20, true, false, PotatoProjectileEntity::build).register();
+    */
 
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }

@@ -160,7 +160,6 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 target.extend(source.segments, source.getWireCount());
             }
             source.discard();
-            target.makeWire();
         } else if(entry.holders.size() == 1) {
             // One holder remaining, remove junction from it and drop the entry.
             for(var holder : entry.holders) {

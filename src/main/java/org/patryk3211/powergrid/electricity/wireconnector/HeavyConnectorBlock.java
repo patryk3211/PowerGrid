@@ -34,10 +34,10 @@ public class HeavyConnectorBlock extends AbstractConnectorBlock {
                     var terminal = switch(state.get(FACING)) {
                         case UP -> TERMINAL_DOWN.rotateAroundX(180);
                         case DOWN -> TERMINAL_DOWN;
-                        case NORTH -> TERMINAL_DOWN.rotateAroundX(90);
-                        case SOUTH -> TERMINAL_DOWN.rotateAroundX(-90);
-                        case EAST -> TERMINAL_DOWN.rotateAroundX(90).rotateAroundY(90);
-                        case WEST -> TERMINAL_DOWN.rotateAroundX(90).rotateAroundY(-90);
+                        case NORTH -> TERMINAL_DOWN.rotateAroundX(-90);
+                        case SOUTH -> TERMINAL_DOWN.rotateAroundX(90);
+                        case EAST -> TERMINAL_DOWN.rotateAroundX(90).rotateAroundY(-90);
+                        case WEST -> TERMINAL_DOWN.rotateAroundX(90).rotateAroundY(90);
                     };
                     return new TerminalBoundingBox[] { terminal };
                 })

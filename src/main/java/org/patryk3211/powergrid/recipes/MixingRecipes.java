@@ -28,14 +28,14 @@ import java.util.function.UnaryOperator;
 public class MixingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
-    SILVER_MESH = create("silver_mesh", b -> b
-            .require(ModdedItems.SILVER_WIRE)
-            .require(ModdedItems.SILVER_WIRE)
-            .require(ModdedItems.SILVER_WIRE)
-            .require(ModdedItems.SILVER_WIRE)
-            .require(ModdedItems.SILVER_WIRE)
-            .require(ModdedItems.SILVER_WIRE)
-            .output(ModdedItems.SILVER_MESH)
+    GOLD_MESH = create("gold_mesh", b -> b
+            .require(ModdedItems.GOLDEN_WIRE)
+            .require(ModdedItems.GOLDEN_WIRE)
+            .require(ModdedItems.GOLDEN_WIRE)
+            .require(ModdedItems.GOLDEN_WIRE)
+            .require(ModdedItems.GOLDEN_WIRE)
+            .require(ModdedItems.GOLDEN_WIRE)
+            .output(ModdedItems.GOLDEN_MESH)
     );
 
     public MixingRecipes(FabricDataOutput output) {

@@ -48,6 +48,7 @@ public class Reagents {
                     .liquid(b -> b.lang("Water").fluid(Fluids.WATER, 22f))
                     .solid(b -> b.lang("Ice").item(Items.ICE, Reagent.BLOCK_MOLE_AMOUNT, -10f))
                     .recipes(333.55f, 40.65f)
+                    .liquidConductance(0.005f)
                     .register();
     public static final ReagentEntry<Reagent> NITROGEN = REGISTRATE.reagent("nitrogen", Reagent::new)
             .properties(properties -> properties
@@ -85,6 +86,7 @@ public class Reagents {
 
     public static final ReagentEntry<Reagent> DISSOLVED_REDSTONE_SULFATE = dissolvedReagent("dissolved_redstone_sulfate", REDSTONE_SULFATE, WATER.liquid())
             .simpleFluid(0xFFFF2020, 22f)
+            .liquidConductance(0.2f)
             .register();
 
     @SuppressWarnings("EmptyMethod")

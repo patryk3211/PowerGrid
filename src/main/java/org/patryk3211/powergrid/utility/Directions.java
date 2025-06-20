@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.utility;
 
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 
 import static net.minecraft.util.math.Direction.*;
@@ -29,4 +31,15 @@ public class Directions {
     public static final Direction[] VERTICAL = {
             UP, DOWN
     };
+
+    public static BooleanProperty property(Direction dir) {
+        return switch(dir) {
+            case EAST -> Properties.EAST;
+            case WEST -> Properties.WEST;
+            case UP -> Properties.UP;
+            case DOWN -> Properties.DOWN;
+            case SOUTH -> Properties.SOUTH;
+            case NORTH -> Properties.NORTH;
+        };
+    }
 }

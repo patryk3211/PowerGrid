@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent.mixture;
 
+import jdk.management.jfr.FlightRecorderMXBean;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import org.patryk3211.powergrid.chemistry.GasConstants;
 import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentConvertible;
@@ -31,6 +33,12 @@ public class VolumeReagentInventory extends ReagentMixture {
     public VolumeReagentInventory(int volume) {
         this.volume = volume;
         isOpen = false;
+    }
+
+    @Override
+    protected void readSnapshot(MixtureSnapshot mixtureSnapshot) {
+        super.readSnapshot(mixtureSnapshot);
+        refreshUsedVolume();
     }
 
     public void setOpen(boolean open) {
@@ -98,8 +106,31 @@ public class VolumeReagentInventory extends ReagentMixture {
         return Math.min(amount, getFreeVolume());
     }
 
+    /**
+     * Add a stack of reagents without checking for volume constraints
+     * @param stack Reagent to add
+     * @param transaction Transaction context
+     */
+    public void forceAdd(ReagentStack stack, TransactionContext transaction) {
+        updateSnapshots(transaction);
+
+        super.addInternal(stack.getReagent(), stack.getAmount(), stack.getTemperature(), true);
+        refreshUsedVolume();
+    }
+
+    public void forceAdd(ReagentMixture mixture, TransactionContext transaction) {
+        updateSnapshots(transaction);
+
+        for(var entry : mixture.reagents.entrySet()) {
+            var stack = new ReagentStack(entry.getKey(), entry.getValue(), mixture.temperature());
+            super.addInternal(stack.getReagent(), stack.getAmount(), stack.getTemperature(), true);
+        }
+        refreshUsedVolume();
+    }
+
     @Override
     protected int addInternal(Reagent reagent, int amount, double temperature, boolean affectEnergy) {
+        // TODO: Amount is already limited to the value returned by accepts() in ReagentMixture::add
         var result = super.addInternal(reagent, accepts(reagent, amount), temperature, affectEnergy);
         refreshUsedVolume();
         return result;

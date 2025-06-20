@@ -20,6 +20,7 @@
   "powergrid.gui.transformer.ratio": "Turns ratio",
 
   "powergrid.gui.chemical_vat.info_header": "Vat information",
+  "powergrid.gui.chemical_vat.upgrade_header": "Upgrade:",
   "powergrid.gui.chemical_vat.temperature": "Reagent temperature",
   "powergrid.gui.chemical_vat.reagents": "Contents:",
 
@@ -32,6 +33,9 @@
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
+
+  "powergrid.tooltip.voltage.rated": "Rated voltage:",
+  "powergrid.tooltip.power.rated": "Rated power:",
 
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",

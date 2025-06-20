@@ -35,4 +35,13 @@ public class Voltage {
                 .add(Text.of(" ")).add(Unit.VOLTAGE.get())
                 .style(Formatting.RED).addTo(tooltip);
     }
+
+    public static void rated(float value, PlayerEntity player, List<Text> tooltip) {
+        Lang.translate("tooltip.voltage.rated")
+                .style(Formatting.GRAY).addTo(tooltip);
+        Lang.builder()
+                .add(Text.of(" ")).add(Lang.number(value))
+                .add(Text.of(" ")).add(Unit.VOLTAGE.get())
+                .style(Formatting.DARK_AQUA).addTo(tooltip);
+    }
 }

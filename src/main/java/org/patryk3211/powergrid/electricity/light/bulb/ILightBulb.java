@@ -15,18 +15,12 @@
  */
 package org.patryk3211.powergrid.electricity.light.bulb;
 
-import com.jozufozu.flywheel.core.PartialModel;
-
-import java.util.function.Function;
-import java.util.function.Supplier;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
 public interface ILightBulb {
-    enum State {
-        OFF, ON, BROKEN
-    }
-
-    Supplier<Function<State, PartialModel>> getModelProvider();
+    record Properties(float dissipationFactor, float thermalMass, float overheatTemperature) { }
 
     float resistanceFunction(float temperature);
-    float dissipationFactor();
+    Properties thermalProperties();
+    LightBulbState createState(LightFixtureBlockEntity fixture);
 }

@@ -64,6 +64,18 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('I', RecipeTags.ironSheet())
             ),
 
+    GROWTH_LAMP = create(ModdedItems.GROWTH_LAMP)
+            .unlockedBy(ModdedBlocks.LIGHT_FIXTURE::get)
+            .shaped(b -> b
+                    .pattern("GQG")
+                    .pattern("GWG")
+                    .pattern(" I ")
+                    .input('G', Items.GLASS_PANE)
+                    .input('W', ModdedItems.IRON_WIRE)
+                    .input('Q', Items.QUARTZ)
+                    .input('I', RecipeTags.ironSheet())
+            ),
+
     RESISTIVE_COIL = create(ModdedItems.RESISTIVE_COIL)
             .unlockedBy(ModdedItems.IRON_WIRE::get)
             .shapeless(b -> b

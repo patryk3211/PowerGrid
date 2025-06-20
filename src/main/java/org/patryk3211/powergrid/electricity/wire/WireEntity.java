@@ -58,13 +58,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     private IWireEndpoint endpoint2;
 
     @NotNull
-    protected WireItem item;
-    protected int itemCount;
+    private WireItem item;
+    private int itemCount;
 
     private ElectricWire wire;
     protected float overheatTemperature = 175f;
     private int despawnTime = 0;
     private int dataVersion = 0;
+
+    private float dissipationFactor;
+    private float thermalMass;
 
     public WireEntity(EntityType<?> type, World world) {
         super(type, world);
@@ -94,9 +97,9 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         }
         if(temperature < overheatTemperature) {
             // If wire is overheated it is considered dead.
-            energy -= DISSIPATION_FACTOR * (temperature - BASE_TEMPERATURE) / 20f;
+            energy -= dissipationFactor * (temperature - BASE_TEMPERATURE) / 20f;
         }
-        temperature += energy / THERMAL_MASS;
+        temperature += energy / thermalMass;
         dataTracker.set(TEMPERATURE, temperature);
 
     }
@@ -140,6 +143,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 endpoint.assignWireEntity(this);
             }
             endpoint1 = endpoint;
+            makeWire();
         }
     }
 
@@ -153,6 +157,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 endpoint.assignWireEntity(this);
             }
             endpoint2 = endpoint;
+            makeWire();
         }
     }
 
@@ -210,6 +215,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
+        if(nbt.contains("Item")) {
+            var itemTag = nbt.getCompound("Item");
+            var readItem = Registries.ITEM.get(new Identifier(itemTag.getString("Id")));
+            if(!(readItem instanceof WireItem))
+                throw new IllegalStateException("WireEntity item must be a WireItem");
+            setItem((WireItem) readItem, itemTag.getInt("Count"));
+        } else {
+            throw new IllegalStateException("WireEntity must have an item");
+        }
+
         if(nbt.contains("Endpoint1")) {
             setEndpoint1(WireEndpointType.deserialize(nbt.getCompound("Endpoint1")));
         } else {
@@ -222,20 +237,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             setEndpoint2(null);
         }
 
-        if(nbt.contains("Item")) {
-            var itemTag = nbt.getCompound("Item");
-            var readItem = Registries.ITEM.get(new Identifier(itemTag.getString("Id")));
-            if(!(readItem instanceof WireItem))
-                throw new IllegalStateException("WireEntity item must be a WireItem");
-            item = (WireItem) readItem;
-            itemCount = itemTag.getInt("Count");
-        } else {
-            throw new IllegalStateException("WireEntity must have an item");
-        }
-
         dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
+    }
 
-        makeWire();
+    public void setItem(WireItem item, int count) {
+        this.item = item;
+        this.itemCount = count;
+
+        int thermalCount = Math.max(itemCount, 1);
+        thermalMass = THERMAL_MASS * thermalCount;
+        dissipationFactor = DISSIPATION_FACTOR * thermalCount;
     }
 
     public float getResistance() {
@@ -312,7 +323,6 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             kill();
             return ActionResult.SUCCESS;
         }
-        System.out.printf("Temperature: %f\n", dataTracker.get(TEMPERATURE));
         return super.interact(player, hand);
     }
 
@@ -322,6 +332,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     public int getWireCount() {
         return itemCount;
+    }
+
+    public void incrementWireCount(int count) {
+        itemCount += count;
+        if(itemCount < 0)
+            itemCount = 0;
+
+        int thermalCount = Math.max(itemCount, 1);
+        thermalMass = THERMAL_MASS * thermalCount;
+        dissipationFactor = DISSIPATION_FACTOR * thermalCount;
     }
 
     @Override

@@ -132,9 +132,22 @@ runDatagen {
 	jvmArgs("-Dfabric-api.datagen.modid=powergrid", "-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
 }
 
+def getGitHash = { ->
+	def stdout = new ByteArrayOutputStream()
+	exec {
+		commandLine 'git', 'rev-parse', '--short', 'HEAD'
+		standardOutput = stdout
+	}
+	return stdout.toString().trim()
+}
+
 test {
 	useJUnitPlatform()
 }
+tasks.register("devBuild", {
+	version = "${project.mod_version}+${project.minecraft_version}-${getGitHash}"
+	dependsOn tasks.build
+})
 
 // configure the maven publication
 publishing {

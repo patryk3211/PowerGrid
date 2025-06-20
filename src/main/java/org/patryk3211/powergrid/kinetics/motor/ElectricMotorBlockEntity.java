@@ -121,6 +121,6 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        coil = builder.connect(10, builder.terminalNode(0), builder.terminalNode(1));
+        coil = builder.connect(ElectricMotorBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 }

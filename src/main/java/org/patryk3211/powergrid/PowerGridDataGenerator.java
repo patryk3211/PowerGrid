@@ -23,6 +23,7 @@ import io.github.fabricators_of_create.porting_lib.data.ExistingFileHelper;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.ponder.PonderIndex;
 import org.patryk3211.powergrid.recipes.*;
 
@@ -45,11 +46,14 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(ReactionRecipes::new);
 		pack.addProvider(ModdedSoundEvents::provider);
 		pack.addProvider(MagnetizingRecipes::new);
+		pack.addProvider(BlockTagProvider::new);
+		pack.addProvider(ElectrolysisRecipes::new);
 
 		PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;
 			provideDefaultLang("interface", langConsumer);
 			provideDefaultLang("messages", langConsumer);
+			provideDefaultLang("tooltips", langConsumer);
 
 			providePonderLang(langConsumer);
 			ModdedSoundEvents.provideLang(langConsumer);

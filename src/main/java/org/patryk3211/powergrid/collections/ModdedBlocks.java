@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.simibubi.create.foundation.data.TagGen;
@@ -34,9 +33,18 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.loot.LootPool;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.condition.SurvivesExplosionLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.entry.LootPoolEntry;
 import net.minecraft.loot.function.ApplyBonusLootFunction;
+import net.minecraft.loot.function.CopyNbtLootFunction;
 import net.minecraft.loot.function.SetCountLootFunction;
+import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
+import net.minecraft.loot.provider.nbt.LootNbtProvider;
+import net.minecraft.loot.provider.nbt.LootNbtProviderType;
+import net.minecraft.loot.provider.nbt.LootNbtProviderTypes;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.sound.BlockSoundGroup;
@@ -54,6 +62,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
+import org.patryk3211.powergrid.electricity.electrode.VatElectrodeBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.febridge.FEBridgeBlock;
@@ -62,12 +71,13 @@ import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
-import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlock;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
@@ -81,13 +91,6 @@ import static net.minecraft.state.property.Properties.*;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedBlocks {
-    public static final BlockEntry<BasicGeneratorBlock> BASIC_GENERATOR = REGISTRATE.block("basic_generator", BasicGeneratorBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.horizontalBlock(ctx.getEntry(), modModel(prov, "block/basic_generator")))
-            .transform(BlockStressDefaults.setImpact(4.0))
-            .simpleItem()
-            .register();
-
     public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
             .blockstate((ctx, prov) ->
                     prov.simpleBlock(ctx.getEntry(), modModel(prov, "block/battery")))
@@ -462,34 +465,6 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    public static final BlockEntry<Block> SILVER_ORE = REGISTRATE.block("silver_ore", Block::new)
-            .defaultBlockstate()
-            .initialProperties(() -> Blocks.GOLD_ORE)
-            .transform(pickaxeOnly())
-            .loot((lt, b) -> lt.addDrop(b,
-                    RegistrateBlockLootTables.dropsWithSilkTouch(b,
-                            lt.applyExplosionDecay(b, ItemEntry.builder(ModdedItems.RAW_SILVER.get())
-                                    .apply(ApplyBonusLootFunction.oreDrops(Enchantments.FORTUNE))))))
-            .tag(BlockTags.NEEDS_IRON_TOOL, Tags.Blocks.ORES)
-            .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/stone"))
-            .tag(Tags.Items.ORES)
-            .build()
-            .register();
-
-    public static final BlockEntry<Block> DEEPSLATE_SILVER_ORE = REGISTRATE.block("deepslate_silver_ore", Block::new)
-            .defaultBlockstate()
-            .initialProperties(() -> Blocks.DEEPSLATE_GOLD_ORE)
-            .transform(pickaxeOnly())
-            .loot((lt, b) -> lt.addDrop(b,
-                    RegistrateBlockLootTables.dropsWithSilkTouch(b,
-                            lt.applyExplosionDecay(b, ItemEntry.builder(ModdedItems.RAW_SILVER.get())
-                                    .apply(ApplyBonusLootFunction.oreDrops(Enchantments.FORTUNE))))))
-            .tag(BlockTags.NEEDS_IRON_TOOL, Tags.Blocks.ORES)
-            .transform(TagGen.tagBlockAndItem("silver_ores", "ores_in_ground/deepslate"))
-            .tag(Tags.Items.ORES)
-            .build()
-            .register();
-
     public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
@@ -530,6 +505,33 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_fan/item")))
                 .build()
+            .register();
+
+    public static final BlockEntry<VatElectrodeBlock> VAT_ELECTRODE = REGISTRATE.block("vat_electrode", VatElectrodeBlock::new)
+            // Block state only used for particles, rendering is handled in block entity renderer
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).partialState().addModels(
+                            ConfiguredModel.builder()
+                                    .modelFile(modModel(prov, "block/copper_electrode"))
+                                    .build()
+                            ))
+            .initialProperties(SharedProperties::copperMetal)
+            .transform(pickaxeOnly())
+            .register();
+
+    public static final BlockEntry<PortableBatteryBlock> PORTABLE_BATTERY = REGISTRATE.block("portable_battery", PortableBatteryBlock::new)
+            .blockstate((ctx, prov) -> prov.horizontalBlock(ctx.getEntry(), modModel(prov, "block/portable_battery/block")))
+            .initialProperties(() -> Blocks.IRON_BLOCK)
+            .transform(pickaxeOnly())
+            .loot((tables, block) -> {
+                tables.addDrop(block, LootTable.builder()
+                        .pool(LootPool.builder()
+                                .conditionally(SurvivesExplosionLootCondition.builder())
+                                .with(ItemEntry.builder(ModdedItems.PORTABLE_BATTERY)))
+                        .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
+                                .withOperation("Charge", "Charge", CopyNbtLootFunction.Operator.REPLACE))
+                );
+            })
             .register();
 
     public static final BlockEntry<FEBridgeBlock> FE_BRIDGE = REGISTRATE.block("fe_bridge", FEBridgeBlock::new)

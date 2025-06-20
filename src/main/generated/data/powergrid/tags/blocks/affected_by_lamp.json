@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#minecraft:bee_growables",
+      "required": false
+    },
+    "minecraft:cactus",
+    "minecraft:sugar_cane"
+  ]
+}

@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchInstance;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
+import org.patryk3211.powergrid.electricity.electrode.VatElectrodeBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
@@ -36,11 +37,10 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
+import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
-import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntity;
-import org.patryk3211.powergrid.kinetics.basicgenerator.BasicGeneratorBlockEntityRenderer;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
@@ -50,12 +50,6 @@ import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedBlockEntities {
-    public static final BlockEntityEntry<BasicGeneratorBlockEntity> BASIC_GENERATOR =
-            REGISTRATE.blockEntity("basic_generator", BasicGeneratorBlockEntity::new)
-                    .validBlock(ModdedBlocks.BASIC_GENERATOR)
-                    .renderer(() -> BasicGeneratorBlockEntityRenderer::new)
-                    .register();
-
     public static final BlockEntityEntry<ConnectorBlockEntity> WIRE_CONNECTOR =
             REGISTRATE.blockEntity("wire_connector", ConnectorBlockEntity::new)
                     .validBlocks(ModdedBlocks.WIRE_CONNECTOR, ModdedBlocks.HEAVY_WIRE_CONNECTOR)
@@ -152,6 +146,16 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("electric_fan", ElectricFanBlockEntity::new)
                     .validBlock(ModdedBlocks.ELECTRIC_FAN)
                     .renderer(() -> ElectricFanRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<VatElectrodeBlockEntity> VAT_ELECTRODE =
+            REGISTRATE.blockEntity("vat_electrode", VatElectrodeBlockEntity::new)
+                    .validBlock(ModdedBlocks.VAT_ELECTRODE)
+                    .register();
+
+    public static final BlockEntityEntry<PortableBatteryBlockEntity> PORTABLE_BATTERY =
+            REGISTRATE.blockEntity("portable_battery", PortableBatteryBlockEntity::new)
+                    .validBlock(ModdedBlocks.PORTABLE_BATTERY)
                     .register();
 
     public static final BlockEntityEntry<FEBridgeBlockEntity> FE_BRIDGE =

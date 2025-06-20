@@ -22,8 +22,11 @@ import com.simibubi.create.foundation.utility.worldWrappers.WrappedWorld;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -36,11 +39,15 @@ import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
+
+import java.util.List;
 
 /**
  * @see com.simibubi.create.content.kinetics.fan.EncasedFanBlock
  */
-public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<ElectricFanBlockEntity> {
+public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<ElectricFanBlockEntity>, IHaveElectricProperties {
     private static final TerminalBoundingBox[] UP_TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5, 6, 7, 6, 7, 9).withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 10, 6, 7, 11, 7, 9).withColor(IDecoratedTerminal.BLUE)
@@ -128,5 +135,14 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
     @Override
     public BlockEntityType<? extends ElectricFanBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.ELECTRIC_FAN.get();
+    }
+
+    public static float resistance() {
+        return 20f;
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        Resistance.series(resistance(), player, tooltip);
     }
 }
