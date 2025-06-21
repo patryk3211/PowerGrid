@@ -43,6 +43,10 @@ public class CircuitLayer {
         map = BitSet.valueOf(tag);
     }
 
+    public void set(int x, int y) {
+        map.set(x + y * GRID_SIZE);
+    }
+
     public List<Line> calculateLines() {
         var lines = new ArrayList<Line>();
         var visited = new BitSet(TOTAL_SIZE);
@@ -79,6 +83,18 @@ public class CircuitLayer {
         return lines;
     }
 
+    public List<Point> calculatePoints() {
+        var points = new ArrayList<Point>();
+        for(int x = 0; x < GRID_SIZE; ++x) {
+            for(int y = 0; y < GRID_SIZE; ++y) {
+                if(map.get(x + y * GRID_SIZE)) {
+                    points.add(new Point(x, y));
+                }
+            }
+        }
+        return points;
+    }
+
     public void fill(int x1, int y1, int x2, int y2) {
         for(int x = x1; x <= x2; ++x) {
             for(int y = y1; y <= y2; ++y) {
@@ -95,5 +111,7 @@ public class CircuitLayer {
         }
     }
 
-    public record Line(boolean vertical, int position, int start, int end) { }
+    public void clear() {
+        map.clear();
+    }
 }

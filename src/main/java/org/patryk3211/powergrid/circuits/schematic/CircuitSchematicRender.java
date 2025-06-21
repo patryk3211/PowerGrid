@@ -23,12 +23,17 @@ import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class CircuitSchematicRender {
+    public static final int COLOR_TERMINAL = 0xFFFCB603;
+    public static final int COLOR_TRACE_FRONT = 0xFFFFFFFF;
+    public static final int COLOR_TRACE_BACK = 0x80FFFFFF;
+    public static final int COLOR_COMPONENT_OUTLINE = 0xFFF078EE;
+
     public static void render(CircuitSchematic schematic, DrawContext context, int x, int y, int scale) {
 
     }
 
     // It's not the most efficient, but it gets the job done. The only way to make this better is to dynamically create textures.
-    public static void renderLayer(List<CircuitLayer.Line> lines, DrawContext ctx, int x, int y, int scale, int color) {
+    public static void renderLayer(List<Line> lines, DrawContext ctx, int x, int y, int scale, int color) {
         for(var line : lines) {
             int x1, x2, y1, y2;
             if(line.vertical()) {
@@ -43,6 +48,14 @@ public class CircuitSchematicRender {
                 y2 = line.position() * scale + scale + y;
             }
             ctx.fill(x1, y1, x2, y2, color);
+        }
+    }
+
+    public static void renderPoints(List<Point> points, DrawContext ctx, int x, int y, int scale, int color) {
+        for(var point : points) {
+            int x1 = x + point.x() * scale;
+            int y1 = y + point.y() * scale;
+            ctx.fill(x1, y1, x1 + scale, y1 + scale, color);
         }
     }
 }

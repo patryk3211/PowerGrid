@@ -37,11 +37,11 @@ public class CircuitDesignTableEditMenu extends AbstractCircuitDesignTableMenu {
 
     @Override
     protected void addSlots() {
-
+        addPlayerSlots(2, 182);
     }
 
     @Override
     public ItemStack quickMove(PlayerEntity player, int slot) {
-        return null;
+        return ItemStack.EMPTY;
     }
 }

@@ -17,8 +17,11 @@ package org.patryk3211.powergrid.circuits.gui;
 
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+
+import java.util.function.BiConsumer;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
 
@@ -31,10 +34,16 @@ public class CircuitEditWidget extends AbstractSimiWidget {
     private SelectMode selectMode = SelectMode.NONE;
     private int selectionColor = 0;
     private SelectCallback selectionCallback = null;
-    private Runnable selectionCanceledCallback = null;
+    private Runnable selectionCancelledCallback = null;
 
-    public CircuitEditWidget(int x, int y, int width, int height) {
+    private Component placedComponent = null;
+    private BiConsumer<Integer, Integer> placementCallback;
+
+    private final CircuitSchematic schematic;
+
+    public CircuitEditWidget(CircuitSchematic schematic, int x, int y, int width, int height) {
         super(x, y, width, height);
+        this.schematic = schematic;
     }
 
     @Override
@@ -46,12 +55,28 @@ public class CircuitEditWidget extends AbstractSimiWidget {
 
         int gridX = (mouseX - x) / scale;
         int gridY = (mouseY - y) / scale;
-        if (gridX >= GRID_SIZE || gridY >= GRID_SIZE)
+        if(gridX >= GRID_SIZE || gridY >= GRID_SIZE)
             return;
 
         var ms = ctx.getMatrices();
         ms.translate(x, y, 0);
         ms.scale(scale, scale, scale);
+
+        if(placedComponent != null) {
+            var footprint = placedComponent.footprint();
+            gridX /= 2;
+            gridY /= 2;
+            int offsetX = footprint.getWidth() / 2;
+            int offsetY = footprint.getHeight() / 2;
+            footprint.render(ctx, (gridX - offsetX) * 2, (gridY - offsetY) * 2);
+
+            ms.push();
+            ms.scale(0.25f, 0.25f, 0.25f);
+            int color = schematic.canPlace(placedComponent, gridX - offsetX, gridY - offsetY) ? 0x8080FF80 : 0x80FF8080;
+            ctx.drawBorder((gridX - offsetX) * 8, (gridY - offsetY) * 8, footprint.getWidth() * 8, footprint.getHeight() * 8, color);
+            ms.pop();
+            return;
+        }
 
         if(selectMode == SelectMode.NONE) {
             // Draw cursor
@@ -137,9 +162,24 @@ public class CircuitEditWidget extends AbstractSimiWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int gridX = MathHelper.clamp((int) ((mouseX - getX()) / scale), 0, GRID_SIZE);
-        int gridY = MathHelper.clamp((int) ((mouseY - getY()) / scale), 0, GRID_SIZE);
-        if (button == 0 && selectMode != SelectMode.NONE) {
+        int gridX = (int) ((mouseX - getX()) / scale);
+        int gridY = (int) ((mouseY - getY()) / scale);
+        if(gridX < 0 || gridX >= GRID_SIZE || gridY < 0 || gridY >= GRID_SIZE)
+            return false;
+
+        if(placedComponent != null) {
+            gridX /= 2;
+            gridY /= 2;
+            var footprint = placedComponent.footprint();
+            int offsetX = footprint.getWidth() / 2;
+            int offsetY = footprint.getHeight() / 2;
+            if(button == 0) {
+                placementCallback.accept(gridX - offsetX, gridY - offsetY);
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        if(button == 0 && selectMode != SelectMode.NONE) {
             if(selectMode == SelectMode.POINT) {
                 startX = gridX;
                 startY = gridY;
@@ -154,12 +194,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
                 }
             }
         } else if (button == 1) {
-            // Cancel
-            if(selectMode != SelectMode.NONE && selectionCanceledCallback != null)
-                selectionCanceledCallback.run();
-            selectMode = SelectMode.NONE;
-            selectionCallback = null;
-            selectStarted = false;
+            cancelSelection();
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -171,8 +206,28 @@ public class CircuitEditWidget extends AbstractSimiWidget {
         selectionCallback = callback;
     }
 
-    public void setSelectionCanceledCallback(Runnable callback) {
-        selectionCanceledCallback = callback;
+    public void setSelectionCancelledCallback(Runnable callback) {
+        selectionCancelledCallback = callback;
+    }
+
+    public void cancelSelection() {
+        if(selectMode != SelectMode.NONE) {
+            if(selectionCancelledCallback != null)
+                selectionCancelledCallback.run();
+            selectMode = SelectMode.NONE;
+            selectionCallback = null;
+            selectStarted = false;
+        }
+    }
+
+    public void componentPlacement(Component component, BiConsumer<Integer, Integer> callback) {
+        placedComponent = component;
+        placementCallback = callback;
+    }
+
+    public void stopComponentPlacement() {
+        placedComponent = null;
+        placementCallback = null;
     }
 
     public enum SelectMode {

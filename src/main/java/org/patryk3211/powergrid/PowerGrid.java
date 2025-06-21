@@ -28,6 +28,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisRecipe;
@@ -36,6 +37,7 @@ import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 import org.patryk3211.powergrid.chemistry.reagent.Reagents;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipeSerializer;
+import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
@@ -90,6 +92,8 @@ public class PowerGrid implements ModInitializer {
 		Reagents.register();
 
 		ModdedParticles.register();
+
+		REGISTRATE.addRegisterCallback(RegistryKeys.ITEM, Components::register);
 
 		REGISTRATE.register();
 		ModdedSoundEvents.register();

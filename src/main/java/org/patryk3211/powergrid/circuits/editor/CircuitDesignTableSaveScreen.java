@@ -37,12 +37,20 @@ public class CircuitDesignTableSaveScreen extends HandledScreen<CircuitDesignTab
 
     @Override
     protected void drawBackground(DrawContext ctx, float delta, int mouseX, int mouseY) {
+    }
 
+    @Override
+    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
     }
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float partialTicks) {
         ctx.fillGradient(0, 0, width, height, -1072689136, -804253680);
+
+        drawBackground(ctx, partialTicks, mouseX, mouseY);
+
         ctx.drawCenteredTextWithShadow(textRenderer, TEXT_SAVING, x, y, 0xFFFFFFFF);
+
+        drawForeground(ctx, mouseX, mouseY);
     }
 }

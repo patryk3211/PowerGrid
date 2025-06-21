@@ -23,10 +23,12 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
-import org.patryk3211.powergrid.circuits.schematic.CircuitLayer;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
+import org.patryk3211.powergrid.circuits.schematic.Line;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
@@ -36,6 +38,7 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
 public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<CircuitDesignTableEditMenu> {
     private static final Identifier BACKGROUND = PowerGrid.texture("gui/circuit_design_table_edit");
@@ -50,10 +53,11 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private static final Text TOOLTIP_LAYER = Lang.translateDirect("gui.circuit_designer.layer");
 
     private final CircuitSchematic schematic;
-    private List<CircuitLayer.Line> fgLines;
-    private List<CircuitLayer.Line> bgLines;
+    private List<Line> fgLines;
+    private List<Line> bgLines;
 
     private Tool currentTool = Tool.NONE;
+    private Component currentComponent = null;
 
     private CircuitEditWidget editWidget;
     private boolean backLayer = false;
@@ -85,7 +89,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         super.init();
 
-        editWidget = new CircuitEditWidget(x + 13 - 11, y + 22, 32 * 4, 32 * 4);
+        editWidget = new CircuitEditWidget(schematic, x + 13 - 11, y + 22, 32 * 4, 32 * 4);
 
         acceptBtn = new IconButton(x + 153 - 11, y + 15, AllIcons.I_CONFIRM);
         cancelBtn = new IconButton(x + 153 - 11, y + 35, ModIcons.I_CANCEL);
@@ -120,7 +124,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             layerBtn.setIcon(backLayer ? ModIcons.I_LAYER_BACK : ModIcons.I_LAYER_FRONT);
         });
 
-        editWidget.setSelectionCanceledCallback(() -> currentTool = Tool.NONE);
+        editWidget.setSelectionCancelledCallback(() -> currentTool = Tool.NONE);
 
         addDrawableChild(editWidget);
         addDrawableChild(acceptBtn);
@@ -146,13 +150,13 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         var layer = backLayer ? schematic.back() : schematic.front();
         layer.fill(x1, y1, x2, y2);
 
-        CircuitLayer.Line line;
+        Line line;
         if(x1 == x2) {
             // Vertical
-            line = new CircuitLayer.Line(true, x1, y1, y2 + 1);
+            line = new Line(true, x1, y1, y2 + 1);
         } else {
             // Horizontal
-            line = new CircuitLayer.Line(false, y1, x1, x2 + 1);
+            line = new Line(false, y1, x1, x2 + 1);
         }
         if(backLayer) {
             bgLines.add(line);
@@ -173,6 +177,12 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         return CircuitEditWidget.SelectionResult.CONTINUE;
     }
 
+    public void placeComponent(int x, int y) {
+        if(schematic.canPlace(currentComponent, x, y)) {
+            schematic.placeComponent(currentComponent, x, y);
+        }
+    }
+
     @Override
     protected void drawBackground(DrawContext ctx, float delta, int mouseX, int mouseY) {
         int bgX = getLeftOfCentered(WIDTH);
@@ -182,16 +192,44 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         ctx.drawTexture(BACKGROUND, bgX, y, 0, 0, WIDTH, HEIGHT);
 
         if(!backLayer) {
-            CircuitSchematicRender.renderLayer(bgLines, ctx, bgX + 13, y + 22, 4, 0x80FFFFFF);
-            CircuitSchematicRender.renderLayer(fgLines, ctx, bgX + 13, y + 22, 4, 0xFFFFFFFF);
+            CircuitSchematicRender.renderLayer(bgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(fgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_FRONT);
         } else {
-            CircuitSchematicRender.renderLayer(fgLines, ctx, bgX + 13, y + 22, 4, 0x80FFFFFF);
-            CircuitSchematicRender.renderLayer(bgLines, ctx, bgX + 13, y + 22, 4, 0xFFFFFFFF);
+            CircuitSchematicRender.renderLayer(fgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(bgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_FRONT);
         }
 
-        if(currentTool != Tool.NONE) {
+        var ms = ctx.getMatrices();
+        ms.push();
+        ms.translate(bgX + 13, y + 22, 0);
+        ms.scale(4, 4, 4);
+        for(var placed : schematic.components()) {
+            placed.component.footprint().render(ctx, placed.x * 2, placed.y * 2);
+        }
+        ms.pop();
+
+        if(currentTool.y > 0) {
             ctx.drawTexture(BACKGROUND, x + 172 - 11, y + currentTool.y, 250, 0, 6, 18);
         }
+    }
+
+    @Override
+    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
+        var result = super.mouseClicked(pMouseX, pMouseY, pButton);
+        var stack = handler.getCursorStack();
+        if(!stack.isEmpty()) {
+            editWidget.stopComponentPlacement();
+            editWidget.cancelSelection();
+            var component = Component.forItem(stack.getItem());
+            if(component != null) {
+                // Enter component placement mode.
+                editWidget.componentPlacement(component, this::placeComponent);
+                currentComponent = component;
+            }
+        } else {
+            editWidget.stopComponentPlacement();
+        }
+        return result;
     }
 
     private static Runnable toolCallback(CircuitDesignTableEditScreen screen, Tool tool) {

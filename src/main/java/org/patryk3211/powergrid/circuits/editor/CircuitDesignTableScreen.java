@@ -25,8 +25,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditButton;
-import org.patryk3211.powergrid.circuits.schematic.CircuitLayer;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
+import org.patryk3211.powergrid.circuits.schematic.Line;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -34,6 +34,7 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
 public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<CircuitDesignTableMenu> {
     private static final Identifier BACKGROUND = PowerGrid.texture("gui/circuit_design_table");
@@ -45,8 +46,8 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
     private IconButton confirmButton;
     private CircuitEditButton editButton;
 
-    private final List<CircuitLayer.Line> linesFg;
-    private final List<CircuitLayer.Line> linesBg;
+    private final List<Line> linesFg;
+    private final List<Line> linesBg;
 
     public CircuitDesignTableScreen(CircuitDesignTableMenu container, PlayerInventory inv, Text title) {
         super(container, inv, title);
@@ -83,8 +84,8 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
 
         ctx.drawTexture(BACKGROUND, bgX, y, 0, 0, WIDTH, HEIGHT);
 
-        CircuitSchematicRender.renderLayer(linesFg, ctx, x + 44 - 11, y + 20, 2, 0xFFFFFFFF);
-        CircuitSchematicRender.renderLayer(linesBg, ctx, x + 44 - 11, y + 20, 2, 0xFFCCCCCC);
+        CircuitSchematicRender.renderLayer(linesFg, ctx, x + 44 - 11, y + 20, 2, COLOR_TRACE_FRONT);
+        CircuitSchematicRender.renderLayer(linesBg, ctx, x + 44 - 11, y + 20, 2, COLOR_TRACE_BACK);
 
         ctx.drawCenteredTextWithShadow(textRenderer, title, x + (WIDTH - 8) / 2, y + 3, 0xFFFFFF);
     }
