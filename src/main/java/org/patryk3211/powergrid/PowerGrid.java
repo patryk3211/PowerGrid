@@ -86,6 +86,7 @@ public class PowerGrid implements ModInitializer {
 		ModdedEntities.register();
 		HeaterFanProcessingTypes.register();
 		ModdedConfigs.register();
+		ModdedMenus.register();
 		Reagents.register();
 
 		ModdedParticles.register();

@@ -23,6 +23,7 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.vat.upgrade.CatalyzerItem;
+import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.electrode.ElectrodeItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
@@ -121,6 +122,9 @@ public class ModdedItems {
                     prov.withExistingParent(ctx.getName(), prov.modLoc("block/portable_battery/block")))
             .properties(p -> p.maxDamage(-1))
 			.tag(forgeItemTag("chestplates"))
+            .register();
+
+    public static final ItemEntry<CircuitSchematicItem> CIRCUIT_SCHEMATIC = REGISTRATE.item("circuit_schematic", CircuitSchematicItem::new)
             .register();
 
     @SuppressWarnings("EmptyMethod")

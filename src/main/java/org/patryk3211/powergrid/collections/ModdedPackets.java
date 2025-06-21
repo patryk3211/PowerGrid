@@ -21,6 +21,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperPacket;
+import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
+import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.network.packets.ZapProjectileS2CPacket;
 
 import java.util.ArrayList;
@@ -44,6 +46,9 @@ public class ModdedPackets {
 
     public static final PacketType<ElectroZapperPacket> ELECTRO_ZAPPER_SHOOT = register(ElectroZapperPacket.class, ElectroZapperPacket::new, SimplePacketBase.NetworkDirection.PLAY_TO_CLIENT);
     public static final PacketType<ZapProjectileS2CPacket> ZAP_PROJECTILE = register(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new, SimplePacketBase.NetworkDirection.PLAY_TO_CLIENT);
+
+    public static final PacketType<ChangeScreenC2SPacket> CHANGE_SCREEN = register(ChangeScreenC2SPacket.class, ChangeScreenC2SPacket::new, SimplePacketBase.NetworkDirection.PLAY_TO_SERVER);
+    public static final PacketType<SaveSchematicC2SPacket> SAVE_SCHEMATIC = register(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new, SimplePacketBase.NetworkDirection.PLAY_TO_SERVER);
 
     private static <T extends SimplePacketBase> PacketType<T> register(Class<T> type, Function<PacketByteBuf, T> factory, SimplePacketBase.NetworkDirection direction) {
         var packetType = new PacketType<>(type, factory, direction);

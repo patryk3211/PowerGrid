@@ -19,6 +19,7 @@ import com.simibubi.create.content.kinetics.base.HalfShaftInstance;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlockEntity;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatRenderer;
+import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
@@ -155,6 +156,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<PortableBatteryBlockEntity> PORTABLE_BATTERY =
             REGISTRATE.blockEntity("portable_battery", PortableBatteryBlockEntity::new)
                     .validBlock(ModdedBlocks.PORTABLE_BATTERY)
+                    .register();
+
+    public static final BlockEntityEntry<CircuitDesignTableBlockEntity> CIRCUIT_DESIGN_BENCH =
+            REGISTRATE.blockEntity("circuit_design_table", CircuitDesignTableBlockEntity::new)
+                    .validBlock(ModdedBlocks.CIRCUIT_DESIGN_BENCH)
                     .register();
 
     @SuppressWarnings("EmptyMethod")
