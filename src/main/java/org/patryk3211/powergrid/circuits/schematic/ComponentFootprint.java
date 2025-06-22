@@ -15,14 +15,16 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
@@ -30,32 +32,19 @@ public class ComponentFootprint {
     private final int width;
     private final int height;
 
-    private final Map<Point, Integer> pads = new HashMap<>();
-    private boolean outline;
-    private ItemStack renderedStack = null;
+    private final ImmutableMap<Point, Integer> pads;
+    private final boolean outline;
+    @Nullable
+    private final Supplier<Item> renderedItem;
 
-    public ComponentFootprint(int width, int height) {
+    private ItemStack cachedStack;
+
+    protected ComponentFootprint(int width, int height, Map<Point, Integer> pads, boolean outline, @Nullable Supplier<Item> renderedItem) {
         this.width = width;
         this.height = height;
-    }
-
-    public ComponentFootprint addPad(int x, int y) {
-        return addPad(x, y, -1);
-    }
-
-    public ComponentFootprint addPad(int x, int y, int nodeIndex) {
-        pads.put(new Point(x, y), nodeIndex);
-        return this;
-    }
-
-    public ComponentFootprint withOutline() {
-        outline = true;
-        return this;
-    }
-
-    public ComponentFootprint withItem(ItemConvertible item) {
-        renderedStack = item.asItem().getDefaultStack();
-        return this;
+        this.pads = ImmutableMap.copyOf(pads);
+        this.outline = outline;
+        this.renderedItem = renderedItem;
     }
 
     protected void renderPads(@NotNull DrawContext ctx, int x, int y) {
@@ -71,12 +60,16 @@ public class ComponentFootprint {
             ctx.drawBorder(x, y, width * 2, height * 2, COLOR_COMPONENT_OUTLINE);
         }
         renderPads(ctx, x, y);
-        if(renderedStack != null) {
+        if(renderedItem != null) {
+            if(cachedStack == null) {
+                cachedStack = renderedItem.get().getDefaultStack();
+            }
+
             var ms = ctx.getMatrices();
             ms.push();
             var scale = Math.min(width, height) / 8f;
             ms.scale(scale, scale, scale);
-            ctx.drawItem(renderedStack, (int) (x / scale), (int) (y / scale));
+            ctx.drawItem(cachedStack, (int) (x / scale), (int) (y / scale));
             ms.pop();
         }
     }
@@ -91,5 +84,40 @@ public class ComponentFootprint {
 
     public Map<Point, Integer> getPads() {
         return pads;
+    }
+
+    public static class Builder {
+        private final int width, height;
+        private final Map<Point, Integer> pads = new HashMap<>();
+        private Supplier<Item> itemSupplier;
+        private boolean outline = false;
+
+        public Builder(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+
+        public Builder addPad(int x, int y) {
+            return addPad(x, y, -1);
+        }
+
+        public Builder addPad(int x, int y, int nodeIndex) {
+            pads.put(new Point(x, y), nodeIndex);
+            return this;
+        }
+
+        public Builder withOutline() {
+            outline = true;
+            return this;
+        }
+
+        public Builder withItem(Supplier<Item> itemSupplier) {
+            this.itemSupplier = itemSupplier;
+            return this;
+        }
+
+        public ComponentFootprint build() {
+            return new ComponentFootprint(width, height, pads, outline, itemSupplier);
+        }
     }
 }

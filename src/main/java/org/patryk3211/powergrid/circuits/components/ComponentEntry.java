@@ -15,10 +15,12 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
-import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
+import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.fabric.RegistryObject;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 
-public class VacuumTubeComponent extends Component {
-    public VacuumTubeComponent(ComponentFootprint footprint) {
-        super(footprint);
+public class ComponentEntry<T extends Component> extends RegistryEntry<T> {
+    public ComponentEntry(AbstractRegistrate<?> owner, RegistryObject<T> delegate) {
+        super(owner, delegate);
     }
 }

@@ -20,7 +20,11 @@ import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -58,6 +62,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     private Tool currentTool = Tool.NONE;
     private Component currentComponent = null;
+    private Slot selectedSlot = null;
 
     private CircuitEditWidget editWidget;
     private boolean backLayer = false;
@@ -135,7 +140,24 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         addDrawableChild(layerBtn);
     }
 
+    @Override
+    protected List<Text> getTooltipFromItem(ItemStack stack) {
+        var lines = super.getTooltipFromItem(stack);
+        if(Component.forItem(stack.getItem()) != null) {
+            lines.add(Lang.translate("gui.circuit_builder.placeable")
+                    .style(Formatting.DARK_GREEN)
+                    .style(Formatting.ITALIC)
+                    .component());
+        }
+        return lines;
+    }
+
     private void toolSelected(Tool tool) {
+        if(currentComponent != null) {
+            currentComponent = null;
+            selectedSlot = null;
+            editWidget.stopComponentPlacement();
+        }
         switch(tool) {
             case CONNECT -> {
                 editWidget.requestSelection(CircuitEditWidget.SelectMode.LINE, 0x80FFFFFF, this::placeTrace);
@@ -189,6 +211,19 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         int invY = y + HEIGHT + 4;
         renderPlayerInventory(ctx, bgX + WIDTH - PLAYER_INVENTORY.width, invY);
 
+        for(int k = 0; k < this.handler.slots.size(); ++k) {
+            var slot = this.handler.slots.get(k);
+            if(!slot.isEnabled() || !slot.hasStack())
+                continue;
+            if(slot == selectedSlot) {
+                ctx.drawTexture(BACKGROUND, x + slot.x - 1, y + slot.y - 1 , 232, 18, 18, 18);
+                continue;
+            }
+            if(Component.forItem(slot.getStack().getItem()) == null)
+                continue;
+            ctx.drawTexture(BACKGROUND, x + slot.x - 1, y + slot.y - 1 , 232, 0, 18, 18);
+        }
+
         ctx.drawTexture(BACKGROUND, bgX, y, 0, 0, WIDTH, HEIGHT);
 
         if(!backLayer) {
@@ -214,22 +249,27 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     }
 
     @Override
-    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-        var result = super.mouseClicked(pMouseX, pMouseY, pButton);
-        var stack = handler.getCursorStack();
-        if(!stack.isEmpty()) {
+    protected void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType) {
+        if(slot == null || !slot.hasStack())
+            return;
+        var component = Component.forItem(slot.getStack().getItem());
+        if(component == null)
+            return;
+        editWidget.cancelSelection();
+        editWidget.componentPlacement(component, this::placeComponent);
+        currentComponent = component;
+        selectedSlot = slot;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if(button == 1 && currentComponent != null) {
+            currentComponent = null;
+            selectedSlot = null;
             editWidget.stopComponentPlacement();
-            editWidget.cancelSelection();
-            var component = Component.forItem(stack.getItem());
-            if(component != null) {
-                // Enter component placement mode.
-                editWidget.componentPlacement(component, this::placeComponent);
-                currentComponent = component;
-            }
-        } else {
-            editWidget.stopComponentPlacement();
+            return true;
         }
-        return result;
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private static Runnable toolCallback(CircuitDesignTableEditScreen screen, Tool tool) {

@@ -23,6 +23,7 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.impl.resource.loader.FabricLifecycledResourceManager;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -37,6 +38,7 @@ import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 import org.patryk3211.powergrid.chemistry.reagent.Reagents;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipeSerializer;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -67,6 +69,7 @@ public class PowerGrid implements ModInitializer {
 		ElectricalNetwork.LOGGER = LOGGER;
 
 		ReagentRegistry.init();
+		ComponentRegistry.init();
 		ModdedSoundEvents.prepare();
 
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
@@ -90,10 +93,9 @@ public class PowerGrid implements ModInitializer {
 		ModdedConfigs.register();
 		ModdedMenus.register();
 		Reagents.register();
+		Components.register();
 
 		ModdedParticles.register();
-
-		REGISTRATE.addRegisterCallback(RegistryKeys.ITEM, Components::register);
 
 		REGISTRATE.register();
 		ModdedSoundEvents.register();

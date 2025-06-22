@@ -16,22 +16,24 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class Component {
     private static final Map<Item, Component> COMPONENT_MAP = new HashMap<>();
 
-    private final Item item;
+    private Supplier<? extends Item> item;
     private final ComponentFootprint footprint;
 
-    public Component(ItemConvertible item, ComponentFootprint footprint) {
-        this.item = item.asItem();
+    public Component(ComponentFootprint footprint) {
         this.footprint = footprint;
-        COMPONENT_MAP.put(this.item, this);
+    }
+
+    void setItem(Supplier<? extends Item> item) {
+        this.item = item;
     }
 
     public ComponentFootprint footprint() {
@@ -39,10 +41,19 @@ public class Component {
     }
 
     public Item getRequiredItem() {
-        return item;
+        return item.get();
     }
 
     public static Component forItem(Item item) {
-        return COMPONENT_MAP.get(item);
+        if(COMPONENT_MAP.containsKey(item))
+            return COMPONENT_MAP.get(item);
+        for(var entry : ComponentRegistry.REGISTRY) {
+            if(entry.item.get() == item) {
+                COMPONENT_MAP.put(item, entry);
+                return entry;
+            }
+        }
+        COMPONENT_MAP.put(item, null);
+        return null;
     }
 }

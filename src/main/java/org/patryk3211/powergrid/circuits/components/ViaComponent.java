@@ -15,14 +15,10 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
-import com.simibubi.create.AllItems;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
 public class ViaComponent extends Component {
-    public static final ComponentFootprint FOOTPRINT = new ComponentFootprint(1, 1)
-            .addPad(0, 0);
-
-    public ViaComponent() {
-        super(AllItems.COPPER_NUGGET, FOOTPRINT);
+    public ViaComponent(ComponentFootprint footprint) {
+        super(footprint);
     }
 }

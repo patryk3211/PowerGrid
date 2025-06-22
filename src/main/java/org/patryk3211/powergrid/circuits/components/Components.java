@@ -15,12 +15,27 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
-public class Components {
-    public static Component VIA;
-    public static Component VACUUM_TUBE;
+import com.simibubi.create.AllItems;
 
-    public static void register() {
-        VIA = new ViaComponent();
-        VACUUM_TUBE = new VacuumTubeComponent();
-    }
+import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
+
+public class Components {
+    public static final ComponentEntry<ViaComponent> VIA = REGISTRATE.component("via", ViaComponent::new)
+            .footprint(1, 1, b -> b.addPad(0, 0))
+            .item(AllItems.COPPER_NUGGET)
+            .register();
+
+    public static final ComponentEntry<VacuumTubeComponent> VACUUM_TUBE = REGISTRATE.component("vacuum_tube", VacuumTubeComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 1)
+                    .addPad(0, 4)
+                    .addPad(5, 1)
+                    .addPad(5, 4)
+                    .withItem(AllItems.ELECTRON_TUBE)
+                    .withOutline())
+            .item(AllItems.ELECTRON_TUBE)
+            .register();
+
+    @SuppressWarnings("EmptyMethod")
+    public static void register() { /* Initialize static fields. */ }
 }

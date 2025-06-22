@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.circuits.schematic;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 
 public class PlacedComponent {
     public final Component component;
@@ -26,8 +26,7 @@ public class PlacedComponent {
     public final int y;
 
     public PlacedComponent(NbtCompound tag) {
-        var item = Registries.ITEM.get(new Identifier(tag.getString("Id")));
-        component = Component.forItem(item);
+        component = ComponentRegistry.REGISTRY.get(new Identifier(tag.getString("Id")));
         x = tag.getInt("X");
         y = tag.getInt("Y");
     }
@@ -41,8 +40,8 @@ public class PlacedComponent {
     public NbtCompound serializeNbt() {
         var tag = new NbtCompound();
 
-        var item = Registries.ITEM.getId(component.getRequiredItem());
-        tag.putString("Id", item.toString());
+        var id = ComponentRegistry.REGISTRY.getId(component);
+        tag.putString("Id", id.toString());
         tag.putInt("X", x);
         tag.putInt("Y", y);
 
