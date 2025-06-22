@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,17 +30,19 @@ import java.util.function.Supplier;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
 public class ComponentFootprint {
+    private static final PadData NONE = new PadData(-1, null);
+
     private final int width;
     private final int height;
 
-    private final ImmutableMap<Point, Integer> pads;
+    private final ImmutableMap<Point, PadData> pads;
     private final boolean outline;
     @Nullable
     private final Supplier<Item> renderedItem;
 
     private ItemStack cachedStack;
 
-    protected ComponentFootprint(int width, int height, Map<Point, Integer> pads, boolean outline, @Nullable Supplier<Item> renderedItem) {
+    protected ComponentFootprint(int width, int height, Map<Point, PadData> pads, boolean outline, @Nullable Supplier<Item> renderedItem) {
         this.width = width;
         this.height = height;
         this.pads = ImmutableMap.copyOf(pads);
@@ -74,6 +77,14 @@ public class ComponentFootprint {
         }
     }
 
+    @Nullable
+    public Text getTooltip(int mouseX, int mouseY) {
+        var pad = pads.get(new Point(mouseX, mouseY));
+        if(pad == null)
+            return null;
+        return pad.tooltip;
+    }
+
     public int getWidth() {
         return width;
     }
@@ -82,13 +93,13 @@ public class ComponentFootprint {
         return height;
     }
 
-    public Map<Point, Integer> getPads() {
+    public Map<Point, PadData> getPads() {
         return pads;
     }
 
     public static class Builder {
         private final int width, height;
-        private final Map<Point, Integer> pads = new HashMap<>();
+        private final Map<Point, PadData> pads = new HashMap<>();
         private Supplier<Item> itemSupplier;
         private boolean outline = false;
 
@@ -98,11 +109,12 @@ public class ComponentFootprint {
         }
 
         public Builder addPad(int x, int y) {
-            return addPad(x, y, -1);
+            pads.put(new Point(x, y), NONE);
+            return this;
         }
 
-        public Builder addPad(int x, int y, int nodeIndex) {
-            pads.put(new Point(x, y), nodeIndex);
+        public Builder addPad(int x, int y, int nodeIndex, Text tooltip) {
+            pads.put(new Point(x, y), new PadData(nodeIndex, tooltip));
             return this;
         }
 
@@ -120,4 +132,6 @@ public class ComponentFootprint {
             return new ComponentFootprint(width, height, pads, outline, itemSupplier);
         }
     }
+
+    public record PadData(int nodeIndex, Text tooltip) { }
 }

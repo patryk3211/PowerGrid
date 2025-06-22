@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.simibubi.create.AllItems;
+import net.minecraft.text.Text;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -27,10 +28,10 @@ public class Components {
 
     public static final ComponentEntry<ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(0, 1)
-                    .addPad(0, 4)
-                    .addPad(5, 1)
-                    .addPad(5, 4)
+                    .addPad(0, 1, 0, Text.of("Anode"))
+                    .addPad(0, 4, 1, Text.of("Cathode"))
+                    .addPad(5, 1, 2, Text.of("Grid"))
+                    .addPad(5, 4, 3, Text.of("Heater"))
                     .withItem(AllItems.ELECTRON_TUBE)
                     .withOutline())
             .item(AllItems.ELECTRON_TUBE)

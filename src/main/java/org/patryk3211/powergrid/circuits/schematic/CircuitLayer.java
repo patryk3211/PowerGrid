@@ -47,6 +47,10 @@ public class CircuitLayer {
         map.set(x + y * GRID_SIZE);
     }
 
+    public boolean get(int x, int y) {
+        return map.get(x + y * GRID_SIZE);
+    }
+
     public List<Line> calculateLines() {
         var lines = new ArrayList<Line>();
         var visited = new BitSet(TOTAL_SIZE);

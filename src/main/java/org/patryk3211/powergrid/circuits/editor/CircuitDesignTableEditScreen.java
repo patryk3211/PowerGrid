@@ -242,8 +242,31 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     }
 
     @Override
+    protected void drawMouseoverTooltip(DrawContext context, int mouseX, int mouseY) {
+        super.drawMouseoverTooltip(context, mouseX, mouseY);
+
+        int x = editWidget.getX(), y = editWidget.getY();
+        int gridX = (mouseX - x) / 4;
+        int gridY = (mouseY - y) / 4;
+
+        for(var placed : schematic.components()) {
+            var localX = gridX - placed.x * 2;
+            var localY = gridY - placed.y * 2;
+            if(localX < 0 || localY < 0)
+                continue;
+            var footprint = placed.component.footprint();
+            if(localX >= footprint.getWidth() * 2 || localY >= footprint.getHeight() * 2)
+                continue;
+            var tooltip = footprint.getTooltip(localX, localY);
+            if(tooltip == null)
+                continue;
+            context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
+        }
+    }
+
+    @Override
     protected void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType) {
-        if(slot == null || !slot.hasStack())
+        if(slot == null || !slot.hasStack() || actionType != SlotActionType.PICKUP)
             return;
         var component = Component.forItem(slot.getStack().getItem());
         if(component == null)

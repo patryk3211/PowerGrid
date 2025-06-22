@@ -122,6 +122,13 @@ public class CircuitSchematic {
         if(x + width > 16 || y + height > 16)
             return false;
 
+        // Check pad clearance
+        var thisFootprint = component.footprint();
+        for(var pad : thisFootprint.getPads().keySet()) {
+            if(pads.get(x * 2 + pad.x(), y * 2 + pad.y()))
+                return false;
+        }
+
         boolean thisVia = component instanceof ViaComponent;
         for(var placed : components) {
             boolean thatVia = placed.component instanceof ViaComponent;
