@@ -28,8 +28,10 @@ import org.patryk3211.powergrid.circuits.gui.CircuitEditButton;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
 import org.patryk3211.powergrid.circuits.schematic.Line;
+import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
+import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
@@ -45,11 +47,12 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
     private static final Text TOOLTIP_EDIT = Lang.translateDirect("gui.circuit_designer.edit");
 
     private IconButton confirmButton;
+    private IconButton loadButton;
     private CircuitEditButton editButton;
 
     private final CircuitSchematic schematic;
-    private final List<Line> linesFg;
-    private final List<Line> linesBg;
+    private List<Line> linesFg;
+    private List<Line> linesBg;
 
     public CircuitDesignTableScreen(CircuitDesignTableMenu container, PlayerInventory inv, Text title) {
         super(container, inv, title);
@@ -67,7 +70,16 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
         super.init();
 
         confirmButton = new IconButton(x + 116 - 11, y + 66, AllIcons.I_CONFIRM);
+        loadButton = new IconButton(x + 15 - 11, y + 65, ModIcons.I_RIGHT);
         editButton = new CircuitEditButton(x + 42 - 11, y + 18, 68, 68);
+
+        confirmButton.withCallback(() -> {
+            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, false));
+        });
+
+        loadButton.withCallback(() -> {
+            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, true));
+        });
 
         editButton.setTooltip(Tooltip.of(TOOLTIP_EDIT));
         editButton.withCallback(() -> {
@@ -75,6 +87,7 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
         });
 
         addDrawableChild(confirmButton);
+        addDrawableChild(loadButton);
         addDrawableChild(editButton);
     }
 
@@ -85,6 +98,12 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
         renderPlayerInventory(ctx, bgX + 2, invY);
 
         ctx.drawTexture(BACKGROUND, bgX, y, 0, 0, WIDTH, HEIGHT);
+
+        if(handler.contentHolder.schematicChanged) {
+            linesFg = schematic.front().calculateLines();
+            linesBg = schematic.back().calculateLines();
+            handler.contentHolder.schematicChanged = false;
+        }
 
         CircuitSchematicRender.renderLayer(linesFg, ctx, x + 44 - 11, y + 20, 2, COLOR_TRACE_FRONT);
         CircuitSchematicRender.renderLayer(linesBg, ctx, x + 44 - 11, y + 20, 2, COLOR_TRACE_BACK);

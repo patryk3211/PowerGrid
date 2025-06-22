@@ -23,11 +23,13 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 
@@ -36,6 +38,7 @@ import java.util.List;
 public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements IMultiScreenHandlerFactory {
     private final CircuitDesignTableInventory inventory = new CircuitDesignTableInventory();
     CircuitSchematic schematic = new CircuitSchematic();
+    boolean schematicChanged = false;
 
     private class CircuitDesignTableInventory extends ItemStackHandler {
         public CircuitDesignTableInventory() {
@@ -70,6 +73,8 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         super.read(tag, clientPacket);
         inventory.deserializeNBT(tag.getCompound("Inventory"));
         schematic.deserializeNbt(tag.getCompound("Schematic"));
+        if(clientPacket)
+            schematicChanged = true;
     }
 
     @Override
@@ -79,6 +84,33 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
             case 1 -> CircuitDesignTableEditMenu.create(syncId, playerInventory, this);
             default -> null;
         };
+    }
+
+    public void writeToItem() {
+        var stack = inventory.getStackInSlot(1);
+        if(stack.isEmpty() || world.isClient)
+            return;
+        stack.decrement(1);
+        inventory.setStackInSlot(2, schematic.toItemStack());
+        schematic.clear();
+        notifyUpdate();
+    }
+
+    public void readFromItem() {
+        var stack = inventory.getStackInSlot(0);
+        if(stack.isEmpty() || world.isClient || !stack.hasNbt())
+            return;
+        if(inventory.getStackInSlot(1).isEmpty()) {
+            // Move to save slot
+            inventory.setStackInSlot(0, ItemStack.EMPTY);
+            inventory.setStackInSlot(1, stack);
+        }
+        try {
+            schematic.deserializeNbt(stack.getNbt());
+        } catch(RuntimeException e) {
+            PowerGrid.LOGGER.error("Failed to load schematic from item: ", e);
+        }
+        notifyUpdate();
     }
 
     @Override

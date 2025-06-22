@@ -24,8 +24,15 @@ import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 
 public class SaveSchematicC2SPacket extends SimplePacketBase {
-    private BlockPos pos;
-    private final NbtCompound nbt;
+    private final BlockPos pos;
+    private NbtCompound nbt;
+    private boolean load;
+
+    public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, boolean load) {
+        pos = be.getPos();
+        nbt = null;
+        this.load = load;
+    }
 
     public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, CircuitSchematic schematic) {
         pos = be.getPos();
@@ -34,13 +41,22 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
 
     public SaveSchematicC2SPacket(PacketByteBuf buf) {
         pos = buf.readBlockPos();
-        nbt = buf.readNbt();
+        if(buf.readBoolean()) {
+            nbt = buf.readNbt();
+        } else {
+            load = buf.readBoolean();
+        }
     }
 
     @Override
     public void write(PacketByteBuf buf) {
         buf.writeBlockPos(pos);
-        buf.writeNbt(nbt);
+        buf.writeBoolean(nbt != null);
+        if(nbt != null) {
+            buf.writeNbt(nbt);
+        } else {
+            buf.writeBoolean(load);
+        }
     }
 
     @Override
@@ -49,11 +65,21 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
             var world = context.sender().getWorld();
             var be = world.getBlockEntity(pos);
             if(be instanceof CircuitDesignTableBlockEntity table) {
-                table.getSchematic().deserializeNbt(nbt);
-                table.notifyUpdate();
+                if(nbt != null) {
+                    table.getSchematic().deserializeNbt(nbt);
+                    table.notifyUpdate();
 
-                // Saved successfully.
-                IMultiScreenHandlerFactory.openScreen(context.sender(), table, table::sendToMenu, 0);
+                    // Saved successfully.
+                    IMultiScreenHandlerFactory.openScreen(context.sender(), table, table::sendToMenu, 0);
+                } else {
+                    if(load) {
+                        // Load schematic from item
+                        table.readFromItem();
+                    } else {
+                        // Save schematic to item
+                        table.writeToItem();
+                    }
+                }
             }
         });
         return true;

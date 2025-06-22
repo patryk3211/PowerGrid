@@ -142,4 +142,11 @@ public class CircuitSchematic {
         }
         return true;
     }
+
+    public void clear() {
+        front.clear();
+        back.clear();
+        pads.clear();
+        components.clear();
+    }
 }
