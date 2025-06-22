@@ -234,14 +234,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             CircuitSchematicRender.renderLayer(bgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_FRONT);
         }
 
-        var ms = ctx.getMatrices();
-        ms.push();
-        ms.translate(bgX + 13, y + 22, 0);
-        ms.scale(4, 4, 4);
-        for(var placed : schematic.components()) {
-            placed.component.footprint().render(ctx, placed.x * 2, placed.y * 2);
-        }
-        ms.pop();
+        CircuitSchematicRender.renderComponents(schematic, ctx, bgX + 13, y + 22, 4);
 
         if(currentTool.y > 0) {
             ctx.drawTexture(BACKGROUND, x + 172 - 11, y + currentTool.y, 250, 0, 6, 18);

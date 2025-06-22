@@ -58,4 +58,15 @@ public class CircuitSchematicRender {
             ctx.fill(x1, y1, x1 + scale, y1 + scale, color);
         }
     }
+
+    public static void renderComponents(CircuitSchematic schematic, DrawContext ctx, int x, int y, int scale) {
+        var ms = ctx.getMatrices();
+        ms.push();
+        ms.translate(x, y, 0);
+        ms.scale(scale, scale, scale);
+        for(var placed : schematic.components()) {
+            placed.component.footprint().render(ctx, placed.x * 2, placed.y * 2);
+        }
+        ms.pop();
+    }
 }

@@ -25,6 +25,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditButton;
+import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
 import org.patryk3211.powergrid.circuits.schematic.Line;
 import org.patryk3211.powergrid.collections.ModdedPackets;
@@ -46,13 +47,14 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
     private IconButton confirmButton;
     private CircuitEditButton editButton;
 
+    private final CircuitSchematic schematic;
     private final List<Line> linesFg;
     private final List<Line> linesBg;
 
     public CircuitDesignTableScreen(CircuitDesignTableMenu container, PlayerInventory inv, Text title) {
         super(container, inv, title);
-        var schematic = container.contentHolder.getSchematic();
 
+        schematic = container.contentHolder.getSchematic();
         linesFg = schematic.front().calculateLines();
         linesBg = schematic.back().calculateLines();
     }
@@ -86,6 +88,7 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
 
         CircuitSchematicRender.renderLayer(linesFg, ctx, x + 44 - 11, y + 20, 2, COLOR_TRACE_FRONT);
         CircuitSchematicRender.renderLayer(linesBg, ctx, x + 44 - 11, y + 20, 2, COLOR_TRACE_BACK);
+        CircuitSchematicRender.renderComponents(schematic, ctx, x + 44 - 11, y + 20, 2);
 
         ctx.drawCenteredTextWithShadow(textRenderer, title, x + (WIDTH - 8) / 2, y + 3, 0xFFFFFF);
     }

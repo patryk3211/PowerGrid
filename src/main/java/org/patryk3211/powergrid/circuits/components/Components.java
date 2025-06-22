@@ -25,7 +25,7 @@ public class Components {
             .item(AllItems.COPPER_NUGGET)
             .register();
 
-    public static final ComponentEntry<VacuumTubeComponent> VACUUM_TUBE = REGISTRATE.component("vacuum_tube", VacuumTubeComponent::new)
+    public static final ComponentEntry<ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 1)
                     .addPad(0, 4)

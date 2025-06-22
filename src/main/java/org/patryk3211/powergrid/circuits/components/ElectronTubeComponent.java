@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.circuits.components;
 
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
-public class VacuumTubeComponent extends Component {
-    public VacuumTubeComponent(ComponentFootprint footprint) {
+public class ElectronTubeComponent extends Component {
+    public ElectronTubeComponent(ComponentFootprint footprint) {
         super(footprint);
     }
 }

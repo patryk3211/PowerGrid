@@ -58,5 +58,6 @@
   "powergrid.gui.circuit_designer.delete": "Delete selection",
   "powergrid.gui.circuit_designer.select": "Select component",
   "powergrid.gui.circuit_designer.layer": "Switch layer",
-  "powergrid.gui.circuit_designer.saving": "Saving..."
+  "powergrid.gui.circuit_designer.saving": "Saving...",
+  "powergrid.gui.circuit_designer.placeable": "Placeable"
 }
