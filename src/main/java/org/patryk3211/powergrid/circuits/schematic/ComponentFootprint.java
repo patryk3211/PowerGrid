@@ -40,7 +40,7 @@ public class ComponentFootprint {
     @Nullable
     private final Supplier<Item> renderedItem;
 
-    private ItemStack cachedStack;
+    private ItemStack renderedStack;
 
     protected ComponentFootprint(int width, int height, Map<Point, PadData> pads, boolean outline, @Nullable Supplier<Item> renderedItem) {
         this.width = width;
@@ -64,15 +64,11 @@ public class ComponentFootprint {
         }
         renderPads(ctx, x, y);
         if(renderedItem != null) {
-            if(cachedStack == null) {
-                cachedStack = renderedItem.get().getDefaultStack();
-            }
-
             var ms = ctx.getMatrices();
             ms.push();
             var scale = Math.min(width, height) / 8f;
             ms.scale(scale, scale, scale);
-            ctx.drawItem(cachedStack, (int) (x / scale), (int) (y / scale));
+            ctx.drawItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
             ms.pop();
         }
     }
@@ -83,6 +79,15 @@ public class ComponentFootprint {
         if(pad == null)
             return null;
         return pad.tooltip;
+    }
+
+    @Nullable
+    public ItemStack getRenderedStack() {
+        if(renderedItem == null)
+            return null;
+        if(renderedStack == null)
+            renderedStack = renderedItem.get().getDefaultStack();
+        return renderedStack;
     }
 
     public int getWidth() {

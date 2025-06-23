@@ -29,6 +29,7 @@ import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
+import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
 import org.patryk3211.powergrid.circuits.schematic.Line;
@@ -63,6 +64,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private Tool currentTool = Tool.NONE;
     private Component currentComponent = null;
     private Slot selectedSlot = null;
+    private PlacedComponent selectedComponent = null;
 
     private CircuitEditWidget editWidget;
     private boolean backLayer = false;
@@ -75,6 +77,8 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private IconButton selectBtn;
 
     private IconButton layerBtn;
+
+    private ComponentPropertiesWidget propertiesWidget;
 
     public CircuitDesignTableEditScreen(CircuitDesignTableEditMenu container, PlayerInventory inv, Text title) {
         super(container, inv, title);
@@ -95,6 +99,12 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         super.init();
 
         editWidget = new CircuitEditWidget(schematic, x + 13 - 11, y + 22, 32 * 4, 32 * 4);
+        propertiesWidget = new ComponentPropertiesWidget(textRenderer, x - 165, y + 12);
+
+        currentTool = Tool.NONE;
+        selectedComponent = null;
+        currentComponent = null;
+        selectedSlot = null;
 
         acceptBtn = new IconButton(x + 153 - 11, y + 15, AllIcons.I_CONFIRM);
         cancelBtn = new IconButton(x + 153 - 11, y + 35, ModIcons.I_CANCEL);
@@ -116,9 +126,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             client.setScreen(new CircuitDesignTableSaveScreen(handler, handler.playerInventory, title));
         });
 
-        cancelBtn.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(handler.contentHolder, 0));
-        });
+        cancelBtn.withCallback(() -> ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(handler.contentHolder, 0)));
 
         connectBtn.withCallback(toolCallback(this, Tool.CONNECT));
         deleteBtn.withCallback(toolCallback(this, Tool.DELETE));
@@ -132,6 +140,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         editWidget.setSelectionCancelledCallback(() -> currentTool = Tool.NONE);
 
         addDrawableChild(editWidget);
+        addDrawableChild(propertiesWidget);
         addDrawableChild(acceptBtn);
         addDrawableChild(cancelBtn);
         addDrawableChild(connectBtn);
@@ -152,24 +161,40 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         return lines;
     }
 
-    private void toolSelected(Tool tool) {
+    private void toolSelect(Tool tool) {
         if(currentComponent != null) {
             currentComponent = null;
             selectedSlot = null;
             editWidget.stopComponentPlacement();
         }
+        if(selectedComponent != null) {
+            propertiesWidget.setComponent(null);
+            selectedComponent = null;
+        }
         switch(tool) {
-            case CONNECT -> {
-                editWidget.requestSelection(CircuitEditWidget.SelectMode.LINE, 0x80FFFFFF, this::placeTrace);
-            }
-            case DELETE -> {
-                editWidget.requestSelection(CircuitEditWidget.SelectMode.AREA, 0x80FF8080, this::deleteArea);
-            }
+            case CONNECT -> editWidget.requestSelection(CircuitEditWidget.SelectMode.LINE, 0x80FFFFFF, this::placeTrace);
+            case DELETE -> editWidget.requestSelection(CircuitEditWidget.SelectMode.AREA, 0x80FF8080, this::deleteArea);
+            case SELECT -> editWidget.requestSelection(CircuitEditWidget.SelectMode.POINT, 0x80FFFFFF, this::selectComponent);
         }
     }
 
-    private CircuitEditWidget.SelectionResult placeTrace(int x1, int y1, int x2, int y2) {
+    private void toolSelect(Slot slot) {
+        var component = Component.forItem(slot.getStack().getItem());
+        if(component == null)
+            return;
+        editWidget.cancelSelection();
+        if(selectedComponent != null) {
+            selectedComponent = null;
+            propertiesWidget.setComponent(null);
+        }
+        editWidget.componentPlacement(component, this::placeComponent);
+        currentComponent = component;
+        selectedSlot = slot;
+    }
+
+    private CircuitEditWidget.SelectionResult placeTrace(int x1, int y1, int x2, int y2, int clickX, int clickY) {
         var layer = backLayer ? schematic.back() : schematic.front();
+        boolean isTrace = layer.get(clickX, clickY);
         layer.fill(x1, y1, x2, y2);
 
         Line line;
@@ -185,10 +210,12 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         } else {
             fgLines.add(line);
         }
+        if(schematic.isPad(clickX, clickY) || isTrace)
+            return CircuitEditWidget.SelectionResult.BEGIN_NEW;
         return CircuitEditWidget.SelectionResult.CONTINUE;
     }
 
-    public CircuitEditWidget.SelectionResult deleteArea(int x1, int y1, int x2, int y2) {
+    public CircuitEditWidget.SelectionResult deleteArea(int x1, int y1, int x2, int y2, int clickX, int clickY) {
         var layer = backLayer ? schematic.back() : schematic.front();
         layer.clear(x1, y1, x2, y2);
         if(backLayer) {
@@ -196,7 +223,19 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         } else {
             fgLines = layer.calculateLines();
         }
-        return CircuitEditWidget.SelectionResult.CONTINUE;
+        schematic.removeComponents(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+        return CircuitEditWidget.SelectionResult.BEGIN_NEW;
+    }
+
+    public CircuitEditWidget.SelectionResult selectComponent(int x1, int y1, int x2, int y2, int clickX, int clickY) {
+        var placed = schematic.getComponent(x1 / 2, y1 / 2);
+        if(placed == null)
+            return CircuitEditWidget.SelectionResult.IGNORE;
+
+        selectedComponent = placed;
+        propertiesWidget.setComponent(selectedComponent);
+        currentTool = Tool.NONE;
+        return CircuitEditWidget.SelectionResult.END;
     }
 
     public void placeComponent(int x, int y) {
@@ -226,18 +265,28 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         ctx.drawTexture(BACKGROUND, bgX, y, 0, 0, WIDTH, HEIGHT);
 
+        int bpX = bgX + 13, bpY = y + 22;
         if(!backLayer) {
-            CircuitSchematicRender.renderLayer(bgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_BACK);
-            CircuitSchematicRender.renderLayer(fgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_FRONT);
+            CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, 4, COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, 4, COLOR_TRACE_FRONT);
         } else {
-            CircuitSchematicRender.renderLayer(fgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_BACK);
-            CircuitSchematicRender.renderLayer(bgLines, ctx, bgX + 13, y + 22, 4, COLOR_TRACE_FRONT);
+            CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, 4, COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, 4, COLOR_TRACE_FRONT);
         }
 
-        CircuitSchematicRender.renderComponents(schematic, ctx, bgX + 13, y + 22, 4);
+        CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, 4);
 
         if(currentTool.y > 0) {
             ctx.drawTexture(BACKGROUND, x + 172 - 11, y + currentTool.y, 250, 0, 6, 18);
+        }
+
+        if(selectedComponent != null) {
+            var footprint = selectedComponent.footprint();
+            ctx.drawBorder(
+                    bpX + selectedComponent.x * 8 - 1, bpY + selectedComponent.y * 8 - 1,
+                    footprint.getWidth() * 8 + 2, footprint.getHeight() * 8 + 2,
+                    COLOR_SELECT_OUTLINE
+            );
         }
     }
 
@@ -254,7 +303,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             var localY = gridY - placed.y * 2;
             if(localX < 0 || localY < 0)
                 continue;
-            var footprint = placed.component.footprint();
+            var footprint = placed.footprint();
             if(localX >= footprint.getWidth() * 2 || localY >= footprint.getHeight() * 2)
                 continue;
             var tooltip = footprint.getTooltip(localX, localY);
@@ -268,13 +317,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     protected void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType) {
         if(slot == null || !slot.hasStack() || actionType != SlotActionType.PICKUP)
             return;
-        var component = Component.forItem(slot.getStack().getItem());
-        if(component == null)
-            return;
-        editWidget.cancelSelection();
-        editWidget.componentPlacement(component, this::placeComponent);
-        currentComponent = component;
-        selectedSlot = slot;
+        toolSelect(slot);
     }
 
     @Override
@@ -283,6 +326,10 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             currentComponent = null;
             selectedSlot = null;
             editWidget.stopComponentPlacement();
+            if(selectedComponent != null) {
+                selectedComponent = null;
+                propertiesWidget.setComponent(null);
+            }
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -291,7 +338,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private static Runnable toolCallback(CircuitDesignTableEditScreen screen, Tool tool) {
         return () -> {
             screen.currentTool = tool;
-            screen.toolSelected(tool);
+            screen.toolSelect(tool);
         };
     }
 

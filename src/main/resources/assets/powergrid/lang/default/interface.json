@@ -59,5 +59,7 @@
   "powergrid.gui.circuit_designer.select": "Select component",
   "powergrid.gui.circuit_designer.layer": "Switch layer",
   "powergrid.gui.circuit_designer.saving": "Saving...",
-  "powergrid.gui.circuit_designer.placeable": "Placeable"
+  "powergrid.gui.circuit_designer.placeable": "Placeable",
+
+  "powergrid.component.property.tube_gain": "Gain"
 }

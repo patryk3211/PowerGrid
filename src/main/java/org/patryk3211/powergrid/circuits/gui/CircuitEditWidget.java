@@ -59,11 +59,11 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             return;
 
         var ms = ctx.getMatrices();
-        ms.translate(x, y, 0);
+        ms.translate(x, y, 1000);
         ms.scale(scale, scale, scale);
 
         if(placedComponent != null) {
-            var footprint = placedComponent.footprint();
+            var footprint = placedComponent.footprint(null);
             gridX /= 2;
             gridY /= 2;
             int offsetX = footprint.getWidth() / 2;
@@ -84,7 +84,17 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             ms.scale(1f / scale, 1f / scale, 1f / scale);
             ctx.drawBorder(gridX * scale, gridY * scale, scale, scale, 0xFFAAAAFF);
             ms.pop();
-        } else if(!selectStarted || selectMode == SelectMode.POINT) {
+        } else if(selectMode == SelectMode.POINT) {
+            ms.push();
+            ms.translate(gridX, gridY, 0);
+            ms.scale(0.25f, 0.25f, 0.25f);
+            ctx.fill(1, 1, 3, 3, selectionColor);
+            ctx.fill(-6, 1, -1, 3, selectionColor);
+            ctx.fill(1, -6, 3, -1, selectionColor);
+            ctx.fill(5, 1, 10, 3, selectionColor);
+            ctx.fill(1, 5, 3, 10, selectionColor);
+            ms.pop();
+        } else if(!selectStarted) {
             ctx.fill(gridX, gridY, gridX + 1, gridY + 1, selectionColor);
         } else if(selectMode == SelectMode.LINE) {
             int lenX = Math.abs(gridX - startX) + 1;
@@ -143,7 +153,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
                 }
                 default -> throw new IllegalStateException("Cannot handle callback without valid selection mode");
             }
-            result = selectionCallback.accept(x1, y1, x2, y2);
+            result = selectionCallback.accept(x1, y1, x2, y2, endX, endY);
         }
         switch(result) {
             case CONTINUE -> {
@@ -155,6 +165,9 @@ public class CircuitEditWidget extends AbstractSimiWidget {
                 selectStarted = false;
                 selectMode = SelectMode.NONE;
                 selectionCallback = null;
+            }
+            case BEGIN_NEW -> {
+                selectStarted = false;
             }
             case IGNORE -> { }
         }
@@ -170,7 +183,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
         if(placedComponent != null) {
             gridX /= 2;
             gridY /= 2;
-            var footprint = placedComponent.footprint();
+            var footprint = placedComponent.footprint(null);
             int offsetX = footprint.getWidth() / 2;
             int offsetY = footprint.getHeight() / 2;
             if(button == 0) {
@@ -235,10 +248,10 @@ public class CircuitEditWidget extends AbstractSimiWidget {
     }
 
     public enum SelectionResult {
-        IGNORE, CONTINUE, END
+        IGNORE, CONTINUE, BEGIN_NEW, END
     }
 
     public interface SelectCallback {
-        SelectionResult accept(int x1, int y1, int x2, int y2);
+        SelectionResult accept(int x1, int y1, int x2, int y2, int clickX, int clickY);
     }
 }

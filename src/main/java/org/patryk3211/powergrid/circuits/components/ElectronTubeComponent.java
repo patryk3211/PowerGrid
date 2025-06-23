@@ -15,10 +15,21 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
+import com.google.common.collect.ImmutableCollection;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
+import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
 public class ElectronTubeComponent extends Component {
+    public static final FloatProperty TUBE_GAIN = new FloatProperty(PowerGrid.MOD_ID, "tube_gain", 5, 1, 50);
+
     public ElectronTubeComponent(ComponentFootprint footprint) {
         super(footprint);
+    }
+
+    @Override
+    protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
+        properties.add(TUBE_GAIN);
     }
 }

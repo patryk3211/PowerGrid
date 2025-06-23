@@ -203,5 +203,17 @@
   "reagent.powergrid.sulfur_dioxide": "Sulfur Dioxide",
   "reagent.powergrid.sulfur_trioxide": "Sulfur Trioxide",
   "reagent.powergrid.sulfuric_acid": "Sulfuric Acid",
-  "reagent.powergrid.water_gas": "Steam"
+  "reagent.powergrid.water_gas": "Steam",
+
+  "powergrid.gui.circuit_designer.edit": "Edit circuit",
+  "powergrid.gui.circuit_designer.save": "Save changes",
+  "powergrid.gui.circuit_designer.discard": "Discard changes",
+  "powergrid.gui.circuit_designer.connect": "Place trace",
+  "powergrid.gui.circuit_designer.delete": "Delete selection",
+  "powergrid.gui.circuit_designer.select": "Select component",
+  "powergrid.gui.circuit_designer.layer": "Switch layer",
+  "powergrid.gui.circuit_designer.saving": "Saving...",
+  "powergrid.gui.circuit_designer.placeable": "Placeable",
+
+  "powergrid.component.property.tube_gain": "Gain"
 }

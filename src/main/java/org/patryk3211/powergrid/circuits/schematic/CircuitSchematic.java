@@ -19,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -43,7 +44,9 @@ public class CircuitSchematic {
         front.from(schematic.front);
         back.from(schematic.back);
         for(var component : schematic.components) {
-            components.add(new PlacedComponent(component.component, component.x, component.y));
+            var placed = new PlacedComponent(component);
+            components.add(placed);
+            addPads(placed);
         }
     }
 
@@ -80,7 +83,7 @@ public class CircuitSchematic {
     }
 
     private void addPads(PlacedComponent placed) {
-        var componentPads = placed.component.footprint().getPads();
+        var componentPads = placed.footprint().getPads();
         for(var point : componentPads.keySet()) {
             pads.set(placed.x * 2 + point.x(), placed.y * 2 + point.y());
         }
@@ -90,6 +93,24 @@ public class CircuitSchematic {
         var placed = new PlacedComponent(component, x, y);
         components.add(placed);
         addPads(placed);
+    }
+
+    public void removeComponents(int x, int y, int width, int height) {
+        components.removeIf(placed -> placed.intersects(x, y, width, height));
+        rebuildPads();
+    }
+
+    @Nullable
+    public PlacedComponent getComponent(int x, int y) {
+        for(var placed : components) {
+            if(x < placed.x || y < placed.y)
+                continue;
+            var footprint = placed.footprint();
+            if(x >= placed.x + footprint.getWidth() || y >= placed.y + footprint.getHeight())
+                continue;
+            return placed;
+        }
+        return null;
     }
 
     public CircuitLayer front() {
@@ -117,13 +138,13 @@ public class CircuitSchematic {
     public boolean canPlace(Component component, int x, int y) {
         if(x < 0 || y < 0)
             return false;
-        var width = component.footprint().getWidth();
-        var height = component.footprint().getHeight();
+        var width = component.footprint(null).getWidth();
+        var height = component.footprint(null).getHeight();
         if(x + width > 16 || y + height > 16)
             return false;
 
         // Check pad clearance
-        var thisFootprint = component.footprint();
+        var thisFootprint = component.footprint(null);
         for(var pad : thisFootprint.getPads().keySet()) {
             if(pads.get(x * 2 + pad.x(), y * 2 + pad.y()))
                 return false;
@@ -136,11 +157,14 @@ public class CircuitSchematic {
                 // Vias only collide with other vias, components don't collide with vias
                 continue;
             }
-            var footprint = placed.component.footprint();
-            if(Math.abs(x - placed.x) * 2 < (width + footprint.getWidth()) && Math.abs(y - placed.y) * 2 < (height + footprint.getHeight()))
+            if(placed.intersects(x, y, width, height))
                 return false;
         }
         return true;
+    }
+
+    public boolean isPad(int x, int y) {
+        return pads.get(x, y);
     }
 
     public void clear() {

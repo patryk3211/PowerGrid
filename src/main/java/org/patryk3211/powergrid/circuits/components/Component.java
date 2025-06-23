@@ -15,11 +15,15 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.item.Item;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class Component {
@@ -27,21 +31,34 @@ public class Component {
 
     private Supplier<? extends Item> item;
     private final ComponentFootprint footprint;
+    private final ImmutableList<ComponentProperty<?>> properties;
 
     public Component(ComponentFootprint footprint) {
         this.footprint = footprint;
+
+        var properties = new ImmutableList.Builder<ComponentProperty<?>>();
+        addProperties(properties);
+        this.properties = properties.build();
+    }
+
+    protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
+
     }
 
     void setItem(Supplier<? extends Item> item) {
         this.item = item;
     }
 
-    public ComponentFootprint footprint() {
+    public ComponentFootprint footprint(@Nullable PlacedComponent placed) {
         return footprint;
     }
 
     public Item getRequiredItem() {
         return item.get();
+    }
+
+    public ImmutableList<ComponentProperty<?>> getProperties() {
+        return properties;
     }
 
     public static Component forItem(Item item) {
