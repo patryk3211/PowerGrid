@@ -35,13 +35,14 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.circuits.schematic.Area;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
-import org.patryk3211.powergrid.circuits.schematic.Line;
 import org.patryk3211.powergrid.circuits.schematic.Point;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
 
 public class CircuitBoardModel implements UnbakedModel, BakedModel {
     public static final ModelIdentifier MODEL_ID = new ModelIdentifier(new Identifier(PowerGrid.MOD_ID, "circuit_board"), "");
@@ -121,10 +122,10 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
 
     public void emitTrace(Area area, RenderContext context) {
         var emitter = context.getEmitter();
-        float x1 = area.x1() / 32f;
-        float y1 = area.y1() / 32f;
-        float x2 = area.x2() / 32f;
-        float y2 = area.y2() / 32f;
+        float x1 = (float) area.x1() / GRID_SIZE;
+        float y1 = (float) area.y1() / GRID_SIZE;
+        float x2 = (float) area.x2() / GRID_SIZE;
+        float y2 = (float) area.y2() / GRID_SIZE;
         emitter.square(Direction.UP, x1, 1.0f - y2, x2, 1.0f - y1, 14f / 16f - 0.0025f);
         emitter.uv(0, x1, y1);
         emitter.uv(1, x1, y2);
@@ -138,10 +139,10 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
     public void emitPad(Point point, RenderContext context) {
         var emitter = context.getEmitter();
         float x1 = point.x(), y1 = point.y(), x2 = x1 + 1, y2 = y1 + 1;
-        x1 /= 32;
-        x2 /= 32;
-        y1 /= 32;
-        y2 /= 32;
+        x1 /= GRID_SIZE;
+        x2 /= GRID_SIZE;
+        y1 /= GRID_SIZE;
+        y2 /= GRID_SIZE;
         emitter.square(Direction.UP, x1, 1.0f - y2, x2, 1.0f - y1, 14f / 16f - 0.0025f);
         emitter.uv(0, x1, y1);
         emitter.uv(1, x1, y2);

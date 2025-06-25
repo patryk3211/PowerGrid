@@ -22,7 +22,8 @@ import java.util.BitSet;
 import java.util.List;
 
 public class CircuitLayer {
-    public static final int GRID_SIZE = 32;
+    public static final int GRID_SIZE = 16;
+    public static final int GRID_TO_GRID_SCALE = GRID_SIZE / 16;
     public static final int TOTAL_SIZE = GRID_SIZE * GRID_SIZE;
 
     private BitSet map;
@@ -73,7 +74,7 @@ public class CircuitLayer {
                     continue;
                 }
                 // Search for a horizontal line.
-                for(int i = x + 1; i < 32; ++i) {
+                for(int i = x + 1; i < GRID_SIZE; ++i) {
                     if(!map.get(i + y * GRID_SIZE) || visited.get(i + y * GRID_SIZE))
                         break;
                     visited.set(i + y * GRID_SIZE);

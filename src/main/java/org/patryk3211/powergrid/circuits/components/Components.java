@@ -31,21 +31,18 @@ public class Components {
 
     public static final ComponentEntry<ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(0, 1, 0, Text.of("Anode"))
-                    .addPad(0, 4, 1, Text.of("Cathode"))
-                    .addPad(5, 1, 2, Text.of("Grid"))
-                    .addPad(5, 4, 3, Text.of("Heater"))
+                    .addPad(0, 0, 0, Text.of("Anode"))
+                    .addPad(0, 2, 1, Text.of("Cathode"))
+                    .addPad(2, 0, 2, Text.of("Grid"))
+                    .addPad(2, 2, 3, Text.of("Heater"))
                     .withItem(AllItems.ELECTRON_TUBE)
                     .withOutline())
             .item(AllItems.ELECTRON_TUBE)
             .register();
 
     public static final ComponentEntry<ConnectorComponent> CONNECTOR = REGISTRATE.component("connector", ConnectorComponent::new)
-            .footprint(2, 2, b -> b
+            .footprint(3, 3, b -> b
                     .addPad(1, 1, 0)
-                    .addPad(1, 2, 0)
-                    .addPad(2, 1, 0)
-                    .addPad(2, 2, 0)
                     .withOutline())
             .item(ModdedBlocks.WIRE_CONNECTOR)
             .register();

@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import java.util.*;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
 public class CircuitSchematic {
     private final CircuitLayer front = new CircuitLayer();
@@ -101,7 +102,7 @@ public class CircuitSchematic {
     private void addPads(PlacedComponent placed) {
         var componentPads = placed.footprint().getPads();
         for(var point : componentPads.keySet()) {
-            pads.set(placed.x * 2 + point.x(), placed.y * 2 + point.y());
+            pads.set(placed.x * GRID_TO_GRID_SCALE + point.x(), placed.y * GRID_TO_GRID_SCALE + point.y());
         }
     }
 
@@ -220,7 +221,7 @@ public class CircuitSchematic {
         // Check pad clearance
         var thisFootprint = component.footprint(null);
         for(var pad : thisFootprint.getPads().keySet()) {
-            if(pads.get(x * 2 + pad.x(), y * 2 + pad.y()))
+            if(pads.get(x * GRID_TO_GRID_SCALE + pad.x(), y * GRID_TO_GRID_SCALE + pad.y()))
                 return false;
         }
 
@@ -238,12 +239,12 @@ public class CircuitSchematic {
     }
 
     private Optional<Node> makeComponentNode(int x, int y) {
-        var placed = getComponent(x / 2, y / 2);
+        var placed = getComponent(x / GRID_TO_GRID_SCALE, y / GRID_TO_GRID_SCALE);
         if(placed == null)
             return Optional.empty();
         var footprint = placed.footprint();
-        int lX = x - placed.x * 2;
-        int lY = y - placed.y * 2;
+        int lX = x - placed.x * GRID_TO_GRID_SCALE;
+        int lY = y - placed.y * GRID_TO_GRID_SCALE;
         var padData = footprint.getPads().get(new Point(lX, lY));
         if(padData == null || padData.nodeIndex() < 0)
             return Optional.empty();
@@ -302,8 +303,8 @@ public class CircuitSchematic {
         var bundles = new ArrayList<Collection<Node>>();
         for(var placed : components) {
             for(var pad : placed.footprint().getPads().keySet()) {
-                var x = placed.x * 2 + pad.x();
-                var y = placed.y * 2 + pad.y();
+                var x = placed.x * GRID_TO_GRID_SCALE + pad.x();
+                var y = placed.y * GRID_TO_GRID_SCALE + pad.y();
                 var nodes = flood(Layer.FRONT, x, y, visitMap);
                 if(nodes.size() >= 2)
                     bundles.add(nodes);

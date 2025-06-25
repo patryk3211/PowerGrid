@@ -25,6 +25,8 @@ import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
+
 public class PlacedComponent {
     public final Component component;
     public final int x;
@@ -126,7 +128,7 @@ public class PlacedComponent {
 
     public boolean intersects32(int x, int y, int width, int height) {
         var footprint = footprint();
-        return this.x * 2 < x + width && this.x * 2 + footprint.getWidth() * 2 > x &&
-                this.y * 2 < y + height && this.y * 2 + footprint.getHeight() * 2 > y;
+        return this.x * GRID_TO_GRID_SCALE < x + width && this.x * GRID_TO_GRID_SCALE + footprint.getWidth() * GRID_TO_GRID_SCALE > x &&
+                this.y * GRID_TO_GRID_SCALE < y + height && this.y * GRID_TO_GRID_SCALE + footprint.getHeight() * GRID_TO_GRID_SCALE > y;
     }
 }

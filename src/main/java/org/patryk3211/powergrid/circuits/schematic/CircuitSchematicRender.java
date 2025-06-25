@@ -21,12 +21,14 @@ import net.minecraft.client.gui.DrawContext;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
+
 @Environment(EnvType.CLIENT)
 public class CircuitSchematicRender {
     public static final int COLOR_TERMINAL = 0xFFFCB603;
     public static final int COLOR_TRACE_FRONT = 0xFFFFFFFF;
     public static final int COLOR_TRACE_BACK = 0x80FFFFFF;
-    public static final int COLOR_COMPONENT_OUTLINE = 0xFFF078EE;
+    public static final int COLOR_COMPONENT_OUTLINE = 0x80F078EE;
     public static final int COLOR_SELECT_OUTLINE = 0xFFEBBA34;
 
     public static void render(CircuitSchematic schematic, DrawContext context, int x, int y, int scale) {
@@ -66,7 +68,7 @@ public class CircuitSchematicRender {
         ms.translate(x, y, 0);
         ms.scale(scale, scale, scale);
         for(var placed : schematic.components()) {
-            placed.footprint().render(ctx, placed.x * 2, placed.y * 2);
+            placed.footprint().render(ctx, placed.x * GRID_TO_GRID_SCALE, placed.y * GRID_TO_GRID_SCALE);
         }
         ms.pop();
     }

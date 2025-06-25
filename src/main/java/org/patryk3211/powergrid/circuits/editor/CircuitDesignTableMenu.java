@@ -22,6 +22,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandlerType;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 
@@ -47,7 +48,7 @@ public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
         addSlot(new SlotItemHandler(beInv, 0, X_OFFSET + 16, Y_OFFSET + 44) {
             @Override
             public boolean canInsert(ItemStack stack) {
-                return ModdedItems.CIRCUIT_SCHEMATIC.isIn(stack);
+                return ModdedItems.CIRCUIT_SCHEMATIC.isIn(stack) || ModdedBlocks.CIRCUIT_BOARD.isIn(stack);
             }
         });
         addSlot(new SlotItemHandler(beInv, 1, X_OFFSET + 117, Y_OFFSET + 21) {

@@ -43,6 +43,7 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
     private static final Identifier BACKGROUND = PowerGrid.texture("gui/circuit_design_table");
     private static final int WIDTH = 180;
     private static final int HEIGHT = 92;
+    public static final int SCALE = 4;
 
     private static final Text TOOLTIP_EDIT = Lang.translateDirect("gui.circuit_designer.edit");
 
@@ -105,9 +106,9 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
             handler.contentHolder.schematicChanged = false;
         }
 
-        CircuitSchematicRender.renderLayer(linesFg, ctx, x + 44 - 11, y + 20, 2, COLOR_TRACE_FRONT);
-        CircuitSchematicRender.renderLayer(linesBg, ctx, x + 44 - 11, y + 20, 2, COLOR_TRACE_BACK);
-        CircuitSchematicRender.renderComponents(schematic, ctx, x + 44 - 11, y + 20, 2);
+        CircuitSchematicRender.renderLayer(linesFg, ctx, x + 44 - 11, y + 20, SCALE, COLOR_TRACE_FRONT);
+        CircuitSchematicRender.renderLayer(linesBg, ctx, x + 44 - 11, y + 20, SCALE, COLOR_TRACE_BACK);
+        CircuitSchematicRender.renderComponents(schematic, ctx, x + 44 - 11, y + 20, SCALE);
 
         ctx.drawCenteredTextWithShadow(textRenderer, title, x + (WIDTH - 8) / 2, y + 3, 0xFFFFFF);
     }

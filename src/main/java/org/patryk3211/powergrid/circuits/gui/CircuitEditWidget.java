@@ -23,10 +23,12 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 
 import java.util.function.BiConsumer;
 
+import static org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen.CIRCUIT_SCALE;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
 public class CircuitEditWidget extends AbstractSimiWidget {
-    private int scale = 4;
+    private int scale = CIRCUIT_SCALE;
 
     private boolean selectStarted = false;
     private int startX, startY;
@@ -64,16 +66,16 @@ public class CircuitEditWidget extends AbstractSimiWidget {
 
         if(placedComponent != null) {
             var footprint = placedComponent.footprint(null);
-            gridX /= 2;
-            gridY /= 2;
+            gridX /= GRID_TO_GRID_SCALE;
+            gridY /= GRID_TO_GRID_SCALE;
             int offsetX = footprint.getWidth() / 2;
             int offsetY = footprint.getHeight() / 2;
-            footprint.render(ctx, (gridX - offsetX) * 2, (gridY - offsetY) * 2);
+            footprint.render(ctx, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
 
             ms.push();
-            ms.scale(0.25f, 0.25f, 0.25f);
+            ms.scale(1f / scale, 1f / scale, 1f / scale);
             int color = schematic.canPlace(placedComponent, gridX - offsetX, gridY - offsetY) ? 0x8080FF80 : 0x80FF8080;
-            ctx.drawBorder((gridX - offsetX) * 8, (gridY - offsetY) * 8, footprint.getWidth() * 8, footprint.getHeight() * 8, color);
+            ctx.drawBorder((gridX - offsetX) * scale * GRID_TO_GRID_SCALE, (gridY - offsetY) * scale * GRID_TO_GRID_SCALE, footprint.getWidth() * scale * GRID_TO_GRID_SCALE, footprint.getHeight() * scale * GRID_TO_GRID_SCALE, color);
             ms.pop();
             return;
         }
@@ -181,8 +183,8 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             return false;
 
         if(placedComponent != null) {
-            gridX /= 2;
-            gridY /= 2;
+            gridX /= GRID_TO_GRID_SCALE;
+            gridY /= GRID_TO_GRID_SCALE;
             var footprint = placedComponent.footprint(null);
             int offsetX = footprint.getWidth() / 2;
             int offsetY = footprint.getHeight() / 2;

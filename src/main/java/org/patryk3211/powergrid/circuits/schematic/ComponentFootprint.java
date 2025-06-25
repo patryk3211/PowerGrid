@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
 public class ComponentFootprint {
@@ -58,13 +59,13 @@ public class ComponentFootprint {
 
     public void render(@NotNull DrawContext ctx, int x, int y) {
         if(outline) {
-            ctx.drawBorder(x, y, width * 2, height * 2, COLOR_COMPONENT_OUTLINE);
+            ctx.drawBorder(x, y, width * GRID_TO_GRID_SCALE, height * GRID_TO_GRID_SCALE, COLOR_COMPONENT_OUTLINE);
         }
         renderPads(ctx, x, y);
         if(renderedItem != null) {
             var ms = ctx.getMatrices();
             ms.push();
-            var scale = Math.min(width, height) / 8f;
+            var scale = Math.min(width, height) / 16f * GRID_TO_GRID_SCALE;
             ms.scale(scale, scale, scale);
             ctx.drawItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
             ms.pop();
@@ -112,7 +113,7 @@ public class ComponentFootprint {
         }
 
         private void validatePad(int x, int y) {
-            if(x < 0 || y < 0 || x >= width * 2 || y >= height * 2)
+            if(x < 0 || y < 0 || x >= width * GRID_TO_GRID_SCALE || y >= height * GRID_TO_GRID_SCALE)
                 throw new IllegalArgumentException("Pad position must be inside defined footprint size");
         }
 

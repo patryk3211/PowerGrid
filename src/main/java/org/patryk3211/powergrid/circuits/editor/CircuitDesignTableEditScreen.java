@@ -30,10 +30,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
-import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
-import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
-import org.patryk3211.powergrid.circuits.schematic.Line;
-import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
+import org.patryk3211.powergrid.circuits.schematic.*;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
@@ -43,12 +40,15 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.*;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
 public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<CircuitDesignTableEditMenu> {
     private static final Identifier BACKGROUND = PowerGrid.texture("gui/circuit_design_table_edit");
     private static final int WIDTH = 181;
     private static final int HEIGHT = 160;
+
+    public static final int CIRCUIT_SCALE = 8;
 
     private static final Text TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
     private static final Text TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");
@@ -98,7 +98,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         super.init();
 
-        editWidget = new CircuitEditWidget(schematic, x + 13 - 11, y + 22, 32 * 4, 32 * 4);
+        editWidget = new CircuitEditWidget(schematic, x + 13 - 11, y + 22, GRID_SIZE * CIRCUIT_SCALE, GRID_SIZE * CIRCUIT_SCALE);
         propertiesWidget = new ComponentPropertiesWidget(textRenderer, x - 165, y + 12);
 
         currentTool = Tool.NONE;
@@ -267,14 +267,14 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         int bpX = bgX + 13, bpY = y + 22;
         if(!backLayer) {
-            CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, 4, COLOR_TRACE_BACK);
-            CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, 4, COLOR_TRACE_FRONT);
+            CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_FRONT);
         } else {
-            CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, 4, COLOR_TRACE_BACK);
-            CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, 4, COLOR_TRACE_FRONT);
+            CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_FRONT);
         }
 
-        CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, 4);
+        CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE);
 
         if(currentTool.y > 0) {
             ctx.drawTexture(BACKGROUND, x + 172 - 11, y + currentTool.y, 250, 0, 6, 18);
@@ -283,8 +283,8 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         if(selectedComponent != null) {
             var footprint = selectedComponent.footprint();
             ctx.drawBorder(
-                    bpX + selectedComponent.x * 8 - 1, bpY + selectedComponent.y * 8 - 1,
-                    footprint.getWidth() * 8 + 2, footprint.getHeight() * 8 + 2,
+                    bpX + selectedComponent.x * CIRCUIT_SCALE * GRID_TO_GRID_SCALE - 1, bpY + selectedComponent.y * CIRCUIT_SCALE * GRID_TO_GRID_SCALE - 1,
+                    footprint.getWidth() * CIRCUIT_SCALE * GRID_TO_GRID_SCALE + 2, footprint.getHeight() * CIRCUIT_SCALE * GRID_TO_GRID_SCALE + 2,
                     COLOR_SELECT_OUTLINE
             );
         }
@@ -299,12 +299,12 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         int gridY = (mouseY - y) / 4;
 
         for(var placed : schematic.components()) {
-            var localX = gridX - placed.x * 2;
-            var localY = gridY - placed.y * 2;
+            var localX = gridX - placed.x * GRID_TO_GRID_SCALE;
+            var localY = gridY - placed.y * GRID_TO_GRID_SCALE;
             if(localX < 0 || localY < 0)
                 continue;
             var footprint = placed.footprint();
-            if(localX >= footprint.getWidth() * 2 || localY >= footprint.getHeight() * 2)
+            if(localX >= footprint.getWidth() * GRID_TO_GRID_SCALE || localY >= footprint.getHeight() * GRID_TO_GRID_SCALE)
                 continue;
             var tooltip = footprint.getTooltip(localX, localY);
             if(tooltip == null)
