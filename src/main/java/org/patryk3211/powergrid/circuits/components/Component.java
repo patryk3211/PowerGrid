@@ -18,15 +18,18 @@ package org.patryk3211.powergrid.circuits.components;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.item.Item;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 import java.util.*;
 import java.util.function.Supplier;
 
-public class Component {
+public abstract class Component {
     private static final Map<Item, Component> COMPONENT_MAP = new HashMap<>();
 
     private Supplier<? extends Item> item;
@@ -42,6 +45,22 @@ public class Component {
     }
 
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
+
+    }
+
+    public float getPadResistance(int padIndex) {
+        return 0;
+    }
+
+    public boolean emitExternalTerminals() {
+        return false;
+    }
+
+    public List<TerminalBoundingBox> terminals(@NotNull PlacedComponent placed) {
+        return List.of();
+    }
+
+    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder) {
 
     }
 

@@ -16,12 +16,11 @@
 package org.patryk3211.powergrid.circuits.schematic;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
+import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +85,7 @@ public class PlacedComponent {
     public <T> T get(ComponentProperty<T> property) {
         for(var entry : properties) {
             if(entry.property == property)
-                return (T) entry.value;
+                return (T) entry.getValue();
         }
         throw new IllegalArgumentException("Placed components doesn't have the requested property");
     }
@@ -121,36 +120,13 @@ public class PlacedComponent {
 
     public boolean intersects(int x, int y, int width, int height) {
         var footprint = footprint();
-        return Math.abs(x - this.x) * 2 < (width + footprint.getWidth()) && Math.abs(y - this.y) * 2 < (height + footprint.getHeight());
+        return this.x < x + width && this.x + footprint.getWidth() > x &&
+                this.y < y + height && this.y + footprint.getHeight() > y;
     }
 
-    private static class PropertyEntry<T> {
-        private final ComponentProperty<T> property;
-        private T value;
-
-        public PropertyEntry(ComponentProperty<T> property) {
-            this.property = property;
-            this.value = property.defaultValue();
-        }
-
-        public void read(@Nullable NbtElement element) {
-            value = property.read(element);
-        }
-
-        public NbtElement write() {
-            return property.write(value);
-        }
-
-        public String stringValue() {
-            return property.toString(value);
-        }
-
-        public void setValue(String value) {
-            this.value = property.parse(value);
-        }
-
-        public void setValueRaw(Object value) {
-            this.value = (T) value;
-        }
+    public boolean intersects32(int x, int y, int width, int height) {
+        var footprint = footprint();
+        return this.x * 2 < x + width && this.x * 2 + footprint.getWidth() * 2 > x &&
+                this.y * 2 < y + height && this.y * 2 + footprint.getHeight() * 2 > y;
     }
 }

@@ -24,6 +24,7 @@
     "powergrid:electromagnet",
     "powergrid:electric_fan",
     "powergrid:vat_electrode",
-    "powergrid:portable_battery"
+    "powergrid:portable_battery",
+    "powergrid:circuit_board"
   ]
 }

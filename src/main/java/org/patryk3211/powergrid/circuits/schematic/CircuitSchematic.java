@@ -19,13 +19,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
 
 public class CircuitSchematic {
     private final CircuitLayer front = new CircuitLayer();
@@ -48,6 +50,20 @@ public class CircuitSchematic {
             components.add(placed);
             addPads(placed);
         }
+    }
+
+    public static CircuitSchematic fromNbt(NbtCompound nbt) {
+        if(nbt == null)
+            return null;
+        var schematic = new CircuitSchematic();
+        schematic.deserializeNbt(nbt);
+        return schematic;
+    }
+
+    public static CircuitSchematic fromStack(ItemStack stack) {
+        if(stack.isEmpty() || !stack.hasNbt())
+            return null;
+        return fromNbt(stack.getNbt());
     }
 
     public NbtCompound serializeNbt() {
@@ -96,7 +112,7 @@ public class CircuitSchematic {
     }
 
     public void removeComponents(int x, int y, int width, int height) {
-        components.removeIf(placed -> placed.intersects(x, y, width, height));
+        components.removeIf(placed -> placed.intersects32(x, y, width, height));
         rebuildPads();
     }
 
@@ -111,6 +127,18 @@ public class CircuitSchematic {
             return placed;
         }
         return null;
+    }
+
+    public boolean isPad(int x, int y) {
+        return pads.get(x, y);
+    }
+
+    public CircuitLayer getLayer(Layer layer) {
+        return layer == Layer.FRONT ? front : back;
+    }
+
+    public boolean getLayer(Layer layer, int x, int y) {
+        return getLayer(layer).get(x, y);
     }
 
     public CircuitLayer front() {
@@ -133,6 +161,52 @@ public class CircuitSchematic {
         var stack = ModdedItems.CIRCUIT_SCHEMATIC.asStack();
         stack.setNbt(serializeNbt());
         return stack;
+    }
+
+    private boolean getAreaState(CircuitLayer layer, int x, int y) {
+        return layer.get(x, y) && !isPad(x, y);
+    }
+
+    public List<Area> calculateAreas(Layer forLayer) {
+        var areas = new ArrayList<Area>();
+        var layer = getLayer(forLayer);
+
+        var visitMap = new BitSet(GRID_SIZE * GRID_SIZE);
+        for(int x = 0; x < GRID_SIZE; ++x) {
+            for(int y = 0; y < GRID_SIZE; ++y) {
+                var bit = getAreaState(layer, x, y);
+                if(!bit || visitMap.get(x + y * GRID_SIZE))
+                    continue;
+                int x1;
+                for(x1 = x + 1; x1 < GRID_SIZE; ++x1) {
+                    if(!getAreaState(layer, x1, y) || visitMap.get(x1 + y * GRID_SIZE))
+                        break;
+                }
+                int y1;
+                for(y1 = y + 1; y1 < GRID_SIZE; ++y1) {
+                    if(!getAreaState(layer, x, y1) || visitMap.get(x + y1 * GRID_SIZE))
+                        break;
+                    boolean isFull = true;
+                    for(int i = x; i < x1; ++i) {
+                        if(!getAreaState(layer, i, y1) || visitMap.get(i + y1 * GRID_SIZE)) {
+                            isFull = false;
+                            break;
+                        }
+                    }
+                    if(!isFull)
+                        break;
+                }
+
+                for(int x2 = x; x2 < x1; ++x2) {
+                    for(int y2 = y; y2 < y1; ++y2) {
+                        visitMap.set(x2 + y2 * GRID_SIZE);
+                    }
+                }
+                areas.add(new Area(x, y, x1, y1));
+            }
+        }
+
+        return areas;
     }
 
     public boolean canPlace(Component component, int x, int y) {
@@ -163,8 +237,79 @@ public class CircuitSchematic {
         return true;
     }
 
-    public boolean isPad(int x, int y) {
-        return pads.get(x, y);
+    private Optional<Node> makeComponentNode(int x, int y) {
+        var placed = getComponent(x / 2, y / 2);
+        if(placed == null)
+            return Optional.empty();
+        var footprint = placed.footprint();
+        int lX = x - placed.x * 2;
+        int lY = y - placed.y * 2;
+        var padData = footprint.getPads().get(new Point(lX, lY));
+        if(padData == null || padData.nodeIndex() < 0)
+            return Optional.empty();
+        return Optional.of(new Node(placed, padData.nodeIndex()));
+    }
+
+    private boolean shouldVisit(Layer layer, int x, int y, VisitMap visitMap) {
+        if(x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE)
+            return false;
+        if(!visitMap.canVisit(layer, x, y))
+            return false;
+        return getLayer(layer, x, y) || isPad(x, y);
+    }
+
+    @NotNull
+    private Collection<Node> flood(Layer layer, int x, int y, VisitMap visitMap) {
+        if(!visitMap.canVisit(layer, x, y))
+            return List.of();
+
+        var toVisit = new ArrayList<Point>();
+        toVisit.add(new Point(x, y));
+
+        var nodes = new HashSet<Node>();
+        while(!toVisit.isEmpty()) {
+            var node = toVisit.remove(0);
+            int nX = node.x();
+            int nY = node.y();
+
+            if(visitMap.visit(layer, nX, nY)) {
+                if(isPad(nX, nY)) {
+                    // We need to trace the other layer and check for component node.
+                    var componentNode = makeComponentNode(nX, nY);
+                    componentNode.ifPresent(nodes::add);
+
+                    // Flood opposite layer.
+                    var componentNodes = flood(layer.opposite(), nX, nY, visitMap);
+                    nodes.addAll(componentNodes);
+                }
+
+                // Add neighbors that haven't been visited.
+                if(shouldVisit(layer, nX + 1, nY, visitMap))
+                    toVisit.add(new Point(nX + 1, nY));
+                if(shouldVisit(layer, nX - 1, nY, visitMap))
+                    toVisit.add(new Point(nX - 1, nY));
+                if(shouldVisit(layer, nX, nY + 1, visitMap))
+                    toVisit.add(new Point(nX, nY + 1));
+                if(shouldVisit(layer, nX, nY - 1, visitMap))
+                    toVisit.add(new Point(nX, nY - 1));
+            }
+        }
+        return nodes;
+    }
+
+    public Collection<Collection<Node>> findNodeBundles() {
+        var visitMap = new VisitMap();
+        var bundles = new ArrayList<Collection<Node>>();
+        for(var placed : components) {
+            for(var pad : placed.footprint().getPads().keySet()) {
+                var x = placed.x * 2 + pad.x();
+                var y = placed.y * 2 + pad.y();
+                var nodes = flood(Layer.FRONT, x, y, visitMap);
+                if(nodes.size() >= 2)
+                    bundles.add(nodes);
+            }
+        }
+        return bundles;
     }
 
     public void clear() {
@@ -172,5 +317,32 @@ public class CircuitSchematic {
         back.clear();
         pads.clear();
         components.clear();
+    }
+
+    public enum Layer {
+        FRONT, BACK;
+
+        public Layer opposite() {
+            return this == FRONT ? BACK : FRONT;
+        }
+    }
+
+    public record Node(PlacedComponent placed, int pad) { }
+
+    private static class VisitMap {
+        private final BitSet front = new BitSet(GRID_SIZE * GRID_SIZE);
+        private final BitSet back = new BitSet(GRID_SIZE * GRID_SIZE);
+
+        public boolean visit(Layer layer, int x, int y) {
+            var set = layer == Layer.FRONT ? front : back;
+            var result = !set.get(x + y * GRID_SIZE);
+            set.set(x + y * GRID_SIZE);
+            return result;
+        }
+
+        public boolean canVisit(Layer layer, int x, int y) {
+            var set = layer == Layer.FRONT ? front : back;
+            return !set.get(x + y * GRID_SIZE);
+        }
     }
 }

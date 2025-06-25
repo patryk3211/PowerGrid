@@ -15,10 +15,34 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.world.World;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 
 public class CircuitSchematicItem extends Item {
     public CircuitSchematicItem(Settings settings) {
         super(settings.maxCount(1));
+    }
+
+    @Override
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+//        var schematic = CircuitSchematic.fromStack(user.getStackInHand(hand));
+//        var bundles = schematic.findNodeBundles();
+//        int i = 0;
+//        for(var bundle : bundles) {
+//            System.out.printf("Bundle %d:\n", i++);
+//            for(var node : bundle) {
+//                System.out.printf("  Pad %d of component at (%d, %d)\n", node.pad(), node.placed().x, node.placed().y);
+//            }
+//        }
+//        return TypedActionResult.success(user.getStackInHand(hand));
+
+        var block = new ItemStack(ModdedBlocks.CIRCUIT_BOARD, 1);
+        block.setNbt(user.getStackInHand(hand).getNbt());
+        return TypedActionResult.success(block); //super.use(world, user, hand);
     }
 }

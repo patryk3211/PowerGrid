@@ -25,6 +25,7 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -54,17 +55,8 @@ public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Co
         return this;
     }
 
-    public ComponentBuilder<T, P> item(Item item) {
-        onRegister(component -> component.setItem(() -> item));
-        return this;
-    }
-
-    public ComponentBuilder<T, P> item(ItemEntry<?> item) {
-        onRegisterAfter(RegistryKeys.ITEM, component -> {
-            if(!item.isPresent())
-                throw new IllegalStateException("Item is not present yet");
-            component.setItem(item.lazy());
-        });
+    public ComponentBuilder<T, P> item(ItemConvertible item) {
+        onRegisterAfter(RegistryKeys.ITEM, component -> component.setItem(item::asItem));
         return this;
     }
 

@@ -17,7 +17,10 @@ package org.patryk3211.powergrid.circuits.components;
 
 import com.simibubi.create.AllItems;
 import net.minecraft.text.Text;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
 
+import static org.patryk3211.powergrid.PowerGrid.MOD_ID;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class Components {
@@ -35,6 +38,16 @@ public class Components {
                     .withItem(AllItems.ELECTRON_TUBE)
                     .withOutline())
             .item(AllItems.ELECTRON_TUBE)
+            .register();
+
+    public static final ComponentEntry<ConnectorComponent> CONNECTOR = REGISTRATE.component("connector", ConnectorComponent::new)
+            .footprint(2, 2, b -> b
+                    .addPad(1, 1, 0)
+                    .addPad(1, 2, 0)
+                    .addPad(2, 1, 0)
+                    .addPad(2, 2, 0)
+                    .withOutline())
+            .item(ModdedBlocks.WIRE_CONNECTOR)
             .register();
 
     @SuppressWarnings("EmptyMethod")

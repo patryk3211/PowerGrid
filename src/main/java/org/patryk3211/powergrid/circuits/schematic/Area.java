@@ -15,12 +15,5 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
-import org.jetbrains.annotations.NotNull;
-
-public record Point(int x, int y) implements Comparable<Point> {
-    @Override
-    public int compareTo(@NotNull Point o) {
-        var r = Integer.compare(y, o.y);
-        return r == 0 ? Integer.compare(x, o.x) : r;
-    }
+public record Area(int x1, int y1, int x2, int y2) {
 }

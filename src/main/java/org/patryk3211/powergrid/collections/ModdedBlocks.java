@@ -45,6 +45,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
@@ -524,8 +525,22 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CircuitDesignTableBlock> CIRCUIT_DESIGN_BENCH = REGISTRATE.block("circuit_design_table", CircuitDesignTableBlock::new)
+            .blockstate((ctx, prov) -> {})
             .initialProperties(() -> Blocks.CRAFTING_TABLE)
             .transform(axeOnly())
+            .defaultLoot()
+            .item()
+            .model((ctx, prov) -> {})
+            .build()
+            .register();
+
+    public static final BlockEntry<CircuitBoardBlock> CIRCUIT_BOARD = REGISTRATE.block("circuit_board", CircuitBoardBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
+                            ConfiguredModel.builder().modelFile(unchecked("circuit_board")).build()
+                    ))
+            .initialProperties(SharedProperties::stone)
+            .transform(pickaxeOnly())
             .defaultLoot()
             .simpleItem()
             .register();

@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
+import org.patryk3211.powergrid.circuits.circuitboard.BakedCircuit;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
@@ -33,9 +34,9 @@ public interface IElectricEntity {
 
     class CircuitBuilder {
         private ElectricalNetwork network;
-        private final List<IElectricNode> externalNodes;
-        private final Collection<INode> internalNodes;
-        private final Collection<ElectricWire> wires;
+        protected final List<IElectricNode> externalNodes;
+        protected final Collection<INode> internalNodes;
+        protected final Collection<ElectricWire> wires;
         private boolean alterExternal = true;
 
         public CircuitBuilder(List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<ElectricWire> wires) {
@@ -254,6 +255,27 @@ public interface IElectricEntity {
             if(network != null)
                 network.addNode(node);
             return node;
+        }
+
+        public void setTo(BakedCircuit circuit) {
+            if(!alterExternal)
+                throw new IllegalStateException("Alter external must be allowed for baked circuit");
+            clear();
+            for(var node : circuit.externalNodes) {
+                externalNodes.add(node);
+                if(network != null)
+                    network.addNode(node);
+            }
+            for(var node : circuit.internalNodes) {
+                internalNodes.add(node);
+                if(network != null)
+                    network.addNode(node);
+            }
+            for(var wire : circuit.wires) {
+                wires.add(wire);
+                if(network != null)
+                    network.addWire(wire);
+            }
         }
     }
 }

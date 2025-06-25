@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
-import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -23,8 +22,7 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
@@ -35,17 +33,17 @@ public class ComponentFootprint {
     private final int width;
     private final int height;
 
-    private final ImmutableMap<Point, PadData> pads;
+    private final SortedMap<Point, PadData> pads;
     private final boolean outline;
     @Nullable
     private final Supplier<Item> renderedItem;
 
     private ItemStack renderedStack;
 
-    protected ComponentFootprint(int width, int height, Map<Point, PadData> pads, boolean outline, @Nullable Supplier<Item> renderedItem) {
+    protected ComponentFootprint(int width, int height, SortedMap<Point, PadData> pads, boolean outline, @Nullable Supplier<Item> renderedItem) {
         this.width = width;
         this.height = height;
-        this.pads = ImmutableMap.copyOf(pads);
+        this.pads = pads;
         this.outline = outline;
         this.renderedItem = renderedItem;
     }
@@ -104,7 +102,7 @@ public class ComponentFootprint {
 
     public static class Builder {
         private final int width, height;
-        private final Map<Point, PadData> pads = new HashMap<>();
+        private final SortedMap<Point, PadData> pads = new TreeMap<>();
         private Supplier<Item> itemSupplier;
         private boolean outline = false;
 
@@ -113,12 +111,23 @@ public class ComponentFootprint {
             this.height = height;
         }
 
+        private void validatePad(int x, int y) {
+            if(x < 0 || y < 0 || x >= width * 2 || y >= height * 2)
+                throw new IllegalArgumentException("Pad position must be inside defined footprint size");
+        }
+
         public Builder addPad(int x, int y) {
+            validatePad(x, y);
             pads.put(new Point(x, y), NONE);
             return this;
         }
 
-        public Builder addPad(int x, int y, int nodeIndex, Text tooltip) {
+        public Builder addPad(int x, int y, int nodeIndex) {
+            return addPad(x, y, nodeIndex, null);
+        }
+
+        public Builder addPad(int x, int y, int nodeIndex, @Nullable Text tooltip) {
+            validatePad(x, y);
             pads.put(new Point(x, y), new PadData(nodeIndex, tooltip));
             return this;
         }
@@ -134,9 +143,20 @@ public class ComponentFootprint {
         }
 
         public ComponentFootprint build() {
+            var padIndices = new TreeSet<Integer>();
+            for(var pad : pads.values()) {
+                if(pad.nodeIndex >= 0)
+                    padIndices.add(pad.nodeIndex);
+            }
+            if(!padIndices.isEmpty()) {
+                if (padIndices.first() != 0)
+                    throw new IllegalStateException("Footprint pad indices must start from 0");
+                if (padIndices.last() != padIndices.size() - 1)
+                    throw new IllegalStateException("Footprint pad indices must not contain any gaps");
+            }
             return new ComponentFootprint(width, height, pads, outline, itemSupplier);
         }
     }
 
-    public record PadData(int nodeIndex, Text tooltip) { }
+    public record PadData(int nodeIndex, @Nullable Text tooltip) { }
 }
