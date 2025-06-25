@@ -32,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.List;
 
@@ -100,7 +101,7 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         var stack = inventory.getStackInSlot(0);
         if(stack.isEmpty() || world.isClient || !stack.hasNbt())
             return;
-        if(inventory.getStackInSlot(1).isEmpty()) {
+        if(inventory.getStackInSlot(1).isEmpty() && stack.isOf(ModdedItems.CIRCUIT_SCHEMATIC.get())) {
             // Move to save slot
             inventory.setStackInSlot(0, ItemStack.EMPTY);
             inventory.setStackInSlot(1, stack);
