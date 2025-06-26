@@ -20,7 +20,9 @@ import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
@@ -47,6 +49,8 @@ public class BiCGSTABSolver implements ISolver {
     private DMatrixRMaj t;
 
     private final double targetPrecision;
+
+    private Set<ISolverHook> hooks = new HashSet<>();
 
     public BiCGSTABSolver(double targetPrecision) {
         this.targetPrecision = targetPrecision;
@@ -97,9 +101,17 @@ public class BiCGSTABSolver implements ISolver {
             return guess;
         }
 
+        for(var hook : hooks) {
+            hook.preSolve(A, guess, b);
+        }
+
         // r = b - A * x
         CommonOps_DDRM.mult(A, guess, v);
         CommonOps_DDRM.subtract(b, v, residual);
+
+        for(var hook : hooks) {
+            hook.addResidual(A, guess, b, residual);
+        }
 
         if(USE_RANDOM_HAT_RESIDUAL) {
             RandomMatrices_DDRM.fillUniform(hatResidual, random);
@@ -116,6 +128,10 @@ public class BiCGSTABSolver implements ISolver {
         int iters = 0;
         double norm = 0;
         while(iters++ < MAX_ITERATIONS) {
+            for(var hook : hooks) {
+                hook.iteration(A, guess, residual, p);
+            }
+
             // v = A * p
             CommonOps_DDRM.mult(A, p, v);
 
@@ -158,5 +174,15 @@ public class BiCGSTABSolver implements ISolver {
         }
 
         return guess;
+    }
+
+    @Override
+    public void addHook(ISolverHook hook) {
+        hooks.add(hook);
+    }
+
+    @Override
+    public void removeHook(ISolverHook hook) {
+        hooks.remove(hook);
     }
 }
