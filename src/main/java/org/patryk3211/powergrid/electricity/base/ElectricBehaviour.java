@@ -23,6 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -44,7 +45,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     private final List<INode> internalNodes = new LinkedList<>();
     private final List<IElectricNode> externalNodes = new LinkedList<>();
-    private final List<ElectricWire> internalWires = new LinkedList<>();
+    private final List<AbstractElectricWire> internalWires = new LinkedList<>();
 
     // TODO: Consider making this a map
     private final List<List<WireEntity>> connections;
@@ -149,7 +150,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 entity.dropWire();
             }
         }
-        internalWires.forEach(ElectricWire::remove);
+        internalWires.forEach(AbstractElectricWire::remove);
         if(externalNodes.isEmpty())
             return;
 

@@ -18,7 +18,7 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
@@ -29,7 +29,7 @@ import java.util.function.Function;
 public class BakedCircuit {
     public final List<IElectricNode> externalNodes = new ArrayList<>();
     public final List<INode> internalNodes = new ArrayList<>();
-    public final List<ElectricWire> wires = new ArrayList<>();
+    public final List<AbstractElectricWire> wires = new ArrayList<>();
     public final List<TerminalBoundingBox> terminals = new ArrayList<>();
     private final Map<PlacedComponent, Integer> padNodeMap = new HashMap<>();
 

@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import org.patryk3211.powergrid.circuits.circuitboard.BakedCircuit;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
@@ -36,10 +37,10 @@ public interface IElectricEntity {
         private ElectricalNetwork network;
         protected final List<IElectricNode> externalNodes;
         protected final Collection<INode> internalNodes;
-        protected final Collection<ElectricWire> wires;
+        protected final Collection<AbstractElectricWire> wires;
         private boolean alterExternal = true;
 
-        public CircuitBuilder(List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<ElectricWire> wires) {
+        public CircuitBuilder(List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
             this.externalNodes = externalNodes;
             this.internalNodes = internalNodes;
             this.wires = wires;
@@ -196,6 +197,18 @@ public interface IElectricEntity {
             if(network != null)
                 network.addWire(wire);
             return wire;
+        }
+
+        public void add(AbstractElectricWire wire) {
+            wires.add(wire);
+            if(network != null)
+                network.addWire(wire);
+        }
+
+        public void add(INode node) {
+            internalNodes.add(node);
+            if(network != null)
+                network.addNode(node);
         }
 
         /**

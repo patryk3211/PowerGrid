@@ -30,16 +30,18 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
 
     private final float gain;
     private final float perveance;
+    private final float saturationCurrent;
 
     private double prevConductance;
 
-    public ElectronTubeWire(float gain, float perveance, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
+    public ElectronTubeWire(float gain, float perveance, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
         super(cathode, anode);
         this.grid = grid;
         this.gridWire = new ElectricWire(1e5f, grid, cathode);
 
         this.gain = gain;
         this.perveance = perveance;
+        this.saturationCurrent = saturationCurrent;
 
         this.prevConductance = 0;
     }
@@ -68,6 +70,7 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
             if(x <= 0)
                 return I_LEAK;
             var Ia = perveance * Math.sqrt(x * x * x) + I_LEAK;
+            Ia = Math.min(Ia, saturationCurrent);
             return Ia / anodePotential;
             // Simplified triode current equation:
 //            var Ia = Math.max(transconductance * (gain * gridPotential + anodePotential), 0);
@@ -83,5 +86,9 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
         var newConductance = conductance();
         network.updateConductance(this, newConductance - prevConductance);
         prevConductance = newConductance;
+    }
+
+    public static float calculatePerveance(float anodeVoltage, float gain, float anodeCurrent) {
+        return (float) (anodeCurrent / Math.pow(anodeVoltage / gain, 2 / 3f));
     }
 }

@@ -24,14 +24,14 @@ public class ElectronTubeTest extends TestHelper {
         var Net = new Network();
 
         var V1 = Net.V(50f);
-        var V2 = Net.V(0f);
+        var V2 = Net.V(-1.0f);
         var GND = Net.V(0);
 
         var Anode = Net.N();
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(10, 0.001f, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;
@@ -65,7 +65,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(10, 0.01f, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 0.01f, 10, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final float R = 0.001f;
@@ -91,7 +91,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(10, 0.001f, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final float R = 0.001f;
@@ -118,7 +118,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(10, 0.001f, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final float R = 0.001f;

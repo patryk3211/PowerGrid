@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 
@@ -26,7 +26,7 @@ import java.util.function.Function;
 public class ComponentCircuitBuilder extends IElectricEntity.CircuitBuilder {
     private final Function<Integer, FloatingNode> externalNodeProvider;
 
-    public ComponentCircuitBuilder(Function<Integer, FloatingNode> externalNodeProvider, Collection<INode> internalNodes, Collection<ElectricWire> wires) {
+    public ComponentCircuitBuilder(Function<Integer, FloatingNode> externalNodeProvider, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
         super(null, internalNodes, wires);
         this.externalNodeProvider = externalNodeProvider;
     }

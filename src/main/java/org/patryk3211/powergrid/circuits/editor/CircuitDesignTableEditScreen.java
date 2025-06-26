@@ -228,7 +228,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     }
 
     public CircuitEditWidget.SelectionResult selectComponent(int x1, int y1, int x2, int y2, int clickX, int clickY) {
-        var placed = schematic.getComponent(x1 / 2, y1 / 2);
+        var placed = schematic.getComponent(x1 / GRID_TO_GRID_SCALE, y1 / GRID_TO_GRID_SCALE);
         if(placed == null)
             return CircuitEditWidget.SelectionResult.IGNORE;
 
@@ -295,8 +295,8 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         super.drawMouseoverTooltip(context, mouseX, mouseY);
 
         int x = editWidget.getX(), y = editWidget.getY();
-        int gridX = (mouseX - x) / 4;
-        int gridY = (mouseY - y) / 4;
+        int gridX = (mouseX - x) / CIRCUIT_SCALE;
+        int gridY = (mouseY - y) / CIRCUIT_SCALE;
 
         for(var placed : schematic.components()) {
             var localX = gridX - placed.x * GRID_TO_GRID_SCALE;

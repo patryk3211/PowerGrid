@@ -66,7 +66,8 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         ms.translate(0, yOffset, 0);
         for(var property : component.component.getProperties()) {
             ctx.drawTexture(PROPERTIES, 0, 0, 0, 29, getWidth(), 20);
-            ctx.drawText(textRenderer, Text.translatable(property.translationKey()), 6, 6, 0xFF606060, false);
+            var propertyKey = property.translationKey();
+            int end = ctx.drawText(textRenderer, Text.translatable(propertyKey), 6, 6, 0xFF606060, false);
             ctx.enableScissor(getX() + 95, getY() + 2 + yOffset, getX() + 145, getY() + 18 + yOffset);
 
             if(property == selectedProperty) {
@@ -80,6 +81,15 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
             }
 
             ctx.disableScissor();
+
+            var summary = Text.translatableWithFallback(propertyKey + ".summary", "");
+            if(!summary.getString().isEmpty()) {
+                // Hover description.
+                int x1 = getX() + 6;
+                int y1 = getY() + 6 + yOffset;
+                if(mouseX >= x1 && mouseY >= y1 && mouseX < x1 + end - 6 && mouseY < y1 + 16)
+                    ctx.drawTooltip(textRenderer, summary, mouseX - getX(), mouseY - getY() - yOffset);
+            }
 
             yOffset += 20;
             ms.translate(0, 20, 0);
