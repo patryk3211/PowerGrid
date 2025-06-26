@@ -48,8 +48,8 @@ public class ElectronTubeComponent extends Component {
         var tube = new ElectronTubeWire(
                 placed.get(TUBE_GAIN), perveance, placed.get(SATURATION_CURRENT),
                 builder.terminalNode(0), // Cathode
-                builder.terminalNode(1), // Grid
-                builder.terminalNode(2)  // Anode
+                builder.terminalNode(2), // Anode
+                builder.terminalNode(1)  // Grid
         );
         builder.add(tube);
     }

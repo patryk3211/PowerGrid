@@ -328,7 +328,11 @@ public class CircuitSchematic {
         }
     }
 
-    public record Node(PlacedComponent placed, int pad) { }
+    public record Node(PlacedComponent placed, int pad) {
+        public float getPadResistance() {
+            return placed.component.getPadResistance(pad);
+        }
+    }
 
     private static class VisitMap {
         private final BitSet front = new BitSet(GRID_SIZE * GRID_SIZE);

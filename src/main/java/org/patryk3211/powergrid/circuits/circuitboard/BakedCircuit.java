@@ -19,6 +19,7 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
@@ -31,10 +32,14 @@ public class BakedCircuit {
     public final List<INode> internalNodes = new ArrayList<>();
     public final List<AbstractElectricWire> wires = new ArrayList<>();
     public final List<TerminalBoundingBox> terminals = new ArrayList<>();
-    private final Map<PlacedComponent, Integer> padNodeMap = new HashMap<>();
+    private final Map<PlacedComponent, Function<Integer, FloatingNode>> padNodeProviderMap = new HashMap<>();
 
     protected BakedCircuit() {
 
+    }
+
+    private FloatingNode getNode(CircuitSchematic.Node node) {
+        return padNodeProviderMap.get(node.placed()).apply(node.pad());
     }
 
     public static BakedCircuit from(CircuitSchematic schematic) {
@@ -57,10 +62,11 @@ public class BakedCircuit {
                     result.internalNodes.add(node);
                 }
             }
-            result.padNodeMap.put(placed, nodeOffset);
+            // Turns pad index into the corresponding component node.
             Function<Integer, FloatingNode> provider = external ?
-                    index -> (FloatingNode) result.externalNodes.get(index - nodeOffset) :
-                    index -> (FloatingNode) result.internalNodes.get(index - nodeOffset);
+                    index -> (FloatingNode) result.externalNodes.get(index + nodeOffset) :
+                    index -> (FloatingNode) result.internalNodes.get(index + nodeOffset);
+            result.padNodeProviderMap.put(placed, provider);
 
             var builder = new ComponentCircuitBuilder(provider, result.internalNodes, result.wires);
             placed.component.bake(placed, builder);
@@ -76,6 +82,25 @@ public class BakedCircuit {
             if(bundle.size() <= 1) {
                 // These shouldn't exist but just in case, discard them.
                 continue;
+            }
+            if(bundle.size() == 2) {
+                // Direct wire
+                var nodes = bundle.toArray(CircuitSchematic.Node[]::new);
+                var node1 = result.getNode(nodes[0]);
+                var node2 = result.getNode(nodes[1]);
+
+                var R = nodes[0].getPadResistance() + nodes[1].getPadResistance();
+                var wire = new ElectricWire(R, node1, node2);
+                result.wires.add(wire);
+            } else {
+                // Junction between pads
+                var junctionNode = new FloatingNode();
+                result.internalNodes.add(junctionNode);
+
+                for(var node : bundle) {
+                    var wire = new ElectricWire(node.getPadResistance(), result.getNode(node), junctionNode);
+                    result.wires.add(wire);
+                }
             }
         }
         return result;
