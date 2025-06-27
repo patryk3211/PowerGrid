@@ -21,6 +21,8 @@ import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.INode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,9 @@ public class PlacedComponent {
     public final int x;
     public final int y;
     private final List<PropertyEntry<?>> properties = new ArrayList<>();
+
+    public final List<INode> nodes = new ArrayList<>();
+    public final List<AbstractElectricWire> wires = new ArrayList<>();
 
     public PlacedComponent(NbtCompound tag) {
         this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"));
@@ -130,5 +135,13 @@ public class PlacedComponent {
         var footprint = footprint();
         return this.x * GRID_TO_GRID_SCALE < x + width && this.x * GRID_TO_GRID_SCALE + footprint.getWidth() * GRID_TO_GRID_SCALE > x &&
                 this.y * GRID_TO_GRID_SCALE < y + height && this.y * GRID_TO_GRID_SCALE + footprint.getHeight() * GRID_TO_GRID_SCALE > y;
+    }
+
+    public void add(INode node) {
+        nodes.add(node);
+    }
+
+    public void add(AbstractElectricWire wire) {
+        wires.add(wire);
     }
 }

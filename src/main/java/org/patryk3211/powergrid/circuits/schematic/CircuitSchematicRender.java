@@ -29,7 +29,7 @@ public class CircuitSchematicRender {
     public static final int COLOR_TRACE_FRONT = 0xFFFFFFFF;
     public static final int COLOR_TRACE_BACK = 0x80FFFFFF;
     public static final int COLOR_COMPONENT_OUTLINE = 0x80F078EE;
-    public static final int COLOR_SELECT_OUTLINE = 0xFFEBBA34;
+    public static final int COLOR_SELECT_OUTLINE = 0x80EBBA34;
 
     public static void render(CircuitSchematic schematic, DrawContext context, int x, int y, int scale) {
 

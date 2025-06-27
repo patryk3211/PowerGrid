@@ -137,6 +137,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             rebuildOnClient = true;
     }
 
+    public boolean needsRebuild() {
+        return rebuildOnClient;
+    }
+
     @Override
     public boolean isSafeNBT() {
         return true;

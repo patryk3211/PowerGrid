@@ -19,6 +19,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.circuits.components.IDynamicComponent;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
@@ -27,12 +28,15 @@ import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
+    private boolean firstPacket = true;
 
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     public void withSchematic(CircuitSchematic schematic) {
+        if(world.isClient)
+            return;
         this.schematic = new CircuitSchematic(schematic);
         bakeCircuit();
         notifyUpdate();
@@ -41,19 +45,24 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     private void bakeCircuit() {
         baked = BakedCircuit.from(schematic);
         electricBehaviour.rebuildCircuit();
+        if(world != null && world.isClient)
+            IDynamicComponent.modelChanged(pos);
     }
 
     @Override
     protected void write(NbtCompound tag, boolean clientPacket) {
+        if(!clientPacket || electricBehaviour.needsRebuild() || firstPacket) {
+            tag.put("Schematic", schematic.serializeNbt());
+            firstPacket = false;
+        }
         super.write(tag, clientPacket);
-        tag.put("Schematic", schematic.serializeNbt());
     }
 
     @Override
     protected void read(NbtCompound tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        schematic.deserializeNbt(tag.getCompound("Schematic"));
-        if(baked == null || tag.getBoolean("Rebuild")) {
+        if(!clientPacket || tag.getBoolean("Rebuild") || baked == null) {
+            schematic.deserializeNbt(tag.getCompound("Schematic"));
             bakeCircuit();
         }
     }

@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.circuitboard;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.minecraft.block.BlockState;
@@ -44,6 +46,7 @@ import java.util.function.Supplier;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
 
+@Environment(EnvType.CLIENT)
 public class CircuitBoardModel implements UnbakedModel, BakedModel {
     public static final ModelIdentifier MODEL_ID = new ModelIdentifier(new Identifier(PowerGrid.MOD_ID, "circuit_board"), "");
     public static final Identifier BASE_MODEL = PowerGrid.asResource("block/circuit_board");
@@ -161,7 +164,7 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
             // Emit components
             var schematic = circuit.getSchematic();
             for(var placed : schematic.components()) {
-                var model = ComponentModels.getModel(placed.component);
+                var model = ComponentModels.getModel(placed);
                 context.pushTransform(new OffsetTransform(placed.x, 2, placed.y));
                 model.emitBlockQuads(blockView, state, pos, randomSupplier, context);
                 context.popTransform();

@@ -20,6 +20,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.util.Identifier;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
 import java.util.*;
 
@@ -32,16 +33,16 @@ public class ComponentModels {
     public static Set<Identifier> collectIds() {
         var ids = new HashSet<Identifier>();
         for(var component : ComponentRegistry.REGISTRY) {
-            var componentId = ComponentRegistry.REGISTRY.getId(component);
-            ids.add(modelId(componentId));
+            for(var id : component.requestedModels()) {
+                ids.add(modelId(id));
+            }
         }
         return ids;
     }
 
-    public static BakedModel getModel(Component component) {
+    public static BakedModel getModel(PlacedComponent placed) {
         var manager = MinecraftClient.getInstance().getBakedModelManager();
-        var id = ComponentRegistry.REGISTRY.getId(component);
-        var model = manager.getModel(modelId(id));
+        var model = manager.getModel(modelId(placed.component.getModelId(placed)));
         return model != null ? model : manager.getMissingModel();
     }
 }

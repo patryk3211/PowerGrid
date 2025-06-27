@@ -20,13 +20,18 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.circuits.components.IDynamicComponent;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
@@ -56,6 +61,11 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                 var terminal = be.terminal(state, i);
                 shapeCopy = VoxelShapes.union(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
             }
+            for(var placed : be.getSchematic().components()) {
+                if(!(placed.component instanceof IDynamicComponent dynamic))
+                    continue;
+                shapeCopy = VoxelShapes.union(dynamic.getShape(placed), shapeCopy);
+            }
             shape[0] = shapeCopy;
         });
         return shape[0];
@@ -68,6 +78,25 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
             stack.setNbt(be.getSchematic().serializeNbt());
         });
         return stack;
+    }
+
+    @Override
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        var beResult = onBlockEntityUse(world, pos, be -> {
+            var hitLocalPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
+            for(var placed : be.getSchematic().components()) {
+                if(!(placed.component instanceof IDynamicComponent dynamic))
+                    continue;
+                var outline = dynamic.getShape(placed).getBoundingBox().expand(1 / 32f);
+                if(!outline.contains(hitLocalPos))
+                    continue;
+                return dynamic.use(be, placed, player);
+            }
+            return ActionResult.PASS;
+        });
+        if(beResult != ActionResult.PASS)
+            return beResult;
+        return super.onUse(state, world, pos, player, hand, hit);
     }
 
     @Override

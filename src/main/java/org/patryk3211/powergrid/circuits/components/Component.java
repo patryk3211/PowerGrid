@@ -17,7 +17,10 @@ package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.item.Item;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -31,6 +34,7 @@ import java.util.function.Supplier;
 
 public abstract class Component {
     private static final Map<Item, Component> COMPONENT_MAP = new HashMap<>();
+    public static final float BASE_Y = 2 / 16f;
 
     private Supplier<? extends Item> item;
     private final ComponentFootprint footprint;
@@ -78,6 +82,18 @@ public abstract class Component {
 
     public ImmutableList<ComponentProperty<?>> getProperties() {
         return properties;
+    }
+
+    @NotNull
+    @Environment(EnvType.CLIENT)
+    public Identifier getModelId(@NotNull PlacedComponent component) {
+        return ComponentRegistry.REGISTRY.getId(this);
+    }
+
+    @NotNull
+    @Environment(EnvType.CLIENT)
+    public Collection<Identifier> requestedModels() {
+        return List.of(ComponentRegistry.REGISTRY.getId(this));
     }
 
     public static Component forItem(Item item) {

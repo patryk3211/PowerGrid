@@ -45,6 +45,14 @@ public class Components {
             .item(ModdedBlocks.WIRE_CONNECTOR)
             .register();
 
+    public static final ComponentEntry<SwitchComponent> SWITCH = REGISTRATE.component("switch", SwitchComponent::new)
+            .footprint(4, 3, b -> b
+                    .addPad(0, 1, 0)
+                    .addPad(3, 1, 1)
+                    .withOutline())
+            .item(ModdedBlocks.LV_SWITCH)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }

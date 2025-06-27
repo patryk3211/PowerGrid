@@ -69,6 +69,8 @@ public class BakedCircuit {
             result.padNodeProviderMap.put(placed, provider);
 
             var builder = new ComponentCircuitBuilder(provider, result.internalNodes, result.wires);
+            placed.nodes.clear();
+            placed.wires.clear();
             placed.component.bake(placed, builder);
 
             if(external) {

@@ -94,9 +94,7 @@ public interface IElectricEntity {
         public <T extends INode> T addInternalNode(Class<T> clazz, Object... params) {
             try {
                 var node = clazz.getConstructor(Arrays.stream(params).map(Object::getClass).toArray(len -> new Class<?>[len])).newInstance(params);
-                internalNodes.add(node);
-                if(network != null)
-                    network.addNode(node);
+                add(node);
                 return node;
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
@@ -110,9 +108,7 @@ public interface IElectricEntity {
          */
         public FloatingNode addInternalNode() {
             var node = new FloatingNode();
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
@@ -177,9 +173,7 @@ public interface IElectricEntity {
          */
         public ElectricWire connect(float resistance, IElectricNode node1, IElectricNode node2) {
             var wire = new ElectricWire(resistance, node1, node2);
-            wires.add(wire);
-            if(network != null)
-                network.addWire(wire);
+            add(wire);
             return wire;
         }
 
@@ -193,9 +187,7 @@ public interface IElectricEntity {
          */
         public SwitchedWire connectSwitch(float resistance, IElectricNode node1, IElectricNode node2, boolean state) {
             var wire = new SwitchedWire(resistance, node1, node2, state);
-            wires.add(wire);
-            if(network != null)
-                network.addWire(wire);
+            add(wire);
             return wire;
         }
 
@@ -224,49 +216,37 @@ public interface IElectricEntity {
 
         public TransformerCoupling couple(float ratio, float resistance, IElectricNode p1, IElectricNode s1) {
             var node = TransformerCoupling.create(ratio, resistance, p1, s1);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, float resistance, IElectricNode p1, IElectricNode s1, IElectricNode s2) {
             var node = TransformerCoupling.create(ratio, resistance, p1, s1, s2);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, float resistance, IElectricNode p1, IElectricNode p2, IElectricNode s1, IElectricNode s2) {
             var node = TransformerCoupling.create(ratio, resistance, p1, p2, s1, s2);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, IElectricNode p1, IElectricNode s1) {
             var node = TransformerCoupling.create(ratio, p1, s1);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, IElectricNode p1, IElectricNode s1, IElectricNode s2) {
             var node = TransformerCoupling.create(ratio, p1, s1, s2);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, IElectricNode p1, IElectricNode p2, IElectricNode s1, IElectricNode s2) {
             var node = TransformerCoupling.create(ratio, p1, p2, s1, s2);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
