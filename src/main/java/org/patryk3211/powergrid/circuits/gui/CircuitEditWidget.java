@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.gui;
 
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -191,7 +192,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             if(button == 0) {
                 placementCallback.accept(gridX - offsetX, gridY - offsetY);
             }
-            return super.mouseClicked(mouseX, mouseY, button);
+            return true; //super.mouseClicked(mouseX, mouseY, button);
         }
 
         if(button == 0 && selectMode != SelectMode.NONE) {
@@ -204,6 +205,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
                     startX = gridX;
                     startY = gridY;
                     selectStarted = true;
+                    playDownSound(MinecraftClient.getInstance().getSoundManager());
                 } else {
                     handleCallback(gridX, gridY);
                 }
@@ -211,7 +213,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
         } else if (button == 1) {
             cancelSelection();
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return true; //super.mouseClicked(mouseX, mouseY, button);
     }
 
     public void requestSelection(SelectMode mode, int color, SelectCallback callback) {

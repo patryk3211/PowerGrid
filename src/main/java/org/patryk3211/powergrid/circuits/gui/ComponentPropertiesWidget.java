@@ -24,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
-import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
@@ -40,12 +39,6 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
     private PlacedComponent component;
     private List<PropertyWidget<?, ?>> propertyWidgets = new ArrayList<>();
 
-//    private boolean cursorBlink = true;
-//    private int tickCount = 0;
-//    private ComponentProperty<?> selectedProperty = null;
-//    private String lineBuffer;
-//    private int cursorPosition;
-
     private int propertyCount = 0;
 
     public ComponentPropertiesWidget(TextRenderer textRenderer, int right, int y) {
@@ -56,8 +49,6 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
 
     public void setComponent(@Nullable PlacedComponent component) {
         this.component = component;
-//        selectedProperty = null;
-//        lineBuffer = null;
 
         propertyWidgets.clear();
         if(component != null) {
@@ -138,44 +129,6 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         }
         ms.pop();
 
-//        ms.translate(0, yOffset, 0);
-//        for(var property : component.component.getProperties()) {
-////            ctx.drawTexture(PROPERTIES, 0, 0, 0, 29, getWidth(), 20);
-//            var propertyKey = property.translationKey();
-//            int end = ctx.drawText(textRenderer, Text.translatable(propertyKey), 6, 6, 0xFF606060, false);
-//
-//            if(property instanceof FloatProperty) {
-//                ctx.drawTexture(PROPERTIES, 60 + centerSliceSize, 0, 0, 57, 60, 20);
-//                ctx.enableScissor(getX() + 68 + centerSliceSize, getY() + 2 + yOffset, getX() + centerSliceSize + 68 + 46, getY() + 18 + yOffset);
-//
-//                if(property == selectedProperty) {
-//                    var text = lineBuffer == null ? component.getString(property) : lineBuffer;
-//                    ctx.drawText(textRenderer, text, 68 + centerSliceSize, 6, -1, false);
-//                    int len = textRenderer.getWidth(text.substring(0, cursorPosition));
-//                    if(cursorBlink)
-//                        ctx.fill(68 + centerSliceSize + len, 5, 68 + centerSliceSize + len + 1, 14, -1);
-//                } else {
-//                    ctx.drawText(textRenderer, component.getString(property), 68 + centerSliceSize, 6, -1, false);
-//                }
-//
-//                ctx.disableScissor();
-//            } else if(property instanceof BooleanProperty) {
-//                ctx.drawTexture(PROPERTIES, 60 + centerSliceSize, 0, 0, 78, 60, 20);
-//            }
-//
-//            var summary = Text.translatableWithFallback(propertyKey + ".summary", "");
-//            if(!summary.getString().isEmpty()) {
-//                // Hover description.
-//                int x1 = getX() + 6;
-//                int y1 = getY() + 6 + yOffset;
-//                if(mouseX >= x1 && mouseY >= y1 && mouseX < x1 + end - 6 && mouseY < y1 + 16)
-//                    ctx.drawTooltip(textRenderer, summary, mouseX - getX(), mouseY - getY() - yOffset);
-//            }
-//
-//            yOffset += 20;
-//            ms.translate(0, 20, 0);
-//        }
-
         ms.translate(0, yOffset, 0);
         ctx.drawTexture(PROPERTIES, 0, 0, 0, 50, 60, 6);
         if(width > 120) {
@@ -212,30 +165,6 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         for(var widget : propertyWidgets) {
             result |= widget.mouseClicked(mouseX, mouseY, button);
         }
-//        var x = mouseX - getX();
-//        var y = mouseY - getY();
-//        if(selectedProperty != null) {
-//            acceptInput();
-//        }
-//        if(x < width - 60 || x > width)
-//            return false;
-//
-//        var properties = component.component.getProperties();
-//        for(int i = 0; i < properties.size(); ++i) {
-//            int yOffset = 16 + i * 20;
-//            if(y < yOffset + 2 || y > yOffset + 18)
-//                continue;
-//
-//            selectedProperty = properties.get(i);
-//            if(selectedProperty instanceof BooleanProperty) {
-//                selectedProperty = null;
-//                return false;
-//            }
-//            lineBuffer = component.getString(selectedProperty);
-//            cursorPosition = lineBuffer.length();
-//            return true;
-//        }
-
         return result;
     }
 
@@ -245,42 +174,8 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         for(var widget : propertyWidgets) {
             result |= widget.keyPressed(keyCode, scanCode, modifiers);
         }
-//        if(selectedProperty == null)
-//            return false;
-//        switch(scanCode) {
-//            case 22 -> {
-//                if(cursorPosition > 0) {
-//                    if(cursorPosition == lineBuffer.length()) {
-//                        lineBuffer = lineBuffer.substring(0, cursorPosition - 1);
-//                    } else {
-//                        lineBuffer = lineBuffer.substring(0, cursorPosition - 1) + lineBuffer.substring(cursorPosition);
-//                    }
-//                    --cursorPosition;
-//                }
-//            }
-//            case 113 -> {
-//                if(--cursorPosition < 0)
-//                    cursorPosition = 0;
-//            }
-//            case 114 -> {
-//                if(++cursorPosition > lineBuffer.length())
-//                    cursorPosition = lineBuffer.length();
-//            }
-//            case 36 -> acceptInput();
-//            default -> {
-//                return false;
-//            }
-//        }
         return result;
     }
-
-//    public void acceptInput() {
-//        if(selectedProperty == null || component == null)
-//            return;
-//        component.setString(selectedProperty, lineBuffer);
-//        lineBuffer = null;
-//        selectedProperty = null;
-//    }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
@@ -289,18 +184,5 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
             result |= widget.charTyped(chr, modifiers);
         }
         return result;
-//        if(selectedProperty == null)
-//            return false;
-//
-//        if(cursorPosition == 0) {
-//            lineBuffer = chr + lineBuffer;
-//        } else if(cursorPosition == lineBuffer.length()) {
-//            lineBuffer += chr;
-//        } else {
-//            lineBuffer = lineBuffer.substring(0, cursorPosition) + chr + lineBuffer.substring(cursorPosition);
-//        }
-//
-//        cursorPosition++;
-//        return true;
     }
 }

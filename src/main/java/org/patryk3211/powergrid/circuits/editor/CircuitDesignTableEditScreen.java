@@ -15,14 +15,19 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
+import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.sound.SoundManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -33,6 +38,7 @@ import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.*;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
 import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -89,6 +95,14 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         fgLines = schematic.front().calculateLines();
         bgLines = schematic.back().calculateLines();
+    }
+
+    private static SoundManager soundManager() {
+        return MinecraftClient.getInstance().getSoundManager();
+    }
+
+    private static void playSound(AllSoundEvents.SoundEntry sound) {
+        soundManager().play(PositionedSoundInstance.master(sound.getMainEvent(), 1.0f));
     }
 
     @Override
@@ -210,6 +224,8 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         } else {
             fgLines.add(line);
         }
+
+        playSound(ModdedSoundEvents.UI_PLACE_TRACE);
         if(schematic.isPad(clickX, clickY) || isTrace)
             return CircuitEditWidget.SelectionResult.BEGIN_NEW;
         return CircuitEditWidget.SelectionResult.CONTINUE;
@@ -224,6 +240,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             fgLines = layer.calculateLines();
         }
         schematic.removeComponents(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+        playSound(ModdedSoundEvents.UI_DELETE_AREA);
         return CircuitEditWidget.SelectionResult.BEGIN_NEW;
     }
 
@@ -235,12 +252,16 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         selectedComponent = placed;
         propertiesWidget.setComponent(selectedComponent);
         currentTool = Tool.NONE;
+        playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
         return CircuitEditWidget.SelectionResult.END;
     }
 
     public void placeComponent(int x, int y) {
         if(schematic.canPlace(currentComponent, x, y)) {
+            playSound(ModdedSoundEvents.UI_PLACE_COMPONENT);
             schematic.placeComponent(currentComponent, x, y);
+        } else {
+            playSound(ModdedSoundEvents.UI_PLACE_FAIL);
         }
     }
 

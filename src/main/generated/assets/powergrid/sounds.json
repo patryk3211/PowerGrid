@@ -57,6 +57,51 @@
     ],
     "subtitle": "powergrid.subtitle.mv_switch_click"
   },
+  "ui.delete_area": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.remove_item"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.delete_area"
+  },
+  "ui.place_component": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.add_item"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.place_component"
+  },
+  "ui.place_component.fail": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.note_block.bass"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.place_component.fail"
+  },
+  "ui.place_trace": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.metal.place"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.place_trace"
+  },
+  "ui.select_component": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:ui.button.click"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.select_component"
+  },
   "wire_cut": {
     "sounds": [
       {

@@ -70,6 +70,26 @@ public class ModdedSoundEvents {
     ELECTROZAPPER_SHOOT = create("electrozapper_shoot").subtitle("Electro-Zapper bzzzts")
 //            .addVariant("electrozapper_shoot")
             .category(SoundCategory.PLAYERS)
+            .build(),
+
+    UI_PLACE_TRACE = create("ui.place_trace")
+            .playExisting(SoundEvents.BLOCK_METAL_PLACE, 0.75f, 1.75f)
+            .build(),
+
+    UI_DELETE_AREA = create("ui.delete_area")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_REMOVE_ITEM, 0.5f, 1.0f)
+            .build(),
+
+    UI_PLACE_COMPONENT = create("ui.place_component")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ADD_ITEM, 0.5f, 1.0f)
+            .build(),
+
+    UI_PLACE_FAIL = create("ui.place_component.fail")
+            .playExisting(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), 1.0f, 0.5f)
+            .build(),
+
+    UI_SELECT_COMPONENT = create("ui.select_component")
+            .playExisting(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f)
             .build()
             ;
 
