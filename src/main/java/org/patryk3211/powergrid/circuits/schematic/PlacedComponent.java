@@ -92,7 +92,15 @@ public class PlacedComponent {
     public <T> T get(ComponentProperty<T> property) {
         for(var entry : properties) {
             if(entry.property == property)
-                return (T) entry.getValue();
+                return (T) entry.get();
+        }
+        throw new IllegalArgumentException("Placed components doesn't have the requested property");
+    }
+
+    public <T> PropertyEntry<T> getEntry(ComponentProperty<T> property) {
+        for(var entry : properties) {
+            if(entry.property == property)
+                return (PropertyEntry<T>) entry;
         }
         throw new IllegalArgumentException("Placed components doesn't have the requested property");
     }

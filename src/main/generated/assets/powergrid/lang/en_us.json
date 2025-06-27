@@ -77,6 +77,7 @@
   "item.powergrid.wire_cutter": "Wire Cutter",
   "item.powergrid.zinc_sheet": "Zinc Sheet",
   "itemGroup.powergrid.main": "Create: Power Grid",
+  "powergrid.component.property.switch_state": "State",
   "powergrid.component.property.tube_anode_resistance": "Anode Resistance",
   "powergrid.component.property.tube_anode_resistance.summary": "Apparent anode resistance when grid voltage is zero",
   "powergrid.component.property.tube_gain": "Gain",

@@ -47,7 +47,11 @@ public class PropertyEntry<T> {
         this.value = (T) value;
     }
 
-    public T getValue() {
+    public T get() {
         return value;
+    }
+
+    public void set(T value) {
+        this.value = value;
     }
 }
