@@ -19,8 +19,10 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
+import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.entity.player.PlayerInventory;
@@ -75,6 +77,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private CircuitEditWidget editWidget;
     private boolean backLayer = false;
 
+    private TextFieldWidget nameField;
     private IconButton acceptBtn;
     private IconButton cancelBtn;
 
@@ -115,6 +118,17 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         editWidget = new CircuitEditWidget(schematic, x + 13 - 11, y + 22, GRID_SIZE * CIRCUIT_SCALE, GRID_SIZE * CIRCUIT_SCALE);
         propertiesWidget = new ComponentPropertiesWidget(textRenderer, x - 15, y + 12);
 
+        var name = handler.contentHolder.getSchematicName();
+        if(name == null)
+            name = "Schematic";
+        nameField = new TextFieldWidget(textRenderer, x + 4 - 11, y + 3, 148, 9, Components.immutableEmpty());
+        nameField.setText(name);
+        nameField.setEditableColor(-1);
+        nameField.setUneditableColor(-1);
+        nameField.setDrawsBackground(false);
+        nameField.setMaxLength(35);
+        nameField.setEditable(true);
+
         currentTool = Tool.NONE;
         selectedComponent = null;
         currentComponent = null;
@@ -135,7 +149,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         layerBtn.setToolTip(TOOLTIP_LAYER);
 
         acceptBtn.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, schematic));
+            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, nameField.getText(), schematic));
             handler.contentHolder.schematic = schematic;
             client.setScreen(new CircuitDesignTableSaveScreen(handler, handler.playerInventory, title));
         });
@@ -153,6 +167,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         editWidget.setSelectionCancelledCallback(() -> currentTool = Tool.NONE);
 
+        addDrawableChild(nameField);
         addDrawableChild(editWidget);
         addDrawableChild(propertiesWidget);
         addDrawableChild(acceptBtn);

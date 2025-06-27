@@ -18,7 +18,9 @@ package org.patryk3211.powergrid.network.packets;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -26,6 +28,8 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 public class SaveSchematicC2SPacket extends SimplePacketBase {
     private final BlockPos pos;
     private NbtCompound nbt;
+    @Nullable
+    private String name;
     private boolean load;
 
     public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, boolean load) {
@@ -34,15 +38,19 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
         this.load = load;
     }
 
-    public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, CircuitSchematic schematic) {
+    public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, @Nullable String name, CircuitSchematic schematic) {
         pos = be.getPos();
         nbt = schematic.serializeNbt();
+        this.name = name;
     }
 
     public SaveSchematicC2SPacket(PacketByteBuf buf) {
         pos = buf.readBlockPos();
         if(buf.readBoolean()) {
             nbt = buf.readNbt();
+            if(buf.readBoolean()) {
+                name = buf.readString();
+            }
         } else {
             load = buf.readBoolean();
         }
@@ -54,6 +62,10 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
         buf.writeBoolean(nbt != null);
         if(nbt != null) {
             buf.writeNbt(nbt);
+            buf.writeBoolean(name != null);
+            if(name != null) {
+                buf.writeString(name);
+            }
         } else {
             buf.writeBoolean(load);
         }
@@ -67,6 +79,7 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
             if(be instanceof CircuitDesignTableBlockEntity table) {
                 if(nbt != null) {
                     table.getSchematic().deserializeNbt(nbt);
+                    table.setSchematicName(name);
                     table.notifyUpdate();
 
                     // Saved successfully.
