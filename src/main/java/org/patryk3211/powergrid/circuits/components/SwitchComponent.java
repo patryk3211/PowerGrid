@@ -16,9 +16,6 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import com.tterrag.registrate.fabric.EnvExecutor;
-import net.fabricmc.api.EnvType;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
@@ -51,7 +48,7 @@ public class SwitchComponent extends Component implements IDynamicComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder) {
-        var wire = builder.connectSwitch(1f, builder.terminalNode(0), builder.terminalNode(1), placed.get(STATE));
+        var wire = builder.connectSwitch(0.150f, builder.terminalNode(0), builder.terminalNode(1), placed.get(STATE));
         placed.add(wire);
     }
 

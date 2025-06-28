@@ -37,6 +37,10 @@
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.power.rated": "Rated power:",
 
+  "powergrid.tooltip.circuit_assembly": "Circuit Assembly",
+  "powergrid.tooltip.circuit_assembly.progress": "Progress",
+  "powergrid.tooltip.circuit_assembly.insert": "Insert",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",

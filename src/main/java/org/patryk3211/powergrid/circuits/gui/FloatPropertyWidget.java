@@ -22,6 +22,7 @@ import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 
 import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PROPERTIES;
 
+// TODO: Use TextFieldWidget here
 public class FloatPropertyWidget extends PropertyWidget<Float, PropertyEntry<Float>> {
     private boolean selected = false;
     private boolean cursorBlink = true;

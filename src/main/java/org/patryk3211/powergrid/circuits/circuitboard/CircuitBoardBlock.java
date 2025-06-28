@@ -22,6 +22,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -75,7 +76,9 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
         var stack = super.getPickStack(world, pos, state);
         withBlockEntityDo(world, pos, be -> {
-            stack.setNbt(be.getSchematic().serializeNbt());
+            var tag = new NbtCompound();
+            tag.put("Schematic", be.getSchematic().serializeNbt());
+            stack.setNbt(tag);
         });
         return stack;
     }

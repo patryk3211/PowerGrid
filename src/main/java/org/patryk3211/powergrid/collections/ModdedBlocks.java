@@ -542,7 +542,9 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
-            .simpleItem()
+            .item()
+                .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
+                .build()
             .register();
 
     @SuppressWarnings("EmptyMethod")

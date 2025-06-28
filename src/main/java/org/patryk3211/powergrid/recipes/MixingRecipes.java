@@ -16,11 +16,14 @@
 package org.patryk3211.powergrid.recipes;
 
 import com.simibubi.create.AllRecipeTypes;
+import com.simibubi.create.content.processing.recipe.HeatCondition;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.chemistry.reagent.Reagents;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.function.UnaryOperator;
@@ -36,7 +39,13 @@ public class MixingRecipes extends ProcessingRecipeGen {
             .require(ModdedItems.GOLDEN_WIRE)
             .require(ModdedItems.GOLDEN_WIRE)
             .output(ModdedItems.GOLDEN_MESH)
-    );
+    ),
+    ETCHED_CIRCUIT_BOARD = create("etched_circuit_board", b -> b
+            .require(ModdedItems.UNETCHED_CIRCUIT)
+            .require(Reagents.SULFURIC_ACID.asFluid(), FluidConstants.BOTTLE)
+            .requiresHeat(HeatCondition.HEATED)
+            .output(ModdedItems.INCOMPLETE_CIRCUIT))
+    ;
 
     public MixingRecipes(FabricDataOutput output) {
         super(output);

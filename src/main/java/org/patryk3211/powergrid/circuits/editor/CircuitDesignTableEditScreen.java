@@ -29,7 +29,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -119,8 +118,6 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         propertiesWidget = new ComponentPropertiesWidget(textRenderer, x - 15, y + 12);
 
         var name = handler.contentHolder.getSchematicName();
-        if(name == null)
-            name = "Schematic";
         nameField = new TextFieldWidget(textRenderer, x + 4 - 11, y + 3, 148, 9, Components.immutableEmpty());
         nameField.setText(name);
         nameField.setEditableColor(-1);

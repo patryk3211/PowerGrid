@@ -15,13 +15,19 @@
  */
 package org.patryk3211.powergrid.recipes;
 
+import com.google.gson.JsonObject;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeBuilder;
 import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.data.server.recipe.RecipeJsonProvider;
 import net.minecraft.item.Items;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -54,7 +60,16 @@ public class SequencedAssemblyRecipes extends CreateRecipeProvider {
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.COPPER_COIL))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.ELECTRON_TUBE))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.INTEGRATED_CIRCUIT))
-            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.GOLD_NUGGET)))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.GOLD_NUGGET))),
+
+    UNETCHED_CIRCUIT_BOARD = create("unetched_circuit_board", b -> b.require(ModdedItems.CIRCUIT_SCHEMATIC)
+            .transitionTo(ModdedItems.INCOMPLETE_UNETCHED_CIRCUIT)
+            .addOutput(ModdedItems.UNETCHED_CIRCUIT, 100)
+            .loops(2)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.PAPER))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.DOUGH))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
+            .addStep(PressingRecipe::new, rb -> rb))
 
             ;
 
@@ -65,6 +80,37 @@ public class SequencedAssemblyRecipes extends CreateRecipeProvider {
     protected GeneratedRecipe create(String name, UnaryOperator<SequencedAssemblyRecipeBuilder> transform) {
         GeneratedRecipe recipe = c -> transform.apply(new SequencedAssemblyRecipeBuilder(PowerGrid.asResource(name)))
                 .build(c);
+        all.add(recipe);
+        return recipe;
+    }
+
+    protected GeneratedRecipe createSpecial(RecipeSerializer<?> serializer) {
+        GeneratedRecipe recipe = c -> c.accept(new RecipeJsonProvider() {
+            @Override
+            public void serialize(JsonObject json) {
+            }
+
+            @Override
+            public Identifier getRecipeId() {
+                var serializerId = Registries.RECIPE_SERIALIZER.getId(serializer).getPath();
+                return new Identifier(PowerGrid.MOD_ID, "special/" + serializerId);
+            }
+
+            @Override
+            public RecipeSerializer<?> getSerializer() {
+                return serializer;
+            }
+
+            @Override
+            public @Nullable JsonObject toAdvancementJson() {
+                return null;
+            }
+
+            @Override
+            public @Nullable Identifier getAdvancementId() {
+                return null;
+            }
+        });
         all.add(recipe);
         return recipe;
     }

@@ -15,5 +15,12 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
+import net.minecraft.fluid.Fluid;
+import org.jetbrains.annotations.Nullable;
+
 public record ReagentTriplet<S extends Reagent, L extends Reagent, G extends Reagent>(ReagentEntry<S> solid, ReagentEntry<L> liquid, ReagentEntry<G> gas) {
+    @Nullable
+    public Fluid asFluid() {
+        return liquid.asFluid();
+    }
 }

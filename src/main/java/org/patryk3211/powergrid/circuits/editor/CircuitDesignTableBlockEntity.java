@@ -28,6 +28,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
@@ -107,6 +108,7 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
             result.setCustomName(Text.literal(schematicName));
         inventory.setStackInSlot(2, result);
         schematic.clear();
+        schematicName = null;
         notifyUpdate();
     }
 
@@ -125,7 +127,7 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
             inventory.setStackInSlot(1, stack);
         }
         try {
-            schematic.deserializeNbt(stack.getNbt());
+            schematic.deserializeNbt(stack.getNbt().getCompound("Schematic"));
         } catch(RuntimeException e) {
             PowerGrid.LOGGER.error("Failed to load schematic from item: ", e);
         }
@@ -137,8 +139,9 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         return Text.of("Circuit Designer");
     }
 
+    @NotNull
     public String getSchematicName() {
-        return schematicName;
+        return schematicName != null ? schematicName : "Empty Schematic";
     }
 
     public void setSchematicName(String name) {

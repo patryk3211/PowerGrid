@@ -30,8 +30,12 @@ public class CircuitSchematicItem extends Item {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        var block = new ItemStack(ModdedBlocks.CIRCUIT_BOARD, 1);
-        block.setNbt(user.getStackInHand(hand).getNbt());
-        return TypedActionResult.success(block);
+        if(user.isCreative() && user.isSneaking()) {
+            var block = new ItemStack(ModdedBlocks.CIRCUIT_BOARD, 1);
+            block.setNbt(user.getStackInHand(hand).getNbt());
+            return TypedActionResult.success(block);
+        } else {
+            return super.use(world, user, hand);
+        }
     }
 }

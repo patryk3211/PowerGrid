@@ -18,6 +18,8 @@ package org.patryk3211.powergrid.chemistry.reagent;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.fabric.RegistryObject;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import net.minecraft.fluid.Fluid;
+import org.jetbrains.annotations.Nullable;
 
 public class ReagentEntry<T extends Reagent> extends RegistryEntry<T> implements ReagentConvertible {
     public ReagentEntry(AbstractRegistrate<?> owner, RegistryObject<T> delegate) {
@@ -27,5 +29,10 @@ public class ReagentEntry<T extends Reagent> extends RegistryEntry<T> implements
     @Override
     public Reagent asReagent() {
         return get();
+    }
+
+    @Nullable
+    public Fluid asFluid() {
+        return get().asFluid();
     }
 }

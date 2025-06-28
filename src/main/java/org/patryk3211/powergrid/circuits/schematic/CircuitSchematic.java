@@ -64,7 +64,7 @@ public class CircuitSchematic {
     public static CircuitSchematic fromStack(ItemStack stack) {
         if(stack.isEmpty() || !stack.hasNbt())
             return null;
-        return fromNbt(stack.getNbt());
+        return fromNbt(stack.getNbt().getCompound("Schematic"));
     }
 
     public NbtCompound serializeNbt() {
@@ -160,7 +160,9 @@ public class CircuitSchematic {
 
     public ItemStack toItemStack() {
         var stack = ModdedItems.CIRCUIT_SCHEMATIC.asStack();
-        stack.setNbt(serializeNbt());
+        var tag = new NbtCompound();
+        tag.put("Schematic", serializeNbt());
+        stack.setNbt(tag);
         return stack;
     }
 
