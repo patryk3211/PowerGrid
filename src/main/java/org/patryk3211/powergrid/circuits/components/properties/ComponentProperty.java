@@ -36,7 +36,7 @@ public abstract class ComponentProperty<T> {
         return namespace + ".component.property." + name;
     }
 
-    public abstract T parse(String value);
+    public abstract T parse(String value) throws RuntimeException;
     public abstract String toString(T value);
 
     public abstract T read(@Nullable NbtElement element);

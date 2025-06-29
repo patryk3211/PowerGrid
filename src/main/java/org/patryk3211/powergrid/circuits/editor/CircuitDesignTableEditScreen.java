@@ -22,6 +22,11 @@ import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.navigation.GuiNavigation;
+import net.minecraft.client.gui.navigation.GuiNavigationPath;
+import net.minecraft.client.gui.navigation.NavigationDirection;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
@@ -345,6 +350,14 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
                 continue;
             context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
         }
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // TODO: Add key binds for tools
+        // Prevent closing on Inventory Key and ESC
+        var focused = getFocused();
+        return focused != null && focused.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

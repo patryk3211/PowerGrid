@@ -22,8 +22,8 @@ import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 
 import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PROPERTIES;
 
-public class CalculatedPropertyWidget extends PropertyWidget<Object, PropertyEntry.Calculated<Object>> {
-    protected CalculatedPropertyWidget(TextRenderer textRenderer, int x, int y, PropertyEntry.Calculated<Object> property) {
+public class ConstantPropertyWidget<T> extends PropertyWidget<T, PropertyEntry<T>> {
+    protected ConstantPropertyWidget(TextRenderer textRenderer, int x, int y, PropertyEntry<T> property) {
         super(textRenderer, x, y, property);
     }
 
@@ -37,5 +37,10 @@ public class CalculatedPropertyWidget extends PropertyWidget<Object, PropertyEnt
         var text = property.stringValue();
         int len = textRenderer.getWidth(text);
         ctx.drawText(textRenderer, text, x + 60 - len - 8, y + 6, 0xFF404040, false);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return false;
     }
 }

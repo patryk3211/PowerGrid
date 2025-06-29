@@ -40,7 +40,7 @@ public class FloatProperty extends ComponentProperty<Float> {
     }
 
     @Override
-    public Float parse(String str) {
+    public Float parse(String str) throws NumberFormatException {
         var value = Float.parseFloat(str);
         return limit(value);
     }

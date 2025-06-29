@@ -60,7 +60,11 @@ public class PropertyEntry<T> {
     }
 
     public void setValue(String value) {
-        this.value = property.parse(value);
+        try {
+            this.value = property.parse(value);
+        } catch(RuntimeException e) {
+            this.value = property.defaultValue();
+        }
     }
 
     public void setValueRaw(Object value) {
