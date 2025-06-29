@@ -125,8 +125,9 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
                 // Hover description.
                 int x1 = getX() + 6;
                 int y1 = widget.getY() + 6;
+                var lines = textRenderer.wrapLines(summary, getWidth());
                 if(mouseX >= x1 && mouseY >= y1 && mouseX < end && mouseY < y1 + 16)
-                    ctx.drawTooltip(textRenderer, summary, mouseX, mouseY);
+                    ctx.drawOrderedTooltip(textRenderer, lines, mouseX, mouseY);
             }
         }
         ms.pop();

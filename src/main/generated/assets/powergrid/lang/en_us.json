@@ -87,7 +87,7 @@
   "itemGroup.powergrid.main": "Create: Power Grid",
   "powergrid.component.property.switch_state": "State",
   "powergrid.component.property.tube_anode_resistance": "Anode Resistance",
-  "powergrid.component.property.tube_anode_resistance.summary": "Apparent anode resistance when grid voltage is zero",
+  "powergrid.component.property.tube_anode_resistance.summary": "Apparent anode resistance when grid voltage is zero and anode voltage is 1 V",
   "powergrid.component.property.tube_gain": "Gain",
   "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
   "powergrid.component.property.tube_heater_power": "Heater Power",

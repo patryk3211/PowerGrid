@@ -72,10 +72,6 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
             var Ia = perveance * Math.sqrt(x * x * x) + I_LEAK;
             Ia = Math.min(Ia, saturationCurrent);
             return Ia / anodePotential;
-            // Simplified triode current equation:
-//            var Ia = Math.max(transconductance * (gain * gridPotential + anodePotential), 0);
-//            var Ia = Math.max()
-//            return Math.max(Ia / anodePotential, 0);
         } else {
             return 0;
         }
@@ -89,6 +85,6 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
     }
 
     public static float calculatePerveance(float anodeVoltage, float gain, float anodeCurrent) {
-        return (float) (anodeCurrent / Math.pow(anodeVoltage / gain, 2 / 3f));
+        return (float) (anodeCurrent / Math.pow(anodeVoltage / gain, 3 / 2f));
     }
 }
