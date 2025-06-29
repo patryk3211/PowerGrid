@@ -24,7 +24,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
+import org.patryk3211.powergrid.circuits.components.properties.CalculatedProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
+import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
 import java.util.ArrayList;
@@ -72,6 +74,8 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
                     propertyWidgets.add(new FloatPropertyWidget(textRenderer, x, y, component.getEntry(fProp)));
                 } else if(property instanceof BooleanProperty bProp) {
                     propertyWidgets.add(new BooleanPropertyWidget(textRenderer, x, y, component.getEntry(bProp)));
+                } else if(property instanceof CalculatedProperty<?> calculated) {
+                    propertyWidgets.add(new CalculatedPropertyWidget(textRenderer, x, y, (PropertyEntry.Calculated<Object>) component.getEntry(calculated)));
                 }
                 y += 20;
             }

@@ -42,7 +42,7 @@ public class PlacedComponent {
         this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"));
         var propertyMap = tag.getCompound("Properties");
         for(var entry : properties) {
-            entry.read(propertyMap.get(entry.property.id().toString()));
+            entry.read(propertyMap);
         }
     }
 
@@ -62,7 +62,7 @@ public class PlacedComponent {
         this.x = x;
         this.y = y;
         for(var property : component.getProperties()) {
-            properties.add(new PropertyEntry<>(property));
+            properties.add(PropertyEntry.makeFor(property, this));
         }
     }
 
@@ -77,7 +77,7 @@ public class PlacedComponent {
         if(!properties.isEmpty()) {
             var propertyMap = new NbtCompound();
             for(var entry : properties) {
-                propertyMap.put(entry.property.id().toString(), entry.write());
+                entry.write(propertyMap);
             }
             tag.put("Properties", propertyMap);
         }

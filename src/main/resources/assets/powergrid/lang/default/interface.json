@@ -71,5 +71,9 @@
   "powergrid.component.property.tube_anode_resistance.summary": "Apparent anode resistance when grid voltage is zero",
   "powergrid.component.property.tube_saturation_current": "Saturation Current",
   "powergrid.component.property.tube_saturation_current.summary": "Maximum current that can pass through the tube",
+  "powergrid.component.property.tube_heater_voltage": "Heater Voltage",
+  "powergrid.component.property.tube_heater_voltage.summary": "Voltage required to reach the rated heater power",
+  "powergrid.component.property.tube_heater_power": "Heater Power",
+  "powergrid.component.property.tube_heater_power.summary": "Power requirement for the given saturation current",
   "powergrid.component.property.switch_state": "State"
 }

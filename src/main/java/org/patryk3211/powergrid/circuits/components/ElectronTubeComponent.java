@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableCollection;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
+import org.patryk3211.powergrid.circuits.components.properties.CalculatedProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
@@ -29,7 +30,12 @@ public class ElectronTubeComponent extends Component {
     // TODO: Value ranges might need balancing
     public static final FloatProperty TUBE_GAIN = new FloatProperty(PowerGrid.MOD_ID, "tube_gain", 5, 1, 50);
     public static final FloatProperty ANODE_RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "tube_anode_resistance", 5000, 100, 10000);
-    public static final FloatProperty SATURATION_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "tube_saturation_current", 0.01f, 0.0001f, 10);
+    public static final FloatProperty SATURATION_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "tube_saturation_current", 0.01f, 0.0001f, 20);
+    public static final FloatProperty HEATER_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "tube_heater_voltage", 6f, 1f, 16f);
+    public static final CalculatedProperty<Float> HEATER_POWER = new CalculatedProperty<>(PowerGrid.MOD_ID, "tube_heater_power", state -> {
+        var Is = state.get(SATURATION_CURRENT);
+        return Math.max(5f, Is * 50f);
+        }, value -> String.format("%.1f W", value));
 
     public ElectronTubeComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -37,7 +43,7 @@ public class ElectronTubeComponent extends Component {
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
-        properties.add(TUBE_GAIN, ANODE_RESISTANCE, SATURATION_CURRENT);
+        properties.add(TUBE_GAIN, ANODE_RESISTANCE, SATURATION_CURRENT, HEATER_VOLTAGE, HEATER_POWER);
     }
 
     @Override

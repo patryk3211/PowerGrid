@@ -15,24 +15,44 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
-import net.minecraft.nbt.NbtElement;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.nbt.NbtCompound;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
 public class PropertyEntry<T> {
     public final ComponentProperty<T> property;
-    private T value;
+    public final PlacedComponent parent;
+    protected T value;
 
-    public PropertyEntry(ComponentProperty<T> property) {
+    protected PropertyEntry(ComponentProperty<T> property, PlacedComponent parent) {
         this.property = property;
+        this.parent = parent;
         this.value = property.defaultValue();
     }
 
-    public void read(@Nullable NbtElement element) {
-        value = property.read(element);
+    public static <T> PropertyEntry<T> makeFor(ComponentProperty<T> property, PlacedComponent parent) {
+        if(property instanceof CalculatedProperty<T> calculatedProperty) {
+            return new Calculated<>(calculatedProperty, parent);
+        } else {
+            return new PropertyEntry<>(property, parent);
+        }
     }
 
-    public NbtElement write() {
-        return property.write(value);
+    public void read(NbtCompound compound) {
+        if(property instanceof CalculatedProperty<T>)
+            return;
+        var element = compound.get(property.id().toString());
+        if(element == null) {
+            value = property.defaultValue();
+        } else {
+            value = property.read(element);
+        }
+    }
+
+    public void write(NbtCompound compound) {
+        var element = property.write(value);
+        if(element == null)
+            return;
+        compound.put(property.id().toString(), element);
     }
 
     public String stringValue() {
@@ -53,5 +73,42 @@ public class PropertyEntry<T> {
 
     public void set(T value) {
         this.value = value;
+    }
+
+    public static class Calculated<T> extends PropertyEntry<T> {
+        private final CalculatedProperty<T> calculated;
+
+        protected Calculated(CalculatedProperty<T> property, PlacedComponent parent) {
+            super(property, parent);
+            this.calculated = property;
+        }
+
+        @Override
+        public void read(NbtCompound compound) { }
+        @Override
+        public void write(NbtCompound compound) { }
+
+        @Override
+        public void setValue(String value) {
+            throw new IllegalCallerException("Cannot set value of calculated property");
+        }
+
+        @Override
+        public void setValueRaw(Object value) { }
+
+        @Override
+        public void set(T value) {
+            throw new IllegalCallerException("Cannot set value of calculated property");
+        }
+
+        @Override
+        public String stringValue() {
+            return calculated.toString(get());
+        }
+
+        @Override
+        public T get() {
+            return calculated.calculate(parent);
+        }
     }
 }
