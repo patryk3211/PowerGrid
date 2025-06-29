@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "create:electron_tube",
+    "create:copper_nugget",
+    "powergrid:lv_switch",
+    "powergrid:wire_connector"
+  ]
+}
