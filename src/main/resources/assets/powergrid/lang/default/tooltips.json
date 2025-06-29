@@ -19,5 +19,10 @@
   "item.powergrid.electrobaton.tooltip.condition1": "While wearing a Portable Battery",
   "item.powergrid.electrobaton.tooltip.behaviour1": "Attacked enemies will be _stunned_ and _no durability_ will be used. Instead, _Forge Energy_ is drained from the Battery",
 
-  "item.powergrid.incomplete_circuit.tooltip.summary": "Use _Mechanical Arms_ to insert used components and complete the circuit"
+  "item.powergrid.incomplete_circuit.tooltip.summary": "Use _Mechanical Arms_ to insert used components and complete the circuit",
+  "item.powergrid.circuit_schematic.tooltip.creative": "Sneak right-click to convert into an assembled circuit",
+
+  "block.powergrid.circuit_design_table.tooltip.summary": "Design and write _Circuit Schematics_",
+  "block.powergrid.circuit_design_table.tooltip.condition1": "When given an Empty Schematic",
+  "block.powergrid.circuit_design_table.tooltip.behaviour1": "Write the current design into a schematic item"
 }

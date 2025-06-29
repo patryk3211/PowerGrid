@@ -63,6 +63,10 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private static final Text TOOLTIP_DELETE = Lang.translateDirect("gui.circuit_designer.delete");
     private static final Text TOOLTIP_SELECT = Lang.translateDirect("gui.circuit_designer.select");
     private static final Text TOOLTIP_LAYER = Lang.translateDirect("gui.circuit_designer.layer");
+    private static final Text TOOLTIP_PLACEABLE = Lang.translate("gui.circuit_designer.placeable")
+            .style(Formatting.DARK_GREEN)
+            .style(Formatting.ITALIC)
+            .component();
 
     private final CircuitSchematic schematic;
     private List<Line> fgLines;
@@ -179,10 +183,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     protected List<Text> getTooltipFromItem(ItemStack stack) {
         var lines = super.getTooltipFromItem(stack);
         if(Component.forItem(stack.getItem()) != null) {
-            lines.add(Lang.translate("gui.circuit_builder.placeable")
-                    .style(Formatting.DARK_GREEN)
-                    .style(Formatting.ITALIC)
-                    .component());
+            lines.add(TOOLTIP_PLACEABLE);
         }
         return lines;
     }

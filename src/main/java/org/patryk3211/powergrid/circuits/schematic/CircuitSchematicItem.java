@@ -15,13 +15,22 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import net.fabricmc.api.EnvType;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+
+import java.util.List;
 
 public class CircuitSchematicItem extends Item {
     public CircuitSchematicItem(Settings settings) {
@@ -36,6 +45,15 @@ public class CircuitSchematicItem extends Item {
             return TypedActionResult.success(block);
         } else {
             return super.use(world, user, hand);
+        }
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        var player = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().player);
+        if(context.isCreative() || (player != null && player.isCreative())) {
+            tooltip.add(Text.translatable(getTranslationKey() + ".tooltip.creative")
+                    .formatted(Formatting.DARK_PURPLE, Formatting.ITALIC));
         }
     }
 }
