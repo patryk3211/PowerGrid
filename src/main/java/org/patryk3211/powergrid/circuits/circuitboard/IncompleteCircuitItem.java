@@ -72,7 +72,7 @@ public class IncompleteCircuitItem extends Item {
         if(--missingAmount <= 0) {
             missingComponents.remove(id);
         } else {
-            missingComponents.put(id, missingComponents);
+            missingComponents.putInt(id, missingAmount);
         }
         assemblyTag.putInt("Inserted", assemblyTag.getInt("Inserted") + 1);
         return true;
@@ -94,6 +94,28 @@ public class IncompleteCircuitItem extends Item {
             return ItemVariant.of(ModdedBlocks.CIRCUIT_BOARD, tag);
         }
         return ItemVariant.of(ModdedItems.INCOMPLETE_CIRCUIT, tag);
+    }
+
+    @Nullable
+    public static ItemStack insert(ItemStack circuit, ItemStack component) {
+        if(!circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get()))
+            return null;
+        var tag = circuit.getNbt().copy();
+        if(!tag.contains("Assembly")) {
+            tag.put("Assembly", makeAssemblyTag(tag.getCompound("Schematic")));
+        }
+        if(!insertComponent(tag.getCompound("Assembly"), component))
+            return null;
+        var missing = tag.getCompound("Assembly").getCompound("Missing");
+        ItemStack newStack;
+        if(missing.isEmpty()) {
+            tag.remove("Assembly");
+            newStack = new ItemStack(ModdedBlocks.CIRCUIT_BOARD);
+        } else {
+            newStack = new ItemStack(ModdedItems.INCOMPLETE_CIRCUIT);
+        }
+        newStack.setNbt(tag);
+        return newStack;
     }
 
     public static float getProgress(ItemStack stack) {

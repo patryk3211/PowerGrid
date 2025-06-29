@@ -15,40 +15,46 @@
  */
 package org.patryk3211.powergrid.mixin;
 
+import com.simibubi.create.content.kinetics.belt.BeltHelper;
+import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
+import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.kinetics.mechanicalArm.AllArmInteractionPointTypes;
 import com.simibubi.create.content.kinetics.mechanicalArm.ArmInteractionPoint;
+import io.github.fabricators_of_create.porting_lib.transfer.callbacks.TransactionCallback;
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
-@Mixin(ArmInteractionPoint.class)
+@Mixin(value = ArmInteractionPoint.class, remap = false)
 public abstract class ArmInteractionPointMixin {
-    @Shadow(remap = false) @Nullable protected abstract Storage<ItemVariant> getHandler();
+    @Shadow @Nullable protected abstract Storage<ItemVariant> getHandler();
 
-    @Inject(
-            method = "insert(Lnet/minecraft/item/ItemStack;Lnet/fabricmc/fabric/api/transfer/v1/transaction/TransactionContext;)Lnet/minecraft/item/ItemStack;",
-            at = @At("TAIL"),
-            cancellable = true
-    )
-    private void insertAssembleCircuit(ItemStack stack, TransactionContext ctx, CallbackInfoReturnable<ItemStack> cir) {
-        if(!(((Object) this) instanceof AllArmInteractionPointTypes.DepotPoint))
-            return;
+    @Shadow public abstract World getLevel();
+
+    @Shadow public abstract BlockPos getPos();
+
+    @Unique
+    private ItemStack handleDepot(ItemStack stack, TransactionContext ctx) {
         var handler = getHandler();
         if (handler == null)
-            return;
-        var remainder = cir.getReturnValue();
-        if(remainder.isEmpty())
-            return;
+            return null;
         // Try to insert into a circuit
         try(var inner = ctx.openNested()) {
             for(var view : handler) {
@@ -56,17 +62,71 @@ public abstract class ArmInteractionPointMixin {
                     continue;
                 var circuit = view.getResource();
                 if(circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get())) {
-                    if(view.extract(view.getResource(), 1, ctx) == 0)
+                    if(handler.extract(view.getResource(), 1, ctx) == 0)
                         continue;
-                    var newCircuit = IncompleteCircuitItem.insert(circuit, remainder);
+                    var newCircuit = IncompleteCircuitItem.insert(circuit, stack);
                     if(newCircuit != null) {
                         if(handler.insert(newCircuit, 1, ctx) == 1) {
-                            remainder.decrement(1);
+                            var result = ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - 1);
                             inner.commit();
+                            return result;
                         }
                     }
+                    inner.abort();
+                    return stack;
                 }
             }
         }
+        return null;
+    }
+
+    @Unique
+    private ItemStack handleBelt(ItemStack stack, TransactionContext ctx) {
+        var beltBE = BeltHelper.getSegmentBE(getLevel(), getPos());
+        if (beltBE == null)
+            return null;
+        var transport = beltBE.getBehaviour(TransportedItemStackHandlerBehaviour.TYPE);
+        if (transport == null)
+            return null;
+        var found = new MutableBoolean(false);
+        var inserted = new MutableBoolean(false);
+        transport.handleCenteredProcessingOnAllItems(0.05f, tis -> {
+            if(found.isFalse() && ModdedItems.INCOMPLETE_CIRCUIT.isIn(tis.stack)) {
+                found.setTrue();
+                var newCircuit = IncompleteCircuitItem.insert(tis.stack, stack);
+                if(newCircuit != null) {
+                    inserted.setTrue();
+                    TransactionCallback.onSuccess(ctx, () -> {
+                        var result = new TransportedItemStack(newCircuit);
+                        result.lockedExternally = newCircuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get());
+                        transport.handleProcessingOnItem(tis,
+                                TransportedItemStackHandlerBehaviour.TransportedResult.convertToAndLeaveHeld(List.of(), result)
+                        );
+                    });
+                }
+            }
+            return TransportedItemStackHandlerBehaviour.TransportedResult.doNothing();
+        });
+        if(found.isFalse())
+            return null;
+        if(inserted.isFalse())
+            return stack;
+        return ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - 1);
+    }
+
+    @Inject(
+            method = "insert(Lnet/minecraft/item/ItemStack;Lnet/fabricmc/fabric/api/transfer/v1/transaction/TransactionContext;)Lnet/minecraft/item/ItemStack;",
+            at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/transfer/v1/storage/Storage;insert(Ljava/lang/Object;JLnet/fabricmc/fabric/api/transfer/v1/transaction/TransactionContext;)J"),
+            cancellable = true
+    )
+    private void insertAssembleCircuit(ItemStack stack, TransactionContext ctx, CallbackInfoReturnable<ItemStack> cir) {
+        ItemStack remainder = null;
+        if(((Object) this) instanceof AllArmInteractionPointTypes.BeltPoint) {
+            remainder = handleBelt(stack, ctx);
+        } else if(((Object) this) instanceof AllArmInteractionPointTypes.DepotPoint) {
+            remainder = handleDepot(stack, ctx);
+        }
+        if(remainder != null)
+            cir.setReturnValue(remainder);
     }
 }
