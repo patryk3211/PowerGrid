@@ -107,7 +107,7 @@ public class CircuitSchematic {
     }
 
     public void placeComponent(Component component, int x, int y) {
-        var placed = new PlacedComponent(component, x, y);
+        var placed = new PlacedComponent(component, x, y, UUID.randomUUID());
         components.add(placed);
         addPads(placed);
     }

@@ -15,8 +15,12 @@
  */
 package org.patryk3211.powergrid.circuits.circuitboard;
 
+import net.minecraft.nbt.NbtCompound;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
+import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
+import org.patryk3211.powergrid.circuits.thermal.ThermalUnit;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -32,6 +36,7 @@ public class BakedCircuit {
     public final List<INode> internalNodes = new ArrayList<>();
     public final List<AbstractElectricWire> wires = new ArrayList<>();
     public final List<TerminalBoundingBox> terminals = new ArrayList<>();
+    public final List<ThermalUnit> thermalUnits = new ArrayList<>();
     private final Map<PlacedComponent, Function<Integer, FloatingNode>> padNodeProviderMap = new HashMap<>();
 
     protected BakedCircuit() {
@@ -71,7 +76,16 @@ public class BakedCircuit {
             var builder = new ComponentCircuitBuilder(provider, result.internalNodes, result.wires);
             placed.nodes.clear();
             placed.wires.clear();
-            placed.component.bake(placed, builder);
+
+            MutableInt thermalIndex = new MutableInt(0);
+            var thermalBuilders = new ArrayList<ThermalBuilder>();
+            ThermalBuilder.IEmitter thermalEmitter = () -> {
+                var thermalBuilder = new ThermalBuilder(placed.getUUID(), thermalIndex.getAndIncrement());
+                thermalBuilders.add(thermalBuilder);
+                return thermalBuilder;
+            };
+            placed.component.bake(placed, builder, thermalEmitter);
+            thermalBuilders.stream().map(ThermalBuilder::build).forEach(result.thermalUnits::add);
 
             if(external) {
                 var bbs = placed.component.terminals(placed);
@@ -106,5 +120,26 @@ public class BakedCircuit {
             }
         }
         return result;
+    }
+
+    public void write(NbtCompound tag) {
+        var thermalTag = new NbtCompound();
+        for(var unit : thermalUnits) {
+            unit.write(thermalTag);
+        }
+        tag.put("Thermal", thermalTag);
+    }
+
+    public void read(NbtCompound tag) {
+        var thermalTag = tag.getCompound("Thermal");
+        for(var unit : thermalUnits) {
+            unit.read(thermalTag);
+        }
+    }
+
+    public void tick() {
+        for(var unit : thermalUnits) {
+            unit.tick();
+        }
     }
 }

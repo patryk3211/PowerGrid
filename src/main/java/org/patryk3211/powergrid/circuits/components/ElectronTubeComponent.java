@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -24,7 +25,10 @@ import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
+import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.sim.special.ElectronTubeWire;
+
+import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public class ElectronTubeComponent extends Component {
     // TODO: Value ranges might need balancing
@@ -47,16 +51,36 @@ public class ElectronTubeComponent extends Component {
     }
 
     @Override
-    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder) {
+    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, @NotNull ThermalBuilder.IEmitter thermals) {
         var perveance = ElectronTubeWire.calculatePerveance(1,
                 placed.get(TUBE_GAIN),
                 1 / placed.get(ANODE_RESISTANCE));
+        final var saturationCurrent = placed.get(SATURATION_CURRENT);
         var tube = new ElectronTubeWire(
-                placed.get(TUBE_GAIN), perveance, placed.get(SATURATION_CURRENT),
+                placed.get(TUBE_GAIN), perveance, saturationCurrent,
                 builder.terminalNode(0), // Cathode
                 builder.terminalNode(2), // Anode
                 builder.terminalNode(1)  // Grid
         );
         builder.add(tube);
+
+        var targetPower = placed.get(HEATER_POWER);
+        var heaterCurrent = targetPower / placed.get(HEATER_VOLTAGE);
+        var heaterResistance = placed.get(HEATER_VOLTAGE) / heaterCurrent;
+        var heater = builder.connect(heaterResistance, builder.terminalNode(0), builder.terminalNode(3));
+
+        placed.add(tube);
+        placed.add(heater);
+
+        final var operatingTemperature = 1400f;
+        final var dissipationFactor = targetPower / (operatingTemperature - BASE_TEMPERATURE);
+        thermals.builder()
+                .addHeatSource(heater)
+                .setThermalMass(0.001f)
+                .setOverheatTemperature(1500f)
+                .setDissipationFactor(dissipationFactor)
+                .withCallback(temperature -> tube.setSaturationCurrent(
+                        MathHelper.clamp(temperature - 1300f, 0, 150) * saturationCurrent / 100
+                ));
     }
 }

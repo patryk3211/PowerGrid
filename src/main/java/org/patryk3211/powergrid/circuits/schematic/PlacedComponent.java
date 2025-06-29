@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.sim.node.INode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
@@ -33,13 +34,14 @@ public class PlacedComponent {
     public final Component component;
     public final int x;
     public final int y;
+    public final UUID uuid;
     private final List<PropertyEntry<?>> properties = new ArrayList<>();
 
     public final List<INode> nodes = new ArrayList<>();
     public final List<AbstractElectricWire> wires = new ArrayList<>();
 
     public PlacedComponent(NbtCompound tag) {
-        this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"));
+        this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUuid("UUID"));
         var propertyMap = tag.getCompound("Properties");
         for(var entry : properties) {
             entry.read(propertyMap);
@@ -47,7 +49,7 @@ public class PlacedComponent {
     }
 
     public PlacedComponent(PlacedComponent placed) {
-        this(placed.component, placed.x, placed.y);
+        this(placed.component, placed.x, placed.y, placed.uuid);
         for(var property : properties) {
             property.setValueRaw(placed.get(property.property));
         }
@@ -57,10 +59,11 @@ public class PlacedComponent {
         return ComponentRegistry.REGISTRY.get(new Identifier(id));
     }
 
-    public PlacedComponent(Component component, int x, int y) {
+    public PlacedComponent(Component component, int x, int y, UUID uuid) {
         this.component = component;
         this.x = x;
         this.y = y;
+        this.uuid = uuid;
         for(var property : component.getProperties()) {
             properties.add(PropertyEntry.makeFor(property, this));
         }
@@ -73,6 +76,7 @@ public class PlacedComponent {
         tag.putString("Id", id.toString());
         tag.putInt("X", x);
         tag.putInt("Y", y);
+        tag.putUuid("UUID", uuid);
 
         if(!properties.isEmpty()) {
             var propertyMap = new NbtCompound();
@@ -151,5 +155,9 @@ public class PlacedComponent {
 
     public void add(AbstractElectricWire wire) {
         wires.add(wire);
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 }
