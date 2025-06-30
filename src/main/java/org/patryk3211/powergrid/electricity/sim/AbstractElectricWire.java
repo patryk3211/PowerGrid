@@ -51,7 +51,10 @@ public abstract class AbstractElectricWire {
 
     public float power() {
         var I = current();
-        return (float) (I * I / conductance());
+        var G = conductance();
+        if(I == 0 || G == 0)
+            return 0;
+        return (float) (I * I / G);
     }
 
     public abstract double conductance();
