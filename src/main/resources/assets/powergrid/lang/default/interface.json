@@ -75,5 +75,12 @@
   "powergrid.component.property.tube_heater_voltage.summary": "Voltage required to reach the rated heater power",
   "powergrid.component.property.tube_heater_power": "Heater Power",
   "powergrid.component.property.tube_heater_power.summary": "Power requirement for the given saturation current",
-  "powergrid.component.property.switch_state": "State"
+
+  "powergrid.component.property.switch_state": "State",
+
+  "powergrid.component.property.relay_threshold": "Threshold Voltage",
+  "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
+  "powergrid.component.property.relay_state": "State",
+
+  "powergrid.component.property.resistor_value": "Resistance"
 }

@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.registry.RegistryWrapper;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.concurrent.CompletableFuture;
@@ -35,6 +36,8 @@ public class ItemTagProvider extends FabricTagProvider.ItemTagProvider {
                 .add(AllItems.ELECTRON_TUBE.get())
                 .add(AllItems.COPPER_NUGGET.get())
                 .add(ModdedBlocks.LV_SWITCH.asItem())
-                .add(ModdedBlocks.WIRE_CONNECTOR.asItem());
+                .add(ModdedBlocks.WIRE_CONNECTOR.asItem())
+                .add(ModdedItems.RELAY.get())
+                .add(ModdedItems.RESISTOR.get());
     }
 }

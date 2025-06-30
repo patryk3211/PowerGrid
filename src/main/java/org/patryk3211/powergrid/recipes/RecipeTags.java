@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.recipes;
 
 import com.simibubi.create.AllTags;
 import net.minecraft.item.Item;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 
 public class RecipeTags {
@@ -50,5 +51,9 @@ public class RecipeTags {
 
     public static TagKey<Item> copperCoil() {
         return AllTags.forgeItemTag("copper_coils");
+    }
+
+    public static TagKey<Item> coal() {
+        return ItemTags.COALS;
     }
 }

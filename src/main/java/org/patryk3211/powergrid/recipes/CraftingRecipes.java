@@ -175,7 +175,13 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .shapeless(b -> b
                     .input(ModdedItems.COPPER_COIL)
                     .input(RecipeTags.ironSheet())
-                    .input(AllBlocks.ANDESITE_CASING))
+                    .input(AllBlocks.ANDESITE_CASING)),
+
+    RESISTOR = create(ModdedItems.RESISTOR)
+            .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
+            .shapeless(b -> b
+                    .input(ModdedItems.RESISTIVE_COIL)
+                    .input(RecipeTags.coal()))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {

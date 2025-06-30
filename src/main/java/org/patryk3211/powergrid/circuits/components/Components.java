@@ -50,6 +50,7 @@ public class Components {
             .footprint(4, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(3, 1, 1)
+                    .withItem(ModdedBlocks.LV_SWITCH::asItem)
                     .withOutline())
             .item(ModdedBlocks.LV_SWITCH)
             .register();
@@ -62,9 +63,20 @@ public class Components {
                     .addPad(4, 1, 3, Text.of("Common"))
                     .addPad(4, 2, 3, Text.of("Common"))
                     .addPad(3, 3, 4, Text.of("Normally Open"))
+                    .withItem(ModdedItems.RELAY)
                     .withOutline()
             )
             .item(ModdedItems.RELAY)
+            .register();
+
+    public static final ComponentEntry<ResistorComponent> RESISTOR = REGISTRATE.component("resistor", ResistorComponent::new)
+            .footprint(6, 3, b -> b
+                    .addPad(0, 1, 0)
+                    .addPad(5, 1, 1)
+                    .withItem(ModdedItems.RESISTOR)
+                    .withOutline()
+            )
+            .item(ModdedItems.RESISTOR)
             .register();
 
     @SuppressWarnings("EmptyMethod")

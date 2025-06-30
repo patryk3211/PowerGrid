@@ -67,6 +67,13 @@ public class ComponentFootprint {
             var ms = ctx.getMatrices();
             ms.push();
             var scale = Math.min(width, height) / 16f * GRID_TO_GRID_SCALE;
+            if(width > height) {
+                float offset = (width - height) * 0.5f;
+                ms.translate(offset, 0, 0);
+            } else if(height > width) {
+                float offset = (height - width) * 0.5f;
+                ms.translate(0, offset, 0);
+            }
             ms.scale(scale, scale, scale);
             ctx.drawItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
             ms.pop();
