@@ -17,6 +17,9 @@ package org.patryk3211.powergrid.circuits.schematic;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.World;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
@@ -27,6 +30,8 @@ import org.patryk3211.powergrid.electricity.sim.node.INode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
@@ -36,6 +41,9 @@ public class PlacedComponent {
     public final int y;
     public final UUID uuid;
     private final List<PropertyEntry<?>> properties = new ArrayList<>();
+
+    private Supplier<World> worldSupplier;
+    private BlockPos pos;
 
     public final List<INode> nodes = new ArrayList<>();
     public final List<AbstractElectricWire> wires = new ArrayList<>();
@@ -50,6 +58,7 @@ public class PlacedComponent {
 
     public PlacedComponent(PlacedComponent placed) {
         this(placed.component, placed.x, placed.y, placed.uuid);
+        this.worldSupplier = placed.worldSupplier;
         for(var property : properties) {
             property.setValueRaw(placed.get(property.property));
         }
@@ -67,6 +76,27 @@ public class PlacedComponent {
         for(var property : component.getProperties()) {
             properties.add(PropertyEntry.makeFor(property, this));
         }
+    }
+
+    public void withWorld(Supplier<World> worldSupplier, BlockPos pos) {
+        this.worldSupplier = worldSupplier;
+        this.pos = pos;
+    }
+
+    public World getWorld() {
+        return worldSupplier.get();
+    }
+
+    public void onClientWorld(Supplier<Consumer<World>> callback) {
+        var world = getWorld();
+        if(world.isClient)
+            callback.get().accept(world);
+    }
+
+    public void onServerWorld(Supplier<Consumer<World>> callback) {
+        var world = getWorld();
+        if(!world.isClient)
+            callback.get().accept(world);
     }
 
     public NbtCompound serializeNbt() {
@@ -91,6 +121,10 @@ public class PlacedComponent {
 
     public ComponentFootprint footprint() {
         return component.footprint(this);
+    }
+
+    public boolean tick() {
+        return component.tick(this);
     }
 
     public <T> T get(ComponentProperty<T> property) {
@@ -159,5 +193,9 @@ public class PlacedComponent {
 
     public UUID getUUID() {
         return uuid;
+    }
+
+    public BlockPos getPos() {
+        return pos;
     }
 }

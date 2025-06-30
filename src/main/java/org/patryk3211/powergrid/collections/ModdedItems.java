@@ -89,6 +89,8 @@ public class ModdedItems {
     public static final ItemEntry<Item> ELECTRICAL_GIZMO = ingredient("electrical_gizmo");
     public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag, forgeItemTag("zinc_plates"));
 
+    public static final ItemEntry<Item> RELAY = ingredient("relay", ModdedTags.Item.CIRCUIT_COMPONENT.tag);
+
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_UNETCHED_CIRCUIT = sequencedIngredientBuilder("incomplete_unetched_circuit")

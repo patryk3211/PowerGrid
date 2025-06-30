@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.circuits.components;
 import com.simibubi.create.AllItems;
 import net.minecraft.text.Text;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -51,6 +52,19 @@ public class Components {
                     .addPad(3, 1, 1)
                     .withOutline())
             .item(ModdedBlocks.LV_SWITCH)
+            .register();
+
+    public static final ComponentEntry<RelayComponent> RELAY = REGISTRATE.component("relay", RelayComponent::new)
+            .footprint(5, 4, b -> b
+                    .addPad(0, 0, 0, Text.of("Coil"))
+                    .addPad(0, 3, 1, Text.of("Coil"))
+                    .addPad(3, 0, 2, Text.of("Normally Closed"))
+                    .addPad(4, 1, 3, Text.of("Common"))
+                    .addPad(4, 2, 3, Text.of("Common"))
+                    .addPad(3, 3, 4, Text.of("Normally Open"))
+                    .withOutline()
+            )
+            .item(ModdedItems.RELAY)
             .register();
 
     @SuppressWarnings("EmptyMethod")

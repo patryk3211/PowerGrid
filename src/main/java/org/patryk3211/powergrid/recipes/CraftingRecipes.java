@@ -168,7 +168,14 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("CIC")
                     .pattern("CCC")
                     .input('C', ModdedItems.COPPER_COIL)
-                    .input('I', RecipeTags.ironSheet()))
+                    .input('I', RecipeTags.ironSheet())),
+
+    RELAY = create(ModdedItems.RELAY)
+            .unlockedBy(() -> ModdedItems.COPPER_COIL)
+            .shapeless(b -> b
+                    .input(ModdedItems.COPPER_COIL)
+                    .input(RecipeTags.ironSheet())
+                    .input(AllBlocks.ANDESITE_CASING))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {

@@ -70,6 +70,15 @@ public abstract class Component {
 
     }
 
+    /**
+     * Called every tick as long as the returned value is true
+     * @param placed Placed component state
+     * @return Continue ticking
+     */
+    public boolean tick(@NotNull PlacedComponent placed) {
+        return false;
+    }
+
     void setItem(Supplier<? extends Item> item) {
         this.item = item;
     }

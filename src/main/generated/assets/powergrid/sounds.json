@@ -57,6 +57,15 @@
     ],
     "subtitle": "powergrid.subtitle.mv_switch_click"
   },
+  "relay_click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.lever.click"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.relay_click"
+  },
   "ui.delete_area": {
     "sounds": [
       {

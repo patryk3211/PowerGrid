@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -30,6 +31,7 @@ import org.patryk3211.powergrid.electricity.sim.node.INode;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class BakedCircuit {
     public final List<IElectricNode> externalNodes = new ArrayList<>();
@@ -37,6 +39,7 @@ public class BakedCircuit {
     public final List<AbstractElectricWire> wires = new ArrayList<>();
     public final List<TerminalBoundingBox> terminals = new ArrayList<>();
     public final List<ThermalUnit> thermalUnits = new ArrayList<>();
+    public final List<PlacedComponent> tickedComponents = new ArrayList<>();
     private final Map<PlacedComponent, Function<Integer, FloatingNode>> padNodeProviderMap = new HashMap<>();
 
     protected BakedCircuit() {
@@ -86,6 +89,7 @@ public class BakedCircuit {
             };
             placed.component.bake(placed, builder, thermalEmitter);
             thermalBuilders.stream().map(ThermalBuilder::build).forEach(result.thermalUnits::add);
+            result.tickedComponents.add(placed);
 
             if(external) {
                 var bbs = placed.component.terminals(placed);
@@ -141,5 +145,7 @@ public class BakedCircuit {
         for(var unit : thermalUnits) {
             unit.tick();
         }
+        // Ticks components as long as they return true
+        tickedComponents.removeIf(placed -> !placed.tick());
     }
 }

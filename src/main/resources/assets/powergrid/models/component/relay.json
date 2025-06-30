@@ -1,0 +1,20 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/component/relay",
+		"particle": "powergrid:block/component/relay"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [5, 4, 4],
+			"faces": {
+				"north": {"uv": [0, 0, 5, 4], "texture": "#0"},
+				"east": {"uv": [5, 0, 9, 4], "texture": "#0"},
+				"south": {"uv": [0, 0, 5, 4], "texture": "#0"},
+				"west": {"uv": [5, 0, 9, 4], "texture": "#0"},
+				"up": {"uv": [0, 0, 5, 4], "texture": "#0"}
+			}
+		}
+	]
+}

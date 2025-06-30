@@ -90,6 +90,11 @@ public class ModdedSoundEvents {
 
     UI_SELECT_COMPONENT = create("ui.select_component")
             .playExisting(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f)
+            .build(),
+
+    RELAY_CLICK = create("relay_click").subtitle("Relay clicks")
+            .playExisting(SoundEvents.BLOCK_LEVER_CLICK)
+            .category(SoundCategory.BLOCKS)
             .build()
             ;
 
