@@ -510,6 +510,7 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()
+                .defaultModel()
                 .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
                 .build()
             .register();

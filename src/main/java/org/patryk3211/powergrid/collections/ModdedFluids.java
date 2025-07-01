@@ -24,6 +24,7 @@ import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributeHandler;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.Identifier;
 
@@ -36,7 +37,7 @@ public class ModdedFluids {
                     .tag(FluidTags.WATER)
                     .source(SimpleFlowableFluid.Source::new)
                     .fluidAttributes(() -> new FluidVariantAttributeHandler() { })
-                    .onRegister(flowing -> EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> registerSimpleFluidRenderer(flowing, 0xFFFFEE80)))
+                    .onRegisterAfter(RegistryKeys.FLUID, flowing -> EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> registerSimpleFluidRenderer(flowing, 0xFFFFEE80)))
                     .register();
 
     @Environment(EnvType.CLIENT)
