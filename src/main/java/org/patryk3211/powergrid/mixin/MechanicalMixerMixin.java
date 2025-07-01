@@ -20,6 +20,7 @@ import com.simibubi.create.content.processing.basin.BasinOperatingBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
 import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlockEntity;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.spongepowered.asm.mixin.Mixin;
@@ -45,7 +46,8 @@ public abstract class MechanicalMixerMixin extends BasinOperatingBlockEntity {
 
     @Unique
     private Optional<ChemicalVatBlockEntity> getChemicalVat() {
-        return world.getBlockEntity(pos.down(2), ModdedBlockEntities.CHEMICAL_VAT.get());
+        var be = world.getBlockEntity(pos.down(2), ModdedBlockEntities.CHEMICAL_VAT.get());
+        return be.filter(vat -> vat.getCachedState().get(ChemicalVatBlock.OPEN));
     }
 
     @Inject(method = "tick()V",

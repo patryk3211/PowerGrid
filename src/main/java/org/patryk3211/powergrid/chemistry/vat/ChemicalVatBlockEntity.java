@@ -85,6 +85,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     private final Vector3d gasMomentum = new Vector3d();
     private int bubbles = 0;
+    private boolean isMixed = false;
 
     private StorageView<FluidVariant> maxFluid;
 
@@ -135,6 +136,11 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
         // Moving has to occur after recipe processing so that the burning flag is valid.
         moveReagents();
+
+        if(!isMixed) {
+            reagentInventory.approachTurbulence(0);
+        }
+        isMixed = false;
 
         if(getCachedState().get(ChemicalVatBlock.OPEN)) {
             // Allow gasses in and out
@@ -292,10 +298,15 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
             }
         });
 
+        var propagatedTurbulence = reagentInventory.turbulence() * 0.5f;
         for(var dir : Direction.values()) {
             var vat = getVat(pos.offset(dir));
             if(vat == null)
                 continue;
+
+            if(vat.reagentInventory.turbulence() < propagatedTurbulence)
+                vat.reagentInventory.approachTurbulence(propagatedTurbulence);
+
             if(dir == Direction.DOWN && !solids.isEmpty()) {
                 // Solids can only go down.
                 MixtureHelper.moveReagents(reagentInventory, solids, vat.reagentInventory, reagentInventory.getTotalAmount());
@@ -662,6 +673,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
 
     public void applyTurbulence(float turbulenceFactor) {
         reagentInventory.approachTurbulence(turbulenceFactor);
+        isMixed = true;
     }
 
     @Override
