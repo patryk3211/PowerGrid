@@ -26,12 +26,12 @@ import org.patryk3211.powergrid.chemistry.reagent.*;
 import org.patryk3211.powergrid.chemistry.recipe.condition.RecipeCatalyzerCondition;
 import org.patryk3211.powergrid.chemistry.recipe.condition.RecipeConcentrationCondition;
 import org.patryk3211.powergrid.chemistry.recipe.condition.RecipeTemperatureCondition;
+import org.patryk3211.powergrid.chemistry.recipe.condition.RecipeTurbulenceCondition;
 import org.patryk3211.powergrid.chemistry.recipe.equation.ConstEquation;
 import org.patryk3211.powergrid.chemistry.recipe.equation.MapAggregateEquation;
 
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class ReactionJsonBuilder implements RecipeJsonProvider, ReactionRateEquationBuilder.Parent {
     private final String namespace;
@@ -78,6 +78,23 @@ public class ReactionJsonBuilder implements RecipeJsonProvider, ReactionRateEqua
 
     public ReactionJsonBuilder temperatureCondition(float min, float max) {
         return temperatureCondition((Float) min, (Float) max);
+    }
+
+    public ReactionJsonBuilder minimumTurbulenceCondition(float min) {
+        return turbulenceCondition(min, null);
+    }
+
+    public ReactionJsonBuilder maximumTurbulenceCondition(float max) {
+        return turbulenceCondition(null, max);
+    }
+
+    public ReactionJsonBuilder turbulenceCondition(@Nullable Float min, @Nullable Float max) {
+        params.conditions.add(new RecipeTurbulenceCondition(Optional.ofNullable(min), Optional.ofNullable(max)));
+        return this;
+    }
+
+    public ReactionJsonBuilder turbulenceCondition(float min, float max) {
+        return turbulenceCondition((Float) min, (Float) max);
     }
 
     public ReactionJsonBuilder concentrationCondition(ReagentConvertible reagent, @Nullable Float min, @Nullable Float max) {

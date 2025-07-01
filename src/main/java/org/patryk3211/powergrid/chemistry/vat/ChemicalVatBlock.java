@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.vat;
 
+import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -26,6 +27,7 @@ import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
@@ -164,6 +166,20 @@ public class ChemicalVatBlock extends Block implements IBE<ChemicalVatBlockEntit
         if(context instanceof EntityShapeContext entityContext && entityContext.getEntity() instanceof ItemEntity)
             return COLLISION_SHAPE;
         return getOutlineShape(state, world, pos, context);
+    }
+
+    @Override
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.onPlaced(world, pos, state, placer, itemStack);
+        var be = world.getBlockEntity(pos.up(2), AllBlockEntityTypes.MECHANICAL_MIXER.get());
+        be.ifPresent(mixer -> mixer.basinChecker.scheduleUpdate());
+    }
+
+    @Override
+    public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
+        super.onBroken(world, pos, state);
+        var be = world.getBlockEntity(pos.up(2), AllBlockEntityTypes.MECHANICAL_MIXER.get());
+        be.ifPresent(mixer -> mixer.basinRemoved = true);
     }
 
     @Override

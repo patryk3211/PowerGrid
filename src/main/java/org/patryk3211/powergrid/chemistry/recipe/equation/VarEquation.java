@@ -57,13 +57,13 @@ public abstract class VarEquation {
 
     private static void prepare() {
         if(CODECS.isEmpty()) {
-            var tInst = new TemperatureEquation();
-            add(TemperatureEquation.TYPE, $ -> tInst, null, "temperature", "temp");
+            add(TemperatureEquation.TYPE, $ -> TemperatureEquation.INSTANCE, null, "temperature", "temp");
 
             add(ConcentrationEquation.TYPE, ConcentrationEquation::new, eq -> ((ConcentrationEquation) eq).getArg(), "concentration");
 
-            var catInst = new CatalyzerEquation();
-            add(CatalyzerEquation.TYPE, $ -> catInst, null, "catalyzerStrength", "catalyzer");
+            add(CatalyzerEquation.TYPE, $ -> CatalyzerEquation.INSTANCE, null, "catalyzerStrength", "catalyzer");
+
+            add(TurbulenceEquation.TYPE, $ -> TurbulenceEquation.INSTANCE, null, "turbulence");
         }
     }
 }

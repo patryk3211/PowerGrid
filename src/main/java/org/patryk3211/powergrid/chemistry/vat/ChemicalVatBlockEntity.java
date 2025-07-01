@@ -660,6 +660,10 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
         return true;
     }
 
+    public void applyTurbulence(float turbulenceFactor) {
+        reagentInventory.approachTurbulence(turbulenceFactor);
+    }
+
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> list) {
 

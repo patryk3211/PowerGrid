@@ -24,5 +24,7 @@ public interface ReagentConditions {
     float concentration(ReagentConvertible reagent, ReagentState state);
     float catalyzer();
 
+    float turbulence();
+
     double heatMass();
 }

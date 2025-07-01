@@ -18,7 +18,12 @@ package org.patryk3211.powergrid.chemistry.recipe.equation;
 import org.patryk3211.powergrid.chemistry.recipe.ReagentConditions;
 
 public class TemperatureEquation implements IReactionEquation {
+    public static final TemperatureEquation INSTANCE = new TemperatureEquation();
     public static final Type<IReactionEquation> TYPE = new Type<>("T", VarEquation.CODEC);
+
+    private TemperatureEquation() {
+
+    }
 
     @Override
     public float evaluate(ReagentConditions conditions) {

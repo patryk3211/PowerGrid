@@ -41,6 +41,7 @@ public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> impleme
     private int totalAmount;
 
     private float catalyzer;
+    private float turbulence;
 
     private MixtureFluidView fluidView;
     private MixtureItemView itemView;
@@ -207,6 +208,11 @@ public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> impleme
     @Override
     public float catalyzer() {
         return catalyzer;
+    }
+
+    @Override
+    public float turbulence() {
+        return turbulence;
     }
 
     /**
@@ -470,6 +476,7 @@ public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> impleme
         if(burning) {
             tag.putBoolean("Burning", true);
         }
+        tag.putFloat("Turbulence", turbulence);
         energyChanged();
     }
 
@@ -497,6 +504,14 @@ public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> impleme
         } else {
             burning = false;
         }
+        turbulence = tag.getFloat("Turbulence");
+    }
+
+    public void approachTurbulence(float turbulence) {
+        var delta = (turbulence - this.turbulence) * 0.05f;
+        this.turbulence += delta;
+        if(this.turbulence <= 0.001f)
+            this.turbulence = 0;
     }
 
     @Override

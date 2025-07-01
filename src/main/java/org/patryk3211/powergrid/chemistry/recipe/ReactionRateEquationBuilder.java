@@ -106,7 +106,7 @@ public class ReactionRateEquationBuilder<P extends ReactionRateEquationBuilder.P
     }
 
     public ReactionRateEquationBuilder<P> temperature() {
-        this.elements.add(new TemperatureEquation());
+        this.elements.add(TemperatureEquation.INSTANCE);
         return this;
     }
 
@@ -116,7 +116,12 @@ public class ReactionRateEquationBuilder<P extends ReactionRateEquationBuilder.P
     }
 
     public ReactionRateEquationBuilder<P> catalyzer() {
-        this.elements.add(new CatalyzerEquation());
+        this.elements.add(CatalyzerEquation.INSTANCE);
+        return this;
+    }
+
+    public ReactionRateEquationBuilder<P> turbulence() {
+        this.elements.add(TurbulenceEquation.INSTANCE);
         return this;
     }
 

@@ -4,8 +4,10 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AirCurrentMixin",
+    "BasinOperatingMixin",
     "FanProcessingMixin",
-    "FanProcessingTypeAccessor"
+    "FanProcessingTypeAccessor",
+    "MechanicalMixerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
