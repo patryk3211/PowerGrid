@@ -62,6 +62,7 @@
   "item.powergrid.wire": "Wire",
   "item.powergrid.wire_cutter": "Wire Cutter",
   "item.powergrid.zinc_sheet": "Zinc Sheet",
+  "item.powergrid.empty_circuit": "Empty Circuit",
   "itemGroup.powergrid.main": "Create: Power Grid",
   "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
   "powergrid.devices.creative.current": "Output current",

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "powergrid:item/circuit_board"
+    "layer0": "powergrid:item/unetched_circuit"
   }
 }

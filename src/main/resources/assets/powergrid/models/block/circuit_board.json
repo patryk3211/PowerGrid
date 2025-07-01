@@ -1,6 +1,8 @@
 {
+	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
 	"parent": "block/block",
+	"texture_size": [64, 64],
 	"textures": {
 		"0": "powergrid:block/circuit_board",
 		"particle": "powergrid:block/circuit_board"
@@ -10,12 +12,12 @@
 			"from": [0, 0, 0],
 			"to": [16, 2, 16],
 			"faces": {
-				"north": {"uv": [16, 1, 0, 3], "texture": "#0"},
-				"east": {"uv": [16, 1, 0, 3], "texture": "#0"},
-				"south": {"uv": [0, 1, 16, 3], "texture": "#0"},
-				"west": {"uv": [0, 1, 16, 3], "texture": "#0"},
-				"up": {"uv": [0, 0, 16, 16], "texture": "#0"},
-				"down": {"uv": [0, 0, 16, 16], "texture": "#0"}
+				"north": {"uv": [4, 4, 8, 4.5], "texture": "#0"},
+				"east": {"uv": [0, 4, 4, 4.5], "texture": "#0"},
+				"south": {"uv": [12, 4, 16, 4.5], "texture": "#0"},
+				"west": {"uv": [8, 4, 12, 4.5], "texture": "#0"},
+				"up": {"uv": [8, 4, 4, 0], "texture": "#0"},
+				"down": {"uv": [12, 0, 8, 4], "texture": "#0"}
 			}
 		}
 	]
