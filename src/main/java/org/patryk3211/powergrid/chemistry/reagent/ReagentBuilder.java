@@ -78,23 +78,23 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
         return this;
     }
 
-    public ReagentBuilder<T, P> item(ItemEntry<?> item, int amount, float temperature) {
-        onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(item.get(), amount, temperature));
-        return this;
-    }
-
-    public ReagentBuilder<T, P> item(Item item, int amount, float temperature) {
+    public ReagentBuilder<T, P> item(Supplier<Item> item, int amount, float temperature) {
         onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(item, amount, temperature));
         return this;
     }
 
+    public ReagentBuilder<T, P> item(Item item, int amount, float temperature) {
+        onRegisterAfter(RegistryKeys.ITEM, reagent -> reagent.withItem(() -> item, amount, temperature));
+        return this;
+    }
+
     public ReagentBuilder<T, P> fluid(FluidEntry<?> fluid, float temperature) {
-        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid.get().getStill(), temperature));
+        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid::getSource, temperature));
         return this;
     }
 
     public ReagentBuilder<T, P> fluid(Fluid fluid, float temperature) {
-        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(fluid, temperature));
+        onRegisterAfter(RegistryKeys.FLUID, reagent -> reagent.withFluid(() -> fluid, temperature));
         return this;
     }
 
@@ -110,7 +110,7 @@ public class ReagentBuilder<T extends Reagent, P> extends AbstractBuilder<Reagen
         onRegisterAfter(RegistryKeys.FLUID, reagent -> {
             var fluid = fluidBuilder.getEntry();
             EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> registerSimpleFluidRenderer(fluid, tint));
-            reagent.withFluid(fluid.getStill(), temperature);
+            reagent.withFluid(fluid::getStill, temperature);
         });
         return fluidBuilder;
     }

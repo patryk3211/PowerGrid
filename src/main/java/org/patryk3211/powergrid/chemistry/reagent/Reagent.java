@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class Reagent implements ReagentConvertible {
     public static final int BLOCK_MOLE_AMOUNT = 4000;
@@ -39,11 +40,11 @@ public class Reagent implements ReagentConvertible {
     private RegistryEntry<Reagent> registryEntry;
     public final Properties properties;
 
-    private Item item;
+    private Supplier<Item> item;
     private int itemAmount;
     private float itemTemperature;
 
-    private Fluid fluid;
+    private Supplier<Fluid> fluid;
     private float fluidTemperature;
     private float liquidConductance;
 
@@ -65,18 +66,16 @@ public class Reagent implements ReagentConvertible {
         return getRegistryEntry().isIn(tag);
     }
 
-    public Reagent withItem(Item item, int amount, float temperature) {
+    public Reagent withItem(Supplier<Item> item, int amount, float temperature) {
         this.item = item;
         this.itemAmount = amount;
         this.itemTemperature = temperature;
-        ITEM_MAP.put(item, this);
         return this;
     }
 
-    public Reagent withFluid(Fluid fluid, float temperature) {
+    public Reagent withFluid(Supplier<Fluid> fluid, float temperature) {
         this.fluid = fluid;
         this.fluidTemperature = temperature;
-        FLUID_MAP.put(fluid, this);
         return this;
     }
 
@@ -111,7 +110,7 @@ public class Reagent implements ReagentConvertible {
 
     @Nullable
     public Fluid asFluid() {
-        return fluid;
+        return fluid == null ? null : fluid.get();
     }
 
     public float getFluidTemperature() {
@@ -120,7 +119,7 @@ public class Reagent implements ReagentConvertible {
 
     @Nullable
     public Item asItem() {
-        return item;
+        return item == null ? null : item.get();
     }
 
     public int getItemAmount() {
@@ -140,11 +139,31 @@ public class Reagent implements ReagentConvertible {
     }
 
     public static Reagent getReagent(Fluid fluid) {
-        return FLUID_MAP.get(fluid);
+        if(FLUID_MAP.containsKey(fluid))
+            return FLUID_MAP.get(fluid);
+        Reagent reagent = null;
+        for(var entry : ReagentRegistry.REGISTRY) {
+            if(entry.asFluid() == fluid) {
+                reagent = entry;
+                break;
+            }
+        }
+        FLUID_MAP.put(fluid, reagent);
+        return reagent;
     }
 
     public static Reagent getReagent(Item item) {
-        return ITEM_MAP.get(item);
+        if(ITEM_MAP.containsKey(item))
+            return ITEM_MAP.get(item);
+        Reagent reagent = null;
+        for(var entry : ReagentRegistry.REGISTRY) {
+            if(entry.asItem() == item) {
+                reagent = entry;
+                break;
+            }
+        }
+        ITEM_MAP.put(item, reagent);
+        return reagent;
     }
 
     @Override
