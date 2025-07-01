@@ -76,6 +76,39 @@ public class ReactionRecipes extends ReactionRecipeProvider {
             .minimumTemperatureCondition(0)
             .concentrationCondition(Reagents.SULFURIC_ACID, 0.25f, null, ReagentState.LIQUID)
             .concentrationCondition(Reagents.WATER.liquid(), 0.25f, null, ReagentState.LIQUID)
+            .energy(16.7f)
+    ),
+
+    CINDER_FLOUR_SULFUR_MELTING = create("refining/cinder_flour_sulfur", b -> b
+            .result(Reagents.REDSTONE_SAND, 8)
+            .result(Reagents.SULFUR, 2)
+            .ingredient(Reagents.CINDER_FLOUR, 10)
+            .flag(ReactionFlag.ALLOW_PARTIAL_RESULTS)
+            .minimumTemperatureCondition(200)
+            .minimumTurbulenceCondition(0.5f)
+            .rate()
+                .multiply(eq -> eq
+                        .turbulence()
+                        .constant(1.2f))
+                .build()
+    ),
+
+    REDSTONE_SAND_PROCESSING = create("refining/redstone_sand_processing", b -> b
+            .result(Reagents.REDSTONE_SULFATE, 1)
+            .result(Reagents.HYDROGEN, 2)
+            .result(Reagents.SILICON_DIOXIDE, 7)
+            .ingredient(Reagents.REDSTONE_SAND, 8)
+            .ingredient(Reagents.SULFURIC_ACID, 1)
+            .minimumTemperatureCondition(10f)
+            .minimumTurbulenceCondition(0.5f)
+            .concentrationCondition(Reagents.SULFURIC_ACID, 0.25f, null, ReagentState.LIQUID)
+            .concentrationCondition(Reagents.WATER.liquid(), 0.25f, null, ReagentState.LIQUID)
+            .energy(16.7f)
+            .rate()
+                .multiply(eq -> eq
+                        .turbulence()
+                        .constant(0.5f))
+                .build()
     )
     ;
 

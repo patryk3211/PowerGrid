@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.chemistry.reagent;
 
+import com.simibubi.create.AllItems;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import net.minecraft.fluid.Fluids;
@@ -89,6 +90,16 @@ public class Reagents {
             .liquidConductance(0.2f)
             .register();
 
+    public static final ReagentEntry<Reagent> SILICON_DIOXIDE = simpleReagent("silicon_dioxide", 1713, 2950, 46.7f)
+            .register();
+
+    public static final ReagentEntry<Reagent> CINDER_FLOUR = fixedStateReagent("cinder_flour", ReagentState.SOLID, 42.58f)
+            .item(AllItems.CINDER_FLOUR, 1000, 22f)
+            .register();
+
+    public static final ReagentEntry<Reagent> REDSTONE_SAND = fixedStateReagent("redstone_sand", ReagentState.SOLID, 47.53f)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 
@@ -98,6 +109,13 @@ public class Reagents {
                         .meltingPoint(meltingPoint)
                         .boilingPoint(boilingPoint)
                         .heatCapacity(heatCapacity));
+    }
+
+    private static ReagentBuilder<Reagent, PowerGridRegistrate> fixedStateReagent(String name, ReagentState state, float heatCapacity) {
+        return REGISTRATE.reagent(name, Reagent::new)
+                .properties(properties -> properties
+                        .heatCapacity(heatCapacity))
+                .fixedState(state);
     }
 
     public static ReagentBuilder<Reagent, PowerGridRegistrate> dissolvedReagent(String name, Supplier<Reagent> dissolved, Supplier<Reagent> dissolver) {

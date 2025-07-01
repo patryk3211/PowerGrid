@@ -3,7 +3,11 @@
   "conditions": [
     {
       "type": "temperature",
-      "min": 0.0
+      "min": 10.0
+    },
+    {
+      "type": "turbulence",
+      "min": 0.5
     },
     {
       "type": "concentration",
@@ -21,13 +25,19 @@
   "energy": 16.7,
   "ingredients": [
     {
-      "reagent": "powergrid:redstone"
+      "amount": 8,
+      "reagent": "powergrid:redstone_sand"
     },
     {
       "reagent": "powergrid:sulfuric_acid"
     }
   ],
-  "rate": 1.0,
+  "rate": {
+    "multiply": [
+      "V",
+      0.5
+    ]
+  },
   "results": [
     {
       "reagent": "powergrid:redstone_sulfate"
@@ -35,6 +45,10 @@
     {
       "amount": 2,
       "reagent": "powergrid:hydrogen"
+    },
+    {
+      "amount": 7,
+      "reagent": "powergrid:silicon_dioxide"
     }
   ]
 }

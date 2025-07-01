@@ -1,0 +1,39 @@
+{
+  "type": "powergrid:reaction",
+  "conditions": [
+    {
+      "type": "temperature",
+      "min": 200.0
+    },
+    {
+      "type": "turbulence",
+      "min": 0.5
+    }
+  ],
+  "energy": 0.0,
+  "flags": [
+    "partial"
+  ],
+  "ingredients": [
+    {
+      "amount": 10,
+      "reagent": "powergrid:cinder_flour"
+    }
+  ],
+  "rate": {
+    "multiply": [
+      "V",
+      1.2
+    ]
+  },
+  "results": [
+    {
+      "amount": 8,
+      "reagent": "powergrid:redstone_sand"
+    },
+    {
+      "amount": 2,
+      "reagent": "powergrid:sulfur"
+    }
+  ]
+}
