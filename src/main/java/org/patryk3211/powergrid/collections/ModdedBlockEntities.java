@@ -17,8 +17,6 @@ package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.content.kinetics.base.HalfShaftInstance;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlockEntity;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatRenderer;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
@@ -28,7 +26,6 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchInstance;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
-import org.patryk3211.powergrid.electricity.electrode.VatElectrodeBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
@@ -137,21 +134,10 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.ELECTROMAGNET)
                     .register();
 
-    public static final BlockEntityEntry<ChemicalVatBlockEntity> CHEMICAL_VAT =
-            REGISTRATE.blockEntity("chemical_vat", ChemicalVatBlockEntity::new)
-                    .validBlock(ModdedBlocks.CHEMICAL_VAT)
-                    .renderer(() -> ChemicalVatRenderer::new)
-                    .register();
-
     public static final BlockEntityEntry<ElectricFanBlockEntity> ELECTRIC_FAN =
             REGISTRATE.blockEntity("electric_fan", ElectricFanBlockEntity::new)
                     .validBlock(ModdedBlocks.ELECTRIC_FAN)
                     .renderer(() -> ElectricFanRenderer::new)
-                    .register();
-
-    public static final BlockEntityEntry<VatElectrodeBlockEntity> VAT_ELECTRODE =
-            REGISTRATE.blockEntity("vat_electrode", VatElectrodeBlockEntity::new)
-                    .validBlock(ModdedBlocks.VAT_ELECTRODE)
                     .register();
 
     public static final BlockEntityEntry<PortableBatteryBlockEntity> PORTABLE_BATTERY =

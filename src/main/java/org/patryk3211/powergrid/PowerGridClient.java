@@ -32,7 +32,6 @@ import net.minecraft.client.util.Window;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatModel;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.collections.ModdedPackets;
@@ -96,9 +95,7 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 		context.resolveModel().register(innerContext -> {
 			final var id = innerContext.id();
 			if(id != null) {
-				if(id.equals(ChemicalVatModel.MODEL_ID)) {
-					return new ChemicalVatModel();
-				} else if(id.equals(CircuitBoardModel.MODEL_ID)) {
+				if(id.equals(CircuitBoardModel.MODEL_ID)) {
 					return new CircuitBoardModel();
 				}
 			}

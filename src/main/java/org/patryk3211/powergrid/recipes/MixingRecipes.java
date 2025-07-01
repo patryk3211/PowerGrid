@@ -23,7 +23,6 @@ import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.chemistry.reagent.Reagents;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.function.UnaryOperator;
@@ -31,15 +30,6 @@ import java.util.function.UnaryOperator;
 public class MixingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
-    GOLD_MESH = create("gold_mesh", b -> b
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .output(ModdedItems.GOLDEN_MESH)
-    ),
     ETCHED_CIRCUIT_BOARD = create("etched_circuit_board", b -> b
             .require(ModdedItems.UNETCHED_CIRCUIT)
             .require(Reagents.SULFURIC_ACID.asFluid(), FluidConstants.BOTTLE)

@@ -19,7 +19,6 @@ import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
-import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
@@ -43,8 +42,6 @@ import net.minecraft.util.math.Direction;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.base.CustomProperties;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
@@ -54,7 +51,6 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
-import org.patryk3211.powergrid.electricity.electrode.VatElectrodeBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
@@ -438,23 +434,6 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    public static final BlockEntry<ChemicalVatBlock> CHEMICAL_VAT = REGISTRATE.block("chemical_vat", ChemicalVatBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
-                            ConfiguredModel.builder().modelFile(state.get(ChemicalVatBlock.OPEN) ?
-                                    unchecked("chemical_vat_connected") : modModel(prov, "block/vat/closed"))
-                                    .build()
-                    ))
-            .initialProperties(SharedProperties::stone)
-            .properties(p -> p.sounds(BlockSoundGroup.NETHERITE))
-            .onRegister(CreateRegistrate.connectedTextures(ChemicalVatCTBehaviour::new))
-            .transform(pickaxeOnly())
-            .defaultLoot()
-            .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/vat/base")))
-                .build()
-            .register();
-
     public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
@@ -495,18 +474,6 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_fan/item")))
                 .build()
-            .register();
-
-    public static final BlockEntry<VatElectrodeBlock> VAT_ELECTRODE = REGISTRATE.block("vat_electrode", VatElectrodeBlock::new)
-            // Block state only used for particles, rendering is handled in block entity renderer
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).partialState().addModels(
-                            ConfiguredModel.builder()
-                                    .modelFile(modModel(prov, "block/copper_electrode"))
-                                    .build()
-                            ))
-            .initialProperties(SharedProperties::copperMetal)
-            .transform(pickaxeOnly())
             .register();
 
     public static final BlockEntry<PortableBatteryBlock> PORTABLE_BATTERY = REGISTRATE.block("portable_battery", PortableBatteryBlock::new)
