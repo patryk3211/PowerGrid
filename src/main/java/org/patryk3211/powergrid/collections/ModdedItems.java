@@ -24,7 +24,6 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.PowerGridRegistrate;
-import org.patryk3211.powergrid.chemistry.vat.upgrade.CatalyzerItem;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
