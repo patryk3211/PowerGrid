@@ -23,9 +23,11 @@ import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.chemistry.reagent.Reagent;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentIngredient;
 import org.patryk3211.powergrid.chemistry.reagent.mixture.ReagentMixture;
 import org.patryk3211.powergrid.chemistry.reagent.ReagentStack;
@@ -34,10 +36,7 @@ import org.patryk3211.powergrid.chemistry.recipe.condition.RecipeTemperatureCond
 import org.patryk3211.powergrid.chemistry.recipe.equation.ConstEquation;
 import org.patryk3211.powergrid.chemistry.recipe.equation.IReactionEquation;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixture> {
@@ -56,6 +55,9 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
     private final float energy;
     private final IReactionEquation rate;
 
+    private final int totalResultAmount;
+    private List<ConcentrationMapEntry> concentrationMap = null;
+
     @NotNull
     private RecipeTemperatureCondition temperatureCondition;
 
@@ -66,6 +68,12 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         this.flags = params.flags;
         this.energy = params.energy;
         this.rate = params.rate;
+
+        int resultAmount = 0;
+        for(var result : results) {
+            resultAmount += result.getAmount();
+        }
+        totalResultAmount = resultAmount;
 
         temperatureCondition = null;
         for(var condition : params.conditions) {
@@ -147,6 +155,10 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         return results;
     }
 
+    public int getTotalResultAmount() {
+        return totalResultAmount;
+    }
+
     public BitSet getFlagBits() {
         return flags;
     }
@@ -166,9 +178,16 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
 
     @Override
     public boolean test(ReagentMixture mixture) {
-        for(var ingredient : ingredients) {
-            if(mixture.getAmount(ingredient.getReagent()) < ingredient.getRequiredAmount())
-                return false;
+        if(!hasFlag(ReactionFlag.ALLOW_PARTIAL_RESULTS)) {
+            for(var ingredient : ingredients) {
+                if(mixture.getAmount(ingredient.getReagent()) < ingredient.getRequiredAmount())
+                    return false;
+            }
+        } else {
+            for(var ingredient : ingredients) {
+                if(!mixture.hasReagent(ingredient.getReagent()))
+                    return false;
+            }
         }
         boolean burning = mixture.isBurning();
         for(var condition : conditions) {
@@ -197,6 +216,39 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
         return maxRate <= 0 ? 0 : maxRate;
     }
 
+    private List<ConcentrationMapEntry> getConcentrationMap() {
+        if(concentrationMap != null)
+            return concentrationMap;
+        concentrationMap = new ArrayList<>();
+        for(var result : results) {
+            concentrationMap.add(new ConcentrationMapEntry((float) result.getAmount() / totalResultAmount, result.getReagent()));
+        }
+        concentrationMap.sort((a, b) -> Float.compare(a.concentration, b.concentration));
+        return concentrationMap;
+    }
+
+    private Reagent getRandomResult(Random random) {
+        var concentrations = getConcentrationMap();
+        float p = 0;
+        float v = random.nextFloat();
+        for(var entry : concentrations) {
+            p += entry.concentration;
+            if(v < p) {
+                return entry.reagent;
+            }
+        }
+        return concentrations.get(concentrations.size() - 1).reagent;
+    }
+
+    public Map<Reagent, Integer> rollPartialResults(int count, Random random) {
+        var results = new HashMap<Reagent, Integer>();
+        for(int i = 0; i < count; ++i) {
+            var reagent = getRandomResult(random);
+            results.compute(reagent, (key, current) -> current == null ? 1 : current + 1);
+        }
+        return results;
+    }
+
     public static class RecipeConstructorParameters {
         public List<ReagentIngredient> ingredients = new ArrayList<>();
         public List<IReactionCondition> conditions = new ArrayList<>();
@@ -207,4 +259,6 @@ public class ReactionRecipe implements Recipe<Inventory>, Predicate<ReagentMixtu
 
         public RecipeConstructorParameters() { }
     }
+
+    private record ConcentrationMapEntry(float concentration, Reagent reagent) { }
 }

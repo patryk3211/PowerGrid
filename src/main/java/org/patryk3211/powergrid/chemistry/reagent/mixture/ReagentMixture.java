@@ -21,6 +21,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.random.Random;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisRecipe;
 import org.patryk3211.powergrid.chemistry.reagent.*;
@@ -29,10 +30,7 @@ import org.patryk3211.powergrid.chemistry.recipe.ReactionFlag;
 import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
 import org.patryk3211.powergrid.chemistry.recipe.RecipeProgressStore;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> implements ReagentConditions {
     protected final Map<Reagent, Integer> reagents = new HashMap<>();
@@ -353,42 +351,63 @@ public class ReagentMixture extends SnapshotParticipant<MixtureSnapshot> impleme
      * Warning! This function assumes that the recipe was previously tested and all the required conditions match.
      * @param reaction Reaction recipe to apply to this mixture.
      */
-    public void applyReaction(ReactionRecipe reaction, RecipeProgressStore progressStore) {
+    public void applyReaction(ReactionRecipe reaction, RecipeProgressStore progressStore, Random random) {
         // First calculate the reaction rate.
         float reactionRate = reaction.calculateRate(this, progressStore.getProgress(reaction));
         if(reactionRate <= 0)
             return;
         for(var ingredient : reaction.getReagentIngredients()) {
             var amount = getAmount(ingredient.getReagent());
-            reactionRate = Math.min(amount / ingredient.getRequiredAmount(), reactionRate);
+            reactionRate = Math.min((float) amount / ingredient.getRequiredAmount(), reactionRate);
         }
         var reactionEnergy = reaction.getReactionEnergy();
         var temperature = getTemperaturePrecise();
-        if(reactionEnergy > 0) {
-            // Check energy remaining to max temperature
-        }
 
         // Then apply the reaction at the calculated rate.
         double ingredientEnergy = 0;
-        int quantReactionRate = (int) reactionRate;
+        boolean partial = reaction.hasFlag(ReactionFlag.ALLOW_PARTIAL_RESULTS);
+
+        var completeReactionRate = Math.floor(reactionRate);
+        var remainder = reactionRate - completeReactionRate;
+        int partialCount = (int) Math.floor(remainder * reaction.getTotalResultAmount());
+        var appliedReactionRate = partial
+                ? completeReactionRate + (float) partialCount / reaction.getTotalResultAmount()
+                : completeReactionRate;
         for(var ingredient : reaction.getReagentIngredients()) {
-            ingredientEnergy += stackEnergy(temperature, ingredient.getRequiredAmount() * quantReactionRate, ingredient.getReagent());
-            removeInternal(ingredient.getReagent(), ingredient.getRequiredAmount() * quantReactionRate, true);
+            int consumed = (int) (ingredient.getRequiredAmount() * appliedReactionRate);
+            ingredientEnergy += stackEnergy(temperature, consumed, ingredient.getReagent());
+            removeInternal(ingredient.getReagent(), consumed, true);
         }
         double resultHeatMass = 0;
-        for(var result : reaction.getReagentResults()) {
-            resultHeatMass += stackHeatMass(result.getAmount() * quantReactionRate, result.getReagent());
+        Map<Reagent, Integer> partialResults = null;
+        if(partial && partialCount > 0) {
+            partialResults = reaction.rollPartialResults(partialCount, random);
+            for(var entry : partialResults.entrySet()) {
+                resultHeatMass += stackHeatMass(entry.getValue(), entry.getKey());
+            }
         }
-        double resultEnergy = ingredientEnergy + reactionEnergy * quantReactionRate;
         for(var result : reaction.getReagentResults()) {
-            addInternal(result.getReagent(), result.getAmount() * quantReactionRate, resultEnergy / resultHeatMass, true);
+            resultHeatMass += stackHeatMass(result.getAmount() * (int) appliedReactionRate, result.getReagent());
+        }
+        double resultEnergy = ingredientEnergy + reactionEnergy * appliedReactionRate;
+        var resultTemperature = resultEnergy / resultHeatMass;
+        for(var result : reaction.getReagentResults()) {
+            addInternal(result.getReagent(), result.getAmount() * (int) appliedReactionRate, resultTemperature, true);
+        }
+        if(partialResults != null) {
+            for(var entry : partialResults.entrySet()) {
+                addInternal(entry.getKey(), entry.getValue(), resultTemperature, true);
+            }
         }
         if(reaction.hasFlag(ReactionFlag.COMBUSTION)) {
             // If recipe is a combustion recipe we can set the burning flag so that other things burn too.
             setBurning(true);
         }
-        float remainder = reactionRate - quantReactionRate;
-        progressStore.setProgress(reaction, remainder);
+        if(!partial) {
+            progressStore.setProgress(reaction, (float) remainder);
+        } else {
+            progressStore.setProgress(reaction, 0);
+        }
     }
 
     public int applyReaction(ElectrolysisRecipe recipe, float current, ReagentMixture negativeReceiver) {

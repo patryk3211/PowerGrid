@@ -18,7 +18,8 @@ package org.patryk3211.powergrid.chemistry.recipe;
 import net.minecraft.util.StringIdentifiable;
 
 public enum ReactionFlag implements StringIdentifiable {
-    COMBUSTION("combustion", 0);
+    COMBUSTION("combustion", 0),
+    ALLOW_PARTIAL_RESULTS("partial", 1);
 
     public static final com.mojang.serialization.Codec<ReactionFlag> CODEC = StringIdentifiable.createCodec(ReactionFlag::values);
 

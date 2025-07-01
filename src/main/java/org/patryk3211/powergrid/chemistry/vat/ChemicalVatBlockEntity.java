@@ -112,7 +112,7 @@ public class ChemicalVatBlockEntity extends SmartBlockEntity implements SidedSto
                 var reaction = recipes.get(i);
                 // Test if the reaction is still valid.
                 if(reaction.test(reagentInventory)) {
-                    reagentInventory.applyReaction(reaction, progressStore);
+                    reagentInventory.applyReaction(reaction, progressStore, world.random);
                     if(reaction.hasFlag(ReactionFlag.COMBUSTION)) {
                         stillBurning = true;
                     }
