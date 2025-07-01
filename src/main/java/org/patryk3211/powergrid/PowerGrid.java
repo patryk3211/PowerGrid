@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid;
 
-import com.simibubi.create.AllPackets;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipHelper;
@@ -30,12 +29,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisRecipe;
-import org.patryk3211.powergrid.chemistry.electrolysis.ElectrolysisRecipeSerializer;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
-import org.patryk3211.powergrid.chemistry.reagent.Reagents;
-import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipe;
-import org.patryk3211.powergrid.chemistry.recipe.ReactionRecipeSerializer;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
@@ -64,7 +57,6 @@ public class PowerGrid implements ModInitializer {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
 		ElectricalNetwork.LOGGER = LOGGER;
 
-		ReagentRegistry.init();
 		ModdedSoundEvents.prepare();
 
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
@@ -86,7 +78,6 @@ public class PowerGrid implements ModInitializer {
 		ModdedEntities.register();
 		HeaterFanProcessingTypes.register();
 		ModdedConfigs.register();
-		Reagents.register();
 
 		ModdedParticles.register();
 
@@ -100,11 +91,6 @@ public class PowerGrid implements ModInitializer {
 	}
 
 	private static void registerRecipes() {
-		Registry.register(Registries.RECIPE_SERIALIZER, ReactionRecipe.ID, ReactionRecipeSerializer.INSTANCE);
-		Registry.register(Registries.RECIPE_SERIALIZER, ElectrolysisRecipe.ID, ElectrolysisRecipeSerializer.INSTANCE);
-		Registry.register(Registries.RECIPE_TYPE, ReactionRecipe.ID, ReactionRecipe.TYPE);
-		Registry.register(Registries.RECIPE_TYPE, ElectrolysisRecipe.ID, ElectrolysisRecipe.TYPE);
-
 		var magnetizing = MagnetizingRecipe.TYPE_INFO;
 		Registry.register(Registries.RECIPE_SERIALIZER, magnetizing.getId(), magnetizing.getSerializer());
 		Registry.register(Registries.RECIPE_TYPE, magnetizing.getId(), magnetizing.getType());

@@ -26,17 +26,8 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import java.util.function.UnaryOperator;
 
 public class MixingRecipes extends ProcessingRecipeGen {
-    GeneratedRecipe
+//    GeneratedRecipe
 
-    GOLD_MESH = create("gold_mesh", b -> b
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .require(ModdedItems.GOLDEN_WIRE)
-            .output(ModdedItems.GOLDEN_MESH)
-    );
 
     public MixingRecipes(FabricDataOutput output) {
         super(output);

@@ -19,11 +19,6 @@
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
 
-  "powergrid.gui.chemical_vat.info_header": "Vat information",
-  "powergrid.gui.chemical_vat.upgrade_header": "Upgrade:",
-  "powergrid.gui.chemical_vat.temperature": "Reagent temperature",
-  "powergrid.gui.chemical_vat.reagents": "Contents:",
-
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
