@@ -37,6 +37,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public void withSchematic(CircuitSchematic schematic) {
         if(world.isClient)
             return;
+        if(schematic == null) {
+            world.breakBlock(pos, false);
+            return;
+        }
         this.schematic = new CircuitSchematic(schematic);
         bakeCircuit();
         notifyUpdate();
@@ -71,6 +75,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     @Override
     protected void read(NbtCompound tag, boolean clientPacket) {
+        if(!tag.contains("Schematic") && !world.isClient) {
+            world.breakBlock(pos, false);
+            return;
+        }
         super.read(tag, clientPacket);
         if(!clientPacket || tag.getBoolean("Rebuild") || baked == null) {
             schematic.deserializeNbt(tag.getCompound("Schematic"));
