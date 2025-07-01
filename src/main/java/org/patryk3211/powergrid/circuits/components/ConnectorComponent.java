@@ -27,7 +27,7 @@ import java.util.List;
 
 public class ConnectorComponent extends Component {
     private static final List<TerminalBoundingBox> TERMINALS = List.of(
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0.5f, 1.0f, 0.5f, 1.5f, 2.0f, 1.5f)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 1f, 1.0f, 1f, 2f, 2.0f, 2f)
     );
 
     public ConnectorComponent(ComponentFootprint footprint) {
