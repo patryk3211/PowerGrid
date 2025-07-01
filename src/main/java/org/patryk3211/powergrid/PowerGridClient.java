@@ -27,7 +27,6 @@ import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.util.Window;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatModel;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedParticles;
@@ -87,9 +86,6 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 		context.resolveModel().register(innerContext -> {
 			final var id = innerContext.id();
 			if(id != null) {
-				if(id.equals(ChemicalVatModel.MODEL_ID)) {
-					return new ChemicalVatModel();
-				}
 			}
 			return null;
 		});
