@@ -84,7 +84,7 @@ public class ModdedSoundEvents {
             .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ADD_ITEM, 0.5f, 1.0f)
             .build(),
 
-    UI_PLACE_FAIL = create("ui.place_component.fail")
+    UI_FAIL = create("ui.action.fail")
             .playExisting(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), 1.0f, 0.5f)
             .build(),
 

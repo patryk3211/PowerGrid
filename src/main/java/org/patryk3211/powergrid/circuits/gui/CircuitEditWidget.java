@@ -62,7 +62,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             return;
 
         var ms = ctx.getMatrices();
-        ms.translate(x, y, 1000);
+        ms.translate(x, y, 5);
         ms.scale(scale, scale, scale);
 
         if(placedComponent != null) {

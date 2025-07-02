@@ -59,6 +59,7 @@
   "powergrid.gui.circuit_designer.layer": "Switch layer",
   "powergrid.gui.circuit_designer.saving": "Saving...",
   "powergrid.gui.circuit_designer.placeable": "Placeable",
+  "powergrid.gui.circuit_designer.not_saved": "You have unsaved changes!",
 
   "powergrid.component.property.tube_gain": "Gain",
   "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",

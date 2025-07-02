@@ -66,6 +66,15 @@
     ],
     "subtitle": "powergrid.subtitle.relay_click"
   },
+  "ui.action.fail": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.note_block.bass"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.action.fail"
+  },
   "ui.delete_area": {
     "sounds": [
       {
@@ -83,15 +92,6 @@
       }
     ],
     "subtitle": "powergrid.subtitle.ui.place_component"
-  },
-  "ui.place_component.fail": {
-    "sounds": [
-      {
-        "type": "event",
-        "name": "minecraft:block.note_block.bass"
-      }
-    ],
-    "subtitle": "powergrid.subtitle.ui.place_component.fail"
   },
   "ui.place_trace": {
     "sounds": [
