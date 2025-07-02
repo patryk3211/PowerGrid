@@ -275,8 +275,10 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     public CircuitEditWidget.SelectionResult selectComponent(int x1, int y1, int x2, int y2, int clickX, int clickY) {
         var placed = schematic.getComponent(x1 / GRID_TO_GRID_SCALE, y1 / GRID_TO_GRID_SCALE);
-        if(placed == null)
+        if(placed == null) {
+            playSound(ModdedSoundEvents.UI_FAIL);
             return CircuitEditWidget.SelectionResult.IGNORE;
+        }
 
         selectedComponent = placed;
         propertiesWidget.setComponent(selectedComponent);
@@ -423,14 +425,24 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(button == 1 && currentComponent != null) {
-            currentComponent = null;
-            selectedSlot = null;
-            editWidget.stopComponentPlacement();
+        if(button == 1) {
+            if(currentComponent == null && currentTool == Tool.NONE) {
+                int gridX = (int) ((mouseX - editWidget.getX()) / CIRCUIT_SCALE);
+                int gridY = (int) ((mouseY - editWidget.getY()) / CIRCUIT_SCALE);
+                if(gridX >= 0 && gridY >= 0 && gridX < GRID_SIZE && gridY < GRID_SIZE) {
+                    deleteArea(gridX, gridY, gridX, gridY, gridX, gridY);
+                }
+            }
+            if(currentComponent != null) {
+                currentComponent = null;
+                selectedSlot = null;
+                editWidget.stopComponentPlacement();
+            }
             if(selectedComponent != null) {
                 selectedComponent = null;
                 propertiesWidget.setComponent(null);
             }
+            editWidget.cancelSelection();
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
