@@ -395,7 +395,19 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         // TODO: Add key binds for tools
         // Prevent closing on Inventory Key and ESC
         var focused = getFocused();
-        return focused != null && focused.keyPressed(keyCode, scanCode, modifiers);
+        var handled = focused != null && focused.keyPressed(keyCode, scanCode, modifiers);
+        if(handled)
+            return true;
+
+        var hotbar = client.options.hotbarKeys;
+        for(int i = 0; i < hotbar.length; ++i) {
+            if(hotbar[i].matchesKey(keyCode, scanCode)) {
+                toolSelect(handler.getSlot(i + 27));
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
