@@ -28,7 +28,6 @@ import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
-    private boolean firstPacket = true;
 
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -59,23 +58,23 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Override
     public void tick() {
         super.tick();
-        if(baked != null)
+        if(baked != null) {
             baked.tick();
+            if(!world.isClient)
+                markDirty();
+        }
     }
 
     @Override
     protected void write(NbtCompound tag, boolean clientPacket) {
-        if(!clientPacket || electricBehaviour.needsRebuild() || firstPacket) {
-            tag.put("Schematic", schematic.serializeNbt());
-            firstPacket = false;
-        }
+        tag.put("Schematic", schematic.serializeNbt());
         baked.write(tag);
         super.write(tag, clientPacket);
     }
 
     @Override
     protected void read(NbtCompound tag, boolean clientPacket) {
-        if(!tag.contains("Schematic") && !world.isClient) {
+        if(!tag.contains("Schematic")) {
             world.breakBlock(pos, false);
             return;
         }
