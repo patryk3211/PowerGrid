@@ -40,7 +40,6 @@ import java.util.List;
 public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements IMultiScreenHandlerFactory {
     private final CircuitDesignTableInventory inventory = new CircuitDesignTableInventory();
 
-    private String schematicName = null;
     CircuitSchematic schematic = new CircuitSchematic();
     boolean schematicChanged = false;
 
@@ -70,9 +69,6 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         super.write(tag, clientPacket);
         tag.put("Inventory", inventory.serializeNBT());
         tag.put("Schematic", schematic.serializeNbt());
-        if(schematicName != null) {
-            tag.putString("Name", schematicName);
-        }
     }
 
     @Override
@@ -82,11 +78,6 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         schematic.deserializeNbt(tag.getCompound("Schematic"));
         if(clientPacket)
             schematicChanged = true;
-        if(tag.contains("Name")) {
-            schematicName = tag.getString("Name");
-        } else {
-            schematicName = null;
-        }
     }
 
     @Override
@@ -104,11 +95,8 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
             return;
         stack.decrement(1);
         var result = schematic.toItemStack();
-        if(schematicName != null)
-            result.setCustomName(Text.literal(schematicName));
         inventory.setStackInSlot(2, result);
         schematic.clear();
-        schematicName = null;
         notifyUpdate();
     }
 
@@ -116,11 +104,6 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         var stack = inventory.getStackInSlot(0);
         if(stack.isEmpty() || world.isClient || !stack.hasNbt())
             return;
-        if(stack.hasCustomName()) {
-            schematicName = stack.getName().getString();
-        } else {
-            schematicName = null;
-        }
         if(inventory.getStackInSlot(1).isEmpty() && stack.isOf(ModdedItems.CIRCUIT_SCHEMATIC.get())) {
             // Move to save slot
             inventory.setStackInSlot(0, ItemStack.EMPTY);
@@ -141,11 +124,12 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
 
     @NotNull
     public String getSchematicName() {
-        return schematicName != null ? schematicName : "Empty Schematic";
+        var name = schematic.getName();
+        return name != null ? name : Text.translatable("item.powergrid.circuit_schematic.empty").getString();
     }
 
     public void setSchematicName(String name) {
-        this.schematicName = name;
+        schematic.setName(name);
         if(!world.isClient)
             notifyUpdate();
     }

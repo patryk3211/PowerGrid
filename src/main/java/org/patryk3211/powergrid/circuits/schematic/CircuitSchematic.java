@@ -19,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -39,6 +40,9 @@ public class CircuitSchematic {
 
     private final List<PlacedComponent> components = new ArrayList<>();
 
+    @Nullable
+    private String name;
+
     public CircuitSchematic() {
 
     }
@@ -51,6 +55,10 @@ public class CircuitSchematic {
             components.add(placed);
             addPads(placed);
         }
+    }
+
+    public void setName(@Nullable String name) {
+        this.name = name;
     }
 
     public static CircuitSchematic fromNbt(NbtCompound nbt) {
@@ -77,12 +85,21 @@ public class CircuitSchematic {
             list.add(component.serializeNbt());
         }
         tag.put("Components", list);
+        if(name != null) {
+            tag.putString("Name", name);
+        }
         return tag;
     }
 
     public void deserializeNbt(NbtCompound tag) {
         front.deserialize(tag.getLongArray("Front"));
         back.deserialize(tag.getLongArray("Back"));
+
+        if(tag.contains("Name")) {
+            name = tag.getString("Name");
+        } else {
+            name = null;
+        }
 
         components.clear();
         var list = tag.getList("Components", NbtElement.COMPOUND_TYPE);
@@ -163,6 +180,8 @@ public class CircuitSchematic {
         var tag = new NbtCompound();
         tag.put("Schematic", serializeNbt());
         stack.setNbt(tag);
+        if(name != null)
+            stack.setCustomName(Text.literal(name));
         return stack;
     }
 
@@ -320,6 +339,11 @@ public class CircuitSchematic {
         back.clear();
         pads.clear();
         components.clear();
+    }
+
+    @Nullable
+    public String getName() {
+        return name;
     }
 
     public enum Layer {
