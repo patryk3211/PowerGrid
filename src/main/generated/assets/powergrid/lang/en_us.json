@@ -29,6 +29,7 @@
   "block.powergrid.transformer_core": "Transformer Core",
   "block.powergrid.transformer_medium": "Transformer Medium",
   "block.powergrid.transformer_small": "Transformer Small",
+  "block.powergrid.winding": "Winding",
   "block.powergrid.wire_connector": "Wire Connector",
   "create.aggregate_type.parallel": "Parallel",
   "create.aggregate_type.series": "Series",

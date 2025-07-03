@@ -68,6 +68,7 @@ import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 
 import java.util.function.Function;
@@ -75,6 +76,7 @@ import java.util.function.Function;
 import static com.simibubi.create.foundation.data.TagGen.*;
 import static net.minecraft.state.property.Properties.*;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
+import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
 
 public class ModdedBlocks {
     public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
@@ -518,6 +520,40 @@ public class ModdedBlocks {
                 .build()
             .register();
 
+    public static final BlockEntry<WindingBlock> WINDING = REGISTRATE.block("winding", WindingBlock::new)
+            .blockstate((ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
+                    .forAllStates(state -> {
+                        int x = 0, y = 0;
+                        var axis = state.get(AXIS);
+                        var part = state.get(WindingBlock.PART);
+                        var first = state.get(ALONG_FIRST_AXIS);
+                        switch(axis) {
+                            case X -> y = -90;
+                            case Y -> x =  90;
+                        }
+                        if(part == 2) {
+                            if(axis == Direction.Axis.Y) {
+                                x += 180;
+                            } else {
+                                y += 180;
+                            }
+                        }
+                        var model = switch(part) {
+                            case 0, 2 -> modModel(prov, first ? "block/winding/winding_end_v" : "block/winding/winding_end");
+                            case 1 -> modModel(prov, first ? "block/winding/winding_middle_v" : "block/winding/winding_middle");
+                            default -> throw new IllegalStateException();
+                        };
+                        return ConfiguredModel.builder()
+                                .modelFile(model)
+                                .rotationX(x)
+                                .rotationY(y)
+                                .build();
+                    }))
+            .initialProperties(SharedProperties::copperMetal)
+            .transform(pickaxeOnly())
+            .loot((tables, block) -> tables.addDrop(block, ModdedItems.COPPER_COIL))
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 
@@ -559,7 +595,7 @@ public class ModdedBlocks {
     // This function needs two models. One for Y axis and one for other axis.
     public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
         var facing = state.get(FACING);
-        var axis_along_first = state.get(CustomProperties.ALONG_FIRST_AXIS);
+        var axis_along_first = state.get(ALONG_FIRST_AXIS);
 
         int x = 0, y = 0;
         boolean verticalModel = false;

@@ -104,6 +104,8 @@ public class GlobalElectricNetworks {
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
 
+        if(node1 == null || node2 == null)
+            return null;
         if(node1 == node2)
             return null;
 

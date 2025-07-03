@@ -25,6 +25,8 @@ import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
+import java.util.Objects;
+
 public class BlockWireEndpoint implements IWireEndpoint {
     private BlockPos pos;
     private int terminal;
@@ -102,10 +104,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        // TODO: Since connection doesn't have to persist we can potentially store
-        //  the entity object and avoid unnecessary indirection.
-        behaviour.addConnection(terminal, entity);
-//        behaviour.addConnection(terminal, new ElectricBehaviour.Connection(entity.getBlockPos(), entity.getUuid()));
+        behaviour.addConnection(this, entity);
     }
 
     @Override
@@ -113,8 +112,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        behaviour.removeConnection(terminal, entity);
-//        behaviour.removeConnection(terminal, entity.getUuid());
+        behaviour.removeConnection(this, entity);
     }
 
     @Override
@@ -124,6 +122,11 @@ public class BlockWireEndpoint implements IWireEndpoint {
             return pos.equals(other.pos) && terminal == other.terminal;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos, terminal);
     }
 
     public ITerminalPlacement getTerminalPlacement(World world) {

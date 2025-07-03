@@ -105,6 +105,7 @@ public interface IElectric extends IWrenchable {
         return ActionResult.PASS;
     }
 
+    @Nullable
     default ElectricBehaviour getBehaviour(World world, BlockPos pos, BlockState state) {
         var blockEntity = world.getBlockEntity(pos);
         if(blockEntity instanceof SmartBlockEntity smartEntity)
@@ -169,7 +170,7 @@ public interface IElectric extends IWrenchable {
         }
 
         // Check if there is an existing connection between these nodes.
-        if(behaviour1.hasConnection(endpoint1.getTerminal(), endpoint2) || behaviour2.hasConnection(endpoint2.getTerminal(), endpoint1)) {
+        if(behaviour1.hasConnection(endpoint1, endpoint2) || behaviour2.hasConnection(endpoint2, endpoint1)) {
             sendMessage(context, Lang.translate("message.connection_exists").style(Formatting.RED).component());
             return ActionResult.FAIL;
         }

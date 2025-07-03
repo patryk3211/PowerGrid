@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
 
 import static com.simibubi.create.AllTags.forgeItemTag;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -83,7 +84,9 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<Item> RESISTIVE_COIL = ingredient("resistive_coil", forgeItemTag("iron_coils"), ModdedTags.Item.COILS.tag);
-    public static final ItemEntry<Item> COPPER_COIL = ingredient("copper_coil", forgeItemTag("copper_coils"), ModdedTags.Item.COILS.tag);
+    public static final ItemEntry<WindingItem> COPPER_COIL = REGISTRATE.item("copper_coil", WindingItem::new)
+            .tag(forgeItemTag("copper_coils"), ModdedTags.Item.COILS.tag)
+            .register();
     public static final ItemEntry<Item> MAGNET = ingredient("magnet");
 
     public static final ItemEntry<Item> INTEGRATED_CIRCUIT = ingredient("integrated_circuit");
