@@ -158,7 +158,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     public float windingCurrent() {
-        return mainBE.sourceNode.getCurrent();
+        return mainBE.sourceNode.getCurrent() / mainBE.coilCount;
     }
 
     @Override
