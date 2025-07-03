@@ -54,7 +54,7 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender
 
 public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<CircuitDesignTableEditMenu> {
     private static final Identifier BACKGROUND = PowerGrid.texture("gui/circuit_design_table_edit");
-    private static final int WIDTH = 181;
+    private static final int WIDTH = 182;
     private static final int HEIGHT = 160;
 
     public static final int CIRCUIT_SCALE = 8;
@@ -153,12 +153,13 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         currentComponent = null;
         selectedSlot = null;
 
-        acceptBtn = new IconButton(x + 153 - 11, y + 15, AllIcons.I_CONFIRM);
-        cancelBtn = new IconButton(x + 153 - 11, y + 35, ModIcons.I_CANCEL);
-        connectBtn = new IconButton(x + 153 - 11, y + 55, ModIcons.I_CONNECT);
-        deleteBtn = new IconButton(x + 153 - 11, y + 73, AllIcons.I_TRASH);
-        selectBtn = new IconButton(x + 153 - 11, y + 91, AllIcons.I_TARGET);
-        layerBtn = new IconButton(x + 153 - 11, y + 111, ModIcons.I_LAYER_FRONT);
+        final var BUTTONS_X = x + 154 - 11;
+        acceptBtn = new IconButton(BUTTONS_X, y + 43, AllIcons.I_CONFIRM);
+        cancelBtn = new IconButton(BUTTONS_X, y + 63, ModIcons.I_CANCEL);
+        connectBtn = new IconButton(BUTTONS_X, y + 83, ModIcons.I_CONNECT);
+        deleteBtn = new IconButton(BUTTONS_X, y + 101, AllIcons.I_TRASH);
+        selectBtn = new IconButton(BUTTONS_X, y + 119, AllIcons.I_TARGET);
+        layerBtn = new IconButton(BUTTONS_X, y + 139, ModIcons.I_LAYER_FRONT);
 
         acceptBtn.setToolTip(TOOLTIP_SAVE);
         cancelBtn.setToolTip(TOOLTIP_DISCARD);
@@ -331,7 +332,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE);
 
         if(currentTool.y > 0) {
-            ctx.drawTexture(BACKGROUND, x + 172 - 11, y + currentTool.y, 250, 0, 6, 18);
+            ctx.drawTexture(BACKGROUND, x + 173 - 11, y + currentTool.y, 250, 0, 6, 18);
         }
 
         if(selectedComponent != null) {
@@ -469,9 +470,9 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     private enum Tool {
         NONE(0),
-        CONNECT(55),
-        DELETE(73),
-        SELECT(91);
+        CONNECT(83),
+        DELETE(101),
+        SELECT(119);
 
         public final int y;
 
