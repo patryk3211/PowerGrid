@@ -21,8 +21,10 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
@@ -88,6 +90,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(rotorN != null && rotorN.blockEntity.getCachedState().get(AXIS) != state.get(AXIS))
             rotorN = null;
         sendData();
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return new ThermalBehaviour(this, 2.0f, 0.1f);
     }
 
     @Override
@@ -164,9 +171,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
+        float current = windingCurrent();
+        applyLostPower(current * current * WindingBlock.resistance());
 
         if(rotorP != null) {
-            float current = windingCurrent();
             float torque = coilConstant * rotorP.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
@@ -188,7 +196,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             rotorP.applyTickForce(torque);
         }
         if(rotorN != null) {
-            float current = windingCurrent();
             float torque = coilConstant * rotorN.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
