@@ -145,9 +145,9 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.PORTABLE_BATTERY)
                     .register();
 
-    public static final BlockEntityEntry<CircuitDesignTableBlockEntity> CIRCUIT_DESIGN_BENCH =
+    public static final BlockEntityEntry<CircuitDesignTableBlockEntity> CIRCUIT_DESIGN_TABLE =
             REGISTRATE.blockEntity("circuit_design_table", CircuitDesignTableBlockEntity::new)
-                    .validBlock(ModdedBlocks.CIRCUIT_DESIGN_BENCH)
+                    .validBlock(ModdedBlocks.CIRCUIT_DESIGN_TABLE)
                     .register();
 
     public static final BlockEntityEntry<CircuitBoardBlockEntity> CIRCUIT_BOARD =

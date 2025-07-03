@@ -491,14 +491,17 @@ public class ModdedBlocks {
             })
             .register();
 
-    public static final BlockEntry<CircuitDesignTableBlock> CIRCUIT_DESIGN_BENCH = REGISTRATE.block("circuit_design_table", CircuitDesignTableBlock::new)
-            .blockstate((ctx, prov) -> {})
+    public static final BlockEntry<CircuitDesignTableBlock> CIRCUIT_DESIGN_TABLE = REGISTRATE.block("circuit_design_table", CircuitDesignTableBlock::new)
+            .blockstate((ctx, prov) -> prov
+                    .simpleBlock(ctx.getEntry(), prov.models()
+                            .cubeBottomTop(ctx.getName(),
+                                    prov.modLoc("block/circuit_design_table_side"),
+                                    prov.mcLoc("block/spruce_planks"),
+                                    prov.modLoc("block/circuit_design_table_top"))))
             .initialProperties(() -> Blocks.CRAFTING_TABLE)
             .transform(axeOnly())
             .defaultLoot()
-            .item()
-            .model((ctx, prov) -> {})
-            .build()
+            .simpleItem()
             .register();
 
     public static final BlockEntry<CircuitBoardBlock> CIRCUIT_BOARD = REGISTRATE.block("circuit_board", CircuitBoardBlock::new)
