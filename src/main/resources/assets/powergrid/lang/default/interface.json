@@ -78,5 +78,7 @@
   "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
   "powergrid.component.property.relay_state": "State",
 
-  "powergrid.component.property.resistor_value": "Resistance"
+  "powergrid.component.property.resistor_value": "Resistance",
+
+  "powergrid.recipe.category.circuit_design": "Circuit Designing"
 }

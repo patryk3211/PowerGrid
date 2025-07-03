@@ -208,6 +208,7 @@
   "powergrid.ponder.wire_voltage_drop.text_3": "Lost power is turned into heat",
   "powergrid.ponder.wire_voltage_drop.text_4": "If too much power is drawn, the wires can overheat and break",
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
+  "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.subtitle.electrozapper_shoot": "Electro-Zapper bzzzts",
   "powergrid.subtitle.hv_switch_connect": "Switch connected",
   "powergrid.subtitle.hv_switch_disconnect": "Switch disconnected",
