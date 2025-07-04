@@ -41,7 +41,6 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
@@ -64,7 +63,6 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
-import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
@@ -195,34 +193,6 @@ public class ModdedBlocks {
                         prov.withExistingParent(ctx.getName(), prov.modLoc("block/rotor/rotor_none")))
                 .build()
             .lang("Generator Rotor")
-            .register();
-
-    public static final BlockEntry<CoilBlock> GENERATOR_COIL = REGISTRATE.block("generator_coil", CoilBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder();
-                        if(state.get(CoilBlock.HAS_TERMINALS)) {
-                            builder.modelFile(modModel(prov, "block/coil/generator_coil"));
-                        } else {
-                            builder.modelFile(modModel(prov, "block/coil/generator_coil_bare"));
-                        }
-                        switch(state.get(CoilBlock.FACING)) {
-                            case DOWN -> builder.rotationX(180);
-                            case NORTH -> builder.rotationX(90);
-                            case SOUTH -> builder.rotationX(-90);
-                            case EAST -> builder.rotationX(90).rotationY(90);
-                            case WEST -> builder.rotationX(90).rotationY(-90);
-                        }
-                        return builder.build();
-                    }))
-            .initialProperties(SharedProperties::softMetal)
-            .transform(pickaxeOnly())
-            .defaultLoot()
-            .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/coil/generator_coil")))
-                .build()
-            .lang("Generator Coil")
             .register();
 
     public static final BlockEntry<GeneratorHousing> GENERATOR_HOUSING = REGISTRATE.block("generator_housing", GeneratorHousing::new)
@@ -450,7 +420,7 @@ public class ModdedBlocks {
                         }
                         return builder.build();
                     }))
-            .initialProperties(GENERATOR_COIL::get)
+            .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .defaultLoot()
             .simpleItem()

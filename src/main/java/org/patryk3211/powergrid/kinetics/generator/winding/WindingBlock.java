@@ -48,8 +48,6 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
-import org.patryk3211.powergrid.kinetics.generator.coil.CoilBehaviour;
-import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlockEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -191,6 +189,11 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     @Override
     public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
         super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+
+        var dir = sourcePos.subtract(pos);
+        if(Direction.fromVector(dir.getX(), dir.getY(), dir.getZ()).getAxis() == state.get(AXIS))
+            return;
+
         withBlockEntityDo(world, pos, be -> be.onNeighborChanged(sourcePos));
     }
 
@@ -230,7 +233,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     @Override
     public ElectricBehaviour getBehaviour(World world, BlockPos pos, BlockState state) {
         return getMainBlockEntity(world, pos)
-                .map(be -> be.getBehaviour(ElectricBehaviour.TYPE))
+                .map(winding -> winding.getBehaviourProvider().getBehaviour(ElectricBehaviour.TYPE))
                 .orElse(null);
     }
 
@@ -241,6 +244,24 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             stacks.add(AllBlocks.SHAFT.asStack());
         return stacks;
     }
+
+    public Direction.Axis getParallelCheckAxis(BlockState state) {
+        var along = state.get(ALONG_FIRST_AXIS);
+        return switch(state.get(AXIS)) {
+            case X -> along ? Direction.Axis.Z : Direction.Axis.Y;
+            case Y -> along ? Direction.Axis.X : Direction.Axis.Z;
+            case Z -> along ? Direction.Axis.X : Direction.Axis.Y;
+        };
+    }
+
+//    public Direction.Axis getMagneticAxis(BlockState state) {
+//        var along = state.get(ALONG_FIRST_AXIS);
+//        return switch(state.get(AXIS)) {
+//            case X -> along ? Direction.Axis.Y : Direction.Axis.Z;
+//            case Y -> along ? Direction.Axis.Z : Direction.Axis.X;
+//            case Z -> along ? Direction.Axis.Y : Direction.Axis.X;
+//        };
+//    }
 
     @Override
     public Class<WindingBlockEntity> getBlockEntityClass() {

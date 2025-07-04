@@ -41,9 +41,9 @@ public class PonderIndex {
                 .addStoryBoard("generator/rotor", GeneratorScenes::rotor)
                 .addStoryBoard("generator/generator", GeneratorScenes::generator);
 
-        HELPER.forComponents(ModdedBlocks.GENERATOR_COIL)
-                .addStoryBoard("generator/coil", GeneratorScenes::coil)
-                .addStoryBoard("generator/generator", GeneratorScenes::generator);
+//        HELPER.forComponents(ModdedBlocks.GENERATOR_COIL)
+//                .addStoryBoard("generator/coil", GeneratorScenes::coil)
+//                .addStoryBoard("generator/generator", GeneratorScenes::generator);
 
         HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing);
 

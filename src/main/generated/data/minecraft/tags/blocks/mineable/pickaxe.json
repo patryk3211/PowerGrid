@@ -9,7 +9,6 @@
     "powergrid:andesite_current_gauge",
     "powergrid:brass_current_gauge",
     "powergrid:generator_rotor",
-    "powergrid:generator_coil",
     "powergrid:generator_housing",
     "powergrid:hv_switch",
     "powergrid:creative_voltage_source",
@@ -24,7 +23,6 @@
     "powergrid:electric_fan",
     "powergrid:portable_battery",
     "powergrid:circuit_board",
-    "powergrid:portable_battery",
     "powergrid:winding"
   ]
 }

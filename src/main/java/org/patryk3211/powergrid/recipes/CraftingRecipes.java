@@ -25,15 +25,6 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
 
-    GENERATOR_COIL = create(ModdedBlocks.GENERATOR_COIL)
-            .unlockedBy(ModdedItems.WIRE::get)
-            .shaped(b -> b
-                    .pattern("CIC")
-                    .pattern("CIC")
-                    .input('C', ModdedItems.COPPER_COIL)
-                    .input('I', RecipeTags.ironSheet())
-            ),
-
     WIRE_CONNECTOR = create(ModdedBlocks.WIRE_CONNECTOR)
             .unlockedBy(AllItems.ANDESITE_ALLOY::get)
             .shaped(b -> b

@@ -23,7 +23,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
-import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
@@ -127,12 +126,12 @@ public class GeneratorScenes {
 
         scene.overlay.showControls(new InputWindowElement(util.vector.topOf(coil), Pointing.RIGHT).withWrench(), 30);
         scene.idle(20);
-        scene.world.setBlock(coil, ModdedBlocks.GENERATOR_COIL.getDefaultState()
-                .with(CoilBlock.FACING, Direction.DOWN).with(CoilBlock.HAS_TERMINALS, true), false);
+//        scene.world.setBlock(coil, ModdedBlocks.GENERATOR_COIL.getDefaultState()
+//                .with(CoilBlock.FACING, Direction.DOWN).with(CoilBlock.HAS_TERMINALS, true), false);
         scene.idle(40);
 
-        var state = ModdedBlocks.GENERATOR_COIL.getDefaultState()
-                .with(CoilBlock.FACING, Direction.DOWN).with(CoilBlock.HAS_TERMINALS, false);
+//        var state = ModdedBlocks.GENERATOR_COIL.getDefaultState()
+//                .with(CoilBlock.FACING, Direction.DOWN).with(CoilBlock.HAS_TERMINALS, false);
         var posList = new BlockPos[] {
                 coil.west(),
                 coil.north(),
@@ -140,7 +139,7 @@ public class GeneratorScenes {
                 coil.west().south()
         };
         for(var pos : posList) {
-            scene.world.setBlock(pos, state, false);
+//            scene.world.setBlock(pos, state, false);
             scene.world.showSection(util.select.position(pos), Direction.DOWN);
             scene.idle(5);
         }

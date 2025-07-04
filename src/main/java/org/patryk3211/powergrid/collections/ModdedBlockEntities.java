@@ -39,7 +39,6 @@ import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
@@ -80,10 +79,6 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("generator_rotor", RotorBlockEntity::new)
                     .validBlock(ModdedBlocks.GENERATOR_ROTOR)
                     .renderer(() -> RotorRenderer::new)
-                    .register();
-    public static final BlockEntityEntry<CoilBlockEntity> GENERATOR_COIL =
-            REGISTRATE.blockEntity("generator_coil", CoilBlockEntity::new)
-                    .validBlock(ModdedBlocks.GENERATOR_COIL)
                     .register();
 
     public static final BlockEntityEntry<SwitchBlockEntity> SWITCH =
