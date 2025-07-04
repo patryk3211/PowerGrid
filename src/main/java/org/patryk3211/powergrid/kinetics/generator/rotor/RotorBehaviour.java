@@ -117,8 +117,8 @@ public class RotorBehaviour extends SegmentedBehaviour {
         super.makeController();
         inertia = ROTOR_INERTIA;
         segmentCount = 1;
-        angularVelocity = 0;
-        angle = 0;
+//        angularVelocity = 0;
+//        angle = 0;
     }
 
     @Override
@@ -243,6 +243,9 @@ public class RotorBehaviour extends SegmentedBehaviour {
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity)) {
                 angularVelocity = 0;
             }
+        } else {
+            angularVelocity = getAngularVelocity();
+            angle = getAngle();
         }
         blockEntity.markDirty();
         ticked = true;

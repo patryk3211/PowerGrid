@@ -24,13 +24,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
     private SegmentedBehaviour controller;
     private BlockPos controllerPos;
-    private final List<SegmentedBehaviour> segments = new LinkedList<>();
+    private final Set<SegmentedBehaviour> segments = new HashSet<>();
     private Boolean isController;
 
     public SegmentedBehaviour(SmartBlockEntity be) {
@@ -181,6 +180,61 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         }
     }
 
+    private void checkConnectivity(SegmentedBehaviour without) {
+        if(!isController()) {
+            PowerGrid.LOGGER.error("Tried to check connectivity for a non-controller segment");
+            return;
+        }
+        var checked = new HashSet<SegmentedBehaviour>();
+        var toCheck = new ArrayList<SegmentedBehaviour>();
+        toCheck.add(this);
+
+        while(!toCheck.isEmpty()) {
+            var segment = toCheck.remove(0);
+            if(segment == without || !checked.add(segment))
+                continue;
+            var connected = segment.getConnected();
+            toCheck.addAll(connected);
+        }
+
+        var removed = new ArrayList<SegmentedBehaviour>();
+        var iter = segments.iterator();
+        while(iter.hasNext()) {
+            var segment = iter.next();
+            if(checked.contains(segment) || segment == without)
+                continue;
+            iter.remove();
+
+            removed.add(segment);
+            segmentRemoved(segment);
+            segment.controller = null;
+            segment.isController = null;
+        }
+
+        while(!removed.isEmpty()) {
+            var zoneController = removed.remove(0);
+            zoneController.makeController();
+
+            var checkQueue2 = new ArrayList<SegmentedBehaviour>();
+            checkQueue2.add(zoneController);
+            while(!checkQueue2.isEmpty()) {
+                var segment = checkQueue2.remove(0);
+                segment.blockEntity.notifyUpdate();
+                var connected = segment.getConnected();
+                for(var neighbor : connected) {
+                    if(removed.contains(neighbor)) {
+                        neighbor.controllerPos = zoneController.getPos();
+                        neighbor.isController = false;
+                        zoneController.segments.add(neighbor);
+                        zoneController.segmentAdded(neighbor);
+                        removed.remove(neighbor);
+                        checkQueue2.add(neighbor);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void unload() {
         super.unload();
@@ -200,7 +254,10 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         super.destroy();
         if(controllerPos == null && !segments.isEmpty()) {
             // Move all segments to a new controller.
-            var first = segments.remove(0);
+            var firstIter = segments.iterator();
+            var first = firstIter.next();
+            firstIter.remove();
+
             first.makeController();
             segments.forEach(segment -> segment.setController(first));
 
@@ -210,6 +267,7 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
             first.readController(nbt, false);
             first.blockEntity.sendData();
         }
+        getControllerOrThis().checkConnectivity(this);
     }
 
     public void segmentAdded(SegmentedBehaviour behaviour) {
