@@ -31,11 +31,8 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.base.IConnectableBlock;
-import org.patryk3211.powergrid.collections.ModdedBlocks;
-import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlock;
 
-public class GeneratorHousing extends Block implements IConnectableBlock, IWrenchable {
+public class GeneratorHousing extends Block implements IWrenchable {
     public static final EnumProperty<Direction> HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
     public static final BooleanProperty UP = Properties.UP;
 
@@ -71,29 +68,29 @@ public class GeneratorHousing extends Block implements IConnectableBlock, IWrenc
         };
     }
 
-    @Override
-    public boolean connects(BlockState state, Direction side, BlockState checkState) {
-        // Generator housing can only connect to coils.
-        if(!checkState.isOf(ModdedBlocks.GENERATOR_COIL.get()))
-            return false;
-        if(side.getAxis() == Direction.Axis.Y) {
-            // Up or down side, coil facing must reflect housing facing.
-            return state.get(HORIZONTAL_FACING) == checkState.get(CoilBlock.FACING);
-        } else {
-            // Other sides, coil facing must be up or down, depending on the housing up value.
-            var coilFacing = checkState.get(CoilBlock.FACING);
-            var up = state.get(UP);
-            return up ? coilFacing == Direction.UP : coilFacing == Direction.DOWN;
-        }
-    }
+//    @Override
+//    public boolean connects(BlockState state, Direction side, BlockState checkState) {
+//        // Generator housing can only connect to windings.
+//        if(!checkState.isOf(ModdedBlocks.WINDING.get()))
+//            return false;
+//        if(side.getAxis() == Direction.Axis.Y) {
+//            // Up or down side, coil facing must reflect housing facing.
+//            return state.get(HORIZONTAL_FACING) == checkState.get();
+//        } else {
+//            // Other sides, coil facing must be up or down, depending on the housing up value.
+//            var coilFacing = checkState.get(CoilBlock.FACING);
+//            var up = state.get(UP);
+//            return up ? coilFacing == Direction.UP : coilFacing == Direction.DOWN;
+//        }
+//    }
 
-    @Override
-    public boolean canPropagate(BlockState state, Direction direction) {
-        if(direction == state.get(HORIZONTAL_FACING))
-            return true;
-        var up = state.get(UP);
-        return up ? direction == Direction.UP : direction == Direction.DOWN;
-    }
+//    @Override
+//    public boolean canPropagate(BlockState state, Direction direction) {
+//        if(direction == state.get(HORIZONTAL_FACING))
+//            return true;
+//        var up = state.get(UP);
+//        return up ? direction == Direction.UP : direction == Direction.DOWN;
+//    }
 
     @Override
     public ActionResult onWrenched(BlockState state, ItemUsageContext context) {

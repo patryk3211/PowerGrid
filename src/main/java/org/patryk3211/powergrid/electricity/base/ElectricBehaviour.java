@@ -159,8 +159,12 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void removeConnection(BlockWireEndpoint endpoint, WireEntity wire) {
-        if(connections.containsKey(endpoint))
-            connections.get(endpoint).remove(wire);
+        if(connections.containsKey(endpoint)) {
+            var list = connections.get(endpoint);
+            list.remove(wire);
+            if(list.isEmpty())
+                connections.remove(endpoint);
+        }
     }
 
     @Override
@@ -184,6 +188,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 return true;
         }
         return false;
+    }
+
+    public Map<BlockWireEndpoint, List<WireEntity>> getConnections() {
+        return connections;
     }
 
     public void breakConnections() {
@@ -222,5 +230,13 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 rebuildOnClient = false;
             }
         }
+    }
+
+    public void inheritConnections(ElectricBehaviour otherBehaviour) {
+        for(var entry : otherBehaviour.connections.entrySet()) {
+            var thisList = connections.computeIfAbsent(entry.getKey(), key -> new ArrayList<>());
+            thisList.addAll(entry.getValue());
+        }
+        otherBehaviour.connections.clear();
     }
 }
