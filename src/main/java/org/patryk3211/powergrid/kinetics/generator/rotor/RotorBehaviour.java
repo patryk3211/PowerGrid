@@ -122,13 +122,23 @@ public class RotorBehaviour extends SegmentedBehaviour {
     }
 
     @Override
-    public void readController(NbtCompound compound, boolean clientPacket) {
+    public void read(NbtCompound compound, boolean clientPacket) {
+        super.read(compound, clientPacket);
         if(compound.contains("AngularVelocity")) {
             angularVelocity = compound.getFloat("AngularVelocity");
             if(Float.isNaN(angularVelocity))
                 angularVelocity = 0;
         }
+    }
 
+    @Override
+    public void write(NbtCompound compound, boolean clientPacket) {
+        super.write(compound, clientPacket);
+        compound.putFloat("AngularVelocity", getAngularVelocity());
+    }
+
+    @Override
+    public void readController(NbtCompound compound, boolean clientPacket) {
         if(compound.contains("FieldStrength")) {
             fieldStrength = compound.getFloat("FieldStrength");
         }
@@ -136,7 +146,6 @@ public class RotorBehaviour extends SegmentedBehaviour {
 
     @Override
     public void writeController(NbtCompound compound, boolean clientPacket) {
-        compound.putFloat("AngularVelocity", angularVelocity);
         compound.putFloat("FieldStrength", fieldStrength);
     }
 
@@ -144,9 +153,10 @@ public class RotorBehaviour extends SegmentedBehaviour {
     public void segmentAdded(SegmentedBehaviour behaviour) {
         super.segmentAdded(behaviour);
         if(ticked) {
-            // Treat the new segment as it having 0 velocity.
-            angularVelocity *= (float) Math.sqrt(inertia / (inertia + ROTOR_INERTIA));
+            var segment = (RotorBehaviour) behaviour;
+            var momentum = angularVelocity * inertia + segment.angularVelocity * ROTOR_INERTIA;
             inertia += ROTOR_INERTIA;
+            angularVelocity = momentum / inertia;
             segmentCount += 1;
         }
     }
@@ -174,7 +184,7 @@ public class RotorBehaviour extends SegmentedBehaviour {
     public float getAngularVelocity() {
         var controller = (RotorBehaviour) getControllerOrThis();
         if(controller != null)
-            return controller.angularVelocity; //(controller.angularVelocity + controller.prevAngularVelocity) / 2f;
+            return controller.angularVelocity;
         return 0;
     }
 
@@ -233,9 +243,8 @@ public class RotorBehaviour extends SegmentedBehaviour {
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity)) {
                 angularVelocity = 0;
             }
-
-            blockEntity.markDirty();
         }
+        blockEntity.markDirty();
         ticked = true;
     }
 }

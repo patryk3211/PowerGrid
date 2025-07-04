@@ -22,6 +22,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.PowerGrid;
 
 import java.util.List;
 
