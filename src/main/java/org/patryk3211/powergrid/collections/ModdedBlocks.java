@@ -24,6 +24,7 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
 import io.github.fabricators_of_create.porting_lib.models.generators.ModelFile;
 import io.github.fabricators_of_create.porting_lib.models.generators.block.MultiPartBlockStateBuilder;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -38,6 +39,7 @@ import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
@@ -64,6 +66,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
@@ -164,25 +167,9 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var shaftDir = state.get(RotorBlock.SHAFT_DIRECTION);
-                        if(shaftDir == ShaftDirection.NONE)
-                            return ConfiguredModel.builder().modelFile(modModel(prov, "block/rotor/rotor_particle")).build();
-                        int x = 90;
-                        int y = 0;
-                        if(shaftDir == ShaftDirection.NEGATIVE) {
-                            y = 180;
-                            x = -90;
-                        }
-                        var builder = ConfiguredModel.builder().modelFile(modModel(prov, "block/rotor/rotor_plate"));
-                        switch(state.get(RotorBlock.AXIS)) {
-                            case X -> builder.rotationY(y - 90);
-                            case Z -> builder.rotationY(y);
-                            case Y -> builder.rotationX(x);
-                        };
-                        return builder.build();
-                    }))
+            .blockstate(rotorModel(
+                    PowerGrid.asResource("block/rotor"),
+                    prov -> modModel(prov, "block/rotor/rotor_plate")))
             .initialProperties(SharedProperties::stone)
             .properties(settings -> settings.nonOpaque())
             .transform(pickaxeOnly())
@@ -624,5 +611,32 @@ public class ModdedBlocks {
                 .addModel()
                 .condition(TransformerMediumBlock.HORIZONTAL_AXIS, axis)
                 .condition(TransformerMediumBlock.PART, part);
+    }
+
+
+    private static <T extends AbstractRotorBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> rotorModel(Identifier particleTexture, Function<RegistrateBlockstateProvider, ModelFile> plateModel) {
+        return (ctx, prov) -> {
+            var particleModel = prov.models().getBuilder("block/rotor/" + ctx.getName() + "_particle")
+                    .texture("particle", particleTexture);
+            var configuredParticleModel = ConfiguredModel.builder().modelFile(particleModel).build();
+            prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                var shaftDir = state.get(AbstractRotorBlock.SHAFT_DIRECTION);
+                if(shaftDir == ShaftDirection.NONE)
+                    return configuredParticleModel;
+                int x = 90;
+                int y = 0;
+                if(shaftDir == ShaftDirection.NEGATIVE) {
+                    y = 180;
+                    x = -90;
+                }
+                var builder = ConfiguredModel.builder().modelFile(plateModel.apply(prov));
+                switch(state.get(RotorBlock.AXIS)) {
+                    case X -> builder.rotationY(y - 90);
+                    case Z -> builder.rotationY(y);
+                    case Y -> builder.rotationX(x);
+                };
+                return builder.build();
+            });
+        };
     }
 }
