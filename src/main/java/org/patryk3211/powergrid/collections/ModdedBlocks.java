@@ -66,6 +66,8 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
@@ -180,6 +182,34 @@ public class ModdedBlocks {
                         prov.withExistingParent(ctx.getName(), prov.modLoc("block/rotor/rotor_none")))
                 .build()
             .lang("Generator Rotor")
+            .register();
+
+    public static final BlockEntry<InductionRotorBlock> GENERATOR_INDUCTION_ROTOR = REGISTRATE.block("generator_induction_rotor", InductionRotorBlock::new)
+            .blockstate(rotorModel(
+                    PowerGrid.asResource("block/rotor"),
+                    prov -> modModel(prov, "block/rotor/rotor_plate")))
+            .initialProperties(SharedProperties::softMetal)
+            .properties(AbstractBlock.Settings::nonOpaque)
+            .transform(pickaxeOnly())
+            .transform(BlockStressDefaults.setImpact(4))
+            .defaultLoot()
+            .item()
+                .model((ctx, prov) -> {})
+                .build()
+            .register();
+
+    public static final BlockEntry<CommutatorBlock> GENERATOR_COMMUTATOR = REGISTRATE.block("generator_commutator", CommutatorBlock::new)
+            .blockstate(rotorModel(
+                    prov -> modModel(prov, "block/rotor/commutator_base_horizontal"),
+                    prov -> modModel(prov, "block/rotor/commutator_plate_base_horizontal")))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .transform(BlockStressDefaults.setImpact(4))
+            .defaultLoot()
+            .item()
+                .model((ctx, prov) ->
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/rotor/commutator")))
+                .build()
             .register();
 
     public static final BlockEntry<GeneratorHousing> GENERATOR_HOUSING = REGISTRATE.block("generator_housing", GeneratorHousing::new)
@@ -638,5 +668,25 @@ public class ModdedBlocks {
                 return builder.build();
             });
         };
+    }
+
+    private static <T extends AbstractRotorBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> rotorModel(Function<RegistrateBlockstateProvider, ModelFile> baseModel, Function<RegistrateBlockstateProvider, ModelFile> plateModel) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+            var shaftDir = state.get(AbstractRotorBlock.SHAFT_DIRECTION);
+            int x = 90;
+            int y = 0;
+            if(shaftDir == ShaftDirection.NEGATIVE) {
+                y = 180;
+                x = -90;
+            }
+            var model = shaftDir == ShaftDirection.NONE ? baseModel.apply(prov) : plateModel.apply(prov);
+            var builder = ConfiguredModel.builder().modelFile(model);
+            switch(state.get(RotorBlock.AXIS)) {
+                case X -> builder.rotationY(y - 90);
+                case Z -> builder.rotationY(y);
+                case Y -> builder.rotationX(x);
+            };
+            return builder.build();
+        });
     }
 }

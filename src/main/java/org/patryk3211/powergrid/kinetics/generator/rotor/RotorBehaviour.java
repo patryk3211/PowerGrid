@@ -23,7 +23,7 @@ import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import java.util.LinkedList;
 import java.util.List;
 
-public class RotorBehaviour extends SegmentedBehaviour {
+public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("generator_rotor");
     private static final float ROTOR_INERTIA = 0.1f;
 
@@ -38,10 +38,16 @@ public class RotorBehaviour extends SegmentedBehaviour {
     // Angle is only for rendering and doesn't have to be saved.
     private float angle = 0;
 
+    private boolean emitsField = true;
+
     private boolean ticked = false;
 
     public RotorBehaviour(SmartBlockEntity be) {
         super(be);
+    }
+
+    public void noField() {
+        emitsField = false;
     }
 
     @Override
@@ -117,8 +123,6 @@ public class RotorBehaviour extends SegmentedBehaviour {
         super.makeController();
         inertia = ROTOR_INERTIA;
         segmentCount = 1;
-//        angularVelocity = 0;
-//        angle = 0;
     }
 
     @Override
@@ -150,10 +154,9 @@ public class RotorBehaviour extends SegmentedBehaviour {
     }
 
     @Override
-    public void segmentAdded(SegmentedBehaviour behaviour) {
-        super.segmentAdded(behaviour);
+    public void segmentAdded(RotorBehaviour segment) {
+        super.segmentAdded(segment);
         if(ticked) {
-            var segment = (RotorBehaviour) behaviour;
             var momentum = angularVelocity * inertia + segment.angularVelocity * ROTOR_INERTIA;
             inertia += ROTOR_INERTIA;
             angularVelocity = momentum / inertia;
@@ -162,14 +165,14 @@ public class RotorBehaviour extends SegmentedBehaviour {
     }
 
     @Override
-    public void segmentRemoved(SegmentedBehaviour behaviour) {
-        super.segmentRemoved(behaviour);
+    public void segmentRemoved(RotorBehaviour segment) {
+        super.segmentRemoved(segment);
         inertia -= ROTOR_INERTIA;
         segmentCount -= 1;
     }
 
     public void applyTickForce(float force) {
-        var controller = (RotorBehaviour) getControllerOrThis();
+        var controller = getControllerOrThis();
         if(controller != null && Math.abs(force) > 0.001f) {
             controller.angularVelocity += force / controller.inertia / 20f;
             if(Float.isNaN(controller.angularVelocity))
@@ -182,7 +185,7 @@ public class RotorBehaviour extends SegmentedBehaviour {
      * @return Angular velocity in rotations per minute.
      */
     public float getAngularVelocity() {
-        var controller = (RotorBehaviour) getControllerOrThis();
+        var controller = getControllerOrThis();
         if(controller != null)
             return controller.angularVelocity;
         return 0;
@@ -197,28 +200,30 @@ public class RotorBehaviour extends SegmentedBehaviour {
     }
 
     public float getInertia() {
-        var controller = (RotorBehaviour) getControllerOrThis();
+        var controller = getControllerOrThis();
         if(controller != null)
             return controller.inertia;
         return 0;
     }
 
     public float getAngle() {
-        var controller = (RotorBehaviour) getControllerOrThis();
+        var controller = getControllerOrThis();
         if(controller != null)
             return controller.angle;
         return 0;
     }
 
     public float getFieldStrength() {
-        var controller = (RotorBehaviour) getControllerOrThis();
+        if(!emitsField)
+            return 0;
+        var controller = getControllerOrThis();
         if(controller != null)
             return controller.fieldStrength;
         return 0;
     }
 
     public void setFieldStrength(float value) {
-        var controller = (RotorBehaviour) getControllerOrThis();
+        var controller = getControllerOrThis();
         if(controller != null) {
             controller.fieldStrength = value;
             controller.blockEntity.markDirty();

@@ -64,20 +64,21 @@ public class RotorRenderer extends KineticBlockEntityRenderer<RotorBlockEntity> 
             kineticRotationTransform(shaft, rotor, axis, angle, light);
             shaft.renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
         } else {
-            facing = switch(axis) {
-                case X -> Direction.EAST;
-                case Y -> Direction.UP;
-                case Z -> Direction.SOUTH;
-            };
+            facing = Direction.from(axis, Direction.AxisDirection.POSITIVE);
         }
         var rotorModel = CachedBufferer.partialFacing(getModelForState(state), state, facing);
-        var behaviour = rotor.getRotorBehaviour();
-        var rotorAngle = behaviour.getAngle() + behaviour.getAngularVelocity() * 0.3f * partialTicks;
-        rotorAngle = rotorAngle / 180f * (float) Math.PI;
+        var rotorAngle = getRotorAngle(rotor, partialTicks);
 
         rotorModel.light(light);
         rotorModel.rotateCentered(Direction.get(Direction.AxisDirection.POSITIVE, axis), rotorAngle);
         rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
+    }
+
+    protected float getRotorAngle(RotorBlockEntity rotor, float partialTicks) {
+        var behaviour = rotor.getRotorBehaviour();
+        var rotorAngle = behaviour.getAngle() + behaviour.getAngularVelocity() * 0.3f * partialTicks;
+        rotorAngle = rotorAngle / 180f * (float) Math.PI;
+        return rotorAngle;
     }
 
     protected PartialModel getModelForState(BlockState state) {

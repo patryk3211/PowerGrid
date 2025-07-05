@@ -20,17 +20,17 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 
 import java.util.*;
+import java.util.function.Consumer;
 
-public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
-    private SegmentedBehaviour controller;
-    private BlockPos controllerPos;
-    private final Set<SegmentedBehaviour> segments = new HashSet<>();
-    private Boolean isController;
+public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extends BlockEntityBehaviour {
+    protected T controller;
+    protected BlockPos controllerPos;
+    protected final Set<T> segments = new HashSet<>();
+    protected Boolean isController;
+    protected Runnable changeCallback;
 
     public SegmentedBehaviour(SmartBlockEntity be) {
         super(be);
@@ -38,6 +38,11 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         controller = null;
         controllerPos = null;
         isController = null;
+        changeCallback = null;
+    }
+
+    public void setChangeCallback(Runnable callback) {
+        changeCallback = callback;
     }
 
     @Override
@@ -57,6 +62,16 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         }
     }
 
+    public void forEachSegment(Consumer<T> consumer) {
+        var controller = getControllerOrThis();
+        if(controller != null) {
+            consumer.accept(controller);
+            for(var segment : controller.segments) {
+                consumer.accept(segment);
+            }
+        }
+    }
+
     protected void makeController() {
         controller = null;
         controllerPos = null;
@@ -67,9 +82,9 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         return controllerPos == null;
     }
 
-    protected abstract List<? extends SegmentedBehaviour> getConnected();
+    protected abstract List<T> getConnected();
     @Override
-    public abstract BehaviourType<? extends SegmentedBehaviour> getType();
+    public abstract BehaviourType<T> getType();
 
     private void grabController() {
         var world = getWorld();
@@ -103,7 +118,7 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         }
     }
 
-    private void setController(SegmentedBehaviour controller) {
+    protected void setController(T controller) {
         assert controller == null || controller.controller == null : "Controller of a controller cannot have a controller (for it is not a controller of itself)";
         if(controller == this) {
             // This is a very invalid state.
@@ -111,16 +126,16 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
             return;
         }
         if(this.controller != controller && this.controller != null) {
-            this.controller.segments.remove(this);
-            this.controller.segmentRemoved(this);
+            this.controller.segments.remove((T) this);
+            this.controller.segmentRemoved((T) this);
         }
         this.controller = controller;
         if(controller != null) {
             // Add entity to segments of the controller
             this.controllerPos = controller.getPos();
             this.isController = false;
-            controller.segments.add(this);
-            controller.segmentAdded(this);
+            controller.segments.add((T) this);
+            controller.segmentAdded((T) this);
             // Move all controlled segments to the new controller
             segments.forEach(segment -> segment.setController(controller));
             segments.clear();
@@ -133,12 +148,12 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         blockEntity.sendData();
     }
 
-    public SegmentedBehaviour getController() {
+    public T getController() {
         return controller;
     }
 
-    public SegmentedBehaviour getControllerOrThis() {
-        return controllerPos == null ? this : controller;
+    public T getControllerOrThis() {
+        return controllerPos == null ? (T) this : controller;
     }
 
     public abstract void readController(NbtCompound compound, boolean clientPacket);
@@ -180,14 +195,14 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         }
     }
 
-    private void checkConnectivity(SegmentedBehaviour without) {
+    protected void checkConnectivity(T without) {
         if(!isController()) {
             PowerGrid.LOGGER.error("Tried to check connectivity for a non-controller segment");
             return;
         }
-        var checked = new HashSet<SegmentedBehaviour>();
-        var toCheck = new ArrayList<SegmentedBehaviour>();
-        toCheck.add(this);
+        var checked = new HashSet<T>();
+        var toCheck = new ArrayList<T>();
+        toCheck.add((T) this);
 
         while(!toCheck.isEmpty()) {
             var segment = toCheck.remove(0);
@@ -197,7 +212,7 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
             toCheck.addAll(connected);
         }
 
-        var removed = new ArrayList<SegmentedBehaviour>();
+        var removed = new ArrayList<T>();
         var iter = segments.iterator();
         while(iter.hasNext()) {
             var segment = iter.next();
@@ -215,7 +230,7 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
             var zoneController = removed.remove(0);
             zoneController.makeController();
 
-            var checkQueue2 = new ArrayList<SegmentedBehaviour>();
+            var checkQueue2 = new ArrayList<T>();
             checkQueue2.add(zoneController);
             while(!checkQueue2.isEmpty()) {
                 var segment = checkQueue2.remove(0);
@@ -240,8 +255,8 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
         super.unload();
         if(controllerPos != null) {
             if(controller != null) {
-                controller.segments.remove(this);
-                controller.segmentRemoved(this);
+                controller.segments.remove((T) this);
+                controller.segmentRemoved((T) this);
                 controller = null;
             }
         } else {
@@ -267,14 +282,23 @@ public abstract class SegmentedBehaviour extends BlockEntityBehaviour {
             first.readController(nbt, false);
             first.blockEntity.sendData();
         }
-        getControllerOrThis().checkConnectivity(this);
+        getControllerOrThis().checkConnectivity((T) this);
     }
 
-    public void segmentAdded(SegmentedBehaviour behaviour) {
-
+    protected void onChange() {
+        if(changeCallback != null)
+            changeCallback.run();
     }
 
-    public void segmentRemoved(SegmentedBehaviour behaviour) {
+    public void segmentAdded(T behaviour) {
+        onChange();
+        for(var segment : segments)
+            segment.onChange();
+    }
 
+    public void segmentRemoved(T behaviour) {
+        onChange();
+        for(var segment : segments)
+            segment.onChange();
     }
 }

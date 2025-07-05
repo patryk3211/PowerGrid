@@ -66,6 +66,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private VoltageSourceNode sourceNode;
     private TransformerCoupling coupling;
 
+    private boolean neighborChanged = false;
+
     public WindingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -317,15 +319,22 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void initialize() {
-        collectWindingParts();
+        if(coilCount == 0)
+            collectWindingParts();
         super.initialize();
         grabRotors();
     }
 
+    public int getCoilCount() {
+        if(coilCount == 0)
+            collectWindingParts();
+        return coilCount;
+    }
+
     private void calculateElectricalParameters() {
         assert ownerPosition == null : "Only owner of parallel coils may recalculate electrical parameters";
-        totalCoilCount = coilCount;
-        var conductance = 1 / (coilCount * resistance());
+        totalCoilCount = getCoilCount();
+        var conductance = 1 / (totalCoilCount * resistance());
         if(parallelPositions != null) {
             var iter = parallelPositions.iterator();
             while (iter.hasNext()) {
@@ -333,8 +342,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 var be = world.getBlockEntity(windingPos, ModdedBlockEntities.WINDING.get());
                 if (be.isPresent()) {
                     var winding = be.get();
-                    totalCoilCount += winding.coilCount;
-                    conductance += 1 / (winding.coilCount * resistance());
+                    totalCoilCount += winding.getCoilCount();
+                    conductance += 1 / (winding.getCoilCount() * resistance());
                 } else {
                     iter.remove();
                 }
@@ -478,18 +487,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     public void onNeighborChanged(BlockPos neighborPos) {
-        if(mainBE.parallelPositions != null) {
-            // This is the owner
-            mainBE.rebuildParallels();
-        } else if(mainBE.ownerPosition != null) {
-            // Inform the owner
-            var be = world.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
-            be.ifPresentOrElse(WindingBlockEntity::rebuildParallels, mainBE::rebuildParallels);
-        } else {
-            // Simply rebuild
-            mainBE.rebuildParallels();
-        }
-        grabRotors();
+        neighborChanged = true;
     }
 
     public float windingCurrent() {
@@ -506,6 +504,21 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
+        if(neighborChanged) {
+            if(mainBE.parallelPositions != null) {
+                // This is the owner
+                mainBE.rebuildParallels();
+            } else if(mainBE.ownerPosition != null) {
+                // Inform the owner
+                var be = world.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
+                be.ifPresentOrElse(WindingBlockEntity::rebuildParallels, mainBE::rebuildParallels);
+            } else {
+                // Simply rebuild
+                mainBE.rebuildParallels();
+            }
+            grabRotors();
+            neighborChanged = false;
+        }
         super.tick();
         float current = windingCurrent();
         applyLostPower(current * current * WindingBlock.resistance());

@@ -27,7 +27,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import java.util.List;
 
 public class RotorBlockEntity extends KineticBlockEntity {
-    private RotorBehaviour rotorBehaviour;
+    protected RotorBehaviour rotorBehaviour;
     private float currentImpact;
 
     public RotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {

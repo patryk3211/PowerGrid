@@ -9,6 +9,8 @@
     "powergrid:andesite_current_gauge",
     "powergrid:brass_current_gauge",
     "powergrid:generator_rotor",
+    "powergrid:generator_induction_rotor",
+    "powergrid:generator_commutator",
     "powergrid:generator_housing",
     "powergrid:hv_switch",
     "powergrid:creative_voltage_source",

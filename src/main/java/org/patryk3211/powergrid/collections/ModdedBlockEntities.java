@@ -39,6 +39,9 @@ import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorRenderer;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
@@ -79,6 +82,18 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("generator_rotor", RotorBlockEntity::new)
                     .validBlock(ModdedBlocks.GENERATOR_ROTOR)
                     .renderer(() -> RotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<InductionRotorBlockEntity> GENERATOR_INDUCTION_ROTOR =
+            REGISTRATE.blockEntity("generator_induction_rotor", InductionRotorBlockEntity::new)
+                    .validBlock(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
+                    .renderer(() -> RotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CommutatorBlockEntity> GENERATOR_COMMUTATOR =
+            REGISTRATE.blockEntity("generator_commutator", CommutatorBlockEntity::new)
+                    .validBlock(ModdedBlocks.GENERATOR_COMMUTATOR)
+                    .renderer(() -> CommutatorRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<SwitchBlockEntity> SWITCH =

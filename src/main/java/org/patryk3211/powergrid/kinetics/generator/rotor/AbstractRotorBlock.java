@@ -111,7 +111,7 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
             case Y -> pos.up();
             case Z -> pos.south();
         });
-        return state.isOf(this) && state.get(SHAFT_DIRECTION) != ShaftDirection.NEGATIVE && state.get(AXIS) == axis;
+        return state.getBlock() instanceof AbstractRotorBlock && state.get(SHAFT_DIRECTION) != ShaftDirection.NEGATIVE && state.get(AXIS) == axis;
     }
 
     public boolean hasNegative(World world, BlockPos pos, Direction.Axis axis) {
@@ -120,7 +120,7 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
             case Y -> pos.down();
             case Z -> pos.north();
         });
-        return state.isOf(this) && state.get(SHAFT_DIRECTION) != ShaftDirection.POSITIVE && state.get(AXIS) == axis;
+        return state.getBlock() instanceof AbstractRotorBlock && state.get(SHAFT_DIRECTION) != ShaftDirection.POSITIVE && state.get(AXIS) == axis;
     }
 
     @Override
