@@ -451,7 +451,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             boolean shouldContinue = true;
             while (shouldContinue) {
                 shouldContinue = false;
-                for (var position : parallelPositions) {
+                var checkPositions = List.copyOf(parallelPositions);
+                for (var position : checkPositions) {
                     // Check if this wasn't previously checked
                     if (checkedPositions.add(position)) {
                         block.walk(world, position, (pos1, state) -> {
@@ -479,11 +480,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     public void onNeighborChanged(BlockPos neighborPos) {
         if(mainBE.parallelPositions != null) {
             // This is the owner
-            rebuildParallels();
+            mainBE.rebuildParallels();
         } else if(mainBE.ownerPosition != null) {
             // Inform the owner
             var be = world.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
-            be.ifPresentOrElse(WindingBlockEntity::rebuildParallels, this::rebuildParallels);
+            be.ifPresentOrElse(WindingBlockEntity::rebuildParallels, mainBE::rebuildParallels);
         } else {
             // Simply rebuild
             mainBE.rebuildParallels();
@@ -492,7 +493,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     public float windingCurrent() {
-        if(mainBE == null)
+        if(mainBE == null || mainBE.sourceNode == null)
             return 0;
         if(mainBE.ownerPosition != null) {
             var be = world.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
