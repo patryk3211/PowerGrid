@@ -30,6 +30,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -87,6 +88,16 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
             stack.setNbt(tag);
         });
         return stack;
+    }
+
+    @Override
+    public boolean emitsRedstonePower(BlockState state) {
+        return super.emitsRedstonePower(state);
+    }
+
+    @Override
+    public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+        return super.getWeakRedstonePower(state, world, pos, direction);
     }
 
     @Override

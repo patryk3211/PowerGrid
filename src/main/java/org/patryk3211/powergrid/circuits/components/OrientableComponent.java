@@ -16,30 +16,31 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
-import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
+import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
-import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
-public class ResistorComponent extends OrientableComponent {
-    public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 1f, 100_000f);
+public abstract class OrientableComponent extends Component {
+    public static final EnumProperty<Orientation> ORIENTATION = Orientation.PROPERTY;
 
-    public ResistorComponent(ComponentFootprint footprint) {
+    public OrientableComponent(ComponentFootprint footprint) {
         super(footprint);
     }
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(RESISTANCE);
+        properties.add(ORIENTATION);
     }
 
     @Override
-    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        builder.connect(placed.get(RESISTANCE), builder.terminalNode(0), builder.terminalNode(1));
+    public ComponentFootprint footprint(@Nullable PlacedComponent placed) {
+        var footprint = super.footprint(placed);
+        if(placed == null)
+            return footprint;
+        return footprint.rotated(placed.get(ORIENTATION));
     }
 }

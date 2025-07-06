@@ -75,6 +75,24 @@
     ],
     "subtitle": "powergrid.subtitle.ui.action.fail"
   },
+  "ui.click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:ui.button.click"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.click"
+  },
+  "ui.component_rotate": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.rotate_item"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.component_rotate"
+  },
   "ui.delete_area": {
     "sounds": [
       {

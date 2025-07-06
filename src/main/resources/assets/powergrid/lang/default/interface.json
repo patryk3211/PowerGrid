@@ -80,5 +80,13 @@
 
   "powergrid.component.property.resistor_value": "Resistance",
 
-  "powergrid.recipe.category.circuit_design": "Circuit Designing"
+  "powergrid.component.property.orientation": "Orientation",
+
+  "powergrid.recipe.category.circuit_design": "Circuit Designing",
+
+  "powergrid.keyinfo.delete_area": "Delete Area",
+  "powergrid.keyinfo.pick_component": "Pick Component",
+  "powergrid.keyinfo.place_trace": "Place Trace",
+  "powergrid.keyinfo.rotate_component": "Rotate Component",
+  "powergrid.keyinfo.switch_layer": "Switch Layer"
 }

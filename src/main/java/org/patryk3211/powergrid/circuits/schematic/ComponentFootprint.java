@@ -22,6 +22,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -107,6 +108,51 @@ public class ComponentFootprint {
 
     public Map<Point, PadData> getPads() {
         return pads;
+    }
+
+    public ComponentFootprint rotated(Orientation orientation) {
+        int width, height;
+        if(orientation == Orientation.UP || orientation == Orientation.DOWN) {
+            width = this.height;
+            height = this.width;
+        } else {
+            width = this.width;
+            height = this.height;
+        }
+        var pads = new TreeMap<Point, PadData>();
+        for(var pad : this.pads.entrySet()) {
+            var position = pad.getKey();
+            int x, y;
+            switch(orientation) {
+                case RIGHT -> {
+                    // No rotation
+                    x = position.x();
+                    y = position.y();
+                }
+                case DOWN -> {
+                    // 90 degree rotation
+                    x = this.height - position.y() - 1;
+                    y = position.x();
+                }
+                case LEFT -> {
+                    // 180 degree rotation
+                    x = this.width - position.x() - 1;
+                    y = this.height - position.y() - 1;
+                }
+                case UP -> {
+                    // 270 degree rotation
+                    x = position.y();
+                    y = this.width - position.x() - 1;
+                }
+                default -> throw new IllegalStateException("Invalid orientation: " + orientation);
+            }
+            pads.put(new Point(x, y), pad.getValue());
+        }
+
+        var footprint = new ComponentFootprint(width, height, pads, this.outline, this.renderedItem);
+        // Copy cached stack if one is available.
+        footprint.renderedStack = this.renderedStack;
+        return footprint;
     }
 
     public static class Builder {

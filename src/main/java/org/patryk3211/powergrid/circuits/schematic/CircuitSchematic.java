@@ -123,8 +123,8 @@ public class CircuitSchematic {
         }
     }
 
-    public void placeComponent(Component component, int x, int y) {
-        var placed = new PlacedComponent(component, x, y, UUID.randomUUID());
+    public void placeComponent(PlacedComponent basePlacedState, int x, int y) {
+        var placed = new PlacedComponent(basePlacedState, x, y);
         components.add(placed);
         addPads(placed);
     }
@@ -231,22 +231,22 @@ public class CircuitSchematic {
         return areas;
     }
 
-    public boolean canPlace(Component component, int x, int y) {
+    public boolean canPlace(PlacedComponent component, int x, int y) {
         if(x < 0 || y < 0)
             return false;
-        var width = component.footprint(null).getWidth();
-        var height = component.footprint(null).getHeight();
+        var width = component.footprint().getWidth();
+        var height = component.footprint().getHeight();
         if(x + width > 16 || y + height > 16)
             return false;
 
         // Check pad clearance
-        var thisFootprint = component.footprint(null);
+        var thisFootprint = component.footprint();
         for(var pad : thisFootprint.getPads().keySet()) {
             if(pads.get(x * GRID_TO_GRID_SCALE + pad.x(), y * GRID_TO_GRID_SCALE + pad.y()))
                 return false;
         }
 
-        boolean thisVia = component instanceof ViaComponent;
+        boolean thisVia = component.component instanceof ViaComponent;
         for(var placed : components) {
             boolean thatVia = placed.component instanceof ViaComponent;
             if(thisVia != thatVia) {

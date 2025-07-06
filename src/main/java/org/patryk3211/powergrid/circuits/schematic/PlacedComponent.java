@@ -23,6 +23,8 @@ import net.minecraft.world.World;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
+import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
@@ -58,6 +60,14 @@ public class PlacedComponent {
 
     public PlacedComponent(PlacedComponent placed) {
         this(placed.component, placed.x, placed.y, placed.uuid);
+        this.worldSupplier = placed.worldSupplier;
+        for(var property : properties) {
+            property.setValueRaw(placed.get(property.property));
+        }
+    }
+
+    public PlacedComponent(PlacedComponent placed, int x, int y) {
+        this(placed.component, x, y, UUID.randomUUID());
         this.worldSupplier = placed.worldSupplier;
         for(var property : properties) {
             property.setValueRaw(placed.get(property.property));
@@ -133,6 +143,14 @@ public class PlacedComponent {
                 return (T) entry.get();
         }
         throw new IllegalArgumentException("Placed components doesn't have the requested property");
+    }
+
+    public boolean has(ComponentProperty<?> property) {
+        for(var entry : properties) {
+            if(entry.property == property)
+                return true;
+        }
+        return false;
     }
 
     public <T> PropertyEntry<T> getEntry(ComponentProperty<T> property) {

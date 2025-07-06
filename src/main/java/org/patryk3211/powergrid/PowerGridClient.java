@@ -34,10 +34,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.collections.ModdedParticles;
-import org.patryk3211.powergrid.collections.ModdedRenderLayers;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.portablebattery.BatteryArmorLayer;
@@ -53,6 +50,8 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 	@Override
 	public void onInitializeClient() {
 		ModelLoadingPlugin.register(this);
+
+		ModdedKeys.register();
 
 		ModdedPartialModels.register();
 		ModdedRenderLayers.register();

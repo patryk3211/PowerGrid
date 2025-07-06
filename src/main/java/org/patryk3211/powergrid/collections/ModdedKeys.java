@@ -1,0 +1,85 @@
+/*
+ * Copyright 2025 patryk3211
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.patryk3211.powergrid.collections;
+
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.option.KeyBinding;
+import org.lwjgl.glfw.GLFW;
+import org.patryk3211.powergrid.PowerGrid;
+
+/**
+ * @see com.simibubi.create.AllKeys
+ */
+public enum ModdedKeys {
+    CATEGORY_CIRCUIT_EDITOR("Power Grid - Circuit Editor"),
+
+    ROTATE_COMPONENT("rotate_component", GLFW.GLFW_KEY_R),
+    PLACE_TRACE("place_trace", GLFW.GLFW_KEY_T),
+    DELETE_AREA("delete_area", GLFW.GLFW_KEY_D),
+    PICK_COMPONENT("pick_component", GLFW.GLFW_KEY_S),
+    SWITCH_LAYER("switch_layer", GLFW.GLFW_KEY_X)
+
+    ;
+
+    public static final String CATEGORY = "Power Grid";
+    private static String currentCategory = CATEGORY;
+
+    private KeyBinding keybind;
+    private String description;
+    private int key;
+
+    private String category;
+
+    ModdedKeys(String description, int defaultKey) {
+        this.description = PowerGrid.MOD_ID + ".keyinfo." + description;
+        this.key = defaultKey;
+    }
+
+    ModdedKeys(String category) {
+        this.category = category;
+    }
+
+    public static void register() {
+        for(var key : values()) {
+            if(key.description == null) {
+                currentCategory = key.category;
+            } else {
+                key.keybind = new KeyBinding(key.description, key.key, currentCategory);
+                KeyBindingHelper.registerKeyBinding(key.keybind);
+            }
+        }
+    }
+
+    public KeyBinding getKeybind() {
+        return keybind;
+    }
+
+    public boolean isPressed() {
+        return keybind.isPressed();
+    }
+
+    public String getBoundKey() {
+        return keybind.getBoundKeyLocalizedText().getString().toUpperCase();
+    }
+
+    public int getBoundCode() {
+        return KeyBindingHelper.getBoundKeyOf(keybind).getCode();
+    }
+
+    public boolean matchesKey(int keyCode, int scanCode) {
+        return keybind.matchesKey(keyCode, scanCode);
+    }
+}

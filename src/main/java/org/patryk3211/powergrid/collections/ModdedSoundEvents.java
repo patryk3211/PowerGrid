@@ -72,6 +72,14 @@ public class ModdedSoundEvents {
             .category(SoundCategory.PLAYERS)
             .build(),
 
+    UI_CLICK = create("ui.click")
+            .playExisting(SoundEvents.UI_BUTTON_CLICK)
+            .build(),
+
+    UI_COMPONENT_ROTATE = create("ui.component_rotate")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ROTATE_ITEM, 0.75f, 0.75f)
+            .build(),
+
     UI_PLACE_TRACE = create("ui.place_trace")
             .playExisting(SoundEvents.BLOCK_METAL_PLACE, 0.75f, 1.75f)
             .build(),
