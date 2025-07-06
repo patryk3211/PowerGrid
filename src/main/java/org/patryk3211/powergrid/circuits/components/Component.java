@@ -28,7 +28,6 @@ import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
-import org.patryk3211.powergrid.circuits.thermal.ThermalUnit;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 import java.util.*;
@@ -93,6 +92,10 @@ public abstract class Component {
 
     public ImmutableList<ComponentProperty<?>> getProperties() {
         return properties;
+    }
+
+    public boolean canPlace(@NotNull PlacedComponent placed, int x, int y) {
+        return true;
     }
 
     @NotNull

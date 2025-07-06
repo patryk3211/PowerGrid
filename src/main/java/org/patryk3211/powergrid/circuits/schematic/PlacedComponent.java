@@ -18,13 +18,10 @@ package org.patryk3211.powergrid.circuits.schematic;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
-import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
-import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
@@ -131,6 +128,10 @@ public class PlacedComponent {
 
     public ComponentFootprint footprint() {
         return component.footprint(this);
+    }
+
+    public boolean canPlace(int x, int y) {
+        return component.canPlace(this, x, y);
     }
 
     public boolean tick() {

@@ -44,4 +44,26 @@ public enum Orientation {
     public Orientation getCounterClockwise() {
         return values()[idCounterClockwise];
     }
+
+    public Orientation rotate(Orientation rotateBy) {
+        switch(rotateBy) {
+            case RIGHT -> {
+                // 0 degrees
+                return this;
+            }
+            case DOWN -> {
+                // 90 degrees
+                return getClockwise();
+            }
+            case LEFT -> {
+                // 180 degrees
+                return getOpposite();
+            }
+            case UP -> {
+                // 270 degrees
+                return getCounterClockwise();
+            }
+            default -> throw new IllegalStateException();
+        }
+    }
 }

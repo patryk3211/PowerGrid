@@ -22,7 +22,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -237,6 +236,9 @@ public class CircuitSchematic {
         var width = component.footprint().getWidth();
         var height = component.footprint().getHeight();
         if(x + width > 16 || y + height > 16)
+            return false;
+
+        if(!component.canPlace(x, y))
             return false;
 
         // Check pad clearance
