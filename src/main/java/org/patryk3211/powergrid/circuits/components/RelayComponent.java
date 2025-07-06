@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
-public class RelayComponent extends Component {
+public class RelayComponent extends OrientableComponent {
     public static final FloatProperty THRESHOLD_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "relay_threshold", 12, 1, 48);
     public static final BooleanProperty STATE = new BooleanProperty(PowerGrid.MOD_ID, "relay_state");
 
@@ -38,6 +38,7 @@ public class RelayComponent extends Component {
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
+        super.addProperties(properties);
         properties.add(THRESHOLD_VOLTAGE, STATE);
     }
 
