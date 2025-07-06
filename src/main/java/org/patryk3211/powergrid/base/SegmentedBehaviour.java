@@ -59,8 +59,10 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     public void forEachSegment(Consumer<T> consumer) {
         var controller = getControllerOrThis();
         consumer.accept(controller);
-        for(var segment : controller.segments) {
-            consumer.accept(segment);
+        if(controller.segments != null) {
+            for (var segment : controller.segments) {
+                consumer.accept(segment);
+            }
         }
     }
 
