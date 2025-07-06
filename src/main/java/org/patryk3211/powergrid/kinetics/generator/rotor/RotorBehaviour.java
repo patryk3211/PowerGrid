@@ -131,24 +131,24 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             if(Float.isNaN(angularVelocity))
                 angularVelocity = 0;
         }
-    }
-
-    @Override
-    public void write(NbtCompound compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
-        compound.putFloat("AngularVelocity", angularVelocity);
-    }
-
-    @Override
-    public void readController(NbtCompound compound, boolean clientPacket) {
         if(compound.contains("FieldStrength")) {
             fieldStrength = compound.getFloat("FieldStrength");
         }
     }
 
     @Override
-    public void writeController(NbtCompound compound, boolean clientPacket) {
+    public void write(NbtCompound compound, boolean clientPacket) {
+        super.write(compound, clientPacket);
+        compound.putFloat("AngularVelocity", angularVelocity);
         compound.putFloat("FieldStrength", fieldStrength);
+    }
+
+    @Override
+    public void readController(NbtCompound compound, boolean clientPacket) {
+    }
+
+    @Override
+    public void writeController(NbtCompound compound, boolean clientPacket) {
     }
 
     @Override
@@ -206,14 +206,12 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public float getFieldStrength() {
         if(!emitsField)
             return 0;
-        var controller = getControllerOrThis();
-        return controller.fieldStrength;
+        return fieldStrength;
     }
 
     public void setFieldStrength(float value) {
-        var controller = getControllerOrThis();
-        controller.fieldStrength = value;
-        controller.blockEntity.markDirty();
+        fieldStrength = value;
+        blockEntity.markDirty();
     }
 
     @Override
