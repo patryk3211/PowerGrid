@@ -103,6 +103,16 @@ public class ModdedSoundEvents {
     RELAY_CLICK = create("relay_click").subtitle("Relay clicks")
             .playExisting(SoundEvents.BLOCK_LEVER_CLICK)
             .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MICROSWITCH_ON = create("uswitch_on").subtitle("Switch clicks")
+            .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_ON, 1.0f, 2.0f)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MICROSWITCH_OFF = create("uswitch_off").subtitle("Switch clicks")
+            .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF, 1.0f, 2.0f)
+            .category(SoundCategory.BLOCKS)
             .build()
             ;
 

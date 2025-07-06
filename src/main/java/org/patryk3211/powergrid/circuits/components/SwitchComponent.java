@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 import java.util.Collection;
@@ -71,8 +72,15 @@ public class SwitchComponent extends OrientableComponent implements IDynamicComp
         placed.set(STATE, newState);
         ((SwitchedWire) placed.wires.get(0)).setState(newState);
 
-        if(be.getWorld().isClient)
+        if(be.getWorld().isClient) {
             IDynamicComponent.modelChanged(be.getPos());
+        } else {
+            if(newState) {
+                ModdedSoundEvents.MICROSWITCH_ON.playOnServer(be.getWorld(), be.getPos());
+            } else {
+                ModdedSoundEvents.MICROSWITCH_OFF.playOnServer(be.getWorld(), be.getPos());
+            }
+        }
         be.markDirty();
         return ActionResult.SUCCESS;
     }

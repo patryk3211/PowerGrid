@@ -229,6 +229,8 @@
   "powergrid.subtitle.ui.place_component": "unregistered",
   "powergrid.subtitle.ui.place_trace": "unregistered",
   "powergrid.subtitle.ui.select_component": "unregistered",
+  "powergrid.subtitle.uswitch_off": "Switch clicks",
+  "powergrid.subtitle.uswitch_on": "Switch clicks",
   "powergrid.subtitle.wire_cut": "Wire cut",
   "powergrid.tooltip.circuit_assembly": "Circuit Assembly",
   "powergrid.tooltip.circuit_assembly.insert": "Insert",
