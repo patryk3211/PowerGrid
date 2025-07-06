@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemPlacementContext;
@@ -42,6 +43,7 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
     public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
         var side = context.getSide();
         var world = context.getWorld();
+        ActionResult result;
         if(side.getAxis() == state.get(AXIS)) {
             var shaft = state.get(SHAFT_DIRECTION);
             BlockState alteredState = null;
@@ -59,10 +61,16 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
 
             KineticBlockEntity.switchToBlockState(world, context.getBlockPos(), updateAfterWrenched(alteredState, context));
             playRotateSound(world, context.getBlockPos());
-            return ActionResult.SUCCESS;
+            result = ActionResult.SUCCESS;
         } else {
-            return super.onWrenched(state, context);
+            result = super.onWrenched(state, context);
+            if(!result.isAccepted())
+                return result;
         }
+        var behaviour = BlockEntityBehaviour.get(world, context.getBlockPos(), RotorBehaviour.TYPE);
+        if(behaviour != null)
+            behaviour.checkConnectivity(null);
+        return result;
     }
 
     @Override
@@ -87,11 +95,6 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        super.onStateReplaced(state, world, pos, newState, moved);
-    }
-
-    @Override
     public Direction.Axis getRotationAxis(BlockState blockState) {
         return blockState.get(SHAFT_DIRECTION) == ShaftDirection.NONE ? null : blockState.get(AXIS);
     }
@@ -105,7 +108,7 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
         return false;
     }
 
-    public boolean hasPositive(World world, BlockPos pos, Direction.Axis axis) {
+    public boolean hasPositive(WorldView world, BlockPos pos, Direction.Axis axis) {
         BlockState state = world.getBlockState(switch(axis) {
             case X -> pos.east();
             case Y -> pos.up();
@@ -114,7 +117,7 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
         return state.getBlock() instanceof AbstractRotorBlock && state.get(SHAFT_DIRECTION) != ShaftDirection.NEGATIVE && state.get(AXIS) == axis;
     }
 
-    public boolean hasNegative(World world, BlockPos pos, Direction.Axis axis) {
+    public boolean hasNegative(WorldView world, BlockPos pos, Direction.Axis axis) {
         BlockState state = world.getBlockState(switch(axis) {
             case X -> pos.west();
             case Y -> pos.down();

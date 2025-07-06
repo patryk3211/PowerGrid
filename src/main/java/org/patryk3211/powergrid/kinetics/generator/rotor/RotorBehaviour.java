@@ -40,8 +40,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     private boolean emitsField = true;
 
-    private boolean ticked = false;
-
     public RotorBehaviour(SmartBlockEntity be) {
         super(be);
     }
@@ -138,7 +136,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     public void write(NbtCompound compound, boolean clientPacket) {
         super.write(compound, clientPacket);
-        compound.putFloat("AngularVelocity", getAngularVelocity());
+        compound.putFloat("AngularVelocity", angularVelocity);
     }
 
     @Override
@@ -156,12 +154,10 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     public void segmentAdded(RotorBehaviour segment) {
         super.segmentAdded(segment);
-        if(ticked) {
-            var momentum = angularVelocity * inertia + segment.angularVelocity * ROTOR_INERTIA;
-            inertia += ROTOR_INERTIA;
-            angularVelocity = momentum / inertia;
-            segmentCount += 1;
-        }
+        var momentum = angularVelocity * inertia + segment.angularVelocity * ROTOR_INERTIA;
+        inertia += ROTOR_INERTIA;
+        angularVelocity = momentum / inertia;
+        segmentCount += 1;
     }
 
     @Override
@@ -173,7 +169,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     public void applyTickForce(float force) {
         var controller = getControllerOrThis();
-        if(controller != null && Math.abs(force) > 0.001f) {
+        if(Math.abs(force) > 0.001f) {
             controller.angularVelocity += force / controller.inertia / 20f;
             if(Float.isNaN(controller.angularVelocity))
                 controller.angularVelocity = 0;
@@ -186,9 +182,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
      */
     public float getAngularVelocity() {
         var controller = getControllerOrThis();
-        if(controller != null)
-            return controller.angularVelocity;
-        return 0;
+        return controller.angularVelocity;
     }
 
     /**
@@ -201,33 +195,25 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     public float getInertia() {
         var controller = getControllerOrThis();
-        if(controller != null)
-            return controller.inertia;
-        return 0;
+        return controller.inertia;
     }
 
     public float getAngle() {
         var controller = getControllerOrThis();
-        if(controller != null)
-            return controller.angle;
-        return 0;
+        return controller.angle;
     }
 
     public float getFieldStrength() {
         if(!emitsField)
             return 0;
         var controller = getControllerOrThis();
-        if(controller != null)
-            return controller.fieldStrength;
-        return 0;
+        return controller.fieldStrength;
     }
 
     public void setFieldStrength(float value) {
         var controller = getControllerOrThis();
-        if(controller != null) {
-            controller.fieldStrength = value;
-            controller.blockEntity.markDirty();
-        }
+        controller.fieldStrength = value;
+        controller.blockEntity.markDirty();
     }
 
     @Override
@@ -249,10 +235,10 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                 angularVelocity = 0;
             }
         } else {
+            // Fetch values from controller
             angularVelocity = getAngularVelocity();
             angle = getAngle();
         }
         blockEntity.markDirty();
-        ticked = true;
     }
 }
