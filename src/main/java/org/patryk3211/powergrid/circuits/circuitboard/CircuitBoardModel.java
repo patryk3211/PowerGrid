@@ -230,9 +230,28 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
                 var x = view.x(i);
                 var y = view.y(i);
                 var z = view.z(i);
-//                view.pos()
+                switch(orientation) {
+                    case DOWN -> {
+                        // 90 degrees
+                        var buf = x;
+                        x = this.height - z;
+                        z = buf;
+                    }
+                    case LEFT -> {
+                        // 180 degrees
+                        x = this.width - x;
+                        z = this.height - z;
+                    }
+                    case UP -> {
+                        // 270 degrees
+                        var buf = z;
+                        z = this.width - x;
+                        x = buf;
+                    }
+                }
+                view.pos(i, x + this.x, y + this.y, z + this.z);
             }
-            return super.transform(view);
+            return true;
         }
     }
 }
