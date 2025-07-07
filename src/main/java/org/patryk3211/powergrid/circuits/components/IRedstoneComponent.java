@@ -15,15 +15,23 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
-public interface IDynamicComponent {
-    VoxelShape getShape(@NotNull PlacedComponent placed);
+public interface IRedstoneComponent {
+    default boolean isEmitter() {
+        return false;
+    }
 
-    ActionResult use(CircuitBoardBlockEntity be, PlacedComponent component, PlayerEntity player);
+    default boolean isReceiver() {
+        return false;
+    }
+
+    default void receiveRedstone(@NotNull PlacedComponent component, int level) {
+
+    }
+
+    default int getEmittedLevel(@NotNull PlacedComponent component) {
+        return 0;
+    }
 }

@@ -274,6 +274,14 @@ public class CircuitSchematic {
         return Optional.of(new Node(placed, padData.nodeIndex()));
     }
 
+    public int getId(@NotNull PlacedComponent placed) {
+        for(int i = 0; i < components.size(); ++i) {
+            if(components.get(i) == placed)
+                return i;
+        }
+        return -1;
+    }
+
     private boolean shouldVisit(Layer layer, int x, int y, VisitMap visitMap) {
         if(x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE)
             return false;

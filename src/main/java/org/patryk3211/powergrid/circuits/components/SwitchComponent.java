@@ -73,7 +73,7 @@ public class SwitchComponent extends OrientableComponent implements IDynamicComp
         ((SwitchedWire) placed.wires.get(0)).setState(newState);
 
         if(be.getWorld().isClient) {
-            IDynamicComponent.modelChanged(be.getPos());
+            Component.modelChanged(be.getPos());
         } else {
             if(newState) {
                 ModdedSoundEvents.MICROSWITCH_ON.playOnServer(be.getWorld(), be.getPos());

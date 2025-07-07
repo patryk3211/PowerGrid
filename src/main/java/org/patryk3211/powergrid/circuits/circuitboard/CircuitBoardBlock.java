@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
@@ -37,6 +38,8 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.IDynamicComponent;
+import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
@@ -69,9 +72,8 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                 var terminal = be.terminal(state, i);
                 shapeCopy = VoxelShapes.union(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
             }
-            for(var placed : be.getSchematic().components()) {
-                if(!(placed.component instanceof IDynamicComponent dynamic))
-                    continue;
+            for(var placed : be.getComponents(IDynamicComponent.class)) {
+                var dynamic = (IDynamicComponent) placed.component;
                 shapeCopy = VoxelShapes.union(dynamic.getShape(placed), shapeCopy);
             }
             shape[0] = shapeCopy;
@@ -100,13 +102,48 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         return super.getWeakRedstonePower(state, world, pos, direction);
     }
 
+    @Nullable
+    public Orientation getOrientation(BlockState state, Direction side) {
+        // TODO: When circuit facing is implemented this needs to be updated.
+        return switch(side) {
+            case NORTH -> Orientation.UP;
+            case EAST -> Orientation.RIGHT;
+            case SOUTH -> Orientation.DOWN;
+            case WEST -> Orientation.LEFT;
+            default -> null;
+        };
+    }
+
+    @Override
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+        super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+        withBlockEntityDo(world, pos, be -> {
+            var dirVec = sourcePos.subtract(pos);
+            var dir = Direction.fromVector(dirVec.getX(), dirVec.getY(), dirVec.getZ());
+            if(dir == null)
+                return;
+            var power = world.getEmittedRedstonePower(sourcePos, dir.getOpposite());
+            for(var placed : be.getComponents(IRedstoneComponent.class)) {
+                var redstone = (IRedstoneComponent) placed.component;
+                if(!redstone.isReceiver())
+                    continue;
+                if(placed.has(Orientation.PROPERTY)) {
+                    if(placed.get(Orientation.PROPERTY) == getOrientation(state, dir)) {
+                        redstone.receiveRedstone(placed, power);
+                    }
+                } else {
+                    redstone.receiveRedstone(placed, power);
+                }
+            }
+        });
+    }
+
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         var beResult = onBlockEntityUse(world, pos, be -> {
             var hitLocalPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
-            for(var placed : be.getSchematic().components()) {
-                if(!(placed.component instanceof IDynamicComponent dynamic))
-                    continue;
+            for(var placed : be.getComponents(IDynamicComponent.class)) {
+                var dynamic = (IDynamicComponent) placed.component;
                 var outline = dynamic.getShape(placed).getBoundingBox().expand(1 / 32f);
                 if(!outline.contains(hitLocalPos))
                     continue;

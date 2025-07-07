@@ -19,12 +19,15 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
+import org.patryk3211.powergrid.network.packets.UpdateComponentS2CPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +61,7 @@ public class PlacedComponent {
     public PlacedComponent(PlacedComponent placed) {
         this(placed.component, placed.x, placed.y, placed.uuid);
         this.worldSupplier = placed.worldSupplier;
+        this.pos = placed.pos;
         for(var property : properties) {
             property.setValueRaw(placed.get(property.property));
         }
@@ -138,6 +142,19 @@ public class PlacedComponent {
         return component.tick(this);
     }
 
+    public void stateUpdated() {
+        component.stateUpdated(this);
+    }
+
+    public void notifyClients(ComponentProperty<?> property) {
+        onServerWorld(() -> world -> {
+            var circuit = (CircuitBoardBlockEntity) world.getBlockEntity(pos);
+            if(circuit == null)
+                return;
+            ModdedPackets.getChannel().sendToClientsTracking(new UpdateComponentS2CPacket(circuit, this, property), circuit);
+        });
+    }
+
     public <T> T get(ComponentProperty<T> property) {
         for(var entry : properties) {
             if(entry.property == property)
@@ -152,6 +169,15 @@ public class PlacedComponent {
                 return true;
         }
         return false;
+    }
+
+    public PropertyEntry<?> getEntry(Identifier id) {
+        for(var entry : properties) {
+            if(entry.property.id().equals(id)) {
+                return entry;
+            }
+        }
+        throw new IllegalArgumentException("Placed components doesn't have the requested property");
     }
 
     public <T> PropertyEntry<T> getEntry(ComponentProperty<T> property) {
