@@ -90,6 +90,17 @@ public class Components {
             .item(ModdedItems.REDSTONE_RELAY)
             .register();
 
+    public static final ComponentEntry<RedstoneEmitterComponent> REDSTONE_EMITTER = REGISTRATE.component("redstone_emitter", RedstoneEmitterComponent::new)
+            .footprint(3, 5, b -> b
+                    .addPad(1, 0, 0)
+                    .addPad(1, 4, 1)
+                    .withItem(ModdedBlocks.ANDESITE_VOLTAGE_METER::asItem)
+                    .withArrow()
+                    .withOutline()
+            )
+            .item(ModdedBlocks.ANDESITE_VOLTAGE_METER)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }

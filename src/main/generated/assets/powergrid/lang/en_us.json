@@ -84,6 +84,7 @@
   "itemGroup.powergrid.main": "Create: Power Grid",
   "powergrid.circuit_board.tooltip.schematic": "Schematic: ",
   "powergrid.component.property.orientation": "Orientation",
+  "powergrid.component.property.redstone_emitter_digital": "Digital",
   "powergrid.component.property.relay_state": "State",
   "powergrid.component.property.relay_threshold": "Threshold Voltage",
   "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",

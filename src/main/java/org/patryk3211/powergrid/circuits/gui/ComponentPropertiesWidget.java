@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
+import org.patryk3211.powergrid.circuits.components.properties.IntProperty;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
 import java.util.ArrayList;
@@ -53,23 +54,29 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         propertyWidgets.clear();
         if(component != null) {
             var properties = component.component.getProperties();
+            var title = Text.translatable(component.component.getRequiredItem().getTranslationKey());
+            int titleWidth = textRenderer.getWidth(title);
             int maxTextLength = 0;
             for(var property : properties) {
+                if(property.isHidden())
+                    continue;
                 var propertyKey = property.translationKey();
                 var length = textRenderer.getWidth(Text.translatable(propertyKey));
                 if (length > maxTextLength)
                     maxTextLength = length;
             }
 
-            int requiredWidth = maxTextLength + 6 + 60 + 5;
+            int requiredWidth = Math.max(maxTextLength + 6 + 60 + 5, titleWidth + 20);
             int width = Math.max(requiredWidth, 120);
             setWidth(width);
             setX(right - width);
 
             int x = right - 60, y = getY() + 16;
             for(var property : properties) {
-                if(property instanceof FloatProperty fProp) {
-                    propertyWidgets.add(new FloatPropertyWidget(textRenderer, x, y, component.getEntry(fProp)));
+                if(property.isHidden())
+                    continue;
+                if(property instanceof FloatProperty || property instanceof IntProperty) {
+                    propertyWidgets.add(new TextFieldPropertyWidget<>(textRenderer, x, y, component.getEntry(property)));
                 } else if(property instanceof BooleanProperty bProp) {
                     propertyWidgets.add(new BooleanPropertyWidget(textRenderer, x, y, component.getEntry(bProp)));
                 } else {

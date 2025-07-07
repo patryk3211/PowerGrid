@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
 public interface IRedstoneComponent {
@@ -33,5 +35,17 @@ public interface IRedstoneComponent {
 
     default int getEmittedLevel(@NotNull PlacedComponent component) {
         return 0;
+    }
+
+    static void notifyNeighbours(@NotNull PlacedComponent component) {
+        var state = component.getWorld().getBlockState(component.getPos());
+        var circuit = (CircuitBoardBlock) state.getBlock();
+        if(component.has(Orientation.PROPERTY)) {
+            var updateDir = circuit.getDirection(state, component.get(Orientation.PROPERTY));
+            var updatePos = component.getPos().offset(updateDir);
+            component.getWorld().updateNeighbor(updatePos, circuit, component.getPos());
+        } else {
+            component.getWorld().updateNeighbors(component.getPos(), circuit);
+        }
     }
 }

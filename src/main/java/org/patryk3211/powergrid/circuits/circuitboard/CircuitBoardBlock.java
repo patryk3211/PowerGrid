@@ -36,6 +36,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.IDynamicComponent;
 import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
@@ -100,7 +101,20 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
 
     @Override
     public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return super.getWeakRedstonePower(state, world, pos, direction);
+        var output = new MutableInt();
+        withBlockEntityDo(world, pos, be -> {
+            for(var placed : be.getComponents(IRedstoneComponent.class)) {
+                var redstone = (IRedstoneComponent) placed.component;
+                if(!redstone.isEmitter())
+                    continue;
+                if(placed.has(Orientation.PROPERTY) && placed.get(Orientation.PROPERTY) != getOrientation(state, direction.getOpposite()))
+                    continue;
+                var level = redstone.getEmittedLevel(placed);
+                if(level > output.getValue())
+                    output.setValue(level);
+            }
+        });
+        return output.getValue();
     }
 
     @Nullable
@@ -112,6 +126,15 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
             case SOUTH -> Orientation.DOWN;
             case WEST -> Orientation.LEFT;
             default -> null;
+        };
+    }
+
+    public Direction getDirection(BlockState state, Orientation orientation) {
+        return switch(orientation) {
+            case UP -> Direction.NORTH;
+            case RIGHT -> Direction.EAST;
+            case DOWN -> Direction.SOUTH;
+            case LEFT -> Direction.WEST;
         };
     }
 

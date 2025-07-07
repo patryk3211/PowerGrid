@@ -23,7 +23,8 @@ public enum Orientation {
     LEFT(0, 1, 3),
     DOWN(1, 2, 0);
 
-    public static final EnumProperty<Orientation> PROPERTY = new EnumProperty<>(PowerGrid.MOD_ID, "orientation", Orientation.class);
+    public static final EnumProperty<Orientation> PROPERTY =
+            (EnumProperty<Orientation>) new EnumProperty<>(PowerGrid.MOD_ID, "orientation", Orientation.class).hidden();
 
     private final int idOpposite, idClockwise, idCounterClockwise;
 

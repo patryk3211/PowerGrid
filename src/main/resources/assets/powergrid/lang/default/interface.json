@@ -80,6 +80,8 @@
 
   "powergrid.component.property.resistor_value": "Resistance",
 
+  "powergrid.component.property.redstone_emitter_digital": "Digital",
+
   "powergrid.component.property.orientation": "Orientation",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",

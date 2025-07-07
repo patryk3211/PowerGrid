@@ -22,10 +22,17 @@ import org.jetbrains.annotations.Nullable;
 public abstract class ComponentProperty<T> {
     private final String namespace;
     private final String name;
+    private boolean hidden;
 
     public ComponentProperty(String namespace, String name) {
         this.namespace = namespace;
         this.name = name;
+        this.hidden = false;
+    }
+
+    public ComponentProperty<T> hidden() {
+        this.hidden = true;
+        return this;
     }
 
     public Identifier id() {
@@ -34,6 +41,10 @@ public abstract class ComponentProperty<T> {
 
     public String translationKey() {
         return namespace + ".component.property." + name;
+    }
+
+    public boolean isHidden() {
+        return hidden;
     }
 
     public abstract T parse(String value) throws RuntimeException;
