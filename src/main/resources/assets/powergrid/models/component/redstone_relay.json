@@ -1,0 +1,32 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/component/redstone_relay",
+		"particle": "powergrid:block/component/redstone_relay"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [3, 3, 5],
+			"faces": {
+				"north": {"uv": [3, 0, 6, 3], "texture": "#0"},
+				"east": {"uv": [0, 5, 5, 8], "texture": "#0"},
+				"south": {"uv": [3, 0, 6, 3], "texture": "#0"},
+				"west": {"uv": [0, 5, 5, 8], "texture": "#0"},
+				"up": {"uv": [0, 0, 3, 5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [3, -2, 1],
+			"to": [4, 2, 4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [3, -2, 1]},
+			"faces": {
+				"north": {"uv": [10, 1, 11, 5], "texture": "#0"},
+				"east": {"uv": [6, 1, 9, 5], "texture": "#0"},
+				"south": {"uv": [9, 1, 10, 5], "texture": "#0"},
+				"up": {"uv": [6, 0, 9, 1], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [3, 4, 6, 5], "rotation": 90, "texture": "#0"}
+			}
+		}
+	]
+}

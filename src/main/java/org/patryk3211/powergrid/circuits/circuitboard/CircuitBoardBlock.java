@@ -94,7 +94,8 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
 
     @Override
     public boolean emitsRedstonePower(BlockState state) {
-        return super.emitsRedstonePower(state);
+        // This is to make redstone wire connect
+        return true;
     }
 
     @Override

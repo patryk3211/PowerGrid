@@ -79,6 +79,17 @@ public class Components {
             .item(ModdedItems.RESISTOR)
             .register();
 
+    public static final ComponentEntry<RedstoneRelayComponent> REDSTONE_RELAY = REGISTRATE.component("redstone_relay", RedstoneRelayComponent::new)
+            .footprint(3, 5, b -> b
+                    .addPad(1, 0, 0)
+                    .addPad(1, 4, 1)
+                    .withItem(ModdedItems.REDSTONE_RELAY)
+                    .withArrow()
+                    .withOutline()
+            )
+            .item(ModdedItems.REDSTONE_RELAY)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }

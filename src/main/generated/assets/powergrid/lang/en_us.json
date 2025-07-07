@@ -73,6 +73,7 @@
   "item.powergrid.portable_battery.tooltip.condition2": "When placed, Powered by Electricity",
   "item.powergrid.portable_battery.tooltip.summary": "A _Wearable Battery_ for carrying energy",
   "item.powergrid.portable_battery_placeable": "Portable Battery Placeable",
+  "item.powergrid.redstone_relay": "Redstone Relay",
   "item.powergrid.relay": "Relay",
   "item.powergrid.resistive_coil": "Resistive Coil",
   "item.powergrid.resistor": "Resistor",
