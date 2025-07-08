@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.kinetics.generator.winding;
 
 import com.simibubi.create.AllBlocks;
-import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -30,6 +29,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import static net.minecraft.state.property.Properties.AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.ALONG_FIRST_AXIS;
@@ -98,16 +98,19 @@ public class WindingItem extends Item {
                     .with(PART, 1);
 
             var length = getPlacementDelta(pos, firstPos);
+            if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, length + 1))
+                return ActionResult.FAIL;
+
             // Verify the winding can be placed
             if(length > 0) {
                 for(int i = 1; i < length; ++i) {
-                    if(!world.getBlockState(pos.offset(placementAxis, i)).isReplaceable()) {
+                    if(!world.getBlockState(firstPos.offset(placementAxis, i)).isReplaceable()) {
                         return ActionResult.FAIL;
                     }
                 }
             } else {
                 for(int i = -1; i > length; --i) {
-                    if(!world.getBlockState(pos.offset(placementAxis, i)).isReplaceable()) {
+                    if(!world.getBlockState(firstPos.offset(placementAxis, i)).isReplaceable()) {
                         return ActionResult.FAIL;
                     }
                 }
@@ -129,6 +132,7 @@ public class WindingItem extends Item {
                 }
             }
             stack.setNbt(null);
+            PlayerUtilities.removeItems(context.getPlayer(), stack, length + 1);
         } else {
             if(world.isClient)
                 return ActionResult.SUCCESS;
@@ -149,7 +153,7 @@ public class WindingItem extends Item {
     }
 
     @NotNull
-    private static Direction.Axis getPlacementAxis(BlockPos pos, BlockPos firstPos) {
+    public static Direction.Axis getPlacementAxis(BlockPos pos, BlockPos firstPos) {
         var dX = pos.getX() - firstPos.getX();
         var dY = pos.getY() - firstPos.getY();
         var dZ = pos.getZ() - firstPos.getZ();
@@ -166,7 +170,7 @@ public class WindingItem extends Item {
         }
     }
 
-    private static int getPlacementDelta(BlockPos pos, BlockPos firstPos) {
+    public static int getPlacementDelta(BlockPos pos, BlockPos firstPos) {
         var dX = pos.getX() - firstPos.getX();
         var dY = pos.getY() - firstPos.getY();
         var dZ = pos.getZ() - firstPos.getZ();

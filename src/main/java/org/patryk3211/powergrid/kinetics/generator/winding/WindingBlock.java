@@ -16,13 +16,16 @@
 package org.patryk3211.powergrid.kinetics.generator.winding;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.loot.context.LootContextParameterSet;
@@ -164,12 +167,25 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     }
 
     @Override
+    public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
+        super.afterBreak(world, player, pos, state, blockEntity, tool);
+        if(state.get(PART) != 1) {
+            dropStack(world, pos, AllBlocks.SHAFT.asStack());
+        }
+    }
+
+    @Override
     public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
         super.onBroken(world, pos, state);
         if(world.isClient())
             return;
         var axis = state.get(AXIS);
-        BiConsumer<BlockPos, BlockState> breakBlock = (pos1, state1) -> world.breakBlock(pos1, true);
+        BiConsumer<BlockPos, BlockState> breakBlock = (pos1, state1) -> {
+            world.breakBlock(pos1, true);
+            if(state1.get(PART) != 1) {
+                world.setBlockState(pos1, AllBlocks.SHAFT.getDefaultState().with(AXIS, getMagneticAxis(state1)), NOTIFY_ALL);
+            }
+        };
         switch(state.get(PART)) {
             case 0 -> walkForward(world, pos, axis, breakBlock);
             case 1 -> {
@@ -240,8 +256,8 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     @Override
     public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
         var stacks = super.getDroppedStacks(state, builder);
-        if(state.get(PART) != 1)
-            stacks.add(AllBlocks.SHAFT.asStack());
+//        if(state.get(PART) != 1)
+//            stacks.add(AllBlocks.SHAFT.asStack());
         return stacks;
     }
 
@@ -254,14 +270,14 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         };
     }
 
-//    public Direction.Axis getMagneticAxis(BlockState state) {
-//        var along = state.get(ALONG_FIRST_AXIS);
-//        return switch(state.get(AXIS)) {
-//            case X -> along ? Direction.Axis.Y : Direction.Axis.Z;
-//            case Y -> along ? Direction.Axis.Z : Direction.Axis.X;
-//            case Z -> along ? Direction.Axis.Y : Direction.Axis.X;
-//        };
-//    }
+    public Direction.Axis getMagneticAxis(BlockState state) {
+        var along = state.get(ALONG_FIRST_AXIS);
+        return switch(state.get(AXIS)) {
+            case X -> along ? Direction.Axis.Y : Direction.Axis.Z;
+            case Y -> along ? Direction.Axis.Z : Direction.Axis.X;
+            case Z -> along ? Direction.Axis.Y : Direction.Axis.X;
+        };
+    }
 
     @Override
     public Class<WindingBlockEntity> getBlockEntityClass() {
@@ -295,12 +311,17 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             if (player != null && !player.isCreative()) {
                 Block.getDroppedStacks(state1, serverLevel, pos1, world.getBlockEntity(pos1), player, context.getStack())
                         .forEach(stack -> player.getInventory().offerOrDrop(stack));
+                if(pos.equals(pos1) && state1.get(PART) != 1) {
+                    player.getInventory().offerOrDrop(AllBlocks.SHAFT.asStack());
+                }
             }
             state1.onStacksDropped(serverLevel, pos1, ItemStack.EMPTY, true);
             world.breakBlock(pos1, false);
+            if(!pos.equals(pos1) && state1.get(PART) != 1) {
+                world.setBlockState(pos1, AllBlocks.SHAFT.getDefaultState().with(AXIS, getMagneticAxis(state1)));
+            }
         });
 
-        world.breakBlock(pos, false);
         playRemoveSound(world, pos);
         return ActionResult.SUCCESS;
     }
