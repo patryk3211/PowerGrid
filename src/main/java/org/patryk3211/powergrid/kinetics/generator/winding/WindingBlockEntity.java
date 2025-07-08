@@ -529,9 +529,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             float Pe = current * emfVoltage();
             if (Pe > 0) {
                 // Generator is sourcing power
-                // Apply more torque to account for losses, use
-                // those losses to heat the coil up.
-                torque *= 1.1f;
+                torque *= 1.0f;
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
@@ -542,7 +540,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 //            PowerGrid.LOGGER.info("P_e: {}", current * emfVoltage());
 //            PowerGrid.LOGGER.info("P_m: {}", rotor.getAngularVelocityRadians() * torque);
 
-            rotorP.applyTickForce(torque);
+            rotorP.applyTickForce(rotorP.limitForce(torque));
         }
         if(rotorN != null) {
             float torque = coilConstant * rotorN.getFieldStrength() * current;
@@ -550,9 +548,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             float Pe = current * emfVoltage();
             if (Pe > 0) {
                 // Generator is sourcing power
-                // Apply more torque to account for losses, use
-                // those losses to heat the coil up.
-                torque *= 1.1f;
+                torque *= 1.0f;
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
@@ -563,7 +559,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 //            PowerGrid.LOGGER.info("P_e: {}", current * emfVoltage());
 //            PowerGrid.LOGGER.info("P_m: {}", rotor.getAngularVelocityRadians() * torque);
 
-            rotorN.applyTickForce(torque);
+            rotorN.applyTickForce(rotorN.limitForce(torque));
         }
 
         if(sourceNode != null) {

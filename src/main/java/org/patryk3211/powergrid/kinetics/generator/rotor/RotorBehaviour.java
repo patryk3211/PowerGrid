@@ -176,6 +176,17 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         }
     }
 
+    public float limitForce(float forceIn) {
+        var controller = getControllerOrThis();
+        if((forceIn > 0 && controller.angularVelocity > 0) || (forceIn < 0 && controller.angularVelocity < 0)) {
+            // Matching signs, no change.
+            return forceIn;
+        }
+        // Max force is the force that stops the rotor.
+        var maxForce = controller.angularVelocity * 20f * controller.inertia;
+        return Math.signum(forceIn) * Math.min(Math.abs(forceIn), Math.abs(maxForce));
+    }
+
     /**
      * Get the rotor angular velocity.
      * @return Angular velocity in rotations per minute.
