@@ -64,7 +64,8 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         } else {
             for(var commutator : commutators) {
                 var current = commutator.getCurrent();
-                if(current > coilCurrent)
+                // TODO: This isn't the best way to handle multiple commutators.
+                if(Math.abs(current) > Math.abs(coilCurrent))
                     coilCurrent = current;
             }
         }

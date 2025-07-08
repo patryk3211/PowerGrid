@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.particles;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.foundation.particle.ICustomParticleDataWithSprite;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.network.PacketByteBuf;
@@ -37,14 +38,40 @@ public class SparkParticleData implements ParticleEffect, ICustomParticleDataWit
 
         @Override
         public SparkParticleData read(ParticleType<SparkParticleData> type, PacketByteBuf buf) {
-            return new SparkParticleData();
+            return new SparkParticleData(buf.readInt(), buf.readBoolean(), buf.readBoolean());
         }
     };
     public static final SparkParticleData INSTANCE = new SparkParticleData();
-    public static final Codec<SparkParticleData> CODEC = Codec.unit(INSTANCE); //RecordCodecBuilder.create(instance -> instance.point(new CubeSparkParticleData()));
+    public static final Codec<SparkParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.INT.fieldOf("life").forGetter(SparkParticleData::getLife),
+            Codec.BOOL.fieldOf("collision").forGetter(SparkParticleData::getCollision),
+            Codec.BOOL.fieldOf("gravity").forGetter(SparkParticleData::getGravity)
+    ).apply(instance, SparkParticleData::new));
+
+    private final int life;
+    private final boolean collision;
+    private final boolean gravity;
 
     public SparkParticleData() {
+        this(-1, true, true);
+    }
 
+    public SparkParticleData(int life, boolean collision, boolean gravity) {
+        this.life = life;
+        this.collision = collision;
+        this.gravity = gravity;
+    }
+
+    public int getLife() {
+        return life;
+    }
+
+    public boolean getCollision() {
+        return collision;
+    }
+
+    public boolean getGravity() {
+        return gravity;
     }
 
     public static void explodeParticles(World world, float x, float y, float z, Direction dir, int count) {
@@ -67,7 +94,9 @@ public class SparkParticleData implements ParticleEffect, ICustomParticleDataWit
 
     @Override
     public void write(PacketByteBuf buf) {
-
+        buf.writeInt(life);
+        buf.writeBoolean(collision);
+        buf.writeBoolean(gravity);
     }
 
     @Override
