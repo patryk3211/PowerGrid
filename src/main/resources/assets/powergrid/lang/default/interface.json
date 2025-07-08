@@ -85,6 +85,7 @@
   "powergrid.component.property.orientation": "Orientation",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
+  "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
 
   "powergrid.keyinfo.delete_area": "Delete Area",
   "powergrid.keyinfo.pick_component": "Pick Component",

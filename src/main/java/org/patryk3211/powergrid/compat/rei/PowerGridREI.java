@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.compat.rei;
 
+import com.simibubi.create.AllBlocks;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
@@ -38,17 +39,25 @@ public class PowerGridREI implements REIClientPlugin {
     @Override
     public void registerCategories(CategoryRegistry registry) {
         var circuitDesignCategory = new CircuitDesignCategory();
+        var circuitAssemblyCategory = new CircuitAssemblyCategory();
 
         registry.add(circuitDesignCategory);
         registry.addWorkstations(
                 CircuitDesignCategory.IDENTIFIER,
                 EntryStack.of(VanillaEntryTypes.ITEM, ModdedBlocks.CIRCUIT_DESIGN_TABLE.asStack())
         );
+
+        registry.add(circuitAssemblyCategory);
+        registry.addWorkstations(
+                CircuitAssemblyCategory.IDENTIFIER,
+                EntryStack.of(VanillaEntryTypes.ITEM, AllBlocks.MECHANICAL_ARM.asStack())
+        );
     }
 
     @Override
     public void registerDisplays(DisplayRegistry registry) {
         registry.add(new CircuitDesignDisplay());
+        registry.add(new CircuitAssemblyDisplay());
     }
 
     @Override
