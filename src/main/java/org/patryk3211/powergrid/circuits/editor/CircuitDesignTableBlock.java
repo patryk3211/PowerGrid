@@ -41,7 +41,7 @@ public class CircuitDesignTableBlock extends Block implements IBE<CircuitDesignT
 
     @Override
     public BlockEntityType<? extends CircuitDesignTableBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.CIRCUIT_DESIGN_BENCH.get();
+        return ModdedBlockEntities.CIRCUIT_DESIGN_TABLE.get();
     }
 
     @Override

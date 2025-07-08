@@ -98,6 +98,14 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
+    public boolean isValid(World world) {
+        var behaviour = getElectricBehaviour(world);
+        if(behaviour == null)
+            return false;
+        return behaviour.hasTerminal(terminal);
+    }
+
+    @Override
     public void assignWireEntity(WireEntity entity) {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)

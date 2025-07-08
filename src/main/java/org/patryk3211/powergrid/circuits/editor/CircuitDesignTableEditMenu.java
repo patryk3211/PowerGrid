@@ -37,7 +37,7 @@ public class CircuitDesignTableEditMenu extends AbstractCircuitDesignTableMenu {
 
     @Override
     protected void addSlots() {
-        addPlayerSlots(2, 182);
+        addPlayerSlots(3, 182);
     }
 
     @Override

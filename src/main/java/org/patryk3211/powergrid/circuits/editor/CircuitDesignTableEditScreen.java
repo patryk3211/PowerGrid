@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
@@ -22,11 +23,7 @@ import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
-import net.minecraft.client.gui.navigation.NavigationDirection;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
@@ -37,12 +34,15 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.*;
 import org.patryk3211.powergrid.collections.ModIcons;
+import org.patryk3211.powergrid.collections.ModdedKeys;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
@@ -50,6 +50,7 @@ import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.*;
@@ -57,7 +58,7 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender
 
 public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<CircuitDesignTableEditMenu> {
     private static final Identifier BACKGROUND = PowerGrid.texture("gui/circuit_design_table_edit");
-    private static final int WIDTH = 181;
+    private static final int WIDTH = 182;
     private static final int HEIGHT = 160;
 
     public static final int CIRCUIT_SCALE = 8;
@@ -72,13 +73,15 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             .style(Formatting.DARK_GREEN)
             .style(Formatting.ITALIC)
             .component();
+    private static final Text TEXT_SAVING = Lang.translateDirect("gui.circuit_designer.saving");
+    private static final Text TEXT_NOT_SAVED = Lang.translateDirect("gui.circuit_designer.not_saved");
 
     private final CircuitSchematic schematic;
     private List<Line> fgLines;
     private List<Line> bgLines;
 
     private Tool currentTool = Tool.NONE;
-    private Component currentComponent = null;
+    private PlacedComponent currentComponent = null;
     private Slot selectedSlot = null;
     private PlacedComponent selectedComponent = null;
 
@@ -96,6 +99,10 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private IconButton layerBtn;
 
     private ComponentPropertiesWidget propertiesWidget;
+    private boolean changed = false;
+
+    private boolean saving = false;
+    private int unsavedPopupTimeout = 0;
 
     public CircuitDesignTableEditScreen(CircuitDesignTableEditMenu container, PlayerInventory inv, Text title) {
         super(container, inv, title);
@@ -114,6 +121,16 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     private static void playSound(AllSoundEvents.SoundEntry sound) {
         soundManager().play(PositionedSoundInstance.master(sound.getMainEvent(), 1.0f));
+    }
+
+    public void save() {
+        ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, nameField.getText(), schematic));
+        handler.contentHolder.schematic = schematic;
+        saving = true;
+    }
+
+    public void discard() {
+        ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(handler.contentHolder, 0));
     }
 
     @Override
@@ -140,12 +157,13 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         currentComponent = null;
         selectedSlot = null;
 
-        acceptBtn = new IconButton(x + 153 - 11, y + 15, AllIcons.I_CONFIRM);
-        cancelBtn = new IconButton(x + 153 - 11, y + 35, ModIcons.I_CANCEL);
-        connectBtn = new IconButton(x + 153 - 11, y + 55, ModIcons.I_CONNECT);
-        deleteBtn = new IconButton(x + 153 - 11, y + 73, AllIcons.I_TRASH);
-        selectBtn = new IconButton(x + 153 - 11, y + 91, AllIcons.I_TARGET);
-        layerBtn = new IconButton(x + 153 - 11, y + 111, ModIcons.I_LAYER_FRONT);
+        final var BUTTONS_X = x + 154 - 11;
+        acceptBtn = new IconButton(BUTTONS_X, y + 43, AllIcons.I_CONFIRM);
+        cancelBtn = new IconButton(BUTTONS_X, y + 63, ModIcons.I_CANCEL);
+        connectBtn = new IconButton(BUTTONS_X, y + 83, ModIcons.I_CONNECT);
+        deleteBtn = new IconButton(BUTTONS_X, y + 101, AllIcons.I_TRASH);
+        selectBtn = new IconButton(BUTTONS_X, y + 119, AllIcons.I_TARGET);
+        layerBtn = new IconButton(BUTTONS_X, y + 139, ModIcons.I_LAYER_FRONT);
 
         acceptBtn.setToolTip(TOOLTIP_SAVE);
         cancelBtn.setToolTip(TOOLTIP_DISCARD);
@@ -154,13 +172,9 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         selectBtn.setToolTip(TOOLTIP_SELECT);
         layerBtn.setToolTip(TOOLTIP_LAYER);
 
-        acceptBtn.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, nameField.getText(), schematic));
-            handler.contentHolder.schematic = schematic;
-            client.setScreen(new CircuitDesignTableSaveScreen(handler, handler.playerInventory, title));
-        });
+        acceptBtn.withCallback(this::save);
 
-        cancelBtn.withCallback(() -> ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(handler.contentHolder, 0)));
+        cancelBtn.withCallback(this::discard);
 
         connectBtn.withCallback(toolCallback(this, Tool.CONNECT));
         deleteBtn.withCallback(toolCallback(this, Tool.DELETE));
@@ -203,6 +217,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             propertiesWidget.setComponent(null);
             selectedComponent = null;
         }
+        currentTool = tool;
         switch(tool) {
             case CONNECT -> editWidget.requestSelection(CircuitEditWidget.SelectMode.LINE, 0x80FFFFFF, this::placeTrace);
             case DELETE -> editWidget.requestSelection(CircuitEditWidget.SelectMode.AREA, 0x80FF8080, this::deleteArea);
@@ -219,8 +234,9 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             selectedComponent = null;
             propertiesWidget.setComponent(null);
         }
-        editWidget.componentPlacement(component, this::placeComponent);
-        currentComponent = component;
+        var placed = new PlacedComponent(component, 0, 0, UUID.randomUUID());
+        editWidget.componentPlacement(placed, this::placeComponent);
+        currentComponent = placed;
         selectedSlot = slot;
     }
 
@@ -243,6 +259,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             fgLines.add(line);
         }
 
+        changed = true;
         playSound(ModdedSoundEvents.UI_PLACE_TRACE);
         if(schematic.isPad(clickX, clickY) || isTrace)
             return CircuitEditWidget.SelectionResult.BEGIN_NEW;
@@ -259,18 +276,22 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         }
         schematic.removeComponents(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
         playSound(ModdedSoundEvents.UI_DELETE_AREA);
+        changed = true;
         return CircuitEditWidget.SelectionResult.BEGIN_NEW;
     }
 
     public CircuitEditWidget.SelectionResult selectComponent(int x1, int y1, int x2, int y2, int clickX, int clickY) {
         var placed = schematic.getComponent(x1 / GRID_TO_GRID_SCALE, y1 / GRID_TO_GRID_SCALE);
-        if(placed == null)
+        if(placed == null) {
+            playSound(ModdedSoundEvents.UI_FAIL);
             return CircuitEditWidget.SelectionResult.IGNORE;
+        }
 
         selectedComponent = placed;
         propertiesWidget.setComponent(selectedComponent);
         currentTool = Tool.NONE;
         playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
+        changed = true;
         return CircuitEditWidget.SelectionResult.END;
     }
 
@@ -278,8 +299,9 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         if(schematic.canPlace(currentComponent, x, y)) {
             playSound(ModdedSoundEvents.UI_PLACE_COMPONENT);
             schematic.placeComponent(currentComponent, x, y);
+            changed = true;
         } else {
-            playSound(ModdedSoundEvents.UI_PLACE_FAIL);
+            playSound(ModdedSoundEvents.UI_FAIL);
         }
     }
 
@@ -316,7 +338,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE);
 
         if(currentTool.y > 0) {
-            ctx.drawTexture(BACKGROUND, x + 172 - 11, y + currentTool.y, 250, 0, 6, 18);
+            ctx.drawTexture(BACKGROUND, x + 173 - 11, y + currentTool.y, 250, 0, 6, 18);
         }
 
         if(selectedComponent != null) {
@@ -327,6 +349,20 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
                     COLOR_SELECT_OUTLINE
             );
         }
+        
+        if(unsavedPopupTimeout > 0) {
+            int color = 0xFF6060;
+            int alpha = Math.min(unsavedPopupTimeout, 20) * 255 / 20;
+            color |= alpha << 24;
+            ctx.drawCenteredTextWithShadow(textRenderer, TEXT_NOT_SAVED, width / 2, y - 12, color);
+        }
+    }
+
+    @Override
+    protected void handledScreenTick() {
+        super.handledScreenTick();
+        if(unsavedPopupTimeout > 0)
+            --unsavedPopupTimeout;
     }
 
     @Override
@@ -354,10 +390,82 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if(keyCode == 256) {
+            if(!changed || saving) {
+                this.close();
+            } else {
+                playSound(ModdedSoundEvents.UI_FAIL);
+                unsavedPopupTimeout = 60;
+            }
+            return true;
+        }
         // TODO: Add key binds for tools
         // Prevent closing on Inventory Key and ESC
         var focused = getFocused();
-        return focused != null && focused.keyPressed(keyCode, scanCode, modifiers);
+        var handled = focused != null && focused.keyPressed(keyCode, scanCode, modifiers);
+        if(handled)
+            return true;
+
+        // Hotbar as component quick select
+        var hotbar = client.options.hotbarKeys;
+        for(int i = 0; i < hotbar.length; ++i) {
+            if(hotbar[i].matchesKey(keyCode, scanCode)) {
+                toolSelect(handler.getSlot(i + 27));
+                return true;
+            }
+        }
+
+        // Other tool keybinds
+        if(ModdedKeys.ROTATE_COMPONENT.matchesKey(keyCode, scanCode)) {
+            if(currentComponent != null && currentComponent.has(Orientation.PROPERTY)) {
+                var current = currentComponent.get(Orientation.PROPERTY);
+                if(Screen.hasShiftDown()) {
+                    current = current.getCounterClockwise();
+                } else {
+                    current = current.getClockwise();
+                }
+                currentComponent.set(Orientation.PROPERTY, current);
+                playSound(ModdedSoundEvents.UI_COMPONENT_ROTATE);
+                return true;
+            }
+        } else if(ModdedKeys.PLACE_TRACE.matchesKey(keyCode, scanCode)) {
+            toolSelect(Tool.CONNECT);
+            playSound(ModdedSoundEvents.UI_PLACE_TRACE);
+            return true;
+        } else if(ModdedKeys.DELETE_AREA.matchesKey(keyCode, scanCode)) {
+            toolSelect(Tool.DELETE);
+            playSound(ModdedSoundEvents.UI_DELETE_AREA);
+            return true;
+        } else if(ModdedKeys.PICK_COMPONENT.matchesKey(keyCode, scanCode)) {
+            toolSelect(Tool.SELECT);
+            playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
+            return true;
+        } else if(ModdedKeys.SWITCH_LAYER.matchesKey(keyCode, scanCode)) {
+            backLayer = !backLayer;
+            layerBtn.setIcon(backLayer ? ModIcons.I_LAYER_BACK : ModIcons.I_LAYER_FRONT);
+            playSound(ModdedSoundEvents.UI_CLICK);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void render(@NotNull DrawContext ctx, int mouseX, int mouseY, float partialTicks) {
+        super.render(ctx, mouseX, mouseY, partialTicks);
+
+        if(saving) {
+            RenderSystem.disableDepthTest();
+            var ms = ctx.getMatrices();
+            ms.push();
+            ms.translate(0, 0, 10);
+            // Apply another layer of gradient
+            ctx.fillGradient(0, 0, width, height, -1072689136, -804253680);
+
+            AllIcons.I_CONFIG_SAVE.render(ctx, width / 2 - 8, height / 2 - 8);
+            ctx.drawCenteredTextWithShadow(textRenderer, TEXT_SAVING, width / 2, height / 2 + 12, -1);
+            ms.pop();
+        }
     }
 
     @Override
@@ -369,14 +477,24 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(button == 1 && currentComponent != null) {
-            currentComponent = null;
-            selectedSlot = null;
-            editWidget.stopComponentPlacement();
+        if(button == 1) {
+            if(currentComponent == null && currentTool == Tool.NONE) {
+                int gridX = (int) ((mouseX - editWidget.getX()) / CIRCUIT_SCALE);
+                int gridY = (int) ((mouseY - editWidget.getY()) / CIRCUIT_SCALE);
+                if(gridX >= 0 && gridY >= 0 && gridX < GRID_SIZE && gridY < GRID_SIZE) {
+                    deleteArea(gridX, gridY, gridX, gridY, gridX, gridY);
+                }
+            }
+            if(currentComponent != null) {
+                currentComponent = null;
+                selectedSlot = null;
+                editWidget.stopComponentPlacement();
+            }
             if(selectedComponent != null) {
                 selectedComponent = null;
                 propertiesWidget.setComponent(null);
             }
+            editWidget.cancelSelection();
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -391,9 +509,9 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     private enum Tool {
         NONE(0),
-        CONNECT(55),
-        DELETE(73),
-        SELECT(91);
+        CONNECT(83),
+        DELETE(101),
+        SELECT(119);
 
         public final int y;
 

@@ -30,7 +30,7 @@ import org.patryk3211.powergrid.electricity.sim.special.ElectronTubeWire;
 
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
-public class ElectronTubeComponent extends Component {
+public class ElectronTubeComponent extends OrientableComponent {
     // TODO: Value ranges might need balancing
     public static final FloatProperty TUBE_GAIN = new FloatProperty(PowerGrid.MOD_ID, "tube_gain", 5, 1, 50);
     public static final FloatProperty ANODE_RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "tube_anode_resistance", 5000, 100, 10000);
@@ -47,6 +47,7 @@ public class ElectronTubeComponent extends Component {
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
+        super.addProperties(properties);
         properties.add(TUBE_GAIN, ANODE_RESISTANCE, SATURATION_CURRENT, HEATER_VOLTAGE, HEATER_POWER);
     }
 

@@ -19,8 +19,10 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -28,7 +30,6 @@ import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
-import org.patryk3211.powergrid.circuits.thermal.ThermalUnit;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 import java.util.*;
@@ -48,6 +49,12 @@ public abstract class Component {
         var properties = new ImmutableList.Builder<ComponentProperty<?>>();
         addProperties(properties);
         this.properties = properties.build();
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void modelChanged(BlockPos pos) {
+        var renderer = MinecraftClient.getInstance().worldRenderer;
+        renderer.scheduleBlockRenders(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
 
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
@@ -79,6 +86,14 @@ public abstract class Component {
         return false;
     }
 
+    /**
+     * Called when state is updated externally
+     * @param placed Placed component state
+     */
+    public void stateUpdated(@NotNull PlacedComponent placed) {
+
+    }
+
     void setItem(Supplier<? extends Item> item) {
         this.item = item;
     }
@@ -93,6 +108,10 @@ public abstract class Component {
 
     public ImmutableList<ComponentProperty<?>> getProperties() {
         return properties;
+    }
+
+    public boolean canPlace(@NotNull PlacedComponent placed, int x, int y) {
+        return true;
     }
 
     @NotNull

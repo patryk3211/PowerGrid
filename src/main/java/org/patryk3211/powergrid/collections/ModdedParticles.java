@@ -25,8 +25,6 @@ import net.minecraft.particle.ParticleType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.chemistry.vat.particles.BubbleParticleData;
-import org.patryk3211.powergrid.chemistry.vat.particles.GasParticleData;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizationParticleData;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
@@ -38,9 +36,7 @@ import java.util.function.Supplier;
 public class ModdedParticles {
     private static final List<ParticleEntry<?>> all = new ArrayList<>();
 
-    public static final ParticleType<GasParticleData> GAS = register("gas", GasParticleData::new);
     public static final ParticleType<MagnetizationParticleData> MAGNETIZATION = register("magnetization", MagnetizationParticleData::new);
-    public static final ParticleType<BubbleParticleData> VAT_BUBBLE = register("vat_bubble", BubbleParticleData::new);
 
     public static final ParticleType<SparkParticleData> CUBE_SPARK = register("spark", SparkParticleData::new);
     public static final ParticleType<ZapParticleData> ZAP = register("zap", ZapParticleData::new);

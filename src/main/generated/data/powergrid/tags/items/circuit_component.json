@@ -1,11 +1,13 @@
 {
   "replace": false,
   "values": [
-    "create:electron_tube",
     "create:copper_nugget",
-    "powergrid:lv_switch",
+    "create:electron_tube",
     "powergrid:wire_connector",
+    "powergrid:lv_switch",
     "powergrid:relay",
-    "powergrid:resistor"
+    "powergrid:resistor",
+    "powergrid:redstone_relay",
+    "powergrid:andesite_voltage_gauge"
   ]
 }

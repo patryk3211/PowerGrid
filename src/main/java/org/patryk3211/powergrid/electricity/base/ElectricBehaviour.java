@@ -212,6 +212,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return false;
     }
 
+    public boolean hasTerminal(int terminal) {
+        return terminal >= 0 && terminal < externalNodes.size() && externalNodes.get(terminal) != null;
+    }
+
     public void breakConnections() {
         if(destroying)
             return;

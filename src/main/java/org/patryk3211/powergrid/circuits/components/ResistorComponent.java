@@ -25,7 +25,7 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
-public class ResistorComponent extends Component {
+public class ResistorComponent extends OrientableComponent {
     public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 1f, 100_000f);
 
     public ResistorComponent(ComponentFootprint footprint) {
@@ -34,6 +34,7 @@ public class ResistorComponent extends Component {
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
+        super.addProperties(properties);
         properties.add(RESISTANCE);
     }
 

@@ -19,16 +19,22 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
-import org.patryk3211.powergrid.circuits.components.IDynamicComponent;
+import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
-    private boolean firstPacket = true;
+    private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
 
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -37,40 +43,49 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public void withSchematic(CircuitSchematic schematic) {
         if(world.isClient)
             return;
+        if(schematic == null) {
+            world.breakBlock(pos, false);
+            return;
+        }
         this.schematic = new CircuitSchematic(schematic);
         bakeCircuit();
         notifyUpdate();
     }
 
     private void bakeCircuit() {
+        componentCache.clear();
         baked = BakedCircuit.from(schematic);
         for(var placed : schematic.components()) {
             placed.withWorld(this::getWorld, pos);
         }
         electricBehaviour.rebuildCircuit();
         if(world != null && world.isClient)
-            IDynamicComponent.modelChanged(pos);
+            Component.modelChanged(pos);
     }
 
     @Override
     public void tick() {
         super.tick();
-        if(baked != null)
+        if(baked != null) {
             baked.tick();
+            if(!world.isClient)
+                markDirty();
+        }
     }
 
     @Override
     protected void write(NbtCompound tag, boolean clientPacket) {
-        if(!clientPacket || electricBehaviour.needsRebuild() || firstPacket) {
-            tag.put("Schematic", schematic.serializeNbt());
-            firstPacket = false;
-        }
+        tag.put("Schematic", schematic.serializeNbt());
         baked.write(tag);
         super.write(tag, clientPacket);
     }
 
     @Override
     protected void read(NbtCompound tag, boolean clientPacket) {
+        if(!tag.contains("Schematic")) {
+            world.breakBlock(pos, false);
+            return;
+        }
         super.read(tag, clientPacket);
         if(!clientPacket || tag.getBoolean("Rebuild") || baked == null) {
             schematic.deserializeNbt(tag.getCompound("Schematic"));
@@ -98,5 +113,17 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     public CircuitSchematic getSchematic() {
         return schematic;
+    }
+
+    public <T> Collection<PlacedComponent> getComponents(Class<T> ofClass) {
+        if(componentCache.containsKey(ofClass))
+            return componentCache.get(ofClass);
+        var components = new ArrayList<PlacedComponent>();
+        for(var placed : schematic.components()) {
+            if(ofClass.isInstance(placed.component))
+                components.add(placed);
+        }
+        componentCache.put(ofClass, components);
+        return components;
     }
 }

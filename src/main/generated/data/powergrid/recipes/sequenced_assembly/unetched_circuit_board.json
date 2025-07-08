@@ -18,7 +18,7 @@
           "item": "powergrid:incomplete_unetched_circuit"
         },
         {
-          "item": "minecraft:paper"
+          "item": "powergrid:empty_circuit"
         }
       ],
       "results": [

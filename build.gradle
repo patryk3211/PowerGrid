@@ -78,6 +78,8 @@ dependencies {
 	// Create - dependencies are added transitively
 	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_version}")
 
+	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
+
 	// Development QOL
 	modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
 	modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")

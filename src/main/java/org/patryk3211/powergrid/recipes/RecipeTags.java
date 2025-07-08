@@ -56,4 +56,8 @@ public class RecipeTags {
     public static TagKey<Item> coal() {
         return ItemTags.COALS;
     }
+
+    public static TagKey<Item> planks() {
+        return ItemTags.PLANKS;
+    }
 }

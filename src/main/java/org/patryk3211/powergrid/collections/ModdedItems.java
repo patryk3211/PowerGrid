@@ -24,11 +24,9 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.PowerGridRegistrate;
-import org.patryk3211.powergrid.chemistry.vat.upgrade.CatalyzerItem;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
-import org.patryk3211.powergrid.electricity.electrode.ElectrodeItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
@@ -94,6 +92,7 @@ public class ModdedItems {
 
     public static final ItemEntry<Item> RELAY = ingredient("relay");
     public static final ItemEntry<Item> RESISTOR = ingredient("resistor");
+    public static final ItemEntry<Item> REDSTONE_RELAY = ingredient("redstone_relay");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
@@ -102,16 +101,6 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<IncompleteCircuitItem> INCOMPLETE_CIRCUIT = REGISTRATE.item("incomplete_circuit", IncompleteCircuitItem::new)
             .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
-            .register();
-
-    public static final ItemEntry<Item> SULFUR = REGISTRATE.item("sulfur", Item::new)
-            .register();
-    public static final ItemEntry<CatalyzerItem> GOLDEN_MESH = REGISTRATE.item("golden_mesh", CatalyzerItem::new)
-            .transform(CatalyzerItem.setStrength(1.0f))
-            .register();
-
-    public static final ItemEntry<ElectrodeItem> COPPER_ELECTRODE = REGISTRATE.item("copper_electrode", ElectrodeItem::new)
-            .transform(ElectrodeItem.setModel(() -> () -> ModdedPartialModels.VAT_COPPER_ELECTRODE))
             .register();
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)

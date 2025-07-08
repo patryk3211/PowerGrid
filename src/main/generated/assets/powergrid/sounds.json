@@ -66,6 +66,33 @@
     ],
     "subtitle": "powergrid.subtitle.relay_click"
   },
+  "ui.action.fail": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.note_block.bass"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.action.fail"
+  },
+  "ui.click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:ui.button.click"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.click"
+  },
+  "ui.component_rotate": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.rotate_item"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ui.component_rotate"
+  },
   "ui.delete_area": {
     "sounds": [
       {
@@ -84,15 +111,6 @@
     ],
     "subtitle": "powergrid.subtitle.ui.place_component"
   },
-  "ui.place_component.fail": {
-    "sounds": [
-      {
-        "type": "event",
-        "name": "minecraft:block.note_block.bass"
-      }
-    ],
-    "subtitle": "powergrid.subtitle.ui.place_component.fail"
-  },
   "ui.place_trace": {
     "sounds": [
       {
@@ -110,6 +128,24 @@
       }
     ],
     "subtitle": "powergrid.subtitle.ui.select_component"
+  },
+  "uswitch_off": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.wooden_button.click_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.uswitch_off"
+  },
+  "uswitch_on": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.wooden_button.click_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.uswitch_on"
   },
   "wire_cut": {
     "sounds": [

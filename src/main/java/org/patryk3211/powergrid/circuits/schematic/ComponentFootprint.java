@@ -19,9 +19,11 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -30,6 +32,8 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_G
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
 public class ComponentFootprint {
+    private static final Identifier ARROWS = PowerGrid.texture("gui/circuit_arrows");
+
     private static final PadData NONE = new PadData(-1, null);
 
     private final int width;
@@ -39,15 +43,18 @@ public class ComponentFootprint {
     private final boolean outline;
     @Nullable
     private final Supplier<Item> renderedItem;
+    @Nullable
+    private final Orientation arrow;
 
     private ItemStack renderedStack;
 
-    protected ComponentFootprint(int width, int height, SortedMap<Point, PadData> pads, boolean outline, @Nullable Supplier<Item> renderedItem) {
+    protected ComponentFootprint(int width, int height, SortedMap<Point, PadData> pads, boolean outline, @Nullable Supplier<Item> renderedItem, @Nullable Orientation arrow) {
         this.width = width;
         this.height = height;
         this.pads = pads;
         this.outline = outline;
         this.renderedItem = renderedItem;
+        this.arrow = arrow;
     }
 
     protected void renderPads(@NotNull DrawContext ctx, int x, int y) {
@@ -63,8 +70,8 @@ public class ComponentFootprint {
             ctx.drawBorder(x, y, width * GRID_TO_GRID_SCALE, height * GRID_TO_GRID_SCALE, COLOR_COMPONENT_OUTLINE);
         }
         renderPads(ctx, x, y);
+        var ms = ctx.getMatrices();
         if(renderedItem != null) {
-            var ms = ctx.getMatrices();
             ms.push();
             var scale = Math.min(width, height) / 16f * GRID_TO_GRID_SCALE;
             if(width > height) {
@@ -76,6 +83,25 @@ public class ComponentFootprint {
             }
             ms.scale(scale, scale, scale);
             ctx.drawItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
+            ms.pop();
+        }
+        if(arrow != null) {
+            ms.push();
+            int u = (arrow.ordinal() % 2) * 8;
+            int v = (arrow.ordinal() / 2) * 8;
+            ms.translate(x + (width * GRID_TO_GRID_SCALE * 0.5f), y + (height * GRID_TO_GRID_SCALE * 0.5f), 0);
+
+            switch(arrow) {
+                case RIGHT -> ms.translate(width / 2, 0, 0);
+                case LEFT -> ms.translate(-width / 2, 0, 0);
+                case DOWN -> ms.translate(0, height / 2, 0);
+                case UP -> ms.translate(0, -height / 2, 0);
+            }
+
+            ms.scale(0.25f, 0.25f, 1);
+            ms.translate(-4, -4, 0);
+            ctx.drawTexture(ARROWS, 0, 0, u, v, 8, 8, 16, 16);
+
             ms.pop();
         }
     }
@@ -109,11 +135,57 @@ public class ComponentFootprint {
         return pads;
     }
 
+    public ComponentFootprint rotated(Orientation orientation) {
+        int width, height;
+        if(orientation == Orientation.UP || orientation == Orientation.DOWN) {
+            width = this.height;
+            height = this.width;
+        } else {
+            width = this.width;
+            height = this.height;
+        }
+        var pads = new TreeMap<Point, PadData>();
+        for(var pad : this.pads.entrySet()) {
+            var position = pad.getKey();
+            int x, y;
+            switch(orientation) {
+                case RIGHT -> {
+                    // No rotation
+                    x = position.x();
+                    y = position.y();
+                }
+                case DOWN -> {
+                    // 90 degree rotation
+                    x = this.height - position.y() - 1;
+                    y = position.x();
+                }
+                case LEFT -> {
+                    // 180 degree rotation
+                    x = this.width - position.x() - 1;
+                    y = this.height - position.y() - 1;
+                }
+                case UP -> {
+                    // 270 degree rotation
+                    x = position.y();
+                    y = this.width - position.x() - 1;
+                }
+                default -> throw new IllegalStateException("Invalid orientation: " + orientation);
+            }
+            pads.put(new Point(x, y), pad.getValue());
+        }
+
+        var footprint = new ComponentFootprint(width, height, pads, this.outline, this.renderedItem, arrow == null ? null : arrow.rotate(orientation));
+        // Copy cached stack if one is available.
+        footprint.renderedStack = this.renderedStack;
+        return footprint;
+    }
+
     public static class Builder {
         private final int width, height;
         private final SortedMap<Point, PadData> pads = new TreeMap<>();
         private Supplier<Item> itemSupplier;
         private boolean outline = false;
+        private Orientation arrow = null;
 
         public Builder(int width, int height) {
             this.width = width;
@@ -151,6 +223,16 @@ public class ComponentFootprint {
             return this;
         }
 
+        public Builder withArrow(Orientation facing) {
+            this.arrow = facing;
+            return this;
+        }
+
+        public Builder withArrow() {
+            this.arrow = Orientation.RIGHT;
+            return this;
+        }
+
         public ComponentFootprint build() {
             var padIndices = new TreeSet<Integer>();
             for(var pad : pads.values()) {
@@ -163,7 +245,7 @@ public class ComponentFootprint {
                 if (padIndices.last() != padIndices.size() - 1)
                     throw new IllegalStateException("Footprint pad indices must not contain any gaps");
             }
-            return new ComponentFootprint(width, height, pads, outline, itemSupplier);
+            return new ComponentFootprint(width, height, pads, outline, itemSupplier, arrow);
         }
     }
 

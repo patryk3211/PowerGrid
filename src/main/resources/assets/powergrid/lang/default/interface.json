@@ -19,11 +19,6 @@
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
 
-  "powergrid.gui.chemical_vat.info_header": "Vat information",
-  "powergrid.gui.chemical_vat.upgrade_header": "Upgrade:",
-  "powergrid.gui.chemical_vat.temperature": "Reagent temperature",
-  "powergrid.gui.chemical_vat.reagents": "Contents:",
-
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
@@ -64,6 +59,7 @@
   "powergrid.gui.circuit_designer.layer": "Switch layer",
   "powergrid.gui.circuit_designer.saving": "Saving...",
   "powergrid.gui.circuit_designer.placeable": "Placeable",
+  "powergrid.gui.circuit_designer.not_saved": "You have unsaved changes!",
 
   "powergrid.component.property.tube_gain": "Gain",
   "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
@@ -82,5 +78,18 @@
   "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
   "powergrid.component.property.relay_state": "State",
 
-  "powergrid.component.property.resistor_value": "Resistance"
+  "powergrid.component.property.resistor_value": "Resistance",
+
+  "powergrid.component.property.redstone_emitter_digital": "Digital",
+
+  "powergrid.component.property.orientation": "Orientation",
+
+  "powergrid.recipe.category.circuit_design": "Circuit Designing",
+  "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
+
+  "powergrid.keyinfo.delete_area": "Delete Area",
+  "powergrid.keyinfo.pick_component": "Pick Component",
+  "powergrid.keyinfo.place_trace": "Place Trace",
+  "powergrid.keyinfo.rotate_component": "Rotate Component",
+  "powergrid.keyinfo.switch_layer": "Switch Layer"
 }

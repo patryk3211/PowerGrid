@@ -20,10 +20,8 @@
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
     "powergrid:electric_motor",
-    "powergrid:chemical_vat",
     "powergrid:electromagnet",
     "powergrid:electric_fan",
-    "powergrid:vat_electrode",
     "powergrid:portable_battery",
     "powergrid:circuit_board"
   ]

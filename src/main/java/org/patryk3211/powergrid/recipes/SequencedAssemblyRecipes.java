@@ -66,7 +66,7 @@ public class SequencedAssemblyRecipes extends CreateRecipeProvider {
             .transitionTo(ModdedItems.INCOMPLETE_UNETCHED_CIRCUIT)
             .addOutput(ModdedItems.UNETCHED_CIRCUIT, 100)
             .loops(2)
-            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.PAPER))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.EMPTY_CIRCUIT))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.DOUGH))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
             .addStep(PressingRecipe::new, rb -> rb))

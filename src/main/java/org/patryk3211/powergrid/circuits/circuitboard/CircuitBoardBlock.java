@@ -16,27 +16,38 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.IDynamicComponent;
+import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.utility.Lang;
+
+import java.util.List;
 
 public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoardBlockEntity> {
     private static final VoxelShape SHAPE_PLATE = createCuboidShape(0, 0, 0, 16, 2, 16);
@@ -62,9 +73,8 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                 var terminal = be.terminal(state, i);
                 shapeCopy = VoxelShapes.union(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
             }
-            for(var placed : be.getSchematic().components()) {
-                if(!(placed.component instanceof IDynamicComponent dynamic))
-                    continue;
+            for(var placed : be.getComponents(IDynamicComponent.class)) {
+                var dynamic = (IDynamicComponent) placed.component;
                 shapeCopy = VoxelShapes.union(dynamic.getShape(placed), shapeCopy);
             }
             shape[0] = shapeCopy;
@@ -84,12 +94,80 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     }
 
     @Override
+    public boolean emitsRedstonePower(BlockState state) {
+        // This is to make redstone wire connect
+        return true;
+    }
+
+    @Override
+    public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+        var output = new MutableInt();
+        withBlockEntityDo(world, pos, be -> {
+            for(var placed : be.getComponents(IRedstoneComponent.class)) {
+                var redstone = (IRedstoneComponent) placed.component;
+                if(!redstone.isEmitter())
+                    continue;
+                if(placed.has(Orientation.PROPERTY) && placed.get(Orientation.PROPERTY) != getOrientation(state, direction.getOpposite()))
+                    continue;
+                var level = redstone.getEmittedLevel(placed);
+                if(level > output.getValue())
+                    output.setValue(level);
+            }
+        });
+        return output.getValue();
+    }
+
+    @Nullable
+    public Orientation getOrientation(BlockState state, Direction side) {
+        // TODO: When circuit facing is implemented this needs to be updated.
+        return switch(side) {
+            case NORTH -> Orientation.UP;
+            case EAST -> Orientation.RIGHT;
+            case SOUTH -> Orientation.DOWN;
+            case WEST -> Orientation.LEFT;
+            default -> null;
+        };
+    }
+
+    public Direction getDirection(BlockState state, Orientation orientation) {
+        return switch(orientation) {
+            case UP -> Direction.NORTH;
+            case RIGHT -> Direction.EAST;
+            case DOWN -> Direction.SOUTH;
+            case LEFT -> Direction.WEST;
+        };
+    }
+
+    @Override
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+        super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+        withBlockEntityDo(world, pos, be -> {
+            var dirVec = sourcePos.subtract(pos);
+            var dir = Direction.fromVector(dirVec.getX(), dirVec.getY(), dirVec.getZ());
+            if(dir == null)
+                return;
+            var power = world.getEmittedRedstonePower(sourcePos, dir.getOpposite());
+            for(var placed : be.getComponents(IRedstoneComponent.class)) {
+                var redstone = (IRedstoneComponent) placed.component;
+                if(!redstone.isReceiver())
+                    continue;
+                if(placed.has(Orientation.PROPERTY)) {
+                    if(placed.get(Orientation.PROPERTY) == getOrientation(state, dir)) {
+                        redstone.receiveRedstone(placed, power);
+                    }
+                } else {
+                    redstone.receiveRedstone(placed, power);
+                }
+            }
+        });
+    }
+
+    @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         var beResult = onBlockEntityUse(world, pos, be -> {
             var hitLocalPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
-            for(var placed : be.getSchematic().components()) {
-                if(!(placed.component instanceof IDynamicComponent dynamic))
-                    continue;
+            for(var placed : be.getComponents(IDynamicComponent.class)) {
+                var dynamic = (IDynamicComponent) placed.component;
                 var outline = dynamic.getShape(placed).getBoundingBox().expand(1 / 32f);
                 if(!outline.contains(hitLocalPos))
                     continue;
@@ -100,6 +178,19 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         if(beResult != ActionResult.PASS)
             return beResult;
         return super.onUse(state, world, pos, player, hand, hit);
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
+        var schematic = CircuitSchematic.fromStack(stack);
+        if(schematic != null && schematic.getName() != null) {
+            tooltip.add(Lang
+                    .translate("circuit_board.tooltip.schematic")
+                    .add(Text.literal(schematic.getName()))
+                    .style(Formatting.GRAY)
+                    .component());
+        }
+        super.appendTooltip(stack, world, tooltip, options);
     }
 
     @Override

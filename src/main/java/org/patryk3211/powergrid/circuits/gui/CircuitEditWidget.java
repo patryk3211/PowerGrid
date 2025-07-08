@@ -21,6 +21,7 @@ import net.minecraft.client.gui.DrawContext;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
 import java.util.function.BiConsumer;
 
@@ -39,7 +40,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
     private SelectCallback selectionCallback = null;
     private Runnable selectionCancelledCallback = null;
 
-    private Component placedComponent = null;
+    private PlacedComponent placedComponent = null;
     private BiConsumer<Integer, Integer> placementCallback;
 
     private final CircuitSchematic schematic;
@@ -62,11 +63,11 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             return;
 
         var ms = ctx.getMatrices();
-        ms.translate(x, y, 1000);
+        ms.translate(x, y, 5);
         ms.scale(scale, scale, scale);
 
         if(placedComponent != null) {
-            var footprint = placedComponent.footprint(null);
+            var footprint = placedComponent.footprint();
             gridX /= GRID_TO_GRID_SCALE;
             gridY /= GRID_TO_GRID_SCALE;
             int offsetX = footprint.getWidth() / 2;
@@ -186,7 +187,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
         if(placedComponent != null) {
             gridX /= GRID_TO_GRID_SCALE;
             gridY /= GRID_TO_GRID_SCALE;
-            var footprint = placedComponent.footprint(null);
+            var footprint = placedComponent.footprint();
             int offsetX = footprint.getWidth() / 2;
             int offsetY = footprint.getHeight() / 2;
             if(button == 0) {
@@ -237,7 +238,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
         }
     }
 
-    public void componentPlacement(Component component, BiConsumer<Integer, Integer> callback) {
+    public void componentPlacement(PlacedComponent component, BiConsumer<Integer, Integer> callback) {
         placedComponent = component;
         placementCallback = callback;
     }

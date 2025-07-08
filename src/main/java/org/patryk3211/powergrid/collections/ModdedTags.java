@@ -20,7 +20,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentRegistry;
 
 public class ModdedTags {
     public static final String FORGE_NAMESPACE = "c";
@@ -62,21 +61,6 @@ public class ModdedTags {
 
         Block(String namespace, String name) {
             tag = AllTags.optionalTag(Registries.BLOCK, new Identifier(namespace, name));
-        }
-    }
-
-    public enum Reagent {
-        POWDER("powder")
-        ;
-
-        public final TagKey<org.patryk3211.powergrid.chemistry.reagent.Reagent> tag;
-
-        Reagent(String name) {
-            this(PowerGrid.MOD_ID, name);
-        }
-
-        Reagent(String namespace, String name) {
-            tag = AllTags.optionalTag(ReagentRegistry.REGISTRY, new Identifier(namespace, name));
         }
     }
 }

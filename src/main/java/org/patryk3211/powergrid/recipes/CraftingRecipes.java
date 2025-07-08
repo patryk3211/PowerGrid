@@ -177,11 +177,27 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input(RecipeTags.ironSheet())
                     .input(AllBlocks.ANDESITE_CASING)),
 
+    REDSTONE_RELAY = create(ModdedItems.REDSTONE_RELAY)
+            .unlockedBy(() -> ModdedItems.RELAY)
+            .shapeless(b -> b
+                    .input(ModdedItems.RELAY)
+                    .input(Items.REDSTONE)),
+
     RESISTOR = create(ModdedItems.RESISTOR)
             .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
             .shapeless(b -> b
                     .input(ModdedItems.RESISTIVE_COIL)
-                    .input(RecipeTags.coal()))
+                    .input(RecipeTags.coal())),
+
+    CIRCUIT_DESIGN_TABLE = create(ModdedBlocks.CIRCUIT_DESIGN_TABLE)
+            .unlockedBy(() -> AllItems.EMPTY_SCHEMATIC)
+            .shaped(b -> b
+                    .pattern("ES")
+                    .pattern("WW")
+                    .pattern("WW")
+                    .input('E', AllItems.ELECTRON_TUBE)
+                    .input('S', AllItems.EMPTY_SCHEMATIC)
+                    .input('W', RecipeTags.planks()))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {
