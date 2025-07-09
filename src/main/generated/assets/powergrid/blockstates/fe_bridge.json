@@ -1,0 +1,54 @@
+{
+  "variants": {
+    "axis_along_first=false,facing=down": {
+      "model": "powergrid:block/fe_bridge_v",
+      "y": 90
+    },
+    "axis_along_first=false,facing=east": {
+      "model": "powergrid:block/fe_bridge_h",
+      "x": -90
+    },
+    "axis_along_first=false,facing=north": {
+      "model": "powergrid:block/fe_bridge_h",
+      "x": -90,
+      "y": -90
+    },
+    "axis_along_first=false,facing=south": {
+      "model": "powergrid:block/fe_bridge_h",
+      "x": -90,
+      "y": 90
+    },
+    "axis_along_first=false,facing=up": {
+      "model": "powergrid:block/fe_bridge_v",
+      "x": 180,
+      "y": 90
+    },
+    "axis_along_first=false,facing=west": {
+      "model": "powergrid:block/fe_bridge_h",
+      "x": -90,
+      "y": 180
+    },
+    "axis_along_first=true,facing=down": {
+      "model": "powergrid:block/fe_bridge_v"
+    },
+    "axis_along_first=true,facing=east": {
+      "model": "powergrid:block/fe_bridge_h"
+    },
+    "axis_along_first=true,facing=north": {
+      "model": "powergrid:block/fe_bridge_h",
+      "y": -90
+    },
+    "axis_along_first=true,facing=south": {
+      "model": "powergrid:block/fe_bridge_h",
+      "y": 90
+    },
+    "axis_along_first=true,facing=up": {
+      "model": "powergrid:block/fe_bridge_v",
+      "x": 180
+    },
+    "axis_along_first=true,facing=west": {
+      "model": "powergrid:block/fe_bridge_h",
+      "y": 180
+    }
+  }
+}
