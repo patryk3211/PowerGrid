@@ -19,14 +19,11 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-
-import java.util.UUID;
 
 public class BlockWireEndpoint implements IWireEndpoint {
     private BlockPos pos;
@@ -68,10 +65,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     public IElectric getElectricBlock(World world) {
-        var state = world.getBlockState(pos);
-        if(state.getBlock() instanceof IElectric electric)
-            return electric;
-        return null;
+        return IElectric.getAt(world, pos);
     }
 
     public ElectricBehaviour getElectricBehaviour(World world) {
@@ -84,8 +78,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
 
     @Override
     public Vec3d getExactPosition(World world) {
-        var state = world.getBlockState(pos);
-        return IElectric.getTerminalPos(pos, state, this.terminal);
+        return IElectric.getTerminalPos(world, pos, this.terminal);
     }
 
     @Override
@@ -105,13 +98,19 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
+    public boolean isValid(World world) {
+        var behaviour = getElectricBehaviour(world);
+        if(behaviour == null)
+            return false;
+        return behaviour.hasTerminal(terminal);
+    }
+
+    @Override
     public void assignWireEntity(WireEntity entity) {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        // TODO: Since connection doesn't have to persist we can potentially store
-        //  the entity object and avoid unnecessary indirection.
-        behaviour.addConnection(terminal, new ElectricBehaviour.Connection(entity.getBlockPos(), entity.getUuid()));
+        behaviour.addConnection(terminal, entity);
     }
 
     @Override
@@ -119,7 +118,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        behaviour.removeConnection(terminal, entity.getUuid());
+        behaviour.removeConnection(terminal, entity);
     }
 
     @Override

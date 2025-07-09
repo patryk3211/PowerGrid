@@ -21,17 +21,20 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
+import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.model.BakedModelManager;
+import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.Window;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatModel;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.collections.ModdedParticles;
-import org.patryk3211.powergrid.collections.ModdedRenderLayers;
+import net.minecraft.util.Identifier;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardModel;
+import org.patryk3211.powergrid.circuits.components.ComponentModels;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.portablebattery.BatteryArmorLayer;
@@ -47,6 +50,8 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 	@Override
 	public void onInitializeClient() {
 		ModelLoadingPlugin.register(this);
+
+		ModdedKeys.register();
 
 		ModdedPartialModels.register();
 		ModdedRenderLayers.register();
@@ -84,15 +89,24 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 
 	@Override
 	public void onInitializeModelLoader(Context context) {
+		var componentModels = ComponentModels.collectIds();
+		context.addModels(componentModels);
 		context.resolveModel().register(innerContext -> {
 			final var id = innerContext.id();
 			if(id != null) {
-				if(id.equals(ChemicalVatModel.MODEL_ID)) {
-					return new ChemicalVatModel();
+				if(id.equals(CircuitBoardModel.MODEL_ID)) {
+					return new CircuitBoardModel();
 				}
 			}
 			return null;
 		});
+//		context.modifyModelBeforeBake().register((model, innerContext) -> {
+//			final var id = innerContext.id();
+//			if(id != null && componentModels.contains(id)) {
+//				model.getModelDependencies();
+//			}
+//			return null;
+//		});
 	}
 
 	public static void addEntityRendererLayers(EntityType<? extends LivingEntity> entityType, LivingEntityRenderer<?, ?> entityRenderer,

@@ -20,8 +20,6 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -29,15 +27,12 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.wire.*;
-import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public interface IElectric extends IWrenchable {
     /**
@@ -117,16 +112,27 @@ public interface IElectric extends IWrenchable {
         return null;
     }
 
-    static Vec3d getTerminalPos(BlockPos position, BlockState state, int terminalIndex) {
-        if(state.getBlock() instanceof IElectric electric) {
-            var terminal = electric.terminal(state, terminalIndex);
-            if(terminal == null)
-                return position.toCenterPos();
-            var origin = terminal.getOrigin();
-            return new Vec3d(position.getX() + origin.x, position.getY() + origin.y, position.getZ() + origin.z);
-        } else {
+    @Nullable
+    static IElectric getAt(World world, BlockPos pos) {
+        var be = world.getBlockEntity(pos);
+        if(be instanceof IElectric electric)
+            return electric;
+        var state = world.getBlockState(pos);
+        if(state.getBlock() instanceof IElectric electric)
+            return electric;
+        return null;
+    }
+
+    static Vec3d getTerminalPos(World world, BlockPos position, int terminalIndex) {
+        var electric = getAt(world, position);
+        if(electric == null)
             return position.toCenterPos();
-        }
+        var state = world.getBlockState(position);
+        var terminal = electric.terminal(state, terminalIndex);
+        if(terminal == null)
+            return position.toCenterPos();
+        var origin = terminal.getOrigin();
+        return new Vec3d(position.getX() + origin.x, position.getY() + origin.y, position.getZ() + origin.z);
     }
 
     static void sendMessage(ItemUsageContext context, Text text) {
@@ -143,16 +149,6 @@ public interface IElectric extends IWrenchable {
 
         var result = WireItem.connect(world, context.getStack(), context.getPlayer(), endpoint1, endpoint2);
         return result.getResult();
-//        if(result.getResult() == ActionResult.SUCCESS) {
-////            var entity = result.getValue();
-////            if(entity != null) {
-////                entity.setEndpoint2(endpoint2);
-////                entity.makeWire();
-////            }
-//            return ActionResult.SUCCESS;
-//        }
-
-//        return ActionResult.FAIL;
     }
 
     static ActionResult makeHangingWireConnection(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemUsageContext context) {

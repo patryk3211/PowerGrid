@@ -14,7 +14,7 @@ repositories {
 
 	maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
 	maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
-	maven { url = "https://maven.tterrag.com/" } // Flywheel
+	maven { url = "https://modmaven.dev/" } // Flywheel
 	maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
 	maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" } // Forge Config API Port
 
@@ -77,6 +77,8 @@ dependencies {
 
 	// Create - dependencies are added transitively
 	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_version}")
+
+	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 
 	// Development QOL
 	modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")

@@ -17,44 +17,33 @@ package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
-import com.simibubi.create.foundation.data.TagGen;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
-import com.simibubi.create.foundation.data.CreateRegistrate;
-import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
 import io.github.fabricators_of_create.porting_lib.models.generators.ModelFile;
 import io.github.fabricators_of_create.porting_lib.models.generators.block.MultiPartBlockStateBuilder;
-import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.condition.SurvivesExplosionLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
-import net.minecraft.loot.entry.LootPoolEntry;
-import net.minecraft.loot.function.ApplyBonusLootFunction;
 import net.minecraft.loot.function.CopyNbtLootFunction;
 import net.minecraft.loot.function.SetCountLootFunction;
 import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
-import net.minecraft.loot.provider.nbt.LootNbtProvider;
-import net.minecraft.loot.provider.nbt.LootNbtProviderType;
-import net.minecraft.loot.provider.nbt.LootNbtProviderTypes;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
-import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.base.CustomProperties;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatBlock;
-import org.patryk3211.powergrid.chemistry.vat.ChemicalVatCTBehaviour;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
+import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
@@ -62,7 +51,6 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
-import org.patryk3211.powergrid.electricity.electrode.VatElectrodeBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.febridge.FEBridgeBlock;
@@ -72,7 +60,6 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
-import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -448,23 +435,6 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    public static final BlockEntry<ChemicalVatBlock> CHEMICAL_VAT = REGISTRATE.block("chemical_vat", ChemicalVatBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
-                            ConfiguredModel.builder().modelFile(state.get(ChemicalVatBlock.OPEN) ?
-                                    unchecked("chemical_vat_connected") : modModel(prov, "block/vat/closed"))
-                                    .build()
-                    ))
-            .initialProperties(SharedProperties::stone)
-            .properties(p -> p.sounds(BlockSoundGroup.NETHERITE))
-            .onRegister(CreateRegistrate.connectedTextures(ChemicalVatCTBehaviour::new))
-            .transform(pickaxeOnly())
-            .defaultLoot()
-            .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/vat/base")))
-                .build()
-            .register();
-
     public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
@@ -507,18 +477,6 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    public static final BlockEntry<VatElectrodeBlock> VAT_ELECTRODE = REGISTRATE.block("vat_electrode", VatElectrodeBlock::new)
-            // Block state only used for particles, rendering is handled in block entity renderer
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).partialState().addModels(
-                            ConfiguredModel.builder()
-                                    .modelFile(modModel(prov, "block/copper_electrode"))
-                                    .build()
-                            ))
-            .initialProperties(SharedProperties::copperMetal)
-            .transform(pickaxeOnly())
-            .register();
-
     public static final BlockEntry<PortableBatteryBlock> PORTABLE_BATTERY = REGISTRATE.block("portable_battery", PortableBatteryBlock::new)
             .blockstate((ctx, prov) -> prov.horizontalBlock(ctx.getEntry(), modModel(prov, "block/portable_battery/block")))
             .initialProperties(() -> Blocks.IRON_BLOCK)
@@ -532,6 +490,33 @@ public class ModdedBlocks {
                                 .withOperation("Charge", "Charge", CopyNbtLootFunction.Operator.REPLACE))
                 );
             })
+            .register();
+
+    public static final BlockEntry<CircuitDesignTableBlock> CIRCUIT_DESIGN_TABLE = REGISTRATE.block("circuit_design_table", CircuitDesignTableBlock::new)
+            .blockstate((ctx, prov) -> prov
+                    .simpleBlock(ctx.getEntry(), prov.models()
+                            .cubeBottomTop(ctx.getName(),
+                                    prov.modLoc("block/circuit_design_table_side"),
+                                    prov.mcLoc("block/spruce_planks"),
+                                    prov.modLoc("block/circuit_design_table_top"))))
+            .initialProperties(() -> Blocks.CRAFTING_TABLE)
+            .transform(axeOnly())
+            .defaultLoot()
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<CircuitBoardBlock> CIRCUIT_BOARD = REGISTRATE.block("circuit_board", CircuitBoardBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
+                            ConfiguredModel.builder().modelFile(unchecked("circuit_board")).build()
+                    ))
+            .initialProperties(SharedProperties::stone)
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .item()
+                .defaultModel()
+                .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
+                .build()
             .register();
 
     public static final BlockEntry<FEBridgeBlock> FE_BRIDGE = REGISTRATE.block("fe_bridge", FEBridgeBlock::new)

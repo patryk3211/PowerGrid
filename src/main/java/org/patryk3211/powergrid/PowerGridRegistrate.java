@@ -30,8 +30,9 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.chemistry.reagent.Reagent;
-import org.patryk3211.powergrid.chemistry.reagent.ReagentBuilder;
+import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.ComponentBuilder;
+import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
 import java.util.function.Function;
 
@@ -74,11 +75,11 @@ public class PowerGridRegistrate extends AbstractRegistrate<PowerGridRegistrate>
         return (CreateBlockEntityBuilder<T, P>) this.entry(name, (callback) -> CreateBlockEntityBuilder.create(this, parent, name, callback, factory));
     }
 
-    public <T extends Reagent> ReagentBuilder<T, PowerGridRegistrate> reagent(String name, NonNullFunction<Reagent.Properties, T> factory) {
-        return reagent(this.self(), name, factory);
+    public <T extends Component> ComponentBuilder<T, PowerGridRegistrate> component(String name, NonNullFunction<ComponentFootprint, T> factory) {
+        return component(this.self(), name, factory);
     }
 
-    public <T extends Reagent, P> ReagentBuilder<T, P> reagent(P parent, String name, NonNullFunction<Reagent.Properties, T> factory) {
-        return this.entry(name, callback ->  ReagentBuilder.create(this, parent, name, callback, factory));
+    public <T extends Component, P> ComponentBuilder<T, P> component(P parent, String name, NonNullFunction<ComponentFootprint, T> factory) {
+        return this.entry(name, callback ->  ComponentBuilder.create(this, parent, name, callback, factory));
     }
 }

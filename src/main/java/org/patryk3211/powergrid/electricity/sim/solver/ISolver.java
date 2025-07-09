@@ -21,4 +21,7 @@ public interface ISolver {
     void setStateSize(int size);
     DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b);
     void zero();
+
+    void addHook(ISolverHook hook);
+    void removeHook(ISolverHook hook);
 }

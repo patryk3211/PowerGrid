@@ -19,12 +19,11 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -46,9 +45,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     private final List<INode> internalNodes = new LinkedList<>();
     private final List<IElectricNode> externalNodes = new LinkedList<>();
-    private final List<ElectricWire> internalWires = new LinkedList<>();
+    private final List<AbstractElectricWire> internalWires = new LinkedList<>();
 
-    private final List<List<Connection>> connections;
+    // TODO: Consider making this a map
+    private final List<List<WireEntity>> connections;
     private boolean destroying = false;
     private boolean rebuildOnClient = false;
 
@@ -56,7 +56,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         super(be);
         this.element = be;
 
-        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         element.buildCircuit(builder);
 
         connections = new ArrayList<>();
@@ -93,30 +93,52 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void rebuildCircuit() {
-        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         builder.with(getNetwork());
-        builder.alterExternal(false);
         builder.clear();
         element.buildCircuit(builder);
 
         // Break connections if external node was removed.
-        for(int i = 0; i < externalNodes.size(); ++i) {
-            if(externalNodes.get(i) != null)
+        var oldConnections = new ArrayList<>(connections);
+        connections.clear();
+        for(int i = 0; i < oldConnections.size(); ++i) {
+            if(i < externalNodes.size() && externalNodes.get(i) != null) {
+                // Rewire
+                var nodeConnections = oldConnections.get(i);
+                connections.add(nodeConnections);
+                if(nodeConnections.isEmpty())
+                    continue;
+                for(var entity : nodeConnections) {
+                    entity.makeWire();
+                }
                 continue;
-            var nodeConnections = connections.get(i);
+            }
+            if(i < externalNodes.size()) {
+                connections.add(new ArrayList<>());
+            }
+            var nodeConnections = oldConnections.get(i);
             if(nodeConnections.isEmpty())
                 continue;
             var endpoint = new BlockWireEndpoint(getPos(), i);
             var connCopy = List.copyOf(nodeConnections);
-            for(var connection : connCopy) {
-                connection.notifyRemoved(getWorld(), endpoint);
+            for(var wire : connCopy) {
+                wire.endpointRemoved(endpoint);
             }
             nodeConnections.clear();
+        }
+        if(oldConnections.size() < externalNodes.size()) {
+            for(int i = 0; i < externalNodes.size() - oldConnections.size(); ++i) {
+                connections.add(new ArrayList<>());
+            }
         }
 
         var world = getWorld();
         if(world != null && !world.isClient)
             rebuildOnClient = true;
+    }
+
+    public boolean needsRebuild() {
+        return rebuildOnClient;
     }
 
     @Override
@@ -128,14 +150,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void unload() {
         var world = getWorld();
         for(var terminalConnections : connections) {
-            for(var connection : terminalConnections) {
-                var entity = connection.getEntity(world);
-                if(entity != null) {
-                    entity.dropWire();
-                }
+            for(var entity : terminalConnections) {
+                entity.dropWire();
             }
         }
-        internalWires.forEach(ElectricWire::remove);
+        internalWires.forEach(AbstractElectricWire::remove);
         if(externalNodes.isEmpty())
             return;
 
@@ -151,8 +170,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public void refreshConnectionEntities() {
         for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
-            for(var connection : connections.get(sourceTerminal)) {
-                var entity = connection.getEntity(getWorld());
+            for(var entity : connections.get(sourceTerminal)) {
                 if(entity instanceof HangingWireEntity wire)
                     wire.refreshTerminalPositions();
             }
@@ -163,22 +181,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void initialize() {
         super.initialize();
     }
-
-    public void addConnection(int sourceTerminal, Connection connection) {
-        connections.get(sourceTerminal).add(connection);
+  
+    public void addConnection(int sourceTerminal, WireEntity wire) {
+        connections.get(sourceTerminal).add(wire);
         blockEntity.notifyUpdate();
     }
 
-    // Must be called from WireEntity
-    public void removeConnection(int sourceTerminal, UUID entityId) {
-        var sourceConnections = connections.get(sourceTerminal);
-        for(var conn : sourceConnections) {
-            if(conn.wireEntityId.equals(entityId)) {
-                sourceConnections.remove(conn);
-                blockEntity.notifyUpdate();
-                return;
-            }
-        }
+    public void removeConnection(int sourceTerminal, WireEntity wire) {
+        connections.get(sourceTerminal).remove(wire);
     }
 
     @Override
@@ -195,18 +205,16 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public boolean hasConnection(int sourceTerminal, BlockWireEndpoint endpoint) {
         var sourceConnections = connections.get(sourceTerminal);
-        for(var connection : sourceConnections) {
-            var entity = connection.getEntity(getWorld());
-            if(entity == null)
-                return false;
+        for(var entity : sourceConnections) {
             if(entity.isConnectedTo(endpoint.getPos(), endpoint.getTerminal()))
                 return true;
         }
         return false;
     }
 
-    public List<List<Connection>> getConnections() {
-        return connections;
+
+    public boolean hasTerminal(int terminal) {
+        return terminal >= 0 && terminal < externalNodes.size() && externalNodes.get(terminal) != null;
     }
 
     public void breakConnections() {
@@ -218,8 +226,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             for(int sourceTerminal = 0; sourceTerminal < connections.size(); ++sourceTerminal) {
                 var sourceConnections = connections.get(sourceTerminal);
                 var endpoint = new BlockWireEndpoint(getPos(), sourceTerminal);
-                for(var connection : sourceConnections) {
-                    connection.notifyRemoved(world, endpoint);
+                for(var entity : sourceConnections) {
+                    entity.endpointRemoved(endpoint);
                 }
                 sourceConnections.clear();
             }
