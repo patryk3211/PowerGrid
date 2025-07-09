@@ -15,17 +15,22 @@
  */
 package org.patryk3211.powergrid.electricity.febridge;
 
-import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import team.reborn.energy.api.EnergyStorage;
+import team.reborn.energy.api.EnergyStorageUtil;
 
 public class FEBridgeBlockEntity extends ElectricBlockEntity {
-    private int charge;
+    private final FEBridgeEnergyStorage energyStorage = new FEBridgeEnergyStorage(this);
     private SwitchedWire wire;
+    private long currentRate;
 
     public FEBridgeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -45,11 +50,32 @@ public class FEBridgeBlockEntity extends ElectricBlockEntity {
 
         float ampToFe = ampToFE();
         if(wire.getState()) {
-            charge += Math.round(wire.current() * ampToFe);
+            energyStorage.amount += Math.round(wire.current() * ampToFe);
+            markDirty();
         }
 
-        int maxCharge = (int) (wire.potentialDifference() * voltToFE());
-        int missingCharge = maxCharge - charge;
+        if(energyStorage.amount > 0) {
+            // Try to move energy
+            var facing = getCachedState().get(FEBridgeBlock.FACING);
+            var sideStorage = EnergyStorage.SIDED.find(world, pos.offset(facing), facing.getOpposite());
+            var moved = EnergyStorageUtil.move(energyStorage, sideStorage, Long.MAX_VALUE, null);
+            if(!world.isClient) {
+                if(moved != currentRate) {
+                    currentRate = moved;
+                    sendData();
+                }
+            } else if(moved == 0) {
+                // Since some things might not sync this to client, this is necessary
+                // to provide a valid, client-side simulation parameters.
+                energyStorage.amount -= currentRate;
+                if(energyStorage.amount < 0)
+                    energyStorage.amount = 0;
+            }
+        }
+
+        long maxCharge = (long) (wire.potentialDifference() * voltToFE());
+        energyStorage.capacity = maxCharge;
+        long missingCharge = maxCharge - energyStorage.amount;
         if(missingCharge <= 0) {
             wire.setState(false);
             return;
@@ -65,6 +91,28 @@ public class FEBridgeBlockEntity extends ElectricBlockEntity {
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
         wire = builder.connectSwitch(1, builder.terminalNode(0), builder.terminalNode(1));
+    }
+
+    @Override
+    protected void write(NbtCompound tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        tag.putLong("Energy", energyStorage.amount);
+        if(clientPacket)
+            tag.putLong("Rate", currentRate);
+    }
+
+    @Override
+    protected void read(NbtCompound tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        energyStorage.amount = tag.getLong("Energy");
+        if(clientPacket)
+            currentRate = tag.getLong("Rate");
+    }
+
+    public @Nullable EnergyStorage getEnergyStorage(@Nullable Direction dir) {
+        if(dir == null || getCachedState().get(FEBridgeBlock.FACING) == dir)
+            return energyStorage;
+        return null;
     }
 }
 

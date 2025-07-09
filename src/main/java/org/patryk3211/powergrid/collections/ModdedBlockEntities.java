@@ -45,6 +45,7 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
+import team.reborn.energy.api.EnergyStorage;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -159,6 +160,8 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<FEBridgeBlockEntity> FE_BRIDGE =
             REGISTRATE.blockEntity("fe_bridge", FEBridgeBlockEntity::new)
                     .validBlock(ModdedBlocks.FE_BRIDGE)
+                    .onRegister(beType ->
+                            EnergyStorage.SIDED.registerForBlockEntity(FEBridgeBlockEntity::getEnergyStorage, beType))
                     .register();
 
     @SuppressWarnings("EmptyMethod")
