@@ -50,8 +50,7 @@ public class ModdedTags {
 
     public enum Block {
         SILVER_ORES(FORGE_NAMESPACE, "silver_ores"),
-        AFFECTED_BY_LAMP("affected_by_lamp"),
-        TRANSMISSION_LINE_POINT("transmission_line_point")
+        AFFECTED_BY_LAMP("affected_by_lamp")
         ;
 
         public final TagKey<net.minecraft.block.Block> tag;

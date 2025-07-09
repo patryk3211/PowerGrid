@@ -88,7 +88,6 @@ public class ModdedBlocks {
             .blockstate(alternateDirectionalBlock("block/wire_connector"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
-            .tag(ModdedTags.Block.TRANSMISSION_LINE_POINT.tag)
             .defaultLoot()
             .simpleItem()
             .register();
@@ -97,7 +96,6 @@ public class ModdedBlocks {
             .blockstate(alternateDirectionalBlock("block/heavy_wire_connector"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
-            .tag(ModdedTags.Block.TRANSMISSION_LINE_POINT.tag)
             .defaultLoot()
             .simpleItem()
             .register();

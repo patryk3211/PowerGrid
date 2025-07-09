@@ -28,14 +28,12 @@ import java.util.Map;
 public class NetworkGraph {
     private static class Node {
         public final IElectricNode node;
-        public boolean transmissionLinePoint;
         public final Map<Node, Connection> connections;
         public boolean isKept;
 
-        public Node(IElectricNode node, boolean transmissionLinePoint) {
+        public Node(IElectricNode node) {
             this.node = node;
             this.connections = new HashMap<>();
-            this.transmissionLinePoint = transmissionLinePoint;
             isKept = false;
         }
     }
@@ -45,10 +43,10 @@ public class NetworkGraph {
     private final Map<IElectricNode, Node> nodes = new HashMap<>();
     private final Map<IElectricNode, Integer> countOverrides = new HashMap<>();
 
-    public void addNode(IElectricNode node, boolean transmissionLinePoint) {
+    public void addNode(IElectricNode node) {
         if(nodes.containsKey(node))
             return;
-        nodes.put(node, new Node(node, transmissionLinePoint));
+        nodes.put(node, new Node(node));
     }
 
     public void keepNode(IElectricNode node) {
@@ -130,12 +128,6 @@ public class NetworkGraph {
         if(!nodes.containsKey(node))
             return 0;
         return nodes.get(node).connections.size();
-    }
-
-    public boolean isTransmissionLinePoint(IElectricNode node) {
-        if(!nodes.containsKey(node))
-            return false;
-        return nodes.get(node).transmissionLinePoint;
     }
 
     public void addCountOverrides(Map<IElectricNode, Integer> overrides) {
