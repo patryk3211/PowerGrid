@@ -38,6 +38,7 @@ import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.portablebattery.BatteryArmorLayer;
+import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
@@ -80,6 +81,7 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 
 		ELECTRO_ZAPPER_RENDER_HANDLER.tick();
 		WindingPreview.tick();
+		TransformerWindingScreen.clientTick();
 	}
 
 	public void registerOverlays() {

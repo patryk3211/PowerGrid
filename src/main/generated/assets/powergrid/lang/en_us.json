@@ -139,6 +139,7 @@
   "powergrid.gui.heater.title": "Coil temperature",
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
+  "powergrid.gui.transformer.turns": "Turns",
   "powergrid.gui.voltage_meter.title": "Measured voltage",
   "powergrid.keyinfo.delete_area": "Delete Area",
   "powergrid.keyinfo.pick_component": "Pick Component",
