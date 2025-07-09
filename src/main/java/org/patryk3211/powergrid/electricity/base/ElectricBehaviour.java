@@ -30,11 +30,13 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 public class ElectricBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<ElectricBehaviour> TYPE = new BehaviourType<>();
@@ -91,7 +93,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void rebuildCircuit() {
-        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         builder.with(getNetwork());
         builder.clear();
         element.buildCircuit(builder);

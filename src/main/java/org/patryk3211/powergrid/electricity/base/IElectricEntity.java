@@ -37,10 +37,10 @@ public interface IElectricEntity {
         private final BlockPos pos;
         private final List<IElectricNode> externalNodes;
         private final Collection<INode> internalNodes;
-        private final Collection<ElectricWire> wires;
+        private final Collection<AbstractElectricWire> wires;
         private boolean alterExternal = true;
 
-        public CircuitBuilder(BlockPos pos, List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<ElectricWire> wires) {
+        public CircuitBuilder(BlockPos pos, List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
             this.pos = pos;
             this.externalNodes = externalNodes;
             this.internalNodes = internalNodes;

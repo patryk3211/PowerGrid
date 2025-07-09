@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.circuitboard;
 
+import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
@@ -26,8 +27,8 @@ import java.util.function.Function;
 public class ComponentCircuitBuilder extends IElectricEntity.CircuitBuilder {
     private final Function<Integer, FloatingNode> externalNodeProvider;
 
-    public ComponentCircuitBuilder(Function<Integer, FloatingNode> externalNodeProvider, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
-        super(null, internalNodes, wires);
+    public ComponentCircuitBuilder(BlockPos pos, Function<Integer, FloatingNode> externalNodeProvider, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
+        super(pos, null, internalNodes, wires);
         this.externalNodeProvider = externalNodeProvider;
     }
 

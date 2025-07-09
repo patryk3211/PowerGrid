@@ -37,13 +37,13 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
-    public void addWire(ElectricWire wire) {
+    public void addWire(AbstractElectricWire wire) {
         super.addWire(wire);
 //        graph.connect(wire.node1, wire.node2, wire);
     }
 
     @Override
-    public void removeWire(ElectricWire wire) {
+    public void removeWire(AbstractElectricWire wire) {
         super.removeWire(wire);
         graph.disconnect(wire.node1, wire.node2);
     }

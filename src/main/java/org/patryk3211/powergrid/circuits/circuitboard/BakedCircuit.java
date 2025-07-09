@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -50,7 +51,7 @@ public class BakedCircuit {
         return padNodeProviderMap.get(node.placed()).apply(node.pad());
     }
 
-    public static BakedCircuit from(CircuitSchematic schematic) {
+    public static BakedCircuit from(CircuitSchematic schematic, BlockPos pos) {
         var result = new BakedCircuit();
 
         // Create component pad nodes.
@@ -76,7 +77,7 @@ public class BakedCircuit {
                     index -> (FloatingNode) result.internalNodes.get(index + nodeOffset);
             result.padNodeProviderMap.put(placed, provider);
 
-            var builder = new ComponentCircuitBuilder(provider, result.internalNodes, result.wires);
+            var builder = new ComponentCircuitBuilder(pos, provider, result.internalNodes, result.wires);
             placed.nodes.clear();
             placed.wires.clear();
 
