@@ -225,12 +225,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public void setPosition(double x, double y, double z) {
         super.setPosition(x, y, z);
         // Endpoints need to be refreshed with new entity block pos.
-        var e1 = getEndpoint1();
-        setEndpoint1(null);
-        setEndpoint1(e1);
-        var e2 = getEndpoint2();
-        setEndpoint2(null);
-        setEndpoint2(e2);
+//        var e1 = getEndpoint1();
+//        setEndpoint1(null);
+//        setEndpoint1(e1);
+//        var e2 = getEndpoint2();
+//        setEndpoint2(null);
+//        setEndpoint2(e2);
     }
 
     public void refreshTerminalPositions() {

@@ -35,6 +35,11 @@ public interface IWireEndpoint {
     IElectricNode getNode(World world);
     void joinNetwork(World world, ElectricalNetwork network);
 
+    // TODO: Implement for other endpoints
+    default boolean isValid(World world) {
+        return true;
+    }
+
     void assignWireEntity(WireEntity entity);
     void removeWireEntity(WireEntity entity);
 

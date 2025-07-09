@@ -42,6 +42,8 @@ import net.minecraft.util.math.Direction;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.base.CustomProperties;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
+import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
@@ -487,6 +489,33 @@ public class ModdedBlocks {
                                 .withOperation("Charge", "Charge", CopyNbtLootFunction.Operator.REPLACE))
                 );
             })
+            .register();
+
+    public static final BlockEntry<CircuitDesignTableBlock> CIRCUIT_DESIGN_TABLE = REGISTRATE.block("circuit_design_table", CircuitDesignTableBlock::new)
+            .blockstate((ctx, prov) -> prov
+                    .simpleBlock(ctx.getEntry(), prov.models()
+                            .cubeBottomTop(ctx.getName(),
+                                    prov.modLoc("block/circuit_design_table_side"),
+                                    prov.mcLoc("block/spruce_planks"),
+                                    prov.modLoc("block/circuit_design_table_top"))))
+            .initialProperties(() -> Blocks.CRAFTING_TABLE)
+            .transform(axeOnly())
+            .defaultLoot()
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<CircuitBoardBlock> CIRCUIT_BOARD = REGISTRATE.block("circuit_board", CircuitBoardBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
+                            ConfiguredModel.builder().modelFile(unchecked("circuit_board")).build()
+                    ))
+            .initialProperties(SharedProperties::stone)
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .item()
+                .defaultModel()
+                .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
+                .build()
             .register();
 
     @SuppressWarnings("EmptyMethod")

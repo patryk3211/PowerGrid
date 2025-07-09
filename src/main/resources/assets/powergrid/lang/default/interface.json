@@ -32,6 +32,10 @@
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.power.rated": "Rated power:",
 
+  "powergrid.tooltip.circuit_assembly": "Circuit Assembly",
+  "powergrid.tooltip.circuit_assembly.progress": "Progress",
+  "powergrid.tooltip.circuit_assembly.insert": "Insert",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
@@ -44,5 +48,48 @@
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
 
   "create.aggregate_type.series": "Series",
-  "create.aggregate_type.parallel": "Parallel"
+  "create.aggregate_type.parallel": "Parallel",
+
+  "powergrid.gui.circuit_designer.edit": "Edit circuit",
+  "powergrid.gui.circuit_designer.save": "Save changes",
+  "powergrid.gui.circuit_designer.discard": "Discard changes",
+  "powergrid.gui.circuit_designer.connect": "Place trace",
+  "powergrid.gui.circuit_designer.delete": "Delete selection",
+  "powergrid.gui.circuit_designer.select": "Select component",
+  "powergrid.gui.circuit_designer.layer": "Switch layer",
+  "powergrid.gui.circuit_designer.saving": "Saving...",
+  "powergrid.gui.circuit_designer.placeable": "Placeable",
+  "powergrid.gui.circuit_designer.not_saved": "You have unsaved changes!",
+
+  "powergrid.component.property.tube_gain": "Gain",
+  "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
+  "powergrid.component.property.tube_anode_resistance": "Anode Resistance",
+  "powergrid.component.property.tube_anode_resistance.summary": "Apparent anode resistance when grid voltage is zero and anode voltage is 1 V",
+  "powergrid.component.property.tube_saturation_current": "Saturation Current",
+  "powergrid.component.property.tube_saturation_current.summary": "Maximum current that can pass through the tube",
+  "powergrid.component.property.tube_heater_voltage": "Heater Voltage",
+  "powergrid.component.property.tube_heater_voltage.summary": "Voltage required to reach the rated heater power",
+  "powergrid.component.property.tube_heater_power": "Heater Power",
+  "powergrid.component.property.tube_heater_power.summary": "Power requirement for the given saturation current",
+
+  "powergrid.component.property.switch_state": "State",
+
+  "powergrid.component.property.relay_threshold": "Threshold Voltage",
+  "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
+  "powergrid.component.property.relay_state": "State",
+
+  "powergrid.component.property.resistor_value": "Resistance",
+
+  "powergrid.component.property.redstone_emitter_digital": "Digital",
+
+  "powergrid.component.property.orientation": "Orientation",
+
+  "powergrid.recipe.category.circuit_design": "Circuit Designing",
+  "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
+
+  "powergrid.keyinfo.delete_area": "Delete Area",
+  "powergrid.keyinfo.pick_component": "Pick Component",
+  "powergrid.keyinfo.place_trace": "Place Trace",
+  "powergrid.keyinfo.rotate_component": "Rotate Component",
+  "powergrid.keyinfo.switch_layer": "Switch Layer"
 }

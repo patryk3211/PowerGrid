@@ -19,6 +19,7 @@ import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.BiCGSTABSolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolver;
+import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.Set;
 public class ElectricalNetwork {
     private static final double PRECISION = 1e-6;
 
-    private final Set<ElectricWire> wires = new HashSet<>();
+    private final Set<AbstractElectricWire> wires = new HashSet<>();
     private final Set<ICouplingNode> couplings = new HashSet<>();
     private final ArrayList<INode> nodes = new ArrayList<>();
 
@@ -73,6 +74,8 @@ public class ElectricalNetwork {
 
         if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode)
             ++sourceCount;
+        if(node instanceof ISolverHook hook)
+            solver.addHook(hook);
     }
 
     public void addNodes(IElectricNode... nodes) {
@@ -100,6 +103,8 @@ public class ElectricalNetwork {
             couplings.remove(node);
         if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode)
             --sourceCount;
+        if(node instanceof ISolverHook hook)
+            solver.removeHook(hook);
 
         setDirty();
     }
@@ -123,7 +128,7 @@ public class ElectricalNetwork {
         return dirty;
     }
 
-    public void addWire(ElectricWire wire) {
+    public void addWire(AbstractElectricWire wire) {
         if((wire.node1 != null && !nodes.contains(wire.node1)) || (wire.node2 != null && !nodes.contains(wire.node2)))
             // If node of a wire is not null it must be in the network's node set.
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network");
@@ -131,9 +136,11 @@ public class ElectricalNetwork {
         wires.add(wire);
 
         updateConductance(wire, wire.conductance());
+        if(wire instanceof ISolverHook hook)
+            solver.addHook(hook);
     }
 
-    public void updateConductance(ElectricWire wire, double change) {
+    public void updateConductance(AbstractElectricWire wire, double change) {
         if(conductanceMatrix == null || dirty)
             return;
 
@@ -184,15 +191,17 @@ public class ElectricalNetwork {
         }
     }
 
-    public void removeWire(ElectricWire wire) {
+    public void removeWire(AbstractElectricWire wire) {
         if(!wires.contains(wire))
             return;
         wires.remove(wire);
 
         updateConductance(wire, -wire.conductance());
+        if(wire instanceof ISolverHook hook)
+            solver.removeHook(hook);
     }
 
-    public void updateResistance(ElectricWire wire, double oldResistance) {
+    public void updateResistance(AbstractElectricWire wire, double oldResistance) {
         double change = wire.conductance();
         if(oldResistance != 0)
             change -= 1 / oldResistance;
@@ -205,6 +214,9 @@ public class ElectricalNetwork {
         couplings.add(coupling);
         nodes.add(coupling);
         setDirty();
+
+        if(coupling instanceof ISolverHook hook)
+            solver.addHook(hook);
     }
 
     public void updateVoltage(VoltageSourceNode node, double oldVoltage) {
@@ -229,7 +241,7 @@ public class ElectricalNetwork {
 
     private void populateConductanceMatrix() {
         conductanceMatrix.zero();
-        List<ElectricWire> staleWires = new ArrayList<>();
+        List<AbstractElectricWire> staleWires = new ArrayList<>();
         for(var wire : wires) {
             var G = wire.conductance();
             if(wire.node1 != null && wire.node2 != null) {
@@ -251,7 +263,11 @@ public class ElectricalNetwork {
             }
         }
 
-        staleWires.forEach(wires::remove);
+        staleWires.forEach(wire -> {
+            if(wire instanceof ISolverHook hook)
+                solver.removeHook(hook);
+            wires.remove(wire);
+        });
         for(var node : couplings) {
             node.couple(conductanceMatrix);
         }

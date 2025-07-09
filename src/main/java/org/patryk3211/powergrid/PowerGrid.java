@@ -29,6 +29,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
+import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
@@ -57,6 +59,7 @@ public class PowerGrid implements ModInitializer {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
 		ElectricalNetwork.LOGGER = LOGGER;
 
+		ComponentRegistry.init();
 		ModdedSoundEvents.prepare();
 
 		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
@@ -74,10 +77,13 @@ public class PowerGrid implements ModInitializer {
 
 		ModdedBlocks.register();
 		ModdedItems.register();
+		ModdedFluids.register();
 		ModdedBlockEntities.register();
 		ModdedEntities.register();
 		HeaterFanProcessingTypes.register();
 		ModdedConfigs.register();
+		ModdedMenus.register();
+		Components.register();
 
 		ModdedParticles.register();
 

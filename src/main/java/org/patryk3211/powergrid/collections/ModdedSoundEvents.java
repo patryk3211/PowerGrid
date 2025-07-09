@@ -70,6 +70,49 @@ public class ModdedSoundEvents {
     ELECTROZAPPER_SHOOT = create("electrozapper_shoot").subtitle("Electro-Zapper bzzzts")
 //            .addVariant("electrozapper_shoot")
             .category(SoundCategory.PLAYERS)
+            .build(),
+
+    UI_CLICK = create("ui.click")
+            .playExisting(SoundEvents.UI_BUTTON_CLICK)
+            .build(),
+
+    UI_COMPONENT_ROTATE = create("ui.component_rotate")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ROTATE_ITEM, 0.75f, 0.75f)
+            .build(),
+
+    UI_PLACE_TRACE = create("ui.place_trace")
+            .playExisting(SoundEvents.BLOCK_METAL_PLACE, 0.75f, 1.75f)
+            .build(),
+
+    UI_DELETE_AREA = create("ui.delete_area")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_REMOVE_ITEM, 0.5f, 1.0f)
+            .build(),
+
+    UI_PLACE_COMPONENT = create("ui.place_component")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ADD_ITEM, 0.5f, 1.0f)
+            .build(),
+
+    UI_FAIL = create("ui.action.fail")
+            .playExisting(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), 1.0f, 0.5f)
+            .build(),
+
+    UI_SELECT_COMPONENT = create("ui.select_component")
+            .playExisting(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f)
+            .build(),
+
+    RELAY_CLICK = create("relay_click").subtitle("Relay clicks")
+            .playExisting(SoundEvents.BLOCK_LEVER_CLICK)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MICROSWITCH_ON = create("uswitch_on").subtitle("Switch clicks")
+            .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_ON, 1.0f, 2.0f)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MICROSWITCH_OFF = create("uswitch_off").subtitle("Switch clicks")
+            .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF, 1.0f, 2.0f)
+            .category(SoundCategory.BLOCKS)
             .build()
             ;
 

@@ -18,10 +18,14 @@ package org.patryk3211.powergrid.collections;
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
+import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.PowerGridRegistrate;
+import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
+import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
@@ -55,6 +59,9 @@ public class ModdedItems {
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
             .register();
 
+    public static final ItemEntry<Item> EMPTY_CIRCUIT = REGISTRATE.item("empty_circuit", Item::new)
+            .register();
+
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
             .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
                 case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
@@ -83,8 +90,18 @@ public class ModdedItems {
     public static final ItemEntry<Item> ELECTRICAL_GIZMO = ingredient("electrical_gizmo");
     public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag, forgeItemTag("zinc_plates"));
 
+    public static final ItemEntry<Item> RELAY = ingredient("relay");
+    public static final ItemEntry<Item> RESISTOR = ingredient("resistor");
+    public static final ItemEntry<Item> REDSTONE_RELAY = ingredient("redstone_relay");
+
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_UNETCHED_CIRCUIT = sequencedIngredientBuilder("incomplete_unetched_circuit")
+            .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
+            .register();
+    public static final ItemEntry<IncompleteCircuitItem> INCOMPLETE_CIRCUIT = REGISTRATE.item("incomplete_circuit", IncompleteCircuitItem::new)
+            .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
+            .register();
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
             .transform(CreateRegistrate.customRenderedItem(() -> ElectroZapperItemRenderer::new))
@@ -111,6 +128,12 @@ public class ModdedItems {
 			.tag(forgeItemTag("chestplates"))
             .register();
 
+    public static final ItemEntry<CircuitSchematicItem> CIRCUIT_SCHEMATIC = REGISTRATE.item("circuit_schematic", CircuitSchematicItem::new)
+            .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
+            .register();
+
+    public static final ItemEntry<Item> UNETCHED_CIRCUIT = ingredient("unetched_circuit", ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag);
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 
@@ -118,10 +141,15 @@ public class ModdedItems {
         return REGISTRATE.item(name, SequencedAssemblyItem::new).register();
     }
 
+    private static ItemBuilder<SequencedAssemblyItem, PowerGridRegistrate> sequencedIngredientBuilder(String name) {
+        return REGISTRATE.item(name, SequencedAssemblyItem::new);
+    }
+
     private static ItemEntry<Item> ingredient(String name) {
         return REGISTRATE.item(name, Item::new).register();
     }
 
+    @SafeVarargs
     private static ItemEntry<Item> ingredient(String name, TagKey<Item>... tags) {
         return REGISTRATE.item(name, Item::new).tag(tags).register();
     }

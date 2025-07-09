@@ -30,6 +30,9 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.ComponentBuilder;
+import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
 import java.util.function.Function;
 
@@ -70,5 +73,13 @@ public class PowerGridRegistrate extends AbstractRegistrate<PowerGridRegistrate>
     @Override
     public <T extends BlockEntity, P> CreateBlockEntityBuilder<T, P> blockEntity(P parent, String name, BlockEntityBuilder.BlockEntityFactory<T> factory) {
         return (CreateBlockEntityBuilder<T, P>) this.entry(name, (callback) -> CreateBlockEntityBuilder.create(this, parent, name, callback, factory));
+    }
+
+    public <T extends Component> ComponentBuilder<T, PowerGridRegistrate> component(String name, NonNullFunction<ComponentFootprint, T> factory) {
+        return component(this.self(), name, factory);
+    }
+
+    public <T extends Component, P> ComponentBuilder<T, P> component(P parent, String name, NonNullFunction<ComponentFootprint, T> factory) {
+        return this.entry(name, callback ->  ComponentBuilder.create(this, parent, name, callback, factory));
     }
 }

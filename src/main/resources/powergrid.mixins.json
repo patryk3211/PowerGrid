@@ -4,8 +4,12 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AirCurrentMixin",
+    "ArmBlockEntityMixin",
+    "ArmInteractionPointMixin",
+    "BasinRecipeMixin",
     "FanProcessingMixin",
-    "FanProcessingTypeAccessor"
+    "FanProcessingTypeAccessor",
+    "RecipeApplierMixin"
   ],
   "injectors": {
     "defaultRequire": 1
