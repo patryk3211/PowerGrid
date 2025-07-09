@@ -62,6 +62,18 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
                 max.x - expand, max.y - expand, max.z - expand);
     }
 
+    public TerminalBoundingBox offset(Vec3d offset) {
+        return this.offset(offset.x, offset.y, offset.z);
+    }
+
+    public TerminalBoundingBox offset(double x, double y, double z) {
+        var terminal = new TerminalBoundingBox(this);
+        terminal.min = terminal.min.add(x, y, z);
+        terminal.max = terminal.max.add(x, y, z);
+        terminal.origin = terminal.origin.add(x, y, z);
+        return terminal;
+    }
+
     public TerminalBoundingBox rotateAroundX(BlockRotation rotation) {
         TerminalBoundingBox terminal = new TerminalBoundingBox(this);
         switch(rotation) {

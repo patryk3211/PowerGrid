@@ -14,7 +14,7 @@ repositories {
 
 	maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
 	maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
-	maven { url = "https://maven.tterrag.com/" } // Flywheel
+	maven { url = "https://modmaven.dev/" } // Flywheel
 	maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
 	maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" } // Forge Config API Port
 
@@ -78,6 +78,8 @@ dependencies {
 	// Create - dependencies are added transitively
 	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_version}")
 
+	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
+
 	// Development QOL
 	modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
 	modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
@@ -132,9 +134,22 @@ runDatagen {
 	jvmArgs("-Dfabric-api.datagen.modid=powergrid", "-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
 }
 
+def getGitHash = { ->
+	def stdout = new ByteArrayOutputStream()
+	exec {
+		commandLine 'git', 'rev-parse', '--short', 'HEAD'
+		standardOutput = stdout
+	}
+	return stdout.toString().trim()
+}
+
 test {
 	useJUnitPlatform()
 }
+tasks.register("devBuild", {
+	version = "${project.mod_version}+${project.minecraft_version}-${getGitHash}"
+	dependsOn tasks.build
+})
 
 // configure the maven publication
 publishing {

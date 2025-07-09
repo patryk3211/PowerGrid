@@ -15,10 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderPhase;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.*;
 
 import java.util.OptionalDouble;
 
@@ -36,8 +33,24 @@ public class ModdedRenderLayers {
                     .build(false)
     );
 
+    private static final RenderLayer COLOR = RenderLayer.of(
+            "powergrid_color",
+            VertexFormats.POSITION_COLOR,
+            VertexFormat.DrawMode.QUADS,
+            256,
+            RenderLayer.MultiPhaseParameters.builder()
+                    .program(RenderPhase.COLOR_PROGRAM)
+                    .cull(RenderPhase.DISABLE_CULLING)
+                    .transparency(RenderPhase.NO_TRANSPARENCY)
+                    .build(false)
+    );
+
     public static RenderLayer getDebugLines() {
         return DEBUG_LINES;
+    }
+
+    public static RenderLayer getColor() {
+        return COLOR;
     }
 
     @SuppressWarnings("EmptyMethod")

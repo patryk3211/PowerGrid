@@ -20,10 +20,9 @@
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
     "powergrid:electric_motor",
-    "powergrid:chemical_vat",
-    "powergrid:silver_ore",
-    "powergrid:deepslate_silver_ore",
     "powergrid:electromagnet",
-    "powergrid:electric_fan"
+    "powergrid:electric_fan",
+    "powergrid:portable_battery",
+    "powergrid:circuit_board"
   ]
 }

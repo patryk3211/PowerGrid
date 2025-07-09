@@ -21,11 +21,21 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
+import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.ItemTags;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.info.Power;
 
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -38,8 +48,14 @@ public class CuttingRecipes extends ProcessingRecipeGen {
     IRON_WIRE = create(AllItems.IRON_SHEET::get, b ->
             b.duration(50).output(ModdedItems.IRON_WIRE.get(), 4)),
 
-    SILVER_WIRE = create(ModdedItems.SILVER_SHEET::get, b ->
-            b.duration(50).output(ModdedItems.SILVER_WIRE.get(), 4))
+    GOLD_WIRE = create(AllItems.GOLDEN_SHEET::get, b ->
+            b.duration(50).output(ModdedItems.GOLDEN_WIRE.get(), 4)),
+
+    EMPTY_CIRCUIT = create("empty_circuit_slabs", b -> b
+            .output(ModdedItems.EMPTY_CIRCUIT, 2)
+            .require(ItemTags.WOODEN_SLABS)
+            .duration(50))
+
             ;
 
     public CuttingRecipes(FabricDataOutput output) {
@@ -48,6 +64,10 @@ public class CuttingRecipes extends ProcessingRecipeGen {
 
     protected <T extends ProcessingRecipe<?>> GeneratedRecipe create(Supplier<ItemConvertible> singleIngredient, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
         return super.create(PowerGrid.MOD_ID, singleIngredient, transform);
+    }
+
+    protected <T extends ProcessingRecipe<?>> GeneratedRecipe create(String name, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
+        return super.create(PowerGrid.asResource(name), transform);
     }
 
     @Override

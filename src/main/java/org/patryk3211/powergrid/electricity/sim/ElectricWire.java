@@ -17,19 +17,14 @@ package org.patryk3211.powergrid.electricity.sim;
 
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
-public class ElectricWire {
+public class ElectricWire extends AbstractElectricWire {
     protected double resistance;
-    public final IElectricNode node1;
-    public final IElectricNode node2;
-
-    protected ElectricalNetwork network;
 
     public ElectricWire(double resistance, IElectricNode node1, IElectricNode node2) {
+        super(node1, node2);
         if(resistance == 0)
             throw new IllegalStateException("Wire resistance must not be zero");
         this.resistance = resistance;
-        this.node1 = node1;
-        this.node2 = node2;
     }
 
     public void setResistance(double resistance) {
@@ -45,32 +40,7 @@ public class ElectricWire {
         return resistance;
     }
 
-    public void setNetwork(ElectricalNetwork network) {
-        this.network = network;
-    }
-
-    public void remove() {
-        if(network != null)
-            network.removeWire(this);
-    }
-
-    public float potentialDifference() {
-        if(node1 == null)
-            return -node2.getVoltage();
-        if(node2 == null)
-            return node1.getVoltage();
-        return node1.getVoltage() - node2.getVoltage();
-    }
-
-    public float current() {
-        return (float) (potentialDifference() / resistance);
-    }
-
-    public float power() {
-        var I = current();
-        return (float) (I * I * resistance);
-    }
-
+    @Override
     public double conductance() {
         if(resistance == 0)
             throw new IllegalStateException("Wire resistance must not be zero");

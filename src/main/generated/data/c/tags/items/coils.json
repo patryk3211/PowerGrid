@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "powergrid:resistive_coil",
+    "powergrid:copper_coil"
+  ]
+}

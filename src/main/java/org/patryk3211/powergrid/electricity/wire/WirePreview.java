@@ -110,7 +110,8 @@ public class WirePreview {
         if(target.getType() == HitResult.Type.BLOCK) {
             var blockTarget = (BlockHitResult) target;
             var state = world.getBlockState(blockTarget.getBlockPos());
-            if(state.getBlock() instanceof IElectric electric) {
+            var electric = IElectric.getAt(world, blockTarget.getBlockPos());
+            if(electric != null) {
                 var pos = blockTarget.getBlockPos();
                 var terminal = electric.terminalAt(state, hitPoint.subtract(pos.getX(), pos.getY(), pos.getZ()));
                 if(terminal != null) {

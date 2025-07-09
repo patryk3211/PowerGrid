@@ -49,10 +49,11 @@ public class TerminalHandler {
             return;
 
         if(target instanceof BlockHitResult blockHit) {
-            var state = world.getBlockState(blockHit.getBlockPos());
-            if(!(state.getBlock() instanceof IElectric electric))
+            var electric = IElectric.getAt(world, blockHit.getBlockPos());
+            if(electric == null)
                 return;
             var blockPos = blockHit.getBlockPos();
+            var state = world.getBlockState(blockPos);
             var terminal = electric.terminalAt(state, blockHit.getPos().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
             if(terminal == null)
                 return;

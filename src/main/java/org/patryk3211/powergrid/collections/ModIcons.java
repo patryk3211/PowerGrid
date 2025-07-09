@@ -42,6 +42,13 @@ public class ModIcons extends AllIcons {
 
     public static final ModIcons I_SERIES = newRow();
     public static final ModIcons I_PARALLEL = next();
+    public static final ModIcons I_CONNECT = next();
+    public static final ModIcons I_CANCEL = next();
+
+    public static final ModIcons I_LAYER_FRONT = newRow();
+    public static final ModIcons I_LAYER_BACK = next();
+    public static final ModIcons I_RIGHT = next();
+    public static final ModIcons I_TOGGLE = next();
 
     // Unfortunately we need these since AllIcons has them private, and we need them in render function.
     private final int iconX;

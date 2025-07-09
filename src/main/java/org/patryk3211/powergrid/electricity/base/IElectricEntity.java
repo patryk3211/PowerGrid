@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.circuits.circuitboard.BakedCircuit;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
@@ -72,6 +74,7 @@ public interface IElectricEntity {
          * Add an external node to the circuit. The order in which these are added affects
          * node bindings for electric block terminal indices.
          */
+        @Deprecated
         public FloatingNode addExternalNode() {
             if(!alterExternal)
                 return null;
@@ -83,12 +86,17 @@ public interface IElectricEntity {
             return node;
         }
 
+        /**
+         * Add a new internal node of the given class.
+         * @param clazz Node class
+         * @param params Constructor parameters
+         * @return New internal node
+         * @param <T> Node type
+         */
         public <T extends INode> T addInternalNode(Class<T> clazz, Object... params) {
             try {
                 var node = clazz.getConstructor(Arrays.stream(params).map(Object::getClass).toArray(len -> new Class<?>[len])).newInstance(params);
-                internalNodes.add(node);
-                if(network != null)
-                    network.addNode(node);
+                add(node);
                 return node;
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
@@ -96,18 +104,29 @@ public interface IElectricEntity {
             }
         }
 
+        /**
+         * Add a new floating internal node.
+         * @return Internal floating node
+         */
         public FloatingNode addInternalNode() {
             var node = new FloatingNode();
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
+        /**
+         * Get external node at index.
+         * @param index Index of node
+         * @return External node
+         */
         public FloatingNode terminalNode(int index) {
             return (FloatingNode) externalNodes.get(index);
         }
 
+        /**
+         * Set external node count. This should correspond to the value specified in block.
+         * @param count Number of nodes
+         */
         public void setTerminalCount(int count) {
             if(alterExternal) {
                 var currentCount = externalNodes.size();
@@ -127,72 +146,131 @@ public interface IElectricEntity {
             }
         }
 
+        /**
+         * Set if external node should be present in the external node list.
+         * This method allows for altering the external node structure even on circuit rebuilds.
+         * @param index Index of node to alter
+         * @param present Set if the node should exist
+         */
+        public void setExternalNode(int index, boolean present) {
+            var node = externalNodes.get(index);
+            if(node == null && present) {
+                node = new FloatingNode();
+                if(network != null)
+                    network.addNode(node);
+                externalNodes.set(index, node);
+            } else if(node != null && !present) {
+                if(network != null)
+                    network.removeNode(node);
+                externalNodes.set(index, null);
+            }
+        }
+
+        /**
+         * Connect two electric nodes with a simple wire.
+         * @param resistance Initial resistance of wire
+         * @param node1 First node
+         * @param node2 Second node
+         * @return Connection wire
+         */
         public ElectricWire connect(float resistance, IElectricNode node1, IElectricNode node2) {
             var wire = new ElectricWire(resistance, node1, node2);
-            wires.add(wire);
-            if(network != null)
-                network.addWire(wire);
+            add(wire);
             return wire;
         }
 
+        /**
+         * Connect two electric nodes with a switchable wire.
+         * @param resistance Initial resistance of wire
+         * @param node1 First node
+         * @param node2 Second node
+         * @param state Initial switch state
+         * @return Connection wire
+         */
         public SwitchedWire connectSwitch(float resistance, IElectricNode node1, IElectricNode node2, boolean state) {
             var wire = new SwitchedWire(resistance, node1, node2, state);
-            wires.add(wire);
-            if(network != null)
-                network.addWire(wire);
+            add(wire);
             return wire;
         }
 
+        public void add(AbstractElectricWire wire) {
+            wires.add(wire);
+            if(network != null)
+                network.addWire(wire);
+        }
+
+        public void add(INode node) {
+            internalNodes.add(node);
+            if(network != null)
+                network.addNode(node);
+        }
+
+        /**
+         * Connect two electric nodes with a switchable wire with initial state set to true.
+         * @param resistance Initial resistance of wire
+         * @param node1 First node
+         * @param node2 Second node
+         * @return Connection wire
+         */
         public SwitchedWire connectSwitch(float resistance, IElectricNode node1, IElectricNode node2) {
             return connectSwitch(resistance, node1, node2, true);
         }
 
         public TransformerCoupling couple(float ratio, float resistance, IElectricNode p1, IElectricNode s1) {
             var node = TransformerCoupling.create(ratio, resistance, p1, s1);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, float resistance, IElectricNode p1, IElectricNode s1, IElectricNode s2) {
             var node = TransformerCoupling.create(ratio, resistance, p1, s1, s2);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, float resistance, IElectricNode p1, IElectricNode p2, IElectricNode s1, IElectricNode s2) {
             var node = TransformerCoupling.create(ratio, resistance, p1, p2, s1, s2);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, IElectricNode p1, IElectricNode s1) {
             var node = TransformerCoupling.create(ratio, p1, s1);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, IElectricNode p1, IElectricNode s1, IElectricNode s2) {
             var node = TransformerCoupling.create(ratio, p1, s1, s2);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
         }
 
         public TransformerCoupling couple(float ratio, IElectricNode p1, IElectricNode p2, IElectricNode s1, IElectricNode s2) {
             var node = TransformerCoupling.create(ratio, p1, p2, s1, s2);
-            internalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
+            add(node);
             return node;
+        }
+
+        public void setTo(BakedCircuit circuit) {
+            if(!alterExternal)
+                throw new IllegalStateException("Alter external must be allowed for baked circuit");
+            clear();
+            for(var node : circuit.externalNodes) {
+                externalNodes.add(node);
+                if(network != null)
+                    network.addNode(node);
+            }
+            for(var node : circuit.internalNodes) {
+                internalNodes.add(node);
+                if(network != null)
+                    network.addNode(node);
+            }
+            for(var wire : circuit.wires) {
+                wires.add(wire);
+                if(network != null)
+                    network.addWire(wire);
+            }
         }
     }
 }

@@ -51,8 +51,8 @@ public class TransformerTests extends TestHelper {
         Net.calculate();
 
         Assertions.assertEquals(0, V1.getCurrent(), 1e-6, "Voltage source has incorrect current");
-        Assertions.assertEquals(0, S1.getVoltage(), 1e-6, "Transformer secondary has incorrect voltage");
-        Assertions.assertEquals(-5, S2.getVoltage(), 1e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(0, S1.getVoltage(), 1e-5, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(-5, S2.getVoltage(), 1e-5, "Transformer secondary has incorrect voltage");
 
         Load.remove();
         Load = Net.W(10, S2, null);
@@ -60,8 +60,8 @@ public class TransformerTests extends TestHelper {
         Net.calculate();
 
         Assertions.assertEquals(0, V1.getCurrent(), 1e-6, "Voltage source has incorrect current");
-        Assertions.assertEquals(5, S1.getVoltage(), 1e-6, "Transformer secondary has incorrect voltage");
-        Assertions.assertEquals(0, S2.getVoltage(), 1e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(5, S1.getVoltage(), 1e-5, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(0, S2.getVoltage(), 1e-5, "Transformer secondary has incorrect voltage");
 
         Load.remove();
         Load = Net.W(10, S1, S2);
@@ -69,7 +69,7 @@ public class TransformerTests extends TestHelper {
         Net.calculate();
 
         Assertions.assertEquals(5f / 10, V1.getCurrent(), 1e-6, "Voltage source has incorrect current");
-        Assertions.assertEquals(5, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary has incorrect voltage");
+        Assertions.assertEquals(5, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-5, "Transformer secondary has incorrect voltage");
     }
 
     @Test

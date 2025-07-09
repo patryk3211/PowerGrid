@@ -1,0 +1,75 @@
+/*
+ * Copyright 2025 patryk3211
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.patryk3211.powergrid.circuits.schematic;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.DrawContext;
+
+import java.util.List;
+
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
+
+@Environment(EnvType.CLIENT)
+public class CircuitSchematicRender {
+    public static final int COLOR_TERMINAL = 0xFFFCB603;
+    public static final int COLOR_TRACE_FRONT = 0xFFFFFFFF;
+    public static final int COLOR_TRACE_BACK = 0x80FFFFFF;
+    public static final int COLOR_COMPONENT_OUTLINE = 0x80F078EE;
+    public static final int COLOR_SELECT_OUTLINE = 0x80EBBA34;
+
+    public static void render(CircuitSchematic schematic, DrawContext context, int x, int y, int scale) {
+
+    }
+
+    // It's not the most efficient, but it gets the job done. The only way to make this better is to dynamically create textures.
+    public static void renderLayer(List<Line> lines, DrawContext ctx, int x, int y, int scale, int color) {
+        for(var line : lines) {
+            int x1, x2, y1, y2;
+            if(line.vertical()) {
+                x1 = line.position() * scale + x;
+                x2 = line.position() * scale + scale + x;
+                y1 = line.start() * scale + y;
+                y2 = line.end() * scale + y;
+            } else {
+                x1 = line.start() * scale + x;
+                x2 = line.end() * scale + x;
+                y1 = line.position() * scale + y;
+                y2 = line.position() * scale + scale + y;
+            }
+            ctx.fill(x1, y1, x2, y2, color);
+        }
+    }
+
+    public static void renderPoints(List<Point> points, DrawContext ctx, int x, int y, int scale, int color) {
+        for(var point : points) {
+            int x1 = x + point.x() * scale;
+            int y1 = y + point.y() * scale;
+            ctx.fill(x1, y1, x1 + scale, y1 + scale, color);
+        }
+    }
+
+    public static void renderComponents(CircuitSchematic schematic, DrawContext ctx, int x, int y, int scale) {
+        var ms = ctx.getMatrices();
+        ms.push();
+        ms.translate(x, y, 0);
+        ms.scale(scale, scale, scale);
+        for(var placed : schematic.components()) {
+            placed.footprint().render(ctx, placed.x * GRID_TO_GRID_SCALE, placed.y * GRID_TO_GRID_SCALE);
+        }
+        ms.pop();
+    }
+}

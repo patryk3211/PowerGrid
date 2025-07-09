@@ -55,8 +55,9 @@ public class WireItem extends Item implements IWire {
         if(context.getHand() != Hand.MAIN_HAND)
             return super.useOnBlock(context);
 
+        var electric = IElectric.getAt(context.getWorld(), context.getBlockPos());
         var blockState = context.getWorld().getBlockState(context.getBlockPos());
-        if(blockState.getBlock() instanceof IElectric electric) {
+        if(electric != null) {
             var result = electric.onWire(blockState, context);
             if(result != ActionResult.PASS)
                 return result;
