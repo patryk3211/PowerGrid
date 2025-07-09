@@ -93,7 +93,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
         float energy = 0;
         if (wire != null) {
-            energy += wire.power() / 20f;
+            // We have to use current here since the wire might be a transmission line,
+            // which needs special resistance handling.
+            var I = wire.current();
+            energy += I * I * getResistance() / 20f;
         }
         if(temperature < overheatTemperature) {
             // If wire is overheated it is considered dead.
@@ -140,7 +143,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
                     endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
-                endpoint.assignWireEntity(this);
+                if(endpoint.isValid(getWorld())) {
+                    endpoint.assignWireEntity(this);
+                } else {
+                    endpoint = null;
+                }
             }
             endpoint1 = endpoint;
             makeWire();
@@ -154,7 +161,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
                     endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
-                endpoint.assignWireEntity(this);
+                if(endpoint.isValid(getWorld())) {
+                    endpoint.assignWireEntity(this);
+                } else {
+                    endpoint = null;
+                }
             }
             endpoint2 = endpoint;
             makeWire();
@@ -263,7 +274,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             return;
 
         var world = getWorld();
-        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, getResistance());
+        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
     }
 
     public void dropWire() {
@@ -297,7 +308,19 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public void remove(RemovalReason reason) {
         super.remove(reason);
+        if(reason.shouldDestroy()) {
+            dropWire();
+            if(endpoint1 != null)
+                endpoint1.removeWireEntity(this);
+            if(endpoint2 != null)
+                endpoint2.removeWireEntity(this);
+        }
+    }
 
+    @Override
+    public void onRemoved() {
+        super.onRemoved();
+        var reason = getRemovalReason();
         if(reason.shouldDestroy()) {
             dropWire();
             if(endpoint1 != null)
@@ -323,6 +346,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             kill();
             return ActionResult.SUCCESS;
         }
+        System.out.println(wire);
         return super.interact(player, hand);
     }
 

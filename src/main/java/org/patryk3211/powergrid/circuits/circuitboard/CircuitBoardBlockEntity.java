@@ -19,15 +19,22 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
-import org.patryk3211.powergrid.circuits.components.IDynamicComponent;
+import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
+    private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
 
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -46,13 +53,14 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     private void bakeCircuit() {
-        baked = BakedCircuit.from(schematic);
+        componentCache.clear();
+        baked = BakedCircuit.from(schematic, pos);
         for(var placed : schematic.components()) {
             placed.withWorld(this::getWorld, pos);
         }
         electricBehaviour.rebuildCircuit();
         if(world != null && world.isClient)
-            IDynamicComponent.modelChanged(pos);
+            Component.modelChanged(pos);
     }
 
     @Override
@@ -105,5 +113,17 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     public CircuitSchematic getSchematic() {
         return schematic;
+    }
+
+    public <T> Collection<PlacedComponent> getComponents(Class<T> ofClass) {
+        if(componentCache.containsKey(ofClass))
+            return componentCache.get(ofClass);
+        var components = new ArrayList<PlacedComponent>();
+        for(var placed : schematic.components()) {
+            if(ofClass.isInstance(placed.component))
+                components.add(placed);
+        }
+        componentCache.put(ofClass, components);
+        return components;
     }
 }

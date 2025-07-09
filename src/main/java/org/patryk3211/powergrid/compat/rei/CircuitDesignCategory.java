@@ -20,7 +20,6 @@ import com.simibubi.create.compat.rei.ItemIcon;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.Renderer;
-import me.shedaniel.rei.api.client.gui.widgets.Slot;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
 import me.shedaniel.rei.api.client.gui.widgets.Widgets;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
@@ -72,7 +71,7 @@ public class CircuitDesignCategory implements DisplayCategory<CircuitDesignDispl
 
     @Override
     public int getDisplayHeight() {
-        return 150;
+        return 100;
     }
 
     @Override
@@ -82,24 +81,24 @@ public class CircuitDesignCategory implements DisplayCategory<CircuitDesignDispl
         widgets.add(Widgets.createDrawableWidget((graphics, mouseX, mouseY, partialTick) -> {
             MatrixStack poseStack = graphics.getMatrices();
             poseStack.push();
-            poseStack.translate(bounds.getX() + 75 - 24, bounds.getY() + 4 + 75 - 24, 0);
+            poseStack.translate(bounds.getX() + 75 - 24, bounds.getY() + 4 + 65 - 24, 0);
             poseStack.scale(3, 3, 1);
             icon.render(graphics, new Rectangle(0, 0, 16, 16), mouseX, mouseY, partialTick);
             poseStack.pop();
         }));
         widgets.add(Widgets.createTexturedWidget(TEXTURE, bounds, 0, 0));
 
-        var schematicIn = Widgets.createSlot(new Point(bounds.x + 21, bounds.y + 89));
+        var schematicIn = Widgets.createSlot(new Point(bounds.x + 21, bounds.y + 38));
         schematicIn.entry(EntryStack.of(VanillaEntryTypes.ITEM, AllItems.EMPTY_SCHEMATIC.asStack()));
         schematicIn.markInput();
         widgets.add(schematicIn);
 
-        var schematicOut = Widgets.createSlot(new Point(bounds.x + 113, bounds.y + 89));
+        var schematicOut = Widgets.createSlot(new Point(bounds.x + 113, bounds.y + 38));
         schematicOut.entry(EntryStack.of(VanillaEntryTypes.ITEM, ModdedItems.CIRCUIT_SCHEMATIC.asStack()));
         schematicOut.markOutput();
         widgets.add(schematicOut);
 
-        var components = Widgets.createSlot(new Point(bounds.x + 67, bounds.y + 25));
+        var components = Widgets.createSlot(new Point(bounds.x + 67, bounds.y + 15));
         components.entries(display.getInputEntries()
                 .stream()
                 .flatMap(Collection::stream)

@@ -168,6 +168,12 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input(RecipeTags.ironSheet())
                     .input(AllBlocks.ANDESITE_CASING)),
 
+    REDSTONE_RELAY = create(ModdedItems.REDSTONE_RELAY)
+            .unlockedBy(() -> ModdedItems.RELAY)
+            .shapeless(b -> b
+                    .input(ModdedItems.RELAY)
+                    .input(Items.REDSTONE)),
+
     RESISTOR = create(ModdedItems.RESISTOR)
             .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
             .shapeless(b -> b

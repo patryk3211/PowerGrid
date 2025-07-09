@@ -106,6 +106,7 @@ public class ElectricalNetwork {
         if(node instanceof ISolverHook hook)
             solver.removeHook(hook);
 
+        node.setNetwork(null);
         setDirty();
     }
 
@@ -195,6 +196,7 @@ public class ElectricalNetwork {
         if(!wires.contains(wire))
             return;
         wires.remove(wire);
+        wire.setNetwork(null);
 
         updateConductance(wire, -wire.conductance());
         if(wire instanceof ISolverHook hook)

@@ -6,7 +6,8 @@
 	"description": "Providing electricity to a world near you.",
 	"authors": [
 		"patryk3211",
-		"Da-Negy"
+		"Da-Negy",
+		"rvndm"
 	],
 	"contact": {
 		"sources": "https://github.com/patryk3211/PowerGrid"

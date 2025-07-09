@@ -80,5 +80,16 @@
 
   "powergrid.component.property.resistor_value": "Resistance",
 
-  "powergrid.recipe.category.circuit_design": "Circuit Designing"
+  "powergrid.component.property.redstone_emitter_digital": "Digital",
+
+  "powergrid.component.property.orientation": "Orientation",
+
+  "powergrid.recipe.category.circuit_design": "Circuit Designing",
+  "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
+
+  "powergrid.keyinfo.delete_area": "Delete Area",
+  "powergrid.keyinfo.pick_component": "Pick Component",
+  "powergrid.keyinfo.place_trace": "Place Trace",
+  "powergrid.keyinfo.rotate_component": "Rotate Component",
+  "powergrid.keyinfo.switch_layer": "Switch Layer"
 }

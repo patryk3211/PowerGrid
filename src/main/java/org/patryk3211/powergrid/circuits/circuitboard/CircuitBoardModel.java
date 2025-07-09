@@ -35,6 +35,7 @@ import net.minecraft.world.BlockRenderView;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.Area;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.Point;
@@ -61,7 +62,7 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
 
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, Random random) {
-        return List.of();
+        return baseModel.getQuads(state, face, random);
     }
 
     @Override
@@ -165,7 +166,14 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
             var schematic = circuit.getSchematic();
             for(var placed : schematic.components()) {
                 var model = ComponentModels.getModel(placed);
-                context.pushTransform(new OffsetTransform(placed.x, 2, placed.y));
+                if(placed.has(Orientation.PROPERTY)) {
+                    var orientation = placed.get(Orientation.PROPERTY);
+                    // We need the raw footprint dimensions (without rotations)
+                    var footprint = placed.component.footprint(null);
+                    context.pushTransform(new RotateOffsetTransform(placed.x, 2, placed.y, orientation, footprint.getWidth(), footprint.getHeight()));
+                } else {
+                    context.pushTransform(new OffsetTransform(placed.x, 2, placed.y));
+                }
                 model.emitBlockQuads(blockView, state, pos, randomSupplier, context);
                 context.popTransform();
             }
@@ -185,7 +193,7 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
     }
 
     private static class OffsetTransform implements RenderContext.QuadTransform {
-        private final float x, y, z;
+        protected final float x, y, z;
 
         public OffsetTransform(int x, int y, int z) {
             this.x = x / 16f;
@@ -199,6 +207,48 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
                 var x = view.x(i);
                 var y = view.y(i);
                 var z = view.z(i);
+                view.pos(i, x + this.x, y + this.y, z + this.z);
+            }
+            return true;
+        }
+    }
+
+    private static class RotateOffsetTransform extends OffsetTransform {
+        protected final Orientation orientation;
+        protected final float width, height;
+
+        public RotateOffsetTransform(int x, int y, int z, Orientation orientation, int width, int height) {
+            super(x, y, z);
+            this.orientation = orientation;
+            this.width = width / 16f;
+            this.height = height / 16f;
+        }
+
+        @Override
+        public boolean transform(MutableQuadView view) {
+            for(int i = 0; i < 4; ++i) {
+                var x = view.x(i);
+                var y = view.y(i);
+                var z = view.z(i);
+                switch(orientation) {
+                    case DOWN -> {
+                        // 90 degrees
+                        var buf = x;
+                        x = this.height - z;
+                        z = buf;
+                    }
+                    case LEFT -> {
+                        // 180 degrees
+                        x = this.width - x;
+                        z = this.height - z;
+                    }
+                    case UP -> {
+                        // 270 degrees
+                        var buf = z;
+                        z = this.width - x;
+                        x = buf;
+                    }
+                }
                 view.pos(i, x + this.x, y + this.y, z + this.z);
             }
             return true;

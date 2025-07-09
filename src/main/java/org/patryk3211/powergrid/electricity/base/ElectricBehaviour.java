@@ -47,7 +47,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         super(be);
         this.element = be;
 
-        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         element.buildCircuit(builder);
     }
 
@@ -80,7 +80,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void rebuildCircuit() {
-        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         builder.with(getNetwork());
         builder.clear();
         element.buildCircuit(builder);
@@ -192,6 +192,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public Map<BlockWireEndpoint, List<WireEntity>> getConnections() {
         return connections;
+    }
+
+
+    public boolean hasTerminal(int terminal) {
+        return terminal >= 0 && terminal < externalNodes.size() && externalNodes.get(terminal) != null;
     }
 
     public void breakConnections() {

@@ -72,6 +72,14 @@ public class ModdedSoundEvents {
             .category(SoundCategory.PLAYERS)
             .build(),
 
+    UI_CLICK = create("ui.click")
+            .playExisting(SoundEvents.UI_BUTTON_CLICK)
+            .build(),
+
+    UI_COMPONENT_ROTATE = create("ui.component_rotate")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ROTATE_ITEM, 0.75f, 0.75f)
+            .build(),
+
     UI_PLACE_TRACE = create("ui.place_trace")
             .playExisting(SoundEvents.BLOCK_METAL_PLACE, 0.75f, 1.75f)
             .build(),
@@ -94,6 +102,16 @@ public class ModdedSoundEvents {
 
     RELAY_CLICK = create("relay_click").subtitle("Relay clicks")
             .playExisting(SoundEvents.BLOCK_LEVER_CLICK)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MICROSWITCH_ON = create("uswitch_on").subtitle("Switch clicks")
+            .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_ON, 1.0f, 2.0f)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MICROSWITCH_OFF = create("uswitch_off").subtitle("Switch clicks")
+            .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF, 1.0f, 2.0f)
             .category(SoundCategory.BLOCKS)
             .build()
             ;

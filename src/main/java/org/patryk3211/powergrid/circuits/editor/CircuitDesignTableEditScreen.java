@@ -23,6 +23,7 @@ import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundManager;
@@ -36,10 +37,12 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.*;
 import org.patryk3211.powergrid.collections.ModIcons;
+import org.patryk3211.powergrid.collections.ModdedKeys;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
@@ -47,6 +50,7 @@ import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.*;
@@ -77,7 +81,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private List<Line> bgLines;
 
     private Tool currentTool = Tool.NONE;
-    private Component currentComponent = null;
+    private PlacedComponent currentComponent = null;
     private Slot selectedSlot = null;
     private PlacedComponent selectedComponent = null;
 
@@ -213,6 +217,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             propertiesWidget.setComponent(null);
             selectedComponent = null;
         }
+        currentTool = tool;
         switch(tool) {
             case CONNECT -> editWidget.requestSelection(CircuitEditWidget.SelectMode.LINE, 0x80FFFFFF, this::placeTrace);
             case DELETE -> editWidget.requestSelection(CircuitEditWidget.SelectMode.AREA, 0x80FF8080, this::deleteArea);
@@ -229,8 +234,9 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             selectedComponent = null;
             propertiesWidget.setComponent(null);
         }
-        editWidget.componentPlacement(component, this::placeComponent);
-        currentComponent = component;
+        var placed = new PlacedComponent(component, 0, 0, UUID.randomUUID());
+        editWidget.componentPlacement(placed, this::placeComponent);
+        currentComponent = placed;
         selectedSlot = slot;
     }
 
@@ -400,12 +406,45 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         if(handled)
             return true;
 
+        // Hotbar as component quick select
         var hotbar = client.options.hotbarKeys;
         for(int i = 0; i < hotbar.length; ++i) {
             if(hotbar[i].matchesKey(keyCode, scanCode)) {
                 toolSelect(handler.getSlot(i + 27));
                 return true;
             }
+        }
+
+        // Other tool keybinds
+        if(ModdedKeys.ROTATE_COMPONENT.matchesKey(keyCode, scanCode)) {
+            if(currentComponent != null && currentComponent.has(Orientation.PROPERTY)) {
+                var current = currentComponent.get(Orientation.PROPERTY);
+                if(Screen.hasShiftDown()) {
+                    current = current.getCounterClockwise();
+                } else {
+                    current = current.getClockwise();
+                }
+                currentComponent.set(Orientation.PROPERTY, current);
+                playSound(ModdedSoundEvents.UI_COMPONENT_ROTATE);
+                return true;
+            }
+        } else if(ModdedKeys.PLACE_TRACE.matchesKey(keyCode, scanCode)) {
+            toolSelect(Tool.CONNECT);
+            playSound(ModdedSoundEvents.UI_PLACE_TRACE);
+            return true;
+        } else if(ModdedKeys.DELETE_AREA.matchesKey(keyCode, scanCode)) {
+            toolSelect(Tool.DELETE);
+            playSound(ModdedSoundEvents.UI_DELETE_AREA);
+            return true;
+        } else if(ModdedKeys.PICK_COMPONENT.matchesKey(keyCode, scanCode)) {
+            toolSelect(Tool.SELECT);
+            playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
+            return true;
+        } else if(ModdedKeys.SWITCH_LAYER.matchesKey(keyCode, scanCode)) {
+            backLayer = !backLayer;
+            layerBtn.setIcon(backLayer ? ModIcons.I_LAYER_BACK : ModIcons.I_LAYER_FRONT);
+            playSound(ModdedSoundEvents.UI_CLICK);
+            return true;
         }
 
         return false;

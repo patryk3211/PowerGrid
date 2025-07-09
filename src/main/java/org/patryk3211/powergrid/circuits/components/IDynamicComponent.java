@@ -15,12 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -30,10 +26,4 @@ public interface IDynamicComponent {
     VoxelShape getShape(@NotNull PlacedComponent placed);
 
     ActionResult use(CircuitBoardBlockEntity be, PlacedComponent component, PlayerEntity player);
-
-    @Environment(EnvType.CLIENT)
-    static void modelChanged(BlockPos pos) {
-        var renderer = MinecraftClient.getInstance().worldRenderer;
-        renderer.scheduleBlockRenders(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-    }
 }

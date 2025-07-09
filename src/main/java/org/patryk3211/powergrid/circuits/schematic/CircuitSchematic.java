@@ -22,7 +22,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -123,8 +122,8 @@ public class CircuitSchematic {
         }
     }
 
-    public void placeComponent(Component component, int x, int y) {
-        var placed = new PlacedComponent(component, x, y, UUID.randomUUID());
+    public void placeComponent(PlacedComponent basePlacedState, int x, int y) {
+        var placed = new PlacedComponent(basePlacedState, x, y);
         components.add(placed);
         addPads(placed);
     }
@@ -231,22 +230,25 @@ public class CircuitSchematic {
         return areas;
     }
 
-    public boolean canPlace(Component component, int x, int y) {
+    public boolean canPlace(PlacedComponent component, int x, int y) {
         if(x < 0 || y < 0)
             return false;
-        var width = component.footprint(null).getWidth();
-        var height = component.footprint(null).getHeight();
+        var width = component.footprint().getWidth();
+        var height = component.footprint().getHeight();
         if(x + width > 16 || y + height > 16)
             return false;
 
+        if(!component.canPlace(x, y))
+            return false;
+
         // Check pad clearance
-        var thisFootprint = component.footprint(null);
+        var thisFootprint = component.footprint();
         for(var pad : thisFootprint.getPads().keySet()) {
             if(pads.get(x * GRID_TO_GRID_SCALE + pad.x(), y * GRID_TO_GRID_SCALE + pad.y()))
                 return false;
         }
 
-        boolean thisVia = component instanceof ViaComponent;
+        boolean thisVia = component.component instanceof ViaComponent;
         for(var placed : components) {
             boolean thatVia = placed.component instanceof ViaComponent;
             if(thisVia != thatVia) {
@@ -270,6 +272,14 @@ public class CircuitSchematic {
         if(padData == null || padData.nodeIndex() < 0)
             return Optional.empty();
         return Optional.of(new Node(placed, padData.nodeIndex()));
+    }
+
+    public int getId(@NotNull PlacedComponent placed) {
+        for(int i = 0; i < components.size(); ++i) {
+            if(components.get(i) == placed)
+                return i;
+        }
+        return -1;
     }
 
     private boolean shouldVisit(Layer layer, int x, int y, VisitMap visitMap) {
