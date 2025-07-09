@@ -56,7 +56,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         super(be);
         this.element = be;
 
-        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         element.buildCircuit(builder);
 
         connections = new ArrayList<>();
@@ -93,7 +93,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void rebuildCircuit() {
-        var builder = new IElectricEntity.CircuitBuilder(externalNodes, internalNodes, internalWires);
+        var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         builder.with(getNetwork());
         builder.clear();
         element.buildCircuit(builder);
@@ -181,7 +181,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void initialize() {
         super.initialize();
     }
-
+  
     public void addConnection(int sourceTerminal, WireEntity wire) {
         connections.get(sourceTerminal).add(wire);
         blockEntity.notifyUpdate();
@@ -211,6 +211,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
         return false;
     }
+
 
     public boolean hasTerminal(int terminal) {
         return terminal >= 0 && terminal < externalNodes.size() && externalNodes.get(terminal) != null;

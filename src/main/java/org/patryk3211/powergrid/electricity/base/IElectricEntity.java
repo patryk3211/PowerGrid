@@ -15,15 +15,14 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
+import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.circuits.circuitboard.BakedCircuit;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.INode;
-import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -35,12 +34,14 @@ public interface IElectricEntity {
 
     class CircuitBuilder {
         private ElectricalNetwork network;
-        protected final List<IElectricNode> externalNodes;
-        protected final Collection<INode> internalNodes;
-        protected final Collection<AbstractElectricWire> wires;
+        private final BlockPos pos;
+        private final List<IElectricNode> externalNodes;
+        private final Collection<INode> internalNodes;
+        private final Collection<AbstractElectricWire> wires;
         private boolean alterExternal = true;
 
-        public CircuitBuilder(List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
+        public CircuitBuilder(BlockPos pos, List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
+            this.pos = pos;
             this.externalNodes = externalNodes;
             this.internalNodes = internalNodes;
             this.wires = wires;
@@ -77,7 +78,8 @@ public interface IElectricEntity {
         public FloatingNode addExternalNode() {
             if(!alterExternal)
                 return null;
-            var node = new FloatingNode();
+            int index = externalNodes.size();
+            var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, index));
             externalNodes.add(node);
             if(network != null)
                 network.addNode(node);
