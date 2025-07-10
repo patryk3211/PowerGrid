@@ -114,11 +114,12 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
     public void renderBarCap(DrawContext graphics, int x, int y, int width, ValueSettingsBoard board) {
         int milestoneCount = board.maxValue() / board.milestoneInterval();
         int milestoneSegmentWidth = width / milestoneCount;
+        int scale = board.maxValue() > 128 ? 1 : 2;
 
         // Last not covered milestone
         var milestone = cap / board.milestoneInterval();
         // First milestone is never covered
-        int toMilestoneOffset = milestoneSegmentWidth * milestone + 7;
+        int toMilestoneOffset = milestoneSegmentWidth * milestone + 8 / scale;
         var milestoneFraction = (float) (cap - milestone * board.milestoneInterval()) / board.milestoneInterval();
 
         int offset = (int) (toMilestoneOffset + (milestoneSegmentWidth - 7 + 1) * milestoneFraction);
@@ -126,6 +127,8 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
         x -= 1;
         width -= offset;
         width += 2;
+        if(width <= 2)
+            return;
 
         RenderSystem.setShaderTexture(0, CAP_TEXTURE);
         int sideWidth = Math.min(3, width / 2);
