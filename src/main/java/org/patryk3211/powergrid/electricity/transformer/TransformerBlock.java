@@ -108,7 +108,8 @@ public abstract class TransformerBlock extends ElectricBlock {
                 return ActionResult.SUCCESS;
             } else {
                 if(context.getWorld().isClient) {
-                    var b = TransformerWindingScreen.beginInteraction(() -> new TransformerWindingScreen(this, context.getHand(), turns));
+                    var cap = be.hasPrimary() ? be.getPrimary().getTurns() : 0;
+                    var b = TransformerWindingScreen.beginInteraction(() -> new TransformerWindingScreen(this, context.getHand(), turns, cap));
                     return b ? ActionResult.SUCCESS : ActionResult.CONSUME;
                 }
                 return ActionResult.SUCCESS;
@@ -150,7 +151,8 @@ public abstract class TransformerBlock extends ElectricBlock {
                     if(isInitiator(context.getBlockPos(), state, blockEndpoint.getPos())) {
                         // Put into winding mode.
                         if(context.getWorld().isClient) {
-                            var b = TransformerWindingScreen.beginInteraction(() -> new TransformerWindingScreen(this, context.getHand(), 1));
+                            var cap = be.hasPrimary() ? be.getPrimary().getTurns() : 0;
+                            var b = TransformerWindingScreen.beginInteraction(() -> new TransformerWindingScreen(this, context.getHand(), 1, cap));
                             return b ? ActionResult.SUCCESS : ActionResult.CONSUME;
                         }
                         return ActionResult.SUCCESS;
@@ -165,25 +167,29 @@ public abstract class TransformerBlock extends ElectricBlock {
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         var stack = player.getStackInHand(hand);
-        if(player.isSneaking() && stack.isOf(ModdedItems.WIRE_CUTTER.get()) && !world.isClient) {
+        if(stack.isOf(ModdedItems.WIRE_CUTTER.get()) && !world.isClient) {
             var be = getBlockEntity(world, pos, state);
             if(be.isEmpty())
                 return ActionResult.FAIL;
             if(be.get().hasSecondary()) {
-                var coil = be.get().getSecondary();
-                var item = coil.getItem();
-                var count = coil.getTurns();
-                for(int items = count; items > 0; items -= 64) {
-                    player.giveItemStack(new ItemStack(item, Math.min(64, items)));
+                if(!player.isCreative()) {
+                    var coil = be.get().getSecondary();
+                    var item = coil.getItem();
+                    var count = coil.getTurns();
+                    for (int items = count; items > 0; items -= 64) {
+                        player.giveItemStack(new ItemStack(item, Math.min(64, items)));
+                    }
                 }
                 be.get().removeSecondary();
                 return ActionResult.SUCCESS;
             } else if(be.get().hasPrimary()) {
-                var coil = be.get().getPrimary();
-                var item = coil.getItem();
-                var count = coil.getTurns();
-                for(int items = count; items > 0; items -= 64) {
-                    player.giveItemStack(new ItemStack(item, Math.min(64, items)));
+                if(!player.isCreative()) {
+                    var coil = be.get().getPrimary();
+                    var item = coil.getItem();
+                    var count = coil.getTurns();
+                    for (int items = count; items > 0; items -= 64) {
+                        player.giveItemStack(new ItemStack(item, Math.min(64, items)));
+                    }
                 }
                 be.get().removePrimary();
                 return ActionResult.SUCCESS;
