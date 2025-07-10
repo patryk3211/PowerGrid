@@ -9,6 +9,7 @@
     "BasinRecipeMixin",
     "FanProcessingMixin",
     "FanProcessingTypeAccessor",
+    "KineticBlockEntityAccessor",
     "RecipeApplierMixin"
   ],
   "injectors": {
