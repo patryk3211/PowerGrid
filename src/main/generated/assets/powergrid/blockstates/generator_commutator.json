@@ -1,38 +1,15 @@
 {
   "variants": {
-    "axis=x,shaft=negative": {
-      "model": "powergrid:block/rotor/commutator_plate_base_horizontal",
-      "y": 90
-    },
-    "axis=x,shaft=none": {
+    "axis=x": {
       "model": "powergrid:block/rotor/commutator_base_horizontal",
       "y": -90
     },
-    "axis=x,shaft=positive": {
-      "model": "powergrid:block/rotor/commutator_plate_base_horizontal",
-      "y": -90
-    },
-    "axis=y,shaft=negative": {
-      "model": "powergrid:block/rotor/commutator_plate_base_horizontal",
-      "x": -90
-    },
-    "axis=y,shaft=none": {
+    "axis=y": {
       "model": "powergrid:block/rotor/commutator_base_horizontal",
       "x": 90
     },
-    "axis=y,shaft=positive": {
-      "model": "powergrid:block/rotor/commutator_plate_base_horizontal",
-      "x": 90
-    },
-    "axis=z,shaft=negative": {
-      "model": "powergrid:block/rotor/commutator_plate_base_horizontal",
-      "y": 180
-    },
-    "axis=z,shaft=none": {
+    "axis=z": {
       "model": "powergrid:block/rotor/commutator_base_horizontal"
-    },
-    "axis=z,shaft=positive": {
-      "model": "powergrid:block/rotor/commutator_plate_base_horizontal"
     }
   }
 }

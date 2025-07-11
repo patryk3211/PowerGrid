@@ -34,7 +34,6 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     protected Set<T> segments;
     @Nullable
     protected Runnable changeCallback;
-//    private boolean needsCheck;
 
     public SegmentedBehaviour(SmartBlockEntity be) {
         super(be);
@@ -42,7 +41,6 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         controllerPos = null;
         segments = null;
         changeCallback = null;
-//        needsCheck = true;
     }
 
     public void setChangeCallback(@Nullable Runnable callback) {
@@ -239,12 +237,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             segment.onChange();
     }
 
-//    @Override
-//    public void tick() {
-//        if(needsCheck) {
-//            checkConnectivity(null);
-//            needsCheck = false;
-//        }
-//        super.tick();
-//    }
+    public int getSegmentCount() {
+        var controller = getControllerOrThis();
+        return controller.segments.size() + 1;
+    }
 }

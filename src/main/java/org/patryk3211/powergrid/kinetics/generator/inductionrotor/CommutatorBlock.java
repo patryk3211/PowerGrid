@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.VoxelShaper;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
@@ -32,7 +33,6 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
-import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
 
 public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, IElectric {
     private final BlockStateTerminalCollection terminals;
@@ -52,7 +52,6 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
                 createCuboidShape(0, 12, 6, 3, 16, 9),
                 createCuboidShape(13, 12, 7, 16, 16, 10)
         ), Direction.Axis.Z);
-        var plateShaper = VoxelShaper.forDirectional(createCuboidShape(0, 0, 13, 16, 16, 16), Direction.SOUTH);
         terminals = BlockStateTerminalCollection.builder(this)
                 .forAllStatesExcept(state -> {
                     var axis = state.get(AXIS);
@@ -60,14 +59,10 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
                         return BlockStateTerminalCollection.each(TERMINALS_HORIZONTAL, terminal ->
                                 terminal.rotateAroundY(90));
                     return TERMINALS_HORIZONTAL;
-                }, SHAFT_DIRECTION)
+                })
                 .withShapeMapper(state -> {
                     var axis = state.get(AXIS);
-                    var shaftDirection = state.get(SHAFT_DIRECTION);
-                    if(shaftDirection == ShaftDirection.NONE)
-                        return baseShaper.get(axis);
-                    var direction = Direction.from(axis, shaftDirection.axisDirection());
-                    return VoxelShapes.union(baseShaper.get(axis), plateShaper.get(direction));
+                    return baseShaper.get(axis);
                 })
                 .build();
         outlines = getShapesForStates(terminals.shapeMapper());

@@ -15,97 +15,48 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.rotor;
 
-import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
-import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
+import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
-public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
-    public static final EnumProperty<ShaftDirection> SHAFT_DIRECTION = EnumProperty.of("shaft", ShaftDirection.class);
+public abstract class AbstractRotorBlock extends Block implements IRotorAssemblyPart, IWrenchable {
+    public static final EnumProperty<Direction.Axis> AXIS = Properties.AXIS;
 
     public AbstractRotorBlock(Settings properties) {
         super(properties);
-        setDefaultState(getDefaultState()
-                .with(SHAFT_DIRECTION, ShaftDirection.POSITIVE));
     }
 
     @Override
     public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
-        var side = context.getSide();
         var world = context.getWorld();
-        ActionResult result;
-        if(side.getAxis() == state.get(AXIS)) {
-            var shaft = state.get(SHAFT_DIRECTION);
-            BlockState alteredState = null;
-            if(shaft.axisDirection() == side.getDirection()) {
-                alteredState = state.with(SHAFT_DIRECTION, ShaftDirection.NONE);
-            } else if(shaft == ShaftDirection.NONE) {
-                alteredState = state.with(SHAFT_DIRECTION, ShaftDirection.from(side.getDirection()));
-            } else {
-                // Opposite side has shaft, fail since we can't have more than one shaft input.
-                return ActionResult.FAIL;
-            }
+        ActionResult result = IWrenchable.super.onWrenched(state, context);
+        if(!result.isAccepted())
+            return result;
 
-            if(!alteredState.canPlaceAt(world, context.getBlockPos()))
-                return ActionResult.PASS;
-
-            KineticBlockEntity.switchToBlockState(world, context.getBlockPos(), updateAfterWrenched(alteredState, context));
-            playRotateSound(world, context.getBlockPos());
-            result = ActionResult.SUCCESS;
-        } else {
-            result = super.onWrenched(state, context);
-            if(!result.isAccepted())
-                return result;
-        }
         var behaviour = BlockEntityBehaviour.get(world, context.getBlockPos(), RotorBehaviour.TYPE);
         if(behaviour != null)
             behaviour.checkConnectivity(null);
-        return result;
-    }
 
-    @Override
-    public BlockState getRotatedBlockState(BlockState state, Direction face) {
-        var facing = state.get(SHAFT_DIRECTION).with(state.get(AXIS));
-        if(facing != null) {
-            assert face.getAxis() != state.get(AXIS);
-            facing = face.getDirection() == Direction.AxisDirection.POSITIVE ? facing.rotateClockwise(face.getAxis()) : facing.rotateCounterclockwise(face.getAxis());
-            return state
-                    .with(AXIS, facing.getAxis())
-                    .with(SHAFT_DIRECTION, ShaftDirection.from(facing.getDirection()));
-        } else {
-            // Rotate only using axis.
-            return super.getRotatedBlockState(state, face);
-        }
+        return result;
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(SHAFT_DIRECTION);
-    }
-
-    @Override
-    public Direction.Axis getRotationAxis(BlockState blockState) {
-        return blockState.get(SHAFT_DIRECTION) == ShaftDirection.NONE ? null : blockState.get(AXIS);
-    }
-
-    @Override
-    public boolean hasShaftTowards(WorldView world, BlockPos pos, BlockState state, Direction face) {
-        if(state.get(AXIS) == face.getAxis()) {
-            var direction = state.get(SHAFT_DIRECTION);
-            return face.getDirection() == direction.axisDirection();
-        }
-        return false;
+        builder.add(AXIS);
     }
 
     public boolean hasPositive(WorldView world, BlockPos pos, Direction.Axis axis) {
@@ -114,7 +65,7 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
             case Y -> pos.up();
             case Z -> pos.south();
         });
-        return state.getBlock() instanceof AbstractRotorBlock && state.get(SHAFT_DIRECTION) != ShaftDirection.NEGATIVE && state.get(AXIS) == axis;
+        return state.getBlock() instanceof IRotorAssemblyPart assembly && assembly.canConnect(state, Direction.from(axis, Direction.AxisDirection.NEGATIVE));
     }
 
     public boolean hasNegative(WorldView world, BlockPos pos, Direction.Axis axis) {
@@ -123,7 +74,7 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
             case Y -> pos.down();
             case Z -> pos.north();
         });
-        return state.getBlock() instanceof AbstractRotorBlock && state.get(SHAFT_DIRECTION) != ShaftDirection.POSITIVE && state.get(AXIS) == axis;
+        return state.getBlock() instanceof IRotorAssemblyPart assembly && assembly.canConnect(state, Direction.from(axis, Direction.AxisDirection.POSITIVE));
     }
 
     @Override
@@ -144,23 +95,14 @@ public abstract class AbstractRotorBlock extends RotatedPillarKineticBlock {
         }
 
         if(preferredAxis == null)
-            preferredAxis = getPreferredAxis(context);
-
-        Direction direction = null;
-        if(preferredAxis == null || (context.getPlayer() != null && context.getPlayer().isSneaking())) {
-            direction = context.getPlayerLookDirection().getOpposite();
-            preferredAxis = direction.getAxis();
-        }
-
-        boolean positive = hasPositive(world, pos, preferredAxis);
-        boolean negative = hasNegative(world, pos, preferredAxis);
-
-        ShaftDirection shaft = ShaftDirection.NONE;
-        if(!positive && !negative && direction != null)
-            shaft = ShaftDirection.from(direction.getDirection());
+            preferredAxis = context.getPlayerLookDirection().getAxis();
 
         return getDefaultState()
-                .with(AXIS, preferredAxis)
-                .with(SHAFT_DIRECTION, shaft);
+                .with(AXIS, preferredAxis);
+    }
+
+    @Override
+    public boolean canConnect(BlockState state, Direction dir) {
+        return state.get(AXIS) == dir.getAxis();
     }
 }

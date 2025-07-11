@@ -18,10 +18,9 @@ package org.patryk3211.powergrid.config;
 import com.simibubi.create.foundation.config.ConfigBase;
 
 public class CKinetics extends ConfigBase {
-    public final ConfigFloat basicGeneratorConversionRatio = f(0.25f, 0, "basicGeneratorRatio", Comments.basicGeneratorConversionRatio);
-    public final ConfigFloat basicGeneratorResistance = f(1.5f, 0, "basicGeneratorResistance", Comments.basicGeneratorResistance);
-
     public final ConfigFloat encasedFanCoolingStrength = f(0.01f, 0, "encasedFanCooling", Comments.encasedFanCoolingStrength);
+
+    public final ConfigFloat generatorClutchForcePerSegment = f(10f, 0, "generatorSegmentForce", Comments.generatorClutchForcePerSegment);
 
     @Override
     public String getName() {
@@ -29,8 +28,7 @@ public class CKinetics extends ConfigBase {
     }
 
     private static class Comments {
-        public static final String basicGeneratorConversionRatio = "Basic generator rotational speed to voltage conversion ratio";
-        public static final String basicGeneratorResistance = "Basic generator source resistance (limits maximum current drawn)";
         public static final String encasedFanCoolingStrength = "Cooling multiplier applied to devices in the air stream (multiplied by rotational speed)";
+        public static final String generatorClutchForcePerSegment = "Maximum force applied by clutch for each segment of a rotating assembly";
     }
 }

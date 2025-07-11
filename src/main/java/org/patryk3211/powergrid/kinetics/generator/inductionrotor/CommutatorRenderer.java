@@ -15,22 +15,19 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
-import com.google.common.cache.Cache;
-import com.jozufozu.flywheel.core.PartialModel;
 import com.simibubi.create.foundation.render.CachedBufferer;
+import com.simibubi.create.foundation.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
-import org.patryk3211.powergrid.kinetics.generator.rotor.ShaftDirection;
 
-import static org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock.SHAFT_DIRECTION;
+import static net.minecraft.state.property.Properties.AXIS;
 
 public class CommutatorRenderer extends RotorRenderer {
     public CommutatorRenderer(BlockEntityRendererFactory.Context context) {
@@ -42,7 +39,7 @@ public class CommutatorRenderer extends RotorRenderer {
         super.renderSafe(rotor, partialTicks, matrixStack, buffer, light, overlay);
 
         var state = rotor.getCachedState();
-        var axis = state.get(Properties.AXIS);
+        var axis = state.get(AXIS);
         var facing = Direction.from(axis, Direction.AxisDirection.POSITIVE);
 
         var rotorAngle = getRotorAngle(rotor, partialTicks);
@@ -51,7 +48,7 @@ public class CommutatorRenderer extends RotorRenderer {
         var sin = Math.sin(brushAngle);
         var brushOffset = sin * sin * 1 / 16f;
 
-        var brush = CachedBufferer.partial(ModdedPartialModels.COMMUTATOR_BRUSH, state); //partialFacing(ModdedPartialModels.COMMUTATOR_BRUSH, state, facing);
+        var brush = CachedBufferer.partial(ModdedPartialModels.COMMUTATOR_BRUSH, state);
         brush.light(light)
                 .centre()
                 .rotateToFace(facing)
@@ -67,11 +64,7 @@ public class CommutatorRenderer extends RotorRenderer {
     }
 
     @Override
-    protected PartialModel getModelForState(BlockState state) {
-        if(state.get(SHAFT_DIRECTION) != ShaftDirection.NONE) {
-            return ModdedPartialModels.COMMUTATOR_SHAFT;
-        } else {
-            return ModdedPartialModels.COMMUTATOR_FULL;
-        }
+    protected SuperByteBuffer getModelForState(BlockState state) {
+        return CachedBufferer.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.from(state.get(AXIS), Direction.AxisDirection.POSITIVE));
     }
 }

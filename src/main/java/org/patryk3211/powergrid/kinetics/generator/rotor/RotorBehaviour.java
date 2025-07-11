@@ -18,8 +18,11 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
+import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,58 +57,25 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         assert world != null;
 
         var state = blockEntity.getCachedState();
+        if(!(state.getBlock() instanceof IRotorAssemblyPart assembly))
+            return List.of();
         var pos = getPos();
 
-        var axis = state.get(RotorBlock.AXIS);
-        var direction = state.get(RotorBlock.SHAFT_DIRECTION);
-        List<RotorBehaviour> entities = new LinkedList<>();
-
-        RotorBehaviour positive = null;
-        RotorBehaviour negative = null;
-        switch(axis) {
-            case X -> {
-                positive = get(world, pos.east(), getType());
-                negative = get(world, pos.west(), getType());
-            }
-            case Y -> {
-                positive = get(world, pos.up(), getType());
-                negative = get(world, pos.down(), getType());
-            }
-            case Z -> {
-                positive = get(world, pos.south(), getType());
-                negative = get(world, pos.north(), getType());
-            }
+        var checkDirs = new ArrayList<Direction>();
+        for(var dir : Direction.values()) {
+            if(assembly.canConnect(state, dir))
+                checkDirs.add(dir);
         }
-        switch(direction) {
-            case NONE -> {
-                if(positive != null) {
-                    var otherState = positive.blockEntity.getCachedState();
-                    if(otherState.get(RotorBlock.AXIS) == axis && otherState.get(RotorBlock.SHAFT_DIRECTION) != ShaftDirection.NEGATIVE) {
-                        entities.add(positive);
-                    }
-                }
-                if(negative != null) {
-                    var otherState = negative.blockEntity.getCachedState();
-                    if(otherState.get(RotorBlock.AXIS) == axis && otherState.get(RotorBlock.SHAFT_DIRECTION) != ShaftDirection.POSITIVE) {
-                        entities.add(negative);
-                    }
-                }
-            }
-            case POSITIVE -> {
-                if(negative != null) {
-                    var otherState = negative.blockEntity.getCachedState();
-                    if(otherState.get(RotorBlock.AXIS) == axis && otherState.get(RotorBlock.SHAFT_DIRECTION) != ShaftDirection.POSITIVE) {
-                        entities.add(negative);
-                    }
-                }
-            }
-            case NEGATIVE -> {
-                if(positive != null) {
-                    var otherState = positive.blockEntity.getCachedState();
-                    if(otherState.get(RotorBlock.AXIS) == axis && otherState.get(RotorBlock.SHAFT_DIRECTION) != ShaftDirection.NEGATIVE) {
-                        entities.add(positive);
-                    }
-                }
+        List<RotorBehaviour> entities = new LinkedList<>();
+        for(var dir : checkDirs) {
+            var rotor = get(world, pos.offset(dir), getType());
+            if(rotor == null)
+                continue;
+            var otherState = rotor.blockEntity.getCachedState();
+            if(otherState.getBlock() instanceof IRotorAssemblyPart assemblyPart) {
+                if(!assemblyPart.canConnect(otherState, dir.getOpposite()))
+                    continue;
+                entities.add(rotor);
             }
         }
         return entities;
@@ -233,16 +203,14 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
             float friction = Math.abs(velocity * 20f * inertia);
             friction = Math.min(friction, segmentCount * 1f);
+
             angularVelocity -= Math.signum(velocity) * friction / 20f / inertia;
+            if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity))
+                angularVelocity = 0;
 
             angle = (angle + velocity * 0.3f) % 360;
-            if(Float.isNaN(angle)) {
+            if(Float.isNaN(angle))
                 angle = 0;
-            }
-
-            if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity)) {
-                angularVelocity = 0;
-            }
         } else {
             // Fetch values from controller
             angularVelocity = getAngularVelocity();
