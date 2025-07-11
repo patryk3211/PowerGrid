@@ -21,25 +21,30 @@ import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 
 public class TerminalHandler {
     private static final Object outlineSlot = new Object();
+    private static IDecoratedTerminal targetTerminal = null;
 
     public static void init() {
         ClientTickEvents.END_WORLD_TICK.register(TerminalHandler::tick);
     }
 
     private static void tick(ClientWorld world) {
+        targetTerminal = null;
         var client = MinecraftClient.getInstance();
         var target = client.crosshairTarget;
         if(target == null || target.getType() == HitResult.Type.MISS || client.player == null)
             return;
-
 
         var mainItem = client.player.getMainHandStack();
         var offItem = client.player.getOffHandStack();
@@ -60,11 +65,19 @@ public class TerminalHandler {
 
             if(!(terminal instanceof IDecoratedTerminal decorated))
                 return;
+            targetTerminal = decorated;
 
             CreateClient.OUTLINER.showAABB(outlineSlot, decorated.getOutline().offset(blockPos))
                     .colored(decorated.getColor())
                     .withFaceTexture(AllSpecialTextures.CUTOUT_CHECKERED)
                     .lineWidth(0.020f);
         }
+    }
+
+    @Nullable
+    public static Text overlayText(PlayerEntity player) {
+        if(targetTerminal == null)
+            return null;
+        return targetTerminal.getName();
     }
 }

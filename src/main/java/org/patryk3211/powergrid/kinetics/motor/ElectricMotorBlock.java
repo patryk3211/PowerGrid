@@ -45,8 +45,8 @@ import java.util.List;
 public class ElectricMotorBlock extends DirectionalKineticBlock implements IElectric, IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
     private static final RotatedTerminalCollection TERMINALS = RotatedTerminalCollection
             .builder(RotatedTerminalCollection::rotateNorthToFacing)
-            .add(new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 0, 7, 13, 3, 9, 16))
-            .add(new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 13, 7, 13, 16, 9, 16))
+            .add(new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 0, 7, 13, 3, 9, 16).withColor(IDecoratedTerminal.RED))
+            .add(new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 13, 7, 13, 16, 9, 16).withColor(IDecoratedTerminal.BLUE))
             .with(Directions.ALL)
             .build();
 
