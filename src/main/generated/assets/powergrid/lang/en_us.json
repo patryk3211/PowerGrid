@@ -42,6 +42,7 @@
   "item.powergrid.circuit_schematic.empty": "Empty Schematic",
   "item.powergrid.circuit_schematic.tooltip.creative": "Sneak right-click to convert into an assembled circuit",
   "item.powergrid.copper_coil": "Copper Coil",
+  "item.powergrid.diode": "Diode",
   "item.powergrid.electrical_gizmo": "Electrical Gizmo",
   "item.powergrid.electrobaton": "Electro-Baton",
   "item.powergrid.electrobaton.tooltip.behaviour1": "Attacked enemies will be _stunned_ and _no durability_ will be used. Instead, _Forge Energy_ is drained from the Battery",

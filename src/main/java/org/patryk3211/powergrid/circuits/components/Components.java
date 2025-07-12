@@ -101,6 +101,16 @@ public class Components {
             .item(ModdedBlocks.ANDESITE_VOLTAGE_METER)
             .register();
 
+    public static final ComponentEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
+            .footprint(6, 3, b -> b
+                    .addPad(0, 1, 0, Text.of("Anode"))
+                    .addPad(5, 1, 1, Text.of("Cathode"))
+                    .withItem(ModdedItems.DIODE)
+                    .withOutline()
+            )
+            .item(ModdedItems.DIODE)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }
