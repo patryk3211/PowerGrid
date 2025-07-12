@@ -30,10 +30,10 @@ public class Components {
 
     public static final ComponentEntry<ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(0, 0, 2, Text.of("Anode"))
-                    .addPad(0, 2, 0, Text.of("Cathode"))
-                    .addPad(2, 0, 1, Text.of("Grid"))
-                    .addPad(2, 2, 3, Text.of("Heater"))
+                    .addPad(0, 0, 2, "Anode")
+                    .addPad(0, 2, 0, "Cathode")
+                    .addPad(2, 0, 1, "Grid")
+                    .addPad(2, 2, 3, "Heater")
                     .withItem(AllItems.ELECTRON_TUBE)
                     .withOutline())
             .item(AllItems.ELECTRON_TUBE)
@@ -57,12 +57,12 @@ public class Components {
 
     public static final ComponentEntry<RelayComponent> RELAY = REGISTRATE.component("relay", RelayComponent::new)
             .footprint(5, 4, b -> b
-                    .addPad(0, 0, 0, Text.of("Coil"))
-                    .addPad(0, 3, 1, Text.of("Coil"))
-                    .addPad(3, 0, 2, Text.of("Normally Closed"))
-                    .addPad(4, 1, 3, Text.of("Common"))
-                    .addPad(4, 2, 3, Text.of("Common"))
-                    .addPad(3, 3, 4, Text.of("Normally Open"))
+                    .addPad(0, 0, 0, "Coil")
+                    .addPad(0, 3, 1, "Coil")
+                    .addPad(3, 0, 2, "Normally Closed")
+                    .addPad(4, 1, 3, "Common")
+                    .addPad(4, 2, 3, "Common")
+                    .addPad(3, 3, 4, "Normally Open")
                     .withItem(ModdedItems.RELAY)
                     .withOutline()
             )
@@ -103,8 +103,8 @@ public class Components {
 
     public static final ComponentEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
             .footprint(6, 3, b -> b
-                    .addPad(0, 1, 0, Text.of("Anode"))
-                    .addPad(5, 1, 1, Text.of("Cathode"))
+                    .addPad(0, 1, 0, "Anode")
+                    .addPad(5, 1, 1, "Cathode")
                     .withItem(ModdedItems.DIODE)
                     .withOutline()
             )

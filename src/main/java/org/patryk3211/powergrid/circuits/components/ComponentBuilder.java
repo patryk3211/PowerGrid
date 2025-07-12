@@ -19,12 +19,11 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.fabric.RegistryObject;
-import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import com.tterrag.registrate.util.nullness.NonnullType;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -51,7 +50,10 @@ public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Co
     }
 
     public ComponentBuilder<T, P> footprint(int width, int height, NonNullUnaryOperator<ComponentFootprint.Builder> transform) {
-        this.footprint = transform.apply(new ComponentFootprint.Builder(width, height)).build();
+        var keyBase = "component." + getOwner().getModid() + "." + getName();
+        var builder = transform.apply(new ComponentFootprint.Builder(width, height, keyBase));
+        addMiscData(ProviderType.LANG, provider -> builder.translatedPads.forEach(provider::add));
+        this.footprint = builder.build();
         return this;
     }
 

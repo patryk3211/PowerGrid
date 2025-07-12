@@ -23,6 +23,7 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.components.ComponentEntry;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 
 import java.util.*;
@@ -186,10 +187,18 @@ public class ComponentFootprint {
         private Supplier<Item> itemSupplier;
         private boolean outline = false;
         private Orientation arrow = null;
+        @Nullable
+        private final String translationKey;
+        public final Map<String, String> translatedPads = new HashMap<>();
 
         public Builder(int width, int height) {
+            this(width, height, null);
+        }
+
+        public Builder(int width, int height, String translationKeyBase) {
             this.width = width;
             this.height = height;
+            this.translationKey = translationKeyBase;
         }
 
         private void validatePad(int x, int y) {
@@ -204,13 +213,21 @@ public class ComponentFootprint {
         }
 
         public Builder addPad(int x, int y, int nodeIndex) {
-            return addPad(x, y, nodeIndex, null);
+            return addPad(x, y, nodeIndex, (Text) null);
         }
 
         public Builder addPad(int x, int y, int nodeIndex, @Nullable Text tooltip) {
             validatePad(x, y);
             pads.put(new Point(x, y), new PadData(nodeIndex, tooltip));
             return this;
+        }
+
+        public Builder addPad(int x, int y, int nodeIndex, String defaultLang) {
+            if(translationKey == null)
+                throw new IllegalCallerException("This method may only be used when the translation key base is set");
+            var key = translationKey + "." + nodeIndex;
+            translatedPads.put(key, defaultLang);
+            return addPad(x, y, nodeIndex, Text.translatable(key));
         }
 
         public Builder withOutline() {
