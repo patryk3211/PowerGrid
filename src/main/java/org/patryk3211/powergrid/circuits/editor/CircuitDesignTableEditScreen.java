@@ -140,7 +140,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         super.init();
 
-        editWidget = new CircuitEditWidget(schematic, x + 13 - 11, y + 22, GRID_SIZE * CIRCUIT_SCALE, GRID_SIZE * CIRCUIT_SCALE);
+        editWidget = new CircuitEditWidget(textRenderer, schematic, x + 13 - 11, y + 22, GRID_SIZE * CIRCUIT_SCALE, GRID_SIZE * CIRCUIT_SCALE);
         propertiesWidget = new ComponentPropertiesWidget(textRenderer, x - 15, y + 12);
 
         var name = handler.contentHolder.getSchematicName();

@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -71,6 +72,7 @@ public class ComponentFootprint {
             ctx.drawBorder(x, y, width * GRID_TO_GRID_SCALE, height * GRID_TO_GRID_SCALE, COLOR_COMPONENT_OUTLINE);
         }
         renderPads(ctx, x, y);
+
         var ms = ctx.getMatrices();
         if(renderedItem != null) {
             ms.push();
@@ -105,6 +107,24 @@ public class ComponentFootprint {
 
             ms.pop();
         }
+    }
+
+    public void renderPadIndices(@NotNull DrawContext ctx, @NotNull TextRenderer textRenderer, int x, int y) {
+        var ms = ctx.getMatrices();
+        ms.push();
+        int scale = 12;
+        ms.translate(0.5f, 0.5f, 100);
+        ms.scale(1.0f / scale, 1.0f / scale, 1.0f);
+        for(var entry : pads.entrySet()) {
+            var point = entry.getKey();
+            int x1 = (point.x() + x) * scale;
+            int y1 = (point.y() + y) * scale;
+
+            var text = Integer.toString(entry.getValue().nodeIndex);
+            int width = textRenderer.getWidth(text);
+            ctx.drawText(textRenderer, text, x1 - width / 2, y1 - 4, -1, false);
+        }
+        ms.pop();
     }
 
     @Nullable
