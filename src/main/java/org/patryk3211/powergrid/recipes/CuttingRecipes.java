@@ -32,6 +32,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.info.Power;
 
@@ -54,7 +55,10 @@ public class CuttingRecipes extends ProcessingRecipeGen {
     EMPTY_CIRCUIT = create("empty_circuit_slabs", b -> b
             .output(ModdedItems.EMPTY_CIRCUIT, 2)
             .require(ItemTags.WOODEN_SLABS)
-            .duration(50))
+            .duration(50)),
+
+    GENERATOR_HOUSING = create(ModdedBlocks.TRANSFORMER_CORE::get, b ->
+            b.duration(100).output(ModdedBlocks.GENERATOR_HOUSING.get()))
 
             ;
 

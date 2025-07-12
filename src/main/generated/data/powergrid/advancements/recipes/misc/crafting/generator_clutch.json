@@ -6,7 +6,7 @@
         "items": [
           {
             "items": [
-              "create:iron_sheet"
+              "create:clutch"
             ]
           }
         ]
@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create:crafting/generator_housing"
+        "recipe": "create:crafting/generator_clutch"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "create:crafting/generator_housing"
+      "create:crafting/generator_clutch"
     ]
   },
   "sends_telemetry_event": false

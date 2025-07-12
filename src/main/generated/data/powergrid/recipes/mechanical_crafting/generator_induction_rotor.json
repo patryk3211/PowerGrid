@@ -6,7 +6,7 @@
       "item": "create:andesite_alloy"
     },
     "M": {
-      "item": "powergrid:magnet"
+      "tag": "c:copper_coils"
     },
     "S": {
       "item": "create:shaft"
@@ -18,6 +18,6 @@
     "AMA"
   ],
   "result": {
-    "item": "powergrid:generator_rotor"
+    "item": "powergrid:generator_induction_rotor"
   }
 }

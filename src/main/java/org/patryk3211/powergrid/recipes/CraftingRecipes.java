@@ -92,12 +92,11 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('R', ModdedItems.RESISTIVE_COIL)
             ),
 
-    GENERATOR_HOUSING = create(ModdedBlocks.GENERATOR_HOUSING)
-            .unlockedBy(AllItems.IRON_SHEET::get)
-            .shaped(b -> b
-                    .pattern("II")
-                    .pattern(" I")
-                    .input('I', RecipeTags.ironSheet())
+    GENERATOR_CLUTCH = create(ModdedBlocks.GENERATOR_CLUTCH)
+            .unlockedBy(AllBlocks.CLUTCH::get)
+            .shapeless(b -> b
+                    .input(AllBlocks.CLUTCH)
+                    .input(AllItems.ANDESITE_ALLOY)
             ),
 
     ANDESITE_VOLTAGE_GAUGE = create(ModdedBlocks.ANDESITE_VOLTAGE_METER)

@@ -129,10 +129,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         };
 
         rotorP = BlockEntityBehaviour.get(world, pos.offset(magneticAxis, 1), RotorBehaviour.TYPE);
-        if(rotorP != null && (!rotorP.blockEntity.getCachedState().contains(AXIS) || rotorP.blockEntity.getCachedState().get(AXIS) == magneticAxis))
+        if(rotorP != null && (!rotorP.hasField() || !rotorP.blockEntity.getCachedState().contains(AXIS) || rotorP.blockEntity.getCachedState().get(AXIS) == magneticAxis))
             rotorP = null;
         rotorN = BlockEntityBehaviour.get(world, pos.offset(magneticAxis, -1), RotorBehaviour.TYPE);
-        if(rotorN != null && (!rotorN.blockEntity.getCachedState().contains(AXIS) || rotorN.blockEntity.getCachedState().get(AXIS) == magneticAxis))
+        if(rotorN != null && (!rotorN.hasField() || !rotorN.blockEntity.getCachedState().contains(AXIS) || rotorN.blockEntity.getCachedState().get(AXIS) == magneticAxis))
             rotorN = null;
         sendData();
     }

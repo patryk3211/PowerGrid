@@ -51,6 +51,10 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         emitsField = false;
     }
 
+    public boolean hasField() {
+        return emitsField;
+    }
+
     @Override
     protected List<RotorBehaviour> getConnected() {
         var world = getWorld();

@@ -1,0 +1,14 @@
+{
+  "type": "create:cutting",
+  "ingredients": [
+    {
+      "item": "powergrid:transformer_core"
+    }
+  ],
+  "processingTime": 100,
+  "results": [
+    {
+      "item": "powergrid:generator_housing"
+    }
+  ]
+}
