@@ -42,7 +42,8 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook {
 
     @Override
     public void addResidual(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b, DMatrixRMaj residual) {
-        var current = conductance() * (potentialDifference() + voltageInject);
+        // Calculate current with a bit of leakage
+        var current = conductance() * (potentialDifference() + voltageInject) * 0.9999f;
         if(node1 != null)
             residual.add(node1.getIndex(), 0, current);
         if(node2 != null)

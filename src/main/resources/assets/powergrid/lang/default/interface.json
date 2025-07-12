@@ -79,6 +79,7 @@
   "powergrid.component.property.relay_state": "State",
 
   "powergrid.component.property.resistor_value": "Resistance",
+  "powergrid.component.property.capacitor_value": "Capacitance",
 
   "powergrid.component.property.redstone_emitter_digital": "Digital",
 

@@ -1,0 +1,43 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/component/capacitor",
+		"particle": "powergrid:block/component/capacitor"
+	},
+	"elements": [
+		{
+			"from": [0, 1, 0],
+			"to": [3, 5, 3],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 1, 0]},
+			"faces": {
+				"north": {"uv": [9, 0, 12, 4], "texture": "#0"},
+				"east": {"uv": [6, 0, 9, 4], "texture": "#0"},
+				"south": {"uv": [3, 0, 6, 4], "texture": "#0"},
+				"west": {"uv": [0, 0, 3, 4], "texture": "#0"},
+				"up": {"uv": [0, 6, 3, 9], "texture": "#0"},
+				"down": {"uv": [3, 6, 6, 9], "texture": "#0"}
+			}
+		},
+		{
+			"from": [0, 0, 0],
+			"to": [3, 0.5, 3],
+			"faces": {
+				"north": {"uv": [9, 5, 12, 5.5], "texture": "#0"},
+				"east": {"uv": [6, 5, 9, 5.5], "texture": "#0"},
+				"south": {"uv": [3, 5, 6, 5.5], "texture": "#0"},
+				"west": {"uv": [0, 5, 3, 5.5], "texture": "#0"},
+				"up": {"uv": [13, 0, 16, 3], "texture": "#0"}
+			}
+		},
+		{
+			"from": [0.25, 0.5, 0.25],
+			"to": [2.75, 1, 2.75],
+			"faces": {
+				"north": {"uv": [9.25, 4, 11.75, 4.5], "texture": "#0"},
+				"east": {"uv": [6.25, 4, 8.75, 4.5], "texture": "#0"},
+				"south": {"uv": [3.25, 4, 5.75, 4.5], "texture": "#0"},
+				"west": {"uv": [0.25, 4, 2.75, 4.5], "texture": "#0"}
+			}
+		}
+	]
+}

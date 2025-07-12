@@ -94,6 +94,7 @@ public class ModdedItems {
     public static final ItemEntry<Item> RESISTOR = ingredient("resistor");
     public static final ItemEntry<Item> REDSTONE_RELAY = ingredient("redstone_relay");
     public static final ItemEntry<Item> DIODE = ingredient("diode");
+    public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");

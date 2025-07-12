@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.simibubi.create.AllItems;
-import net.minecraft.text.Text;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -109,6 +108,16 @@ public class Components {
                     .withOutline()
             )
             .item(ModdedItems.DIODE)
+            .register();
+
+    public static final ComponentEntry<CapacitorComponent> CAPACITOR = REGISTRATE.component("capacitor", CapacitorComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 1, 0)
+                    .addPad(2, 1, 1)
+                    .withItem(ModdedItems.CAPACITOR)
+                    .withOutline()
+            )
+            .item(ModdedItems.CAPACITOR)
             .register();
 
     @SuppressWarnings("EmptyMethod")
