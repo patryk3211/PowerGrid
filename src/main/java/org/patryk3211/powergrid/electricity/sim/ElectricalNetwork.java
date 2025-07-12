@@ -20,6 +20,7 @@ import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.BiCGSTABSolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
+import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -135,6 +136,8 @@ public class ElectricalNetwork {
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network");
         wire.setNetwork(this);
         wires.add(wire);
+        if(wire instanceof CapacitorWire)
+            ++sourceCount;
 
         updateConductance(wire, wire.conductance());
         if(wire instanceof ISolverHook hook)
@@ -197,6 +200,8 @@ public class ElectricalNetwork {
             return;
         wires.remove(wire);
         wire.setNetwork(null);
+        if(wire instanceof CapacitorWire)
+            --sourceCount;
 
         updateConductance(wire, -wire.conductance());
         if(wire instanceof ISolverHook hook)

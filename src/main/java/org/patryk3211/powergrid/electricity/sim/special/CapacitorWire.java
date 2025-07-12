@@ -22,12 +22,12 @@ import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
 public class CapacitorWire extends AbstractElectricWire implements ISolverHook {
     private float capacitance;
-    private float voltage;
+    private float voltageInject;
 
     public CapacitorWire(float capacitance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
         this.capacitance = capacitance;
-        this.voltage = 0;
+        this.voltageInject = 0;
     }
 
     @Override
@@ -36,12 +36,17 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook {
         return capacitance / 0.05f;
     }
 
+    public void setVoltage(float voltage) {
+        voltageInject = voltage - potentialDifference();
+    }
+
     @Override
     public void addResidual(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b, DMatrixRMaj residual) {
-        var current = conductance() * potentialDifference();
+        var current = conductance() * (potentialDifference() + voltageInject);
         if(node1 != null)
             residual.add(node1.getIndex(), 0, current);
         if(node2 != null)
             residual.add(node2.getIndex(), 0, -current);
+        voltageInject = 0;
     }
 }

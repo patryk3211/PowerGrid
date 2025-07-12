@@ -70,4 +70,20 @@ public class CapacitorTest extends TestHelper {
         Assertions.assertEquals( 0.368f, V1.getCurrent(), 0.01f, "First voltage source current is incorrect");
         Assertions.assertEquals(-0.368, V2.getCurrent(), 0.01f, "Second voltage source current is incorrect");
     }
+
+    @Test
+    void testFloating() {
+        var Net = new Network();
+
+        var N1 = Net.N();
+
+        var C = new CapacitorWire(1f, N1, null);
+        Net.network.addWire(C);
+        C.setVoltage(5f);
+
+        for(int i = 0; i < 2; ++i) {
+            Net.calculate();
+            Assertions.assertEquals(5.0f, C.potentialDifference(), 0.01f, "Capacitor voltage is incorrect");
+        }
+    }
 }

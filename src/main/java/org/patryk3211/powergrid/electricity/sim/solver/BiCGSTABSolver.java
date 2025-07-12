@@ -87,17 +87,6 @@ public class BiCGSTABSolver implements ISolver {
     public DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b) {
         if(b.getNumRows() == 0)
             return guess;
-        boolean zeroResult = true;
-        for(int i = 0; i < b.getNumRows(); ++i) {
-            if(b.get(i, 0) != 0) {
-                zeroResult = false;
-                break;
-            }
-        }
-        if(zeroResult) {
-            zero();
-            return guess;
-        }
 
         for(var hook : hooks) {
             hook.preSolve(A, guess, b);
@@ -109,6 +98,12 @@ public class BiCGSTABSolver implements ISolver {
 
         for(var hook : hooks) {
             hook.addResidual(A, guess, b, residual);
+        }
+
+        // Check if result is already good enough.
+        double norm = NormOps_DDRM.normP2(residual);
+        if(norm <= targetPrecision) {
+            return guess;
         }
 
         if(USE_RANDOM_HAT_RESIDUAL) {
@@ -124,7 +119,6 @@ public class BiCGSTABSolver implements ISolver {
         p.setTo(residual);
 
         int iters = 0;
-        double norm = 0;
         while(iters++ < MAX_ITERATIONS) {
             for(var hook : hooks) {
                 hook.iteration(A, guess, residual, p);
