@@ -106,9 +106,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         if(!isController())
             return;
         if(!hasSoundSource && Math.abs(angularVelocity) > 32) {
-            if (blockEntity instanceof RotorBlockEntity rotor) {
-                MinecraftClient.getInstance().getSoundManager().play(new RotorSoundInstance(rotor));
-            }
+            MinecraftClient.getInstance().getSoundManager().play(new RotorSoundInstance(this));
             hasSoundSource = true;
         } else if(hasSoundSource && Math.abs(angularVelocity) < 32) {
             hasSoundSource = false;
