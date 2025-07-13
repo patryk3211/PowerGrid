@@ -115,7 +115,11 @@ public class ModdedSoundEvents {
             .category(SoundCategory.BLOCKS)
             .build(),
 
-    TRANSFORMER_HUM = create("transformer").subtitle("Transformer Hum")
+    TRANSFORMER_HUM = create("transformer").subtitle("Transformer hum")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    GENERATOR = create("generator").subtitle("Generator spinning")
             .category(SoundCategory.BLOCKS)
             .build()
 
