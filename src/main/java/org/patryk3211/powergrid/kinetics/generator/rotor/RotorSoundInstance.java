@@ -49,6 +49,7 @@ public class RotorSoundInstance extends MovingSoundInstance {
             var pitch = velocity / 128f;
             if(velocity < 32) {
                 this.volume = 0.0f;
+                setDone();
             } else {
                 var volume = (velocity / 128);
                 this.volume = MathHelper.clamp(volume, 0, 1) * 0.3f;
