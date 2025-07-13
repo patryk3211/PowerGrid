@@ -17,6 +17,9 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
@@ -42,6 +45,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     private float angle = 0;
 
     private boolean emitsField = true;
+    private boolean hasSoundSource = false;
 
     public RotorBehaviour(SmartBlockEntity be) {
         super(be);
@@ -95,6 +99,20 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         super.makeController();
         inertia = ROTOR_INERTIA;
         segmentCount = 1;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public void tickAudio() {
+        if(!isController())
+            return;
+        if(!hasSoundSource && Math.abs(angularVelocity) > 32) {
+            if (blockEntity instanceof RotorBlockEntity rotor) {
+                MinecraftClient.getInstance().getSoundManager().play(new RotorSoundInstance(rotor));
+            }
+            hasSoundSource = true;
+        } else if(hasSoundSource && Math.abs(angularVelocity) < 32) {
+            hasSoundSource = false;
+        }
     }
 
     @Override
@@ -215,6 +233,9 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             angle = (angle + velocity * 0.3f) % 360;
             if(Float.isNaN(angle))
                 angle = 0;
+
+            if(getWorld() != null && getWorld().isClient)
+                tickAudio();
         } else {
             // Fetch values from controller
             angularVelocity = getAngularVelocity();

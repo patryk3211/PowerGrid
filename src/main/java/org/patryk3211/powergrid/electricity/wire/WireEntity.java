@@ -342,7 +342,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
         if(player.getStackInHand(hand).getItem() == ModdedItems.WIRE_CUTTER.get()) {
-            getWorld().playSoundFromEntity(null, this, ModdedSoundEvents.WIRE_CUT.getMainEvent(), SoundCategory.BLOCKS, 0.75f, 1.25f);
+            ModdedSoundEvents.WIRE_CUT.playAt(getWorld(), getPos(), 0.75f, 1.25f, false);
             kill();
             return ActionResult.SUCCESS;
         }

@@ -8,6 +8,15 @@
     ],
     "subtitle": "powergrid.subtitle.electrozapper_shoot"
   },
+  "generator": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:generator"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.generator"
+  },
   "hv_switch_connect": {
     "sounds": [
       {
@@ -65,6 +74,15 @@
       }
     ],
     "subtitle": "powergrid.subtitle.relay_click"
+  },
+  "transformer": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:transformer"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.transformer"
   },
   "ui.action.fail": {
     "sounds": [
