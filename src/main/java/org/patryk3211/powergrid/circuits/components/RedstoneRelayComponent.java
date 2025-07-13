@@ -46,7 +46,7 @@ public class RedstoneRelayComponent extends EdgeComponent implements IRedstoneCo
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var wire = builder.connectSwitch(RESISTANCE, builder.terminalNode(0), builder.terminalNode(1), false);
+        var wire = builder.connectSwitch(RESISTANCE, builder.terminalNode(0), builder.terminalNode(1), placed.get(POWERED));
         placed.add(wire);
     }
 
