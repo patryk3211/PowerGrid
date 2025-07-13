@@ -66,6 +66,15 @@
     ],
     "subtitle": "powergrid.subtitle.relay_click"
   },
+  "transformer": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:transformer"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.transformer"
+  },
   "ui.action.fail": {
     "sounds": [
       {
