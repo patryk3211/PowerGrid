@@ -22,6 +22,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -91,21 +92,26 @@ public class CircuitSchematic {
     }
 
     public void deserializeNbt(NbtCompound tag) {
-        front.deserialize(tag.getLongArray("Front"));
-        back.deserialize(tag.getLongArray("Back"));
+        try {
+            front.deserialize(tag.getLongArray("Front"));
+            back.deserialize(tag.getLongArray("Back"));
 
-        if(tag.contains("Name")) {
-            name = tag.getString("Name");
-        } else {
-            name = null;
-        }
+            if (tag.contains("Name")) {
+                name = tag.getString("Name");
+            } else {
+                name = null;
+            }
 
-        components.clear();
-        var list = tag.getList("Components", NbtElement.COMPOUND_TYPE);
-        for(var element : list) {
-            components.add(new PlacedComponent((NbtCompound) element));
+            components.clear();
+            var list = tag.getList("Components", NbtElement.COMPOUND_TYPE);
+            for (var element : list) {
+                components.add(new PlacedComponent((NbtCompound) element));
+            }
+            rebuildPads();
+        } catch(RuntimeException e) {
+            clear();
+            PowerGrid.LOGGER.error("Failed to deserialize circuit schematic NBT", e);
         }
-        rebuildPads();
     }
 
     public void rebuildPads() {

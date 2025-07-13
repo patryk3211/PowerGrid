@@ -16,8 +16,11 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
@@ -40,8 +43,16 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     protected ElectricWire secondaryStray;
     protected ElectricWire mutualInductance;
 
+    public float lastCurrent;
+    private boolean hasSoundSource;
+
     public TransformerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
     }
 
     @Override
@@ -49,22 +60,39 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         super.tick();
 
         float power = 0;
+        lastCurrent = 0;
         if(primaryStray != null) {
             var I1 = primaryStray.current();
             var P1 = I1 * I1 * primaryStray.getResistance();
             power += P1;
+            lastCurrent += Math.abs(I1);
         }
         if(secondaryStray != null) {
             var I2 = secondaryStray.current();
             var P2 = I2 * I2 * secondaryStray.getResistance();
             power += P2;
+            lastCurrent += Math.abs(I2);
         }
         if(mutualInductance != null) {
             var I3 = mutualInductance.current();
             var P3 = I3 * I3 * mutualInductance.getResistance();
             power += P3;
+            lastCurrent += Math.abs(I3);
         }
         applyLostPower(power);
+        if(world.isClient) {
+            tickAudio();
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    protected void tickAudio() {
+        if(!hasSoundSource && TransformerSoundInstance.getVolume(lastCurrent) > 0) {
+            MinecraftClient.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
+            hasSoundSource = true;
+        } else if(hasSoundSource && TransformerSoundInstance.getVolume(lastCurrent) <= 0) {
+            hasSoundSource = false;
+        }
     }
 
     @Override
