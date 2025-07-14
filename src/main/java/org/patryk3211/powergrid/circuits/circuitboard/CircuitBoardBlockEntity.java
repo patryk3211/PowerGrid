@@ -53,6 +53,13 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         notifyUpdate();
     }
 
+    public void setAdditionalData(NbtCompound tag) {
+        if(baked == null)
+            return;
+        baked.read(tag);
+        notifyUpdate();
+    }
+
     private void bakeCircuit() {
         componentCache.clear();
         baked = BakedCircuit.from(schematic, () -> world, pos);

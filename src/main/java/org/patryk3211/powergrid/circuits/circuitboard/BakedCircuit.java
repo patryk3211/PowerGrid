@@ -148,9 +148,11 @@ public class BakedCircuit {
     }
 
     public void read(NbtCompound tag) {
-        var thermalTag = tag.getCompound("Thermal");
-        for(var unit : thermalUnits) {
-            unit.read(thermalTag);
+        if(tag.contains("Thermal")) {
+            var thermalTag = tag.getCompound("Thermal");
+            for(var unit : thermalUnits) {
+                unit.read(thermalTag);
+            }
         }
         isDamaged = false;
     }
