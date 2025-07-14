@@ -26,11 +26,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = ValueSettingsScreen.class, remap = false)
+@Mixin(value = ValueSettingsScreen.class)
 public abstract class ValueSettingsScreenMixin {
-    @Shadow private int maxLabelWidth;
-    @Shadow private int valueBarWidth;
-    @Shadow private ValueSettingsBoard board;
+    @Shadow(remap = false) private int maxLabelWidth;
+    @Shadow(remap = false) private int valueBarWidth;
+    @Shadow(remap = false) private ValueSettingsBoard board;
 
     @Inject(method = "renderWindow(Lnet/minecraft/client/gui/DrawContext;IIF)V", at = @At(
             value = "INVOKE",
