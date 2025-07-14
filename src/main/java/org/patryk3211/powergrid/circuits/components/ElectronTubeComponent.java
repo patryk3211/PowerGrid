@@ -80,7 +80,7 @@ public class ElectronTubeComponent extends OrientableComponent {
                 .setThermalMass(0.001f)
                 .setOverheatTemperature(1500f)
                 .setDissipationFactor(dissipationFactor)
-                .withCallback(temperature -> tube.setSaturationCurrent(
+                .withTemperatureCallback(temperature -> tube.setSaturationCurrent(
                         MathHelper.clamp(temperature - 1300f, 0, 150) * saturationCurrent / 100
                 ));
     }

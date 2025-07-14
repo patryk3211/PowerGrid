@@ -28,6 +28,7 @@ public class ThermalBuilder {
     private float thermalMass;
     private float dissipationFactor;
     private Consumer<Float> temperatureCallback;
+    private Runnable overheatCallback;
 
     private final UUID componentUUID;
     private final int index;
@@ -52,6 +53,15 @@ public class ThermalBuilder {
         return this;
     }
 
+    public ThermalBuilder setMaxPower(float power, float temperature) {
+        this.dissipationFactor = power / (temperature - 22f);
+        return this;
+    }
+
+    public ThermalBuilder setMaxCurrent(float current, float resistance, float temperature) {
+        return setMaxPower(resistance * current * current, temperature);
+    }
+
     public ThermalBuilder setDissipationFactor(float dissipationFactor) {
         this.dissipationFactor = dissipationFactor;
         return this;
@@ -62,15 +72,20 @@ public class ThermalBuilder {
         return this;
     }
 
-    public ThermalBuilder withCallback(Consumer<Float> temperatureCallback) {
+    public ThermalBuilder withTemperatureCallback(Consumer<Float> temperatureCallback) {
         this.temperatureCallback = temperatureCallback;
+        return this;
+    }
+
+    public ThermalBuilder withOverheatCallback(Runnable overheatCallback) {
+        this.overheatCallback = overheatCallback;
         return this;
     }
 
     public ThermalUnit build() {
         if(thermalMass == 0)
             throw new IllegalStateException("Thermal mass cannot be zero");
-        return new ThermalUnit(componentUUID, index, thermalMass, dissipationFactor, overheatTemperature, sources, temperatureCallback);
+        return new ThermalUnit(componentUUID, index, thermalMass, dissipationFactor, overheatTemperature, sources, temperatureCallback, overheatCallback);
     }
 
     public interface IEmitter {

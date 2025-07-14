@@ -53,7 +53,12 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
     @Override
     public void setNetwork(ElectricalNetwork network) {
         super.setNetwork(network);
-        network.addWire(gridWire);
+        if(network != null) {
+            network.addWire(gridWire);
+        } else {
+            gridWire.remove();
+            gridWire.setNetwork(null);
+        }
     }
 
     @Override

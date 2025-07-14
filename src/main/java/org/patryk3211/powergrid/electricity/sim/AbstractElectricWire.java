@@ -46,6 +46,8 @@ public abstract class AbstractElectricWire {
     }
 
     public float current() {
+        if(network == null)
+            return 0;
         return (float) (potentialDifference() * conductance());
     }
 

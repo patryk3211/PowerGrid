@@ -1,4 +1,13 @@
 {
+  "component_explode": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.firework_rocket.blast"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.component_explode"
+  },
   "electrozapper_shoot": {
     "sounds": [
       {

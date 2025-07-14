@@ -58,7 +58,15 @@ public class RelayComponent extends OrientableComponent {
         placed.add(normallyClosed);
         placed.add(normallyOpen);
 
-        super.bake(placed, builder, thermals);
+        thermals.builder()
+                .setMaxCurrent(0.2f, resistance, 125f)
+                .setThermalMass(0.02f)
+                .addHeatSource(coilWire);
+        thermals.builder()
+                .setMaxPower(250, 125f)
+                .setThermalMass(0.075f)
+                .addHeatSource(normallyClosed)
+                .addHeatSource(normallyOpen);
     }
 
     @Override

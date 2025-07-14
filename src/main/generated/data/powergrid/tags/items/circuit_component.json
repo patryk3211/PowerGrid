@@ -9,6 +9,7 @@
     "powergrid:resistor",
     "powergrid:redstone_relay",
     "powergrid:andesite_voltage_gauge",
-    "powergrid:diode"
+    "powergrid:diode",
+    "powergrid:capacitor"
   ]
 }

@@ -19,6 +19,9 @@
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
 
+  "powergrid.gui.circuit_board.damage_header": "Damaged",
+  "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",

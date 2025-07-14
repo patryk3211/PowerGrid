@@ -105,6 +105,11 @@ public class ModdedSoundEvents {
             .category(SoundCategory.BLOCKS)
             .build(),
 
+    COMPONENT_EXPLODE = create("component_explode").subtitle("Component pops")
+            .playExisting(SoundEvents.ENTITY_FIREWORK_ROCKET_BLAST, 0.25f, 2.0f)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
     MICROSWITCH_ON = create("uswitch_on").subtitle("Switch clicks")
             .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_ON, 1.0f, 2.0f)
             .category(SoundCategory.BLOCKS)

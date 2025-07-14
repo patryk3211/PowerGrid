@@ -27,8 +27,6 @@ import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.sim.special.DiodeWire;
 
 public class DiodeComponent extends OrientableComponent {
-//    public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 1f, 100_000f);
-
     public DiodeComponent(ComponentFootprint footprint) {
         super(footprint);
     }
@@ -42,5 +40,9 @@ public class DiodeComponent extends OrientableComponent {
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var diodeWire = new DiodeWire(0.1f, builder.terminalNode(1), builder.terminalNode(0));
         builder.add(diodeWire);
+        thermals.builder()
+                .setMaxPower(200, 125f)
+                .setThermalMass(0.02f)
+                .addHeatSource(diodeWire);
     }
 }
