@@ -15,15 +15,18 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.shape.VoxelShape;
-import org.jetbrains.annotations.NotNull;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
-public interface IDynamicComponent {
-    VoxelShape getShape(@NotNull PlacedComponent placed);
+public interface IRenderedComponent {
+    default boolean emitBaked() {
+        return true;
+    }
 
-    ActionResult use(CircuitBoardBlockEntity be, PlacedComponent component, PlayerEntity player);
+    @Environment(EnvType.CLIENT)
+    void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay);
 }

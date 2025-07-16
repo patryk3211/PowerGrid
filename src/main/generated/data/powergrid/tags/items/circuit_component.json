@@ -10,6 +10,7 @@
     "powergrid:redstone_relay",
     "powergrid:andesite_voltage_gauge",
     "powergrid:diode",
-    "powergrid:capacitor"
+    "powergrid:capacitor",
+    "minecraft:glowstone_dust"
   ]
 }

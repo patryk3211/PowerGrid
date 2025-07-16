@@ -36,7 +36,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import java.util.Collection;
 import java.util.List;
 
-public class SwitchComponent extends OrientableComponent implements IDynamicComponent {
+public class SwitchComponent extends OrientableComponent implements IInteractableComponent {
     public static final BooleanProperty STATE = new BooleanProperty(PowerGrid.MOD_ID, "switch_state");
 
     public SwitchComponent(ComponentFootprint footprint) {

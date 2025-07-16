@@ -88,6 +88,10 @@
 
   "powergrid.component.property.orientation": "Orientation",
 
+  "powergrid.component.property.led_red": "Red",
+  "powergrid.component.property.led_green": "Green",
+  "powergrid.component.property.led_blue": "Blue",
+
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
 

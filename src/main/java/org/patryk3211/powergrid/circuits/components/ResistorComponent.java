@@ -44,7 +44,7 @@ public class ResistorComponent extends OrientableComponent {
         // 1 watt of dissipation power, these are not high power resistors.
         thermals.builder()
                 .setThermalMass(0.01f)
-                .setMaxPower(1, 125f)
+                .setMaxPower(10, 125f)
                 .addHeatSource(wire);
     }
 }

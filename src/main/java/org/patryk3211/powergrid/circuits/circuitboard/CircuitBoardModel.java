@@ -35,6 +35,7 @@ import net.minecraft.world.BlockRenderView;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
+import org.patryk3211.powergrid.circuits.components.IRenderedComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.Area;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -165,6 +166,8 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
             // Emit components
             var schematic = circuit.getSchematic();
             for(var placed : schematic.components()) {
+                if(placed instanceof IRenderedComponent rendered && !rendered.emitBaked())
+                    continue;
                 var model = ComponentModels.getModel(placed);
                 if(placed.has(Orientation.PROPERTY)) {
                     var orientation = placed.get(Orientation.PROPERTY);

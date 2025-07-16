@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.collections;
 import com.simibubi.create.content.kinetics.base.HalfShaftInstance;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardRenderer;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
@@ -153,6 +154,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CircuitBoardBlockEntity> CIRCUIT_BOARD =
             REGISTRATE.blockEntity("circuit_board", CircuitBoardBlockEntity::new)
                     .validBlock(ModdedBlocks.CIRCUIT_BOARD)
+                    .renderer(() -> CircuitBoardRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

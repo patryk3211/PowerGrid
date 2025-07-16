@@ -36,6 +36,8 @@
   "component.powergrid.electron_tube.1": "Grid",
   "component.powergrid.electron_tube.2": "Anode",
   "component.powergrid.electron_tube.3": "Heater",
+  "component.powergrid.led.0": "Anode",
+  "component.powergrid.led.1": "Cathode",
   "component.powergrid.relay.0": "Coil",
   "component.powergrid.relay.1": "Coil",
   "component.powergrid.relay.2": "Normally Closed",

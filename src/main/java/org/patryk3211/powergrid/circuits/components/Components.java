@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.simibubi.create.AllItems;
+import net.minecraft.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -118,6 +119,15 @@ public class Components {
                     .withOutline()
             )
             .item(ModdedItems.CAPACITOR)
+            .register();
+
+    public static final ComponentEntry<LEDComponent> LED = REGISTRATE.component("led", LEDComponent::new)
+            .footprint(2, 2, b -> b
+                    .addPad(0, 0, 0, "Anode")
+                    .addPad(1, 1, 1, "Cathode")
+                    .withOutline()
+            )
+            .item(Items.GLOWSTONE_DUST)
             .register();
 
     @SuppressWarnings("EmptyMethod")
