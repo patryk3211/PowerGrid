@@ -46,6 +46,9 @@ public class BiCGSTABSolver implements ISolver {
     private DMatrixRMaj s;
     private DMatrixRMaj t;
 
+    private DMatrixRMaj y;
+    private DMatrixRMaj z;
+
     private final double targetPrecision;
 
     private Set<ISolverHook> hooks = new HashSet<>();
@@ -66,6 +69,9 @@ public class BiCGSTABSolver implements ISolver {
             h = new DMatrixRMaj(newSize, 1);
             s = new DMatrixRMaj(newSize, 1);
             t = new DMatrixRMaj(newSize, 1);
+
+            y = new DMatrixRMaj(newSize, 1);
+            z = new DMatrixRMaj(newSize, 1);
         }
     }
 
@@ -80,6 +86,17 @@ public class BiCGSTABSolver implements ISolver {
             h.zero();
             s.zero();
             t.zero();
+        }
+    }
+
+    private void preconditioned(DMatrixRMaj K, DMatrixRMaj input, DMatrixRMaj output) {
+        for(int i = 0; i < input.getNumRows(); ++i) {
+            var k = K.get(i, i);
+            if(k == 0) {
+                output.set(i, 0, input.get(i, 0));
+            } else {
+                output.set(i, 0, input.get(i, 0) / k);
+            }
         }
     }
 
@@ -124,12 +141,14 @@ public class BiCGSTABSolver implements ISolver {
                 hook.iteration(A, guess, residual, p);
             }
 
-            // v = A * p
-            CommonOps_DDRM.mult(A, p, v);
+            preconditioned(A, p, y);
+
+            // v = A * y
+            CommonOps_DDRM.mult(A, y, v);
 
             double alpha = dot / CommonOps_DDRM.dot(hatResidual, v);
-            // h = x + alpha * p
-            CommonOps_DDRM.add(guess, alpha, p, h);
+            // h = x + alpha * y
+            CommonOps_DDRM.add(guess, alpha, y, h);
             // s = r - alpha * v
             CommonOps_DDRM.add(residual, -alpha, v, s);
 
@@ -139,12 +158,14 @@ public class BiCGSTABSolver implements ISolver {
                 break;
             }
 
-            // t = A * s
-            CommonOps_DDRM.mult(A, s, t);
+            preconditioned(A, s, z);
+
+            // t = A * z
+            CommonOps_DDRM.mult(A, z, t);
             double omega = CommonOps_DDRM.dot(t, s) / CommonOps_DDRM.dot(t, t);
 
-            // x = h + omega * s
-            CommonOps_DDRM.add(h, omega, s, guess);
+            // x = h + omega * z
+            CommonOps_DDRM.add(h, omega, z, guess);
             // r = s - omega * t
             CommonOps_DDRM.add(s, -omega, t, residual);
 
