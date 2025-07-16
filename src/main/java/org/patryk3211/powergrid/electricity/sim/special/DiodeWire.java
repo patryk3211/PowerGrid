@@ -22,11 +22,13 @@ import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
 public class DiodeWire extends AbstractElectricWire implements ISolverHook {
     private final float resistance;
+    private final float biasVoltage;
     private double prevConductance;
 
-    public DiodeWire(float resistance, IElectricNode cathode, IElectricNode anode) {
+    public DiodeWire(float resistance, float biasVoltage, IElectricNode cathode, IElectricNode anode) {
         super(cathode, anode);
         this.resistance = resistance;
+        this.biasVoltage = biasVoltage;
         prevConductance = 0;
     }
 
@@ -37,8 +39,8 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
             return 0;
 
         var V = Math.abs(anodePotential);
-        // Diode equation: I_S * exp(V_a / V_t) Here, V_t is constant at 25mV
-        var Ia = Math.min(0.01f * (Math.exp(anodePotential / 0.025f)), V / resistance);
+        // Diode equation: I_S * exp(V_a / V_t) Here, V_t is constant at 100mV
+        var Ia = Math.min(Math.exp((anodePotential - biasVoltage) / 0.1f), V / resistance);
         return Ia / anodePotential;
     }
 
