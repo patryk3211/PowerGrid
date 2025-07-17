@@ -25,6 +25,7 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
 
     private final float resistance;
     private final float biasVoltage;
+    private double currentConductance;
     private double prevConductance;
 
     private double prevCurrent;
@@ -38,38 +39,62 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
         prevCurrent = 0;
     }
 
-//    private double diodeCurrent(double V) {
-//        var Ilin = V / resistance * 0.5;
-//        var Ia = (Math.tanh((V - biasVoltage) / 0.1) + 1) * Ilin;
-//        return Ia;
-//    }
+    private double diodeCurrent(double V) {
+        var Ilin = V / resistance * 0.5;
+        var Ia = (Math.tanh((V - biasVoltage) / 0.2) + 1) * Ilin;
+        return Ia;
+    }
 
     @Override
     public double conductance() {
-        var V = potentialDifference();
-        if(V <= 0)
-            return I_LEAK;
-        if(V >= biasVoltage)
-            return resistance;
-        return (1 / resistance) * V / biasVoltage;
+//        var V = potentialDifference();
+//        double conductance;
+//        if(V <= biasVoltage / 2) {
+//            conductance = I_LEAK;
+//        } else {
+//            conductance = 1.0 / resistance;
+//            if(V < biasVoltage) {
+//                conductance *= (V / biasVoltage - 0.5f);
+//            }
+//        }
+//        conductance = conductance * 0.75 + prevCurrent * 0.25;
+//        return conductance;
 
-//        if(V <= 0)
-//            return I_LEAK;
-
-//        var Ia = diodeCurrent(V);
+//        var Ilin = V / resistance * 0.5;
+//        var Ia = (Math.tanh((V - biasVoltage) / 0.1) + 1) * Ilin;
 //        Ia = Ia * 0.75 + prevCurrent * 0.25;
-//        prevCurrent = Ia;
 //        return Ia / (V + biasVoltage) + I_LEAK;
+        return currentConductance;
     }
 
     @Override
     public void preSolve(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b) {
-        var newConductance = conductance();
-        network.updateConductance(this, newConductance - prevConductance);
-        prevConductance = newConductance;
+        var V = potentialDifference();
+        var Ia = diodeCurrent(V);
+
+        // Why does this help? Idk, but it does so it stays.
+        prevCurrent = prevCurrent * 0.99 + Ia;
+        if(prevCurrent < 0)
+            prevCurrent = 0;
+        Ia = Ia * 0.9f + prevCurrent * 0.1f;
+
+        if(V + biasVoltage == 0) {
+            currentConductance = I_LEAK;
+        } else {
+            currentConductance = Ia / (V + biasVoltage) + I_LEAK;
+        }
+        network.updateConductance(this, currentConductance - prevConductance);
+        prevConductance = currentConductance;
     }
 
-//    @Override
+    @Override
+    public void addResidual(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b, DMatrixRMaj residual) {
+//        var I = potentialDifference() * conductance();
+//        residual.add(node1.getIndex(), 0, -I);
+//        residual.add(node2.getIndex(), 0, I);
+    }
+
+    //    @Override
 //    public void iteration(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj residual, DMatrixRMaj p) {
 //        var V = x.get(node1.getIndex(), 0) - x.get(node2.getIndex(), 0);
 //

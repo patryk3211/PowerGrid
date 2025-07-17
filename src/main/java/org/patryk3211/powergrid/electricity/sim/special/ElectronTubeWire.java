@@ -78,7 +78,7 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
             var x = gridPotential + anodePotential / gain;
             if(x <= 0)
                 return I_LEAK;
-            var Ia = perveance * Math.sqrt(x * x * x) + I_LEAK;
+            var Ia = perveance * /*Math.sqrt(x * x * x)*/ x + I_LEAK;
             Ia = Math.min(Ia, saturationCurrent);
             return Ia / anodePotential;
         } else {
