@@ -238,6 +238,7 @@ public class ModdedBlocks {
                     }))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .addLayer(() -> RenderLayer::getCutoutMipped)
             .defaultLoot()
             .simpleItem()
             .register();
