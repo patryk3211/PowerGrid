@@ -1,15 +1,15 @@
 {
   "variants": {
     "axis=x": {
-      "model": "powergrid:block/rotor/commutator_base_horizontal",
+      "model": "powergrid:block/generator/commutator_base_horizontal",
       "y": -90
     },
     "axis=y": {
-      "model": "powergrid:block/rotor/commutator_base_horizontal",
+      "model": "powergrid:block/generator/commutator_base_horizontal",
       "x": 90
     },
     "axis=z": {
-      "model": "powergrid:block/rotor/commutator_base_horizontal"
+      "model": "powergrid:block/generator/commutator_base_horizontal"
     }
   }
 }

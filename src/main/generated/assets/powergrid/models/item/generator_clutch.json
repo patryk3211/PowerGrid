@@ -1,3 +1,3 @@
 {
-  "parent": "powergrid:block/rotor/clutch_item"
+  "parent": "powergrid:block/generator/clutch_item"
 }

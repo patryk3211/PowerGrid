@@ -169,7 +169,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
-            .blockstate(rotorModel("block/rotor/rotor"))
+            .blockstate(rotorModel("block/generator/rotor"))
             .initialProperties(SharedProperties::stone)
             .properties(AbstractBlock.Settings::nonOpaque)
             .transform(pickaxeOnly())
@@ -177,13 +177,13 @@ public class ModdedBlocks {
             .defaultLoot()
             .item()
                 .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/rotor/rotor")))
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/rotor")))
                 .build()
             .lang("Generator Rotor")
             .register();
 
     public static final BlockEntry<InductionRotorBlock> GENERATOR_INDUCTION_ROTOR = REGISTRATE.block("generator_induction_rotor", InductionRotorBlock::new)
-            .blockstate(rotorModel("block/rotor/rotor"))
+            .blockstate(rotorModel("block/generator/rotor"))
             .initialProperties(SharedProperties::softMetal)
             .properties(AbstractBlock.Settings::nonOpaque)
             .transform(pickaxeOnly())
@@ -196,7 +196,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<CommutatorBlock> GENERATOR_COMMUTATOR = REGISTRATE.block("generator_commutator", CommutatorBlock::new)
             .blockstate(rotorModel(
-                    prov -> modModel(prov, "block/rotor/commutator_base_horizontal")
+                    prov -> modModel(prov, "block/generator/commutator_base_horizontal")
             ))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
@@ -204,26 +204,26 @@ public class ModdedBlocks {
             .defaultLoot()
             .item()
                 .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/rotor/commutator")))
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/commutator")))
                 .build()
             .register();
 
     public static final BlockEntry<GeneratorClutchBlock> GENERATOR_CLUTCH = REGISTRATE.block("generator_clutch", GeneratorClutchBlock::new)
-            .blockstate(alternateDirectionalBlock(state -> state.get(POWERED) ? "block/rotor/clutch_on" : "block/rotor/clutch"))
+            .blockstate(alternateDirectionalBlock(state -> state.get(POWERED) ? "block/generator/clutch_on" : "block/generator/clutch"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(BlockStressDefaults.setImpact(4))
             .defaultLoot()
             .item()
                 .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/rotor/clutch_item")))
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/clutch_item")))
                 .build()
             .register();
 
     public static final BlockEntry<GeneratorHousing> GENERATOR_HOUSING = REGISTRATE.block("generator_housing", GeneratorHousing::new)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder().modelFile(modModel(prov, "block/generator_housing"));
+                        var builder = ConfiguredModel.builder().modelFile(modModel(prov, "block/generator/housing"));
                         int x = 0;
                         int y = 0;
                         var facing = state.get(GeneratorHousing.HORIZONTAL_FACING);
