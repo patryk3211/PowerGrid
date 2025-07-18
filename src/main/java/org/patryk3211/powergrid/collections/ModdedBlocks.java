@@ -240,7 +240,10 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .addLayer(() -> RenderLayer::getCutoutMipped)
             .defaultLoot()
-            .simpleItem()
+            .item()
+                .model((ctx, prov) ->
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/housing")))
+                .build()
             .register();
 
     public static final BlockEntry<LvSwitchBlock> LV_SWITCH = REGISTRATE.block("lv_switch", LvSwitchBlock::new)
@@ -537,36 +540,10 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<WindingBlock> WINDING = REGISTRATE.block("winding", WindingBlock::new)
-            .blockstate((ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
-                    .forAllStates(state -> {
-                        int x = 0, y = 0;
-                        var axis = state.get(AXIS);
-                        var part = state.get(WindingBlock.PART);
-                        var first = state.get(ALONG_FIRST_AXIS);
-                        switch(axis) {
-                            case X -> y = -90;
-                            case Y -> x =  90;
-                        }
-                        if(part == 2) {
-                            if(axis == Direction.Axis.Y) {
-                                x += 180;
-                            } else {
-                                y += 180;
-                            }
-                        }
-                        var model = switch(part) {
-                            case 0, 2 -> modModel(prov, first ? "block/winding/winding_end_v" : "block/winding/winding_end");
-                            case 1 -> modModel(prov, first ? "block/winding/winding_middle_v" : "block/winding/winding_middle");
-                            default -> throw new IllegalStateException();
-                        };
-                        return ConfiguredModel.builder()
-                                .modelFile(model)
-                                .rotationX(x)
-                                .rotationY(y)
-                                .build();
-                    }))
+            .blockstate(windingModel())
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
+            .addLayer(() -> RenderLayer::getCutoutMipped)
             .loot((tables, block) -> tables.addDrop(block, ModdedItems.COPPER_COIL))
             .register();
 
@@ -690,5 +667,77 @@ public class ModdedBlocks {
             };
             return builder.build();
         });
+    }
+
+    private static <T extends WindingBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> windingModel() {
+        return (ctx, prov) -> {
+            var builder = prov.getMultipartBuilder(ctx.getEntry());
+            for(var axis : Direction.Axis.values()) {
+                for(int i = 0; i <= 2; ++i) {
+                    windingModel(axis, i, true, builder, prov);
+                    windingModel(axis, i, false, builder, prov);
+                }
+            }
+        };
+    }
+
+    private static void windingModel(Direction.Axis axis, int part, boolean alongFirst, MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov) {
+        int x = 0, y = 0;
+        switch(axis) {
+            case X -> y = -90;
+            case Y -> x =  90;
+        }
+        if(part == 2) {
+            if(axis == Direction.Axis.Y) {
+                x += 180;
+            } else {
+                y += 180;
+            }
+        }
+        var model = switch(part) {
+            case 0, 2 -> modModel(prov, alongFirst ? "block/winding/end_v" : "block/winding/end");
+            case 1 -> modModel(prov, alongFirst ? "block/winding/middle_v" : "block/winding/middle");
+            default -> throw new IllegalStateException();
+        };
+
+        Function<Boolean, ModelFile.ExistingModelFile> caseModel = half -> {
+            var halfStr = (!half ^ part == 2) ? "p" : "n";
+            return switch(part) {
+                case 0, 2 -> modModel(prov, "block/winding/end" + (alongFirst ? "_v" : "") + "_case_" + halfStr);
+                case 1 -> modModel(prov, "block/winding/middle" + (alongFirst ? "_v" : "") + "_case_" + halfStr);
+                default -> throw new IllegalStateException();
+            };
+        };
+
+        builder.part()
+                    .modelFile(model)
+                    .rotationX(x)
+                    .rotationY(y)
+                .addModel()
+                    .condition(AXIS, axis)
+                    .condition(WindingBlock.PART, part)
+                    .condition(ALONG_FIRST_AXIS, alongFirst)
+                .end();
+        // Case halves
+        builder.part()
+                    .modelFile(caseModel.apply(false))
+                    .rotationX(x)
+                    .rotationY(y)
+                .addModel()
+                    .condition(AXIS, axis)
+                    .condition(WindingBlock.PART, part)
+                    .condition(ALONG_FIRST_AXIS, alongFirst)
+                    .condition(WindingBlock.CASE_LEFT, true)
+                .end();
+        builder.part()
+                    .modelFile(caseModel.apply(true))
+                    .rotationX(x)
+                    .rotationY(y)
+                .addModel()
+                    .condition(AXIS, axis)
+                    .condition(WindingBlock.PART, part)
+                    .condition(ALONG_FIRST_AXIS, alongFirst)
+                    .condition(WindingBlock.CASE_RIGHT, true)
+                .end();
     }
 }

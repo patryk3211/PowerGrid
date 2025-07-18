@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.kinetics.generator.winding;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
@@ -46,28 +45,38 @@ import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+
+import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.HORIZONTAL_FACING;
+import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.UP;
 
 public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntity> {
     public static final EnumProperty<Direction.Axis> AXIS = Properties.AXIS;
     public static final IntProperty PART = IntProperty.of("part", 0, 2);
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
+    public static final BooleanProperty CASE_RIGHT = BooleanProperty.of("right");
+    public static final BooleanProperty CASE_LEFT = BooleanProperty.of("left");
+
     private static final VoxelShaper HORIZONTAL_END_SHAPER = VoxelShaper.forDirectional(VoxelShapes.union(
             createCuboidShape(2, 3, 3, 14, 13, 16),
-            createCuboidShape(0, 6, 6, 16, 10, 10)
+            createCuboidShape(0, 6, 6, 16, 10, 10),
+            createCuboidShape(6, 6, 0, 10, 10, 3)
     ), Direction.SOUTH);
     private static final VoxelShaper VERTICAL_END_SHAPER = VoxelShaper.forDirectional(VoxelShapes.union(
             createCuboidShape(3, 2, 3, 13, 14, 16),
-            createCuboidShape(6, 0, 6, 10, 16, 10)
+            createCuboidShape(6, 0, 6, 10, 16, 10),
+            createCuboidShape(6, 6, 0, 10, 10, 3)
     ), Direction.SOUTH);
 
     private static final VoxelShaper HORIZONTAL_MIDDLE_SHAPER = VoxelShaper.forAxis(
@@ -80,12 +89,10 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     );
 
     private static final TerminalBoundingBox TERMINAL_POSITIVE =
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 6, 6, 3, 10, 10, 4)
-                    .withOrigin(8, 8, 3)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 6, 6, 0, 10, 10, 2)
                     .withColor(IDecoratedTerminal.RED);
     private static final TerminalBoundingBox TERMINAL_NEGATIVE =
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 6, 6, 12, 10, 10, 13)
-                    .withOrigin(8, 8, 13)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 6, 6, 14, 10, 10, 16)
                     .withColor(IDecoratedTerminal.BLUE);
 
     public WindingBlock(Settings settings) {
@@ -103,7 +110,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
                     }
                     terminals[part / 2] = terminalIn;
                     return terminals;
-                }, ALONG_FIRST_AXIS)
+                }, ALONG_FIRST_AXIS, CASE_RIGHT, CASE_LEFT)
                 .build());
     }
 
@@ -199,18 +206,61 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(AXIS, PART, ALONG_FIRST_AXIS);
+        builder.add(AXIS, PART, ALONG_FIRST_AXIS, CASE_RIGHT, CASE_LEFT);
+    }
+
+    public static boolean canConnect(BlockState thisState, boolean positive, BlockState state) {
+        if(state.getBlock() instanceof WindingBlock windingBlock) {
+            // Another winding, check for alignment
+            if(state.get(AXIS) == thisState.get(AXIS) && state.get(ALONG_FIRST_AXIS) == thisState.get(ALONG_FIRST_AXIS)) {
+                // Alignment matches and block entity is valid, these can be connected.
+                return true;
+            }
+        } else if(state.getBlock() instanceof GeneratorHousing) {
+            var windingBlock = (WindingBlock) thisState.getBlock();
+            var parallelAxis = windingBlock.getParallelCheckAxis(thisState);
+            if(parallelAxis.isHorizontal()) {
+                var expectedFacing = Direction.from(parallelAxis, positive ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
+                return state.get(HORIZONTAL_FACING) == expectedFacing;
+            } else {
+                var expectUp = !positive;
+                return state.get(UP) == expectUp;
+            }
+        }
+        return false;
+    }
+
+    public void updateCase(BlockState state, WorldAccess world, BlockPos pos) {
+        var axis = getParallelCheckAxis(state);
+        var stateN = world.getBlockState(pos.offset(axis, -1));
+        var left = canConnect(state, false, stateN);
+
+        var stateP = world.getBlockState(pos.offset(axis, 1));
+        var right = canConnect(state, true, stateP);
+
+        var newState = state.with(CASE_LEFT, left)
+                .with(CASE_RIGHT, right);
+        if(newState != state) {
+            world.setBlockState(pos, newState, 0);
+        }
     }
 
     @Override
     public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
         super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+        updateCase(state, world, pos);
 
         var dir = sourcePos.subtract(pos);
         if(Direction.fromVector(dir.getX(), dir.getY(), dir.getZ()).getAxis() == state.get(AXIS))
             return;
 
         withBlockEntityDo(world, pos, be -> be.onNeighborChanged(sourcePos));
+    }
+
+    @Override
+    public void prepare(BlockState state, WorldAccess world, BlockPos pos, int flags, int maxUpdateDepth) {
+        super.prepare(state, world, pos, flags, maxUpdateDepth);
+        updateCase(state, world, pos);
     }
 
     @Nullable
@@ -324,6 +374,11 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
 
         playRemoveSound(world, pos);
         return ActionResult.SUCCESS;
+    }
+
+    @Override
+    public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
+        return ModdedItems.COPPER_COIL.asStack();
     }
 
     public static float resistance() {
