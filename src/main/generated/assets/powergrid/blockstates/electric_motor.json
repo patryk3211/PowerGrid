@@ -1,26 +1,26 @@
 {
   "variants": {
     "facing=down": {
-      "model": "powergrid:block/electric_motor_vertical",
+      "model": "powergrid:block/electric_motor/block_vertical",
       "x": 90
     },
     "facing=east": {
-      "model": "powergrid:block/electric_motor",
+      "model": "powergrid:block/electric_motor/block",
       "y": 90
     },
     "facing=north": {
-      "model": "powergrid:block/electric_motor"
+      "model": "powergrid:block/electric_motor/block"
     },
     "facing=south": {
-      "model": "powergrid:block/electric_motor",
+      "model": "powergrid:block/electric_motor/block",
       "y": 180
     },
     "facing=up": {
-      "model": "powergrid:block/electric_motor_vertical",
+      "model": "powergrid:block/electric_motor/block_vertical",
       "x": -90
     },
     "facing=west": {
-      "model": "powergrid:block/electric_motor",
+      "model": "powergrid:block/electric_motor/block",
       "y": -90
     }
   }

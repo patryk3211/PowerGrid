@@ -420,15 +420,15 @@ public class ModdedBlocks {
 
     public static final BlockEntry<ElectricMotorBlock> ELECTRIC_MOTOR = REGISTRATE.block("electric_motor", ElectricMotorBlock::new)
             .blockstate(alternateDirectionalBlock(state -> switch(state.get(ElectricMotorBlock.FACING).getAxis()) {
-                        case X, Z -> "block/electric_motor";
-                        case Y -> "block/electric_motor_vertical";
+                        case X, Z -> "block/electric_motor/block";
+                        case Y -> "block/electric_motor/block_vertical";
                     }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(BlockStressDefaults.setCapacity(64))
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_motor_item")))
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_motor/item")))
                 .build()
             .register();
 

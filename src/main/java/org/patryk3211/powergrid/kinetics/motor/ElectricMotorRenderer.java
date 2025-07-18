@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.kinetics.motor;
 
-import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
@@ -29,6 +28,6 @@ public class ElectricMotorRenderer extends KineticBlockEntityRenderer<ElectricMo
 
     @Override
     protected SuperByteBuffer getRotatedModel(ElectricMotorBlockEntity be, BlockState state) {
-        return CachedBufferer.partialFacing(AllPartialModels.SHAFT_HALF, state);
+        return CachedBufferer.block(shaft(state.get(ElectricMotorBlock.FACING).getAxis()));
     }
 }
