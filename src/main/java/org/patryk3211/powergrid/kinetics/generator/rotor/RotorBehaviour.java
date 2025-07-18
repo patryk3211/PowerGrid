@@ -228,6 +228,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity))
                 angularVelocity = 0;
 
+            if(Math.abs(angularVelocity) > 320) {
+                // TODO: Maybe make this a bit more destructive.
+                getWorld().breakBlock(getPos(), false);
+            }
+
             angle = (angle + velocity * 0.3f) % 360;
             if(Float.isNaN(angle))
                 angle = 0;
