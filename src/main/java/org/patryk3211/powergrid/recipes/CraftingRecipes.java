@@ -187,7 +187,15 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("WW")
                     .input('E', AllItems.ELECTRON_TUBE)
                     .input('S', AllItems.EMPTY_SCHEMATIC)
-                    .input('W', RecipeTags.planks()))
+                    .input('W', RecipeTags.planks())),
+
+    GENERATOR_HOUSING = create(ModdedBlocks.GENERATOR_HOUSING)
+            .unlockedBy(() -> AllItems.IRON_SHEET)
+            .shaped(b -> b
+                    .pattern("II")
+                    .pattern("CI")
+                    .input('I', RecipeTags.ironSheet())
+                    .input('C', RecipeTags.copperSheet()))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {

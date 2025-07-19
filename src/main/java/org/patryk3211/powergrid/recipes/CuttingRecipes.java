@@ -55,10 +55,7 @@ public class CuttingRecipes extends ProcessingRecipeGen {
     EMPTY_CIRCUIT = create("empty_circuit_slabs", b -> b
             .output(ModdedItems.EMPTY_CIRCUIT, 2)
             .require(ItemTags.WOODEN_SLABS)
-            .duration(50)),
-
-    GENERATOR_HOUSING = create(ModdedBlocks.TRANSFORMER_CORE::get, b ->
-            b.duration(100).output(ModdedBlocks.GENERATOR_HOUSING.get()))
+            .duration(50))
 
             ;
 
