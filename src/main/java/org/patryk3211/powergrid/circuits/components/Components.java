@@ -125,9 +125,10 @@ public class Components {
             .footprint(2, 2, b -> b
                     .addPad(0, 0, 0, "Anode")
                     .addPad(1, 1, 1, "Cathode")
+                    .withItem(ModdedItems.LED)
                     .withOutline()
             )
-            .item(Items.GLOWSTONE_DUST)
+            .item(ModdedItems.LED)
             .register();
 
     public static final ComponentEntry<ButtonComponent> BUTTON = REGISTRATE.component("button", ButtonComponent::new)

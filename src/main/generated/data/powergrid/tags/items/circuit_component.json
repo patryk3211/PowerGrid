@@ -11,7 +11,7 @@
     "powergrid:andesite_voltage_gauge",
     "powergrid:diode",
     "powergrid:capacitor",
-    "minecraft:glowstone_dust",
+    "powergrid:led",
     "minecraft:stone_button"
   ]
 }

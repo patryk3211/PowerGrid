@@ -197,7 +197,65 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("WW")
                     .input('E', AllItems.ELECTRON_TUBE)
                     .input('S', AllItems.EMPTY_SCHEMATIC)
-                    .input('W', RecipeTags.planks()))
+                    .input('W', RecipeTags.planks())),
+
+    LV_SWITCH = create(ModdedBlocks.LV_SWITCH)
+            .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
+            .shaped(b -> b
+                    .pattern(" L ")
+                    .pattern("CAC")
+                    .input('L', Items.LEVER)
+                    .input('C', RecipeTags.copperNugget())
+                    .input('A', AllBlocks.ANDESITE_CASING)),
+
+    MV_SWITCH = create(ModdedBlocks.MV_SWITCH)
+            .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
+            .shaped(b -> b
+                    .pattern(" L ")
+                    .pattern("SAS")
+                    .input('L', Items.LEVER)
+                    .input('S', RecipeTags.copperSheet())
+                    .input('A', AllBlocks.ANDESITE_CASING)),
+
+    CAPACITOR = create(ModdedItems.CAPACITOR)
+            .unlockedBy(() -> AllItems.IRON_SHEET)
+            .shaped(b -> b
+                    .pattern(" I ")
+                    .pattern("ZPC")
+                    .pattern(" I ")
+                    .input('Z', RecipeTags.zincSheet())
+                    .input('P', Items.PAPER)
+                    .input('C', RecipeTags.copperSheet())
+                    .input('I', RecipeTags.ironSheet())),
+
+    DIODE = create(ModdedItems.DIODE)
+            .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
+            .shaped(b -> b
+                    .pattern("R")
+                    .pattern("C")
+                    .input('R', AllItems.POLISHED_ROSE_QUARTZ)
+                    .input('C', RecipeTags.copperSheet())),
+
+    LED = create(ModdedItems.LED)
+            .unlockedBy(() -> Items.AMETHYST_SHARD)
+            .shaped(b -> b
+                    .pattern("A")
+                    .pattern("I")
+                    .input('A', Items.AMETHYST_SHARD)
+                    .input('I', RecipeTags.ironSheet())),
+
+    WIRE_CUTTER = create(ModdedItems.WIRE_CUTTER)
+            .unlockedBy(() -> AllItems.IRON_SHEET)
+            .shaped(b -> b
+                    .pattern("I ")
+                    .pattern(" I")
+                    .input('I', RecipeTags.ironSheet())),
+
+    ELECTRIC_FAN = create(ModdedBlocks.ELECTRIC_FAN)
+            .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
+            .shapeless(b -> b
+                    .input(ModdedBlocks.ELECTRIC_MOTOR)
+                    .input(AllBlocks.ENCASED_FAN))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {
