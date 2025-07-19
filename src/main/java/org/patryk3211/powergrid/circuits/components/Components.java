@@ -130,6 +130,15 @@ public class Components {
             .item(Items.GLOWSTONE_DUST)
             .register();
 
+    public static final ComponentEntry<ButtonComponent> BUTTON = REGISTRATE.component("button", ButtonComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 1, 0)
+                    .addPad(2, 1, 1)
+                    .withOutline()
+            )
+            .item(Items.STONE_BUTTON)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }
