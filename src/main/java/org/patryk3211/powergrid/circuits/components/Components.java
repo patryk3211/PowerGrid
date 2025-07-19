@@ -135,9 +135,10 @@ public class Components {
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(2, 1, 1)
+                    .withItem(ModdedBlocks.LV_BUTTON::asItem)
                     .withOutline()
             )
-            .item(Items.STONE_BUTTON)
+            .item(ModdedBlocks.LV_BUTTON)
             .register();
 
     @SuppressWarnings("EmptyMethod")

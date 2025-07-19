@@ -88,7 +88,7 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<SwitchBlockEntity> SWITCH =
             REGISTRATE.blockEntity("switch", SwitchBlockEntity::new)
-                    .validBlocks(ModdedBlocks.LV_SWITCH, ModdedBlocks.MV_SWITCH)
+                    .validBlocks(ModdedBlocks.LV_SWITCH, ModdedBlocks.MV_SWITCH, ModdedBlocks.LV_BUTTON)
                     .register();
 
     public static final BlockEntityEntry<HvSwitchBlockEntity> HV_SWITCH =

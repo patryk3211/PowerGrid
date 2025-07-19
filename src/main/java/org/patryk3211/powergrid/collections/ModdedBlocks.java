@@ -47,10 +47,7 @@ import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
@@ -260,9 +257,36 @@ public class ModdedBlocks {
                         });
                         return builder.build();
                     }))
+            .initialProperties(SharedProperties::wooden)
+            .transform(axeOrPickaxe())
             .lang("LV Switch")
             .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/lv_switch_off_v")))
+                .model((ctx, prov) ->
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/lv_switch_off_v")))
+                .build()
+            .register();
+
+    public static final BlockEntry<LvButtonBlock> LV_BUTTON = REGISTRATE.block("lv_button", LvButtonBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
+                        surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            if(vertical) {
+                                builder.modelFile(modModel(prov, "block/switches/lv_button" + suffix + "_v"));
+                            } else {
+                                builder.modelFile(modModel(prov, "block/switches/lv_button" + suffix + "_h"));
+                            }
+                            builder.rotationX(x).rotationY(y);
+                        });
+                        return builder.build();
+                    }))
+            .initialProperties(SharedProperties::wooden)
+            .transform(axeOrPickaxe())
+            .lang("LV Button")
+            .item()
+                .model((ctx, prov) ->
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/lv_button_off_v")))
                 .build()
             .register();
 
@@ -282,8 +306,11 @@ public class ModdedBlocks {
                         return builder.build();
                     }))
             .lang("MV Switch")
+            .initialProperties(SharedProperties::wooden)
+            .transform(axeOrPickaxe())
             .item()
-            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/mv_switch_off_v")))
+            .model((ctx, prov) ->
+                    prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/mv_switch_off_v")))
             .build()
             .register();
 

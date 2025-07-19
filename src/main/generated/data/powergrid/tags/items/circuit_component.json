@@ -12,6 +12,6 @@
     "powergrid:diode",
     "powergrid:capacitor",
     "powergrid:led",
-    "minecraft:stone_button"
+    "powergrid:lv_button"
   ]
 }

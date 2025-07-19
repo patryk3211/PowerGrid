@@ -208,6 +208,15 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('C', RecipeTags.copperNugget())
                     .input('A', AllBlocks.ANDESITE_CASING)),
 
+    LV_BUTTON = create(ModdedBlocks.LV_BUTTON)
+            .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
+            .shaped(b -> b
+                    .pattern(" B ")
+                    .pattern("CAC")
+                    .input('B', Items.STONE_BUTTON)
+                    .input('C', RecipeTags.copperNugget())
+                    .input('A', AllBlocks.ANDESITE_CASING)),
+
     MV_SWITCH = create(ModdedBlocks.MV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
             .shaped(b -> b

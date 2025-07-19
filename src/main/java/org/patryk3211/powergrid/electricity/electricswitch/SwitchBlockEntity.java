@@ -29,9 +29,12 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     private float maxVoltage;
     private boolean switchState;
     private Float overvoltResistance;
+    private boolean isButton;
+    private int buttonTimeout = 0;
 
     public SwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        isButton = ((SwitchBlock) state.getBlock()).isButton;
     }
 
     @Override
@@ -49,12 +52,23 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
             overvoltResistance = world.random.nextFloat() * 1000f;
             wire.setResistance(overvoltResistance);
         }
+        if(isButton && buttonTimeout > 0) {
+            --buttonTimeout;
+            if(buttonTimeout == 0) {
+                var block = (SwitchBlock) getCachedState().getBlock();
+                world.setBlockState(pos, getCachedState().with(SwitchBlock.OPEN, true));
+                block.useSound(world, pos, true);
+                setState(false);
+            }
+        }
     }
 
     public void setState(boolean state) {
         switchState = state;
         if(overvoltResistance == null)
             wire.setState(state);
+        if(isButton && state)
+            buttonTimeout = 10;
         notifyUpdate();
     }
 
@@ -70,6 +84,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
             wire.setResistance(overvoltResistance);
             wire.setState(true);
         }
+        if(isButton)
+            buttonTimeout = tag.getByte("Timeout");
     }
 
     @Override
@@ -81,6 +97,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
         if(overvoltResistance != null) {
             tag.putFloat("Overvolted", overvoltResistance);
         }
+        if(isButton)
+            tag.putByte("Timeout", (byte) buttonTimeout);
     }
 
     @Override
