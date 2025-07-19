@@ -491,7 +491,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     public float windingCurrent() {
-        if(mainBE == null || mainBE.sourceNode == null)
+        if(mainBE == null)
             return 0;
         if(mainBE.ownerPosition != null) {
             var be = world.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
@@ -499,6 +499,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 return be.get().windingCurrent();
             }
         }
+        if(mainBE.sourceNode == null)
+            return 0;
         return mainBE.sourceNode.getCurrent() / mainBE.totalCoilCount;
     }
 
