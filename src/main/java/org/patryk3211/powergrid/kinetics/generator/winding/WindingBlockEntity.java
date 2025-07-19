@@ -494,6 +494,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(mainBE == null)
             return 0;
         if(mainBE.ownerPosition != null) {
+            if(mainBE.ownerPosition == pos) {
+                // A winding cannot be owned by itself.
+                // This is an invalid state that can be caused if the client doesn't receive all data on time.
+                return 0;
+            }
             var be = world.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
             if(be.isPresent()) {
                 return be.get().windingCurrent();
