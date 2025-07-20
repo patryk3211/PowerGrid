@@ -29,7 +29,6 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
     private double prevConductance;
 
     private double prevCurrent;
-    private double r;
 
     public DiodeWire(float resistance, float biasVoltage, IElectricNode cathode, IElectricNode anode) {
         super(anode, cathode);
@@ -47,23 +46,6 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
 
     @Override
     public double conductance() {
-//        var V = potentialDifference();
-//        double conductance;
-//        if(V <= biasVoltage / 2) {
-//            conductance = I_LEAK;
-//        } else {
-//            conductance = 1.0 / resistance;
-//            if(V < biasVoltage) {
-//                conductance *= (V / biasVoltage - 0.5f);
-//            }
-//        }
-//        conductance = conductance * 0.75 + prevCurrent * 0.25;
-//        return conductance;
-
-//        var Ilin = V / resistance * 0.5;
-//        var Ia = (Math.tanh((V - biasVoltage) / 0.1) + 1) * Ilin;
-//        Ia = Ia * 0.75 + prevCurrent * 0.25;
-//        return Ia / (V + biasVoltage) + I_LEAK;
         return currentConductance;
     }
 
@@ -86,24 +68,4 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
         network.updateConductance(this, currentConductance - prevConductance);
         prevConductance = currentConductance;
     }
-
-    @Override
-    public void addResidual(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b, DMatrixRMaj residual) {
-//        var I = potentialDifference() * conductance();
-//        residual.add(node1.getIndex(), 0, -I);
-//        residual.add(node2.getIndex(), 0, I);
-    }
-
-    //    @Override
-//    public void iteration(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj residual, DMatrixRMaj p) {
-//        var V = x.get(node1.getIndex(), 0) - x.get(node2.getIndex(), 0);
-//
-//        var Ia = diodeCurrent(V);
-//        var diff = Ia / (V + biasVoltage) - r;
-//        p.add(node1.getIndex(), 0, -diff);
-//        p.add(node2.getIndex(), 0, diff);
-//        residual.add(node1.getIndex(), 0, -diff);
-//        residual.add(node2.getIndex(), 0, diff);
-//        r += diff;
-//    }
 }
