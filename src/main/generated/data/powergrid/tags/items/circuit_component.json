@@ -13,6 +13,6 @@
     "powergrid:capacitor",
     "powergrid:led",
     "powergrid:lv_button",
-    "minecraft:comparator"
+    "powergrid:potentiometer"
   ]
 }

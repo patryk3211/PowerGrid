@@ -18,7 +18,11 @@ package org.patryk3211.powergrid.circuits.components;
 import com.google.common.collect.ImmutableCollection;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
+import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.utility.Components;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.MathHelper;
@@ -34,6 +38,7 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.network.packets.UpdateComponentBiPacket;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
@@ -41,7 +46,7 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-public class PotentiometerComponent extends OrientableComponent implements IInteractableComponent {
+public class PotentiometerComponent extends OrientableComponent implements IInteractableComponent, IRenderedComponent {
     public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "potentiometer_resistance", 1000, 100, 100000);
     public static final IntProperty VALUE = new IntProperty(PowerGrid.MOD_ID, "potentiometer_value", 50, 0, 100);
 
@@ -112,5 +117,17 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
 
         wire1.setResistance(R * V);
         wire2.setResistance(R * (1 - V));
+    }
+
+    @Override
+    public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
+        var buffer = CachedBufferer.partial(ModdedPartialModels.POTENTIOMETER_KNOB, be.getCachedState());
+        var angle = 135 - 135 * 2 * (placed.get(VALUE) / 100.0f);
+        buffer
+                .translate(2.5 / 16, 0, 2.5 / 16)
+                .rotateY(angle)
+                .translate(-2.5 / 16, 0, -2.5 / 16)
+                .light(light)
+                .renderInto(ms, bufferSource.getBuffer(RenderLayer.getSolid()));
     }
 }

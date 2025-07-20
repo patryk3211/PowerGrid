@@ -252,6 +252,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('A', Items.AMETHYST_SHARD)
                     .input('I', RecipeTags.ironSheet())),
 
+    POTENTIOMETER = create(ModdedItems.POTENTIOMETER)
+            .unlockedBy(() -> ModdedItems.RESISTOR)
+            .shaped(b -> b
+                    .pattern("A")
+                    .pattern("N")
+                    .pattern("C")
+                    .input('A', AllItems.ANDESITE_ALLOY)
+                    .input('N', RecipeTags.copperNugget())
+                    .input('C', RecipeTags.coal())),
+
     WIRE_CUTTER = create(ModdedItems.WIRE_CUTTER)
             .unlockedBy(() -> AllItems.IRON_SHEET)
             .shaped(b -> b

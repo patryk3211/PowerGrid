@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.simibubi.create.AllItems;
-import net.minecraft.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -146,9 +145,10 @@ public class Components {
                     .addPad(1, 2, 0)
                     .addPad(2, 3, 1)
                     .addPad(3, 2, 2)
+                    .withItem(ModdedItems.POTENTIOMETER)
                     .withOutline()
             )
-            .item(Items.COMPARATOR)
+            .item(ModdedItems.POTENTIOMETER)
             .register();
 
     @SuppressWarnings("EmptyMethod")
