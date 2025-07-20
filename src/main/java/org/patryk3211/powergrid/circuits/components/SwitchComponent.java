@@ -61,11 +61,7 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
 
     @Override
     public VoxelShape getShape(@NotNull PlacedComponent placed) {
-        var footprint = footprint(placed);
-        return VoxelShapes.cuboid(
-                placed.x / 16f, BASE_Y, placed.y / 16f,
-                (placed.x + footprint.getWidth()) / 16f, BASE_Y + 2 / 16f, (placed.y + footprint.getHeight()) / 16f
-        );
+        return IInteractableComponent.extrudedFootprint(placed, 2 / 16f);
     }
 
     @Override

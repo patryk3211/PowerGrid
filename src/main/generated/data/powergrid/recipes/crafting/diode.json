@@ -10,8 +10,7 @@
     }
   },
   "pattern": [
-    "R",
-    "C"
+    "RC"
   ],
   "result": {
     "item": "powergrid:diode"

@@ -105,6 +105,8 @@
   "powergrid.component.property.led_green": "uǝǝɹ⅁",
   "powergrid.component.property.led_red": "pǝᴚ",
   "powergrid.component.property.orientation": "uoıʇɐʇuǝıɹO",
+  "powergrid.component.property.potentiometer_resistance": "ǝɔuɐʇsısǝᴚ",
+  "powergrid.component.property.potentiometer_value": "buıʇʇǝS",
   "powergrid.component.property.redstone_emitter_digital": "ןɐʇıbıᗡ",
   "powergrid.component.property.relay_state": "ǝʇɐʇS",
   "powergrid.component.property.relay_threshold": "ǝbɐʇןoΛ pןoɥsǝɹɥ⟘",

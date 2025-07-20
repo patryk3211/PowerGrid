@@ -141,6 +141,16 @@ public class Components {
             .item(ModdedBlocks.LV_BUTTON)
             .register();
 
+    public static final ComponentEntry<PotentiometerComponent> POTENTIOMETER = REGISTRATE.component("potentiometer", PotentiometerComponent::new)
+            .footprint(5, 5, b -> b
+                    .addPad(1, 2, 0)
+                    .addPad(2, 3, 1)
+                    .addPad(3, 2, 2)
+                    .withOutline()
+            )
+            .item(Items.COMPARATOR)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }

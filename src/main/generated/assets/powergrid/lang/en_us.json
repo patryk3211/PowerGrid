@@ -105,6 +105,8 @@
   "powergrid.component.property.led_green": "Green",
   "powergrid.component.property.led_red": "Red",
   "powergrid.component.property.orientation": "Orientation",
+  "powergrid.component.property.potentiometer_resistance": "Resistance",
+  "powergrid.component.property.potentiometer_value": "Setting",
   "powergrid.component.property.redstone_emitter_digital": "Digital",
   "powergrid.component.property.relay_state": "State",
   "powergrid.component.property.relay_threshold": "Threshold Voltage",

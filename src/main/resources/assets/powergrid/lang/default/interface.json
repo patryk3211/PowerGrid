@@ -92,6 +92,9 @@
   "powergrid.component.property.led_green": "Green",
   "powergrid.component.property.led_blue": "Blue",
 
+  "powergrid.component.property.potentiometer_resistance": "Resistance",
+  "powergrid.component.property.potentiometer_value": "Setting",
+
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
 

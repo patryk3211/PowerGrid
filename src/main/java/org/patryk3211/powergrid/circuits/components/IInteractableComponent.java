@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.circuits.components;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -26,4 +27,12 @@ public interface IInteractableComponent {
     VoxelShape getShape(@NotNull PlacedComponent placed);
 
     ActionResult use(CircuitBoardBlockEntity be, PlacedComponent component, PlayerEntity player);
+
+    static VoxelShape extrudedFootprint(@NotNull PlacedComponent placed, float height) {
+        var footprint = placed.footprint();
+        return VoxelShapes.cuboid(
+                placed.x / 16f, Component.BASE_Y, placed.y / 16f,
+                (placed.x + footprint.getWidth()) / 16f, Component.BASE_Y + height, (placed.y + footprint.getHeight()) / 16f
+        );
+    }
 }

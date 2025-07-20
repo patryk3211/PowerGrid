@@ -57,7 +57,7 @@ public class LEDComponent extends OrientableComponent implements IRenderedCompon
         placed.add(wire);
         // 7.5mA is max current, 5 mA is target for max intensity
         thermals.builder()
-                .setMaxPower(0.050f, 100f)
+                .setMaxPower(0.025f, 125f)
                 .setThermalMass(0.00025f)
                 .addHeatSource(wire);
     }

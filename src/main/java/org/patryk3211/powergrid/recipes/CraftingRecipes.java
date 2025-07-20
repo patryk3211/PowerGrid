@@ -240,8 +240,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
     DIODE = create(ModdedItems.DIODE)
             .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
             .shaped(b -> b
-                    .pattern("R")
-                    .pattern("C")
+                    .pattern("RC")
                     .input('R', AllItems.POLISHED_ROSE_QUARTZ)
                     .input('C', RecipeTags.copperSheet())),
 
