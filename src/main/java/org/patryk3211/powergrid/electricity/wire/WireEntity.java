@@ -30,13 +30,13 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.registry.Registries;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -122,11 +122,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         temperatureUpdate();
 
         if(isOverheated()) {
-            if(wire != null) {
-                // Remove to prevent power transfer in the 5 particle ticks.
-                wire.remove();
-                wire = null;
-            }
+            // Remove to prevent power transfer in the 5 particle ticks.
+            dropWire();
             if(!world.isClient) {
                 if(++despawnTime >= 5) {
                     // Break without dropping items.
@@ -266,6 +263,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     public void makeWire() {
         if(wire != null) {
+//            GlobalElectricNetworks.destroyWire(getWorld(), wire);
             wire.remove();
         }
 
@@ -274,11 +272,17 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             return;
 
         var world = getWorld();
-        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
+        try {
+            wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
+        } catch(RuntimeException e) {
+            kill();
+            PowerGrid.LOGGER.error("Failed to create wire for entity", e);
+        }
     }
 
     public void dropWire() {
         if(wire != null) {
+//            GlobalElectricNetworks.destroyWire(getWorld(), wire);
             wire.remove();
             wire = null;
         }

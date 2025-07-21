@@ -30,6 +30,12 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
+    public void addNode(IElectricNode node) {
+        super.addNode(node);
+        graph.addNode(node);
+    }
+
+    @Override
     public void removeNode(INode node) {
         super.removeNode(node);
         if(node instanceof IElectricNode enode)
@@ -39,7 +45,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     @Override
     public void addWire(AbstractElectricWire wire) {
         super.addWire(wire);
-//        graph.connect(wire.node1, wire.node2, wire);
+        graph.connect(wire.node1, wire.node2, wire);
     }
 
     @Override

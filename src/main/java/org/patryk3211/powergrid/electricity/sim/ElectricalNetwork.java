@@ -43,6 +43,8 @@ public class ElectricalNetwork {
 
     private boolean dirty;
     private boolean recalculating;
+    private double conductanceDelta = 0;
+    private int conductanceUpdates = 0;
 
     public static Logger LOGGER = null;
 
@@ -67,6 +69,8 @@ public class ElectricalNetwork {
     }
 
     public void addNode(IElectricNode node) {
+        if(nodes.contains(node))
+            return;
         node.assignIndex(nodes.size());
         node.setNetwork(this);
         nodes.add(node);
@@ -84,7 +88,7 @@ public class ElectricalNetwork {
     }
 
     public void removeNode(INode node) {
-        if(nodes.get(node.getIndex()) != node)
+        if(node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
             // This node is not actually in this network.
             return;
 
@@ -142,9 +146,11 @@ public class ElectricalNetwork {
     }
 
     public void updateConductance(AbstractElectricWire wire, double change) {
-        if(conductanceMatrix == null || dirty)
+        if(conductanceMatrix == null || dirty || change == 0)
             return;
 
+        conductanceDelta += Math.abs(change);
+        ++conductanceUpdates;
         if(wire.node1 != null && wire.node2 != null) {
             var index1 = wire.node1.getIndex();
             var index2 = wire.node2.getIndex();
@@ -243,6 +249,8 @@ public class ElectricalNetwork {
 
     private void populateConductanceMatrix() {
         conductanceMatrix.zero();
+        conductanceDelta = 0;
+        conductanceUpdates = 0;
         List<AbstractElectricWire> staleWires = new ArrayList<>();
         for(var wire : wires) {
             var G = wire.conductance();
@@ -332,6 +340,12 @@ public class ElectricalNetwork {
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix();
             populateCurrentMatrix();
+        } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
+            // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
+            // the matrices from scratch.
+            LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
+            populateConductanceMatrix();
+            populateCurrentMatrix();
         }
 
         if(printState) {
@@ -345,6 +359,10 @@ public class ElectricalNetwork {
         }
         for(var node : nodes) {
             if(node instanceof IElectricNode enode) {
+                if(node.getIndex() >= result.getNumRows()) {
+                    // Why is it here???
+                    continue;
+                }
                 float value = (float) result.get(node.getIndex(), 0);
                 if(Float.isNaN(value)) {
                     if(!recalculating) {

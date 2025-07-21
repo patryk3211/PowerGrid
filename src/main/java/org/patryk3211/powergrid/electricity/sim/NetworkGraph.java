@@ -38,7 +38,7 @@ public class NetworkGraph {
         }
     }
 
-    private record Connection(WireEntity entity, ElectricWire wire) { }
+    private record Connection(AbstractElectricWire wire) { }
 
     private final Map<IElectricNode, Node> nodes = new HashMap<>();
     private final Map<IElectricNode, Integer> countOverrides = new HashMap<>();
@@ -69,14 +69,14 @@ public class NetworkGraph {
         }
     }
 
-    public void connect(IElectricNode node1, IElectricNode node2, WireEntity entity, @Nullable ElectricWire wire) {
+    public void connect(IElectricNode node1, IElectricNode node2, @Nullable AbstractElectricWire wire) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return;
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
 
-        var conn = new Connection(entity, wire);
+        var conn = new Connection(wire);
         object1.connections.put(object2, conn);
         object2.connections.put(object1, conn);
     }
@@ -92,23 +92,25 @@ public class NetworkGraph {
         object2.connections.remove(object1);
     }
 
-    public WireEntity getEntity(IElectricNode node1, IElectricNode node2) {
-        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
-            return null;
-
-        var object1 = nodes.get(node1);
-        var object2 = nodes.get(node2);
-        return object1.connections.get(object2).entity;
-    }
+//    public WireEntity getEntity(IElectricNode node1, IElectricNode node2) {
+//        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
+//            return null;
+//
+//        var object1 = nodes.get(node1);
+//        var object2 = nodes.get(node2);
+//        return object1.connections.get(object2).entity;
+//    }
 
     @Nullable
-    public ElectricWire getWire(IElectricNode node1, IElectricNode node2) {
+    public AbstractElectricWire getWire(IElectricNode node1, IElectricNode node2) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return null;
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
-        return object1.connections.get(object2).wire;
+
+        var conn = object1.connections.get(object2);
+        return conn == null ? null : conn.wire;
     }
 
     @NotNull

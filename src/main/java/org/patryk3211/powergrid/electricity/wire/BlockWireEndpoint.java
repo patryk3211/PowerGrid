@@ -130,6 +130,11 @@ public class BlockWireEndpoint implements IWireEndpoint {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Block(pos=%s, n=%d)", pos, terminal);
+    }
+
     public ITerminalPlacement getTerminalPlacement(World world) {
         var electric = getElectricBlock(world);
         var state = world.getBlockState(pos);

@@ -18,8 +18,12 @@ package org.patryk3211.powergrid.electricity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.collections.ModdedTags;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.*;
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -66,66 +70,203 @@ public class GlobalElectricNetworks {
         return networkList.newNetwork();
     }
 
-    public static ElectricWire makeSimpleWire(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        var node1 = endpoint1.getNode(world);
-        var node2 = endpoint2.getNode(world);
-
-        if(node1 == node2)
-            return null;
-        if(node1 == null || node2 == null)
-            return null;
-
-        // Put both nodes into the same network.
-        ElectricalNetwork network;
-        if(node1.getNetwork() == null && node2.getNetwork() == null) {
-            network = GlobalElectricNetworks.createNetwork(world);
-            endpoint1.joinNetwork(world, network);
-            endpoint2.joinNetwork(world, network);
-        } else if(node1.getNetwork() == null) {
-            network = node2.getNetwork();
-            endpoint1.joinNetwork(world, network);
-        } else if(node2.getNetwork() == null) {
-            network = node1.getNetwork();
-            endpoint2.joinNetwork(world, network);
-        } else if(node1.getNetwork() != node2.getNetwork()) {
-            if(node1.getNetwork().size() >= node2.getNetwork().size()) {
-                network = node1.getNetwork();
-                network.merge(node2.getNetwork());
-            } else {
-                network = node2.getNetwork();
-                network.merge(node1.getNetwork());
-            }
-        } else {
-            network = node1.getNetwork();
-        }
-
-        var wire = new OwnedElectricWire(forEntity.getResistance(), node1, node2, forEntity);
-        network.addWire(wire);
-
-        var worldNetworks = getWorldNetworks(world);
-        worldNetworks.globalGraph.connect(node1, node2, forEntity, wire);
-        return wire;
+    public static void splitTransmissionLine(World world, TransmissionLine line, IElectricNode atNode) {
+        PowerGrid.LOGGER.debug("Splitting transmission line at {}", atNode);
+        line.splitAt(atNode);
     }
 
-    public static ElectricWire makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public static void splitTransmissionLine(World world, IElectricNode node) {
+        var worldNetworks = getWorldNetworks(world);
+        var connCount = worldNetworks.globalGraph.connectionCount(node);
+        if(connCount == 0) {
+            var line = worldNetworks.transmissionLineNodes.get(node);
+            if(line != null) {
+                splitTransmissionLine(world, line, node);
+                return;
+            }
+        }
+        if(connCount <= 2)
+            return;
+        // If there are more than 2 connections from the node we might have hooked into a transmission line.
+        var connectedNodes = worldNetworks.globalGraph.getConnectedNodes(node);
+        TransmissionLine line = null;
+        for(var connected : connectedNodes) {
+            var wire = worldNetworks.globalGraph.getWire(node, connected);
+            if(wire instanceof TransmissionLine wireLine) {
+                if(line == null) {
+                    line = wireLine;
+                } else if(line == wireLine) {
+                    // Middle of a transmission line.
+                    splitTransmissionLine(world, line, node);
+                }
+            }
+        }
+    }
+
+    public static TransmissionLine getLine(WireEntity entity) {
+        var wire = entity.getWire();
+        if(wire == null)
+            return null;
+        var worldNetworks = getWorldNetworks(entity.getWorld());
+        var line = worldNetworks.transmissionLineNodes.get(wire.getNode1());
+        if(line != null && line.isPart(wire)) {
+            return line;
+        }
+        line = worldNetworks.transmissionLineNodes.get(wire.getNode2());
+        if(line != null && line.isPart(wire)) {
+            return line;
+        }
+        // If that fails, the only other option is that the line has one segment (or doesn't exist).
+        var lineWire = worldNetworks.globalGraph.getWire(wire.getNode1(), wire.getNode2());
+        if(lineWire instanceof TransmissionLine line1) {
+            return line1;
+        }
+        return null;
+    }
+
+    public static OwnedElectricWire makeTransmissionLine(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+        // This method needs to ensure proper ordering of segments in the transmission line.
+        var worldNetworks = getWorldNetworks(world);
+
+        var network = unifyNetwork(world, endpoint1, endpoint2);
+        if(network == null)
+            return null;
+
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
 
-        if(node1 == node2)
-            return null;
-        if(node1 == null || node2 == null)
-            return null;
+        int nConns1 = worldNetworks.connectionCount(endpoint1);
+        int nConns2 = worldNetworks.connectionCount(endpoint2);
+        var connected1 = nConns1 == 1 ? worldNetworks.globalGraph.getConnectedNodes(node1).get(0) : null;
+        var connected2 = nConns2 == 1 ? worldNetworks.globalGraph.getConnectedNodes(node2).get(0) : null;
+
+        TransmissionLine line = null;
+        TransmissionLinePart simpleWire = null;
+        if(nConns1 == 1) {
+            // We can attach to an existing line on endpoint1
+            var wire = worldNetworks.globalGraph.getWire(node1, connected1);
+            if(wire instanceof TransmissionLine curLine) {
+                line = curLine;
+                simpleWire = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line);
+                // We can extend this line by the second node.
+                PowerGrid.LOGGER.debug("Extending line at end by wire {}, terminating node is now {}", simpleWire, node2);
+                if(line.getNode2() != node1)
+                    line.flip();
+                line.addLastSegment(simpleWire);
+            }
+        } else if(nConns1 == 0) {
+            // Possibly part of a transmission line
+            // After splitting, the transmission line might not be in the same network.
+            splitTransmissionLine(world, node1);
+        }
+        if(nConns2 == 1) {
+            // We can attach to an existing line on endpoint2
+            var wire = worldNetworks.globalGraph.getWire(node2, connected2);
+            if(wire instanceof TransmissionLine curLine) {
+                if(line != null) {
+                    // We need to merge lines.
+                    PowerGrid.LOGGER.debug("Merging transmission lines between {} and {}", node1, node2);
+                    if(curLine.getNode1() != line.getNode2())
+                        curLine.flip();
+                    line.merge(curLine);
+                } else {
+                    line = curLine;
+                    simpleWire = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line);
+                    PowerGrid.LOGGER.debug("Extending line at beginning by wire {}, starting node is now {}", simpleWire, node1);
+                    // We can extend this line by the first node.
+                    if(line.getNode1() != node2)
+                        line.flip();
+                    line.addFirstSegment(simpleWire);
+                }
+            }
+        } else if(nConns2 == 0) {
+            // Possibly part of a transmission line
+            splitTransmissionLine(world, node2);
+        }
+        if(line == null) {
+            simpleWire = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, null);
+            line = new TransmissionLine(forEntity.getResistance(), node1, node2, simpleWire, worldNetworks);
+            simpleWire.setLine(line);
+            network.addWire(line);
+            PowerGrid.LOGGER.debug("New transmission line between {} and {}", node1, node2);
+        }
+        return simpleWire;
+    }
+
+    @Nullable
+    private static ElectricalNetwork unifyNetwork(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+        var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
 
         var worldNetworks = getWorldNetworks(world);
         worldNetworks.add(endpoint1);
         worldNetworks.add(endpoint2);
 
-        return makeSimpleWire(world, endpoint1, endpoint2, forEntity);
+        if(node1 == node2)
+            return null;
+        if(node1 == null || node2 == null)
+            return null;
+
+        var line1 = worldNetworks.transmissionLineNodes.get(node1);
+        var line2 = worldNetworks.transmissionLineNodes.get(node2);
+
+        var net1 = line1 == null ? node1.getNetwork() : line1.getNetwork();
+        var net2 = line2 == null ? node2.getNetwork() : line2.getNetwork();
+
+        // Put both nodes into the same network.
+        ElectricalNetwork network;
+        if(net1 == null && net2 == null) {
+            network = GlobalElectricNetworks.createNetwork(world);
+            endpoint1.joinNetwork(world, network);
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 == null) {
+            network = net2;
+            endpoint1.joinNetwork(world, network);
+        } else if(net2 == null) {
+            network = net1;
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 != net2) {
+            if(net1.size() >= net2.size()) {
+                network = net1;
+                network.merge(net2);
+            } else {
+                network = net2;
+                network.merge(net1);
+            }
+        } else {
+            network = net1;
+        }
+
+        return network;
     }
+
+    private static OwnedElectricWire makeSimpleWire(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+        var network = unifyNetwork(world, endpoint1, endpoint2);
+        if(network == null)
+            return null;
+
+        var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
+
+        var wire = new OwnedElectricWire(forEntity.getResistance(), node1, node2, forEntity);
+        network.addWire(wire);
+        return wire;
+    }
+
+    public static ElectricWire makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+//        return makeSimpleWire(world, endpoint1, endpoint2, forEntity);
+        return makeTransmissionLine(world, endpoint1, endpoint2, forEntity);
+    }
+
+//    public static void destroyWire(World world, ElectricWire wire) {
+//        var worldNetworks = getWorldNetworks(world);
+//        TransmissionLine.tryDestroy(worldNetworks, wire);
+//    }
 
     public static class WorldNetworks {
         public final World world;
         public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
+        public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
         public final NetworkGraph globalGraph = new NetworkGraph();
 
         public WorldNetworks(World world) {
@@ -155,6 +296,14 @@ public class GlobalElectricNetworks {
 
         public void removeAll(Collection<ElectricalNetwork> networks) {
             subnetworks.removeAll(networks);
+        }
+
+        public void assignTransmissionLine(IElectricNode node, @Nullable TransmissionLine line) {
+            if(line != null) {
+                transmissionLineNodes.put(node, line);
+            } else {
+                transmissionLineNodes.remove(node);
+            }
         }
     }
 }
