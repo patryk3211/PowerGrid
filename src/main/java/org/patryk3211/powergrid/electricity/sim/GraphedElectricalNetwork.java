@@ -51,7 +51,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     @Override
     public void removeWire(AbstractElectricWire wire) {
         super.removeWire(wire);
-        graph.disconnect(wire.node1, wire.node2);
+        graph.disconnect(wire.node1, wire.node2, wire);
     }
 
     public NetworkGraph getGraph() {

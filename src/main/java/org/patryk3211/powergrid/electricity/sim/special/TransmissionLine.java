@@ -41,26 +41,6 @@ public class TransmissionLine extends ElectricWire {
         this.global = global;
     }
 
-    public static void tryDestroy(GlobalElectricNetworks.WorldNetworks global, ElectricWire wire) {
-        // First, try to remove segment from long lines.
-        TransmissionLine line = null;
-        line = global.transmissionLineNodes.get(wire.getNode1());
-        if(line != null && line.isPart(wire)) {
-            line.removeSegment(wire);
-            return;
-        }
-        line = global.transmissionLineNodes.get(wire.getNode2());
-        if(line != null && line.isPart(wire)) {
-            line.removeSegment(wire);
-            return;
-        }
-        // If that fails, the only other option is that the line has one segment (or doesn't exist).
-        var lineWire = global.globalGraph.getWire(wire.getNode1(), wire.getNode2());
-        if(lineWire instanceof TransmissionLine line1) {
-            line1.remove();
-        }
-    }
-
     public void addLastSegment(TransmissionLinePart wire) {
         assert wire.getNode1() == getNode2();
         wire.setLine(this);
@@ -162,28 +142,28 @@ public class TransmissionLine extends ElectricWire {
         }
     }
 
-    public void rewire() {
-        if(segments.isEmpty()) {
-            remove();
-            return;
-        }
-
-        double totalResistance = 0;
-        for(var segment : segments) {
-            totalResistance += segment.getResistance();
-        }
-        setResistance(totalResistance);
-
-        for(int i = 0; i < segments.size() - 1; ++i) {
-            var segment = segments.get(i);
-            var node = segment.getNode2();
-            if(node.getNetwork() != null)
-                node.getNetwork().removeNode(node);
-            global.assignTransmissionLine(node, this);
-        }
-        global.assignTransmissionLine(this.node1, null);
-        global.assignTransmissionLine(this.node2, null);
-    }
+//    public void rewire() {
+//        if(segments.isEmpty()) {
+//            remove();
+//            return;
+//        }
+//
+//        double totalResistance = 0;
+//        for(var segment : segments) {
+//            totalResistance += segment.getResistance();
+//        }
+//        setResistance(totalResistance);
+//
+//        for(int i = 0; i < segments.size() - 1; ++i) {
+//            var segment = segments.get(i);
+//            var node = segment.getNode2();
+//            if(node.getNetwork() != null)
+//                node.getNetwork().removeNode(node);
+//            global.assignTransmissionLine(node, this);
+//        }
+//        global.assignTransmissionLine(this.node1, null);
+//        global.assignTransmissionLine(this.node2, null);
+//    }
 
     public boolean isPart(ElectricWire wire) {
         return segments.contains(wire);

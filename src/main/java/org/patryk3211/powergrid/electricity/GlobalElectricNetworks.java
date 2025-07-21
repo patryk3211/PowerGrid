@@ -82,23 +82,6 @@ public class GlobalElectricNetworks {
             var line = worldNetworks.transmissionLineNodes.get(node);
             if(line != null) {
                 splitTransmissionLine(world, line, node);
-                return;
-            }
-        }
-        if(connCount <= 2)
-            return;
-        // If there are more than 2 connections from the node we might have hooked into a transmission line.
-        var connectedNodes = worldNetworks.globalGraph.getConnectedNodes(node);
-        TransmissionLine line = null;
-        for(var connected : connectedNodes) {
-            var wire = worldNetworks.globalGraph.getWire(node, connected);
-            if(wire instanceof TransmissionLine wireLine) {
-                if(line == null) {
-                    line = wireLine;
-                } else if(line == wireLine) {
-                    // Middle of a transmission line.
-                    splitTransmissionLine(world, line, node);
-                }
             }
         }
     }
@@ -117,7 +100,7 @@ public class GlobalElectricNetworks {
             return line;
         }
         // If that fails, the only other option is that the line has one segment (or doesn't exist).
-        var lineWire = worldNetworks.globalGraph.getWire(wire.getNode1(), wire.getNode2());
+        var lineWire = worldNetworks.globalGraph.getFirstWire(wire.getNode1(), wire.getNode2());
         if(lineWire instanceof TransmissionLine line1) {
             return line1;
         }
@@ -140,19 +123,13 @@ public class GlobalElectricNetworks {
         var connected1 = nConns1 == 1 ? worldNetworks.globalGraph.getConnectedNodes(node1).get(0) : null;
         var connected2 = nConns2 == 1 ? worldNetworks.globalGraph.getConnectedNodes(node2).get(0) : null;
 
-        TransmissionLine line = null;
-        TransmissionLinePart simpleWire = null;
+        TransmissionLine line1 = null, line2 = null;
+        TransmissionLinePart linePart = null;
         if(nConns1 == 1) {
             // We can attach to an existing line on endpoint1
-            var wire = worldNetworks.globalGraph.getWire(node1, connected1);
+            var wire = worldNetworks.globalGraph.getFirstWire(node1, connected1);
             if(wire instanceof TransmissionLine curLine) {
-                line = curLine;
-                simpleWire = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line);
-                // We can extend this line by the second node.
-                PowerGrid.LOGGER.debug("Extending line at end by wire {}, terminating node is now {}", simpleWire, node2);
-                if(line.getNode2() != node1)
-                    line.flip();
-                line.addLastSegment(simpleWire);
+                line1 = curLine;
             }
         } else if(nConns1 == 0) {
             // Possibly part of a transmission line
@@ -161,36 +138,56 @@ public class GlobalElectricNetworks {
         }
         if(nConns2 == 1) {
             // We can attach to an existing line on endpoint2
-            var wire = worldNetworks.globalGraph.getWire(node2, connected2);
+            var wire = worldNetworks.globalGraph.getFirstWire(node2, connected2);
             if(wire instanceof TransmissionLine curLine) {
-                if(line != null) {
-                    // We need to merge lines.
-                    PowerGrid.LOGGER.debug("Merging transmission lines between {} and {}", node1, node2);
-                    if(curLine.getNode1() != line.getNode2())
-                        curLine.flip();
-                    line.merge(curLine);
+                line2 = curLine;
+                if(line1 != null) {
+                    if(line1 != line2) {
+                        linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line1);
+                        // We can extend the first line by the second node.
+                        PowerGrid.LOGGER.debug("Extending line at end by wire {}, terminating node is now {}", linePart, node2);
+                        if(line1.getNode2() != node1)
+                            line1.flip();
+                        line1.addLastSegment(linePart);
+                        // We need to merge lines.
+                        PowerGrid.LOGGER.debug("Merging transmission lines between {} and {}", node1, node2);
+                        if (curLine.getNode1() != line1.getNode2())
+                            curLine.flip();
+                        line1.merge(curLine);
+                    } else {
+                        // We are merging two ends of a single line, this cannot happen or things will break.
+                        line1 = null;
+                        line2 = null;
+                    }
                 } else {
-                    line = curLine;
-                    simpleWire = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line);
-                    PowerGrid.LOGGER.debug("Extending line at beginning by wire {}, starting node is now {}", simpleWire, node1);
+                    linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line2);
+                    PowerGrid.LOGGER.debug("Extending line at beginning by wire {}, starting node is now {}", linePart, node1);
                     // We can extend this line by the first node.
-                    if(line.getNode1() != node2)
-                        line.flip();
-                    line.addFirstSegment(simpleWire);
+                    if(line2.getNode1() != node2)
+                        line2.flip();
+                    line2.addFirstSegment(linePart);
                 }
             }
         } else if(nConns2 == 0) {
             // Possibly part of a transmission line
             splitTransmissionLine(world, node2);
         }
-        if(line == null) {
-            simpleWire = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, null);
-            line = new TransmissionLine(forEntity.getResistance(), node1, node2, simpleWire, worldNetworks);
-            simpleWire.setLine(line);
+        if(line1 != null) {
+            linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line1);
+            // We can extend this line by the second node.
+            PowerGrid.LOGGER.debug("Extending line at end by wire {}, terminating node is now {}", linePart, node2);
+            if(line1.getNode2() != node1)
+                line1.flip();
+            line1.addLastSegment(linePart);
+        }
+        if(line1 == null && line2 == null) {
+            linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, null);
+            var line = new TransmissionLine(forEntity.getResistance(), node1, node2, linePart, worldNetworks);
+            linePart.setLine(line);
             network.addWire(line);
             PowerGrid.LOGGER.debug("New transmission line between {} and {}", node1, node2);
         }
-        return simpleWire;
+        return linePart;
     }
 
     @Nullable

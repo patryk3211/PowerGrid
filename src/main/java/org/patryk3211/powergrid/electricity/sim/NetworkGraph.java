@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.electricity.sim;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +27,7 @@ import java.util.Map;
 public class NetworkGraph {
     private static class Node {
         public final IElectricNode node;
-        public final Map<Node, Connection> connections;
+        public final Map<Node, List<AbstractElectricWire>> connections;
         public boolean isKept;
 
         public Node(IElectricNode node) {
@@ -38,21 +37,12 @@ public class NetworkGraph {
         }
     }
 
-    private record Connection(AbstractElectricWire wire) { }
-
     private final Map<IElectricNode, Node> nodes = new HashMap<>();
-    private final Map<IElectricNode, Integer> countOverrides = new HashMap<>();
 
     public void addNode(IElectricNode node) {
         if(nodes.containsKey(node))
             return;
         nodes.put(node, new Node(node));
-    }
-
-    public void keepNode(IElectricNode node) {
-        if(!nodes.containsKey(node))
-            return;
-        nodes.get(node).isKept = true;
     }
 
     public void removeNode(IElectricNode node) {
@@ -69,40 +59,40 @@ public class NetworkGraph {
         }
     }
 
-    public void connect(IElectricNode node1, IElectricNode node2, @Nullable AbstractElectricWire wire) {
+    public void connect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return;
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
 
-        var conn = new Connection(wire);
-        object1.connections.put(object2, conn);
-        object2.connections.put(object1, conn);
+        object1.connections.computeIfAbsent(object2, key -> new ArrayList<>()).add(wire);
+        object2.connections.computeIfAbsent(object1, key -> new ArrayList<>()).add(wire);
     }
 
-    public void disconnect(IElectricNode node1, IElectricNode node2) {
+    public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return;
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
 
-        object1.connections.remove(object2);
-        object2.connections.remove(object1);
+        var conns1 = object1.connections.get(object2);
+        if(conns1 != null) {
+            conns1.remove(wire);
+            if(conns1.isEmpty())
+                object1.connections.remove(object2);
+        }
+        var conns2 = object2.connections.get(object1);
+        if(conns2 != null) {
+            conns2.remove(wire);
+            if(conns2.isEmpty())
+                object2.connections.remove(object1);
+        }
     }
-
-//    public WireEntity getEntity(IElectricNode node1, IElectricNode node2) {
-//        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
-//            return null;
-//
-//        var object1 = nodes.get(node1);
-//        var object2 = nodes.get(node2);
-//        return object1.connections.get(object2).entity;
-//    }
 
     @Nullable
-    public AbstractElectricWire getWire(IElectricNode node1, IElectricNode node2) {
+    public AbstractElectricWire getFirstWire(IElectricNode node1, IElectricNode node2) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return null;
 
@@ -110,7 +100,7 @@ public class NetworkGraph {
         var object2 = nodes.get(node2);
 
         var conn = object1.connections.get(object2);
-        return conn == null ? null : conn.wire;
+        return conn == null ? null : conn.isEmpty() ? null : conn.get(0);
     }
 
     @NotNull
@@ -125,20 +115,12 @@ public class NetworkGraph {
     }
 
     public int connectionCount(IElectricNode node) {
-        if(countOverrides.containsKey(node))
-            return countOverrides.get(node);
         if(!nodes.containsKey(node))
             return 0;
-        return nodes.get(node).connections.size();
-    }
 
-    public void addCountOverrides(Map<IElectricNode, Integer> overrides) {
-        countOverrides.putAll(overrides);
-    }
-
-    public void removeCountOverride(Map<IElectricNode, Integer> overrides) {
-        for(var node : overrides.keySet()) {
-            countOverrides.remove(node);
-        }
+        int size = 0;
+        for(var list : nodes.get(node).connections.values())
+            size += list.size();
+        return size;
     }
 }
