@@ -91,9 +91,9 @@ public class PowerGrid implements ModInitializer {
 		ModdedSoundEvents.register();
 
 		GlobalElectricNetworks.init();
-		ServerBoundPackets.init();
 		ModdedPackets.registerPackets();
 		ModdedPackets.getChannel().initServerListener();
+		ServerBoundPackets.init();
 	}
 
 	private static void registerRecipes() {

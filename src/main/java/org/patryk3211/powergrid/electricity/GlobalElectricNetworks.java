@@ -70,18 +70,13 @@ public class GlobalElectricNetworks {
         return networkList.newNetwork();
     }
 
-    public static void splitTransmissionLine(World world, TransmissionLine line, IElectricNode atNode) {
-        PowerGrid.LOGGER.trace("Splitting transmission line at {}", atNode);
-        line.splitAt(atNode);
-    }
-
     public static void splitTransmissionLine(World world, IElectricNode node) {
         var worldNetworks = getWorldNetworks(world);
         var connCount = worldNetworks.globalGraph.connectionCount(node);
         if(connCount == 0) {
             var line = worldNetworks.transmissionLineNodes.get(node);
             if(line != null) {
-                splitTransmissionLine(world, line, node);
+                line.splitAt(node);
             }
         }
     }
@@ -145,12 +140,12 @@ public class GlobalElectricNetworks {
                     if(line1 != line2) {
                         linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line1);
                         // We can extend the first line by the second node.
-                        PowerGrid.LOGGER.trace("Extending line at end by wire {}, terminating node is now {}", linePart, node2);
+                        PowerGrid.LOGGER.trace("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
                         if(line1.getNode2() != node1)
                             line1.flip();
                         line1.addLastSegment(linePart);
                         // We need to merge lines.
-                        PowerGrid.LOGGER.trace("Merging transmission lines between {} and {}", node1, node2);
+                        PowerGrid.LOGGER.trace("{}: Merging transmission lines between {} and {}", line1, node1, node2);
                         if (curLine.getNode1() != line1.getNode2())
                             curLine.flip();
                         line1.merge(curLine);
@@ -161,7 +156,7 @@ public class GlobalElectricNetworks {
                     line1 = null;
                 } else {
                     linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line2);
-                    PowerGrid.LOGGER.trace("Extending line at beginning by wire {}, starting node is now {}", linePart, node1);
+                    PowerGrid.LOGGER.trace("{}: Extending line at beginning by wire {}, starting node is now {}", line2, linePart, node1);
                     // We can extend this line by the first node.
                     if(line2.getNode1() != node2)
                         line2.flip();
@@ -175,7 +170,7 @@ public class GlobalElectricNetworks {
         if(line1 != null) {
             linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line1);
             // We can extend this line by the second node.
-            PowerGrid.LOGGER.trace("Extending line at end by wire {}, terminating node is now {}", linePart, node2);
+            PowerGrid.LOGGER.trace("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
             if(line1.getNode2() != node1)
                 line1.flip();
             line1.addLastSegment(linePart);
@@ -185,7 +180,7 @@ public class GlobalElectricNetworks {
             var line = new TransmissionLine(forEntity.getResistance(), node1, node2, linePart, worldNetworks);
             linePart.setLine(line);
             network.addWire(line);
-            PowerGrid.LOGGER.trace("New transmission line between {} and {}", node1, node2);
+            PowerGrid.LOGGER.trace("{}: New transmission line between {} and {}", line, node1, node2);
         }
         return linePart;
     }
@@ -295,6 +290,12 @@ public class GlobalElectricNetworks {
                 transmissionLineNodes.put(node, line);
             } else {
                 transmissionLineNodes.remove(node);
+            }
+        }
+
+        public void validateRemoval(TransmissionLine line) {
+            if(transmissionLineNodes.containsValue(line)) {
+                PowerGrid.LOGGER.error("Line {} was not fully removed from transmission line node map!", line);
             }
         }
     }
