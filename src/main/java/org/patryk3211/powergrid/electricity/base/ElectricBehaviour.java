@@ -83,11 +83,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         if(externalNodes.isEmpty())
             throw new IllegalStateException("Cannot join a network if no external nodes are defined");
         if(getNetwork() == null) {
-            internalNodes.forEach(network::addNode);
             externalNodes.forEach(node -> {
                 if(node != null)
                     network.addNode(node);
             });
+            internalNodes.forEach(network::addNode);
             internalWires.forEach(network::addWire);
         }
     }
@@ -160,11 +160,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
         var network = getNetwork();
         if(network != null) {
+            internalNodes.forEach(network::removeNode);
             externalNodes.forEach(node -> {
                 if(node != null)
                     network.removeNode(node);
             });
-            internalNodes.forEach(network::removeNode);
         }
     }
 
