@@ -346,7 +346,6 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             kill();
             return ActionResult.SUCCESS;
         }
-        System.out.println(wire);
         return super.interact(player, hand);
     }
 

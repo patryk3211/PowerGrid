@@ -24,6 +24,7 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TransmissionLine extends ElectricWire {
     public final List<TransmissionLinePart> segments = new ArrayList<>();
@@ -69,6 +70,7 @@ public class TransmissionLine extends ElectricWire {
 
     public void merge(TransmissionLine line) {
         assert getNode2() == line.getNode1();
+        PowerGrid.LOGGER.trace("{}: Appending {}", this, line);
         segments.addAll(line.segments);
         setResistance(resistance + line.getResistance());
         global.assignTransmissionLine(line.getNode1(), this);
@@ -78,8 +80,8 @@ public class TransmissionLine extends ElectricWire {
         });
         global.assignTransmissionLine(line.getNode2(), null);
         line.segments.clear();
-        line.remove();
         setNode2(line.getNode2());
+        line.remove();
     }
 
     @Nullable
@@ -142,14 +144,50 @@ public class TransmissionLine extends ElectricWire {
     public void remove() {
         super.remove();
         PowerGrid.LOGGER.trace("{}: Removing transmission line between {} and {}", this, node1, node2);
-        global.validateRemoval(this);
         for(var segment : segments) {
             global.assignTransmissionLine(segment.getNode2(), null);
         }
+        optimizeNode(getNode1());
+        optimizeNode(getNode2());
     }
 
     public boolean isPart(ElectricWire wire) {
         return segments.contains(wire);
+    }
+
+    private void optimizeNode(IElectricNode node) {
+        if(global.globalGraph.connectionCount(node) == 2) {
+            // We can possibly merge two transmission lines here.
+            var nodes = global.globalGraph.getConnectedNodes(node);
+            if(nodes.size() != 2)
+                return;
+            var lines = nodes.stream()
+                    .map(connected -> global.globalGraph.getFirstWire(node, connected))
+                    .filter(wire -> wire instanceof TransmissionLine)
+                    .map(wire -> (TransmissionLine) wire)
+                    .toList();
+            if(lines.size() != 2)
+                return;
+            var line1 = lines.get(0);
+            var line2 = lines.get(1);
+            if(line1.getNetwork() != line2.getNetwork())
+                return;
+            if(line1.getNode1() == line2.getNode2()) {
+                // Append line1 onto line2
+                line2.merge(line1);
+            } else if(line1.getNode2() == line2.getNode1()) {
+                // Append line2 onto line1
+                line1.merge(line2);
+            } else if(line1.getNode1() == line2.getNode1()) {
+                line1.flip();
+                line1.merge(line2);
+            } else if(line1.getNode2() == line2.getNode2()) {
+                line2.flip();
+                line1.merge(line2);
+            } else {
+                PowerGrid.LOGGER.error("Unknown line optimization case");
+            }
+        }
     }
 
     public void removeSegment(ElectricWire wire) {
@@ -178,7 +216,9 @@ public class TransmissionLine extends ElectricWire {
             global.assignTransmissionLine(node1, null);
             if(network != null)
                 network.addNode(node1);
+            var optiNode = getNode1();
             setNode1(node1);
+            optimizeNode(optiNode);
         } else if (wire.getNode2() == node2) {
             // Last segment
             PowerGrid.LOGGER.trace("{}: Removing last segment of transmission line", this);
@@ -195,7 +235,9 @@ public class TransmissionLine extends ElectricWire {
             global.assignTransmissionLine(node2, null);
             if(network != null)
                 network.addNode(node2);
+            var optiNode = getNode2();
             setNode2(node2);
+            optimizeNode(optiNode);
         } else {
             // Middle segment
             PowerGrid.LOGGER.trace("{}: Removing middle segment of transmission line", this);

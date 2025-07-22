@@ -292,11 +292,5 @@ public class GlobalElectricNetworks {
                 transmissionLineNodes.remove(node);
             }
         }
-
-        public void validateRemoval(TransmissionLine line) {
-            if(transmissionLineNodes.containsValue(line)) {
-                PowerGrid.LOGGER.error("Line {} was not fully removed from transmission line node map!", line);
-            }
-        }
     }
 }
