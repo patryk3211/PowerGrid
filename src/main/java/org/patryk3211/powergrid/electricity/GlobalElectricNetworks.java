@@ -17,6 +17,9 @@ package org.patryk3211.powergrid.electricity;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -182,6 +185,8 @@ public class GlobalElectricNetworks {
             network.addWire(line);
             PowerGrid.LOGGER.trace("{}: New transmission line between {} and {}", line, node1, node2);
         }
+
+//        PowerGrid.LOGGER.trace("Transmission line post-creation info, n1 - {}, n2 - {}, l1 - {}, l2 - {}", nConns1, nConns2, line1, line2);
         return linePart;
     }
 
@@ -248,6 +253,18 @@ public class GlobalElectricNetworks {
     public static ElectricWire makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
 //        return makeSimpleWire(world, endpoint1, endpoint2, forEntity);
         return makeTransmissionLine(world, endpoint1, endpoint2, forEntity);
+    }
+
+    public static void inspect(IElectricNode node, PlayerEntity user) {
+        var worldNetworks = getWorldNetworks(user.getWorld());
+        user.sendMessage(Text.of(user instanceof ServerPlayerEntity ? "Server:" : "Client:"));
+        user.sendMessage(Text.literal(node.toString()));
+        for(var connected : worldNetworks.globalGraph.getConnectedNodes(node)) {
+            user.sendMessage(Text.literal(" - " + connected));
+            for(var wire : worldNetworks.globalGraph.getWires(node, connected)) {
+                user.sendMessage(Text.literal("  via " + wire));
+            }
+        }
     }
 
     public static class WorldNetworks {

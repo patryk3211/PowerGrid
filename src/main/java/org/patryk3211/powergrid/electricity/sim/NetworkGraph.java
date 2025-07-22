@@ -19,10 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class NetworkGraph {
     private static class Node {
@@ -66,8 +63,10 @@ public class NetworkGraph {
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
 
-        object1.connections.computeIfAbsent(object2, key -> new ArrayList<>()).add(wire);
-        object2.connections.computeIfAbsent(object1, key -> new ArrayList<>()).add(wire);
+        var conns1 = object1.connections.computeIfAbsent(object2, key -> new ArrayList<>());
+        if(!conns1.contains(wire)) conns1.add(wire);
+        var conns2 = object2.connections.computeIfAbsent(object1, key -> new ArrayList<>());
+        if(!conns2.contains(wire)) conns2.add(wire);
     }
 
     public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
@@ -101,6 +100,17 @@ public class NetworkGraph {
 
         var conn = object1.connections.get(object2);
         return conn == null ? null : conn.isEmpty() ? null : conn.get(0);
+    }
+
+    public Collection<AbstractElectricWire> getWires(IElectricNode node1, IElectricNode node2) {
+        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
+            return List.of();
+
+        var object1 = nodes.get(node1);
+        var object2 = nodes.get(node2);
+
+        var conn = object1.connections.get(object2);
+        return conn == null ? List.of() : conn;
     }
 
     @NotNull
