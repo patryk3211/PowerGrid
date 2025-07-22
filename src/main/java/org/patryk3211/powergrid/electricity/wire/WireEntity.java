@@ -56,6 +56,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     private IWireEndpoint endpoint1;
     private IWireEndpoint endpoint2;
+    protected byte deferEndpointResolution = 0;
 
     @NotNull
     private WireItem item;
@@ -121,6 +122,21 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         var world = getWorld();
         temperatureUpdate();
 
+        if((deferEndpointResolution & 1) != 0) {
+            if(endpoint1.isValid(world)) {
+                endpoint1.assignWireEntity(this);
+                deferEndpointResolution &= ~1;
+                makeWire();
+            }
+        }
+        if((deferEndpointResolution & 2) != 0) {
+            if(endpoint2.isValid(world)) {
+                endpoint2.assignWireEntity(this);
+                deferEndpointResolution &= ~2;
+                makeWire();
+            }
+        }
+
         if(isOverheated()) {
             // Remove to prevent power transfer in the 5 particle ticks.
             dropWire();
@@ -137,13 +153,18 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(endpoint1 != endpoint) {
             if(endpoint1 != null)
                 endpoint1.removeWireEntity(this);
+            var world = getWorld();
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
-                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
-                if(endpoint.isValid(getWorld())) {
+                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(world);
+                if(endpoint.isValid(world)) {
                     endpoint.assignWireEntity(this);
                 } else {
-                    endpoint = null;
+                    if(world.isClient) {
+                        deferEndpointResolution |= 1;
+                    } else {
+                        endpoint = null;
+                    }
                 }
             }
             endpoint1 = endpoint;
@@ -155,13 +176,18 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(endpoint2 != endpoint) {
             if(endpoint2 != null)
                 endpoint2.removeWireEntity(this);
+            var world = getWorld();
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
-                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
-                if(endpoint.isValid(getWorld())) {
+                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(world);
+                if(endpoint.isValid(world)) {
                     endpoint.assignWireEntity(this);
                 } else {
-                    endpoint = null;
+                    if(world.isClient) {
+                        deferEndpointResolution |= 2;
+                    } else {
+                        endpoint = null;
+                    }
                 }
             }
             endpoint2 = endpoint;
@@ -269,6 +295,9 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             return;
 
         var world = getWorld();
+        if(!endpoint1.isValid(world) || !endpoint2.isValid(world))
+            return;
+
         try {
             wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
         } catch(RuntimeException e) {
