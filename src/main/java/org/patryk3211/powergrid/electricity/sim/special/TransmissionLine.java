@@ -88,6 +88,7 @@ public class TransmissionLine extends ElectricWire {
             return null;
         if(segments.size() == 1)
             return null;
+        PowerGrid.LOGGER.trace("Splitting transmission line between {} and {} at {}", node1, node2, atNode);
         TransmissionLine line2 = null;
         double R1 = 0, R2 = 0;
         var iter = segments.iterator();
@@ -119,6 +120,7 @@ public class TransmissionLine extends ElectricWire {
             if(network != null)
                 network.addWire(line2);
         } else {
+            PowerGrid.LOGGER.trace("  Splitting failed");
             global.assignTransmissionLine(getNode2(), null);
         }
         return line2;
@@ -126,6 +128,7 @@ public class TransmissionLine extends ElectricWire {
 
     public void flip() {
         var segmentsCopy = List.copyOf(segments);
+        PowerGrid.LOGGER.trace("Flipping transmission line between {} and {}", node1, node2);
         segments.clear();
         for(var segment : segmentsCopy) {
             segment.flipNodes();
@@ -137,33 +140,11 @@ public class TransmissionLine extends ElectricWire {
     @Override
     public void remove() {
         super.remove();
+        PowerGrid.LOGGER.trace("Removing transmission line between {} and {}", node1, node2);
         for(var segment : segments) {
             global.assignTransmissionLine(segment.getNode2(), null);
         }
     }
-
-//    public void rewire() {
-//        if(segments.isEmpty()) {
-//            remove();
-//            return;
-//        }
-//
-//        double totalResistance = 0;
-//        for(var segment : segments) {
-//            totalResistance += segment.getResistance();
-//        }
-//        setResistance(totalResistance);
-//
-//        for(int i = 0; i < segments.size() - 1; ++i) {
-//            var segment = segments.get(i);
-//            var node = segment.getNode2();
-//            if(node.getNetwork() != null)
-//                node.getNetwork().removeNode(node);
-//            global.assignTransmissionLine(node, this);
-//        }
-//        global.assignTransmissionLine(this.node1, null);
-//        global.assignTransmissionLine(this.node2, null);
-//    }
 
     public boolean isPart(ElectricWire wire) {
         return segments.contains(wire);
@@ -175,14 +156,20 @@ public class TransmissionLine extends ElectricWire {
             remove();
             return;
         }
+        if(!segments.contains(wire)) {
+            PowerGrid.LOGGER.error("Wire is not part of this transmission line even though it thinks so");
+            return;
+        }
         if (wire.getNode1() == node1) {
             // First segment
+            PowerGrid.LOGGER.trace("Removing first segment of transmission line");
             var removed = segments.remove(0);
             if(segments.isEmpty()) {
                 remove();
                 return;
             }
             assert removed == wire;
+            removed.setLine(null);
             setResistance(resistance - removed.getResistance());
 
             var node1 = wire.getNode2();
@@ -192,12 +179,14 @@ public class TransmissionLine extends ElectricWire {
             setNode1(node1);
         } else if (wire.getNode2() == node2) {
             // Last segment
+            PowerGrid.LOGGER.trace("Removing last segment of transmission line");
             var removed = segments.remove(segments.size() - 1);
             if(segments.isEmpty()) {
                 remove();
                 return;
             }
             assert removed == wire;
+            removed.setLine(null);
             setResistance(resistance - removed.getResistance());
 
             var node2 = wire.getNode1();
@@ -207,16 +196,21 @@ public class TransmissionLine extends ElectricWire {
             setNode2(node2);
         } else {
             // Middle segment
+            PowerGrid.LOGGER.trace("Removing middle segment of transmission line");
             var splitNode = wire.getNode2();
             var line2 = splitAt(splitNode);
             if(line2 == null)
                 return;
+
             global.assignTransmissionLine(splitNode, null);
             if(network != null)
                 network.addNode(splitNode);
+
             // Last segment is the removed wire.
             var removed = segments.remove(segments.size() - 1);
+            removed.setLine(null);
             if(segments.isEmpty()) {
+                PowerGrid.LOGGER.trace("Split and remove resulted in an empty line");
                 remove();
                 return;
             }

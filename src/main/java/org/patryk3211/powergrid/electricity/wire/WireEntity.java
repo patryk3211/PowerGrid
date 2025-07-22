@@ -262,10 +262,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public void makeWire() {
-        if(wire != null) {
-//            GlobalElectricNetworks.destroyWire(getWorld(), wire);
-            wire.remove();
-        }
+        dropWire();
 
         // Cannot make a wire unless both endpoints are valid.
         if(endpoint1 == null || endpoint2 == null)
@@ -282,7 +279,6 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     public void dropWire() {
         if(wire != null) {
-//            GlobalElectricNetworks.destroyWire(getWorld(), wire);
             wire.remove();
             wire = null;
         }
