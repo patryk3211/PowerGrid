@@ -17,6 +17,10 @@ package org.patryk3211.powergrid.electricity.sim.node;
 
 import org.ejml.data.DMatrixRMaj;
 
+import java.util.Collection;
+
 public interface ICouplingNode extends INode {
     void couple(DMatrixRMaj conductance);
+
+    Collection<IElectricNode> coupledNodes();
 }

@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.sim;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 import java.util.*;
@@ -25,11 +26,13 @@ public class NetworkGraph {
     private static class Node {
         public final IElectricNode node;
         public final Map<Node, List<AbstractElectricWire>> connections;
+        public final Set<ICouplingNode> couplings;
         public boolean isKept;
 
         public Node(IElectricNode node) {
             this.node = node;
             this.connections = new HashMap<>();
+            this.couplings = new HashSet<>();
             isKept = false;
         }
     }
@@ -53,6 +56,9 @@ public class NetworkGraph {
         nodes.remove(node);
         for(var other : object.connections.keySet()) {
             other.connections.remove(object);
+        }
+        if(!object.couplings.isEmpty()) {
+            ElectricalNetwork.LOGGER.warn("Electric node removed before it was fully decoupled, this can cause issues");
         }
     }
 
@@ -90,6 +96,24 @@ public class NetworkGraph {
         }
     }
 
+    public void couple(ICouplingNode coupling) {
+        for(var node : coupling.coupledNodes()) {
+            var object = nodes.get(node);
+            if(object == null)
+                continue;
+            object.couplings.add(coupling);
+        }
+    }
+
+    public void decouple(ICouplingNode coupling) {
+        for(var node : coupling.coupledNodes()) {
+            var object = nodes.get(node);
+            if(object == null)
+                continue;
+            object.couplings.remove(coupling);
+        }
+    }
+
     @Nullable
     public AbstractElectricWire getFirstWire(IElectricNode node1, IElectricNode node2) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
@@ -118,8 +142,20 @@ public class NetworkGraph {
         if(!nodes.containsKey(node))
             return List.of();
         var eNodes = new ArrayList<IElectricNode>();
-        for(var otherNode : nodes.get(node).connections.keySet()) {
+        var object = nodes.get(node);
+        for(var otherNode : object.connections.keySet()) {
+            if(eNodes.contains(otherNode.node))
+                continue;
             eNodes.add(otherNode.node);
+        }
+        for(var coupling : object.couplings) {
+            for(var otherNode : coupling.coupledNodes()) {
+                if(otherNode == node)
+                    continue;
+                if(eNodes.contains(otherNode))
+                    continue;
+                eNodes.add(otherNode);
+            }
         }
         return eNodes;
     }
@@ -128,8 +164,9 @@ public class NetworkGraph {
         if(!nodes.containsKey(node))
             return 0;
 
-        int size = 0;
-        for(var list : nodes.get(node).connections.values())
+        var object = nodes.get(node);
+        int size = object.couplings.size();
+        for(var list : object.connections.values())
             size += list.size();
         return size;
     }

@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 
@@ -36,10 +37,18 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
+    public void addNode(ICouplingNode coupling) {
+        super.addNode(coupling);
+        graph.couple(coupling);
+    }
+
+    @Override
     public void removeNode(INode node) {
         super.removeNode(node);
         if(node instanceof IElectricNode enode)
             graph.removeNode(enode);
+        if(node instanceof ICouplingNode cnode)
+            graph.decouple(cnode);
     }
 
     @Override

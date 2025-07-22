@@ -17,19 +17,29 @@ package org.patryk3211.powergrid.electricity.sim.node;
 
 import org.ejml.data.DMatrixRMaj;
 
+import java.util.Collection;
+import java.util.List;
+
 public abstract class TransformerCoupling extends CouplingNode {
     protected float ratio;
     protected float resistance;
+    protected final Collection<IElectricNode> coupledNodes;
 
-    protected TransformerCoupling(float ratio, float resistance) {
+    protected TransformerCoupling(float ratio, float resistance, Collection<IElectricNode> coupledNodes) {
         this.ratio = ratio;
         this.resistance = resistance;
+        this.coupledNodes = coupledNodes;
     }
 
     @Override
     public void couple(DMatrixRMaj conductance) {
         // Unlike other fields, this one holds resistance instead of conductance.
         conductance.set(this.index, this.index, resistance);
+    }
+
+    @Override
+    public Collection<IElectricNode> coupledNodes() {
+        return coupledNodes;
     }
 
     public void setResistance(float resistance) {
@@ -68,7 +78,7 @@ public abstract class TransformerCoupling extends CouplingNode {
         private final IElectricNode secondary;
 
         protected Tr1P1S(float ratio, float resistance, IElectricNode primary, IElectricNode secondary) {
-            super(ratio, resistance);
+            super(ratio, resistance, List.of(primary, secondary));
             this.primary = primary;
             this.secondary = secondary;
         }
@@ -89,7 +99,7 @@ public abstract class TransformerCoupling extends CouplingNode {
         private final IElectricNode secondary2;
 
         protected Tr1P2S(float ratio, float resistance, IElectricNode primary, IElectricNode secondary1, IElectricNode secondary2) {
-            super(ratio, resistance);
+            super(ratio, resistance, List.of(primary, secondary1, secondary2));
             this.primary = primary;
             this.secondary1 = secondary1;
             this.secondary2 = secondary2;
@@ -114,7 +124,7 @@ public abstract class TransformerCoupling extends CouplingNode {
         private final IElectricNode secondary2;
 
         protected Tr2P2S(float ratio, float resistance, IElectricNode primary1, IElectricNode primary2, IElectricNode secondary1, IElectricNode secondary2) {
-            super(ratio, resistance);
+            super(ratio, resistance, List.of(primary1, primary2, secondary1, secondary2));
             this.primary1 = primary1;
             this.primary2 = primary2;
             this.secondary1 = secondary1;
