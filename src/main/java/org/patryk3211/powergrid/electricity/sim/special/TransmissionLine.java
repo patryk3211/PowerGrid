@@ -19,12 +19,10 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TransmissionLine extends ElectricWire {
     public final List<TransmissionLinePart> segments = new ArrayList<>();
@@ -272,85 +270,4 @@ public class TransmissionLine extends ElectricWire {
     public String toString() {
         return String.format("TransmissionLine@%s", Integer.toHexString(hashCode()));
     }
-
-    // Prevent unnecessary electrical network updates.
-    private NetworkFreeze freeze() {
-        return new NetworkFreeze(this);
-    }
-
-    private static class NetworkFreeze implements AutoCloseable {
-        private final TransmissionLine line;
-        private final ElectricalNetwork network;
-
-        public NetworkFreeze(TransmissionLine line) {
-            this.line = line;
-            network = line.getNetwork();
-            if(network != null) {
-                network.removeWire(line);
-                line.setNetwork(null);
-            }
-        }
-
-        @Override
-        public void close() {
-            if(network != null) {
-                if(line.node1.getNetwork() == null || line.node2.getNetwork() == null) {
-                    PowerGrid.LOGGER.error("Transmission line terminating node is not in a network. How did this happen?");
-                    return;
-                }
-                network.addWire(line);
-            }
-        }
-
-        public void addNode(IElectricNode node) {
-            if(network != null)
-                network.addNode(node);
-        }
-    }
-
-//    private static class InnerNode implements IElectricNode {
-//        private final TransmissionLine owner;
-//        private final double potentialRatio;
-//        private final IElectricNode originalNode;
-//
-//        public InnerNode(TransmissionLine owner, double potentialRatio, IElectricNode originalNode) {
-//            this.owner = owner;
-//            this.potentialRatio = potentialRatio;
-//            if(originalNode instanceof InnerNode inner)
-//                originalNode = inner.originalNode;
-//            this.originalNode = originalNode;
-//        }
-//
-//        @Override
-//        public float getVoltage() {
-//            return (float) (owner.node1.getVoltage() * (1 - potentialRatio) + owner.node2.getVoltage() * potentialRatio);
-//        }
-//
-//        @Override
-//        public float getCurrent() {
-//            return 0;
-//        }
-//
-//        @Override
-//        public void receiveResult(float value) { }
-//
-//        @Override
-//        public void assignIndex(int index) { }
-//
-//        @Override
-//        public int getIndex() {
-//            return -1;
-//        }
-//        @Override
-//        public void setNetwork(ElectricalNetwork network) {
-//            if(network != owner.network) {
-//                throw new IllegalArgumentException("Cannot add to a network other than the owner's");
-//            }
-//        }
-//
-//        @Override
-//        public ElectricalNetwork getNetwork() {
-//            return owner.network;
-//        }
-//    }
 }
