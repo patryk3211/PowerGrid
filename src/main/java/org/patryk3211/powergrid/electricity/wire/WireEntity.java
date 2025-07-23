@@ -57,6 +57,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     private IWireEndpoint endpoint1;
     private IWireEndpoint endpoint2;
     protected byte deferEndpointResolution = 0;
+    protected int deferTicks = 0;
 
     @NotNull
     private WireItem item;
@@ -118,7 +119,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     @Override
     public void tick() {
-        super.tick();
+        // We don't need Entity#baseTick() in wires
         var world = getWorld();
         temperatureUpdate();
 
@@ -136,6 +137,17 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 makeWire();
             }
         }
+        if(deferEndpointResolution != 0 && deferTicks++ >= 10) {
+            // If endpoint didn't resolve in 10 ticks it is marked as removed
+            if((deferEndpointResolution & 1) != 0) {
+                endpointRemoved(endpoint1);
+                endpoint1 = null;
+            }
+            if((deferEndpointResolution & 2) != 0) {
+                endpointRemoved(endpoint2);
+                endpoint2 = null;
+            }
+        }
 
         if(isOverheated()) {
             // Remove to prevent power transfer in the 5 particle ticks.
@@ -147,6 +159,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 }
             }
         }
+
+        this.firstUpdate = false;
     }
 
     public void setEndpoint1(IWireEndpoint endpoint) {
@@ -160,11 +174,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 if(endpoint.isValid(world)) {
                     endpoint.assignWireEntity(this);
                 } else {
-                    if(world.isClient) {
-                        deferEndpointResolution |= 1;
-                    } else {
-                        endpoint = null;
-                    }
+                    deferEndpointResolution |= 1;
+                    deferTicks = 0;
                 }
             }
             endpoint1 = endpoint;
@@ -183,11 +194,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 if(endpoint.isValid(world)) {
                     endpoint.assignWireEntity(this);
                 } else {
-                    if(world.isClient) {
-                        deferEndpointResolution |= 2;
-                    } else {
-                        endpoint = null;
-                    }
+                    deferEndpointResolution |= 2;
+                    deferTicks = 0;
                 }
             }
             endpoint2 = endpoint;

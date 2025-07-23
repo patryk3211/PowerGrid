@@ -28,6 +28,10 @@ public class TransmissionLinePart extends OwnedElectricWire {
         this.line = line;
     }
 
+    public TransmissionLine getLine() {
+        return line;
+    }
+
     public void setLine(TransmissionLine line) {
         this.line = line;
     }

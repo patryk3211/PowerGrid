@@ -15,8 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.google.common.base.Objects;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
@@ -99,6 +101,8 @@ public class BlockWireEndpoint implements IWireEndpoint {
 
     @Override
     public boolean isValid(World world) {
+        if(!world.isChunkLoaded(ChunkSectionPos.getSectionCoord(pos.getX()), ChunkSectionPos.getSectionCoord(pos.getZ())))
+            return false;
         var behaviour = getElectricBehaviour(world);
         if(behaviour == null)
             return false;
@@ -128,6 +132,11 @@ public class BlockWireEndpoint implements IWireEndpoint {
             return pos.equals(other.pos) && terminal == other.terminal;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(pos, terminal);
     }
 
     @Override

@@ -17,7 +17,7 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
@@ -27,14 +27,14 @@ import java.util.List;
 public class TransmissionLine extends ElectricWire {
     public final List<TransmissionLinePart> segments = new ArrayList<>();
 
-    private final GlobalElectricNetworks.WorldNetworks global;
+    private final WorldNetworks global;
 
-    private TransmissionLine(double resistance, IElectricNode node1, IElectricNode node2, GlobalElectricNetworks.WorldNetworks global) {
+    private TransmissionLine(double resistance, IElectricNode node1, IElectricNode node2, WorldNetworks global) {
         super(resistance, node1, node2);
         this.global = global;
     }
 
-    public TransmissionLine(double resistance, IElectricNode node1, IElectricNode node2, TransmissionLinePart firstSegment, GlobalElectricNetworks.WorldNetworks global) {
+    public TransmissionLine(double resistance, IElectricNode node1, IElectricNode node2, TransmissionLinePart firstSegment, WorldNetworks global) {
         super(resistance, node1, node2);
         segments.add(firstSegment);
         this.global = global;
