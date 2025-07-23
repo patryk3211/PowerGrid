@@ -26,13 +26,11 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
@@ -336,30 +334,11 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
     public NbtCompound writeNbt(NbtCompound nbt) {
         var lineList = new NbtList();
         for(var line : transmissionLines) {
-            if(!(line.getNode1() instanceof OwnedFloatingNode node1) || !(line.getNode2() instanceof OwnedFloatingNode node2))
-                continue;
-            var lineEntry = new NbtCompound();
-            lineEntry.put("Node1", node1.endpoint.serialize());
-            lineEntry.put("Node2", node2.endpoint.serialize());
-            lineEntry.putDouble("Resistance", line.getResistance());
-
-            boolean bad = false;
-            var segmentList = new NbtList();
-            lineEntry.put("Segments", segmentList);
-            for(var segment : line.segments) {
-                if(!(segment.getNode2() instanceof OwnedFloatingNode node)) {
-                    bad = true;
-                    break;
-                }
-                var segmentEntry = new NbtCompound();
-                segmentEntry.put("Node", node.endpoint.serialize());
-                segmentEntry.putUuid("Id", segment.persistentOwnerId);
-                segmentEntry.putDouble("Resistance", segment.getResistance());
-                segmentList.add(segmentEntry);
-            }
-            if(bad)
-                continue;
-            lineList.add(lineEntry);
+            lineList.add(new UnresolvedTransmissionLine(line).writeNbt());
+        }
+        // Write unresolved lines back to nbt.
+        for(var unresolved : unresolvedLines) {
+            lineList.add(unresolved.writeNbt());
         }
         nbt.put("TransmissionLines", lineList);
         return nbt;
@@ -369,19 +348,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
         var lineList = nbt.getList("TransmissionLines", NbtElement.COMPOUND_TYPE);
         for(var lineEntryGeneric : lineList) {
             var lineEntry = (NbtCompound) lineEntryGeneric;
-            var endpoint1 = WireEndpointType.deserialize(lineEntry.getCompound("Node1"));
-            var endpoint2 = WireEndpointType.deserialize(lineEntry.getCompound("Node2"));
-            var resistance = lineEntry.getDouble("Resistance");
-
-            var segments = new ArrayList<UnresolvedTransmissionLine.Segment>();
-            for(var segmentGeneric : lineEntry.getList("Segments", NbtElement.COMPOUND_TYPE)) {
-                var segment = (NbtCompound) segmentGeneric;
-                var endpoint = WireEndpointType.deserialize(segment.getCompound("Node"));
-                var id = segment.getUuid("Id");
-                var resistance2 = segment.getDouble("Resistance");
-                segments.add(new UnresolvedTransmissionLine.Segment(endpoint, id, resistance2));
-            }
-            unresolvedLines.add(new UnresolvedTransmissionLine(endpoint1, endpoint2, resistance, segments));
+            unresolvedLines.add(new UnresolvedTransmissionLine(lineEntry));
         }
     }
 }

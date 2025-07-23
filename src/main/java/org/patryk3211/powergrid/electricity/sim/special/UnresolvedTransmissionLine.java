@@ -15,11 +15,17 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +42,60 @@ public class UnresolvedTransmissionLine {
         this.endpoint2 = endpoint2;
         this.resistance = resistance;
         this.segments = segments;
+    }
+
+    public UnresolvedTransmissionLine(TransmissionLine line) {
+        if(!(line.getNode1() instanceof OwnedFloatingNode node1) || !(line.getNode2() instanceof OwnedFloatingNode node2))
+            throw new IllegalArgumentException("Transmission line saved to nbt must consist of OwnedFloatingNodes");
+        endpoint1 = node1.endpoint;
+        endpoint2 = node2.endpoint;
+        resistance = line.getResistance();
+
+        segments = new ArrayList<>();
+        for(var segment : line.segments) {
+            IWireEndpoint endpoint;
+            if(segment.getNode2() == null) {
+                endpoint = segment.endpoint2;
+            } else if(segment.getNode2() instanceof OwnedFloatingNode node) {
+                endpoint = node.endpoint;
+            } else {
+                throw new IllegalArgumentException("Transmission line saved to nbt must consist of OwnedFloatingNodes");
+            }
+            segments.add(new Segment(endpoint, segment.persistentOwnerId, segment.getResistance()));
+        }
+    }
+
+    public UnresolvedTransmissionLine(NbtCompound nbt) {
+        endpoint1 = WireEndpointType.deserialize(nbt.getCompound("Node1"));
+        endpoint2 = WireEndpointType.deserialize(nbt.getCompound("Node2"));
+        resistance = nbt.getDouble("Resistance");
+
+        segments = new ArrayList<>();
+        for(var segmentGeneric : nbt.getList("Segments", NbtElement.COMPOUND_TYPE)) {
+            var segment = (NbtCompound) segmentGeneric;
+            var endpoint = WireEndpointType.deserialize(segment.getCompound("Node"));
+            var id = segment.getUuid("Id");
+            var resistance2 = segment.getDouble("Resistance");
+            segments.add(new UnresolvedTransmissionLine.Segment(endpoint, id, resistance2));
+        }
+    }
+
+    public NbtCompound writeNbt() {
+        var lineEntry = new NbtCompound();
+        lineEntry.put("Node1", endpoint1.serialize());
+        lineEntry.put("Node2", endpoint2.serialize());
+        lineEntry.putDouble("Resistance", resistance);
+
+        var segmentList = new NbtList();
+        lineEntry.put("Segments", segmentList);
+        for(var segment : segments) {
+            var segmentEntry = new NbtCompound();
+            segmentEntry.put("Node", segment.endpoint.serialize());
+            segmentEntry.putUuid("Id", segment.id);
+            segmentEntry.putDouble("Resistance", segment.resistance);
+            segmentList.add(segmentEntry);
+        }
+        return lineEntry;
     }
 
     public void setEndpoint1Resolved() {
