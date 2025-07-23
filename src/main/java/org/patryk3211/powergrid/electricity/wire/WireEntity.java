@@ -56,6 +56,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     protected static final TrackedData<Float> TEMPERATURE = DataTracker.registerData(WireEntity.class, TrackedDataHandlerRegistry.FLOAT);
 
+    // TODO: Transmission line flipping might mess with this. Make sure it is safe.
     private IWireEndpoint endpoint1;
     private IWireEndpoint endpoint2;
     protected byte deferEndpointResolution = 0;

@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.UUID;
@@ -30,11 +31,22 @@ public class TransmissionLinePart extends ElectricWire {
     public WireEntity owner;
     public final UUID persistentOwnerId;
 
+    public IWireEndpoint endpoint1;
+    public IWireEndpoint endpoint2;
+
     public TransmissionLinePart(double resistance, IElectricNode node1, IElectricNode node2, @NotNull WireEntity owner, TransmissionLine line) {
         super(resistance, node1, node2);
         this.line = line;
         this.owner = owner;
         this.persistentOwnerId = owner.getUuid();
+    }
+
+    public TransmissionLinePart(double resistance, IWireEndpoint endpoint1, IWireEndpoint endpoint2, UUID ownerId, TransmissionLine line) {
+        super(resistance, null, null);
+        this.persistentOwnerId = ownerId;
+        this.endpoint1 = endpoint1;
+        this.endpoint2 = endpoint2;
+        this.line = line;
     }
 
     public TransmissionLine getLine() {
@@ -46,7 +58,8 @@ public class TransmissionLinePart extends ElectricWire {
     }
 
     public void unload() {
-        line.unloadPart(this);
+        if(line != null)
+            line.unloadPart(this);
     }
 
     // Transmission line part can NEVER be directly in a network.
@@ -57,16 +70,21 @@ public class TransmissionLinePart extends ElectricWire {
 
     @Override
     public void remove() {
-        line.removeSegment(this);
+        if(line != null)
+            line.removeSegment(this);
     }
 
     @Override
     public float potentialDifference() {
+        if(line == null)
+            return 0;
         return (float) (line.current() * getResistance());
     }
 
     @Override
     public float current() {
+        if(line == null)
+            return 0;
         return line.current();
     }
 }

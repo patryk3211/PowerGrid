@@ -30,11 +30,11 @@ import java.util.Set;
 
 public class TransmissionLine extends ElectricWire {
     public final List<TransmissionLinePart> segments = new ArrayList<>();
-    private final Set<TransmissionLinePart> unloadedParts = new HashSet<>();
+    protected final Set<TransmissionLinePart> unloadedParts = new HashSet<>();
 
     private final WorldNetworks global;
 
-    private TransmissionLine(double resistance, IElectricNode node1, IElectricNode node2, WorldNetworks global) {
+    protected TransmissionLine(double resistance, IElectricNode node1, IElectricNode node2, WorldNetworks global) {
         super(resistance, node1, node2);
         this.global = global;
     }
@@ -45,11 +45,44 @@ public class TransmissionLine extends ElectricWire {
         this.global = global;
     }
 
+    private int validateEndpoints(TransmissionLinePart part, WireEntity owner) {
+        if(part.endpoint1.equals(owner.getEndpoint1())) {
+            if(part.endpoint2.equals(owner.getEndpoint2())) {
+                return 1;
+            }
+        } else if(part.endpoint2.equals(owner.getEndpoint1())) {
+            // Endpoints are flipped
+            if(part.endpoint1.equals(owner.getEndpoint2())) {
+                return 2;
+            }
+        }
+        return 0;
+    }
+
     @Nullable
     public TransmissionLinePart grabUnloaded(@NotNull WireEntity owner) {
         for(var part : unloadedParts) {
             if(part.persistentOwnerId.equals(owner.getUuid())) {
+                // If the owner id matches then the endpoints should match too
+                var endpointArrangement = validateEndpoints(part, owner);
+                if(endpointArrangement == 1) {
+                    part.setNode1(part.endpoint1.getNode(owner.getWorld()));
+                    part.setNode2(part.endpoint2.getNode(owner.getWorld()));
+                } else if(endpointArrangement == 2) {
+                    part.setNode1(part.endpoint2.getNode(owner.getWorld()));
+                    part.setNode2(part.endpoint1.getNode(owner.getWorld()));
+                } else {
+                    PowerGrid.LOGGER.error("Endpoint of wire and unloaded line segment do not match");
+                    return null;
+                }
                 part.owner = owner;
+                part.endpoint1 = null;
+                part.endpoint2 = null;
+                if(part.getResistance() != owner.getResistance()) {
+                    var diff = owner.getResistance() - part.getResistance();
+                    part.setResistance(owner.getResistance());
+                    setResistance(getResistance() + diff);
+                }
                 unloadedParts.remove(part);
                 return part;
             }
@@ -58,6 +91,9 @@ public class TransmissionLine extends ElectricWire {
     }
 
     public void unloadPart(TransmissionLinePart part) {
+        // Save endpoints and drop owner
+        part.endpoint1 = part.owner.getEndpoint1();
+        part.endpoint2 = part.owner.getEndpoint2();
         part.owner = null;
         unloadedParts.add(part);
     }

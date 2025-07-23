@@ -15,33 +15,46 @@
  */
 package org.patryk3211.powergrid.electricity;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.*;
 
-public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
+public class WorldNetworks extends PersistentState implements NetworkGraph.IGraphModifyHooks {
     public final World world;
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
     public final Set<TransmissionLine> transmissionLines = new HashSet<>();
     public final NetworkGraph globalGraph = new NetworkGraph();
+    public final List<UnresolvedTransmissionLine> unresolvedLines = new ArrayList<>();
 
     public WorldNetworks(World world) {
         this.world = world;
         this.globalGraph.hooks = this;
+    }
+
+    public WorldNetworks(World world, NbtCompound nbt) {
+        this(world);
+        readNbt(nbt);
     }
 
     @Override
@@ -111,7 +124,7 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
     }
 
     @Nullable
-    protected ElectricalNetwork unifyNetwork(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+    public ElectricalNetwork prepareForConnection(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
 
@@ -123,11 +136,25 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
         if(node1 == null || node2 == null)
             return null;
 
-        var line1 = transmissionLineNodes.get(node1);
-        var line2 = transmissionLineNodes.get(node2);
+//        var line = transmissionLineNodes.get(node1);
+//        if(line != null) {
+//            line.splitAt(node1);
+//        }
+//        line = transmissionLineNodes.get(node2);
+//        if(line != null) {
+//            line.splitAt(node2);
+//        }
 
-        var net1 = line1 == null ? node1.getNetwork() : line1.getNetwork();
-        var net2 = line2 == null ? node2.getNetwork() : line2.getNetwork();
+        // Split transmission lines if needed.
+        var line1 = transmissionLineNodes.get(node1);
+        if(line1 != null)
+            line1.splitAt(node1);
+        var line2 = transmissionLineNodes.get(node2);
+        if(line2 != null)
+            line2.splitAt(node2);
+
+        var net1 = node1.getNetwork();// : line1.getNetwork();
+        var net2 = node2.getNetwork();// : line2.getNetwork();
 
         // Put both nodes into the same network.
         ElectricalNetwork network;
@@ -158,6 +185,7 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
 
     @Nullable
     protected ElectricWire tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+        // First try with existing lines
         var node1 = endpoint1.getNode(world);
         var line1 = transmissionLineNodes.get(node1);
         if(line1 != null) {
@@ -182,12 +210,19 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
                     return part;
             }
         }
+
+        // Next move onto the unresolved lines
+        for(var unresolved : unresolvedLines) {
+            var part = unresolved.resolvePart(this, forEntity);
+            if(part != null)
+                return part;
+        }
         return null;
     }
 
     @Nullable
     public OwnedElectricWire makeSimpleWire(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        var network = unifyNetwork(endpoint1, endpoint2);
+        var network = prepareForConnection(endpoint1, endpoint2);
         if(network == null)
             return null;
 
@@ -206,7 +241,7 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
             return unloadedPart;
 
         // This method needs to ensure proper ordering of segments in the transmission line.
-        var network = unifyNetwork(endpoint1, endpoint2);
+        var network = prepareForConnection(endpoint1, endpoint2);
         if(network == null)
             return null;
 
@@ -226,11 +261,11 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
             if(wire instanceof TransmissionLine curLine) {
                 line1 = curLine;
             }
-        } else if(nConns1 == 0) {
+        }/* else if(nConns1 == 0) {
             // Possibly part of a transmission line
             // After splitting, the transmission line might not be in the same network.
             splitTransmissionLine(node1);
-        }
+        }*/
         if(nConns2 == 1) {
             // We can attach to an existing line on endpoint2
             var wire = globalGraph.getFirstWire(node2, connected2);
@@ -263,10 +298,10 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
                     line2.addFirstSegment(linePart);
                 }
             }
-        } else if(nConns2 == 0) {
+        }/* else if(nConns2 == 0) {
             // Possibly part of a transmission line
             splitTransmissionLine(node2);
-        }
+        }*/
         if(line1 != null) {
             linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line1);
             // We can extend this line by the second node.
@@ -283,6 +318,7 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
             PowerGrid.LOGGER.trace("{}: New transmission line between {} and {}", line, node1, node2);
         }
 
+        markDirty();
         return linePart;
     }
 
@@ -293,6 +329,59 @@ public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
             if(line != null) {
                 line.splitAt(node);
             }
+        }
+    }
+
+    @Override
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        var lineList = new NbtList();
+        for(var line : transmissionLines) {
+            if(!(line.getNode1() instanceof OwnedFloatingNode node1) || !(line.getNode2() instanceof OwnedFloatingNode node2))
+                continue;
+            var lineEntry = new NbtCompound();
+            lineEntry.put("Node1", node1.endpoint.serialize());
+            lineEntry.put("Node2", node2.endpoint.serialize());
+            lineEntry.putDouble("Resistance", line.getResistance());
+
+            boolean bad = false;
+            var segmentList = new NbtList();
+            lineEntry.put("Segments", segmentList);
+            for(var segment : line.segments) {
+                if(!(segment.getNode2() instanceof OwnedFloatingNode node)) {
+                    bad = true;
+                    break;
+                }
+                var segmentEntry = new NbtCompound();
+                segmentEntry.put("Node", node.endpoint.serialize());
+                segmentEntry.putUuid("Id", segment.persistentOwnerId);
+                segmentEntry.putDouble("Resistance", segment.getResistance());
+                segmentList.add(segmentEntry);
+            }
+            if(bad)
+                continue;
+            lineList.add(lineEntry);
+        }
+        nbt.put("TransmissionLines", lineList);
+        return nbt;
+    }
+
+    protected void readNbt(NbtCompound nbt) {
+        var lineList = nbt.getList("TransmissionLines", NbtElement.COMPOUND_TYPE);
+        for(var lineEntryGeneric : lineList) {
+            var lineEntry = (NbtCompound) lineEntryGeneric;
+            var endpoint1 = WireEndpointType.deserialize(lineEntry.getCompound("Node1"));
+            var endpoint2 = WireEndpointType.deserialize(lineEntry.getCompound("Node2"));
+            var resistance = lineEntry.getDouble("Resistance");
+
+            var segments = new ArrayList<UnresolvedTransmissionLine.Segment>();
+            for(var segmentGeneric : lineEntry.getList("Segments", NbtElement.COMPOUND_TYPE)) {
+                var segment = (NbtCompound) segmentGeneric;
+                var endpoint = WireEndpointType.deserialize(segment.getCompound("Node"));
+                var id = segment.getUuid("Id");
+                var resistance2 = segment.getDouble("Resistance");
+                segments.add(new UnresolvedTransmissionLine.Segment(endpoint, id, resistance2));
+            }
+            unresolvedLines.add(new UnresolvedTransmissionLine(endpoint1, endpoint2, resistance, segments));
         }
     }
 }

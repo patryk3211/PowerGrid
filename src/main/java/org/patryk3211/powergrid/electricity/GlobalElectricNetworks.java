@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.electricity.sim.*;
@@ -55,19 +56,21 @@ public class GlobalElectricNetworks {
 
     public static WorldNetworks getWorldNetworks(World world) {
         return worldNetworks.computeIfAbsent(world, key -> {
-            if(key.isClient)
-                return makeClientWorldNetworks(key);
-            return new WorldNetworks(key);
+            if(key.isClient) return makeClientWorldNetworks(key);
+            var server = (ServerWorld) world;
+            return server.getPersistentStateManager().getOrCreate(
+                    nbt -> new WorldNetworks(world, nbt),
+                    () -> new WorldNetworks(world),
+                    "powergrid_electric_network_data"
+            );
         });
     }
 
     public static TransmissionLine getLine(WireEntity entity) {
-        var worldNetworks = GlobalElectricNetworks.worldNetworks.values().iterator().next();
-        entity = (WireEntity) worldNetworks.world.getEntityById(entity.getId());
         var wire = entity.getWire();
         if(wire == null)
             return null;
-//        var worldNetworks = getWorldNetworks(entity.getWorld());
+        var worldNetworks = getWorldNetworks(entity.getWorld());
         var line = worldNetworks.transmissionLineNodes.get(wire.getNode1());
         if(line != null && line.isPart(wire)) {
             return line;
