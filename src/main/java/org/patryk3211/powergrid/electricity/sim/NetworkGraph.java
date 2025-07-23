@@ -38,11 +38,14 @@ public class NetworkGraph {
     }
 
     private final Map<IElectricNode, Node> nodes = new HashMap<>();
+    public IGraphModifyHooks hooks = null;
 
     public void addNode(IElectricNode node) {
         if(nodes.containsKey(node))
             return;
         nodes.put(node, new Node(node));
+        if(hooks != null)
+            hooks.addNode(node);
     }
 
     public void removeNode(IElectricNode node) {
@@ -60,6 +63,8 @@ public class NetworkGraph {
         if(!object.couplings.isEmpty()) {
             ElectricalNetwork.LOGGER.warn("Electric node removed before it was fully decoupled, this can cause issues");
         }
+        if(hooks != null)
+            hooks.removeNode(node);
     }
 
     public void connect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
@@ -73,6 +78,8 @@ public class NetworkGraph {
         if(!conns1.contains(wire)) conns1.add(wire);
         var conns2 = object2.connections.computeIfAbsent(object1, key -> new ArrayList<>());
         if(!conns2.contains(wire)) conns2.add(wire);
+        if(hooks != null)
+            hooks.addWire(wire);
     }
 
     public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
@@ -94,6 +101,8 @@ public class NetworkGraph {
             if(conns2.isEmpty())
                 object2.connections.remove(object1);
         }
+        if(hooks != null)
+            hooks.removeWire(wire);
     }
 
     public void couple(ICouplingNode coupling) {
@@ -169,5 +178,12 @@ public class NetworkGraph {
         for(var list : object.connections.values())
             size += list.size();
         return size;
+    }
+
+    public interface IGraphModifyHooks {
+        default void addNode(IElectricNode node) { }
+        default void removeNode(IElectricNode node) { }
+        default void addWire(AbstractElectricWire wire) { }
+        default void removeWire(AbstractElectricWire wire) { }
     }
 }

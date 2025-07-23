@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.utility;
 
 import com.google.common.collect.Sets;
-import dev.architectury.event.events.common.TickEvent;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
@@ -26,13 +25,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -71,24 +66,12 @@ public class PlayerUtilities {
             return List.of();
         var firstSegment = line.segments.get(0);
         var lastSegment = line.segments.get(line.segments.size() - 1);
+        if(firstSegment.owner == null || lastSegment.owner == null)
+            return List.of();
 
         Set<ServerPlayerEntity> players1 = null, players2 = null;
         players1 = Set.copyOf(PlayerLookup.tracking(firstSegment.owner));
         players2 = Set.copyOf(PlayerLookup.tracking(lastSegment.owner));
-//        if(line.getNode1() instanceof OwnedFloatingNode owned) {
-//            if(owned.endpoint.type() == WireEndpointType.BLOCK) {
-//                var pos = ((BlockWireEndpoint) owned.endpoint).getPos();
-//                players1 = Set.copyOf(PlayerLookup.tracking(world, pos));
-//            }
-//        }
-//        if(line.getNode2() instanceof OwnedFloatingNode owned) {
-//            if(owned.endpoint.type() == WireEndpointType.BLOCK) {
-//                var pos = ((BlockWireEndpoint) owned.endpoint).getPos();
-//                players2 = Set.copyOf(PlayerLookup.tracking(world, pos));
-//            }
-//        }
-//        if(players1 == null || players2 == null)
-//            return List.of();
         return Sets.symmetricDifference(players1, players2);
     }
 }

@@ -15,17 +15,22 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TransmissionLine extends ElectricWire {
     public final List<TransmissionLinePart> segments = new ArrayList<>();
+    private final Set<TransmissionLinePart> unloadedParts = new HashSet<>();
 
     private final WorldNetworks global;
 
@@ -38,6 +43,23 @@ public class TransmissionLine extends ElectricWire {
         super(resistance, node1, node2);
         segments.add(firstSegment);
         this.global = global;
+    }
+
+    @Nullable
+    public TransmissionLinePart grabUnloaded(@NotNull WireEntity owner) {
+        for(var part : unloadedParts) {
+            if(part.persistentOwnerId.equals(owner.getUuid())) {
+                part.owner = owner;
+                unloadedParts.remove(part);
+                return part;
+            }
+        }
+        return null;
+    }
+
+    public void unloadPart(TransmissionLinePart part) {
+        part.owner = null;
+        unloadedParts.add(part);
     }
 
     public void addLastSegment(TransmissionLinePart wire) {

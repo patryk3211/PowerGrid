@@ -43,9 +43,26 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     @Override
-    public @Nullable OwnedElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public void tick() {
+        super.tick();
+        var iter = phantomLines.values().iterator();
+        while(iter.hasNext()) {
+            var data = iter.next();
+            if(data.age++ >= 5) {
+                data.remove();
+                iter.remove();
+            }
+        }
+    }
+
+    @Override
+    public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
         var result = super.makeTransmissionLine(endpoint1, endpoint2, forEntity);
         if(result instanceof TransmissionLinePart part) {
+            // Delete all phantom lines
+            phantomLines.forEach((key, line) -> line.remove());
+            phantomLines.clear();
+
             var line = part.getLine();
             if(line.getNode1() instanceof OwnedFloatingNode node1 && line.getNode2() instanceof OwnedFloatingNode node2) {
                 var key1 = new PhantomLine(node1.endpoint, node2.endpoint);
@@ -72,9 +89,16 @@ public class ClientWorldNetworks extends WorldNetworks {
                     // Packet is not needed, the nodes are actually connected.
                     return;
             }
-            // TODO: Put nodes into networks
+            if(node1.getNetwork() == null) {
+                var network = newNetwork();
+                packet.endpoint1.joinNetwork(world, network);
+            }
             var line1 = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance);
             line1.source.setVoltage(packet.node2Voltage);
+            if(node2.getNetwork() != null) {
+                var network = newNetwork();
+                packet.endpoint2.joinNetwork(world, network);
+            }
             var line2 = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance);
             line2.source.setVoltage(packet.node1Voltage);
         } else if(packet.endpoint1.isValid(world)) {
@@ -90,6 +114,7 @@ public class ClientWorldNetworks extends WorldNetworks {
         var line = phantomLines.computeIfAbsent(new PhantomLine(endpoint1, endpoint2), key -> new PhantomLineData(endpoint1.getNode(world), resistance));
         if(line.wire.getResistance() != resistance)
             line.wire.setResistance(resistance);
+        line.age = 0;
         return line;
     }
 
@@ -114,12 +139,14 @@ public class ClientWorldNetworks extends WorldNetworks {
         public final VoltageSourceNode source;
         public final ElectricWire wire;
         public final IElectricNode node;
+        public int age;
 
         public PhantomLineData(IElectricNode node, float resistance) {
             assert node.getNetwork() != null;
             this.node = node;
             this.source = new VoltageSourceNode();
             this.wire = new ElectricWire(resistance, node, source);
+            this.age = 0;
 
             var network = node.getNetwork();
             network.addNode(source);

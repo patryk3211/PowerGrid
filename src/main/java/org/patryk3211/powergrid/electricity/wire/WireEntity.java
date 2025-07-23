@@ -30,6 +30,7 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -41,6 +42,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 import java.util.List;
@@ -137,17 +139,17 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 makeWire();
             }
         }
-        if(deferEndpointResolution != 0 && deferTicks++ >= 10) {
-            // If endpoint didn't resolve in 10 ticks it is marked as removed
-            if((deferEndpointResolution & 1) != 0) {
-                endpointRemoved(endpoint1);
-                endpoint1 = null;
-            }
-            if((deferEndpointResolution & 2) != 0) {
-                endpointRemoved(endpoint2);
-                endpoint2 = null;
-            }
-        }
+//        if(deferEndpointResolution != 0 && deferTicks++ >= 10) {
+//            // If endpoint didn't resolve in 10 ticks it is marked as removed
+//            if((deferEndpointResolution & 1) != 0) {
+//                endpointRemoved(endpoint1);
+//                endpoint1 = null;
+//            }
+//            if((deferEndpointResolution & 2) != 0) {
+//                endpointRemoved(endpoint2);
+//                endpoint2 = null;
+//            }
+//        }
 
         if(isOverheated()) {
             // Remove to prevent power transfer in the 5 particle ticks.
@@ -416,5 +418,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public PistonBehavior getPistonBehavior() {
         return PistonBehavior.IGNORE;
+    }
+
+    public static void entityUnload(Entity entity, ServerWorld world) {
+        if(!(entity instanceof WireEntity wire))
+            return;
+        if(wire.wire instanceof TransmissionLinePart part) {
+            part.unload();
+            wire.wire = null;
+        } else {
+            wire.dropWire();
+        }
     }
 }

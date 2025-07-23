@@ -29,7 +29,7 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 @Environment(EnvType.CLIENT)
 public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
-    public static final boolean RAINBOW_WIRES = false;
+    public static final boolean RAINBOW_WIRES = true;
 
     public static final double SEGMENT_SIZE = 0.5;
 

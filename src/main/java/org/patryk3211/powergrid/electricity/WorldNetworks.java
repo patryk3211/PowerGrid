@@ -15,23 +15,24 @@
  */
 package org.patryk3211.powergrid.electricity;
 
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.GraphedElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.NetworkGraph;
-import org.patryk3211.powergrid.electricity.sim.OwnedElectricWire;
+import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.*;
 
-public class WorldNetworks {
+public class WorldNetworks implements NetworkGraph.IGraphModifyHooks {
     public final World world;
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
@@ -40,6 +41,45 @@ public class WorldNetworks {
 
     public WorldNetworks(World world) {
         this.world = world;
+        this.globalGraph.hooks = this;
+    }
+
+    @Override
+    public void removeNode(IElectricNode node) {
+        assignTransmissionLine(node, null);
+    }
+
+    public void tick() {
+        var iter = subnetworks.iterator();
+        while(iter.hasNext()) {
+            var network = iter.next();
+            if(network.isEmpty()) {
+                iter.remove();
+                continue;
+            }
+            if(network.isDirty()) {
+                // Two more recalculations to make sure the network is stable.
+                network.calculate();
+                network.calculate();
+            }
+            network.calculate();
+        }
+        if(world instanceof ServerWorld serverWorld) {
+            var iter2 = transmissionLines.iterator();
+            while(iter2.hasNext()) {
+                var line = iter2.next();
+                if(line.segments.isEmpty()) {
+                    PowerGrid.LOGGER.warn("Empty transmission line {} dropped during tick", line);
+                    iter2.remove();
+                    continue;
+                }
+                var players = PlayerUtilities.partialTracking(serverWorld, line);
+                if(players.isEmpty())
+                    continue;
+                var packet = new TransmissionLineS2CPacket(line);
+                ModdedPackets.getChannel().sendToClients(packet, players);
+            }
+        }
     }
 
     protected ElectricalNetwork newNetwork() {
@@ -71,7 +111,7 @@ public class WorldNetworks {
     }
 
     @Nullable
-    protected ElectricalNetwork unifyNetwork(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+    protected ElectricalNetwork unifyNetwork(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
 
@@ -117,8 +157,37 @@ public class WorldNetworks {
     }
 
     @Nullable
+    protected ElectricWire tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+        var node1 = endpoint1.getNode(world);
+        var line1 = transmissionLineNodes.get(node1);
+        if(line1 != null) {
+            var part = line1.grabUnloaded(forEntity);
+            if(part != null)
+                return part;
+        }
+
+        var node2 = endpoint2.getNode(world);
+        var line2 = transmissionLineNodes.get(node2);
+        if(line2 != null) {
+            var part = line2.grabUnloaded(forEntity);
+            if(part != null)
+                return part;
+        }
+
+        var wires = globalGraph.getWires(node1, node2);
+        for(var wire : wires) {
+            if(wire instanceof TransmissionLine line) {
+                var part = line.grabUnloaded(forEntity);
+                if(part != null)
+                    return part;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
     public OwnedElectricWire makeSimpleWire(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        var network = unifyNetwork(world, endpoint1, endpoint2);
+        var network = unifyNetwork(endpoint1, endpoint2);
         if(network == null)
             return null;
 
@@ -131,9 +200,13 @@ public class WorldNetworks {
     }
 
     @Nullable
-    public OwnedElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+        var unloadedPart = tryGrabUnloadedPart(endpoint1, endpoint2, forEntity);
+        if(unloadedPart != null)
+            return unloadedPart;
+
         // This method needs to ensure proper ordering of segments in the transmission line.
-        var network = unifyNetwork(world, endpoint1, endpoint2);
+        var network = unifyNetwork(endpoint1, endpoint2);
         if(network == null)
             return null;
 

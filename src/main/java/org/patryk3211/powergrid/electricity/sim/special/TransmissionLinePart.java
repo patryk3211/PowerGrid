@@ -15,17 +15,26 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.OwnedElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
-public class TransmissionLinePart extends OwnedElectricWire {
-    private TransmissionLine line;
+import java.util.UUID;
 
-    public TransmissionLinePart(double resistance, IElectricNode node1, IElectricNode node2, WireEntity owner, TransmissionLine line) {
-        super(resistance, node1, node2, owner);
+public class TransmissionLinePart extends ElectricWire {
+    private TransmissionLine line;
+    @Nullable
+    public WireEntity owner;
+    public final UUID persistentOwnerId;
+
+    public TransmissionLinePart(double resistance, IElectricNode node1, IElectricNode node2, @NotNull WireEntity owner, TransmissionLine line) {
+        super(resistance, node1, node2);
         this.line = line;
+        this.owner = owner;
+        this.persistentOwnerId = owner.getUuid();
     }
 
     public TransmissionLine getLine() {
@@ -34,6 +43,10 @@ public class TransmissionLinePart extends OwnedElectricWire {
 
     public void setLine(TransmissionLine line) {
         this.line = line;
+    }
+
+    public void unload() {
+        line.unloadPart(this);
     }
 
     // Transmission line part can NEVER be directly in a network.

@@ -17,21 +17,18 @@ package org.patryk3211.powergrid.electricity;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
-import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
-import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.*;
 
@@ -41,35 +38,14 @@ public class GlobalElectricNetworks {
     public static void init() {
         ServerTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
         ServerWorldEvents.UNLOAD.register((server, world) -> worldNetworks.remove(world));
+        ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
     }
 
     protected static void tick(World world) {
         var networks = worldNetworks.get(world);
         if(networks == null)
             return;
-        var iter = networks.subnetworks.iterator();
-        while(iter.hasNext()) {
-            var network = iter.next();
-            if(network.isEmpty()) {
-                iter.remove();
-                continue;
-            }
-            if(network.isDirty()) {
-                // Two more recalculations to make sure the network is stable.
-                network.calculate();
-                network.calculate();
-            }
-            network.calculate();
-        }
-        if(world instanceof ServerWorld serverWorld) {
-            for(var line : networks.transmissionLines) {
-                var players = PlayerUtilities.partialTracking(serverWorld, line);
-                if(players.isEmpty())
-                    continue;
-                var packet = new TransmissionLineS2CPacket(line);
-                ModdedPackets.getChannel().sendToClients(packet, players);
-            }
-        }
+        networks.tick();
     }
 
     @Environment(EnvType.CLIENT)
@@ -86,10 +62,12 @@ public class GlobalElectricNetworks {
     }
 
     public static TransmissionLine getLine(WireEntity entity) {
+        var worldNetworks = GlobalElectricNetworks.worldNetworks.values().iterator().next();
+        entity = (WireEntity) worldNetworks.world.getEntityById(entity.getId());
         var wire = entity.getWire();
         if(wire == null)
             return null;
-        var worldNetworks = getWorldNetworks(entity.getWorld());
+//        var worldNetworks = getWorldNetworks(entity.getWorld());
         var line = worldNetworks.transmissionLineNodes.get(wire.getNode1());
         if(line != null && line.isPart(wire)) {
             return line;
