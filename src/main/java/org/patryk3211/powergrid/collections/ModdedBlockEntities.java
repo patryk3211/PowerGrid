@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
+import org.patryk3211.powergrid.electricity.febridge.FEBridgeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
@@ -45,6 +46,7 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
+import team.reborn.energy.api.EnergyStorage;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -155,6 +157,13 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("circuit_board", CircuitBoardBlockEntity::new)
                     .validBlock(ModdedBlocks.CIRCUIT_BOARD)
                     .renderer(() -> CircuitBoardRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<FEBridgeBlockEntity> FE_BRIDGE =
+            REGISTRATE.blockEntity("fe_bridge", FEBridgeBlockEntity::new)
+                    .validBlock(ModdedBlocks.FE_BRIDGE)
+                    .onRegister(beType ->
+                            EnergyStorage.SIDED.registerForBlockEntity(FEBridgeBlockEntity::getEnergyStorage, beType))
                     .register();
 
     @SuppressWarnings("EmptyMethod")

@@ -50,6 +50,7 @@ import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
+import org.patryk3211.powergrid.electricity.febridge.FEBridgeBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
@@ -551,6 +552,26 @@ public class ModdedBlocks {
                 .defaultModel()
                 .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
                 .build()
+            .register();
+
+    public static final BlockEntry<FEBridgeBlock> FE_BRIDGE = REGISTRATE.block("fe_bridge", FEBridgeBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            if(vertical) {
+                                builder.modelFile(modModel(prov, "block/fe_bridge_v"));
+                            } else {
+                                builder.modelFile(modModel(prov, "block/fe_bridge_h"));
+                            }
+                            builder.rotationX(x).rotationY(y);
+                        });
+                        return builder.build();
+                    }))
+            .lang("FE Bridge")
+            .item()
+            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/fe_bridge_v")))
+            .build()
             .register();
 
     @SuppressWarnings("EmptyMethod")

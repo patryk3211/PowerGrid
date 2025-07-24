@@ -80,6 +80,9 @@ dependencies {
 
 	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 
+	// TechReborn Forge Energy API
+	modApi "teamreborn:energy:${project.energy_api_version}"
+
 	// Development QOL
 	modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
 	modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")

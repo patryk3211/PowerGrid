@@ -30,17 +30,19 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.registry.Registries;
-import net.minecraft.sound.SoundCategory;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 import java.util.List;
@@ -54,8 +56,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     protected static final TrackedData<Float> TEMPERATURE = DataTracker.registerData(WireEntity.class, TrackedDataHandlerRegistry.FLOAT);
 
+    // TODO: Transmission line flipping might mess with this. Make sure it is safe.
     private IWireEndpoint endpoint1;
     private IWireEndpoint endpoint2;
+    protected byte deferEndpointResolution = 0;
+    protected int deferTicks = 0;
 
     @NotNull
     private WireItem item;
@@ -117,16 +122,39 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     @Override
     public void tick() {
-        super.tick();
+        // We don't need Entity#baseTick() in wires
         var world = getWorld();
         temperatureUpdate();
 
-        if(isOverheated()) {
-            if(wire != null) {
-                // Remove to prevent power transfer in the 5 particle ticks.
-                wire.remove();
-                wire = null;
+        if((deferEndpointResolution & 1) != 0) {
+            if(endpoint1.isValid(world)) {
+                endpoint1.assignWireEntity(this);
+                deferEndpointResolution &= ~1;
+                makeWire();
             }
+        }
+        if((deferEndpointResolution & 2) != 0) {
+            if(endpoint2.isValid(world)) {
+                endpoint2.assignWireEntity(this);
+                deferEndpointResolution &= ~2;
+                makeWire();
+            }
+        }
+//        if(deferEndpointResolution != 0 && deferTicks++ >= 10) {
+//            // If endpoint didn't resolve in 10 ticks it is marked as removed
+//            if((deferEndpointResolution & 1) != 0) {
+//                endpointRemoved(endpoint1);
+//                endpoint1 = null;
+//            }
+//            if((deferEndpointResolution & 2) != 0) {
+//                endpointRemoved(endpoint2);
+//                endpoint2 = null;
+//            }
+//        }
+
+        if(isOverheated()) {
+            // Remove to prevent power transfer in the 5 particle ticks.
+            dropWire();
             if(!world.isClient) {
                 if(++despawnTime >= 5) {
                     // Break without dropping items.
@@ -134,19 +162,23 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
                 }
             }
         }
+
+        this.firstUpdate = false;
     }
 
     public void setEndpoint1(IWireEndpoint endpoint) {
         if(endpoint1 != endpoint) {
             if(endpoint1 != null)
                 endpoint1.removeWireEntity(this);
+            var world = getWorld();
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
-                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
-                if(endpoint.isValid(getWorld())) {
+                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(world);
+                if(endpoint.isValid(world)) {
                     endpoint.assignWireEntity(this);
                 } else {
-                    endpoint = null;
+                    deferEndpointResolution |= 1;
+                    deferTicks = 0;
                 }
             }
             endpoint1 = endpoint;
@@ -158,13 +190,15 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(endpoint2 != endpoint) {
             if(endpoint2 != null)
                 endpoint2.removeWireEntity(this);
+            var world = getWorld();
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
-                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(getWorld());
-                if(endpoint.isValid(getWorld())) {
+                    endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(world);
+                if(endpoint.isValid(world)) {
                     endpoint.assignWireEntity(this);
                 } else {
-                    endpoint = null;
+                    deferEndpointResolution |= 2;
+                    deferTicks = 0;
                 }
             }
             endpoint2 = endpoint;
@@ -265,16 +299,22 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public void makeWire() {
-        if(wire != null) {
-            wire.remove();
-        }
+        dropWire();
 
         // Cannot make a wire unless both endpoints are valid.
         if(endpoint1 == null || endpoint2 == null)
             return;
 
         var world = getWorld();
-        wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
+        if(!endpoint1.isValid(world) || !endpoint2.isValid(world))
+            return;
+
+        try {
+            wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
+        } catch(RuntimeException e) {
+            kill();
+            PowerGrid.LOGGER.error("Failed to create wire for entity", e);
+        }
     }
 
     public void dropWire() {
@@ -342,11 +382,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
         if(player.getStackInHand(hand).getItem() == ModdedItems.WIRE_CUTTER.get()) {
-            getWorld().playSoundFromEntity(null, this, ModdedSoundEvents.WIRE_CUT.getMainEvent(), SoundCategory.BLOCKS, 0.75f, 1.25f);
+            ModdedSoundEvents.WIRE_CUT.playAt(getWorld(), getPos(), 0.75f, 1.25f, false);
             kill();
             return ActionResult.SUCCESS;
         }
-        System.out.println(wire);
         return super.interact(player, hand);
     }
 
@@ -380,5 +419,16 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public PistonBehavior getPistonBehavior() {
         return PistonBehavior.IGNORE;
+    }
+
+    public static void entityUnload(Entity entity, ServerWorld world) {
+        if(!(entity instanceof WireEntity wire))
+            return;
+        if(wire.wire instanceof TransmissionLinePart part) {
+            part.unload();
+            wire.wire = null;
+        } else {
+            wire.dropWire();
+        }
     }
 }

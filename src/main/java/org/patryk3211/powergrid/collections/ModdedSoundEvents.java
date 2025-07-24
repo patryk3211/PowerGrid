@@ -127,7 +127,16 @@ public class ModdedSoundEvents {
     MICROBUTTON_OFF = create("ubutton_off").subtitle("Button clicks")
             .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF, 0.75f, 2.0f)
             .category(SoundCategory.BLOCKS)
+            .build(),
+
+    TRANSFORMER_HUM = create("transformer").subtitle("Transformer hum")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    GENERATOR = create("generator").subtitle("Generator spinning")
+            .category(SoundCategory.BLOCKS)
             .build()
+
             ;
 
     private static SoundEntryBuilder create(String name) {
