@@ -1,4 +1,13 @@
 {
+  "component_explode": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.firework_rocket.blast"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.component_explode"
+  },
   "electrozapper_shoot": {
     "sounds": [
       {
@@ -83,6 +92,24 @@
       }
     ],
     "subtitle": "powergrid.subtitle.transformer"
+  },
+  "ubutton_off": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.wooden_button.click_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ubutton_off"
+  },
+  "ubutton_on": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.wooden_button.click_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ubutton_on"
   },
   "ui.action.fail": {
     "sounds": [

@@ -27,7 +27,7 @@ import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
-import org.patryk3211.powergrid.network.packets.UpdateComponentS2CPacket;
+import org.patryk3211.powergrid.network.packets.UpdateComponentBiPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,7 +151,16 @@ public class PlacedComponent {
             var circuit = (CircuitBoardBlockEntity) world.getBlockEntity(pos);
             if(circuit == null)
                 return;
-            ModdedPackets.getChannel().sendToClientsTracking(new UpdateComponentS2CPacket(circuit, this, property), circuit);
+            ModdedPackets.getChannel().sendToClientsTracking(new UpdateComponentBiPacket(circuit, this, property), circuit);
+        });
+    }
+
+    public void notifyClients(Identifier propertyId) {
+        onServerWorld(() -> world -> {
+            var circuit = (CircuitBoardBlockEntity) world.getBlockEntity(pos);
+            if(circuit == null)
+                return;
+            ModdedPackets.getChannel().sendToClientsTracking(new UpdateComponentBiPacket(circuit, this, propertyId), circuit);
         });
     }
 

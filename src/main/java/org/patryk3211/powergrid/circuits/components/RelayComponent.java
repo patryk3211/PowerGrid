@@ -50,14 +50,23 @@ public class RelayComponent extends OrientableComponent {
 
         final var switchResistance = 0.05f;
         var common = builder.terminalNode(3);
-        var normallyClosed = builder.connectSwitch(switchResistance, common, builder.terminalNode(2), true);
-        var normallyOpen = builder.connectSwitch(switchResistance, common, builder.terminalNode(4), false);
+        var state = placed.get(STATE);
+        var normallyClosed = builder.connectSwitch(switchResistance, common, builder.terminalNode(2), !state);
+        var normallyOpen = builder.connectSwitch(switchResistance, common, builder.terminalNode(4), state);
 
         placed.add(coilWire);
         placed.add(normallyClosed);
         placed.add(normallyOpen);
 
-        super.bake(placed, builder, thermals);
+        thermals.builder()
+                .setMaxCurrent(0.2f, resistance, 125f)
+                .setThermalMass(0.02f)
+                .addHeatSource(coilWire);
+        thermals.builder()
+                .setMaxPower(250, 125f)
+                .setThermalMass(0.075f)
+                .addHeatSource(normallyClosed)
+                .addHeatSource(normallyOpen);
     }
 
     @Override

@@ -81,8 +81,15 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     @Override
     public void tick() {
+        var beginFlags = deferEndpointResolution;
         super.tick();
         var world = getWorld();
+        if(beginFlags != deferEndpointResolution) {
+            terminalPos1 = getEndpoint1().getExactPosition(world);
+            terminalPos2 = getEndpoint2().getExactPosition(world);
+            updateRenderParams();
+        }
+
         var temperature = getTemperature();
 
         var pos = getPos();

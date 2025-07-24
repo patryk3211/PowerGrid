@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.base;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
@@ -70,11 +71,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         if(externalNodes.isEmpty())
             throw new IllegalStateException("Cannot join a network if no external nodes are defined");
         if(getNetwork() == null) {
-            internalNodes.forEach(network::addNode);
             externalNodes.forEach(node -> {
                 if(node != null)
                     network.addNode(node);
             });
+            internalNodes.forEach(network::addNode);
             internalWires.forEach(network::addWire);
         }
     }
@@ -130,11 +131,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
         var network = getNetwork();
         if(network != null) {
+            internalNodes.forEach(network::removeNode);
             externalNodes.forEach(node -> {
                 if(node != null)
                     network.removeNode(node);
             });
-            internalNodes.forEach(network::removeNode);
         }
     }
 
@@ -154,6 +155,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public void addConnection(BlockWireEndpoint endpoint, WireEntity wire) {
         var sourceConnections = connections.computeIfAbsent(endpoint, key -> new ArrayList<>());
+        // Check for stale wires here
+        sourceConnections.removeIf(Entity::isRemoved);
         sourceConnections.add(wire);
         blockEntity.notifyUpdate();
     }

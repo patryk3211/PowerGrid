@@ -1,5 +1,23 @@
 {
   "type": "minecraft:block",
+  "functions": [
+    {
+      "function": "minecraft:copy_nbt",
+      "ops": [
+        {
+          "op": "replace",
+          "source": "Schematic",
+          "target": "Schematic"
+        },
+        {
+          "op": "replace",
+          "source": "Thermal",
+          "target": "Thermal"
+        }
+      ],
+      "source": "block_entity"
+    }
+  ],
   "pools": [
     {
       "bonus_rolls": 0.0,

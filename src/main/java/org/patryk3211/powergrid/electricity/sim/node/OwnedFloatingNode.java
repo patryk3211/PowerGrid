@@ -23,4 +23,9 @@ public class OwnedFloatingNode extends FloatingNode {
     public OwnedFloatingNode(IWireEndpoint endpoint) {
         this.endpoint = endpoint;
     }
+
+    @Override
+    public String toString() {
+        return String.format("OwnedFloatingNode[endpoint=%s]", endpoint);
+    }
 }

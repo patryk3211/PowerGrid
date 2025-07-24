@@ -17,42 +17,35 @@ package org.patryk3211.powergrid.electricity.sim;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class NetworkGraph {
     private static class Node {
         public final IElectricNode node;
-        public final Map<Node, Connection> connections;
+        public final Map<Node, List<AbstractElectricWire>> connections;
+        public final Set<ICouplingNode> couplings;
         public boolean isKept;
 
         public Node(IElectricNode node) {
             this.node = node;
             this.connections = new HashMap<>();
+            this.couplings = new HashSet<>();
             isKept = false;
         }
     }
 
-    private record Connection(WireEntity entity, ElectricWire wire) { }
-
     private final Map<IElectricNode, Node> nodes = new HashMap<>();
-    private final Map<IElectricNode, Integer> countOverrides = new HashMap<>();
+    public IGraphModifyHooks hooks = null;
 
     public void addNode(IElectricNode node) {
         if(nodes.containsKey(node))
             return;
         nodes.put(node, new Node(node));
-    }
-
-    public void keepNode(IElectricNode node) {
-        if(!nodes.containsKey(node))
-            return;
-        nodes.get(node).isKept = true;
+        if(hooks != null)
+            hooks.addNode(node);
     }
 
     public void removeNode(IElectricNode node) {
@@ -67,48 +60,90 @@ public class NetworkGraph {
         for(var other : object.connections.keySet()) {
             other.connections.remove(object);
         }
+        if(!object.couplings.isEmpty()) {
+            ElectricalNetwork.LOGGER.warn("Electric node removed before it was fully decoupled, this can cause issues");
+        }
+        if(hooks != null)
+            hooks.removeNode(node);
     }
 
-    public void connect(IElectricNode node1, IElectricNode node2, WireEntity entity, @Nullable ElectricWire wire) {
+    public void connect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return;
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
 
-        var conn = new Connection(entity, wire);
-        object1.connections.put(object2, conn);
-        object2.connections.put(object1, conn);
+        var conns1 = object1.connections.computeIfAbsent(object2, key -> new ArrayList<>());
+        if(!conns1.contains(wire)) conns1.add(wire);
+        var conns2 = object2.connections.computeIfAbsent(object1, key -> new ArrayList<>());
+        if(!conns2.contains(wire)) conns2.add(wire);
+        if(hooks != null)
+            hooks.addWire(wire);
     }
 
-    public void disconnect(IElectricNode node1, IElectricNode node2) {
+    public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return;
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
 
-        object1.connections.remove(object2);
-        object2.connections.remove(object1);
+        var conns1 = object1.connections.get(object2);
+        if(conns1 != null) {
+            conns1.remove(wire);
+            if(conns1.isEmpty())
+                object1.connections.remove(object2);
+        }
+        var conns2 = object2.connections.get(object1);
+        if(conns2 != null) {
+            conns2.remove(wire);
+            if(conns2.isEmpty())
+                object2.connections.remove(object1);
+        }
+        if(hooks != null)
+            hooks.removeWire(wire);
     }
 
-    public WireEntity getEntity(IElectricNode node1, IElectricNode node2) {
-        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
-            return null;
+    public void couple(ICouplingNode coupling) {
+        for(var node : coupling.coupledNodes()) {
+            var object = nodes.get(node);
+            if(object == null)
+                continue;
+            object.couplings.add(coupling);
+        }
+    }
 
-        var object1 = nodes.get(node1);
-        var object2 = nodes.get(node2);
-        return object1.connections.get(object2).entity;
+    public void decouple(ICouplingNode coupling) {
+        for(var node : coupling.coupledNodes()) {
+            var object = nodes.get(node);
+            if(object == null)
+                continue;
+            object.couplings.remove(coupling);
+        }
     }
 
     @Nullable
-    public ElectricWire getWire(IElectricNode node1, IElectricNode node2) {
+    public AbstractElectricWire getFirstWire(IElectricNode node1, IElectricNode node2) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return null;
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
-        return object1.connections.get(object2).wire;
+
+        var conn = object1.connections.get(object2);
+        return conn == null ? null : conn.isEmpty() ? null : conn.get(0);
+    }
+
+    public Collection<AbstractElectricWire> getWires(IElectricNode node1, IElectricNode node2) {
+        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
+            return List.of();
+
+        var object1 = nodes.get(node1);
+        var object2 = nodes.get(node2);
+
+        var conn = object1.connections.get(object2);
+        return conn == null ? List.of() : conn;
     }
 
     @NotNull
@@ -116,27 +151,39 @@ public class NetworkGraph {
         if(!nodes.containsKey(node))
             return List.of();
         var eNodes = new ArrayList<IElectricNode>();
-        for(var otherNode : nodes.get(node).connections.keySet()) {
+        var object = nodes.get(node);
+        for(var otherNode : object.connections.keySet()) {
+            if(eNodes.contains(otherNode.node))
+                continue;
             eNodes.add(otherNode.node);
+        }
+        for(var coupling : object.couplings) {
+            for(var otherNode : coupling.coupledNodes()) {
+                if(otherNode == node)
+                    continue;
+                if(eNodes.contains(otherNode))
+                    continue;
+                eNodes.add(otherNode);
+            }
         }
         return eNodes;
     }
 
     public int connectionCount(IElectricNode node) {
-        if(countOverrides.containsKey(node))
-            return countOverrides.get(node);
         if(!nodes.containsKey(node))
             return 0;
-        return nodes.get(node).connections.size();
+
+        var object = nodes.get(node);
+        int size = object.couplings.size();
+        for(var list : object.connections.values())
+            size += list.size();
+        return size;
     }
 
-    public void addCountOverrides(Map<IElectricNode, Integer> overrides) {
-        countOverrides.putAll(overrides);
-    }
-
-    public void removeCountOverride(Map<IElectricNode, Integer> overrides) {
-        for(var node : overrides.keySet()) {
-            countOverrides.remove(node);
-        }
+    public interface IGraphModifyHooks {
+        default void addNode(IElectricNode node) { }
+        default void removeNode(IElectricNode node) { }
+        default void addWire(AbstractElectricWire wire) { }
+        default void removeWire(AbstractElectricWire wire) { }
     }
 }

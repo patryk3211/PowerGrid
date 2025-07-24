@@ -15,9 +15,12 @@
  */
 package org.patryk3211.powergrid.circuits.circuitboard;
 
+import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -25,13 +28,11 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.utility.Lang;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric {
+public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
     private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
@@ -52,9 +53,16 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         notifyUpdate();
     }
 
+    public void setAdditionalData(NbtCompound tag) {
+        if(baked == null)
+            return;
+        baked.read(tag);
+        notifyUpdate();
+    }
+
     private void bakeCircuit() {
         componentCache.clear();
-        baked = BakedCircuit.from(schematic, pos);
+        baked = BakedCircuit.from(schematic, () -> world, pos);
         for(var placed : schematic.components()) {
             placed.withWorld(this::getWorld, pos);
         }
@@ -125,5 +133,18 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         }
         componentCache.put(ofClass, components);
         return components;
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+        if(baked == null || !baked.isDamaged())
+            return false;
+
+        Lang.translate("gui.circuit_board.damage_header")
+                .forGoggles(tooltip);
+        Lang.translate("gui.circuit_board.damage_body")
+                .style(Formatting.GRAY)
+                .forGoggles(tooltip);
+        return true;
     }
 }

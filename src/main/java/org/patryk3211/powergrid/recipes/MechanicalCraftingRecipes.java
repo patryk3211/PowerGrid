@@ -112,7 +112,16 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .patternLine("Z")
                     .patternLine("Z")
                     .patternLine("A")
-            )
+            ),
+
+    HV_SWITCH = create(ModdedBlocks.HV_SWITCH::get)
+            .recipe(b -> b
+                    .key('I', RecipeTags.ironSheet())
+                    .key('A', AllBlocks.ANDESITE_CASING)
+                    .key('G', AllBlocks.COGWHEEL)
+                    .patternLine("I  ")
+                    .patternLine("I  ")
+                    .patternLine("AGI"))
             ;
 
 

@@ -15,12 +15,19 @@
  */
 package org.patryk3211.powergrid.electricity;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.sim.*;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
@@ -32,131 +39,67 @@ public class GlobalElectricNetworks {
     public static void init() {
         ServerTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
         ServerWorldEvents.UNLOAD.register((server, world) -> worldNetworks.remove(world));
+        ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
     }
 
     protected static void tick(World world) {
         var networks = worldNetworks.get(world);
         if(networks == null)
             return;
-        List<ElectricalNetwork> removed = new LinkedList<>();
-        for(final var network : networks.subnetworks) {
-            if(network.isEmpty()) {
-                removed.add(network);
-                continue;
-            }
-            if(network.isDirty()) {
-                // Two more recalculations to make sure the network is stable.
-                network.calculate();
-                network.calculate();
-            }
-            network.calculate();
-        }
-        networks.removeAll(removed);
-        for(final var network : networks.subnetworks) {
-            network.calculate();
-        }
+        networks.tick();
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static WorldNetworks makeClientWorldNetworks(World world) {
+        return new ClientWorldNetworks(world);
     }
 
     public static WorldNetworks getWorldNetworks(World world) {
-        return worldNetworks.computeIfAbsent(world, WorldNetworks::new);
+        return worldNetworks.computeIfAbsent(world, key -> {
+            if(key.isClient) return makeClientWorldNetworks(key);
+            var server = (ServerWorld) world;
+            return server.getPersistentStateManager().getOrCreate(
+                    nbt -> new WorldNetworks(world, nbt),
+                    () -> new WorldNetworks(world),
+                    "powergrid_electric_network_data"
+            );
+        });
     }
 
-    public static ElectricalNetwork createNetwork(World world) {
-        var networkList = getWorldNetworks(world);
-        return networkList.newNetwork();
-    }
-
-    public static ElectricWire makeSimpleWire(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        var node1 = endpoint1.getNode(world);
-        var node2 = endpoint2.getNode(world);
-
-        if(node1 == null || node2 == null)
+    public static TransmissionLine getLine(WireEntity entity) {
+        var wire = entity.getWire();
+        if(wire == null)
             return null;
-        if(node1 == node2)
-            return null;
-        if(node1 == null || node2 == null)
-            return null;
-
-        // Put both nodes into the same network.
-        ElectricalNetwork network;
-        if(node1.getNetwork() == null && node2.getNetwork() == null) {
-            network = GlobalElectricNetworks.createNetwork(world);
-            endpoint1.joinNetwork(world, network);
-            endpoint2.joinNetwork(world, network);
-        } else if(node1.getNetwork() == null) {
-            network = node2.getNetwork();
-            endpoint1.joinNetwork(world, network);
-        } else if(node2.getNetwork() == null) {
-            network = node1.getNetwork();
-            endpoint2.joinNetwork(world, network);
-        } else if(node1.getNetwork() != node2.getNetwork()) {
-            if(node1.getNetwork().size() >= node2.getNetwork().size()) {
-                network = node1.getNetwork();
-                network.merge(node2.getNetwork());
-            } else {
-                network = node2.getNetwork();
-                network.merge(node1.getNetwork());
-            }
-        } else {
-            network = node1.getNetwork();
+        var worldNetworks = getWorldNetworks(entity.getWorld());
+        var line = worldNetworks.transmissionLineNodes.get(wire.getNode1());
+        if(line != null && line.isPart(wire)) {
+            return line;
         }
-
-        var wire = new OwnedElectricWire(forEntity.getResistance(), node1, node2, forEntity);
-        network.addWire(wire);
-
-        var worldNetworks = getWorldNetworks(world);
-        worldNetworks.globalGraph.connect(node1, node2, forEntity, wire);
-        return wire;
+        line = worldNetworks.transmissionLineNodes.get(wire.getNode2());
+        if(line != null && line.isPart(wire)) {
+            return line;
+        }
+        // If that fails, the only other option is that the line has one segment (or doesn't exist).
+        var lineWire = worldNetworks.globalGraph.getFirstWire(wire.getNode1(), wire.getNode2());
+        if(lineWire instanceof TransmissionLine line1) {
+            return line1;
+        }
+        return null;
     }
 
     public static ElectricWire makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        var node1 = endpoint1.getNode(world);
-        var node2 = endpoint2.getNode(world);
-
-        if(node1 == node2)
-            return null;
-        if(node1 == null || node2 == null)
-            return null;
-
-        var worldNetworks = getWorldNetworks(world);
-        worldNetworks.add(endpoint1);
-        worldNetworks.add(endpoint2);
-
-        return makeSimpleWire(world, endpoint1, endpoint2, forEntity);
+        return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity);
     }
 
-    public static class WorldNetworks {
-        public final World world;
-        public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
-        public final NetworkGraph globalGraph = new NetworkGraph();
-
-        public WorldNetworks(World world) {
-            this.world = world;
-        }
-
-        public ElectricalNetwork newNetwork() {
-            var network = new GraphedElectricalNetwork(globalGraph);
-            subnetworks.add(network);
-            return network;
-        }
-
-        public void add(ElectricalNetwork network) {
-            subnetworks.add(network);
-        }
-
-        public void add(IWireEndpoint endpoint) {
-            if(endpoint instanceof BlockWireEndpoint blockEndpoint) {
-                var block = world.getBlockState(blockEndpoint.getPos());
-                globalGraph.addNode(endpoint.getNode(world));
+    public static void inspect(IElectricNode node, PlayerEntity user) {
+        var worldNetworks = getWorldNetworks(user.getWorld());
+        user.sendMessage(Text.of(user instanceof ServerPlayerEntity ? "Server:" : "Client:"));
+        user.sendMessage(Text.literal(node.toString()));
+        for(var connected : worldNetworks.globalGraph.getConnectedNodes(node)) {
+            user.sendMessage(Text.literal(" - " + connected));
+            for(var wire : worldNetworks.globalGraph.getWires(node, connected)) {
+                user.sendMessage(Text.literal("  via " + wire));
             }
-        }
-
-        public int connectionCount(IWireEndpoint endpoint) {
-            return globalGraph.connectionCount(endpoint.getNode(world));
-        }
-
-        public void removeAll(Collection<ElectricalNetwork> networks) {
-            subnetworks.removeAll(networks);
         }
     }
 }

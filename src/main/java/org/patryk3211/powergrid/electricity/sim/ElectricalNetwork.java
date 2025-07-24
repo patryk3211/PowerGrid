@@ -20,6 +20,7 @@ import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.BiCGSTABSolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
+import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -43,6 +44,8 @@ public class ElectricalNetwork {
 
     private boolean dirty;
     private boolean recalculating;
+    private double conductanceDelta = 0;
+    private int conductanceUpdates = 0;
 
     public static Logger LOGGER = null;
 
@@ -67,6 +70,8 @@ public class ElectricalNetwork {
     }
 
     public void addNode(IElectricNode node) {
+        if(nodes.contains(node))
+            return;
         node.assignIndex(nodes.size());
         node.setNetwork(this);
         nodes.add(node);
@@ -84,7 +89,7 @@ public class ElectricalNetwork {
     }
 
     public void removeNode(INode node) {
-        if(nodes.get(node.getIndex()) != node)
+        if(node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
             // This node is not actually in this network.
             return;
 
@@ -130,11 +135,20 @@ public class ElectricalNetwork {
     }
 
     public void addWire(AbstractElectricWire wire) {
-        if((wire.node1 != null && !nodes.contains(wire.node1)) || (wire.node2 != null && !nodes.contains(wire.node2)))
+        if(wire.node1 != null && !nodes.contains(wire.node1)) {
             // If node of a wire is not null it must be in the network's node set.
-            throw new IllegalArgumentException("Both nodes of a wire must be part of the network");
+            var suffix = wire.node1.getNetwork() == null ? "no network" : "different network";
+            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 isn't - " + suffix + ")");
+        }
+        if(wire.node2 != null && !nodes.contains(wire.node2)) {
+            // If node of a wire is not null it must be in the network's node set.
+            var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
+            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 isn't - " + suffix + ")");
+        }
         wire.setNetwork(this);
         wires.add(wire);
+        if(wire instanceof CapacitorWire)
+            ++sourceCount;
 
         updateConductance(wire, wire.conductance());
         if(wire instanceof ISolverHook hook)
@@ -142,9 +156,11 @@ public class ElectricalNetwork {
     }
 
     public void updateConductance(AbstractElectricWire wire, double change) {
-        if(conductanceMatrix == null || dirty)
+        if(conductanceMatrix == null || dirty || change == 0)
             return;
 
+        conductanceDelta += Math.abs(change);
+        ++conductanceUpdates;
         if(wire.node1 != null && wire.node2 != null) {
             var index1 = wire.node1.getIndex();
             var index2 = wire.node2.getIndex();
@@ -197,6 +213,8 @@ public class ElectricalNetwork {
             return;
         wires.remove(wire);
         wire.setNetwork(null);
+        if(wire instanceof CapacitorWire)
+            --sourceCount;
 
         updateConductance(wire, -wire.conductance());
         if(wire instanceof ISolverHook hook)
@@ -243,6 +261,8 @@ public class ElectricalNetwork {
 
     private void populateConductanceMatrix() {
         conductanceMatrix.zero();
+        conductanceDelta = 0;
+        conductanceUpdates = 0;
         List<AbstractElectricWire> staleWires = new ArrayList<>();
         for(var wire : wires) {
             var G = wire.conductance();
@@ -250,8 +270,9 @@ public class ElectricalNetwork {
                 var index1 = wire.node1.getIndex();
                 var index2 = wire.node2.getIndex();
                 if(!nodes.contains(wire.node1) || !nodes.contains(wire.node2)) {
-                    if(LOGGER != null)
-                        LOGGER.warn("Dropped a stale wire (wire nodes not part of this network).");
+                    if(LOGGER != null) {
+                        LOGGER.warn("Dropped a stale wire (wire nodes not part of this network) between {} and {}.", wire.node1, wire.node2);
+                    }
                     staleWires.add(wire);
                     continue;
                 }
@@ -332,6 +353,12 @@ public class ElectricalNetwork {
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix();
             populateCurrentMatrix();
+        } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
+            // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
+            // the matrices from scratch.
+            LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
+            populateConductanceMatrix();
+            populateCurrentMatrix();
         }
 
         if(printState) {
@@ -345,6 +372,10 @@ public class ElectricalNetwork {
         }
         for(var node : nodes) {
             if(node instanceof IElectricNode enode) {
+                if(node.getIndex() >= result.getNumRows()) {
+                    // Why is it here???
+                    continue;
+                }
                 float value = (float) result.get(node.getIndex(), 0);
                 if(Float.isNaN(value)) {
                     if(!recalculating) {

@@ -43,6 +43,7 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
 
     protected float resistance = 0.01f;
     protected float maxVoltage = 200f;
+    protected boolean isButton = false;
 
     public SwitchBlock(Settings settings) {
         super(settings);
@@ -60,11 +61,17 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
         if(!player.isSneaking()) {
             if(!IWire.holdsWire(player)) {
                 var isOpen = !state.get(OPEN);
-                world.setBlockState(pos, state.with(OPEN, isOpen));
-                if(world.getBlockEntity(pos) instanceof SwitchBlockEntity entity) {
-                    entity.setState(!isOpen);
+                if(!isButton) {
+                    world.setBlockState(pos, state.with(OPEN, isOpen));
+                    withBlockEntityDo(world, pos, be -> be.setState(!isOpen));
+                    useSound(world, pos, isOpen);
+                } else {
+                    if(!isOpen) {
+                        world.setBlockState(pos, state.with(OPEN, false));
+                        useSound(world, pos, false);
+                    }
+                    withBlockEntityDo(world, pos, be -> be.setState(true));
                 }
-                useSound(world, pos, isOpen);
                 return ActionResult.SUCCESS;
             }
         }

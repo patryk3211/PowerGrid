@@ -40,6 +40,11 @@ public class ResistorComponent extends OrientableComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        builder.connect(placed.get(RESISTANCE), builder.terminalNode(0), builder.terminalNode(1));
+        var wire = builder.connect(placed.get(RESISTANCE), builder.terminalNode(0), builder.terminalNode(1));
+        // 1 watt of dissipation power, these are not high power resistors.
+        thermals.builder()
+                .setThermalMass(0.01f)
+                .setMaxPower(10, 125f)
+                .addHeatSource(wire);
     }
 }

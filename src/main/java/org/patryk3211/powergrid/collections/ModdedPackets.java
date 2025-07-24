@@ -51,7 +51,10 @@ public class ModdedPackets {
     public static final PacketType<SaveSchematicC2SPacket> SAVE_SCHEMATIC = register(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new, PLAY_TO_SERVER);
     public static final PacketType<TransformerWindingC2SPacket> TRANSFORMER_WINDING = register(TransformerWindingC2SPacket.class, TransformerWindingC2SPacket::new, PLAY_TO_SERVER);
 
-    public static final PacketType<UpdateComponentS2CPacket> UPDATE_COMPONENT = register(UpdateComponentS2CPacket.class, UpdateComponentS2CPacket::new, PLAY_TO_CLIENT);
+    public static final PacketType<UpdateComponentBiPacket> UPDATE_COMPONENT_S2C = register(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new, PLAY_TO_CLIENT);
+    public static final PacketType<UpdateComponentBiPacket> UPDATE_COMPONENT_C2S = register(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new, PLAY_TO_SERVER);
+
+    public static final PacketType<TransmissionLineS2CPacket> TRANSMISSION_LINE = register(TransmissionLineS2CPacket.class, TransmissionLineS2CPacket::new, PLAY_TO_CLIENT);
 
     private static <T extends SimplePacketBase> PacketType<T> register(Class<T> type, Function<PacketByteBuf, T> factory, SimplePacketBase.NetworkDirection direction) {
         var packetType = new PacketType<>(type, factory, direction);

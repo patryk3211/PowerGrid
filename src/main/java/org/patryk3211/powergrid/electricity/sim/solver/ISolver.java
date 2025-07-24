@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.electricity.sim.solver;
 
 import org.ejml.data.DMatrixRMaj;
 
+import java.util.Collection;
+
 public interface ISolver {
     void setStateSize(int size);
     DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b);
@@ -24,4 +26,6 @@ public interface ISolver {
 
     void addHook(ISolverHook hook);
     void removeHook(ISolverHook hook);
+
+    Collection<ISolverHook> getHooks();
 }

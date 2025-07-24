@@ -20,6 +20,9 @@
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
 
+  "powergrid.gui.circuit_board.damage_header": "Damaged",
+  "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
@@ -80,10 +83,18 @@
   "powergrid.component.property.relay_state": "State",
 
   "powergrid.component.property.resistor_value": "Resistance",
+  "powergrid.component.property.capacitor_value": "Capacitance",
 
   "powergrid.component.property.redstone_emitter_digital": "Digital",
 
   "powergrid.component.property.orientation": "Orientation",
+
+  "powergrid.component.property.led_red": "Red",
+  "powergrid.component.property.led_green": "Green",
+  "powergrid.component.property.led_blue": "Blue",
+
+  "powergrid.component.property.potentiometer_resistance": "Resistance",
+  "powergrid.component.property.potentiometer_value": "Setting",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",

@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.thermal;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
@@ -35,10 +36,13 @@ public class ThermalUnit {
     private final Collection<AbstractElectricWire> heatSources;
     @Nullable
     private final Consumer<Float> temperatureCallback;
+    @Nullable
+    private final Runnable overheatCallback;
 
     private float temperature = 22f;
+    private Vec3d position;
 
-    public ThermalUnit(UUID componentUUID, int index, float thermalMass, float dissipationFactor, float overheatTemperature, Collection<AbstractElectricWire> heatSources, @Nullable Consumer<Float> temperatureCallback) {
+    public ThermalUnit(UUID componentUUID, int index, float thermalMass, float dissipationFactor, float overheatTemperature, Collection<AbstractElectricWire> heatSources, @Nullable Consumer<Float> temperatureCallback, @Nullable Runnable overheatCallback) {
         this.componentUUID = componentUUID;
         this.index = index;
         this.thermalMass = thermalMass;
@@ -46,16 +50,52 @@ public class ThermalUnit {
         this.overheatTemperature = overheatTemperature;
         this.heatSources = heatSources;
         this.temperatureCallback = temperatureCallback;
+        this.overheatCallback = overheatCallback;
+    }
+
+    private void temperatureChanged() {
+        // Heat sources are removed if device has overheated
+        if(hasOverheated()) {
+            heatSources.forEach(AbstractElectricWire::remove);
+            if(overheatCallback != null)
+                overheatCallback.run();
+        }
+        if(temperatureCallback != null)
+            temperatureCallback.accept(temperature);
+    }
+
+    public boolean hasOverheated() {
+        return temperature >= overheatTemperature;
     }
 
     public void tick() {
+        if(hasOverheated())
+            return;
         float power = -dissipationFactor * (temperature - BASE_TEMPERATURE);
         for(var source : heatSources) {
             power += source.power();
         }
         temperature += power / 20f / thermalMass;
-        if(temperatureCallback != null)
-            temperatureCallback.accept(temperature);
+        if(power < 0 && temperature < 22f)
+            temperature = 22f;
+        temperatureChanged();
+    }
+
+    public ThermalUnit withPosition(Vec3d position) {
+        this.position = position;
+        return this;
+    }
+
+    public Vec3d getPosition() {
+        return position;
+    }
+
+    public float getTemperature() {
+        return temperature;
+    }
+
+    public float getOverheatTemperature() {
+        return overheatTemperature;
     }
 
     public String getKey() {
@@ -64,8 +104,7 @@ public class ThermalUnit {
 
     public void read(NbtCompound nbt) {
         temperature = nbt.getFloat(getKey());
-        if(temperatureCallback != null)
-            temperatureCallback.accept(temperature);
+        temperatureChanged();
     }
 
     public void write(NbtCompound nbt) {

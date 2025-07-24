@@ -115,7 +115,7 @@ public abstract class ArmInteractionPointMixin {
     }
 
     @Inject(
-            method = "insert(Lnet/minecraft/item/ItemStack;Lnet/fabricmc/fabric/api/transfer/v1/transaction/TransactionContext;)Lnet/minecraft/item/ItemStack;",
+            method = "insert",
             at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/transfer/v1/storage/Storage;insert(Ljava/lang/Object;JLnet/fabricmc/fabric/api/transfer/v1/transaction/TransactionContext;)J"),
             cancellable = true
     )

@@ -18,8 +18,8 @@ package org.patryk3211.powergrid.electricity.sim;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 public abstract class AbstractElectricWire {
-    public final IElectricNode node1;
-    public final IElectricNode node2;
+    protected IElectricNode node1;
+    protected IElectricNode node2;
 
     protected ElectricalNetwork network;
 
@@ -32,9 +32,50 @@ public abstract class AbstractElectricWire {
         this.network = network;
     }
 
+    public ElectricalNetwork getNetwork() {
+        return network;
+    }
+
     public void remove() {
         if(network != null)
             network.removeWire(this);
+    }
+
+    public void setNode1(IElectricNode node1) {
+        if(network != null) {
+            var network = this.network;
+            network.removeWire(this);
+            this.node1 = node1;
+            network.addWire(this);
+        } else {
+            this.node1 = node1;
+        }
+    }
+
+    public void setNode2(IElectricNode node2) {
+        if(network != null) {
+            var network = this.network;
+            network.removeWire(this);
+            this.node2 = node2;
+            network.addWire(this);
+        } else {
+            this.node2 = node2;
+        }
+    }
+
+    public void flipNodes() {
+        // Node order doesn't matter in the conductance matrix so no additional updates are required.
+        var b = node2;
+        node2 = node1;
+        node1 = b;
+    }
+
+    public IElectricNode getNode1() {
+        return node1;
+    }
+
+    public IElectricNode getNode2() {
+        return node2;
     }
 
     public float potentialDifference() {
@@ -46,6 +87,8 @@ public abstract class AbstractElectricWire {
     }
 
     public float current() {
+        if(network == null)
+            return 0;
         return (float) (potentialDifference() * conductance());
     }
 

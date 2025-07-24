@@ -15,10 +15,19 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
+import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
+import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
 public class ViaComponent extends Component {
     public ViaComponent(ComponentFootprint footprint) {
         super(footprint);
+    }
+
+    @Override
+    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
+
     }
 }
