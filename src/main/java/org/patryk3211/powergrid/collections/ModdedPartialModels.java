@@ -38,8 +38,15 @@ public class ModdedPartialModels {
 
     public static final PartialModel HV_SWITCH_ROD = block("switches/hv_switch_rod");
 
+    public static final PartialModel LED_BULB = model("component/led_bulb");
+    public static final PartialModel POTENTIOMETER_KNOB = model("component/potentiometer_knob");
+
     private static PartialModel block(String path) {
         return new PartialModel(PowerGrid.asResource("block/" + path));
+    }
+
+    private static PartialModel model(String path) {
+        return new PartialModel(PowerGrid.asResource(path));
     }
 
     @SuppressWarnings("EmptyMethod")

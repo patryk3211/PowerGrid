@@ -73,9 +73,7 @@ public abstract class Component {
         return List.of();
     }
 
-    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, @NotNull ThermalBuilder.IEmitter thermals) {
-
-    }
+    public abstract void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, @NotNull ThermalBuilder.IEmitter thermals);
 
     /**
      * Called every tick as long as the returned value is true

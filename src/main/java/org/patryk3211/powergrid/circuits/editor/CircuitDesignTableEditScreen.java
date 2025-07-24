@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
+import org.patryk3211.powergrid.circuits.gui.TextFieldPropertyWidget;
 import org.patryk3211.powergrid.circuits.schematic.*;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedKeys;
@@ -140,7 +141,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         super.init();
 
-        editWidget = new CircuitEditWidget(schematic, x + 13 - 11, y + 22, GRID_SIZE * CIRCUIT_SCALE, GRID_SIZE * CIRCUIT_SCALE);
+        editWidget = new CircuitEditWidget(textRenderer, schematic, x + 13 - 11, y + 22, GRID_SIZE * CIRCUIT_SCALE, GRID_SIZE * CIRCUIT_SCALE);
         propertiesWidget = new ComponentPropertiesWidget(textRenderer, x - 15, y + 12);
 
         var name = handler.contentHolder.getSchematicName();
@@ -405,6 +406,9 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         var handled = focused != null && focused.keyPressed(keyCode, scanCode, modifiers);
         if(handled)
             return true;
+
+        if(selectedComponent != null || focused instanceof TextFieldWidget)
+            return false;
 
         // Hotbar as component quick select
         var hotbar = client.options.hotbarKeys;

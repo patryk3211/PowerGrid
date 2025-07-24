@@ -36,7 +36,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import java.util.Collection;
 import java.util.List;
 
-public class SwitchComponent extends OrientableComponent implements IDynamicComponent {
+public class SwitchComponent extends OrientableComponent implements IInteractableComponent {
     public static final BooleanProperty STATE = new BooleanProperty(PowerGrid.MOD_ID, "switch_state");
 
     public SwitchComponent(ComponentFootprint footprint) {
@@ -53,15 +53,15 @@ public class SwitchComponent extends OrientableComponent implements IDynamicComp
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, @NotNull ThermalBuilder.IEmitter thermals) {
         var wire = builder.connectSwitch(0.150f, builder.terminalNode(0), builder.terminalNode(1), placed.get(STATE));
         placed.add(wire);
+        thermals.builder()
+                .setMaxPower(20, 150)
+                .setThermalMass(0.01f)
+                .addHeatSource(wire);
     }
 
     @Override
     public VoxelShape getShape(@NotNull PlacedComponent placed) {
-        var footprint = footprint(placed);
-        return VoxelShapes.cuboid(
-                placed.x / 16f, BASE_Y, placed.y / 16f,
-                (placed.x + footprint.getWidth()) / 16f, BASE_Y + 2 / 16f, (placed.y + footprint.getHeight()) / 16f
-        );
+        return IInteractableComponent.extrudedFootprint(placed, 2 / 16f);
     }
 
     @Override

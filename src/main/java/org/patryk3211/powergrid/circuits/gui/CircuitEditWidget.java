@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.circuits.gui;
 
 import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -32,6 +33,7 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_G
 public class CircuitEditWidget extends AbstractSimiWidget {
     private int scale = CIRCUIT_SCALE;
 
+    private final TextRenderer textRenderer;
     private boolean selectStarted = false;
     private int startX, startY;
 
@@ -45,8 +47,9 @@ public class CircuitEditWidget extends AbstractSimiWidget {
 
     private final CircuitSchematic schematic;
 
-    public CircuitEditWidget(CircuitSchematic schematic, int x, int y, int width, int height) {
+    public CircuitEditWidget(TextRenderer textRenderer, CircuitSchematic schematic, int x, int y, int width, int height) {
         super(x, y, width, height);
+        this.textRenderer = textRenderer;
         this.schematic = schematic;
     }
 
@@ -73,6 +76,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             int offsetX = footprint.getWidth() / 2;
             int offsetY = footprint.getHeight() / 2;
             footprint.render(ctx, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
+            footprint.renderPadIndices(ctx, textRenderer, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
 
             ms.push();
             ms.scale(1f / scale, 1f / scale, 1f / scale);

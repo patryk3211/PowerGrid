@@ -8,6 +8,11 @@
     "powergrid:relay",
     "powergrid:resistor",
     "powergrid:redstone_relay",
-    "powergrid:andesite_voltage_gauge"
+    "powergrid:andesite_voltage_gauge",
+    "powergrid:diode",
+    "powergrid:capacitor",
+    "powergrid:led",
+    "powergrid:lv_button",
+    "powergrid:potentiometer"
   ]
 }

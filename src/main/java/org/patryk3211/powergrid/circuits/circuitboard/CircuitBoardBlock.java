@@ -38,7 +38,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.circuits.components.IDynamicComponent;
+import org.patryk3211.powergrid.circuits.components.IInteractableComponent;
 import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -60,6 +60,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         withBlockEntityDo(world, pos, be -> {
             be.withSchematic(CircuitSchematic.fromStack(stack));
+            be.setAdditionalData(stack.getNbt());
         });
         super.onPlaced(world, pos, state, placer, stack);
     }
@@ -73,8 +74,8 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                 var terminal = be.terminal(state, i);
                 shapeCopy = VoxelShapes.union(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
             }
-            for(var placed : be.getComponents(IDynamicComponent.class)) {
-                var dynamic = (IDynamicComponent) placed.component;
+            for(var placed : be.getComponents(IInteractableComponent.class)) {
+                var dynamic = (IInteractableComponent) placed.component;
                 shapeCopy = VoxelShapes.union(dynamic.getShape(placed), shapeCopy);
             }
             shape[0] = shapeCopy;
@@ -166,8 +167,8 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         var beResult = onBlockEntityUse(world, pos, be -> {
             var hitLocalPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
-            for(var placed : be.getComponents(IDynamicComponent.class)) {
-                var dynamic = (IDynamicComponent) placed.component;
+            for(var placed : be.getComponents(IInteractableComponent.class)) {
+                var dynamic = (IInteractableComponent) placed.component;
                 var outline = dynamic.getShape(placed).getBoundingBox().expand(1 / 32f);
                 if(!outline.contains(hitLocalPos))
                     continue;

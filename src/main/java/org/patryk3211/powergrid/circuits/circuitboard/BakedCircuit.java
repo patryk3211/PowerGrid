@@ -16,14 +16,19 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.circuits.thermal.ThermalUnit;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
@@ -43,16 +48,19 @@ public class BakedCircuit {
     public final List<PlacedComponent> tickedComponents = new ArrayList<>();
     private final Map<PlacedComponent, Function<Integer, FloatingNode>> padNodeProviderMap = new HashMap<>();
 
-    protected BakedCircuit() {
+    private boolean isDamaged = false;
+    private final Supplier<World> world;
 
+    protected BakedCircuit(Supplier<World> world) {
+        this.world = world;
     }
 
     private FloatingNode getNode(CircuitSchematic.Node node) {
         return padNodeProviderMap.get(node.placed()).apply(node.pad());
     }
 
-    public static BakedCircuit from(CircuitSchematic schematic, BlockPos pos) {
-        var result = new BakedCircuit();
+    public static BakedCircuit from(CircuitSchematic schematic, Supplier<World> world, BlockPos pos) {
+        var result = new BakedCircuit(world);
 
         // Create component pad nodes.
         for(var placed : schematic.components()) {
@@ -89,7 +97,11 @@ public class BakedCircuit {
                 return thermalBuilder;
             };
             placed.component.bake(placed, builder, thermalEmitter);
-            thermalBuilders.stream().map(ThermalBuilder::build).forEach(result.thermalUnits::add);
+            var footprint = placed.footprint();
+            var localPos = Vec3d.of(pos).add((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f);
+            thermalBuilders.stream()
+                    .map(b -> b.build().withPosition(localPos))
+                    .forEach(result.thermalUnits::add);
             result.tickedComponents.add(placed);
 
             if(external) {
@@ -136,15 +148,51 @@ public class BakedCircuit {
     }
 
     public void read(NbtCompound tag) {
-        var thermalTag = tag.getCompound("Thermal");
-        for(var unit : thermalUnits) {
-            unit.read(thermalTag);
+        if(tag.contains("Thermal")) {
+            var thermalTag = tag.getCompound("Thermal");
+            for(var unit : thermalUnits) {
+                unit.read(thermalTag);
+            }
         }
+        isDamaged = false;
+    }
+
+    public boolean isDamaged() {
+        if(isDamaged)
+            return true;
+        for(var unit : thermalUnits) {
+            if(unit.hasOverheated()) {
+                isDamaged = true;
+                break;
+            }
+        }
+        return isDamaged;
     }
 
     public void tick() {
+        var client = world.get().isClient;
         for(var unit : thermalUnits) {
+            var overheated = unit.hasOverheated();
             unit.tick();
+            if(client) {
+                var world = this.world.get();
+                var random = world.random;
+                var pos = unit.getPosition();
+                var x = (float) pos.getX() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                var y = (float) pos.getY() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                var z = (float) pos.getZ() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                if(!unit.hasOverheated() && unit.getTemperature() >= unit.getOverheatTemperature() - 50f) {
+                    // Spawn particles
+                    float chance = (unit.getTemperature() - unit.getOverheatTemperature() + 100) / 100;
+                    if (random.nextFloat() < chance) {
+                        world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+                    }
+                } else if(!overheated && unit.hasOverheated()) {
+                    // Spawn a spark explosion
+                    SparkParticleData.explodeParticles(world, x, y, z, Direction.UP, 10);
+                    ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
+                }
+            }
         }
         // Ticks components as long as they return true
         tickedComponents.removeIf(placed -> !placed.tick());

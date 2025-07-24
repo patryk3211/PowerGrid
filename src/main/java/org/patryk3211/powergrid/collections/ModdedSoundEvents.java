@@ -68,7 +68,6 @@ public class ModdedSoundEvents {
             .build(),
 
     ELECTROZAPPER_SHOOT = create("electrozapper_shoot").subtitle("Electro-Zapper bzzzts")
-//            .addVariant("electrozapper_shoot")
             .category(SoundCategory.PLAYERS)
             .build(),
 
@@ -105,6 +104,11 @@ public class ModdedSoundEvents {
             .category(SoundCategory.BLOCKS)
             .build(),
 
+    COMPONENT_EXPLODE = create("component_explode").subtitle("Component pops")
+            .playExisting(SoundEvents.ENTITY_FIREWORK_ROCKET_BLAST, 0.25f, 2.0f)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
     MICROSWITCH_ON = create("uswitch_on").subtitle("Switch clicks")
             .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_ON, 1.0f, 2.0f)
             .category(SoundCategory.BLOCKS)
@@ -112,6 +116,16 @@ public class ModdedSoundEvents {
 
     MICROSWITCH_OFF = create("uswitch_off").subtitle("Switch clicks")
             .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF, 1.0f, 2.0f)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MICROBUTTON_ON = create("ubutton_on").subtitle("Button clicks")
+            .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_ON, 0.75f, 2.0f)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    MICROBUTTON_OFF = create("ubutton_off").subtitle("Button clicks")
+            .playExisting(SoundEvents.BLOCK_WOODEN_BUTTON_CLICK_OFF, 0.75f, 2.0f)
             .category(SoundCategory.BLOCKS)
             .build(),
 

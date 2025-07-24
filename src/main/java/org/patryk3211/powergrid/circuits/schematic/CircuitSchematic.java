@@ -48,6 +48,7 @@ public class CircuitSchematic {
     }
 
     public CircuitSchematic(CircuitSchematic schematic) {
+        this.name = schematic.name;
         front.from(schematic.front);
         back.from(schematic.back);
         for(var component : schematic.components) {

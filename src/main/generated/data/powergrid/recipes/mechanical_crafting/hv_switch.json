@@ -1,0 +1,23 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "A": {
+      "item": "create:andesite_casing"
+    },
+    "G": {
+      "item": "create:cogwheel"
+    },
+    "I": {
+      "tag": "c:iron_plates"
+    }
+  },
+  "pattern": [
+    "I  ",
+    "I  ",
+    "AGI"
+  ],
+  "result": {
+    "item": "powergrid:hv_switch"
+  }
+}

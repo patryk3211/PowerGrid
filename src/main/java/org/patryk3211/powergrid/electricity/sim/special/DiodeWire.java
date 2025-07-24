@@ -21,31 +21,51 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
 public class DiodeWire extends AbstractElectricWire implements ISolverHook {
+    private static final float I_LEAK = 1e-6f;
+
     private final float resistance;
+    private final float biasVoltage;
+    private double currentConductance;
     private double prevConductance;
 
-    public DiodeWire(float resistance, IElectricNode cathode, IElectricNode anode) {
-        super(cathode, anode);
+    private double prevCurrent;
+
+    public DiodeWire(float resistance, float biasVoltage, IElectricNode cathode, IElectricNode anode) {
+        super(anode, cathode);
         this.resistance = resistance;
+        this.biasVoltage = biasVoltage;
         prevConductance = 0;
+        prevCurrent = 0;
+    }
+
+    private double diodeCurrent(double V) {
+        var Ilin = V / resistance * 0.5;
+        var Ia = (Math.tanh((V - biasVoltage) / 0.2) + 1) * Ilin;
+        return Ia;
     }
 
     @Override
     public double conductance() {
-        var anodePotential = node2.getVoltage() - node1.getVoltage();
-        if(anodePotential == 0)
-            return 0;
-
-        var V = Math.abs(anodePotential);
-        // Diode equation: I_S * exp(V_a / V_t) Here, V_t is constant at 25mV
-        var Ia = Math.min(0.01f * (Math.exp(anodePotential / 0.025f)), V / resistance);
-        return Ia / anodePotential;
+        return currentConductance;
     }
 
     @Override
     public void preSolve(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b) {
-        var newConductance = conductance();
-        network.updateConductance(this, newConductance - prevConductance);
-        prevConductance = newConductance;
+        var V = potentialDifference();
+        var Ia = diodeCurrent(V);
+
+        // Why does this help? Idk, but it does so it stays.
+        prevCurrent = prevCurrent * 0.99 + Ia;
+        if(prevCurrent < 0)
+            prevCurrent = 0;
+        Ia = Ia * 0.9f + prevCurrent * 0.1f;
+
+        if(V + biasVoltage == 0) {
+            currentConductance = I_LEAK;
+        } else {
+            currentConductance = Ia / (V + biasVoltage) + I_LEAK;
+        }
+        network.updateConductance(this, currentConductance - prevConductance);
+        prevConductance = currentConductance;
     }
 }

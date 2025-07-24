@@ -63,7 +63,7 @@ public class ModdedItems {
     public static final ItemEntry<Item> EMPTY_CIRCUIT = REGISTRATE.item("empty_circuit", Item::new)
             .register();
 
-    public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
+//    public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
 
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
             .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
@@ -96,6 +96,12 @@ public class ModdedItems {
     public static final ItemEntry<Item> RELAY = ingredient("relay");
     public static final ItemEntry<Item> RESISTOR = ingredient("resistor");
     public static final ItemEntry<Item> REDSTONE_RELAY = ingredient("redstone_relay");
+    public static final ItemEntry<Item> DIODE = ingredient("diode");
+    public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
+    public static final ItemEntry<Item> LED = REGISTRATE.item("led", Item::new)
+            .lang("LED")
+            .register();
+    public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
