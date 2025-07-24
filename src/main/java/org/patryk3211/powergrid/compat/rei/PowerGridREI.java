@@ -16,6 +16,9 @@
 package org.patryk3211.powergrid.compat.rei;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.compat.rei.ConversionRecipe;
+import com.simibubi.create.compat.rei.CreateREI;
+import com.simibubi.create.compat.rei.category.MysteriousItemConversionCategory;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
@@ -23,9 +26,11 @@ import me.shedaniel.rei.api.client.registry.entry.EntryRegistry;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.compat.HiddenItems;
 
 public class PowerGridREI implements REIClientPlugin {
@@ -62,6 +67,10 @@ public class PowerGridREI implements REIClientPlugin {
 
     @Override
     public void registerEntries(EntryRegistry registry) {
+        MysteriousItemConversionCategory.RECIPES.add(ConversionRecipe.create(
+                new ItemStack(Items.IRON_INGOT),
+                ModdedItems.MAGNET.asStack()
+        ));
         registry.removeEntryIf(entryStack -> {
             if(entryStack.getType() == VanillaEntryTypes.ITEM) {
                 ItemStack itemStack = entryStack.castValue();

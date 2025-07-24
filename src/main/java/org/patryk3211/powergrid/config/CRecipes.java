@@ -17,19 +17,15 @@ package org.patryk3211.powergrid.config;
 
 import com.simibubi.create.foundation.config.ConfigBase;
 
-public class CServer extends ConfigBase {
-    public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
-    public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
-    public final CRecipes recipes = nested(0, CRecipes::new, Comments.recipes);
+public class CRecipes extends ConfigBase {
+    public final ConfigFloat lightningMagnetizationChance = f(0.05f, 0, 1, "encasedFanCooling", Comments.lightningMagnetizationChance);
 
     @Override
     public String getName() {
-        return "server";
+        return "recipes";
     }
 
     private static class Comments {
-        public static final String electricity = "All things related to purely electrical devices";
-        public static final String kinetics = "Things related to kinetic and electrokinetic devices";
-        public static final String recipes = "Recipe configuration values";
+        public static final String lightningMagnetizationChance = "Chance for lightning strike to turn a single iron ingot into a magnet";
     }
 }
