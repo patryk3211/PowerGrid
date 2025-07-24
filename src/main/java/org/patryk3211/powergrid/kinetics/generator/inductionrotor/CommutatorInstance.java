@@ -31,7 +31,7 @@ public class CommutatorInstance extends RotorInstance {
 
     @Override
     protected Instancer<ModelData> getModel(BlockState state) {
-        var facing = Direction.from(state.get(CommutatorBlock.AXIS), Direction.AxisDirection.POSITIVE);
+        var facing = Direction.from(state.get(CommutatorBlock.HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE);
         return getAssemblyMaterial().getModel(ModdedPartialModels.COMMUTATOR_SHAFT, state, facing);
     }
 }

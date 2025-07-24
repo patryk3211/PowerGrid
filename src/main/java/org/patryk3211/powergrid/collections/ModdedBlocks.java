@@ -695,7 +695,15 @@ public class ModdedBlocks {
             int y = 0;
             var model = baseModel.apply(prov);
             var builder = ConfiguredModel.builder().modelFile(model);
-            switch(state.get(RotorBlock.AXIS)) {
+            Direction.Axis axis;
+            if(state.contains(AXIS)) {
+                axis = state.get(AXIS);
+            } else if(state.contains(HORIZONTAL_AXIS)) {
+                axis = state.get(HORIZONTAL_AXIS);
+            } else {
+                axis = Direction.Axis.Z;
+            }
+            switch(axis) {
                 case X -> builder.rotationY(y - 90);
                 case Z -> builder.rotationY(y);
                 case Y -> builder.rotationX(x);

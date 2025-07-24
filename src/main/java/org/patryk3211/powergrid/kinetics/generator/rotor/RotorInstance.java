@@ -28,6 +28,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.Direction;
 
 import static net.minecraft.state.property.Properties.AXIS;
+import static net.minecraft.state.property.Properties.HORIZONTAL_AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.getRotorAngle;
 
 public class RotorInstance extends BlockEntityInstance<SmartBlockEntity> implements DynamicInstance {
@@ -55,11 +56,19 @@ public class RotorInstance extends BlockEntityInstance<SmartBlockEntity> impleme
         transformAssembly();
     }
 
+    public Direction.Axis getRotationAxis() {
+        if(blockState.contains(AXIS))
+            return blockState.get(AXIS);
+        if(blockState.contains(HORIZONTAL_AXIS))
+            return blockState.get(HORIZONTAL_AXIS);
+        return Direction.Axis.X;
+    }
+
     public void transformAssembly() {
         var partial = AnimationTickHolder.getPartialTicks();
         var rotorAngle = getRotorAngle(blockEntity, partial);
 
-        var dir = Direction.from(blockState.get(AXIS), Direction.AxisDirection.POSITIVE);
+        var dir = Direction.from(getRotationAxis(), Direction.AxisDirection.POSITIVE);
         assembly.loadIdentity()
                 .translate(getInstancePosition())
                 .centre()

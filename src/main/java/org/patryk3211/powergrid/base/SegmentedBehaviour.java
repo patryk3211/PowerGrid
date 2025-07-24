@@ -239,6 +239,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
 
     public int getSegmentCount() {
         var controller = getControllerOrThis();
+        if(controller.segments == null)
+            return 1;
         return controller.segments.size() + 1;
     }
 }

@@ -27,7 +27,7 @@ import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 
-import static net.minecraft.state.property.Properties.AXIS;
+import static net.minecraft.state.property.Properties.HORIZONTAL_AXIS;
 
 public class CommutatorRenderer extends RotorRenderer {
     public CommutatorRenderer(BlockEntityRendererFactory.Context context) {
@@ -39,7 +39,7 @@ public class CommutatorRenderer extends RotorRenderer {
         super.renderSafe(rotor, partialTicks, matrixStack, buffer, light, overlay);
 
         var state = rotor.getCachedState();
-        var axis = state.get(AXIS);
+        var axis = state.get(HORIZONTAL_AXIS);
         var facing = Direction.from(axis, Direction.AxisDirection.POSITIVE);
 
         var rotorAngle = getRotorAngle(rotor, partialTicks);
@@ -65,6 +65,6 @@ public class CommutatorRenderer extends RotorRenderer {
 
     @Override
     protected SuperByteBuffer getModelForState(BlockState state) {
-        return CachedBufferer.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.from(state.get(AXIS), Direction.AxisDirection.POSITIVE));
+        return CachedBufferer.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.from(state.get(HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE));
     }
 }

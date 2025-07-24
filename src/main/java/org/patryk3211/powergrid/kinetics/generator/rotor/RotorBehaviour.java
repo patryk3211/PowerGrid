@@ -22,6 +22,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
@@ -92,6 +93,14 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     public BehaviourType<RotorBehaviour> getType() {
         return TYPE;
+    }
+
+    @Nullable
+    public Direction.Axis getAxis() {
+        var state = blockEntity.getCachedState();
+        if(state.contains(AbstractRotorBlock.AXIS))
+            return state.get(AbstractRotorBlock.AXIS);
+        return null;
     }
 
     @Override

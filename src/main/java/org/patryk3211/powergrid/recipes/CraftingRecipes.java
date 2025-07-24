@@ -195,8 +195,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("II")
                     .pattern("CI")
                     .input('I', RecipeTags.ironSheet())
-                    .input('C', RecipeTags.copperSheet())
-                    .input('W', RecipeTags.planks())),
+                    .input('C', RecipeTags.copperSheet())),
 
     LV_SWITCH = create(ModdedBlocks.LV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
