@@ -16,11 +16,15 @@
 package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -57,9 +61,10 @@ public class UpdateComponentS2CPacket extends SimplePacketBase {
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public boolean handle(Context context) {
         context.enqueueWork(() -> {
-            var world = MinecraftClient.getInstance().world;
+            World world = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().world);
             var be = world.getBlockEntity(pos, ModdedBlockEntities.CIRCUIT_BOARD.get());
             be.ifPresent(circuit -> {
                 var placed = circuit.getSchematic().components().get(componentId);

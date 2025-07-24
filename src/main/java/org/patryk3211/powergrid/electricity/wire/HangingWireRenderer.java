@@ -25,9 +25,12 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 @Environment(EnvType.CLIENT)
 public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
+    public static final boolean RAINBOW_WIRES = true;
+
     public static final double SEGMENT_SIZE = 0.5;
 
     public HangingWireRenderer(EntityRendererFactory.Context ctx) {
@@ -55,6 +58,18 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         // To introduce some subtle variety into the wires.
         var thicknessOffset = entity.getId() / 16f;
 
+        int color;
+        if(RAINBOW_WIRES) {
+            var line = GlobalElectricNetworks.getLine(entity);
+            if(line != null) {
+                color = line.hashCode() | 0xFF000000;
+            } else {
+                color = -1;
+            }
+        } else {
+            color = -1;
+        }
+
         var pos = entity.getPos();
         var world = entity.getWorld();
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
@@ -64,7 +79,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             renderSegment(matrices, buffer,
                     x1, y1, z1,
                     x2, y2, z2,
-                    rp.cross1, rp.cross2, LightmapTextureManager.pack(block, sky), -1,
+                    rp.cross1, rp.cross2, LightmapTextureManager.pack(block, sky), color,
                     rp.thickness, thicknessOffset, length, offset);
         });
     }

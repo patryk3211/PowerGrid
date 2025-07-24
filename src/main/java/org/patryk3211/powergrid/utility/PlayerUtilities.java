@@ -15,11 +15,21 @@
  */
 package org.patryk3211.powergrid.utility;
 
+import com.google.common.collect.Sets;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class PlayerUtilities {
     public static boolean hasEnoughItems(PlayerEntity player, Item item, int requiredCount) {
@@ -48,5 +58,20 @@ public class PlayerUtilities {
             return;
         }
         usedStack.decrement(Math.min(count, usedStack.getCount()));
+    }
+
+    @NotNull
+    public static Collection<ServerPlayerEntity> partialTracking(@NotNull ServerWorld world, @NotNull TransmissionLine line) {
+        if(line.segments.isEmpty())
+            return List.of();
+        var firstSegment = line.segments.get(0);
+        var lastSegment = line.segments.get(line.segments.size() - 1);
+        if(firstSegment.owner == null || lastSegment.owner == null)
+            return List.of();
+
+        Set<ServerPlayerEntity> players1 = null, players2 = null;
+        players1 = Set.copyOf(PlayerLookup.tracking(firstSegment.owner));
+        players2 = Set.copyOf(PlayerLookup.tracking(lastSegment.owner));
+        return Sets.symmetricDifference(players1, players2);
     }
 }

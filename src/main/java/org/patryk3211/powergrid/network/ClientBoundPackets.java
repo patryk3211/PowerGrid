@@ -18,7 +18,9 @@ package org.patryk3211.powergrid.network;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.kinetics.generator.coil.CoilAggregate;
@@ -64,5 +66,9 @@ public class ClientBoundPackets {
                 packet.buffer.release();
             });
         });
+    }
+
+    public static World world() {
+        return MinecraftClient.getInstance().world;
     }
 }

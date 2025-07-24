@@ -16,14 +16,16 @@
 package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.networking.SimplePacketBase;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntLists;
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
@@ -96,9 +98,11 @@ public class ZapProjectileS2CPacket extends SimplePacketBase {
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public boolean handle(Context context) {
         context.enqueueWork(() -> {
-            var world = MinecraftClient.getInstance().world;
+            // TODO: That looks stupid, why does ClientWorld try to load on server if the method is marked as client-side?
+            World world = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().world);
             switch(type) {
                 case BLOCK_HIT -> SparkParticleData.explodeParticles(world, pos.x, pos.y, pos.z, dir, 20);
                 case ENTITY_HIT -> {

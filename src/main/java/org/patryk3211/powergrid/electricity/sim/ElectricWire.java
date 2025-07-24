@@ -22,14 +22,12 @@ public class ElectricWire extends AbstractElectricWire {
 
     public ElectricWire(double resistance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
-        if(resistance == 0)
-            throw new IllegalStateException("Wire resistance must not be zero");
+        validateResistance(resistance);
         this.resistance = resistance;
     }
 
     public void setResistance(double resistance) {
-        if(resistance == 0)
-            throw new IllegalStateException("Wire resistance must not be zero");
+        validateResistance(resistance);
         double old = this.resistance;
         this.resistance = resistance;
         if(network != null)
@@ -42,8 +40,12 @@ public class ElectricWire extends AbstractElectricWire {
 
     @Override
     public double conductance() {
-        if(resistance == 0)
-            throw new IllegalStateException("Wire resistance must not be zero");
+        validateResistance(resistance);
         return 1 / resistance;
+    }
+
+    private static void validateResistance(double resistance) {
+        if(resistance <= 0)
+            throw new IllegalStateException("Wire resistance must be greater than zero");
     }
 }

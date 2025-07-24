@@ -18,13 +18,13 @@ package org.patryk3211.powergrid.electricity.base;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
@@ -83,11 +83,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         if(externalNodes.isEmpty())
             throw new IllegalStateException("Cannot join a network if no external nodes are defined");
         if(getNetwork() == null) {
-            internalNodes.forEach(network::addNode);
             externalNodes.forEach(node -> {
                 if(node != null)
                     network.addNode(node);
             });
+            internalNodes.forEach(network::addNode);
             internalWires.forEach(network::addWire);
         }
     }
@@ -160,11 +160,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
         var network = getNetwork();
         if(network != null) {
+            internalNodes.forEach(network::removeNode);
             externalNodes.forEach(node -> {
                 if(node != null)
                     network.removeNode(node);
             });
-            internalNodes.forEach(network::removeNode);
         }
     }
 
@@ -183,7 +183,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
   
     public void addConnection(int sourceTerminal, WireEntity wire) {
-        connections.get(sourceTerminal).add(wire);
+        var sourceConnections = connections.get(sourceTerminal);
+        // Check for stale wires here
+        sourceConnections.removeIf(Entity::isRemoved);
+        sourceConnections.add(wire);
         blockEntity.notifyUpdate();
     }
 
