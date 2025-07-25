@@ -14,10 +14,6 @@
       "chance": 0.4,
       "count": 3,
       "item": "minecraft:iron_nugget"
-    },
-    {
-      "chance": 0.3,
-      "item": "minecraft:flint"
     }
   ]
 }
