@@ -115,7 +115,7 @@ public class ZapProjectileS2CPacket extends SimplePacketBase {
                         if(entity == null)
                             continue;
                         var end = entity.getBoundingBox().getCenter();
-                        world.addImportantParticle(new ZapParticleData((float) end.x, (float) end.y, (float) end.z), true, origin.x, origin.y, origin.z, 0, 0, 0);
+                        world.addImportantParticle(new ZapParticleData((float) end.x, (float) end.y, (float) end.z, true), true, origin.x, origin.y, origin.z, 0, 0, 0);
                         var r = world.random;
                         for(int i = 0; i < 10; ++i) {
                             float pos = r.nextFloat();
