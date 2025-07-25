@@ -7,9 +7,10 @@
     "ArmBlockEntityMixin",
     "ArmInteractionPointMixin",
     "BasinRecipeMixin",
+    "EntityMixin",
     "FanProcessingMixin",
     "FanProcessingTypeAccessor",
-    "EntityMixin",
+    "LightningAccessor",
     "RecipeApplierMixin"
   ],
   "injectors": {

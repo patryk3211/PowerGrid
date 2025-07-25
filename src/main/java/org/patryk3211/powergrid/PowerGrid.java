@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid;
 
+import com.simibubi.create.AllMovementBehaviours;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipHelper;
@@ -22,6 +23,7 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -37,6 +39,7 @@ import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingReci
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.info.ElectricProperties;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.network.ServerBoundPackets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +92,8 @@ public class PowerGrid implements ModInitializer {
 
 		REGISTRATE.register();
 		ModdedSoundEvents.register();
+
+		AllMovementBehaviours.registerBehaviour(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
 
 		GlobalElectricNetworks.init();
 		ModdedPackets.registerPackets();

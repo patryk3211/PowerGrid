@@ -34,34 +34,57 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
     public static final Factory<ZapParticleData> FACTORY = new Factory<>() {
         @Override
         public ZapParticleData read(ParticleType<ZapParticleData> type, StringReader reader) throws CommandSyntaxException {
-            return new ZapParticleData(AbstractDustParticleEffect.readColor(reader));
+            return new ZapParticleData(AbstractDustParticleEffect.readColor(reader), true, 1);
         }
 
         @Override
         public ZapParticleData read(ParticleType<ZapParticleData> type, PacketByteBuf buf) {
-            return new ZapParticleData(buf.readVector3f());
+            return new ZapParticleData(buf.readVector3f(), buf.readBoolean(), buf.readInt());
         }
     };
     private static final Codec<ZapParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codecs.VECTOR_3F.fieldOf("end").forGetter(ZapParticleData::getEnd)
+            Codecs.VECTOR_3F.fieldOf("end").forGetter(ZapParticleData::getEnd),
+            Codec.BOOL.fieldOf("anchor").forGetter(ZapParticleData::isAnchored),
+            Codec.INT.fieldOf("life").forGetter(ZapParticleData::getLife)
     ).apply(instance, ZapParticleData::new));
 
     private final Vector3f end;
+    private final boolean anchor;
+    private int life;
 
     public ZapParticleData() {
-        this(null);
+        this(null, false, 1);
     }
 
-    public ZapParticleData(Vector3f end) {
+    public ZapParticleData(Vector3f end, boolean anchor, int life) {
         this.end = end;
+        this.anchor = anchor;
+        this.life = life;
     }
 
-    public ZapParticleData(float x, float y, float z) {
-        this(new Vector3f(x, y, z));
+    public ZapParticleData(float x, float y, float z, boolean anchor) {
+        this(new Vector3f(x, y, z), anchor, 1);
+    }
+
+    public ZapParticleData(double x, double y, double z, boolean anchor) {
+        this(new Vector3f((float) x, (float) y, (float) z), anchor, 1);
+    }
+
+    public ZapParticleData withLife(int life) {
+        this.life = life;
+        return this;
     }
 
     public Vector3f getEnd() {
         return end;
+    }
+
+    public boolean isAnchored() {
+        return anchor;
+    }
+
+    public int getLife() {
+        return life;
     }
 
     @Override
@@ -87,6 +110,8 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
     @Override
     public void write(PacketByteBuf buf) {
         buf.writeVector3f(end);
+        buf.writeBoolean(anchor);
+        buf.writeInt(life);
     }
 
     @Override
