@@ -24,6 +24,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
@@ -106,15 +107,16 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
         var speed = context.motion.length();
         var sails = bearing.getSailBlocks();
 
-        var speedFactor = Math.min(speed / 20.0f, 1.0f);
-        var sailFactor = Math.min(sails / 8.0f, 1.0f);
+        var configs = ModdedConfigs.server().kinetics;
+        var speedFactor = (float) Math.min(speed * configs.lightningAttractorSpeedFactor.getF(), 1.0f);
+        var sailFactor = Math.min(sails * configs.lightningAttractorSailFactor.getF(), 1.0f);
 
         var facing = context.state.get(FACING);
         var facingVec = Vec3d.of(facing.getVector());
 
         if(isController) {
             if (context.world.isThundering() && speed > 1.5f) {
-                charge += (float) (speedFactor * sailFactor * 0.05f);
+                charge += speedFactor * sailFactor * configs.lightningAttractorMaxFrequency.getF();
                 if (charge >= 1.0f) {
                     charge = 0;
                     if (!context.world.isClient) {
