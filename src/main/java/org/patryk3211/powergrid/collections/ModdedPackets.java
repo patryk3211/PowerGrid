@@ -47,6 +47,8 @@ public class ModdedPackets {
     public static final PacketType<ElectroZapperPacket> ELECTRO_ZAPPER_SHOOT = register(ElectroZapperPacket.class, ElectroZapperPacket::new, PLAY_TO_CLIENT);
     public static final PacketType<ZapProjectileS2CPacket> ZAP_PROJECTILE = register(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new, PLAY_TO_CLIENT);
 
+    public static final PacketType<LightningSyncS2CPacket> LIGHTNING_SYNC = register(LightningSyncS2CPacket.class, LightningSyncS2CPacket::new, PLAY_TO_CLIENT);
+
     public static final PacketType<ChangeScreenC2SPacket> CHANGE_SCREEN = register(ChangeScreenC2SPacket.class, ChangeScreenC2SPacket::new, PLAY_TO_SERVER);
     public static final PacketType<SaveSchematicC2SPacket> SAVE_SCHEMATIC = register(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new, PLAY_TO_SERVER);
     public static final PacketType<TransformerWindingC2SPacket> TRANSFORMER_WINDING = register(TransformerWindingC2SPacket.class, TransformerWindingC2SPacket::new, PLAY_TO_SERVER);

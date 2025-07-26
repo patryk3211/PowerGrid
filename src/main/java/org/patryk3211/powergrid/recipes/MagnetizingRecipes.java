@@ -40,7 +40,6 @@ public class MagnetizingRecipes extends ProcessingRecipeGen {
     IRON_SEPARATION = create(() -> AllItems.CRUSHED_IRON, b -> b
             .output(Items.IRON_NUGGET, 8)
             .output(0.4f, Items.IRON_NUGGET, 3)
-            .output(0.3f, Items.FLINT)
     )
             ;
 

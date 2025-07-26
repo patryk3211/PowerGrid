@@ -22,6 +22,10 @@ public class CKinetics extends ConfigBase {
 
     public final ConfigFloat generatorClutchForcePerSegment = f(10f, 0, "generatorSegmentForce", Comments.generatorClutchForcePerSegment);
 
+    public final ConfigFloat lightningAttractorSpeedFactor = f(1 / 20f, 0, "lightningAttractorSpeedFactor", Comments.lightningAttractorSpeedFactor);
+    public final ConfigFloat lightningAttractorSailFactor = f(1 / 8f, 0, "lightningAttractorSailFactor", Comments.lightningAttractorSailFactor);
+    public final ConfigFloat lightningAttractorMaxFrequency = f(1 / 20f, 0, "lightningAttractorMaxFrequency", Comments.lightningAttractorMaxFrequency);
+
     @Override
     public String getName() {
         return "kinetics";
@@ -30,5 +34,8 @@ public class CKinetics extends ConfigBase {
     private static class Comments {
         public static final String encasedFanCoolingStrength = "Cooling multiplier applied to devices in the air stream (multiplied by rotational speed)";
         public static final String generatorClutchForcePerSegment = "Maximum force applied by clutch for each segment of a rotating assembly";
+        public static final String lightningAttractorSpeedFactor = "How much lightning rod linear velocity is needed to reach the maximum lightning attractor firing rate";
+        public static final String lightningAttractorSailFactor = "How many sail blocks are needed to reach the maximum lightning attractor firing rate";
+        public static final String lightningAttractorMaxFrequency = "How often can the lightning attractor fire";
     }
 }

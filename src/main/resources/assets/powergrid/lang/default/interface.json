@@ -50,6 +50,7 @@
   "powergrid.devices.creative.resistance": "Resistance",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
+  "powergrid.recipe.magnetizing": "Magnetizing",
 
   "create.aggregate_type.series": "Series",
   "create.aggregate_type.parallel": "Parallel",

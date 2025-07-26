@@ -16,13 +16,14 @@
 package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.foundation.ponder.PonderRegistrationHelper;
+import com.tterrag.registrate.util.entry.ItemProviderEntry;
+import net.minecraft.item.ItemConvertible;
+import net.minecraft.item.Items;
+import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.ponder.scenes.DeviceScenes;
-import org.patryk3211.powergrid.ponder.scenes.GaugeScenes;
-import org.patryk3211.powergrid.ponder.scenes.GeneratorScenes;
-import org.patryk3211.powergrid.ponder.scenes.WireScenes;
+import org.patryk3211.powergrid.ponder.scenes.*;
 
 public class PonderIndex {
     static final PonderRegistrationHelper HELPER = new PonderRegistrationHelper(PowerGrid.MOD_ID);
@@ -63,5 +64,9 @@ public class PonderIndex {
                 .addStoryBoard("wire/connector", WireScenes::connector);
 
         HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor);
+
+        HELPER.forComponents(ModdedItems.MAGNET)
+                .addStoryBoard("magnet", MagnetScenes::magnet);
+        HELPER.addStoryBoard(new Identifier("lightning_rod"), "lightning_attractor", MagnetScenes::lightningAttractor);
     }
 }
