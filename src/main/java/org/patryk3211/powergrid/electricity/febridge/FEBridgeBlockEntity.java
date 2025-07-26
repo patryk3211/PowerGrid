@@ -21,7 +21,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import team.reborn.energy.api.EnergyStorage;
@@ -36,23 +35,11 @@ public class FEBridgeBlockEntity extends ElectricBlockEntity {
         super(type, pos, state);
     }
 
-    public static float voltToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
-    }
-
-    public static float ampToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerAmp.getF();
-    }
-
     @Override
     public void tick() {
         super.tick();
 
-        float ampToFe = ampToFE();
-        if(wire.getState()) {
-            energyStorage.amount += Math.round(wire.current() * ampToFe);
-            markDirty();
-        }
+        energyStorage.charge(wire);
 
         if(energyStorage.amount > 0) {
             // Try to move energy
@@ -73,18 +60,7 @@ public class FEBridgeBlockEntity extends ElectricBlockEntity {
             }
         }
 
-        long maxCharge = (long) (wire.potentialDifference() * voltToFE());
-        energyStorage.capacity = maxCharge;
-        long missingCharge = maxCharge - energyStorage.amount;
-        if(missingCharge <= 0) {
-            wire.setState(false);
-            return;
-        }
-
-        float targetAmps = missingCharge / ampToFe;
-        float resistance = wire.potentialDifference() / targetAmps;
-        wire.setResistance(resistance);
-        wire.setState(true);
+        energyStorage.manageWire(wire);
     }
 
     @Override

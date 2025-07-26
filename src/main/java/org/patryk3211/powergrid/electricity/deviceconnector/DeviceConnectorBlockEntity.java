@@ -22,11 +22,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import team.reborn.energy.api.EnergyStorage;
 
 import java.util.List;
 
 public class DeviceConnectorBlockEntity extends ElectricBlockEntity {
+    private ProxyElectricBehaviour proxyBehaviour;
+    private SwitchedWire converterWire;
+
     public DeviceConnectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -34,18 +38,19 @@ public class DeviceConnectorBlockEntity extends ElectricBlockEntity {
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         var state = getCachedState();
-        electricBehaviour = new ProxyElectricBehaviour(this, pos.offset(state.get(DeviceConnectorBlock.FACING)));
+        proxyBehaviour = new ProxyElectricBehaviour(this, pos.offset(state.get(DeviceConnectorBlock.FACING)), () -> converterWire);
+        electricBehaviour = proxyBehaviour;
         behaviours.add(electricBehaviour);
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-
+        builder.setTerminalCount(2);
+        converterWire = builder.connectSwitch(100, builder.terminalNode(0), builder.terminalNode(1));
     }
 
     @Nullable
     public EnergyStorage getEnergyStorage(@Nullable Direction direction) {
-        // TODO: Implement
-        return null;
+        return proxyBehaviour.getBridgeBehaviour();
     }
 }

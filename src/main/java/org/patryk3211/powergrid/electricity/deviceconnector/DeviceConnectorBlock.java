@@ -38,6 +38,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import team.reborn.energy.api.EnergyStorage;
 
 public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity> {
     public static final DirectionProperty FACING = Properties.FACING;
@@ -106,9 +107,17 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
                 .with(ALONG_FIRST_AXIS, along);
     }
 
+    public static boolean hasEnergyStorage(World world, BlockPos pos, Direction side) {
+        return EnergyStorage.SIDED.find(world, pos, side) != null;
+    }
+
     @Override
     public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
         var facing = state.get(FACING);
+        if(world instanceof World world1) {
+            if(hasEnergyStorage(world1, pos.offset(facing), facing.getOpposite()))
+                return true;
+        }
         var neighbor = world.getBlockState(pos.offset(facing));
         if(!(neighbor.getBlock() instanceof IAcceptConnector acceptor))
             return false;
