@@ -5,9 +5,6 @@
     "A": {
       "item": "create:andesite_alloy"
     },
-    "C": {
-      "item": "create:andesite_casing"
-    },
     "M": {
       "item": "powergrid:magnet"
     },
@@ -16,10 +13,9 @@
     }
   },
   "pattern": [
-    " C ",
     "AMA",
     "MSM",
-    " M "
+    "AMA"
   ],
   "result": {
     "item": "powergrid:generator_rotor"

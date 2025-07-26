@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.utility;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.utility.Color;
 import com.simibubi.create.foundation.utility.Pair;
 import net.fabricmc.api.EnvType;
@@ -25,12 +26,13 @@ import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.GameMode;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerBlock;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.mixin.client.BlueprintOverlayRendererAccessor;
@@ -41,9 +43,12 @@ import java.util.List;
 @Environment(EnvType.CLIENT)
 public class PlacementOverlay {
     private static final List<IOverlayTextProvider> overlayProviders = new ArrayList<>();
+    private static Text prevText = null;
+    private static int overlayTicks = -1;
 
     public static void init() {
         overlayProviders.add(PlacementOverlay::getTransformerText);
+        overlayProviders.add(TerminalHandler::overlayText);
     }
 
     public static void setItemRequirement(Item item, int count, boolean hasItems) {
@@ -65,28 +70,44 @@ public class PlacementOverlay {
     public static void renderOverlay(InGameHud gui, DrawContext graphics) {
         var mc = MinecraftClient.getInstance();
         if(!mc.options.hudHidden && mc.interactionManager.getCurrentGameMode() != GameMode.SPECTATOR) {
-//            if(((GuiAccessor) gui).getToolHighlightTimer() <= 0) {
-                MutableText text = null;
+            Text text = null;
 
-                var player = mc.player;
-                for(var provider : overlayProviders) {
-                    text = provider.get(player);
-                    if(text != null)
-                        break;
-                }
+            var player = mc.player;
+            for(var provider : overlayProviders) {
+                text = provider.get(player);
+                if(text != null)
+                    break;
+            }
 
-                if(text != null) {
-                    var window = mc.getWindow();
-                    int x = (window.getScaledWidth() - gui.getTextRenderer().getWidth(text)) / 2;
-                    int y = window.getScaledHeight() - 61;
-                    var color = new Color(4905802);
-                    graphics.drawText(gui.getTextRenderer(), text, x, y, color.getRGB(), false);
+            if(text != null) {
+                if(overlayTicks < 10) {
+                    ++overlayTicks;
                 }
-//            }
+                prevText = text;
+            } else if(prevText != null) {
+                text = prevText;
+                if(--overlayTicks <= 0) {
+                    overlayTicks = 0;
+                    prevText = null;
+                }
+            }
+
+            if(text != null) {
+                var window = mc.getWindow();
+                int x = (window.getScaledWidth() - gui.getTextRenderer().getWidth(text)) / 2;
+                int y = window.getScaledHeight() - 61;
+                var color = new Color(0x4adb4a);
+                float alpha = MathHelper.clamp(overlayTicks, 0, 10) / 10.0f;
+
+                var state = RenderSystem.getShaderColor();
+                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
+                graphics.drawText(gui.getTextRenderer(), text, x, y, color.getRGB(), true);
+                RenderSystem.setShaderColor(state[0], state[1], state[2], state[3]);
+            }
         }
     }
 
-    public static MutableText getTransformerText(PlayerEntity player) {
+    public static Text getTransformerText(PlayerEntity player) {
         var wireStack = WirePreview.getUsedWireStack(player);
         if(wireStack == null)
             return null;
@@ -128,6 +149,6 @@ public class PlacementOverlay {
 
     public interface IOverlayTextProvider {
         @Nullable
-        MutableText get(PlayerEntity player);
+        Text get(PlayerEntity player);
     }
 }

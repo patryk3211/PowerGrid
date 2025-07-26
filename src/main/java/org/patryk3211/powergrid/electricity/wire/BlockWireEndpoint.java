@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import com.google.common.base.Objects;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -26,6 +25,8 @@ import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+
+import java.util.Objects;
 
 public class BlockWireEndpoint implements IWireEndpoint {
     private BlockPos pos;
@@ -114,7 +115,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        behaviour.addConnection(terminal, entity);
+        behaviour.addConnection(this, entity);
     }
 
     @Override
@@ -122,7 +123,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.getWorld());
         if(behaviour == null)
             return;
-        behaviour.removeConnection(terminal, entity);
+        behaviour.removeConnection(this, entity);
     }
 
     @Override
@@ -136,7 +137,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(pos, terminal);
+        return Objects.hash(pos, terminal);
     }
 
     @Override

@@ -21,12 +21,12 @@ import net.minecraft.util.math.MathHelper;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 public class RotorSoundInstance extends MovingSoundInstance {
-    private final RotorBlockEntity be;
+    private final RotorBehaviour behaviour;
 
-    protected RotorSoundInstance(RotorBlockEntity be) {
-        super(ModdedSoundEvents.GENERATOR.getMainEvent(), SoundCategory.AMBIENT, be.getWorld().random);
-        this.be = be;
-        var pos = be.getPos().toCenterPos();
+    protected RotorSoundInstance(RotorBehaviour behaviour) {
+        super(ModdedSoundEvents.GENERATOR.getMainEvent(), SoundCategory.AMBIENT, behaviour.getWorld().random);
+        this.behaviour = behaviour;
+        var pos = behaviour.getPos().toCenterPos();
         this.x = pos.x;
         this.y = pos.y;
         this.z = pos.z;
@@ -42,10 +42,10 @@ public class RotorSoundInstance extends MovingSoundInstance {
 
     @Override
     public void tick() {
-        if(be.isRemoved() || !be.getRotorBehaviour().isController()) {
+        if(behaviour.blockEntity.isRemoved() || !behaviour.isController()) {
             setDone();
         } else {
-            var velocity = be.getRotorBehaviour().getAngularVelocity();
+            var velocity = Math.abs(behaviour.getAngularVelocity());
             var pitch = velocity / 128f;
             if(velocity < 32) {
                 this.volume = 0.0f;

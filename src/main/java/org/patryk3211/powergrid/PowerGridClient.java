@@ -38,8 +38,10 @@ import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.portablebattery.BatteryArmorLayer;
+import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperRenderHandler;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.ponder.PonderIndex;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
@@ -69,7 +71,7 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 		ModdedPackets.getChannel().initClientListener();
 		WirePreview.init();
 		PlacementOverlay.init();
-		ClientTickEvents.START_CLIENT_TICK.register(this::clientTick);
+		ClientTickEvents.END_CLIENT_TICK.register(this::clientTick);
 
 		PonderIndex.register();
 	}
@@ -80,6 +82,8 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 
 		ELECTRO_ZAPPER_RENDER_HANDLER.tick();
 		CustomValueSettingsScreen.clientTick();
+		WindingPreview.tick();
+		TransformerWindingScreen.clientTick();
 	}
 
 	public void registerOverlays() {
@@ -102,13 +106,6 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 			}
 			return null;
 		});
-//		context.modifyModelBeforeBake().register((model, innerContext) -> {
-//			final var id = innerContext.id();
-//			if(id != null && componentModels.contains(id)) {
-//				model.getModelDependencies();
-//			}
-//			return null;
-//		});
 	}
 
 	public static void addEntityRendererLayers(EntityType<? extends LivingEntity> entityType, LivingEntityRenderer<?, ?> entityRenderer,

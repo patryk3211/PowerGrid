@@ -45,8 +45,8 @@ public abstract class TransformerCoupling extends CouplingNode {
     public void setResistance(float resistance) {
         if(network != null) {
             network.alterConductanceMatrix(this.index, this.index, resistance - this.resistance);
-            this.resistance = resistance;
         }
+        this.resistance = resistance;
     }
 
     public static TransformerCoupling create(float ratio, IElectricNode primary, IElectricNode secondary) {

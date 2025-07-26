@@ -32,6 +32,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.info.Power;
 

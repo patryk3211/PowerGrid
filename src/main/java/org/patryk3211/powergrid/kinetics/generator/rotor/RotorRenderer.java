@@ -15,76 +15,49 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.rotor;
 
-import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
+import com.jozufozu.flywheel.backend.Backend;
+import com.jozufozu.flywheel.core.PartialModel;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.utility.AnimationTickHolder;
+import com.simibubi.create.foundation.render.SuperByteBuffer;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
-import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
-public class RotorRenderer extends KineticBlockEntityRenderer<RotorBlockEntity> {
+public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
     public RotorRenderer(BlockEntityRendererFactory.Context context) {
-        super(context);
     }
 
     @Override
     protected void renderSafe(RotorBlockEntity rotor, float partialTicks, MatrixStack matrixStack, VertexConsumerProvider buffer, int light, int overlay) {
-//        if (!Backend.canUseInstancing(be.getWorld())) {
-            var state = getRenderedBlockState(rotor);
-            var axis = state.get(Properties.AXIS);
-            var side = state.get(RotorBlock.SHAFT_DIRECTION);
+        if(Backend.canUseInstancing(rotor.getWorld()))
+            return;
 
-            if(side != ShaftDirection.NONE) {
-                var facing = side.with(axis);
-                assert facing != null;
+        var state = rotor.getCachedState();
+        var axis = state.get(Properties.AXIS);
 
-                float time = AnimationTickHolder.getRenderTime(rotor.getWorld());
+        var rotorModel = getModelForState(state);
+        var rotorAngle = getRotorAngle(rotor, partialTicks);
 
-                var shaft = CachedBufferer.partialFacing(ModdedPartialModels.SHAFT_BIT, state, facing);
-                var offset = getRotationOffsetForPosition(rotor, rotor.getPos(), axis);
-                var angle = time * rotor.getSpeed() * 3.0F / 10.0F % 360.0F;
-                if (rotor.getSpeed() != 0.0F && rotor.hasSource()) {
-                    var source = rotor.source.subtract(rotor.getPos());
-                    var sourceFacing = Direction.getFacing((float) source.getX(), (float) source.getY(), (float) source.getZ());
-                    if (sourceFacing.getAxis() == axis) {
-                        angle *= sourceFacing == facing ? 1.0F : -1.0F;
-                    } else if (sourceFacing.getDirection() == facing.getDirection()) {
-                        angle *= -1.0F;
-                    }
-                }
+        rotorModel.light(light);
+        rotorModel.rotateCentered(Direction.get(Direction.AxisDirection.POSITIVE, axis), rotorAngle);
+        rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
+    }
 
-                angle += offset;
-                angle = angle / 180.0F * (float) Math.PI;
-                kineticRotationTransform(shaft, rotor, axis, angle, light);
-                shaft.renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
+    public static float getRotorAngle(SmartBlockEntity rotor, float partialTicks) {
+        var behaviour = rotor.getBehaviour(RotorBehaviour.TYPE);
+        var rotorAngle = behaviour.getAngle() + behaviour.getAngularVelocity() * 0.3f * partialTicks;
+        rotorAngle = rotorAngle / 180f * (float) Math.PI;
+        return rotorAngle;
+    }
 
-                var rotorModel = CachedBufferer.partialFacing(ModdedPartialModels.ROTOR_SHAFT, state, facing);
-                var behaviour = rotor.getRotorBehaviour();
-                var rotorAngle = behaviour.getAngle() + behaviour.getAngularVelocity() * 0.3f * partialTicks;
-                rotorAngle = rotorAngle / 180f * (float) Math.PI;
-
-                rotorModel.light(light);
-                rotorModel.rotateCentered(Direction.get(Direction.AxisDirection.POSITIVE, axis), rotorAngle);
-                rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
-            } else {
-                var facing = switch(axis) {
-                    case X -> Direction.EAST;
-                    case Y -> Direction.UP;
-                    case Z -> Direction.SOUTH;
-                };
-                var rotorModel = CachedBufferer.partialFacing(ModdedPartialModels.ROTOR_FULL, state, facing);
-                var behaviour = rotor.getRotorBehaviour();
-                var rotorAngle = behaviour.getAngle() + behaviour.getAngularVelocity() * 0.3f * partialTicks;
-                rotorAngle = rotorAngle / 180f * (float) Math.PI;
-
-                rotorModel.light(light);
-                rotorModel.rotateCentered(Direction.get(Direction.AxisDirection.POSITIVE, axis), rotorAngle);
-                rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
-            }
-//        }
+    protected SuperByteBuffer getModelForState(BlockState state) {
+        return CachedBufferer.block(state);
     }
 }

@@ -1,0 +1,622 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_p",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_n",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "part": "0",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_p",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_n",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "part": "0",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v_case_p",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v_case_n",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "part": "1",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_case_p",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_case_n",
+        "y": -90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "part": "1",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_n",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_p",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "part": "2",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_p",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_n",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "part": "2",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_p",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_n",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "part": "0",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_p",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_n",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "0",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v_case_p",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v_case_n",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "part": "1",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_case_p",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_case_n",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "1",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v",
+        "x": 270
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_n",
+        "x": 270
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_p",
+        "x": 270
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "part": "2",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end",
+        "x": 270
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_p",
+        "x": 270
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_n",
+        "x": 270
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "2",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_p"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_n"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "part": "0",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_p"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_n"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "part": "0",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v_case_p"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_v_case_n"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "part": "1",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_case_p"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/middle_case_n"
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "part": "1",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v",
+        "y": 180
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_n",
+        "y": 180
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_p",
+        "y": 180
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "true",
+        "part": "2",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end",
+        "y": 180
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_p",
+        "y": 180
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_n",
+        "y": 180
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "part": "2",
+        "right": "true"
+      }
+    }
+  ]
+}

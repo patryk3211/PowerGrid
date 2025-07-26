@@ -23,7 +23,7 @@ import net.minecraft.client.world.ClientWorld;
 
 @Environment(EnvType.CLIENT)
 public class SparkParticle extends SpriteBillboardParticle {
-    protected SparkParticle(ClientWorld world, double x, double y, double z, double vX, double vY, double vZ, SpriteProvider sprites) {
+    protected SparkParticle(SparkParticleData data, ClientWorld world, double x, double y, double z, double vX, double vY, double vZ, SpriteProvider sprites) {
         super(world, x, y, z);
         setSpriteForAge(sprites);
         velocityX = vX;
@@ -36,10 +36,16 @@ public class SparkParticle extends SpriteBillboardParticle {
         red = 1;
         green = 1;
 
-        gravityStrength = 3.0f;
+        gravityStrength = data.getGravity() ? 3.0f : 0;
         velocityMultiplier = 0.97f;
-        maxAge = r.nextInt(20) + 40;
+        maxAge = data.getLife() < 0 ? r.nextInt(20) + 40 : data.getLife();
         scale = r.nextFloat() * 0.1f + 0.1f;
+        collidesWithWorld = data.getCollision();
+    }
+
+    @Override
+    protected int getBrightness(float tint) {
+        return LightmapTextureManager.MAX_LIGHT_COORDINATE;
     }
 
     @Override
@@ -113,7 +119,7 @@ public class SparkParticle extends SpriteBillboardParticle {
         }
 
         public Particle createParticle(SparkParticleData data, ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            return new SparkParticle(world, x, y, z, xSpeed, ySpeed, zSpeed, this.sprites);
+            return new SparkParticle(data, world, x, y, z, xSpeed, ySpeed, zSpeed, this.sprites);
         }
     }
 }

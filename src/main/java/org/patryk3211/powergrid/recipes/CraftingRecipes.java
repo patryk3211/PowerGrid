@@ -25,15 +25,6 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
 
-    GENERATOR_COIL = create(ModdedBlocks.GENERATOR_COIL)
-            .unlockedBy(ModdedItems.WIRE::get)
-            .shaped(b -> b
-                    .pattern("CIC")
-                    .pattern("CIC")
-                    .input('C', ModdedItems.COPPER_COIL)
-                    .input('I', RecipeTags.ironSheet())
-            ),
-
     WIRE_CONNECTOR = create(ModdedBlocks.WIRE_CONNECTOR)
             .unlockedBy(AllItems.ANDESITE_ALLOY::get)
             .shaped(b -> b
@@ -101,12 +92,11 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('R', ModdedItems.RESISTIVE_COIL)
             ),
 
-    GENERATOR_HOUSING = create(ModdedBlocks.GENERATOR_HOUSING)
-            .unlockedBy(AllItems.IRON_SHEET::get)
-            .shaped(b -> b
-                    .pattern("II")
-                    .pattern(" I")
-                    .input('I', RecipeTags.ironSheet())
+    GENERATOR_CLUTCH = create(ModdedBlocks.GENERATOR_CLUTCH)
+            .unlockedBy(AllBlocks.CLUTCH::get)
+            .shapeless(b -> b
+                    .input(AllBlocks.CLUTCH)
+                    .input(AllItems.ANDESITE_ALLOY)
             ),
 
     ANDESITE_VOLTAGE_GAUGE = create(ModdedBlocks.ANDESITE_VOLTAGE_METER)
@@ -175,7 +165,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .shapeless(b -> b
                     .input(ModdedItems.COPPER_COIL)
                     .input(RecipeTags.ironSheet())
-                    .input(AllBlocks.ANDESITE_CASING)),
+                    .input(AllItems.ANDESITE_ALLOY)),
 
     REDSTONE_RELAY = create(ModdedItems.REDSTONE_RELAY)
             .unlockedBy(() -> ModdedItems.RELAY)
@@ -198,6 +188,14 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('E', AllItems.ELECTRON_TUBE)
                     .input('S', AllItems.EMPTY_SCHEMATIC)
                     .input('W', RecipeTags.planks())),
+
+    GENERATOR_HOUSING = create(ModdedBlocks.GENERATOR_HOUSING)
+            .unlockedBy(() -> AllItems.IRON_SHEET)
+            .shaped(b -> b
+                    .pattern("II")
+                    .pattern("CI")
+                    .input('I', RecipeTags.ironSheet())
+                    .input('C', RecipeTags.copperSheet())),
 
     LV_SWITCH = create(ModdedBlocks.LV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)

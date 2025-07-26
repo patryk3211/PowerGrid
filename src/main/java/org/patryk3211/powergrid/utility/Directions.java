@@ -31,6 +31,9 @@ public class Directions {
     public static final Direction[] VERTICAL = {
             UP, DOWN
     };
+    public static final Axis[] HORIZONTAL_AXIS = {
+            Axis.X, Axis.Y
+    };
 
     public static BooleanProperty property(Direction dir) {
         return switch(dir) {

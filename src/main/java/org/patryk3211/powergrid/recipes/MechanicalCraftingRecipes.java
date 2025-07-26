@@ -49,11 +49,33 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .key('A', AllItems.ANDESITE_ALLOY)
                     .key('M', ModdedItems.MAGNET)
                     .key('S', AllBlocks.SHAFT)
-                    .key('C', AllBlocks.ANDESITE_CASING)
-                    .patternLine(" C ")
                     .patternLine("AMA")
                     .patternLine("MSM")
-                    .patternLine(" M ")
+                    .patternLine("AMA")
+            ),
+
+    GENERATOR_INDUCTION_ROTOR = create(ModdedBlocks.GENERATOR_INDUCTION_ROTOR::get)
+            .recipe(b -> b
+                    .key('A', AllItems.ANDESITE_ALLOY)
+                    .key('M', RecipeTags.copperCoil())
+                    .key('S', AllBlocks.SHAFT)
+                    .patternLine("AMA")
+                    .patternLine("MSM")
+                    .patternLine("AMA")
+            ),
+
+    GENERATOR_COMMUTATOR = create(ModdedBlocks.GENERATOR_COMMUTATOR::get)
+            .recipe(b -> b
+                    .key('A', AllItems.ANDESITE_ALLOY)
+                    .key('S', AllBlocks.SHAFT)
+                    .key('C', AllBlocks.ANDESITE_CASING)
+                    .key('M', RecipeTags.copperSheet())
+                    .key('G', RecipeTags.coal())
+                    .key('N', RecipeTags.copperNugget())
+                    .patternLine("N N")
+                    .patternLine("GMG")
+                    .patternLine("ASA")
+                    .patternLine(" C ")
             ),
 
     INTEGRATED_CIRCUIT = create(ModdedItems.INTEGRATED_CIRCUIT::get)

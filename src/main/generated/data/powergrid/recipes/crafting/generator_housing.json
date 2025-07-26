@@ -2,13 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
+    "C": {
+      "tag": "c:copper_plates"
+    },
     "I": {
       "tag": "c:iron_plates"
     }
   },
   "pattern": [
     "II",
-    " I"
+    "CI"
   ],
   "result": {
     "item": "powergrid:generator_housing"

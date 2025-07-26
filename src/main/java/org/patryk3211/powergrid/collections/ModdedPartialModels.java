@@ -25,8 +25,11 @@ public class ModdedPartialModels {
     public static final PartialModel BRASS_CURRENT_HEAD = block("gauge/brass/current_head");
     public static final PartialModel BRASS_GAUGE_DIAL = block("gauge/brass/dial");
     public static final PartialModel SHAFT_BIT = block("shaft_bit");
-    public static final PartialModel ROTOR_FULL = block("rotor/rotor_none");
-    public static final PartialModel ROTOR_SHAFT = block("rotor/rotor_shaft");
+
+    public static final PartialModel COMMUTATOR_SHAFT = block("generator/commutator_shaft");
+    public static final PartialModel COMMUTATOR_BRUSH = block("generator/commutator_brush");
+
+    public static final PartialModel CLUTCH_SHAFT = block("generator/clutch_shaft");
 
     public static final PartialModel LIGHT_BULB_OFF = block("lamps/light_bulb");
     public static final PartialModel LIGHT_BULB_ON = block("lamps/light_bulb_on");

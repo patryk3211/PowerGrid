@@ -15,19 +15,28 @@
  */
 package org.patryk3211.powergrid.kinetics.motor;
 
+import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
+import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.utility.Iterate;
+import com.simibubi.create.foundation.utility.VoxelShaper;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldView;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
@@ -35,77 +44,89 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.base.terminals.RotatedTerminalCollection;
+import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
-import org.patryk3211.powergrid.utility.Directions;
+import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
 
-public class ElectricMotorBlock extends DirectionalKineticBlock implements IElectric, IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
-    private static final RotatedTerminalCollection TERMINALS = RotatedTerminalCollection
-            .builder(RotatedTerminalCollection::rotateNorthToFacing)
-            .add(new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 0, 7, 13, 3, 9, 16))
-            .add(new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 13, 7, 13, 16, 9, 16))
-            .with(Directions.ALL)
-            .build();
+public class ElectricMotorBlock extends ElectricKineticBlock implements IElectric, IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
+    public static final DirectionProperty FACING = Properties.FACING;
 
-    private static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
-            createCuboidShape(2, 2, 2, 14, 14, 15),
-            TERMINALS.get(Direction.NORTH, 0).getShape(),
-            TERMINALS.get(Direction.NORTH, 1).getShape()
-    );
+    private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 2.5, 11.5, 6.5, 4.5, 13.5, 9.5)
+                    .withColor(IDecoratedTerminal.RED),
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 11.5, 11.5, 6.5, 13.5, 13.5, 9.5)
+                    .withColor(IDecoratedTerminal.BLUE)
+    };
 
-    private static final VoxelShape SHAPE_SOUTH = VoxelShapes.union(
-            createCuboidShape(2, 2, 1, 14, 14, 14),
-            TERMINALS.get(Direction.SOUTH, 0).getShape(),
-            TERMINALS.get(Direction.SOUTH, 1).getShape()
-    );
-
-    private static final VoxelShape SHAPE_WEST = VoxelShapes.union(
-            createCuboidShape(2, 2, 2, 15, 14, 14),
-            TERMINALS.get(Direction.WEST, 0).getShape(),
-            TERMINALS.get(Direction.WEST, 1).getShape()
-    );
-
-    private static final VoxelShape SHAPE_EAST = VoxelShapes.union(
-            createCuboidShape(1, 2, 2, 14, 14, 14),
-            TERMINALS.get(Direction.EAST, 0).getShape(),
-            TERMINALS.get(Direction.EAST, 1).getShape()
-    );
-
-    private static final VoxelShape SHAPE_DOWN = VoxelShapes.union(
-            createCuboidShape(2, 2, 2, 14, 15, 14),
-            TERMINALS.get(Direction.DOWN, 0).getShape(),
-            TERMINALS.get(Direction.DOWN, 1).getShape()
-    );
-
-    private static final VoxelShape SHAPE_UP = VoxelShapes.union(
-            createCuboidShape(2, 1, 2, 14, 14, 14),
-            TERMINALS.get(Direction.UP, 0).getShape(),
-            TERMINALS.get(Direction.UP, 1).getShape()
-    );
+    private BlockStateTerminalCollection terminals = null;
+    private ImmutableMap<BlockState, VoxelShape> outlines = null;
 
     public ElectricMotorBlock(Settings properties) {
         super(properties);
+        var shaper = VoxelShaper.forDirectional(
+                createCuboidShape(3, 3, 0, 13, 13, 16),
+                Direction.NORTH
+        );
+        this.terminals = BlockStateTerminalCollection.builder(this)
+                .forAllStates(state -> BlockStateTerminalCollection.each(NORTH_TERMINALS, terminal -> switch(state.get(FACING)) {
+                    case NORTH -> terminal;
+                    case SOUTH -> terminal.rotateAroundY(180);
+                    case EAST -> terminal.rotateAroundY(90);
+                    case WEST -> terminal.rotateAroundY(-90);
+                    case UP -> terminal.rotateAroundX(-90);
+                    case DOWN -> terminal.rotateAroundX(90);
+                }))
+                .withShapeMapper(state -> shaper.get(state.get(FACING)))
+                .build();
+        var mapper = terminals.shapeMapper();
+        if(mapper != null)
+            outlines = getShapesForStates(mapper);
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        super.appendProperties(builder);
+        builder.add(FACING);
     }
 
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch(state.get(FACING)) {
-            case EAST -> SHAPE_EAST;
-            case WEST -> SHAPE_WEST;
-            case UP -> SHAPE_UP;
-            case DOWN -> SHAPE_DOWN;
-            case SOUTH -> SHAPE_SOUTH;
-            case NORTH -> SHAPE_NORTH;
-        };
+        return outlines.get(state);
+    }
+
+    public Direction getPreferredFacing(ItemPlacementContext context) {
+        Direction prefferedSide = null;
+        for (Direction side : Iterate.directions) {
+            BlockState blockState = context.getWorld()
+                    .getBlockState(context.getBlockPos()
+                            .offset(side));
+            if (blockState.getBlock() instanceof IRotate) {
+                if (((IRotate) blockState.getBlock()).hasShaftTowards(context.getWorld(), context.getBlockPos()
+                        .offset(side), blockState, side.getOpposite()))
+                    if (prefferedSide != null && prefferedSide.getAxis() != side.getAxis()) {
+                        prefferedSide = null;
+                        break;
+                    } else {
+                        prefferedSide = side;
+                    }
+            }
+        }
+        return prefferedSide == null ? null : prefferedSide.getOpposite();
     }
 
     @Override
-    public Direction getPreferredFacing(ItemPlacementContext context) {
-        var facing = super.getPreferredFacing(context);
-        return facing == null ? null : facing.getOpposite();
+    public BlockState getPlacementState(ItemPlacementContext context) {
+        Direction preferred = getPreferredFacing(context);
+        if (preferred == null || (context.getPlayer() != null && context.getPlayer()
+                .isSneaking())) {
+            Direction nearestLookingDirection = context.getPlayerLookDirection();
+            return getDefaultState().with(FACING, context.getPlayer() != null && context.getPlayer()
+                    .isSneaking() ? nearestLookingDirection : nearestLookingDirection.getOpposite());
+        }
+        return getDefaultState().with(FACING, preferred.getOpposite());
     }
 
     @Override
@@ -116,16 +137,6 @@ public class ElectricMotorBlock extends DirectionalKineticBlock implements IElec
     @Override
     public boolean hasShaftTowards(WorldView world, BlockPos pos, BlockState state, Direction face) {
         return face == state.get(FACING);
-    }
-
-    @Override
-    public int terminalCount() {
-        return 2;
-    }
-
-    @Override
-    public ITerminalPlacement terminal(BlockState state, int index) {
-        return TERMINALS.get(state.get(FACING), index);
     }
 
     @Override
@@ -145,5 +156,16 @@ public class ElectricMotorBlock extends DirectionalKineticBlock implements IElec
     @Override
     public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
         Resistance.series(resistance(), player, tooltip);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, BlockRotation rot) {
+        return state.with(FACING, rot.rotate(state.get(FACING)));
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public BlockState mirror(BlockState state, BlockMirror mirrorIn) {
+        return state.rotate(mirrorIn.getRotation(state.get(FACING)));
     }
 }

@@ -41,9 +41,17 @@ import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.coil.CoilBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchInstance;
+import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchRenderer;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorInstance;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorRenderer;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.rotor.RotorInstance;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import team.reborn.energy.api.EnergyStorage;
@@ -80,12 +88,30 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<RotorBlockEntity> GENERATOR_ROTOR =
             REGISTRATE.blockEntity("generator_rotor", RotorBlockEntity::new)
+                    .instance(() -> RotorInstance::new)
                     .validBlock(ModdedBlocks.GENERATOR_ROTOR)
                     .renderer(() -> RotorRenderer::new)
                     .register();
-    public static final BlockEntityEntry<CoilBlockEntity> GENERATOR_COIL =
-            REGISTRATE.blockEntity("generator_coil", CoilBlockEntity::new)
-                    .validBlock(ModdedBlocks.GENERATOR_COIL)
+
+    public static final BlockEntityEntry<InductionRotorBlockEntity> GENERATOR_INDUCTION_ROTOR =
+            REGISTRATE.blockEntity("generator_induction_rotor", InductionRotorBlockEntity::new)
+                    .instance(() -> RotorInstance::new)
+                    .validBlock(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
+                    .renderer(() -> RotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CommutatorBlockEntity> GENERATOR_COMMUTATOR =
+            REGISTRATE.blockEntity("generator_commutator", CommutatorBlockEntity::new)
+                    .instance(() -> CommutatorInstance::new)
+                    .validBlock(ModdedBlocks.GENERATOR_COMMUTATOR)
+                    .renderer(() -> CommutatorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<GeneratorClutchBlockEntity> GENERATOR_CLUTCH =
+            REGISTRATE.blockEntity("generator_clutch", GeneratorClutchBlockEntity::new)
+                    .instance(() -> GeneratorClutchInstance::new)
+                    .validBlock(ModdedBlocks.GENERATOR_CLUTCH)
+                    .renderer(() -> GeneratorClutchRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<SwitchBlockEntity> SWITCH =
@@ -146,6 +172,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<PortableBatteryBlockEntity> PORTABLE_BATTERY =
             REGISTRATE.blockEntity("portable_battery", PortableBatteryBlockEntity::new)
                     .validBlock(ModdedBlocks.PORTABLE_BATTERY)
+                    .register();
+
+    public static final BlockEntityEntry<WindingBlockEntity> WINDING =
+            REGISTRATE.blockEntity("winding", WindingBlockEntity::new)
+                    .validBlock(ModdedBlocks.WINDING)
                     .register();
 
     public static final BlockEntityEntry<CircuitDesignTableBlockEntity> CIRCUIT_DESIGN_TABLE =

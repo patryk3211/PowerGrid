@@ -19,7 +19,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -35,7 +34,6 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
@@ -71,43 +69,52 @@ public abstract class TransformerBlock extends ElectricBlock {
         var stack = context.getStack();
         var nbt = stack.getNbt();
         var turns = nbt.getInt("Turns");
-        var be = getBlockEntity(context.getWorld(), context.getBlockPos(), state);
-        if(be.isEmpty())
-            return ActionResult.FAIL;
-        if(terminal >= 0) {
-            // Make coil between selected terminals.
-            var firstTerminal = nbt.getInt("Terminal");
-            if(terminal == firstTerminal) {
-                IElectric.sendMessage(context, Lang.translate("message.coil_same_terminal").style(Formatting.RED).component());
-                return ActionResult.FAIL;
-            }
-            var player = context.getPlayer();
-            if(!PlayerUtilities.hasEnoughItems(player, stack, turns)) {
-                IElectric.sendMessage(context, Lang.translate("message.coil_missing_items").style(Formatting.RED).component());
-                return ActionResult.FAIL;
-            }
-            if(!context.getWorld().isClient) {
-                if(be.get().hasPrimary()) {
-                    be.get().makeSecondary(firstTerminal, terminal, turns, stack.getItem());
-                } else {
-                    be.get().makePrimary(firstTerminal, terminal, turns, stack.getItem());
+        return getBlockEntity(context.getWorld(), context.getBlockPos(), state).map(be -> {
+            if(terminal >= 0) {
+                // Make coil between selected terminals.
+                var firstTerminal = nbt.getInt("Terminal");
+                if(terminal == firstTerminal) {
+                    IElectric.sendMessage(context, Lang.translate("message.coil_same_terminal").style(Formatting.RED).component());
+                    return ActionResult.FAIL;
                 }
-            }
-            PlayerUtilities.removeItems(player, stack, turns);
-            stack.setNbt(null);
-            return ActionResult.SUCCESS;
-        } else {
-            var primaryTurns = be.get().hasPrimary() ? be.get().getPrimary().getTurns() : 0;
-            if(primaryTurns + turns < maxTurns) {
-                // Add turn.
-                nbt.putInt("Turns", turns + 1);
+                var player = context.getPlayer();
+                if(!PlayerUtilities.hasEnoughItems(player, stack, turns)) {
+                    IElectric.sendMessage(context, Lang.translate("message.coil_missing_items").style(Formatting.RED).component());
+                    return ActionResult.FAIL;
+                }
+
+                // Validate if the given amount of turns can fit on this transformer
+                if(be.hasPrimary()) {
+                    if(turns + be.getPrimary().getTurns() > maxTurns) {
+                        IElectric.sendMessage(context, Lang.translate("message.coil_max_turns").style(Formatting.RED).component());
+                        return ActionResult.FAIL;
+                    }
+                } else {
+                    if(turns > maxTurns) {
+                        IElectric.sendMessage(context, Lang.translate("message.coil_max_turns").style(Formatting.RED).component());
+                        return ActionResult.FAIL;
+                    }
+                }
+
+                if(!context.getWorld().isClient) {
+                    if(be.hasPrimary()) {
+                        be.makeSecondary(firstTerminal, terminal, turns, stack.getItem());
+                    } else {
+                        be.makePrimary(firstTerminal, terminal, turns, stack.getItem());
+                    }
+                    PlayerUtilities.removeItems(player, stack, turns);
+                    stack.setNbt(null);
+                }
                 return ActionResult.SUCCESS;
             } else {
-                // No more turns fit.
-                IElectric.sendMessage(context, Lang.translate("message.coil_max_turns").style(Formatting.RED).component());
-                return ActionResult.FAIL;
+                if(context.getWorld().isClient) {
+                    var cap = be.hasPrimary() ? be.getPrimary().getTurns() : 0;
+                    var b = TransformerWindingScreen.beginInteraction(() -> new TransformerWindingScreen(this, context.getHand(), turns, cap));
+                    return b ? ActionResult.SUCCESS : ActionResult.CONSUME;
+                }
+                return ActionResult.SUCCESS;
             }
-        }
+        }).orElse(ActionResult.FAIL);
     }
 
     @Override
@@ -131,28 +138,27 @@ public abstract class TransformerBlock extends ElectricBlock {
             // Not hit a terminal.
             if(stack.hasNbt()) {
                 // Has first terminal data.
-                var be = getBlockEntity(context.getWorld(), context.getBlockPos(), state);
-                if(be.isEmpty())
-                    return ActionResult.FAIL;
-                var nbt = stack.getNbt();
-                var endpoint = WireEndpointType.deserialize(nbt);
-                if(endpoint.type() != WireEndpointType.BLOCK)
-                    return ActionResult.FAIL;
-                var blockEndpoint = (BlockWireEndpoint) endpoint;
-                if(be.get().isTerminalUsed(blockEndpoint.getTerminal())) {
-                    IElectric.sendMessage(context, Lang.translate("message.coil_exists").style(Formatting.RED).component());
-                    return ActionResult.FAIL;
-                }
-                if(isInitiator(context.getBlockPos(), state, blockEndpoint.getPos())) {
-                    // Put into winding mode.
-                    nbt = new NbtCompound();
-                    nbt.putInt("Turns", 1);
-                    var pos = blockEndpoint.getPos();
-                    nbt.putIntArray("Initiator", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-                    nbt.putInt("Terminal", blockEndpoint.getTerminal());
-                    stack.setNbt(nbt);
-                    return ActionResult.SUCCESS;
-                }
+                return getBlockEntity(context.getWorld(), context.getBlockPos(), state).map(be -> {
+                    var nbt = stack.getNbt();
+                    var endpoint = WireEndpointType.deserialize(nbt);
+                    if(endpoint.type() != WireEndpointType.BLOCK)
+                        return ActionResult.FAIL;
+                    var blockEndpoint = (BlockWireEndpoint) endpoint;
+                    if(be.isTerminalUsed(blockEndpoint.getTerminal())) {
+                        IElectric.sendMessage(context, Lang.translate("message.coil_exists").style(Formatting.RED).component());
+                        return ActionResult.FAIL;
+                    }
+                    if(isInitiator(context.getBlockPos(), state, blockEndpoint.getPos())) {
+                        // Put into winding mode.
+                        if(context.getWorld().isClient) {
+                            var cap = be.hasPrimary() ? be.getPrimary().getTurns() : 0;
+                            var b = TransformerWindingScreen.beginInteraction(() -> new TransformerWindingScreen(this, context.getHand(), 1, cap));
+                            return b ? ActionResult.SUCCESS : ActionResult.CONSUME;
+                        }
+                        return ActionResult.SUCCESS;
+                    }
+                    return ActionResult.PASS;
+                }).orElse(ActionResult.FAIL);
             }
         }
         return result;
@@ -166,20 +172,24 @@ public abstract class TransformerBlock extends ElectricBlock {
             if(be.isEmpty())
                 return ActionResult.FAIL;
             if(be.get().hasSecondary()) {
-                var coil = be.get().getSecondary();
-                var item = coil.getItem();
-                var count = coil.getTurns();
-                for(int items = count; items > 0; items -= 64) {
-                    player.giveItemStack(new ItemStack(item, Math.min(64, items)));
+                if(!player.isCreative()) {
+                    var coil = be.get().getSecondary();
+                    var item = coil.getItem();
+                    var count = coil.getTurns();
+                    for (int items = count; items > 0; items -= 64) {
+                        player.giveItemStack(new ItemStack(item, Math.min(64, items)));
+                    }
                 }
                 be.get().removeSecondary();
                 return ActionResult.SUCCESS;
             } else if(be.get().hasPrimary()) {
-                var coil = be.get().getPrimary();
-                var item = coil.getItem();
-                var count = coil.getTurns();
-                for(int items = count; items > 0; items -= 64) {
-                    player.giveItemStack(new ItemStack(item, Math.min(64, items)));
+                if(!player.isCreative()) {
+                    var coil = be.get().getPrimary();
+                    var item = coil.getItem();
+                    var count = coil.getTurns();
+                    for (int items = count; items > 0; items -= 64) {
+                        player.giveItemStack(new ItemStack(item, Math.min(64, items)));
+                    }
                 }
                 be.get().removePrimary();
                 return ActionResult.SUCCESS;
@@ -187,5 +197,9 @@ public abstract class TransformerBlock extends ElectricBlock {
             return ActionResult.PASS;
         }
         return super.onUse(state, world, pos, player, hand, hit);
+    }
+
+    public int getMaxTurns() {
+        return maxTurns;
     }
 }

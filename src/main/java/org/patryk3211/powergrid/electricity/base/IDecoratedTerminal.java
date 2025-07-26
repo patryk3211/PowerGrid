@@ -16,18 +16,30 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Box;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.utility.Lang;
 
 public interface IDecoratedTerminal {
-    Text POSITIVE = Lang.builder().translate("generic.positive_terminal").component();
-    Text NEGATIVE = Lang.builder().translate("generic.negative_terminal").component();
-    Text CONNECTOR = Lang.builder().translate("generic.terminal").component();
+    Text POSITIVE = Lang.builder()
+            .translate("generic.positive_terminal")
+            .style(Formatting.RED)
+            .component();
+    Text NEGATIVE = Lang.builder()
+            .translate("generic.negative_terminal")
+            .style(Formatting.BLUE)
+            .component();
+    Text CONNECTOR = Lang.builder()
+            .translate("generic.terminal")
+            .style(Formatting.GRAY)
+            .component();
 
     int RED = 0xFF3B3B;
     int BLUE = 0x3B80FF;
     int GRAY = 0xAAAAAA;
 
+    @Nullable
     Text getName();
     Box getOutline();
 
