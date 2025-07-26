@@ -15,15 +15,12 @@
  */
 package org.patryk3211.powergrid.kinetics.motor;
 
-import com.google.common.collect.ImmutableMap;
-import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.Iterate;
 import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -36,13 +33,10 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldView;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
-import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -61,16 +55,14 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IElectri
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    private BlockStateTerminalCollection terminals = null;
-    private ImmutableMap<BlockState, VoxelShape> outlines = null;
-
     public ElectricMotorBlock(Settings properties) {
         super(properties);
         var shaper = VoxelShaper.forDirectional(
                 createCuboidShape(3, 3, 0, 13, 13, 16),
                 Direction.NORTH
         );
-        this.terminals = BlockStateTerminalCollection.builder(this)
+
+        setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> BlockStateTerminalCollection.each(NORTH_TERMINALS, terminal -> switch(state.get(FACING)) {
                     case NORTH -> terminal;
                     case SOUTH -> terminal.rotateAroundY(180);
@@ -80,21 +72,13 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IElectri
                     case DOWN -> terminal.rotateAroundX(90);
                 }))
                 .withShapeMapper(state -> shaper.get(state.get(FACING)))
-                .build();
-        var mapper = terminals.shapeMapper();
-        if(mapper != null)
-            outlines = getShapesForStates(mapper);
+                .build());
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
         builder.add(FACING);
-    }
-
-    @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return outlines.get(state);
     }
 
     public Direction getPreferredFacing(ItemPlacementContext context) {

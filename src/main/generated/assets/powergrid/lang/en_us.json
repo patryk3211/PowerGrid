@@ -12,6 +12,7 @@
   "block.powergrid.creative_current_source": "Creative Current Source",
   "block.powergrid.creative_resistor": "Creative Resistor",
   "block.powergrid.creative_voltage_source": "Creative Voltage Source",
+  "block.powergrid.device_connector": "Device Connector",
   "block.powergrid.electric_fan": "Electric Fan",
   "block.powergrid.electric_motor": "Electric Motor",
   "block.powergrid.electromagnet": "Electromagnet",
