@@ -250,6 +250,7 @@
   "powergrid.recipe.magnetizing": "Magnetizing",
   "powergrid.subtitle.component_explode": "Component pops",
   "powergrid.subtitle.electrozapper_shoot": "Electro-Zapper bzzzts",
+  "powergrid.subtitle.fuse_pops": "Fuse pops",
   "powergrid.subtitle.generator": "Generator spinning",
   "powergrid.subtitle.hv_switch_connect": "Switch connected",
   "powergrid.subtitle.hv_switch_disconnect": "Switch disconnected",

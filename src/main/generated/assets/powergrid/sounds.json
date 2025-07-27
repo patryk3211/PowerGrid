@@ -17,6 +17,15 @@
     ],
     "subtitle": "powergrid.subtitle.electrozapper_shoot"
   },
+  "fuse_pops": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.firework_rocket.blast"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.fuse_pops"
+  },
   "generator": {
     "sounds": [
       {

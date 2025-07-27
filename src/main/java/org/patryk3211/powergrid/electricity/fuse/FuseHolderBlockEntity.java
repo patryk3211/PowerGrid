@@ -67,10 +67,12 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
 
     @Environment(EnvType.CLIENT)
     public void playEffect() {
+        if(world == null)
+            return;
         var pos = this.pos.toCenterPos();
         var facing = getCachedState().get(FuseHolderBlock.FACING);
         SparkParticleData.explodeParticles(world, (float) pos.x, (float) pos.y, (float) pos.z, facing.getOpposite(), 5);
-        ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, 0.8f, false);
+        ModdedSoundEvents.FUSE_POPS.playAt(world, pos, 1.0f, 1.0f, false);
     }
 
     @Override
