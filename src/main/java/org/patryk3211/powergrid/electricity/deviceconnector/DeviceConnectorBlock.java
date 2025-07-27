@@ -29,9 +29,11 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
@@ -110,19 +112,40 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
         return storage != null && storage.supportsInsertion();
     }
 
+    public static VoxelShape makeCheckShape(Direction side) {
+        var min = new Vector3f(6 / 16f);
+        var max = new Vector3f(10 / 16f);
+
+        switch(side.getAxis()) {
+            case X -> { min.x = 0; max.x = 1; }
+            case Y -> { min.y = 0; max.y = 1; }
+            case Z -> { min.z = 0; max.z = 1; }
+        }
+
+        return VoxelShapes.cuboid(min.x, min.y, min.z, max.x, max.y, max.z);
+    }
+
+    public static boolean canSupport(WorldView world, BlockPos pos, BlockState state, Direction side) {
+        var connectorShape = makeCheckShape(side);
+        var shape = state.getCollisionShape(world, pos);
+        // Check if side of the connector is covered by the supporting block's shape.
+        return VoxelShapes.isSideCovered(connectorShape, shape, side.getOpposite());
+    }
+
     @Override
     public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
         var facing = state.get(FACING);
-        var neighbor = world.getBlockState(pos.offset(facing));
+        var neighborPos = pos.offset(facing);
+        var neighbor = world.getBlockState(neighborPos);
         if(neighbor.getBlock() == this)
             return false;
         if(world instanceof World world1) {
-            if(hasEnergyStorage(world1, pos.offset(facing), facing.getOpposite()))
-                return true;
+            if(hasEnergyStorage(world1, neighborPos, facing.getOpposite()))
+                return canSupport(world, neighborPos, neighbor, facing.getOpposite());
         }
         if(!(neighbor.getBlock() instanceof IAcceptConnector acceptor))
             return false;
-        return acceptor.canConnect(neighbor, facing.getOpposite());
+        return acceptor.canConnect(world, neighborPos, neighbor, facing.getOpposite());
     }
 
     @Override

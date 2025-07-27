@@ -28,7 +28,6 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -39,13 +38,12 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 
 import java.util.List;
 
-public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>, IHaveElectricProperties, IAcceptConnector {
+public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>, IHaveElectricProperties {
     private static final TerminalBoundingBox NORTH_TERMINAL1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 12, 12, 7, 15, 15, 10);
     private static final TerminalBoundingBox NORTH_TERMINAL2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 1, 12, 7, 4, 15, 10);
 
@@ -158,10 +156,5 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
 
     public static float resistance() {
         return ModdedConfigs.server().electricity.heaterResistance.getF();
-    }
-
-    @Override
-    public boolean canConnect(BlockState state, Direction side) {
-        return true;
     }
 }
