@@ -23,6 +23,7 @@ import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
+import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchInstance;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
@@ -30,7 +31,6 @@ import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
-import org.patryk3211.powergrid.electricity.febridge.FEBridgeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
@@ -190,11 +190,11 @@ public class ModdedBlockEntities {
                     .renderer(() -> CircuitBoardRenderer::new)
                     .register();
 
-    public static final BlockEntityEntry<FEBridgeBlockEntity> FE_BRIDGE =
-            REGISTRATE.blockEntity("fe_bridge", FEBridgeBlockEntity::new)
-                    .validBlock(ModdedBlocks.FE_BRIDGE)
+    public static final BlockEntityEntry<DeviceConnectorBlockEntity> DEVICE_CONNECTOR =
+            REGISTRATE.blockEntity("device_connector", DeviceConnectorBlockEntity::new)
+                    .validBlock(ModdedBlocks.DEVICE_CONNECTOR)
                     .onRegister(beType ->
-                            EnergyStorage.SIDED.registerForBlockEntity(FEBridgeBlockEntity::getEnergyStorage, beType))
+                            EnergyStorage.SIDED.registerForBlockEntity(DeviceConnectorBlockEntity::getEnergyStorage, beType))
                     .register();
 
     @SuppressWarnings("EmptyMethod")

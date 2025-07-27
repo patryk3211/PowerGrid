@@ -425,8 +425,13 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(!(entity instanceof WireEntity wire))
             return;
         if(wire.wire instanceof TransmissionLinePart part) {
-            part.unload();
-            wire.wire = null;
+            var reason = wire.getRemovalReason();
+            if(reason != null && reason.shouldDestroy()) {
+                wire.dropWire();
+            } else {
+                part.unload();
+                wire.wire = null;
+            }
         } else {
             wire.dropWire();
         }

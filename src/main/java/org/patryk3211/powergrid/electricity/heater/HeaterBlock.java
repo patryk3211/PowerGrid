@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.electricity.heater;
 
 import com.simibubi.create.foundation.block.IBE;
-import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -33,7 +32,6 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;

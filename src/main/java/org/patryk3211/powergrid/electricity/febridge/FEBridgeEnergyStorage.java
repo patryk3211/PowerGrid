@@ -19,6 +19,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.block.entity.BlockEntity;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import team.reborn.energy.api.EnergyStorage;
 
 public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements EnergyStorage {
@@ -28,6 +30,14 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
 
     public FEBridgeEnergyStorage(BlockEntity be) {
         this.be = be;
+    }
+
+    public static float voltToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
+    }
+
+    public static float ampToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerAmp.getF();
     }
 
     @Override
@@ -77,5 +87,28 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
     @Override
     public long getCapacity() {
         return capacity;
+    }
+
+    public void charge(SwitchedWire wire) {
+        float ampToFe = FEBridgeEnergyStorage.ampToFE();
+        if(wire.getState()) {
+            amount += Math.round(wire.current() * ampToFe);
+            be.markDirty();
+        }
+    }
+
+    public void manageWire(SwitchedWire wire) {
+        long maxCharge = (long) (wire.potentialDifference() * FEBridgeEnergyStorage.voltToFE());
+        capacity = maxCharge;
+        long missingCharge = maxCharge - amount;
+        if(missingCharge <= 0) {
+            wire.setState(false);
+            return;
+        }
+
+        float targetAmps = missingCharge / ampToFE();
+        float resistance = wire.potentialDifference() / targetAmps;
+        wire.setResistance(resistance);
+        wire.setState(true);
     }
 }
