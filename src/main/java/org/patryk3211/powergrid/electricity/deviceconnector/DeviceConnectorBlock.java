@@ -45,14 +45,12 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
     private final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 4, 4, 9, 8, 7)
-                    .withOrigin(8, 7, 5.5),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 4, 9, 9, 8, 12)
-                    .withOrigin(8, 7, 10.5)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, -0.5, 10.5, 6, 4.5),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, 11.5, 10.5, 6, 16.5)
     };
 
-    private static final VoxelShape SHAPE_DOWN = createCuboidShape(6, 0, 5, 10, 6, 11);
-    private static final VoxelShape SHAPE_DOWN_2 = createCuboidShape(5, 0, 6, 11, 6, 10);
+    private static final VoxelShape SHAPE_DOWN = createCuboidShape(4.5, 0, 3.5, 11.5, 4, 12.5);
+    private static final VoxelShape SHAPE_DOWN_2 = createCuboidShape(3.5, 0, 4.5, 12.5, 4, 11.5);
 
     public DeviceConnectorBlock(AbstractBlock.Settings settings) {
         super(settings);
@@ -108,17 +106,20 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     }
 
     public static boolean hasEnergyStorage(World world, BlockPos pos, Direction side) {
-        return EnergyStorage.SIDED.find(world, pos, side) != null;
+        var storage = EnergyStorage.SIDED.find(world, pos, side);
+        return storage != null && storage.supportsInsertion();
     }
 
     @Override
     public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
         var facing = state.get(FACING);
+        var neighbor = world.getBlockState(pos.offset(facing));
+        if(neighbor.getBlock() == this)
+            return false;
         if(world instanceof World world1) {
             if(hasEnergyStorage(world1, pos.offset(facing), facing.getOpposite()))
                 return true;
         }
-        var neighbor = world.getBlockState(pos.offset(facing));
         if(!(neighbor.getBlock() instanceof IAcceptConnector acceptor))
             return false;
         return acceptor.canConnect(neighbor, facing.getOpposite());
