@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powergrid:fe_bridge"
+          "name": "powergrid:fuse_holder"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid:blocks/fe_bridge"
+  "random_sequence": "powergrid:blocks/fuse_holder"
 }

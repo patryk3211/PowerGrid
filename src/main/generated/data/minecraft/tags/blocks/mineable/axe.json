@@ -12,6 +12,7 @@
     "powergrid:hv_switch",
     "powergrid:light_fixture",
     "powergrid:electric_fan",
-    "powergrid:circuit_design_table"
+    "powergrid:circuit_design_table",
+    "powergrid:fuse_holder"
   ]
 }

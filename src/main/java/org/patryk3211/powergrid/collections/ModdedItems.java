@@ -50,7 +50,7 @@ public class ModdedItems {
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(WireProperties.setAll(0.015f, 32))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f))
-            .tag(ModdedTags.Item.WIRES.tag)
+            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.FUSE_RESETTING.tag)
             .register();
     public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
             .transform(WireProperties.setAll(0.007f, 8))

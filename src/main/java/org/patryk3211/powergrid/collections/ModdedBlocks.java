@@ -51,6 +51,7 @@ import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
+import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
@@ -576,6 +577,26 @@ public class ModdedBlocks {
                         });
                         return builder.build();
                     }, DeviceConnectorBlock.POLARIZED))
+            .transform(pickaxeOnly())
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<FuseHolderBlock> FUSE_HOLDER = REGISTRATE.block("fuse_holder", FuseHolderBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            if (vertical) {
+                                builder.modelFile(modModel(prov, "block/fuse_holder"));
+                            } else {
+                                builder.modelFile(modModel(prov, "block/fuse_holder_h"));
+                            }
+                            builder.rotationX(x).rotationY(y);
+                        });
+                        return builder.build();
+                    }))
+            .initialProperties(SharedProperties::wooden)
+            .transform(axeOrPickaxe())
             .simpleItem()
             .register();
 

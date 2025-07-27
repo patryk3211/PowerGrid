@@ -48,6 +48,7 @@
   "powergrid.devices.creative.voltage": "Output voltage",
   "powergrid.devices.creative.current": "Output current",
   "powergrid.devices.creative.resistance": "Resistance",
+  "powergrid.devices.fuse.setting": "Max current",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",

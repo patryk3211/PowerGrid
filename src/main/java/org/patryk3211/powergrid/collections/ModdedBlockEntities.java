@@ -31,6 +31,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
+import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
@@ -195,6 +196,11 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.DEVICE_CONNECTOR)
                     .onRegister(beType ->
                             EnergyStorage.SIDED.registerForBlockEntity(DeviceConnectorBlockEntity::getEnergyStorage, beType))
+                    .register();
+
+    public static final BlockEntityEntry<FuseHolderBlockEntity> FUSE_HOLDER =
+            REGISTRATE.blockEntity("fuse_holder", FuseHolderBlockEntity::new)
+                    .validBlock(ModdedBlocks.FUSE_HOLDER)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

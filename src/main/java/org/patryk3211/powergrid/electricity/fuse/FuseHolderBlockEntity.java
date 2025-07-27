@@ -1,0 +1,135 @@
+/*
+ * Copyright 2025 patryk3211
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.patryk3211.powergrid.electricity.fuse;
+
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
+import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
+import com.simibubi.create.foundation.utility.VecHelper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.utility.Lang;
+
+import java.util.List;
+
+public class FuseHolderBlockEntity extends ElectricBlockEntity {
+    private ScrollValueBehaviour setting;
+    private SwitchedWire fuseWire;
+
+    private enum State {
+        OPEN, CLOSED, BLOWN
+    }
+
+    private State state = State.OPEN;
+
+    public FuseHolderBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+
+        setting = new ScrollValueBehaviour(Lang.translateDirect("devices.fuse.setting"), this, new BoxTransform())
+                .withFormatter(i -> Integer.toString(Math.max(1, i)))
+                .between(1, 100);
+        setting.value = 10;
+        behaviours.add(setting);
+    }
+
+    @Override
+    public void buildCircuit(CircuitBuilder builder) {
+        builder.setTerminalCount(2);
+        fuseWire = builder.connectSwitch(0.2f, builder.terminalNode(0), builder.terminalNode(1), state == State.CLOSED);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public void playEffect() {
+        var pos = this.pos.toCenterPos();
+        var facing = getCachedState().get(FuseHolderBlock.FACING);
+        SparkParticleData.explodeParticles(world, (float) pos.x, (float) pos.y, (float) pos.z, facing.getOpposite(), 5);
+        ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, 0.8f, false);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if(fuseWire.getState()) {
+            if(Math.abs(fuseWire.current()) > setting.value) {
+                fuseWire.setState(false);
+                state = State.BLOWN;
+                if(world.isClient)
+                    playEffect();
+                notifyUpdate();
+            }
+        }
+    }
+
+    @Override
+    protected void read(NbtCompound tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        var prevState = state;
+        state = State.values()[tag.getInt("State")];
+        if(clientPacket && state == State.BLOWN && prevState == State.CLOSED)
+            playEffect();
+        fuseWire.setState(state == State.CLOSED);
+    }
+
+    @Override
+    protected void write(NbtCompound tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        tag.putInt("State", state.ordinal());
+    }
+
+    public boolean resetFuse() {
+        if(state == State.OPEN || state == State.BLOWN) {
+            state = State.CLOSED;
+            fuseWire.setState(true);
+            notifyUpdate();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeBlown() {
+        if(state == State.BLOWN) {
+            state = State.OPEN;
+            notifyUpdate();
+            return true;
+        }
+        return false;
+    }
+
+    public static class BoxTransform extends CenteredSideValueBoxTransform {
+        public BoxTransform() {
+            super((state, dir) -> dir.getOpposite() == state.get(FuseHolderBlock.FACING));
+        }
+
+        @Override
+        protected Vec3d getSouthLocation() {
+            return VecHelper.voxelSpace(8.0f, 8.0f, 9.0f);
+        }
+    }
+}
