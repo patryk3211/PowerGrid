@@ -585,7 +585,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<DeviceConnectorBlock> DEVICE_CONNECTOR = REGISTRATE.block("device_connector", DeviceConnectorBlock::new)
             .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStatesExcept(state -> {
                         var builder = ConfiguredModel.builder();
                         surfaceFacingTransforms(state, (x, y, vertical) -> {
                             if(vertical) {
@@ -596,7 +596,7 @@ public class ModdedBlocks {
                             builder.rotationX(x).rotationY(y);
                         });
                         return builder.build();
-                    }))
+                    }, DeviceConnectorBlock.POLARIZED))
             .simpleItem()
             .register();
 

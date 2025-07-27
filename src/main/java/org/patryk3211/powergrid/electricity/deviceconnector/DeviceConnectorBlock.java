@@ -45,10 +45,20 @@ import team.reborn.energy.api.EnergyStorage;
 public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity> {
     public static final DirectionProperty FACING = Properties.FACING;
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
+    public static final BooleanProperty POLARIZED = BooleanProperty.of("polarized");
 
     private final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, -0.5, 10.5, 6, 4.5),
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, 11.5, 10.5, 6, 16.5)
+    };
+
+    // This assumes that terminal 0 is positive and terminal 1 is negative
+    // which holds true for all blocks added by this mod.
+    private final TerminalBoundingBox[] POLARIZED_TERMINALS_DOWN = new TerminalBoundingBox[] {
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5.5, 1, -0.5, 10.5, 6, 4.5)
+                    .withColor(IDecoratedTerminal.RED),
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 5.5, 1, 11.5, 10.5, 6, 16.5)
+                    .withColor(IDecoratedTerminal.BLUE)
     };
 
     private static final VoxelShape SHAPE_DOWN = createCuboidShape(4.5, 0, 3.5, 11.5, 4, 12.5);
@@ -60,21 +70,24 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
         var shaper = VoxelShaper.forDirectional(SHAPE_DOWN, Direction.DOWN);
         var shaper2 = VoxelShaper.forDirectional(SHAPE_DOWN_2, Direction.DOWN);
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
-                .forAllStates(state -> BlockStateTerminalCollection.each(TERMINALS_DOWN, terminal -> {
-                    var facing = state.get(FACING);
-                    terminal = switch(facing) {
-                        case DOWN -> terminal;
-                        case UP -> terminal.rotateAroundX(180);
-                        case EAST -> terminal.rotateAroundZ(-90);
-                        case WEST -> terminal.rotateAroundZ(90);
-                        case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
-                        case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
-                    };
-                    if(!state.get(ALONG_FIRST_AXIS)) {
-                        terminal = terminal.rotate(facing.getAxis(), 90);
-                    }
-                    return terminal;
-                }))
+                .forAllStates(state -> BlockStateTerminalCollection.each(
+                        state.get(POLARIZED) ? POLARIZED_TERMINALS_DOWN : TERMINALS_DOWN,
+                        terminal -> {
+                            var facing = state.get(FACING);
+                            terminal = switch(facing) {
+                                case DOWN -> terminal;
+                                case UP -> terminal.rotateAroundX(180);
+                                case EAST -> terminal.rotateAroundZ(-90);
+                                case WEST -> terminal.rotateAroundZ(90);
+                                case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
+                                case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
+                            };
+                            if(!state.get(ALONG_FIRST_AXIS)) {
+                                terminal = terminal.rotate(facing.getAxis(), 90);
+                            }
+                            return terminal;
+                        })
+                )
                 .withShapeMapper(state -> {
                     var facing = state.get(FACING);
                     var axis_along = state.get(ALONG_FIRST_AXIS);
@@ -87,7 +100,7 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(FACING, ALONG_FIRST_AXIS);
+        builder.add(FACING, ALONG_FIRST_AXIS, POLARIZED);
     }
 
     @Override
@@ -101,10 +114,13 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
         } else {
             along = ctx.getPlayerLookDirection().getAxis() == facing.rotateYClockwise().getAxis();
         }
+        var neighbor = ctx.getWorld().getBlockState(ctx.getBlockPos().offset(facing));
+        var polarized = neighbor.getBlock() instanceof IAcceptConnector acceptor && acceptor.isPolarized();
 
         return getDefaultState()
                 .with(FACING, facing)
-                .with(ALONG_FIRST_AXIS, along);
+                .with(ALONG_FIRST_AXIS, along)
+                .with(POLARIZED, polarized);
     }
 
     public static boolean hasEnergyStorage(World world, BlockPos pos, Direction side) {
