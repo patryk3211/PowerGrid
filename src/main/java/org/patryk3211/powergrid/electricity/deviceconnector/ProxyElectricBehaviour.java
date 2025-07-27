@@ -17,11 +17,11 @@ package org.patryk3211.powergrid.electricity.deviceconnector;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
-import org.patryk3211.powergrid.electricity.febridge.FEBridgeBlock;
 import org.patryk3211.powergrid.electricity.febridge.FEBridgeEnergyStorage;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
@@ -134,7 +134,7 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
 
         if(energyStorage.amount > 0) {
             // Try to move energy
-            var facing = blockEntity.getCachedState().get(FEBridgeBlock.FACING);
+            var facing = blockEntity.getCachedState().get(Properties.FACING);
             var sideStorage = EnergyStorage.SIDED.find(world, getPos().offset(facing), facing.getOpposite());
             var moved = EnergyStorageUtil.move(energyStorage, sideStorage, Long.MAX_VALUE, null);
             if(!world.isClient) {
