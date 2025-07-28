@@ -38,14 +38,11 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     private ScrollValueBehaviour setting;
     private SwitchedWire fuseWire;
 
-    private enum State {
-        OPEN, CLOSED, BLOWN
-    }
-
-    private State state = State.OPEN;
+    private FuseState state;
 
     public FuseHolderBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        this.state = state.get(FuseHolderBlock.STATE);
     }
 
     @Override
@@ -62,7 +59,7 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        fuseWire = builder.connectSwitch(0.2f, builder.terminalNode(0), builder.terminalNode(1), state == State.CLOSED);
+        fuseWire = builder.connectSwitch(0.2f, builder.terminalNode(0), builder.terminalNode(1), state == FuseState.CLOSED);
     }
 
     @Environment(EnvType.CLIENT)
@@ -80,11 +77,9 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
         super.tick();
         if(fuseWire.getState()) {
             if(Math.abs(fuseWire.current()) > setting.value) {
-                fuseWire.setState(false);
-                state = State.BLOWN;
+                setState(FuseState.BLOWN);
                 if(world.isClient)
                     playEffect();
-                notifyUpdate();
             }
         }
     }
@@ -93,10 +88,10 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     protected void read(NbtCompound tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         var prevState = state;
-        state = State.values()[tag.getInt("State")];
-        if(clientPacket && state == State.BLOWN && prevState == State.CLOSED)
+        state = FuseState.values()[tag.getInt("State")];
+        if(clientPacket && state == FuseState.BLOWN && prevState == FuseState.CLOSED)
             playEffect();
-        fuseWire.setState(state == State.CLOSED);
+        fuseWire.setState(state == FuseState.CLOSED);
     }
 
     @Override
@@ -106,22 +101,31 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     }
 
     public boolean resetFuse() {
-        if(state == State.OPEN || state == State.BLOWN) {
-            state = State.CLOSED;
-            fuseWire.setState(true);
-            notifyUpdate();
+        if(state == FuseState.OPEN || state == FuseState.BLOWN) {
+            setState(FuseState.CLOSED);
             return true;
         }
         return false;
     }
 
     public boolean removeBlown() {
-        if(state == State.BLOWN) {
-            state = State.OPEN;
-            notifyUpdate();
+        if(state == FuseState.BLOWN) {
+            setState(FuseState.OPEN);
             return true;
         }
         return false;
+    }
+
+    public void setState(FuseState state) {
+        if(this.state != state) {
+            this.state = state;
+            if(world != null) {
+                world.setBlockState(pos, getCachedState().with(FuseHolderBlock.STATE, state));
+                if(!world.isClient)
+                    notifyUpdate();
+            }
+            fuseWire.setState(state == FuseState.CLOSED);
+        }
     }
 
     public static class BoxTransform extends CenteredSideValueBoxTransform {

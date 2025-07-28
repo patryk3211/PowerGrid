@@ -21,9 +21,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.Property;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
@@ -35,11 +35,11 @@ public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
         super(settings);
     }
 
-    public static BlockStateTerminalCollection surfaceTerminals(Block block, TerminalBoundingBox[] terminalsDown, VoxelShape shapeDown1, VoxelShape shapeDown2) {
+    public static BlockStateTerminalCollection surfaceTerminals(Block block, TerminalBoundingBox[] terminalsDown, VoxelShape shapeDown1, VoxelShape shapeDown2, Property<?>... ignored) {
         var shaper = VoxelShaper.forDirectional(shapeDown1, Direction.DOWN);
         var shaper2 = VoxelShaper.forDirectional(shapeDown2, Direction.DOWN);
         return BlockStateTerminalCollection.builder(block)
-                .forAllStates(state -> BlockStateTerminalCollection.each(terminalsDown, terminal -> {
+                .forAllStatesExcept(state -> BlockStateTerminalCollection.each(terminalsDown, terminal -> {
                     var facing = state.get(FACING);
                     terminal = switch(facing) {
                         case DOWN -> terminal;
@@ -53,7 +53,7 @@ public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
                         terminal = terminal.rotate(facing.getAxis(), 90);
                     }
                     return terminal;
-                }))
+                }), ignored)
                 .withShapeMapper(state -> {
                     var facing = state.get(FACING);
                     var axis_along = state.get(ALONG_FIRST_AXIS);

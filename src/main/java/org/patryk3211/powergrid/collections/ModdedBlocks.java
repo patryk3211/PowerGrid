@@ -38,6 +38,7 @@ import net.minecraft.loot.function.SetCountLootFunction;
 import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -52,6 +53,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
+import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
@@ -582,19 +584,35 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<FuseHolderBlock> FUSE_HOLDER = REGISTRATE.block("fuse_holder", FuseHolderBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder();
+            .blockstate((ctx, prov) -> {
+                var builder = prov.getMultipartBuilder(ctx.getEntry());
+                for(var facing : FACING.getValues()) {
+                    for(var axis : ALONG_FIRST_AXIS.getValues()) {
+                        var state = ctx.getEntry().getDefaultState()
+                                .with(FACING, facing)
+                                .with(ALONG_FIRST_AXIS, axis);
                         surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            var part = builder.part();
                             if (vertical) {
-                                builder.modelFile(modModel(prov, "block/fuse_holder"));
+                                part.modelFile(modModel(prov, "block/fuse_holder"));
                             } else {
-                                builder.modelFile(modModel(prov, "block/fuse_holder_h"));
+                                part.modelFile(modModel(prov, "block/fuse_holder_h"));
                             }
-                            builder.rotationX(x).rotationY(y);
+                            part.rotationX(x).rotationY(y);
+                            part.addModel().condition(FACING, facing).condition(ALONG_FIRST_AXIS, axis);
                         });
-                        return builder.build();
-                    }))
+                    }
+                    var part = builder.part();
+                    part.modelFile(modModel(prov, "block/fuse"));
+                    rotateDownFacingModel(part, facing);
+                    part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.CLOSED);
+
+                    part = builder.part();
+                    part.modelFile(modModel(prov, "block/fuse_blown"));
+                    rotateDownFacingModel(part, facing);
+                    part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.BLOWN);
+                }
+            })
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .simpleItem()
@@ -602,6 +620,16 @@ public class ModdedBlocks {
 
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
+
+    public static void rotateDownFacingModel(ConfiguredModel.Builder<?> builder, Direction facing) {
+        switch(facing) {
+            case UP -> builder.rotationX(180);
+            case NORTH -> builder.rotationX(90);
+            case SOUTH -> builder.rotationX(-90);
+            case WEST -> builder.rotationX(90).rotationY(90);
+            case EAST -> builder.rotationX(90).rotationY(-90);
+        }
+    }
 
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(String model) {
         return (ctx, prov) -> {

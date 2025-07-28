@@ -16,9 +16,12 @@
 package org.patryk3211.powergrid.electricity.fuse;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -33,6 +36,8 @@ import org.patryk3211.powergrid.electricity.base.SurfaceElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class FuseHolderBlock extends SurfaceElectricBlock implements IBE<FuseHolderBlockEntity> {
+    public static final EnumProperty<FuseState> STATE = EnumProperty.of("state", FuseState.class);
+
     private static final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 0, 9.5, 3, 1),
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 15, 9.5, 3, 16)
@@ -49,7 +54,14 @@ public class FuseHolderBlock extends SurfaceElectricBlock implements IBE<FuseHol
 
     public FuseHolderBlock(Settings settings) {
         super(settings);
-        setTerminalCollection(surfaceTerminals(this, TERMINALS_DOWN, SHAPE_DOWN_1, SHAPE_DOWN_2));
+        setDefaultState(getDefaultState().with(STATE, FuseState.OPEN));
+        setTerminalCollection(surfaceTerminals(this, TERMINALS_DOWN, SHAPE_DOWN_1, SHAPE_DOWN_2, STATE));
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        super.appendProperties(builder);
+        builder.add(STATE);
     }
 
     @Override
