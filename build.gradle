@@ -40,6 +40,12 @@ configurations.configureEach {
 	}
 }
 
+fabricApi {
+	configureDataGeneration {
+		client = true
+	}
+}
+
 loom {
 //	splitEnvironmentSourceSets()
 
@@ -50,13 +56,21 @@ loom {
 		}
 	}
 
-	log4jConfigs.from(file('log4j-dev.xml'))
-}
+	runs {
+		named("datagen") {
+			vmArg("-Dfabric-api.datagen")
+			vmArg("-Dfabric-api.datagen.modid=powergrid")
+			vmArg("-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
+		}
 
-fabricApi {
-	configureDataGeneration {
-		client = true
+		named("client") {
+			vmArg("-enableassertions")
+			vmArg("-Dfabric.development=true")
+			vmArg("-javaagent:\"/home/patryk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar\"")
+		}
 	}
+
+	log4jConfigs.from(file('log4j-dev.xml'))
 }
 
 dependencies {
@@ -127,14 +141,6 @@ jar {
 	from {
 		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
 	}
-}
-
-runClient {
-	enableAssertions = true
-}
-
-runDatagen {
-	jvmArgs("-Dfabric-api.datagen.modid=powergrid", "-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
 }
 
 def getGitHash = { ->
