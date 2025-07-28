@@ -43,6 +43,7 @@
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
+  "powergrid.generic.control_terminal": "Control",
 
   "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
   "powergrid.devices.creative.voltage": "Output voltage",

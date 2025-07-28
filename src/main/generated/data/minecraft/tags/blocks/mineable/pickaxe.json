@@ -25,6 +25,7 @@
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
     "powergrid:electric_motor",
+    "powergrid:servo",
     "powergrid:electromagnet",
     "powergrid:electric_fan",
     "powergrid:portable_battery",

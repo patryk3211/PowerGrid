@@ -55,6 +55,8 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
+import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
+import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
 import team.reborn.energy.api.EnergyStorage;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -157,6 +159,13 @@ public class ModdedBlockEntities {
                     .instance(() -> HalfShaftInstance::new)
                     .validBlock(ModdedBlocks.ELECTRIC_MOTOR)
                     .renderer(() -> ElectricMotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<ServoBlockEntity> SERVO =
+            REGISTRATE.blockEntity("servo", ServoBlockEntity::new)
+                    .instance(() -> HalfShaftInstance::new)
+                    .validBlock(ModdedBlocks.SERVO)
+                    .renderer(() -> ServoRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ElectromagnetBlockEntity> ELECTROMAGNET =

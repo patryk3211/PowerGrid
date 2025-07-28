@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.motor;
+package org.patryk3211.powergrid.kinetics.servo;
 
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
@@ -28,8 +28,6 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -44,38 +42,39 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
 
-public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
+public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty FACING = Properties.FACING;
 
-    private static final VoxelShape NORTH_SHAPE = createCuboidShape(3, 3, 0, 13, 13, 16);
-
-    private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 2.5, 11.5, 6.5, 4.5, 13.5, 9.5)
+    private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 4, 12, 14, 6, 14, 16)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 11.5, 11.5, 6.5, 13.5, 13.5, 9.5)
-                    .withColor(IDecoratedTerminal.BLUE)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 10, 12, 14, 12, 14, 16)
+                    .withColor(IDecoratedTerminal.BLUE),
+            new TerminalBoundingBox(IDecoratedTerminal.CONTROL, 7, 12, 14, 9, 14, 16)
+                    .withColor(IDecoratedTerminal.GREEN)
     };
 
-    public ElectricMotorBlock(Settings properties) {
+    private static final VoxelShape NORTH_SHAPE = createCuboidShape(2, 3, 1, 14, 13, 15);
+
+    public ServoBlock(Settings properties) {
         super(properties);
-        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE));
-//        setTerminalCollection(BlockStateTerminalCollection.builder(this)
-//                .forAllStates(state -> BlockStateTerminalCollection.each(NORTH_TERMINALS, terminal -> switch(state.get(FACING)) {
-//                    case NORTH -> terminal;
-//                    case SOUTH -> terminal.rotateAroundY(180);
-//                    case EAST -> terminal.rotateAroundY(90);
-//                    case WEST -> terminal.rotateAroundY(-90);
-//                    case UP -> terminal.rotateAroundX(-90);
-//                    case DOWN -> terminal.rotateAroundX(90);
-//                }))
-//                .withShapeMapper(state -> shaper.get(state.get(FACING)))
-//                .build());
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, TERMINALS_NORTH, NORTH_SHAPE));
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
         builder.add(FACING);
+    }
+
+    @Override
+    public Direction.Axis getRotationAxis(BlockState state) {
+        return state.get(FACING).getAxis();
+    }
+
+    @Override
+    public boolean hasShaftTowards(WorldView world, BlockPos pos, BlockState state, Direction face) {
+        return face == state.get(FACING);
     }
 
     public Direction getPreferredFacing(ItemPlacementContext context) {
@@ -111,42 +110,25 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     }
 
     @Override
-    public Direction.Axis getRotationAxis(BlockState state) {
-        return state.get(FACING).getAxis();
+    public Class<ServoBlockEntity> getBlockEntityClass() {
+        return ServoBlockEntity.class;
     }
 
     @Override
-    public boolean hasShaftTowards(WorldView world, BlockPos pos, BlockState state, Direction face) {
-        return face == state.get(FACING);
+    public BlockEntityType<? extends ServoBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.SERVO.get();
     }
 
-    @Override
-    public Class<ElectricMotorBlockEntity> getBlockEntityClass() {
-        return ElectricMotorBlockEntity.class;
+    public static float resistanceOn() {
+        return 1f;
     }
 
-    @Override
-    public BlockEntityType<? extends ElectricMotorBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.ELECTRIC_MOTOR.get();
-    }
-
-    public static float resistance() {
+    public static float resistanceIdle() {
         return 10f;
     }
 
     @Override
     public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
-        Resistance.series(resistance(), player, tooltip);
-    }
-
-    @Override
-    public BlockState rotate(BlockState state, BlockRotation rot) {
-        return state.with(FACING, rot.rotate(state.get(FACING)));
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public BlockState mirror(BlockState state, BlockMirror mirrorIn) {
-        return state.rotate(mirrorIn.getRotation(state.get(FACING)));
+        Resistance.series(resistanceOn(), player, tooltip);
     }
 }

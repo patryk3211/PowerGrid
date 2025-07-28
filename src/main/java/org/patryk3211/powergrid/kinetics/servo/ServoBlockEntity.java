@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.motor;
+package org.patryk3211.powergrid.kinetics.servo;
 
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -21,24 +21,28 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
+import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 
 import java.util.List;
 
-public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
+public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
+    public static final float MAX_SPEED = 32.0f;
+
     protected ElectricBehaviour electricBehaviour;
     protected ThermalBehaviour thermalBehaviour;
+    private float generatedSpeed;
+    private float currentAngle;
 
     private ElectricWire coil;
+    private ElectricWire control;
 
-    private float generatedSpeed = 0;
-
-    public ElectricMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
-        super(typeIn, pos, state);
+    public ServoBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     @Override
@@ -49,6 +53,29 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
         thermalBehaviour = new ThermalBehaviour(this, 3.5f, 0.75f);
         behaviours.add(thermalBehaviour);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
+        float newTarget = MathHelper.clamp(control.potentialDifference() / 5.0f * 360.0f, -360f, 360f);
+
+        float rotation = (newTarget - currentAngle) / 360.0f;
+        if(Math.abs(rotation) < 0.001f)
+            rotation = 0;
+
+        var speed = MathHelper.clamp(rotation / 0.05f * 60.0f, -MAX_SPEED, MAX_SPEED);
+        if(speed != generatedSpeed) {
+            generatedSpeed = speed;
+            updateGeneratedRotation();
+            notifyUpdate();
+
+            var conductance = 1 / ServoBlock.resistanceIdle() + (1 / ServoBlock.resistanceOn()) * (Math.abs(generatedSpeed) / MAX_SPEED);
+            coil.setResistance(1 / conductance);
+        }
+
+        currentAngle += generatedSpeed / 60.0f * 0.05f * 360f;
     }
 
     protected void applyLostPower(float power) {
@@ -65,75 +92,29 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     }
 
     @Override
+    public void buildCircuit(CircuitBuilder builder) {
+        builder.setTerminalCount(3);
+        coil = builder.connect(ServoBlock.resistanceIdle(), builder.terminalNode(0), builder.terminalNode(1));
+        control = builder.connect(1000f, builder.terminalNode(2), builder.terminalNode(1));
+    }
+
+    @Override
     protected void read(NbtCompound compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         generatedSpeed = compound.getFloat("GeneratedSpeed");
+        currentAngle = compound.getFloat("Angle");
         updateGeneratedRotation();
-        updateDissipation();
     }
 
     @Override
     protected void write(NbtCompound compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putFloat("GeneratedSpeed", generatedSpeed);
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-
-        applyLostPower(coil.power());
-        var voltage = coil.potentialDifference();
-        if(!world.isClient || isVirtual()) {
-            var newSpeed = (int) (voltage * 2.0f);
-            // Max speed constraints.
-            if(newSpeed > 256)
-                newSpeed = 256;
-            if(newSpeed < -256)
-                newSpeed = -256;
-
-            // Update speed from average applied voltage.
-            var diffPercentage = Math.abs((newSpeed - generatedSpeed) / generatedSpeed);
-            if(diffPercentage >= 0.02) {
-                // Update if speed difference larger than 2%.
-                // This should make the motor easier to control and prevent excessive updates.
-                generatedSpeed = newSpeed;
-                updateGeneratedRotation();
-            }
-        }
-    }
-
-    @Override
-    public void applyNewSpeed(float prevSpeed, float speed) {
-        super.applyNewSpeed(prevSpeed, speed);
-        if(Math.signum(prevSpeed) == Math.signum(speed)) {
-            // HACK: To prevent varying voltage from annihilating the network through flickering speed,
-            // the electric motor removes the score it added through its speed update.
-            for (var entry : getOrCreateNetwork().members.keySet()) {
-                ((KineticBlockEntityAccessor) entry).setFlickerTally(Math.max(entry.getFlickerScore() - 5, 0));
-            }
-        }
-    }
-
-    @Override
-    public void onSpeedChanged(float previousSpeed) {
-        super.onSpeedChanged(previousSpeed);
-        updateDissipation();
-    }
-
-    public void updateDissipation() {
-        // Simulate a fan moving more air and providing more cooling
-        thermalBehaviour.setDissipationFactor(Math.max(Math.abs(getSpeed()) * 0.2f, 0.3f));
+        compound.putFloat("Angle", currentAngle);
     }
 
     @Override
     public float getGeneratedSpeed() {
         return convertToDirection(generatedSpeed, getCachedState().get(ElectricMotorBlock.FACING));
-    }
-
-    @Override
-    public void buildCircuit(CircuitBuilder builder) {
-        builder.setTerminalCount(2);
-        coil = builder.connect(ElectricMotorBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 }

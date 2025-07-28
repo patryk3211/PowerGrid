@@ -38,7 +38,6 @@ import net.minecraft.loot.function.SetCountLootFunction;
 import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -73,6 +72,7 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
+import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 
 import java.util.function.Function;
 
@@ -462,6 +462,20 @@ public class ModdedBlocks {
             .defaultLoot()
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_motor/item")))
+                .build()
+            .register();
+
+    public static final BlockEntry<ServoBlock> SERVO = REGISTRATE.block("servo", ServoBlock::new)
+            .blockstate(alternateDirectionalBlock(state -> switch(state.get(ElectricMotorBlock.FACING).getAxis()) {
+                case X, Z -> "block/servo/block";
+                case Y -> "block/servo/block_vertical";
+            }))
+            .initialProperties(() -> Blocks.IRON_BLOCK)
+            .transform(BlockStressDefaults.setCapacity(32))
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/servo/item")))
                 .build()
             .register();
 
