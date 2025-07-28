@@ -120,11 +120,11 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     }
 
     public static float resistanceOn() {
-        return 1f;
+        return 2f;
     }
 
     public static float resistanceIdle() {
-        return 10f;
+        return 20f;
     }
 
     @Override

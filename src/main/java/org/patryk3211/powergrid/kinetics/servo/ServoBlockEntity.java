@@ -37,6 +37,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     protected ThermalBehaviour thermalBehaviour;
     private float generatedSpeed;
     private float currentAngle;
+    private float prevTarget;
 
     private ElectricWire coil;
     private ElectricWire control;
@@ -60,19 +61,33 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         super.tick();
         // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
         float newTarget = MathHelper.clamp(control.potentialDifference() / 5.0f * 360.0f, -360f, 360f);
+        newTarget = prevTarget * 0.5f + newTarget * 0.5f;
+        prevTarget = newTarget;
+
+        // Target coil voltage is 20V
+        float maxSpeed = Math.min(Math.abs(coil.potentialDifference()) * 0.05f, 1.0f) * MAX_SPEED;
+        if(maxSpeed == 0 && generatedSpeed != 0) {
+            generatedSpeed = 0;
+            updateGeneratedRotation();
+            notifyUpdate();
+            return;
+        }
 
         float rotation = (newTarget - currentAngle) / 360.0f;
-        if(Math.abs(rotation) < 0.001f)
+        if(Math.abs(rotation) < 0.01f)
             rotation = 0;
 
-        var speed = MathHelper.clamp(rotation / 0.05f * 60.0f, -MAX_SPEED, MAX_SPEED);
+        var speed = MathHelper.clamp(rotation / 0.05f * 60.0f, -maxSpeed, maxSpeed);
         if(speed != generatedSpeed) {
             generatedSpeed = speed;
             updateGeneratedRotation();
             notifyUpdate();
+        }
 
-            var conductance = 1 / ServoBlock.resistanceIdle() + (1 / ServoBlock.resistanceOn()) * (Math.abs(generatedSpeed) / MAX_SPEED);
-            coil.setResistance(1 / conductance);
+        if(generatedSpeed != 0) {
+            coil.setResistance(ServoBlock.resistanceOn());
+        } else {
+            coil.setResistance(ServoBlock.resistanceIdle());
         }
 
         currentAngle += generatedSpeed / 60.0f * 0.05f * 360f;
