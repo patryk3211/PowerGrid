@@ -7,7 +7,7 @@
     },
     {
       "amount": 27000,
-      "fluid": "powergrid:etching_acid",
+      "fluid": "powergrid:acid",
       "nbt": {}
     }
   ],
