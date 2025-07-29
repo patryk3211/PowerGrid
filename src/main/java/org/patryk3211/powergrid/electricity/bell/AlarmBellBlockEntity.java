@@ -1,0 +1,66 @@
+/*
+ * Copyright 2025 patryk3211
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.patryk3211.powergrid.electricity.bell;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.math.BlockPos;
+import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+
+public class AlarmBellBlockEntity extends ElectricBlockEntity {
+    private ElectricWire wire;
+
+    private boolean hasSoundInstance = false;
+
+    public AlarmBellBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if(world.isClient) {
+            if(getVolume() > 0 && !hasSoundInstance) {
+                MinecraftClient.getInstance().getSoundManager().play(new AlarmBellSoundInstance(this));
+                hasSoundInstance = true;
+            } else if(getVolume() == 0 && hasSoundInstance) {
+                hasSoundInstance = false;
+            }
+        }
+    }
+
+    public float getVolume() {
+        var I = Math.abs(wire.current());
+        if(I < 0.25f)
+            return 0;
+        return I * 2.0f;
+    }
+
+    public float getPitch() {
+        var I = Math.abs(wire.current());
+        if(I < 0.5f)
+            return 0.75f;
+        return Math.min(0.5f + I * 0.5f, 1.5f);
+    }
+
+    @Override
+    public void buildCircuit(CircuitBuilder builder) {
+        builder.setTerminalCount(2);
+        wire = builder.connect(AlarmBellBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1));
+    }
+}

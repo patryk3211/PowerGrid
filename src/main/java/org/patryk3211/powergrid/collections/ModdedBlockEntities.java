@@ -21,6 +21,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardRenderer;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
+import org.patryk3211.powergrid.electricity.bell.AlarmBellBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
@@ -210,6 +211,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<FuseHolderBlockEntity> FUSE_HOLDER =
             REGISTRATE.blockEntity("fuse_holder", FuseHolderBlockEntity::new)
                     .validBlock(ModdedBlocks.FUSE_HOLDER)
+                    .register();
+
+    public static final BlockEntityEntry<AlarmBellBlockEntity> ALARM_BELL =
+            REGISTRATE.blockEntity("alarm_bell", AlarmBellBlockEntity::new)
+                    .validBlock(ModdedBlocks.ALARM_BELL)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

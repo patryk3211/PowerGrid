@@ -1,4 +1,5 @@
 {
+  "block.powergrid.alarm_bell": "ןןǝᗺ ɯɹɐןⱯ",
   "block.powergrid.andesite_current_gauge": "ǝbnɐ⅁ ʇuǝɹɹnƆ ǝʇısǝpuⱯ",
   "block.powergrid.andesite_voltage_gauge": "ǝbnɐ⅁ ǝbɐʇןoΛ ǝʇısǝpuⱯ",
   "block.powergrid.battery": "ʎɹǝʇʇɐᗺ",
@@ -138,6 +139,7 @@
   "powergrid.electrozapper.bolt": "ʇןoᗺ buıuʇɥbıꞀ",
   "powergrid.electrozapper.bolt.damage": "ǝbɐɯɐᗡ ʞɔɐʇʇⱯ %1$s",
   "powergrid.electrozapper.bolt.reload": "sʞɔı⟘ pɐoןǝᴚ %1$s",
+  "powergrid.generic.control_terminal": "ןoɹʇuoƆ",
   "powergrid.generic.negative_terminal": "ǝʌıʇɐbǝN",
   "powergrid.generic.positive_terminal": "ǝʌıʇısoԀ",
   "powergrid.generic.terminal": "ɹoʇɔǝuuoƆ",
@@ -249,6 +251,7 @@
   "powergrid.recipe.category.circuit_assembly": "ʎןqɯǝssⱯ ʇınɔɹıƆ",
   "powergrid.recipe.category.circuit_design": "buıubısǝᗡ ʇınɔɹıƆ",
   "powergrid.recipe.magnetizing": "buızıʇǝubɐW",
+  "powergrid.subtitle.alarm_bell": "sbuıɹ ןןǝq ɯɹɐןⱯ",
   "powergrid.subtitle.component_explode": "sdod ʇuǝuodɯoƆ",
   "powergrid.subtitle.electrozapper_shoot": "sʇzzzq ɹǝddɐZ-oɹʇɔǝןƎ",
   "powergrid.subtitle.fuse_pops": "sdod ǝsnℲ",

@@ -140,6 +140,10 @@ public class ModdedSoundEvents {
 
     GENERATOR = create("generator").subtitle("Generator spinning")
             .category(SoundCategory.BLOCKS)
+            .build(),
+
+    ALARM_BELL = create("alarm_bell").subtitle("Alarm bell rings")
+            .category(SoundCategory.BLOCKS)
             .build()
 
             ;

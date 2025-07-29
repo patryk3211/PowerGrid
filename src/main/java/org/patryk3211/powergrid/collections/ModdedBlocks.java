@@ -24,10 +24,7 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
 import io.github.fabricators_of_create.porting_lib.models.generators.ModelFile;
 import io.github.fabricators_of_create.porting_lib.models.generators.block.MultiPartBlockStateBuilder;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
@@ -45,6 +42,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
+import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
@@ -629,6 +627,13 @@ public class ModdedBlocks {
             })
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<AlarmBellBlock> ALARM_BELL = REGISTRATE.block("alarm_bell", AlarmBellBlock::new)
+            .blockstate(horizontalBlock("alarm_bell"))
+            .initialProperties(() -> Blocks.BELL)
+            .transform(pickaxeOnly())
             .simpleItem()
             .register();
 

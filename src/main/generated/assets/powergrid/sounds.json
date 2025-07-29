@@ -1,4 +1,13 @@
 {
+  "alarm_bell": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:alarm_bell"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.alarm_bell"
+  },
   "component_explode": {
     "sounds": [
       {

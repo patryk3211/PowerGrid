@@ -52,7 +52,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = new ThermalBehaviour(this, 3.5f, 0.75f);
+        thermalBehaviour = ThermalBehaviour.forMaxPower(this, 3.5f, 200);
         behaviours.add(thermalBehaviour);
     }
 
@@ -63,6 +63,8 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         float newTarget = MathHelper.clamp(control.potentialDifference() / 5.0f * 360.0f, -360f, 360f);
         newTarget = prevTarget * 0.5f + newTarget * 0.5f;
         prevTarget = newTarget;
+
+        applyLostPower(coil.power());
 
         // Target coil voltage is 20V
         float maxSpeed = Math.min(Math.abs(coil.potentialDifference()) * 0.05f, 1.0f) * MAX_SPEED;
