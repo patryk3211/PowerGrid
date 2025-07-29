@@ -49,6 +49,10 @@ public abstract class TransformerCoupling extends CouplingNode {
         this.resistance = resistance;
     }
 
+    public float getResistance() {
+        return resistance;
+    }
+
     public static TransformerCoupling create(float ratio, IElectricNode primary, IElectricNode secondary) {
         return new Tr1P1S(ratio, 0, primary, secondary);
     }

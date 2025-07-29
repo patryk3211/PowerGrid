@@ -42,6 +42,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
+import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
@@ -83,6 +84,7 @@ public class ModdedBlocks {
     public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
             .blockstate((ctx, prov) ->
                     prov.simpleBlock(ctx.getEntry(), modModel(prov, "block/battery")))
+            .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
             .simpleItem()
             .register();
 
