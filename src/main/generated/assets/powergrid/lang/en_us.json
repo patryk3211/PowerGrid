@@ -254,6 +254,7 @@
   "powergrid.subtitle.alarm_bell": "Alarm bell rings",
   "powergrid.subtitle.component_explode": "Component pops",
   "powergrid.subtitle.electrozapper_shoot": "Electro-Zapper bzzzts",
+  "powergrid.subtitle.fuse_install": "Fuse installed",
   "powergrid.subtitle.fuse_pops": "Fuse pops",
   "powergrid.subtitle.generator": "Generator spinning",
   "powergrid.subtitle.hv_switch_connect": "Switch connected",

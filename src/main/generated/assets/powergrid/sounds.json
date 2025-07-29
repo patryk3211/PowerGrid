@@ -26,6 +26,15 @@
     ],
     "subtitle": "powergrid.subtitle.electrozapper_shoot"
   },
+  "fuse_install": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.add_item"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.fuse_install"
+  },
   "fuse_pops": {
     "sounds": [
       {

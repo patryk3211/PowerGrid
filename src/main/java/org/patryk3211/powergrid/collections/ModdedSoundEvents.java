@@ -144,6 +144,11 @@ public class ModdedSoundEvents {
 
     ALARM_BELL = create("alarm_bell").subtitle("Alarm bell rings")
             .category(SoundCategory.BLOCKS)
+            .build(),
+
+    FUSE_INSTALL = create("fuse_install").subtitle("Fuse installed")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ADD_ITEM, 0.8f, 0.7f)
+            .category(SoundCategory.BLOCKS)
             .build()
 
             ;

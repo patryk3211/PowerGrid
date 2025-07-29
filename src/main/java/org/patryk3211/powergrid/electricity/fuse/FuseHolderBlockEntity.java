@@ -102,7 +102,10 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
 
     public boolean resetFuse() {
         if(state == FuseState.OPEN || state == FuseState.BLOWN) {
-            setState(FuseState.CLOSED);
+            if(!world.isClient) {
+                setState(FuseState.CLOSED);
+                ModdedSoundEvents.FUSE_INSTALL.playOnServer(world, pos);
+            }
             return true;
         }
         return false;
