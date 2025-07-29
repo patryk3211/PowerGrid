@@ -60,4 +60,8 @@ public class RecipeTags {
     public static TagKey<Item> planks() {
         return ItemTags.PLANKS;
     }
+
+    public static TagKey<Item> brassSheet() {
+        return AllTags.forgeItemTag("brass_plates");
+    }
 }

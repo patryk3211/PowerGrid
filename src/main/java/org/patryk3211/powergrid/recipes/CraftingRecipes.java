@@ -271,7 +271,45 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
             .shapeless(b -> b
                     .input(ModdedBlocks.ELECTRIC_MOTOR)
-                    .input(AllBlocks.ENCASED_FAN))
+                    .input(AllBlocks.ENCASED_FAN)),
+
+    SERVO = create(ModdedBlocks.SERVO)
+            .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
+            .shapeless(b -> b
+                    .input(ModdedBlocks.ELECTRIC_MOTOR)
+                    .input(ModdedItems.ELECTRICAL_GIZMO)
+                    .input(AllItems.PRECISION_MECHANISM)),
+
+    FUSE_HOLDER = create(ModdedBlocks.FUSE_HOLDER)
+            .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
+            .shaped(b -> b
+                    .pattern("I")
+                    .pattern("A")
+                    .pattern("C")
+                    .input('I', RecipeTags.ironSheet())
+                    .input('A', AllBlocks.ANDESITE_CASING)
+                    .input('C', RecipeTags.copperSheet())),
+
+    DEVICE_CONNECTOR = create(ModdedBlocks.DEVICE_CONNECTOR)
+            .unlockedBy(() -> AllItems.COPPER_SHEET)
+            .shaped(b -> b
+                    .pattern(" Z ")
+                    .pattern("CAC")
+                    .input('C', RecipeTags.copperSheet())
+                    .input('Z', RecipeTags.zincSheet())
+                    .input('A', AllItems.ANDESITE_ALLOY)),
+
+    ALARM_BELL = create(ModdedBlocks.ALARM_BELL)
+            .unlockedBy(() -> AllItems.BRASS_SHEET)
+            .shaped(b -> b
+                    .pattern(" B ")
+                    .pattern("BAB")
+                    .pattern("CMI")
+                    .input('B', RecipeTags.brassSheet())
+                    .input('A', AllItems.ANDESITE_ALLOY)
+                    .input('M', ModdedItems.MAGNET)
+                    .input('C', RecipeTags.copperCoil())
+                    .input('I', RecipeTags.ironIngot()))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {

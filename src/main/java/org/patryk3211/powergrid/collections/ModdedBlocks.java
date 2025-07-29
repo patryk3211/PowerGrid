@@ -632,7 +632,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<AlarmBellBlock> ALARM_BELL = REGISTRATE.block("alarm_bell", AlarmBellBlock::new)
             .blockstate(horizontalBlock("alarm_bell"))
-            .initialProperties(() -> Blocks.BELL)
+            .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .simpleItem()
             .register();

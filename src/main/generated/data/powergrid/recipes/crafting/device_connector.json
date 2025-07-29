@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "C": {
+      "tag": "c:copper_plates"
+    },
+    "Z": {
+      "tag": "c:zinc_plates"
+    }
+  },
+  "pattern": [
+    " Z ",
+    "CAC"
+  ],
+  "result": {
+    "item": "powergrid:device_connector"
+  },
+  "show_notification": true
+}
