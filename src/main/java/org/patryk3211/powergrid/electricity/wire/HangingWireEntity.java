@@ -25,6 +25,7 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
@@ -47,10 +48,27 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public void updateRenderParams() {
         if(!getWorld().isClient)
             return;
-        this.setBoundingBox(this.calculateBoundingBox());
         var item = getWireItem();
         renderParams = new CurveParameters(terminalPos1, terminalPos2,
                 item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
+        this.setBoundingBox(this.calculateBoundingBox());
+    }
+
+    @Nullable
+    @Environment(EnvType.CLIENT)
+    public Box calculateClientBoundingBox() {
+        if(renderParams == null)
+            return null;
+        var curve = (CurveParameters) renderParams;
+        var box = new Box(terminalPos1, terminalPos2);
+        var minY = new MutableFloat(box.minY);
+        final float eY = (float) getPos().y;
+        curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
+            float y = (y1 + y2) * 0.5f + eY;
+            if(y < minY.getValue())
+                minY.setValue(y);
+        });
+        return box.withMinY(minY.getValue()).expand(0.1f);
     }
 
     public static HangingWireEntity create(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, float resistance) {
@@ -73,6 +91,11 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     protected Box calculateBoundingBox() {
         if(terminalPos1 != null && terminalPos2 != null) {
+            if(getWorld().isClient) {
+                var box = calculateClientBoundingBox();
+                if(box != null)
+                    return box;
+            }
             var box = new Box(terminalPos1, terminalPos2);
             return box.expand(0.1f);
         } else
