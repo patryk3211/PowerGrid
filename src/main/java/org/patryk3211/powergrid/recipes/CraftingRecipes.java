@@ -304,10 +304,9 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .shaped(b -> b
                     .pattern(" B ")
                     .pattern("BAB")
-                    .pattern("CMI")
+                    .pattern(" CI")
                     .input('B', RecipeTags.brassSheet())
                     .input('A', AllItems.ANDESITE_ALLOY)
-                    .input('M', ModdedItems.MAGNET)
                     .input('C', RecipeTags.copperCoil())
                     .input('I', RecipeTags.ironIngot()))
             ;

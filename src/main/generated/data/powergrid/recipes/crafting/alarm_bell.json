@@ -13,15 +13,12 @@
     },
     "I": {
       "tag": "c:iron_ingots"
-    },
-    "M": {
-      "item": "powergrid:magnet"
     }
   },
   "pattern": [
     " B ",
     "BAB",
-    "CMI"
+    " CI"
   ],
   "result": {
     "item": "powergrid:alarm_bell"
