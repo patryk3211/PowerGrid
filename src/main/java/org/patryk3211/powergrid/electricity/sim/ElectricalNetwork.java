@@ -357,7 +357,7 @@ public class ElectricalNetwork {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
             if(LOGGER != null)
-                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
+                LOGGER.trace("Cumulated conductance updates triggered admittance matrix recalculation");
             populateConductanceMatrix();
             populateCurrentMatrix();
         }

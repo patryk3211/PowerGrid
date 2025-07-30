@@ -34,7 +34,7 @@ public abstract class TransformerCoupling extends CouplingNode {
     @Override
     public void couple(DMatrixRMaj conductance) {
         // Unlike other fields, this one holds resistance instead of conductance.
-        conductance.set(this.index, this.index, resistance);
+        conductance.add(this.index, this.index, resistance);
     }
 
     @Override
@@ -92,10 +92,10 @@ public abstract class TransformerCoupling extends CouplingNode {
         @Override
         public void couple(DMatrixRMaj conductance) {
             super.couple(conductance);
-            conductance.set(this.index, primary.getIndex(), ratio);
-            conductance.set(this.index, secondary.getIndex(), -1);
-            conductance.set(secondary.getIndex(), this.index, 1);
-            conductance.set(primary.getIndex(), this.index, -ratio);
+            conductance.add(this.index, primary.getIndex(), ratio);
+            conductance.add(this.index, secondary.getIndex(), -1);
+            conductance.add(secondary.getIndex(), this.index, 1);
+            conductance.add(primary.getIndex(), this.index, -ratio);
         }
 
         @Override
@@ -124,12 +124,12 @@ public abstract class TransformerCoupling extends CouplingNode {
         @Override
         public void couple(DMatrixRMaj conductance) {
             super.couple(conductance);
-            conductance.set(this.index, primary.getIndex(), ratio);
-            conductance.set(this.index, secondary1.getIndex(), -1.0);
-            conductance.set(this.index, secondary2.getIndex(),  1.0);
-            conductance.set(secondary1.getIndex(), this.index,  1.0);
-            conductance.set(secondary2.getIndex(), this.index, -1.0);
-            conductance.set(primary.getIndex(), this.index, -ratio);
+            conductance.add(this.index, primary.getIndex(), ratio);
+            conductance.add(this.index, secondary1.getIndex(), -1.0);
+            conductance.add(this.index, secondary2.getIndex(),  1.0);
+            conductance.add(secondary1.getIndex(), this.index,  1.0);
+            conductance.add(secondary2.getIndex(), this.index, -1.0);
+            conductance.add(primary.getIndex(), this.index, -ratio);
         }
 
         @Override
@@ -160,14 +160,14 @@ public abstract class TransformerCoupling extends CouplingNode {
         @Override
         public void couple(DMatrixRMaj conductance) {
             super.couple(conductance);
-            conductance.set(this.index, primary1.getIndex(),  ratio);
-            conductance.set(this.index, primary2.getIndex(), -ratio);
-            conductance.set(this.index, secondary1.getIndex(), -1.0);
-            conductance.set(this.index, secondary2.getIndex(),  1.0);
-            conductance.set(secondary1.getIndex(), this.index,  1.0);
-            conductance.set(secondary2.getIndex(), this.index, -1.0);
-            conductance.set(primary1.getIndex(), this.index, -ratio);
-            conductance.set(primary2.getIndex(), this.index,  ratio);
+            conductance.add(this.index, primary1.getIndex(),  ratio);
+            conductance.add(this.index, primary2.getIndex(), -ratio);
+            conductance.add(this.index, secondary1.getIndex(), -1.0);
+            conductance.add(this.index, secondary2.getIndex(),  1.0);
+            conductance.add(secondary1.getIndex(), this.index,  1.0);
+            conductance.add(secondary2.getIndex(), this.index, -1.0);
+            conductance.add(primary1.getIndex(), this.index, -ratio);
+            conductance.add(primary2.getIndex(), this.index,  ratio);
         }
 
         @Override

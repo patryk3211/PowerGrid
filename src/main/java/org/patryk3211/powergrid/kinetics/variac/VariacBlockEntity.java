@@ -58,11 +58,10 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity {
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
         float speed = getSpeed();
-        if(speed == 0)
+        if(speed == 0) {
             arm.chase(arm.getValue(), 0, LerpedFloat.Chaser.LINEAR);
-        var facing = getCachedState().get(HvSwitchBlock.HORIZONTAL_FACING);
-        if(facing == Direction.NORTH || facing == Direction.EAST)
-            speed = -speed;
+            return;
+        }
         arm.chase(speed > 0 ? 1 : 0, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
         sendData();
     }
@@ -93,8 +92,8 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity {
         this.mutualInductance = builder.connect(mutualInductance, Tnode, builder.terminalNode(1));
         // TODO: Find out if this can be replaced with the transformer coupling's resistance.
         this.secondaryStray = builder.connect(secondaryStray, Tnode, Pnode);
-//        this.coupling = builder.couple(ratio, Pnode, builder.terminalNode(1),
-//                builder.terminalNode(1), builder.terminalNode(2));
+        this.coupling = builder.couple(ratio, Pnode, builder.terminalNode(1),
+                builder.terminalNode(2), builder.terminalNode(1));
     }
 
     public void refreshParameters() {
