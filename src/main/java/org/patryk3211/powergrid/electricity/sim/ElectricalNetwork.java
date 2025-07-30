@@ -356,7 +356,8 @@ public class ElectricalNetwork {
         } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
-            LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
+            if(LOGGER != null)
+                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
             populateConductanceMatrix();
             populateCurrentMatrix();
         }
