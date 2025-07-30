@@ -60,6 +60,9 @@ import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
+import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
+import org.patryk3211.powergrid.kinetics.variac.VariacInstance;
+import org.patryk3211.powergrid.kinetics.variac.VariacRenderer;
 import team.reborn.energy.api.EnergyStorage;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -160,6 +163,13 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<TransformerMediumBlockEntity> TRANSFORMER_MEDIUM =
             REGISTRATE.blockEntity("transformer_medium", TransformerMediumBlockEntity::new)
                     .validBlock(ModdedBlocks.TRANSFORMER_MEDIUM)
+                    .register();
+
+    public static final BlockEntityEntry<VariacBlockEntity> VARIAC =
+            REGISTRATE.blockEntity("variac", VariacBlockEntity::new)
+                    .instance(() -> VariacInstance::new)
+                    .validBlock(ModdedBlocks.VARIAC)
+                    .renderer(() -> VariacRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ElectricMotorBlockEntity> ELECTRIC_MOTOR =

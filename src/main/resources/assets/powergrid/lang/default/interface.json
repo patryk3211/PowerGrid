@@ -45,6 +45,8 @@
   "powergrid.generic.terminal": "Connector",
   "powergrid.generic.control_terminal": "Control",
 
+  "powergrid.variac.tap": "Tap",
+
   "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
   "powergrid.devices.creative.voltage": "Output voltage",
   "powergrid.devices.creative.current": "Output current",

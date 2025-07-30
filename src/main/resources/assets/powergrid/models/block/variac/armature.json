@@ -1,0 +1,22 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"0": "powergrid:block/variac",
+		"particle": "powergrid:block/variac"
+	},
+	"elements": [
+		{
+			"from": [7, 10, 2.5],
+			"to": [9, 12, 8.5],
+			"rotation": {"angle": 22.5, "axis": "y", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [6, 2, 7, 3], "rotation": 270, "texture": "#0"},
+				"east": {"uv": [7, 3, 6, 0], "rotation": 90, "texture": "#0"},
+				"west": {"uv": [7, 0, 6, 3], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [7, 3, 8, 0], "texture": "#0"}
+			}
+		}
+	]
+}

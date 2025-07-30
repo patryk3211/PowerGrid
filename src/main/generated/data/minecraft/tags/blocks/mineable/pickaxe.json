@@ -24,6 +24,7 @@
     "powergrid:transformer_core",
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
+    "powergrid:variac",
     "powergrid:electric_motor",
     "powergrid:servo",
     "powergrid:electromagnet",

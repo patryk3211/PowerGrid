@@ -37,6 +37,7 @@
   "block.powergrid.transformer_core": "Transformer Core",
   "block.powergrid.transformer_medium": "Transformer Medium",
   "block.powergrid.transformer_small": "Transformer Small",
+  "block.powergrid.variac": "Variac",
   "block.powergrid.winding": "Winding",
   "block.powergrid.wire_connector": "Wire Connector",
   "component.powergrid.diode.0": "Anode",
@@ -277,5 +278,6 @@
   "powergrid.tooltip.power.rated": "Rated power:",
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
-  "powergrid.tooltip.voltage.rated": "Rated voltage:"
+  "powergrid.tooltip.voltage.rated": "Rated voltage:",
+  "powergrid.variac.tap": "Tap"
 }

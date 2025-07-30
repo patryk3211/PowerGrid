@@ -73,6 +73,7 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
+import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
 import java.util.function.Function;
 
@@ -457,6 +458,15 @@ public class ModdedBlocks {
                     ))
             .properties(properties -> properties.sounds(BlockSoundGroup.NETHERITE))
             .transform(pickaxeOnly())
+            .register();
+
+    public static final BlockEntry<VariacBlock> VARIAC = REGISTRATE.block("variac", VariacBlock::new)
+            .initialProperties(TRANSFORMER_CORE)
+            .blockstate(horizontalBlock("block/variac/block"))
+            .transform(pickaxeOnly())
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "powergrid:block/variac/item"))
+                .build()
             .register();
 
     public static final BlockEntry<ElectricMotorBlock> ELECTRIC_MOTOR = REGISTRATE.block("electric_motor", ElectricMotorBlock::new)
