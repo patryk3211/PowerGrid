@@ -55,7 +55,7 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
         var I = Math.abs(wire.current());
         if(I < 0.5f)
             return 0.75f;
-        return Math.min(0.5f + I * 0.5f, 1.5f);
+        return Math.min(0.5f + I * 0.5f, 1.25f);
     }
 
     @Override

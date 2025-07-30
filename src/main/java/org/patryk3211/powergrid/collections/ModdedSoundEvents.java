@@ -71,31 +71,31 @@ public class ModdedSoundEvents {
             .category(SoundCategory.PLAYERS)
             .build(),
 
-    UI_CLICK = create("ui.click")
+    UI_CLICK = create("ui.click").noSubtitle()
             .playExisting(SoundEvents.UI_BUTTON_CLICK)
             .build(),
 
-    UI_COMPONENT_ROTATE = create("ui.component_rotate")
+    UI_COMPONENT_ROTATE = create("ui.component_rotate").noSubtitle()
             .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ROTATE_ITEM, 0.75f, 0.75f)
             .build(),
 
-    UI_PLACE_TRACE = create("ui.place_trace")
+    UI_PLACE_TRACE = create("ui.place_trace").noSubtitle()
             .playExisting(SoundEvents.BLOCK_METAL_PLACE, 0.75f, 1.75f)
             .build(),
 
-    UI_DELETE_AREA = create("ui.delete_area")
+    UI_DELETE_AREA = create("ui.delete_area").noSubtitle()
             .playExisting(SoundEvents.ENTITY_ITEM_FRAME_REMOVE_ITEM, 0.5f, 1.0f)
             .build(),
 
-    UI_PLACE_COMPONENT = create("ui.place_component")
+    UI_PLACE_COMPONENT = create("ui.place_component").noSubtitle()
             .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ADD_ITEM, 0.5f, 1.0f)
             .build(),
 
-    UI_FAIL = create("ui.action.fail")
+    UI_FAIL = create("ui.action.fail").noSubtitle()
             .playExisting(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), 1.0f, 0.5f)
             .build(),
 
-    UI_SELECT_COMPONENT = create("ui.select_component")
+    UI_SELECT_COMPONENT = create("ui.select_component").noSubtitle()
             .playExisting(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f)
             .build(),
 
@@ -143,6 +143,10 @@ public class ModdedSoundEvents {
             .build(),
 
     ALARM_BELL = create("alarm_bell").subtitle("Alarm bell rings")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    ALARM_BELL_END = create("alarm_bell_end").noSubtitle()
             .category(SoundCategory.BLOCKS)
             .build(),
 

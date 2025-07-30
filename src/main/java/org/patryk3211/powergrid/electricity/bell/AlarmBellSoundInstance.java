@@ -17,7 +17,11 @@ package org.patryk3211.powergrid.electricity.bell;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.MovingSoundInstance;
+import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.client.sound.SoundManager;
+import net.minecraft.client.sound.WeightedSoundSet;
 import net.minecraft.sound.SoundCategory;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
@@ -43,15 +47,23 @@ public class AlarmBellSoundInstance extends MovingSoundInstance {
         return true;
     }
 
+    public void playEnd() {
+        var manager = MinecraftClient.getInstance().getSoundManager();
+        manager.play(new PositionedSoundInstance(ModdedSoundEvents.ALARM_BELL_END.getMainEvent(), SoundCategory.BLOCKS, volume, pitch, random, x, y, z));
+    }
+
     @Override
     public void tick() {
         if(be.isRemoved()) {
             setDone();
         } else {
+            var newVolume = be.getVolume();
+            if(newVolume == 0) {
+                setDone();
+                playEnd();
+            }
             volume = be.getVolume();
             pitch = be.getPitch();
-            if(volume == 0)
-                setDone();
         }
     }
 }
