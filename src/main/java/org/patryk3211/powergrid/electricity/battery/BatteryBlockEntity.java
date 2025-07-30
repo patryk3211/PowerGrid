@@ -75,6 +75,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
             // This should be simulated with a high resistance.
             energy = 0;
             sourceNode.setVoltage(0);
+            return;
         } else if(energy >= spec.getMaxCharge()) {
             energy = spec.getMaxCharge();
             // TODO: Convert excess energy into heat
@@ -109,5 +110,11 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
         builder.setTerminalCount(2);
         sourceNode = builder.addInternalNode(VoltageSourceNode.class);
         coupling = builder.couple(1, 0.5f, sourceNode, builder.terminalNode(0), builder.terminalNode(1));
+    }
+
+    public void setEnergy(double energy) {
+        this.energy = energy;
+        updateParameters();
+        notifyUpdate();
     }
 }

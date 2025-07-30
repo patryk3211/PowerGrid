@@ -41,7 +41,7 @@ public class PotatoBatteryBlock extends AbstractBatteryBlock<PotatoBatteryBlockE
     );
 
     public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
-    public static final BooleanProperty COOKED = BooleanProperty.of("cooked");
+    public static final BooleanProperty BAKED = BooleanProperty.of("baked");
 
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 7, 3, 4.5, 9, 5.5, 6)
@@ -54,14 +54,14 @@ public class PotatoBatteryBlock extends AbstractBatteryBlock<PotatoBatteryBlockE
 
     public PotatoBatteryBlock(Settings settings) {
         super(settings);
-        setDefaultState(getDefaultState().with(COOKED, false));
+        setDefaultState(getDefaultState().with(BAKED, false));
         setTerminalCollection(HorizontalElectricBlock.horizontalNorthTerminals(this, TERMINALS_NORTH, SHAPE_NORTH));
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
-        builder.add(HORIZONTAL_FACING, COOKED);
+        builder.add(HORIZONTAL_FACING, BAKED);
     }
 
     @Override

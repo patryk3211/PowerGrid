@@ -16,16 +16,30 @@
 package org.patryk3211.powergrid.electricity.battery;
 
 import com.simibubi.create.foundation.block.IBE;
-import com.tterrag.registrate.builders.BlockBuilder;
-import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.block.entity.BlockEntityType;
-import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 
 public abstract class AbstractBatteryBlock<T extends BatteryBlockEntity> extends ElectricBlock implements IBE<T> {
     public AbstractBatteryBlock(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.onPlaced(world, pos, state, placer, itemStack);
+        if(itemStack.hasNbt()) {
+            withBlockEntityDo(world, pos, be -> {
+                var tag = itemStack.getNbt();
+                if(tag.contains("Energy")) {
+                    be.setEnergy(tag.getDouble("Energy"));
+                }
+            });
+        }
     }
 
     public abstract BatterySpec getSpec();

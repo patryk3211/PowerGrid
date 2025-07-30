@@ -26,14 +26,17 @@ import io.github.fabricators_of_create.porting_lib.models.generators.ModelFile;
 import io.github.fabricators_of_create.porting_lib.models.generators.block.MultiPartBlockStateBuilder;
 import net.minecraft.block.*;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.item.Items;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
+import net.minecraft.loot.condition.BlockStatePropertyLootCondition;
 import net.minecraft.loot.condition.SurvivesExplosionLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.function.CopyNbtLootFunction;
 import net.minecraft.loot.function.SetCountLootFunction;
 import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
+import net.minecraft.predicate.StatePredicate;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
@@ -91,7 +94,22 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<PotatoBatteryBlock> POTATO_BATTERY = REGISTRATE.block("potato_battery", PotatoBatteryBlock::new)
-            .blockstate(horizontalBlock("block/potato_battery"))
+            .blockstate(horizontalBlock(state -> state.get(PotatoBatteryBlock.BAKED) ? "block/baked_potato_battery" : "block/potato_battery"))
+            .loot((tables, block) ->
+                    tables.addDrop(block, b -> LootTable.builder()
+                            .pool(LootPool.builder()
+                                    .conditionally(SurvivesExplosionLootCondition.builder())
+                                    .conditionally(BlockStatePropertyLootCondition.builder(b)
+                                            .properties(StatePredicate.Builder.create().exactMatch(PotatoBatteryBlock.BAKED, false)))
+                                    .with(ItemEntry.builder(b))
+                                    .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
+                                            .withOperation("Energy", "Energy", CopyNbtLootFunction.Operator.REPLACE)))
+                            .pool(LootPool.builder()
+                                    .conditionally(SurvivesExplosionLootCondition.builder())
+                                    .conditionally(BlockStatePropertyLootCondition.builder(b)
+                                            .properties(StatePredicate.Builder.create().exactMatch(PotatoBatteryBlock.BAKED, true)))
+                                    .with(ItemEntry.builder(Items.BAKED_POTATO)))
+                    ))
             .item()
                 .model((ctx, prov) -> prov.generated(ctx::getEntry))
                 .build()

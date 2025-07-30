@@ -6,12 +6,54 @@
       "conditions": [
         {
           "condition": "minecraft:survives_explosion"
+        },
+        {
+          "block": "powergrid:potato_battery",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "baked": "false"
+          }
         }
       ],
       "entries": [
         {
           "type": "minecraft:item",
           "name": "powergrid:potato_battery"
+        }
+      ],
+      "functions": [
+        {
+          "function": "minecraft:copy_nbt",
+          "ops": [
+            {
+              "op": "replace",
+              "source": "Energy",
+              "target": "Energy"
+            }
+          ],
+          "source": "block_entity"
+        }
+      ],
+      "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        },
+        {
+          "block": "powergrid:potato_battery",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "baked": "true"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:baked_potato"
         }
       ],
       "rolls": 1.0

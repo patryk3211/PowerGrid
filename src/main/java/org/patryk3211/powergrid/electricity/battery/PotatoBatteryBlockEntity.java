@@ -40,14 +40,14 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
 
     @Override
     public void tick() {
-        if(getCachedState().get(PotatoBatteryBlock.COOKED)) {
+        if(getCachedState().get(PotatoBatteryBlock.BAKED)) {
             sourceNode.setVoltage(0);
             energy = 0;
             return;
         }
         super.tick();
         if(thermalBehaviour.isOverheated() && !world.isClient) {
-            world.setBlockState(pos, getCachedState().with(PotatoBatteryBlock.COOKED, true));
+            world.setBlockState(pos, getCachedState().with(PotatoBatteryBlock.BAKED, true));
             notifyUpdate();
         }
     }

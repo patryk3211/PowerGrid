@@ -1,33 +1,33 @@
 {
   "variants": {
-    "cooked=false,facing=east": {
+    "baked=false,facing=east": {
       "model": "powergrid:block/potato_battery",
       "y": 90
     },
-    "cooked=false,facing=north": {
+    "baked=false,facing=north": {
       "model": "powergrid:block/potato_battery"
     },
-    "cooked=false,facing=south": {
+    "baked=false,facing=south": {
       "model": "powergrid:block/potato_battery",
       "y": 180
     },
-    "cooked=false,facing=west": {
+    "baked=false,facing=west": {
       "model": "powergrid:block/potato_battery",
       "y": 270
     },
-    "cooked=true,facing=east": {
-      "model": "powergrid:block/potato_battery",
+    "baked=true,facing=east": {
+      "model": "powergrid:block/baked_potato_battery",
       "y": 90
     },
-    "cooked=true,facing=north": {
-      "model": "powergrid:block/potato_battery"
+    "baked=true,facing=north": {
+      "model": "powergrid:block/baked_potato_battery"
     },
-    "cooked=true,facing=south": {
-      "model": "powergrid:block/potato_battery",
+    "baked=true,facing=south": {
+      "model": "powergrid:block/baked_potato_battery",
       "y": 180
     },
-    "cooked=true,facing=west": {
-      "model": "powergrid:block/potato_battery",
+    "baked=true,facing=west": {
+      "model": "powergrid:block/baked_potato_battery",
       "y": 270
     }
   }
