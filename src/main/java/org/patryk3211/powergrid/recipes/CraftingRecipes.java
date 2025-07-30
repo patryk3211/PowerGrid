@@ -308,7 +308,14 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('B', RecipeTags.brassSheet())
                     .input('A', AllItems.ANDESITE_ALLOY)
                     .input('C', RecipeTags.copperCoil())
-                    .input('I', RecipeTags.ironIngot()))
+                    .input('I', RecipeTags.ironIngot())),
+
+    POTATO_BATTERY = create(ModdedBlocks.POTATO_BATTERY)
+            .unlockedBy(() -> Items.POTATO)
+            .shapeless(b -> b
+                    .input(Items.POTATO)
+                    .input(RecipeTags.zincSheet())
+                    .input(RecipeTags.copperSheet()))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {
