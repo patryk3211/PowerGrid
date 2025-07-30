@@ -18,11 +18,16 @@ package org.patryk3211.powergrid.electricity.wireconnector;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
@@ -53,5 +58,18 @@ public abstract class AbstractConnectorBlock extends ElectricBlock implements IB
     @Override
     public BlockEntityType<? extends ConnectorBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.WIRE_CONNECTOR.get();
+    }
+
+    @Override
+    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
+        var facing = state.get(FACING);
+        return sideCoversSmallSquare(world, pos.offset(facing), facing.getOpposite());
+    }
+
+    @Override
+    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+        return direction == state.get(FACING) && !canPlaceAt(state, world, pos)
+                ? Blocks.AIR.getDefaultState()
+                : super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
     }
 }
