@@ -15,39 +15,18 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
+import com.simibubi.create.foundation.block.IBE;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.block.entity.BlockEntityType;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 
-public class BatteryBlock extends AbstractBatteryBlock<BatteryBlockEntity> implements IAcceptConnector {
-    protected BatterySpec spec;
-
-    public BatteryBlock(Settings settings) {
+public abstract class AbstractBatteryBlock<T extends BatteryBlockEntity> extends ElectricBlock implements IBE<T> {
+    public AbstractBatteryBlock(Settings settings) {
         super(settings);
     }
 
-    public static <T extends BatteryBlock, P> NonNullUnaryOperator<BlockBuilder<T, P>> setSpec(BatterySpec spec) {
-        return b -> b.onRegister(block -> block.spec = spec);
-    }
-
-    public BatterySpec getSpec() {
-        return spec;
-    }
-
-    @Override
-    public Class<BatteryBlockEntity> getBlockEntityClass() {
-        return BatteryBlockEntity.class;
-    }
-
-    @Override
-    public BlockEntityType<? extends BatteryBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.BATTERY.get();
-    }
-
-    @Override
-    public boolean isPolarized() {
-        return true;
-    }
+    public abstract BatterySpec getSpec();
 }

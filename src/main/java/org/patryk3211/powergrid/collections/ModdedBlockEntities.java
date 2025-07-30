@@ -21,6 +21,8 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardRenderer;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
+import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
+import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
@@ -71,6 +73,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<BatteryBlockEntity> BATTERY =
             REGISTRATE.blockEntity("battery", BatteryBlockEntity::new)
                     .validBlock(ModdedBlocks.BATTERY)
+                    .register();
+
+    public static final BlockEntityEntry<PotatoBatteryBlockEntity> POTATO_BATTERY =
+            REGISTRATE.blockEntity("potato_battery", PotatoBatteryBlockEntity::new)
+                    .validBlock(ModdedBlocks.POTATO_BATTERY)
                     .register();
 
     public static final BlockEntityEntry<VoltageGaugeBlockEntity> VOLTAGE_METER =

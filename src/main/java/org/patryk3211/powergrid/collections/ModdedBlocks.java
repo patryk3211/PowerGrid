@@ -42,6 +42,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
+import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
@@ -86,6 +87,13 @@ public class ModdedBlocks {
                     prov.simpleBlock(ctx.getEntry(), modModel(prov, "block/battery")))
             .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
             .simpleItem()
+            .register();
+
+    public static final BlockEntry<PotatoBatteryBlock> POTATO_BATTERY = REGISTRATE.block("potato_battery", PotatoBatteryBlock::new)
+            .blockstate(horizontalBlock("block/potato_battery"))
+            .item()
+                .model((ctx, prov) -> prov.generated(ctx::getEntry))
+                .build()
             .register();
 
     public static final BlockEntry<ConnectorBlock> WIRE_CONNECTOR = REGISTRATE.block("wire_connector", ConnectorBlock::new)
@@ -655,6 +663,12 @@ public class ModdedBlocks {
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(String model) {
         return (ctx, prov) -> {
             prov.horizontalBlock(ctx.getEntry(), modModel(prov, model));
+        };
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(Function<BlockState, String> model) {
+        return (ctx, prov) -> {
+            prov.horizontalBlock(ctx.getEntry(), state -> modModel(prov, model.apply(state)));
         };
     }
 

@@ -20,4 +20,7 @@ public interface BatterySpec {
     float getMaxCharge();
     float calculateResistance(float chargeLevel);
     float calculateVoltage(float chargeLevel);
+
+    float getThermalMass();
+    float getDissipationFactor();
 }

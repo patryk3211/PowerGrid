@@ -32,6 +32,7 @@
   "block.powergrid.lv_switch": "LV Switch",
   "block.powergrid.mv_switch": "MV Switch",
   "block.powergrid.portable_battery": "Portable Battery",
+  "block.powergrid.potato_battery": "Potato Battery",
   "block.powergrid.servo": "Servo",
   "block.powergrid.transformer_core": "Transformer Core",
   "block.powergrid.transformer_medium": "Transformer Medium",

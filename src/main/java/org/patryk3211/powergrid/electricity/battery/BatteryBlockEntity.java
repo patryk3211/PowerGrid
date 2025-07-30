@@ -19,28 +19,44 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 
 public class BatteryBlockEntity extends ElectricBlockEntity {
-    private VoltageSourceNode sourceNode;
-    private TransformerCoupling coupling;
+    protected VoltageSourceNode sourceNode;
+    protected TransformerCoupling coupling;
 
-    private final BatterySpec spec;
-    private double energy;
+    protected final BatterySpec spec;
+    protected double energy;
 
     public BatteryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        spec = ((BatteryBlock) state.getBlock()).getSpec();
+        spec = ((AbstractBatteryBlock<?>) state.getBlock()).getSpec();
         energy = spec.getInitialCharge();
         updateParameters();
         setLazyTickRate(20);
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        var spec = ((AbstractBatteryBlock<?>) getCachedState().getBlock()).getSpec();
+        return new ThermalBehaviour(this, spec.getThermalMass(), spec.getDissipationFactor());
     }
 
     public void updateParameters() {
         float chargeLevel = (float) energy / spec.getMaxCharge();
         sourceNode.setVoltage(spec.calculateVoltage(chargeLevel));
         coupling.setResistance(spec.calculateResistance(chargeLevel));
+    }
+
+    /**
+     * Calculate power draw from the battery
+     * @return Positive power draws energy, negative power recharges
+     */
+    public float calculatePower() {
+        return sourceNode.getCurrent() * sourceNode.getVoltage();
     }
 
     @Override
@@ -52,7 +68,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
         applyLostPower(I * I * coupling.getResistance());
 
         // Extracted energy
-        var power = I * sourceNode.getVoltage();
+        var power = calculatePower();
         energy -= power * 0.05f;
         if(energy <= 0) {
             // If a battery reaches zero volts it is probably dead.
