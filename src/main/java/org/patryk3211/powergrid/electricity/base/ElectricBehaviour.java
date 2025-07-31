@@ -40,7 +40,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     private final List<IElectricNode> externalNodes = new LinkedList<>();
     private final List<AbstractElectricWire> internalWires = new LinkedList<>();
 
-    private final Map<BlockWireEndpoint, List<WireEntity>> connections = new HashMap<>();
+    private final Map<BlockWireEndpoint, Set<WireEntity>> connections = new HashMap<>();
     private boolean destroying = false;
     private boolean rebuildOnClient = false;
 
@@ -154,7 +154,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void addConnection(BlockWireEndpoint endpoint, WireEntity wire) {
-        var sourceConnections = connections.computeIfAbsent(endpoint, key -> new ArrayList<>());
+        var sourceConnections = connections.computeIfAbsent(endpoint, key -> new HashSet<>());
         // Check for stale wires here
         sourceConnections.removeIf(Entity::isRemoved);
         sourceConnections.add(wire);
@@ -193,7 +193,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return false;
     }
 
-    public Map<BlockWireEndpoint, List<WireEntity>> getConnections() {
+    public Map<BlockWireEndpoint, Set<WireEntity>> getConnections() {
         return connections;
     }
 
@@ -242,7 +242,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public void inheritConnections(ElectricBehaviour otherBehaviour) {
         for(var entry : otherBehaviour.connections.entrySet()) {
-            var thisList = connections.computeIfAbsent(entry.getKey(), key -> new ArrayList<>());
+            var thisList = connections.computeIfAbsent(entry.getKey(), key -> new HashSet<>());
             thisList.addAll(entry.getValue());
         }
         otherBehaviour.connections.clear();

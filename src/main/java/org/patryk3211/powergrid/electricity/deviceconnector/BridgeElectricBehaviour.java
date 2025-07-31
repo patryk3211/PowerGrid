@@ -32,7 +32,7 @@ import team.reborn.energy.api.EnergyStorageUtil;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class ProxyElectricBehaviour extends ElectricBehaviour {
+public class BridgeElectricBehaviour extends ElectricBehaviour {
     private final BlockPos behaviourPosition;
     private ElectricBehaviour mainBehaviour;
     private FEBridgeEnergyStorage bridgeBehaviour;
@@ -41,7 +41,7 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
     private boolean fetched = false;
     private final Supplier<SwitchedWire> converterWire;
 
-    public <T extends SmartBlockEntity & IElectricEntity> ProxyElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<SwitchedWire> converterWire) {
+    public <T extends SmartBlockEntity & IElectricEntity> BridgeElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<SwitchedWire> converterWire) {
         super(be);
         this.behaviourPosition = behaviourPosition;
         this.converterWire = converterWire;

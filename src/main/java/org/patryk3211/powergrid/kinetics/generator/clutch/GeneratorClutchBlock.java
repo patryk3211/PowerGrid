@@ -76,7 +76,11 @@ public class GeneratorClutchBlock extends DirectionalKineticBlock implements IBE
 
     @Override
     public BlockState getPlacementState(ItemPlacementContext context) {
-        return super.getPlacementState(context)
+        var initial = super.getPlacementState(context);
+        if(initial == null)
+            return null;
+        return initial
+                .with(FACING, initial.get(FACING).getOpposite())
                 .with(POWERED, context.getWorld().isReceivingRedstonePower(context.getBlockPos()));
     }
 

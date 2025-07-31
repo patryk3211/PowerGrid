@@ -237,7 +237,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity))
                 angularVelocity = 0;
 
-            if(Math.abs(angularVelocity) > 320) {
+            if(Math.abs(angularVelocity) > 320 && !getWorld().isClient) {
                 // TODO: Maybe make this a bit more destructive.
                 getWorld().breakBlock(getPos(), false);
             }

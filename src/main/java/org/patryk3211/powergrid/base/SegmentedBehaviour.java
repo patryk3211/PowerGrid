@@ -211,13 +211,13 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     @Override
     public void unload() {
         super.unload();
-        var controller = getControllerOrThis();
-        controller.checkConnectivity((T) this);
+//        var controller = getControllerOrThis();
+//        controller.checkConnectivity((T) this);
     }
 
-    @Override
-    public void destroy() {
-        super.destroy();
+    public void remove() {
+        var controller = getControllerOrThis();
+        controller.checkConnectivity((T) this);
     }
 
     protected void onChange() {

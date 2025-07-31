@@ -28,7 +28,7 @@ import team.reborn.energy.api.EnergyStorage;
 import java.util.List;
 
 public class DeviceConnectorBlockEntity extends ElectricBlockEntity {
-    private ProxyElectricBehaviour proxyBehaviour;
+    private BridgeElectricBehaviour proxyBehaviour;
     private SwitchedWire converterWire;
 
     public DeviceConnectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -38,7 +38,7 @@ public class DeviceConnectorBlockEntity extends ElectricBlockEntity {
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         var state = getCachedState();
-        proxyBehaviour = new ProxyElectricBehaviour(this, pos.offset(state.get(DeviceConnectorBlock.FACING)), () -> converterWire);
+        proxyBehaviour = new BridgeElectricBehaviour(this, pos.offset(state.get(DeviceConnectorBlock.FACING)), () -> converterWire);
         electricBehaviour = proxyBehaviour;
         behaviours.add(electricBehaviour);
     }

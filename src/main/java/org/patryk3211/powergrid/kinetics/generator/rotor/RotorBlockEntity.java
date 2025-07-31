@@ -35,4 +35,10 @@ public class RotorBlockEntity extends SmartBlockEntity {
         rotorBehaviour = new RotorBehaviour(this);
         behaviours.add(rotorBehaviour);
     }
+
+    @Override
+    public void remove() {
+        super.remove();
+        rotorBehaviour.remove();
+    }
 }
