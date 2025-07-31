@@ -96,6 +96,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<PotatoBatteryBlock> POTATO_BATTERY = REGISTRATE.block("potato_battery", PotatoBatteryBlock::new)
             .blockstate(horizontalBlock(state -> state.get(PotatoBatteryBlock.BAKED) ? "block/baked_potato_battery" : "block/potato_battery"))
+            .initialProperties(() -> Blocks.NETHER_WART)
             .loot((tables, block) ->
                     tables.addDrop(block, b -> LootTable.builder()
                             .pool(LootPool.builder()
