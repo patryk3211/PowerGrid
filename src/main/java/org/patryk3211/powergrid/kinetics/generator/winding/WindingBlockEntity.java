@@ -55,7 +55,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     /**
      * These are all the block entities of a single winding.
      */
-    private List<WindingBlockEntity> collectedBEs;
+    private Set<WindingBlockEntity> collectedBEs;
     private RotorBehaviour rotorP;
     private RotorBehaviour rotorN;
 
@@ -234,7 +234,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var parallelCheckAxis = block.getParallelCheckAxis(getCachedState());
         if(isMain()) {
             mainBE = this;
-            collectedBEs = new ArrayList<>();
+            collectedBEs = new HashSet<>();
             coilCount = 0;
             block.walk(world, pos, (pos1, state) -> {
                 ++coilCount;
@@ -243,7 +243,23 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     world.breakBlock(pos1, false);
                     return;
                 }
-                collectedBEs.add(opt.get());
+                var be = opt.get();
+                collectedBEs.add(be);
+                if(be.collectedBEs != null && be != this) {
+                    // Moving ownership
+                    if(be.ownerPosition != null) {
+                        // This is a parallel
+                        world.getBlockEntity(be.ownerPosition, ModdedBlockEntities.WINDING.get())
+                                .ifPresent(WindingBlockEntity::dissolveParallels);
+                    } else if(be.parallelPositions != null) {
+                        // This is an owner
+                        be.dissolveParallels();
+                    }
+                    // Move collected segments
+                    be.collectedBEs.forEach(other -> other.mainBE = this);
+                    be.collectedBEs = null;
+                    be.mainBE = this;
+                }
                 if(!world.isClient) {
                     // Check for parallel windings and housings
                     checkParallelPosition(pos1.offset(parallelCheckAxis,  1), true, false);
@@ -260,6 +276,14 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 return;
             }
             mainBE = opt.get();
+            if(mainBE.collectedBEs != null && mainBE.collectedBEs.add(this)) {
+                // Late segment join
+                ++mainBE.coilCount;
+                mainBE.resistance = mainBE.coilCount * WindingBlock.resistance();
+                if(mainBE.coupling != null)
+                    mainBE.coupling.setResistance(mainBE.resistance);
+                mainBE.safeRebuildParallels();
+            }
         }
     }
 
@@ -434,16 +458,9 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private void rebuildParallels() {
         if(world.isClient)
             return;
-        if(parallelPositions != null) {
-            for(var parallelPos : parallelPositions) {
-                var be = world.getBlockEntity(parallelPos, ModdedBlockEntities.WINDING.get());
-                be.ifPresent(winding -> winding.ownerPosition = null);
-            }
-            parallelPositions = null;
-        }
         if(ownerPosition != null)
             PowerGrid.LOGGER.info("Non-owner winding is rebuilding parallels");
-        ownerPosition = null;
+        dissolveParallels();
         var block = (WindingBlock) getCachedState().getBlock();
         var parallelCheckAxis = block.getParallelCheckAxis(getCachedState());
         // This block entity becomes the new owner, since it most likely already was one.
@@ -486,8 +503,49 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         sendData();
     }
 
+    private void dissolveParallels() {
+        if(parallelPositions != null) {
+            for(var parallelPos : parallelPositions) {
+                var be = world.getBlockEntity(parallelPos, ModdedBlockEntities.WINDING.get());
+                be.ifPresent(winding -> winding.ownerPosition = null);
+            }
+            parallelPositions = null;
+        }
+        if(ownerPosition != null)
+            PowerGrid.LOGGER.info("Non-owner winding is dissolving parallels");
+        ownerPosition = null;
+    }
+
+    private void moveParallelOwnership(WindingBlockEntity newOwner, boolean withoutThis) {
+        assert this.ownerPosition == null && newOwner.ownerPosition == pos;
+        parallelPositions.remove(newOwner.pos);
+        if(!withoutThis)
+            parallelPositions.add(pos);
+        newOwner.parallelPositions = parallelPositions;
+        parallelPositions = null;
+        if(!withoutThis)
+            ownerPosition = newOwner.pos;
+        newOwner.ownerPosition = null;
+        newOwner.parallelPositions.forEach(bePos -> world.getBlockEntity(bePos, ModdedBlockEntities.WINDING.get())
+                .ifPresent(be -> be.ownerPosition = newOwner.pos));
+    }
+
     public void onNeighborChanged(BlockPos neighborPos) {
         neighborChanged = true;
+    }
+
+    private void safeRebuildParallels() {
+        if(mainBE.parallelPositions != null) {
+            // This is the owner
+            mainBE.rebuildParallels();
+        } else if(mainBE.ownerPosition != null) {
+            // Inform the owner
+            var be = world.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
+            be.ifPresentOrElse(WindingBlockEntity::rebuildParallels, mainBE::rebuildParallels);
+        } else {
+            // Simply rebuild
+            mainBE.rebuildParallels();
+        }
     }
 
     public float windingCurrent() {
@@ -510,19 +568,36 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
+    public void invalidate() {
+        super.invalidate();
+        if(mainBE == this) {
+            if(parallelPositions != null) {
+                // This is the owner
+                WindingBlockEntity newOwner = null;
+                var iter = parallelPositions.iterator();
+                while(newOwner == null && iter.hasNext()) {
+                    var bePos = iter.next();
+                    var be = world.getBlockEntity(bePos, ModdedBlockEntities.WINDING.get());
+                    if(be.isPresent())
+                        newOwner = be.get();
+                }
+                moveParallelOwnership(newOwner, true);
+            } else if(ownerPosition != null) {
+                // Inform the owner
+                var be = world.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get());
+                be.ifPresentOrElse(WindingBlockEntity::rebuildParallels, this::rebuildParallels);
+            }
+//            collectedBEs.forEach(be -> be.mainBE = null);
+        } else {
+            // Segment of a winding
+            mainBE.collectedBEs.remove(this);
+        }
+    }
+
+    @Override
     public void tick() {
         if(neighborChanged) {
-            if(mainBE.parallelPositions != null) {
-                // This is the owner
-                mainBE.rebuildParallels();
-            } else if(mainBE.ownerPosition != null) {
-                // Inform the owner
-                var be = world.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
-                be.ifPresentOrElse(WindingBlockEntity::rebuildParallels, mainBE::rebuildParallels);
-            } else {
-                // Simply rebuild
-                mainBE.rebuildParallels();
-            }
+            safeRebuildParallels();
             grabRotors();
             neighborChanged = false;
         }

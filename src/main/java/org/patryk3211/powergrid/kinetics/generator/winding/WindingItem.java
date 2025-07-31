@@ -66,6 +66,21 @@ public class WindingItem extends Item {
         }
 
         var hitState = world.getBlockState(pos);
+        if(hitState.isOf(ModdedBlocks.WINDING.get())) {
+            var side = context.getSide();
+            if(hitState.get(AXIS) != side.getAxis())
+                return ActionResult.FAIL;
+            var newPos = pos.offset(side);
+            if(!world.getBlockState(newPos).isReplaceable())
+                return ActionResult.FAIL;
+            if(!world.isClient) {
+                stack.decrement(1);
+                world.setBlockState(pos, hitState.with(PART, 1));
+                world.setBlockState(newPos, hitState);
+            }
+            return ActionResult.SUCCESS;
+        }
+
         if(!hitState.isOf(AllBlocks.SHAFT.get()))
             return ActionResult.FAIL;
         
