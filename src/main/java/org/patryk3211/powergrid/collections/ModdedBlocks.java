@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -113,6 +114,13 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.generated(ctx::getEntry))
                 .build()
+            .register();
+
+    public static final BlockEntry<CasingBlock> CONDUCTIVE_CASING = REGISTRATE.block("conductive_casing", CasingBlock::new)
+            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry()))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .simpleItem()
             .register();
 
     public static final BlockEntry<ConnectorBlock> WIRE_CONNECTOR = REGISTRATE.block("wire_connector", ConnectorBlock::new)

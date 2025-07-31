@@ -11,6 +11,7 @@
   "block.powergrid.circuit_design_table.tooltip.behaviour1": "Writes the current design into a schematic item",
   "block.powergrid.circuit_design_table.tooltip.condition1": "When given an Empty Schematic",
   "block.powergrid.circuit_design_table.tooltip.summary": "Design and write _Circuit Schematics_. If you want to place components, you must have them in your inventory.",
+  "block.powergrid.conductive_casing": "Conductive Casing",
   "block.powergrid.creative_current_source": "Creative Current Source",
   "block.powergrid.creative_resistor": "Creative Resistor",
   "block.powergrid.creative_voltage_source": "Creative Voltage Source",

@@ -1,6 +1,6 @@
 {
+	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
-	"parent": "block/block",
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "powergrid:block/electric_motor",
@@ -8,6 +8,7 @@
 	},
 	"elements": [
 		{
+			"name": "ConR",
 			"from": [11.5, 11.5, 6.5],
 			"to": [13.5, 13.5, 9.5],
 			"rotation": {"angle": 0, "axis": "y", "origin": [12.5, 12, 8]},
@@ -21,6 +22,7 @@
 			}
 		},
 		{
+			"name": "ConL",
 			"from": [2.5, 11.5, 6.5],
 			"to": [4.5, 13.5, 9.5],
 			"rotation": {"angle": 0, "axis": "y", "origin": [3.5, 12, 8]},
@@ -34,8 +36,8 @@
 			}
 		},
 		{
-			"from": [5, 5, 15.95],
-			"to": [11, 11, 16.95],
+			"from": [5, 5, 16],
+			"to": [11, 11, 17],
 			"rotation": {"angle": 0, "axis": "y", "origin": [3, 5, 15]},
 			"faces": {
 				"north": {"uv": [9, 2.5, 10.5, 4], "texture": "#1"},
@@ -149,6 +151,14 @@
 				"up": {"uv": [10, 2.25, 11.75, 1.5], "rotation": 270, "texture": "#1"},
 				"down": {"uv": [6, 10.75, 7.75, 10], "rotation": 270, "texture": "#1"}
 			}
+		},
+		{
+			"from": [5, 5, 1],
+			"to": [11, 11, 1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [5, 5, 1]},
+			"faces": {
+				"north": {"uv": [2.5, 0, 4, 1.5], "texture": "#1"}
+			}
 		}
 	],
 	"groups": [
@@ -165,17 +175,18 @@
 				5,
 				6,
 				{
-					"name": "group",
+					"name": "coilL",
 					"origin": [-4, 7.5, 8.5],
 					"color": 0,
 					"children": [7, 8]
 				},
 				{
-					"name": "group",
+					"name": "coilR",
 					"origin": [-4, 7.5, 8.5],
 					"color": 0,
 					"children": [9, 10]
-				}
+				},
+				11
 			]
 		}
 	]

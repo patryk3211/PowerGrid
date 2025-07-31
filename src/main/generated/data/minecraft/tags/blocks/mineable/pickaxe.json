@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "powergrid:conductive_casing",
     "powergrid:wire_connector",
     "powergrid:heavy_wire_connector",
     "powergrid:heating_coil",
