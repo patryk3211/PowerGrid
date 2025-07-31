@@ -5,6 +5,9 @@
     "C": {
       "item": "powergrid:copper_coil"
     },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
     "I": {
       "tag": "c:iron_plates"
     },
@@ -18,7 +21,8 @@
   "pattern": [
     " ICI ",
     "CMSMC",
-    " ICI "
+    " ICI ",
+    "  E  "
   ],
   "result": {
     "item": "powergrid:electric_motor"

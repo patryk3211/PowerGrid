@@ -192,10 +192,11 @@ public class CraftingRecipes extends StandardRecipeProvider {
     GENERATOR_HOUSING = create(ModdedBlocks.GENERATOR_HOUSING)
             .unlockedBy(() -> AllItems.IRON_SHEET)
             .shaped(b -> b
-                    .pattern("II")
-                    .pattern("CI")
+                    .pattern("IC")
+                    .pattern("EI")
                     .input('I', RecipeTags.ironSheet())
-                    .input('C', RecipeTags.copperSheet())),
+                    .input('C', RecipeTags.copperSheet())
+                    .input('E', RecipeTags.conductiveCasing())),
 
     LV_SWITCH = create(ModdedBlocks.LV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)

@@ -17,8 +17,10 @@ package org.patryk3211.powergrid.recipes;
 
 import com.simibubi.create.AllTags;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 
 public class RecipeTags {
     public static TagKey<Item> ironSheet() {
@@ -63,5 +65,9 @@ public class RecipeTags {
 
     public static TagKey<Item> brassSheet() {
         return AllTags.forgeItemTag("brass_plates");
+    }
+
+    public static ItemConvertible conductiveCasing() {
+        return ModdedBlocks.CONDUCTIVE_CASING;
     }
 }

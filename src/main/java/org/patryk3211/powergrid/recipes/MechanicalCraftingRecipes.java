@@ -39,9 +39,11 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .key('M', ModdedItems.MAGNET)
                     .key('I', RecipeTags.ironSheet())
                     .key('S', AllBlocks.SHAFT)
+                    .key('E', RecipeTags.conductiveCasing())
                     .patternLine(" ICI ")
                     .patternLine("CMSMC")
                     .patternLine(" ICI ")
+                    .patternLine("  E  ")
             ),
 
     GENERATOR_ROTOR = create(ModdedBlocks.GENERATOR_ROTOR::get)

@@ -5,13 +5,16 @@
     "C": {
       "tag": "c:copper_plates"
     },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
     "I": {
       "tag": "c:iron_plates"
     }
   },
   "pattern": [
-    "II",
-    "CI"
+    "IC",
+    "EI"
   ],
   "result": {
     "item": "powergrid:generator_housing"
