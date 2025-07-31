@@ -35,7 +35,10 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
     }
 
     public Optional<ElectricBehaviour> getMainBehaviour() {
-        return Optional.ofNullable(get(getWorld(), behaviourPosition.get(), TYPE));
+        var pos = behaviourPosition.get();
+        if(getPos().equals(pos))
+            return Optional.empty();
+        return Optional.ofNullable(get(getWorld(), pos, TYPE));
     }
 
     @Override

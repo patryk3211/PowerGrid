@@ -277,11 +277,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         world.getBlockEntity(be.ownerPosition, ModdedBlockEntities.WINDING.get())
                                 .ifPresent(owner -> {
                                     owner.dissolveParallels();
-                                    owner.removeElectricBehaviour();
                                 });
                     } else if(be.parallelPositions != null) {
                         // This is an owner
                         be.dissolveParallels();
+                        be.electricBehaviour.breakConnections();
                         be.removeElectricBehaviour();
                     }
                     // Move collected segments
@@ -316,6 +316,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             if(mainBE.collectedBEs != null && mainBE.collectedBEs.add(this)) {
                 // Late segment join
                 ++mainBE.coilCount;
+                mainBE.electricBehaviour.breakConnections();
                 mainBE.resistance = mainBE.coilCount * WindingBlock.resistance();
                 if(mainBE.coupling != null)
                     mainBE.coupling.setResistance(mainBE.resistance);
@@ -414,6 +415,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         } else {
             coupling.setResistance(resistance);
         }
+        if(!world.isClient)
+            sendData();
     }
 
     @Override
@@ -440,7 +443,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     ownerPosition = new BlockPos(owner[0], owner[1], owner[2]);
                     removeElectricBehaviour();
                 } else {
-                    addElectricBehaviour();
+                    calculateElectricalParameters();
                 }
                 if (tag.contains("Parallel")) {
                     var data = tag.getIntArray("Parallel");
