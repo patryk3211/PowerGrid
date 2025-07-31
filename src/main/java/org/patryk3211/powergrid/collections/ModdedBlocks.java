@@ -862,7 +862,14 @@ public class ModdedBlocks {
         };
 
         Function<Boolean, ModelFile.ExistingModelFile> caseModel = half -> {
-            var halfStr = (!half ^ (part == 2 && alongFirst)) ? "p" : "n";
+            boolean condition = !half;
+            if(axis == Direction.Axis.Z)
+                condition ^= alongFirst && part == 2;
+            else if(axis == Direction.Axis.Y)
+                condition ^= !alongFirst && part != 2;
+            else
+                condition ^= alongFirst && part != 2;
+            var halfStr = condition ? "p" : "n";
             return switch(part) {
                 case 0, 2 -> modModel(prov, "block/winding/end" + (alongFirst ? "_v" : "") + "_case_" + halfStr);
                 case 1 -> modModel(prov, "block/winding/middle" + (alongFirst ? "_v" : "") + "_case_" + halfStr);
