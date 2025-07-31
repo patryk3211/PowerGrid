@@ -123,7 +123,18 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .key('G', AllBlocks.COGWHEEL)
                     .patternLine("I  ")
                     .patternLine("I  ")
-                    .patternLine("AGI"))
+                    .patternLine("AGI")),
+
+    VARIAC = create(ModdedBlocks.VARIAC::get)
+            .recipe(b -> b
+                    .key('C', RecipeTags.coal())
+                    .key('T', RecipeTags.transformerCore())
+                    .key('W', RecipeTags.copperCoil())
+                    .key('E', RecipeTags.conductiveCasing())
+                    .key('S', RecipeTags.shaft())
+                    .patternLine("CS ")
+                    .patternLine("WTW")
+                    .patternLine("WEW"))
             ;
 
 

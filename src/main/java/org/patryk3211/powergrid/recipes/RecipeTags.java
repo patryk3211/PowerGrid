@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.recipes;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllTags;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
@@ -69,5 +70,13 @@ public class RecipeTags {
 
     public static ItemConvertible conductiveCasing() {
         return ModdedBlocks.CONDUCTIVE_CASING;
+    }
+
+    public static ItemConvertible transformerCore() {
+        return ModdedBlocks.TRANSFORMER_CORE;
+    }
+
+    public static ItemConvertible shaft() {
+        return AllBlocks.SHAFT;
     }
 }
