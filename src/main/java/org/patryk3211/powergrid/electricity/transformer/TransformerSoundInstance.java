@@ -25,9 +25,9 @@ import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 @Environment(EnvType.CLIENT)
 public class TransformerSoundInstance extends MovingSoundInstance {
     protected final BlockEntity be;
-    protected final VolumeProvider provider;
+    protected final TransformerVolumeProvider provider;
 
-    public  <T extends BlockEntity&VolumeProvider> TransformerSoundInstance(T be) {
+    public  <T extends BlockEntity& TransformerVolumeProvider> TransformerSoundInstance(T be) {
         super(ModdedSoundEvents.TRANSFORMER_HUM.getMainEvent(), SoundCategory.AMBIENT, be.getWorld().random);
 
         this.be = be;
@@ -56,9 +56,5 @@ public class TransformerSoundInstance extends MovingSoundInstance {
             if(this.volume == 0)
                 setDone();
         }
-    }
-
-    public interface VolumeProvider {
-        float getVolume();
     }
 }

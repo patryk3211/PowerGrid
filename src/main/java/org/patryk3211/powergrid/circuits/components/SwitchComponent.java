@@ -20,7 +20,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -66,11 +65,8 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
 
     @Override
     public ActionResult use(CircuitBoardBlockEntity be, PlacedComponent placed, PlayerEntity player) {
-        if(placed.wires.isEmpty())
-            return ActionResult.FAIL;
         var newState = !placed.get(STATE);
         placed.set(STATE, newState);
-        ((SwitchedWire) placed.wires.get(0)).setState(newState);
 
         if(be.getWorld().isClient) {
             Component.modelChanged(be.getPos());
@@ -80,9 +76,18 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
             } else {
                 ModdedSoundEvents.MICROSWITCH_OFF.playOnServer(be.getWorld(), be.getPos());
             }
+            placed.notifyClients(STATE);
         }
         be.markDirty();
         return ActionResult.SUCCESS;
+    }
+
+    @Override
+    public void stateUpdated(@NotNull PlacedComponent placed) {
+        super.stateUpdated(placed);
+        if(placed.wires.isEmpty())
+            return;
+        ((SwitchedWire) placed.wires.get(0)).setState(placed.get(STATE));
     }
 
     @Override

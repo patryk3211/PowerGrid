@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
@@ -59,6 +61,7 @@ public class ComponentFootprint {
         this.arrow = arrow;
     }
 
+    @Environment(EnvType.CLIENT)
     protected void renderPads(@NotNull DrawContext ctx, int x, int y) {
         for(var point : pads.keySet()) {
             int x1 = point.x() + x;
@@ -67,6 +70,7 @@ public class ComponentFootprint {
         }
     }
 
+    @Environment(EnvType.CLIENT)
     public void render(@NotNull DrawContext ctx, int x, int y) {
         if(outline) {
             ctx.drawBorder(x, y, width * GRID_TO_GRID_SCALE, height * GRID_TO_GRID_SCALE, COLOR_COMPONENT_OUTLINE);
@@ -109,6 +113,7 @@ public class ComponentFootprint {
         }
     }
 
+    @Environment(EnvType.CLIENT)
     public void renderPadIndices(@NotNull DrawContext ctx, @NotNull TextRenderer textRenderer, int x, int y) {
         var ms = ctx.getMatrices();
         ms.push();

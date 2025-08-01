@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.bell;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
@@ -31,16 +33,21 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
         super(type, pos, state);
     }
 
+    @Environment(EnvType.CLIENT)
+    public void tickAudio() {
+        if(getVolume() > 0 && !hasSoundInstance) {
+            MinecraftClient.getInstance().getSoundManager().play(new AlarmBellSoundInstance(this));
+            hasSoundInstance = true;
+        } else if(getVolume() == 0 && hasSoundInstance) {
+            hasSoundInstance = false;
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
         if(world.isClient) {
-            if(getVolume() > 0 && !hasSoundInstance) {
-                MinecraftClient.getInstance().getSoundManager().play(new AlarmBellSoundInstance(this));
-                hasSoundInstance = true;
-            } else if(getVolume() == 0 && hasSoundInstance) {
-                hasSoundInstance = false;
-            }
+            tickAudio();
         }
     }
 

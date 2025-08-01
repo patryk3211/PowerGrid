@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.kinetics.variac;
 
 import com.jozufozu.flywheel.core.materials.model.ModelData;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
@@ -28,9 +30,10 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSoundInstance;
+import org.patryk3211.powergrid.electricity.transformer.TransformerVolumeProvider;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
-public class VariacBlockEntity extends ElectricKineticBlockEntity implements TransformerSoundInstance.VolumeProvider {
+public class VariacBlockEntity extends ElectricKineticBlockEntity implements TransformerVolumeProvider {
     public static final float PRIMARY_TURNS = 25;
     public static final float CORE_AL = 1.5f;
     public static final float COUPLING_FACTOR = 0.9999f;
@@ -156,6 +159,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public void tickAudio() {
         super.tickAudio();
         if(!hasSoundSource && getVolume() > 0) {
