@@ -22,6 +22,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -29,9 +30,12 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
+import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
+    public static final int CLEARANCE_CHECK_INTERVAL = 20;
+
     private static final Vec3d UP = new Vec3d(0, 1, 0);
 
     public Vec3d terminalPos1;
@@ -41,8 +45,21 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     public Object renderParams;
 
+    private int clearanceCheck = 0;
+
     public HangingWireEntity(EntityType<?> type, World world) {
         super(type, world);
+    }
+
+    public static boolean checkClearance(World world, Vec3d start, Vec3d end) {
+        var result = BlockTrace.raycast(world, start, end);
+        if(result.getType() == HitResult.Type.BLOCK) {
+            if(world.isClient) {
+                WirePreview.notifyOfBlock(result.getBlockPos());
+            }
+            return false;
+        }
+        return true;
     }
 
     public void updateRenderParams() {
@@ -137,6 +154,21 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             double y = curvePoint.y + pos.y;
             double z = curvePoint.z + pos.z;
             world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+        }
+
+        if(!world.isClient && clearanceCheck++ >= CLEARANCE_CHECK_INTERVAL && terminalPos1 != null && terminalPos2 != null) {
+            clearanceCheck = 0;
+            var result = BlockTrace.raycast(world, terminalPos1, terminalPos2);
+            if(result.getType() == HitResult.Type.BLOCK) {
+                if(getEndpoint1() instanceof BlockWireEndpoint block) {
+                    if(block.getPos().equals(result.getBlockPos()))
+                        return;
+                } else if(getEndpoint2() instanceof BlockWireEndpoint block) {
+                    if(block.getPos().equals(result.getBlockPos()))
+                        return;
+                }
+                kill();
+            }
         }
     }
 

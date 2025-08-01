@@ -42,6 +42,22 @@ public class BlockTrace {
         });
     }
 
+    public static BlockHitResult raycast(World world, Vec3d start, Vec3d end) {
+        var ignore1 = BlockPos.ofFloored(start);
+        var ignore2 = BlockPos.ofFloored(end);
+        return BlockView.raycast(start, end, null, (innerContext, pos) -> {
+            var blockState = world.getBlockState(pos);
+            var voxelShape = blockState.getOutlineShape(world, pos);
+            var hit = world.raycastBlock(start, end, pos, voxelShape, blockState);
+            if(hit != null && (hit.getBlockPos().equals(ignore1) || hit.getBlockPos().equals(ignore2)))//passThrough != null && passThrough.check(pos, hit.getPos()))
+                return null;
+            return hit;
+        }, (innerContext) -> {
+            var heading = start.subtract(end);
+            return BlockHitResult.createMissed(end, Direction.getFacing(heading.x, heading.y, heading.z), BlockPos.ofFloored(end));
+        });
+    }
+
     private static double clamp(double val, double min, double max) {
         return Math.max(Math.min(val, max), min);
     }
