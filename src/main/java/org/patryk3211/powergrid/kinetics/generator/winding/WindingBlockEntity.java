@@ -61,7 +61,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     private float coilConstant = 1;
     private float resistance = 0.1f;
-    private int coilCount = 0;
     private int totalCoilCount = 0;
     private VoltageSourceNode sourceNode;
     private TransformerCoupling coupling;
@@ -259,9 +258,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(isMain()) {
             mainBE = this;
             collectedBEs = new HashSet<>();
-            coilCount = 0;
             block.walk(world, pos, (pos1, state) -> {
-                ++coilCount;
                 var opt = world.getBlockEntity(pos1, ModdedBlockEntities.WINDING.get());
                 if(opt.isEmpty()) {
                     world.breakBlock(pos1, false);
@@ -303,9 +300,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     checkParallelPosition(pos1.offset(parallelCheckAxis, -1), false, false);
                 }
             });
-            resistance = coilCount * WindingBlock.resistance();
-            if(ownerPosition == null)
-                calculateElectricalParameters();
+            calculateElectricalParameters();
         } else {
             var opt = block.getMainBlockEntity(world, pos);
             if(opt.isEmpty()) {
@@ -315,11 +310,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             mainBE = opt.get();
             if(mainBE.collectedBEs != null && mainBE.collectedBEs.add(this)) {
                 // Late segment join
-                ++mainBE.coilCount;
                 mainBE.electricBehaviour.breakConnections();
-                mainBE.resistance = mainBE.coilCount * WindingBlock.resistance();
-                if(mainBE.coupling != null)
-                    mainBE.coupling.setResistance(mainBE.resistance);
+                mainBE.calculateElectricalParameters();
                 mainBE.safeRebuildParallels();
             }
         }
@@ -331,8 +323,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         collectedBEs = mainBE.collectedBEs;
         collectedBEs.remove(mainBE);
         collectedBEs.forEach(be -> be.mainBE = this);
-        coilCount = collectedBEs.size();
-        resistance = coilCount * WindingBlock.resistance();
+        calculateElectricalParameters();
         if(!world.isClient)
             safeRebuildParallels();
     }
@@ -391,20 +382,24 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void initialize() {
-        if(coilCount == 0)
+        if(collectedBEs == null)
             collectWindingParts();
         super.initialize();
         grabRotors();
     }
 
     public int getCoilCount() {
-        if(coilCount == 0)
+        if(collectedBEs == null)
             collectWindingParts();
-        return coilCount;
+        return collectedBEs.size();
     }
 
     private void calculateElectricalParameters() {
-        assert ownerPosition == null : "Only owner of parallel coils may recalculate electrical parameters";
+        if(ownerPosition != null) {
+            // If non-owner calls this method then its structure (and possibly resistance) has changed
+            world.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get()).ifPresent(WindingBlockEntity::calculateElectricalParameters);
+            return;
+        }
         totalCoilCount = getCoilCount();
         var conductance = 1 / (totalCoilCount * resistance());
         if(parallelPositions != null) {
@@ -648,6 +643,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         } else if(mainBE != null) {
             // Segment of a winding
             mainBE.collectedBEs.remove(this);
+            mainBE.calculateElectricalParameters();
             mainBE.safeRebuildParallels();
         }
     }
@@ -675,11 +671,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 // Reduce torque to account for losses
                 torque *= 0.9f;
             }
-//            float Pm = rotorP.getAngularVelocityRadians() * torque;
-//            PowerGrid.LOGGER.info("Efficiency: {}", Pm / Pe);
-//            PowerGrid.LOGGER.info("P_e: {}", current * emfVoltage());
-//            PowerGrid.LOGGER.info("P_m: {}", rotor.getAngularVelocityRadians() * torque);
-
             rotorP.applyTickForce(rotorP.limitForce(torque));
         }
         if(rotorN != null) {
@@ -694,11 +685,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 // Reduce torque to account for losses
                 torque *= 0.9f;
             }
-//            float Pm = rotorN.getAngularVelocityRadians() * torque;
-//            PowerGrid.LOGGER.info("Efficiency: {}", Pm / Pe);
-//            PowerGrid.LOGGER.info("P_e: {}", current * emfVoltage());
-//            PowerGrid.LOGGER.info("P_m: {}", rotor.getAngularVelocityRadians() * torque);
-
             rotorN.applyTickForce(rotorN.limitForce(torque));
         }
 
