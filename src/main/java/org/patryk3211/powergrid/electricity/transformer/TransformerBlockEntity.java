@@ -214,10 +214,23 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         float secondaryInductance = secondaryTurns * secondaryTurns * coreAl;
 
         if(primaryCoil.isDefined() && secondaryCoil.isDefined()) {
+            boolean flipped = primaryTurns > secondaryInductance;
+            var primaryCoil = flipped ? this.secondaryCoil : this.primaryCoil;
+            var secondaryCoil = flipped ? this.primaryCoil : this.secondaryCoil;
+            if(flipped) {
+                var b = primaryTurns;
+                primaryTurns = secondaryTurns;
+                secondaryTurns = b;
+
+                var b2 = primaryInductance;
+                primaryInductance = secondaryInductance;
+                secondaryInductance = b2;
+            }
+
             float ratio = (float) secondaryTurns / primaryTurns;
             float mutualInductance = couplingFactor * primaryInductance;
 
-            float primaryStray = primaryInductance -mutualInductance;
+            float primaryStray = primaryInductance - mutualInductance;
             float secondaryStray = secondaryInductance - ratio * ratio * mutualInductance;
 
             var Tnode = builder.addInternalNode();
