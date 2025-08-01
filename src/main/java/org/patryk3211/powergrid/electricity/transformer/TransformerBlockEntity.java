@@ -26,13 +26,14 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
+public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, TransformerSoundInstance.VolumeProvider {
     protected TransformerCoilParameters primaryCoil;
     protected TransformerCoilParameters secondaryCoil;
 
@@ -85,12 +86,17 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         }
     }
 
+    @Override
+    public float getVolume() {
+        return MathHelper.clamp((lastCurrent / 40) - 0.25f, 0, 1);
+    }
+
     @Environment(EnvType.CLIENT)
     protected void tickAudio() {
-        if(!hasSoundSource && TransformerSoundInstance.getVolume(lastCurrent) > 0) {
+        if(!hasSoundSource && getVolume() > 0) {
             MinecraftClient.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
             hasSoundSource = true;
-        } else if(hasSoundSource && TransformerSoundInstance.getVolume(lastCurrent) <= 0) {
+        } else if(hasSoundSource && getVolume() <= 0) {
             hasSoundSource = false;
         }
     }

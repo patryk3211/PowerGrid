@@ -19,16 +19,18 @@ import com.jozufozu.flywheel.core.materials.model.ModelData;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.transformer.TransformerSoundInstance;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
-public class VariacBlockEntity extends ElectricKineticBlockEntity {
+public class VariacBlockEntity extends ElectricKineticBlockEntity implements TransformerSoundInstance.VolumeProvider {
     public static final float PRIMARY_TURNS = 25;
     public static final float CORE_AL = 1.5f;
     public static final float COUPLING_FACTOR = 0.9999f;
@@ -52,6 +54,16 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity {
 
     private float getChaseSpeed() {
         return MathHelper.clamp(Math.abs(getSpeed()) / 60.0f * 0.05f, 0, 1);
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return new ThermalBehaviour(this, 2.0f, 0.5f);
+    }
+
+    @Override
+    public float getVolume() {
+        return MathHelper.clamp((lastCurrent / 40) - 0.25f, 0, 1);
     }
 
     @Override
@@ -115,12 +127,42 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity {
         super.tick();
         arm.tickChaser();
 
+        float power = 0;
+        lastCurrent = 0;
+        if(primaryStray != null) {
+            var I1 = primaryStray.current();
+            power += (float) (I1 * I1 * primaryStray.getResistance());
+            lastCurrent += Math.abs(I1);
+        }
+        if(secondaryStray != null) {
+            var I2 = secondaryStray.current();
+            power += (float) (I2 * I2 * secondaryStray.getResistance());
+            lastCurrent += Math.abs(I2);
+        }
+        if(mutualInductance != null) {
+            var I3 = mutualInductance.current();
+            power += (float) (I3 * I3 * mutualInductance.getResistance());
+            lastCurrent += Math.abs(I3);
+        }
+        applyLostPower(power);
+
         if(!arm.settled()) {
             if(getSpeed() == 0) {
                 arm.updateChaseTarget(arm.getValue());
             }
             refreshParameters();
             markDirty();
+        }
+    }
+
+    @Override
+    public void tickAudio() {
+        super.tickAudio();
+        if(!hasSoundSource && getVolume() > 0) {
+            MinecraftClient.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
+            hasSoundSource = true;
+        } else if(hasSoundSource && getVolume() <= 0) {
+            hasSoundSource = false;
         }
     }
 
