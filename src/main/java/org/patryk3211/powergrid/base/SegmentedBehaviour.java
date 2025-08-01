@@ -34,10 +34,12 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     protected Set<T> segments;
     @Nullable
     protected Runnable changeCallback;
+    protected final int maxSize;
 
-    public SegmentedBehaviour(SmartBlockEntity be) {
+    public SegmentedBehaviour(SmartBlockEntity be, int maxSize) {
         super(be);
 
+        this.maxSize = maxSize;
         controllerPos = null;
         segments = null;
         changeCallback = null;
@@ -49,9 +51,11 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
 
     @Override
     public void initialize() {
-        makeController();
-        super.initialize();
-        checkConnectivity(null);
+        if(checkSizeConstraint()) {
+            makeController();
+            super.initialize();
+            checkConnectivity(null);
+        }
     }
 
     public void forEachSegment(Consumer<T> consumer) {
@@ -75,6 +79,14 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         assert controller.isController();
         this.controllerPos = controller.getPos();
         this.segments = null;
+        if(controller.segments.size() > maxSize) {
+            // This assembly is too big.
+            var world = getWorld();
+            if(!world.isClient)
+                world.breakBlock(getPos(), true);
+            return;
+        }
+
         controller.segments.add((T) this);
         controller.segmentAdded((T) this);
 
@@ -135,9 +147,25 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         }
     }
 
+    private boolean checkSizeConstraint() {
+        if(controllerPos != null || segments != null) {
+            // Already in an assembly so the size check doesn't matter
+            return true;
+        }
+        int totalSize = 1;
+        for(var connected : getConnected()) {
+            totalSize += connected.getSegmentCount();
+        }
+        if(totalSize > maxSize) {
+            var world = getWorld();
+            if(!world.isClient)
+                world.breakBlock(getPos(), true);
+            return false;
+        }
+        return true;
+    }
+
     public void checkConnectivity(@Nullable T without) {
-//        if(getWorld().isClient)
-//            return;
         // Make sure this is always run on the controller
         if(!isController()) {
             var controller = getController();
@@ -148,6 +176,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             }
             return;
         }
+        if(segments == null)
+            return;
         var allConnected = new HashSet<T>();
         var toCheck = new ArrayList<T>();
         toCheck.add((T) this);
@@ -206,13 +236,6 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         }
 
         blockEntity.notifyUpdate();
-    }
-
-    @Override
-    public void unload() {
-        super.unload();
-//        var controller = getControllerOrThis();
-//        controller.checkConnectivity((T) this);
     }
 
     public void remove() {

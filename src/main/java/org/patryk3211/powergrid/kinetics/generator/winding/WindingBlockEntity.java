@@ -584,6 +584,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     private void safeRebuildParallels() {
+        if(mainBE == null)
+            return;
         if(mainBE.parallelPositions != null) {
             // This is the owner
             mainBE.rebuildParallels();

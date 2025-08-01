@@ -24,6 +24,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     private boolean hasSoundSource = false;
 
     public RotorBehaviour(SmartBlockEntity be) {
-        super(be);
+        super(be, ModdedConfigs.server().kinetics.rotorAssemblyMaxSize.get());
     }
 
     public void noField() {
