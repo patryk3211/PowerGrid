@@ -52,6 +52,7 @@
   "powergrid.devices.creative.current": "Output current",
   "powergrid.devices.creative.resistance": "Resistance",
   "powergrid.devices.fuse.setting": "Max current",
+  "powergrid.devices.spark_gap.voltage": "Breakdown Voltage",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",

@@ -63,6 +63,7 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -375,6 +376,15 @@ public class ModdedBlocks {
             .item()
             .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/hv_switch")))
             .build()
+            .register();
+
+    public static final BlockEntry<SparkGapBlock> SPARK_GAP = REGISTRATE.block("spark_gap", SparkGapBlock::new)
+            .blockstate(horizontalAxisBlock("block/spark_gap/block"))
+            .initialProperties(SharedProperties::wooden)
+            .transform(axeOrPickaxe())
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/spark_gap/item")))
+                .build()
             .register();
 
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)

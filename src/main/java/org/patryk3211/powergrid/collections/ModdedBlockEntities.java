@@ -42,6 +42,8 @@ import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlockEntity;
+import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
+import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
@@ -138,6 +140,12 @@ public class ModdedBlockEntities {
                     .instance(() -> HvSwitchInstance::new)
                     .validBlock(ModdedBlocks.HV_SWITCH)
                     .renderer(() -> HvSwitchRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<SparkGapBlockEntity> SPARK_GAP =
+            REGISTRATE.blockEntity("spark_gap", SparkGapBlockEntity::new)
+                    .validBlock(ModdedBlocks.SPARK_GAP)
+                    .renderer(() -> SparkGapRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<CreativeSourceBlockEntity> CREATIVE_SOURCE =
