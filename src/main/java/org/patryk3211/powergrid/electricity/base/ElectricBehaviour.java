@@ -20,6 +20,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -27,6 +28,7 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.*;
@@ -162,7 +164,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void removeConnection(BlockWireEndpoint endpoint, WireEntity wire) {
-        if(connections.containsKey(endpoint)) {
+        if(!destroying && connections.containsKey(endpoint)) {
             var list = connections.get(endpoint);
             list.remove(wire);
             if(list.isEmpty())

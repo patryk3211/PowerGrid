@@ -325,6 +325,19 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         }
     }
 
+    public void makeMain() {
+        if(mainBE == null || mainBE == this)
+            return;
+        collectedBEs = mainBE.collectedBEs;
+        collectedBEs.remove(mainBE);
+        collectedBEs.forEach(be -> be.mainBE = this);
+        coilCount = collectedBEs.size();
+        resistance = coilCount * WindingBlock.resistance();
+        if(!world.isClient)
+            safeRebuildParallels();
+    }
+
+
     private void addParallel(WindingBlockEntity otherMain) {
         assert isMain() : "Only main block entities can keep track of parallel windings";
         assert otherMain.isMain() : "Parallel block entities must be the main entities of their windings";
@@ -442,7 +455,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     var owner = tag.getIntArray("Owner");
                     ownerPosition = new BlockPos(owner[0], owner[1], owner[2]);
                     removeElectricBehaviour();
-                } else {
+                } else if(mainBE != null) {
                     calculateElectricalParameters();
                 }
                 if (tag.contains("Parallel")) {
@@ -611,6 +624,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     @Override
     public void remove() {
         super.remove();
+        // Always break connections when the winding is modified.
+        mainBE.electricBehaviour.breakConnections();
         if(mainBE == this) {
             if(parallelPositions != null) {
                 // This is the owner
@@ -633,6 +648,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         } else if(mainBE != null) {
             // Segment of a winding
             mainBE.collectedBEs.remove(this);
+            mainBE.safeRebuildParallels();
         }
     }
 
