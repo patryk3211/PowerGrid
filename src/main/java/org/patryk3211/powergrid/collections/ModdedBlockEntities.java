@@ -24,6 +24,7 @@ import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlockEntity;
+import org.patryk3211.powergrid.electricity.contactor.ContactorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
@@ -146,6 +147,11 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("spark_gap", SparkGapBlockEntity::new)
                     .validBlock(ModdedBlocks.SPARK_GAP)
                     .renderer(() -> SparkGapRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<ContactorBlockEntity> CONTACTOR =
+            REGISTRATE.blockEntity("contactor", ContactorBlockEntity::new)
+                    .validBlock(ModdedBlocks.CONTACTOR)
                     .register();
 
     public static final BlockEntityEntry<CreativeSourceBlockEntity> CREATIVE_SOURCE =

@@ -22,6 +22,7 @@ import net.minecraft.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
+@SuppressWarnings("unused")
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
 
@@ -224,6 +225,17 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('L', Items.LEVER)
                     .input('S', RecipeTags.copperSheet())
                     .input('A', AllBlocks.ANDESITE_CASING)),
+
+    CONTACTOR = create(ModdedBlocks.CONTACTOR)
+            .unlockedBy(() -> ModdedItems.COPPER_COIL)
+            .shaped(b -> b
+                    .pattern("PCP")
+                    .pattern("PIP")
+                    .pattern(" E ")
+                    .input('P', RecipeTags.copperSheet())
+                    .input('C', RecipeTags.copperCoil())
+                    .input('I', RecipeTags.ironIngot())
+                    .input('E', RecipeTags.conductiveCasing())),
 
     CAPACITOR = create(ModdedItems.CAPACITOR)
             .unlockedBy(() -> AllItems.IRON_SHEET)

@@ -71,8 +71,13 @@ public class BlockStateTerminalCollection {
 
     public static TerminalBoundingBox[] each(TerminalBoundingBox[] input, UnaryOperator<TerminalBoundingBox> func) {
         var copy = new TerminalBoundingBox[input.length];
-        for(var i = 0; i < input.length; ++i)
+        for(var i = 0; i < input.length; ++i) {
+            if(input[i] == null) {
+                copy[i] = null;
+                continue;
+            }
             copy[i] = func.apply(input[i]);
+        }
         return copy;
     }
 

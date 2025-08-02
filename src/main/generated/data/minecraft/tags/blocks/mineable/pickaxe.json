@@ -19,6 +19,7 @@
     "powergrid:mv_switch",
     "powergrid:hv_switch",
     "powergrid:spark_gap",
+    "powergrid:contactor",
     "powergrid:creative_voltage_source",
     "powergrid:creative_current_source",
     "powergrid:creative_resistor",

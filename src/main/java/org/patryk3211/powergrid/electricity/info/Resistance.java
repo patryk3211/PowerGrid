@@ -26,15 +26,14 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class Resistance {
-    public static void series(float value, PlayerEntity player, List<Text> tooltip) {
+    private static void resistance(LangBuilder tooltipText, float value, PlayerEntity player, List<Text> tooltip) {
         if(value == 0)
             return;
         boolean hasGoggles = GogglesItem.isWearingGoggles(player);
         if(!hasGoggles)
             return;
 
-        Lang.translate("tooltip.resistance.series")
-                .style(Formatting.GRAY).addTo(tooltip);
+        tooltipText.addTo(tooltip);
         LangBuilder valueText = Lang.builder().add(Text.of(" "));
         if(value < 1) {
             // Millis
@@ -55,5 +54,17 @@ public class Resistance {
                     .add(Unit.RESISTANCE.get());
         }
         valueText.style(Formatting.DARK_AQUA).addTo(tooltip);
+    }
+
+    public static void series(float value, PlayerEntity player, List<Text> tooltip) {
+        resistance(Lang.translate("tooltip.resistance.series").style(Formatting.GRAY), value, player, tooltip);
+    }
+
+    public static void switchResistance(float value, PlayerEntity player, List<Text> tooltip) {
+        resistance(Lang.translate("tooltip.resistance.switch").style(Formatting.GRAY), value, player, tooltip);
+    }
+
+    public static void coil(float value, PlayerEntity player, List<Text> tooltip) {
+        resistance(Lang.translate("tooltip.resistance.coil").style(Formatting.GRAY), value, player, tooltip);
     }
 }

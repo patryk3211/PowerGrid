@@ -25,6 +25,24 @@
     ],
     "subtitle": "powergrid.subtitle.component_explode"
   },
+  "contactor_off": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:contactor_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.contactor_off"
+  },
+  "contactor_on": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:contactor_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.contactor_on"
+  },
   "electrozapper_shoot": {
     "sounds": [
       {

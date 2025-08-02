@@ -49,6 +49,7 @@ import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
+import org.patryk3211.powergrid.electricity.contactor.ContactorBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
@@ -385,6 +386,13 @@ public class ModdedBlocks {
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/spark_gap/item")))
                 .build()
+            .register();
+
+    public static final BlockEntry<ContactorBlock> CONTACTOR = REGISTRATE.block("contactor", ContactorBlock::new)
+            .blockstate(horizontalAxisBlock("block/contactor"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .simpleItem()
             .register();
 
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)

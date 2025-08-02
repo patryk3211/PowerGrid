@@ -30,6 +30,8 @@
   "powergrid.generic.unit.temperature": "°C",
 
   "powergrid.tooltip.resistance.series": "Series resistance:",
+  "powergrid.tooltip.resistance.switch": "Switch resistance:",
+  "powergrid.tooltip.resistance.coil": "Coil resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
 
@@ -44,6 +46,9 @@
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
   "powergrid.generic.control_terminal": "Control",
+
+  "powergrid.contactor.switch1": "Switch 1",
+  "powergrid.contactor.switch2": "Switch 2",
 
   "powergrid.variac.tap": "Tap",
 

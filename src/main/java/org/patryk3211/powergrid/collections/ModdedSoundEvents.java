@@ -57,6 +57,14 @@ public class ModdedSoundEvents {
             .category(SoundCategory.BLOCKS)
             .build(),
 
+    CONTACTOR_ON = create("contactor_on").subtitle("Contactor connects")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    CONTACTOR_OFF = create("contactor_off").subtitle("Contactor disconnects")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
     WIRE_CUT = create("wire_cut").subtitle("Wire cut")
             .playExisting(SoundEvents.ENTITY_SHEEP_SHEAR, 0.75f, 1.25f)
             .category(SoundCategory.BLOCKS)
