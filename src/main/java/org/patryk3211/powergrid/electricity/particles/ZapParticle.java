@@ -33,6 +33,7 @@ public class ZapParticle extends Particle {
     private final Vector3f cross1;
     private final Vector3f cross2;
     private final boolean anchorEnd;
+    private final int segmentCount;
 
     private final List<Pair<Vector3f, Vector3f>> segments = new ArrayList<>();
 
@@ -41,6 +42,7 @@ public class ZapParticle extends Particle {
         Vector3f end = data.getEnd();
         anchorEnd = data.isAnchored();
         maxAge = data.getLife();
+        segmentCount = data.getSegmentCount();
         blue = 0.5f;
 
         delta = new Vector3f((float) (end.x - this.x), (float) (end.y - this.y), (float) (end.z - this.z));
@@ -65,15 +67,16 @@ public class ZapParticle extends Particle {
         segments.clear();
         var pos = new Vector3f((float) this.x, (float) this.y, (float) this.z);
         var straightPos = new Vector3f(pos);
-        var segmentCount = Math.max((int) (delta.length() / 0.5f), 3);
+        var segmentCount = this.segmentCount == -1 ? Math.max((int) (delta.length() / 0.5f), 3) : this.segmentCount;
         var segmentVector = new Vector3f(delta).mul(1.0f / segmentCount);
         var segmentLength = delta.length() / segmentCount;
+        float totalLength = delta.length();
         for(int i = 0; i < segmentCount; ++i) {
             var straightEndPos = new Vector3f(segmentVector).add(straightPos);
             var endPos = new Vector3f(segmentVector).add(pos);
             endPos
-                    .add(new Vector3f(cross1).mul(random.nextFloat() - 0.5f).mul(50))
-                    .add(new Vector3f(cross2).mul(random.nextFloat() - 0.5f).mul(50));
+                    .add(new Vector3f(cross1).mul(random.nextFloat() - 0.5f).mul(totalLength * 50))
+                    .add(new Vector3f(cross2).mul(random.nextFloat() - 0.5f).mul(totalLength * 50));
             var middle = segmentCount / 2;
             float factor;
             if(anchorEnd) {

@@ -34,32 +34,39 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
     public static final Factory<ZapParticleData> FACTORY = new Factory<>() {
         @Override
         public ZapParticleData read(ParticleType<ZapParticleData> type, StringReader reader) throws CommandSyntaxException {
-            return new ZapParticleData(AbstractDustParticleEffect.readColor(reader), true, 1);
+            return new ZapParticleData(AbstractDustParticleEffect.readColor(reader), true, 1, -1);
         }
 
         @Override
         public ZapParticleData read(ParticleType<ZapParticleData> type, PacketByteBuf buf) {
-            return new ZapParticleData(buf.readVector3f(), buf.readBoolean(), buf.readInt());
+            return new ZapParticleData(buf.readVector3f(), buf.readBoolean(), buf.readInt(), buf.readInt());
         }
     };
     private static final Codec<ZapParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codecs.VECTOR_3F.fieldOf("end").forGetter(ZapParticleData::getEnd),
             Codec.BOOL.fieldOf("anchor").forGetter(ZapParticleData::isAnchored),
-            Codec.INT.fieldOf("life").forGetter(ZapParticleData::getLife)
+            Codec.INT.fieldOf("life").forGetter(ZapParticleData::getLife),
+            Codec.INT.fieldOf("segments").forGetter(ZapParticleData::getSegmentCount)
     ).apply(instance, ZapParticleData::new));
 
     private final Vector3f end;
     private final boolean anchor;
     private int life;
+    private int segmentCount;
 
     public ZapParticleData() {
         this(null, false, 1);
     }
 
     public ZapParticleData(Vector3f end, boolean anchor, int life) {
+        this(end, anchor, life, -1);
+    }
+
+    public ZapParticleData(Vector3f end, boolean anchor, int life, int segmentCount) {
         this.end = end;
         this.anchor = anchor;
         this.life = life;
+        this.segmentCount = segmentCount;
     }
 
     public ZapParticleData(float x, float y, float z, boolean anchor) {
@@ -75,6 +82,11 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
         return this;
     }
 
+    public ZapParticleData withSegments(int count) {
+        this.segmentCount = count;
+        return this;
+    }
+
     public Vector3f getEnd() {
         return end;
     }
@@ -85,6 +97,10 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
 
     public int getLife() {
         return life;
+    }
+
+    public int getSegmentCount() {
+        return segmentCount;
     }
 
     @Override
@@ -112,6 +128,7 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
         buf.writeVector3f(end);
         buf.writeBoolean(anchor);
         buf.writeInt(life);
+        buf.writeInt(segmentCount);
     }
 
     @Override

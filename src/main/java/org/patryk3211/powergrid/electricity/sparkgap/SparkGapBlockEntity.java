@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -50,6 +51,19 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
+        if(world.isClient && plasmaChannel.getState()) {
+            var center = pos.toCenterPos().subtract(0, 0.125f, 0);
+            float offset = (1 + setting.getValue() * 3 / 18f) / 16f;
+
+            var axis = getCachedState().get(SparkGapBlock.HORIZONTAL_AXIS);
+            var end = center.offset(Direction.from(axis, Direction.AxisDirection.POSITIVE), offset);
+            var start = center.offset(Direction.from(axis, Direction.AxisDirection.NEGATIVE), offset);
+            world.addParticle(new ZapParticleData(end.x, end.y, end.z, true)
+                            .withLife(1)
+                            .withSegments(5),
+                    start.x, start.y, start.z, 0, 0, 0);
+        }
+
         if(!plasmaChannel.getState() && plasmaChannel.potentialDifference() > setting.getVoltage()) {
             plasmaChannel.setState(true);
             notifyUpdate();
@@ -79,9 +93,7 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
 
     public static class BoxTransform extends CenteredSideValueBoxTransform {
         public BoxTransform() {
-            super((state, dir) -> {
-                return dir == Direction.UP;
-            });
+            super((state, dir) -> dir == Direction.UP);
         }
 
         @Override
