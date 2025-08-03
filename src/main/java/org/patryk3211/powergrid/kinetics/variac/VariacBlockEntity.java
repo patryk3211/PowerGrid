@@ -82,6 +82,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         float speed = getSpeed();
         if(speed == 0) {
             arm.chase(arm.getValue(), 0, LerpedFloat.Chaser.LINEAR);
+            arm.forceNextSync();
             return;
         }
         arm.chase(speed > 0 ? 1 : 0, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
@@ -180,6 +181,8 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     @Override
     protected void write(NbtCompound compound, boolean clientPacket) {
         super.write(compound, clientPacket);
+        if(clientPacket)
+            arm.forceNextSync();
         compound.put("Arm", arm.writeNBT());
     }
 
