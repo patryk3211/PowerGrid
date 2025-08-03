@@ -237,6 +237,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('I', RecipeTags.ironIngot())
                     .input('E', RecipeTags.conductiveCasing())),
 
+    SPARK_GAP = create(ModdedBlocks.SPARK_GAP)
+            .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
+            .shaped(b -> b
+                    .pattern("C C")
+                    .pattern("I I")
+                    .pattern(" A ")
+                    .input('C', RecipeTags.copperNugget())
+                    .input('I', RecipeTags.ironSheet())
+                    .input('A', RecipeTags.andesiteCasing())),
+
     CAPACITOR = create(ModdedItems.CAPACITOR)
             .unlockedBy(() -> AllItems.IRON_SHEET)
             .shaped(b -> b

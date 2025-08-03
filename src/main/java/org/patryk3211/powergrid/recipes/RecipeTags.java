@@ -79,4 +79,8 @@ public class RecipeTags {
     public static ItemConvertible shaft() {
         return AllBlocks.SHAFT;
     }
+
+    public static ItemConvertible andesiteCasing() {
+        return AllBlocks.ANDESITE_CASING;
+    }
 }
