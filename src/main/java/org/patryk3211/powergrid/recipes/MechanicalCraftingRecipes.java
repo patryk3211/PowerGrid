@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.function.UnaryOperator;
 
+@SuppressWarnings("unused")
 public class MechanicalCraftingRecipes extends CreateRecipeProvider {
     GeneratedRecipe
 
@@ -134,7 +135,16 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .key('S', RecipeTags.shaft())
                     .patternLine("CS ")
                     .patternLine("WTW")
-                    .patternLine("WEW"))
+                    .patternLine("WEW")),
+
+    BASIN_HEATER = create(ModdedBlocks.BASIN_HEATER::get)
+            .recipe(b -> b
+                    .key('R', RecipeTags.resistiveCoil())
+                    .key('E', RecipeTags.conductiveCasing())
+                    .key('C', RecipeTags.copperSheet())
+                    .patternLine("RRRRR")
+                    .patternLine(" C C ")
+                    .patternLine(" CEC "))
             ;
 
 

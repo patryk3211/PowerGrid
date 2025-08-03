@@ -20,6 +20,7 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardRenderer;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
+import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlockEntity;
@@ -101,6 +102,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<HeaterBlockEntity> HEATING_COIL =
             REGISTRATE.blockEntity("heating_coil", HeaterBlockEntity::new)
                     .validBlock(ModdedBlocks.HEATING_COIL)
+                    .register();
+
+    public static final BlockEntityEntry<BasinHeaterBlockEntity> BASIN_HEATER =
+            REGISTRATE.blockEntity("basin_heater", BasinHeaterBlockEntity::new)
+                    .validBlock(ModdedBlocks.BASIN_HEATER)
                     .register();
 
     public static final BlockEntityEntry<RotorBlockEntity> GENERATOR_ROTOR =

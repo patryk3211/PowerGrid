@@ -5,6 +5,7 @@
     "powergrid:wire_connector",
     "powergrid:heavy_wire_connector",
     "powergrid:heating_coil",
+    "powergrid:basin_heater",
     "powergrid:andesite_voltage_gauge",
     "powergrid:brass_voltage_gauge",
     "powergrid:andesite_current_gauge",

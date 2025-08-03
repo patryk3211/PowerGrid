@@ -22,6 +22,7 @@ import net.minecraft.item.ItemConvertible;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
 
 public class RecipeTags {
     public static TagKey<Item> ironSheet() {
@@ -82,5 +83,9 @@ public class RecipeTags {
 
     public static ItemConvertible andesiteCasing() {
         return AllBlocks.ANDESITE_CASING;
+    }
+
+    public static ItemConvertible resistiveCoil() {
+        return ModdedItems.RESISTIVE_COIL;
     }
 }

@@ -117,6 +117,8 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
         var neighbor = ctx.getWorld().getBlockState(ctx.getBlockPos().offset(facing));
         var polarized = neighbor.getBlock() instanceof IAcceptConnector acceptor && acceptor.isPolarized();
 
+        if(ctx.getPlayer() != null && ctx.getPlayer().isSneaking())
+            along = !along;
         return getDefaultState()
                 .with(FACING, facing)
                 .with(ALONG_FIRST_AXIS, along)

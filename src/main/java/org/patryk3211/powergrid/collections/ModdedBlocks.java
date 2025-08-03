@@ -45,6 +45,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
+import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
@@ -147,6 +148,24 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .defaultLoot()
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<BasinHeaterBlock> BASIN_HEATER = REGISTRATE.block("basin_heater", BasinHeaterBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        var model = switch(state.get(BasinHeaterBlock.HEAT_LEVEL)) {
+                            case NONE, SMOULDERING -> "block/basin_heater";
+                            case FADING, KINDLED -> "block/basin_heater_on";
+                            case SEETHING -> "block/basin_heater_seething";
+                        };
+                        builder.modelFile(modModel(prov, model));
+                        return builder.build();
+                    }))
+            .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderLayer::getCutoutMipped)
+            .transform(pickaxeOnly())
             .simpleItem()
             .register();
 
