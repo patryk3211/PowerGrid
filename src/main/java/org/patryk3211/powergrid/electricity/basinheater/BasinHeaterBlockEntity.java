@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.basinheater;
 
+import com.simibubi.create.content.kinetics.mixer.MechanicalMixerBlockEntity;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
@@ -50,12 +51,26 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
         return new ThermalBehaviour(this, 2.0f, factor, 1400);
     }
 
+    public boolean mixerRunning() {
+        var be = world.getBlockEntity(pos.up(3));
+        if(!(be instanceof MechanicalMixerBlockEntity mixer))
+            return false;
+        return mixer.running;
+    }
+
     @Override
     public void tick() {
         super.tick();
         applyLostPower(coil.power());
+        coil.setResistance(mixerRunning() ? BasinHeaterBlock.resistanceWorking() : BasinHeaterBlock.resistance());
         var T = thermalBehaviour.getTemperature();
-        thermalBehaviour.setDissipationFactor(0.005625f * T - 1.625f);
+        var dissipation = 0.005625f * T - 1.625f;
+        if(mixerRunning()) {
+            var I = ModdedConfigs.server().electricity.basinHeaterCurrent.get() * 2;
+            var power = I * I * (BasinHeaterBlock.resistance() - BasinHeaterBlock.resistanceWorking());
+            dissipation += (float) (power / (1000 - 22));
+        }
+        thermalBehaviour.setDissipationFactor(dissipation);
         if(T < 600) {
             setState(BlazeBurnerBlock.HeatLevel.NONE);
         } else if(T < 1000) {
