@@ -52,7 +52,14 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
 
     public VariacBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        arm = LerpedFloat.linear().startWithValue(0).chase(0, 0, LerpedFloat.Chaser.LINEAR);
+        arm = LerpedFloat.linear().chase(0, 0, LerpedFloat.Chaser.LINEAR);
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        arm.forceNextSync();
+        sendData();
     }
 
     private float getChaseSpeed() {
@@ -180,5 +187,6 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     protected void read(NbtCompound compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         arm.readNBT(compound.getCompound("Arm"), clientPacket);
+        refreshParameters();
     }
 }

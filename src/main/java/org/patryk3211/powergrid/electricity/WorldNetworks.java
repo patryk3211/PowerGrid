@@ -15,9 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity;
 
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
@@ -32,6 +34,7 @@ import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLi
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.network.packets.SolverStateS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
@@ -44,6 +47,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
     public final Set<TransmissionLine> transmissionLines = new HashSet<>();
     public final NetworkGraph globalGraph = new NetworkGraph();
     public final List<UnresolvedTransmissionLine> unresolvedLines = new ArrayList<>();
+    private int syncTicks = 0;
 
     public WorldNetworks(World world) {
         this.world = world;
@@ -89,6 +93,19 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
                     continue;
                 var packet = new TransmissionLineS2CPacket(line);
                 ModdedPackets.getChannel().sendToClients(packet, players);
+            }
+            if(syncTicks++ >= 20) {
+                for(var network : subnetworks) {
+                    if(network.getLastGuess() == null)
+                        continue;
+                    var tracking = new HashSet<ServerPlayerEntity>();
+                    var packet = new SolverStateS2CPacket(world, network);
+                    for(var chunk : packet.chunks) {
+                        tracking.addAll(PlayerLookup.tracking(serverWorld, chunk));
+                    }
+                    ModdedPackets.getChannel().sendToClients(packet, tracking);
+                }
+                syncTicks = 0;
             }
         }
     }
