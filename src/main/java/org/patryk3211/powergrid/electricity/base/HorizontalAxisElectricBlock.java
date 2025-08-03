@@ -42,7 +42,10 @@ public abstract class HorizontalAxisElectricBlock extends ElectricBlock {
 
     @Override
     public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return getDefaultState().with(HORIZONTAL_AXIS, ctx.getHorizontalPlayerFacing().getAxis());
+        var facing = ctx.getHorizontalPlayerFacing();
+        if(ctx.getPlayer() != null && ctx.getPlayer().isSneaking())
+            facing = facing.rotateYClockwise();
+        return getDefaultState().with(HORIZONTAL_AXIS, facing.getAxis());
     }
 
     public static BlockStateTerminalCollection horizontalZTerminals(Block block, TerminalBoundingBox[] terminals, VoxelShape northShape) {
