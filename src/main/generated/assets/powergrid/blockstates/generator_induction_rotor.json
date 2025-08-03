@@ -1,15 +1,15 @@
 {
   "variants": {
     "axis=x": {
-      "model": "powergrid:block/generator/rotor",
+      "model": "powergrid:block/generator/induction_rotor",
       "y": -90
     },
     "axis=y": {
-      "model": "powergrid:block/generator/rotor",
+      "model": "powergrid:block/generator/induction_rotor",
       "x": 90
     },
     "axis=z": {
-      "model": "powergrid:block/generator/rotor"
+      "model": "powergrid:block/generator/induction_rotor"
     }
   }
 }

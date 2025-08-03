@@ -221,14 +221,15 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<InductionRotorBlock> GENERATOR_INDUCTION_ROTOR = REGISTRATE.block("generator_induction_rotor", InductionRotorBlock::new)
-            .blockstate(rotorModel("block/generator/rotor"))
+            .blockstate(rotorModel("block/generator/induction_rotor"))
             .initialProperties(SharedProperties::softMetal)
             .properties(AbstractBlock.Settings::nonOpaque)
             .transform(pickaxeOnly())
             .transform(BlockStressDefaults.setImpact(4))
             .defaultLoot()
             .item()
-                .model((ctx, prov) -> {})
+                .model((ctx, prov) ->
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/induction_rotor")))
                 .build()
             .register();
 

@@ -4,8 +4,8 @@
 	"parent": "block/block",
 	"texture_size": [64, 64],
 	"textures": {
-		"0": "powergrid:block/rotor",
-		"particle": "powergrid:block/rotor"
+		"0": "powergrid:block/generator/rotor",
+		"particle": "powergrid:block/generator/rotor"
 	},
 	"elements": [
 		{
