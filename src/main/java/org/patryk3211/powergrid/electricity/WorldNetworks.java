@@ -29,6 +29,7 @@ import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLine;
@@ -100,8 +101,12 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
                 var players = PlayerUtilities.partialTracking(serverWorld, line);
                 if(players.isEmpty())
                     continue;
-                var packet = new TransmissionLineS2CPacket(line);
-                ModdedPackets.getChannel().sendToClients(packet, players);
+                try {
+                    var packet = new TransmissionLineS2CPacket(line);
+                    ModdedPackets.getChannel().sendToClients(packet, players);
+                } catch (RuntimeException e) {
+                    PowerGrid.LOGGER.error("Failed to send a transmission line packet", e);
+                }
             }
             if(syncTicks++ >= 20) {
                 for(var network : subnetworks) {
@@ -160,15 +165,6 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
         if(node1 == null || node2 == null)
             return null;
 
-//        var line = transmissionLineNodes.get(node1);
-//        if(line != null) {
-//            line.splitAt(node1);
-//        }
-//        line = transmissionLineNodes.get(node2);
-//        if(line != null) {
-//            line.splitAt(node2);
-//        }
-
         // Split transmission lines if needed.
         var line1 = transmissionLineNodes.get(node1);
         if(line1 != null)
@@ -177,8 +173,8 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
         if(line2 != null)
             line2.splitAt(node2);
 
-        var net1 = node1.getNetwork();// : line1.getNetwork();
-        var net2 = node2.getNetwork();// : line2.getNetwork();
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
 
         // Put both nodes into the same network.
         ElectricalNetwork network;
@@ -271,6 +267,10 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
 
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
+        if(!(node1 instanceof OwnedFloatingNode))
+            PowerGrid.LOGGER.warn("Creating a transmission line for non-owned floating node (node1 - this might cause issues)");
+        if(!(node2 instanceof OwnedFloatingNode))
+            PowerGrid.LOGGER.warn("Creating a transmission line for non-owned floating node (node2 - this might cause issues)");
 
         int nConns1 = connectionCount(endpoint1);
         int nConns2 = connectionCount(endpoint2);
@@ -285,11 +285,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
             if(wire instanceof TransmissionLine curLine) {
                 line1 = curLine;
             }
-        }/* else if(nConns1 == 0) {
-            // Possibly part of a transmission line
-            // After splitting, the transmission line might not be in the same network.
-            splitTransmissionLine(node1);
-        }*/
+        }
         if(nConns2 == 1) {
             // We can attach to an existing line on endpoint2
             var wire = globalGraph.getFirstWire(node2, connected2);
@@ -322,10 +318,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
                     line2.addFirstSegment(linePart);
                 }
             }
-        }/* else if(nConns2 == 0) {
-            // Possibly part of a transmission line
-            splitTransmissionLine(node2);
-        }*/
+        }
         if(line1 != null) {
             linePart = new TransmissionLinePart(forEntity.getResistance(), node1, node2, forEntity, line1);
             // We can extend this line by the second node.
