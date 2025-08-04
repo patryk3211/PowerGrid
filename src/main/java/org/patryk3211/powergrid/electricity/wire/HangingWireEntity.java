@@ -22,15 +22,20 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
+import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
+    public static final int CLEARANCE_CHECK_INTERVAL = 20;
+
     private static final Vec3d UP = new Vec3d(0, 1, 0);
 
     public Vec3d terminalPos1;
@@ -40,17 +45,47 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     public Object renderParams;
 
+    private int clearanceCheck = 0;
+
     public HangingWireEntity(EntityType<?> type, World world) {
         super(type, world);
+    }
+
+    public static boolean checkClearance(World world, Vec3d start, Vec3d end) {
+        var result = BlockTrace.raycast(world, start, end);
+        if(result.getType() == HitResult.Type.BLOCK) {
+            if(world.isClient) {
+                WirePreview.notifyOfBlock(result.getBlockPos());
+            }
+            return false;
+        }
+        return true;
     }
 
     public void updateRenderParams() {
         if(!getWorld().isClient)
             return;
-        this.setBoundingBox(this.calculateBoundingBox());
         var item = getWireItem();
         renderParams = new CurveParameters(terminalPos1, terminalPos2,
                 item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
+        this.setBoundingBox(this.calculateBoundingBox());
+    }
+
+    @Nullable
+    @Environment(EnvType.CLIENT)
+    public Box calculateClientBoundingBox() {
+        if(renderParams == null)
+            return null;
+        var curve = (CurveParameters) renderParams;
+        var box = new Box(terminalPos1, terminalPos2);
+        var minY = new MutableFloat(box.minY);
+        final float eY = (float) getPos().y;
+        curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
+            float y = (y1 + y2) * 0.5f + eY;
+            if(y < minY.getValue())
+                minY.setValue(y);
+        });
+        return box.withMinY(minY.getValue()).expand(0.1f);
     }
 
     public static HangingWireEntity create(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, float resistance) {
@@ -73,6 +108,11 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     protected Box calculateBoundingBox() {
         if(terminalPos1 != null && terminalPos2 != null) {
+            if(getWorld().isClient) {
+                var box = calculateClientBoundingBox();
+                if(box != null)
+                    return box;
+            }
             var box = new Box(terminalPos1, terminalPos2);
             return box.expand(0.1f);
         } else
@@ -114,6 +154,21 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             double y = curvePoint.y + pos.y;
             double z = curvePoint.z + pos.z;
             world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+        }
+
+        if(!world.isClient && clearanceCheck++ >= CLEARANCE_CHECK_INTERVAL && terminalPos1 != null && terminalPos2 != null) {
+            clearanceCheck = 0;
+            var result = BlockTrace.raycast(world, terminalPos1, terminalPos2);
+            if(result.getType() == HitResult.Type.BLOCK) {
+                if(getEndpoint1() instanceof BlockWireEndpoint block) {
+                    if(block.getPos().equals(result.getBlockPos()))
+                        return;
+                } else if(getEndpoint2() instanceof BlockWireEndpoint block) {
+                    if(block.getPos().equals(result.getBlockPos()))
+                        return;
+                }
+                kill();
+            }
         }
     }
 

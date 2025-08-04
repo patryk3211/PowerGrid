@@ -33,6 +33,9 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt portableBatteryBaseCapacity = i(10000, 1, "portableBatteryBaseCapacity", Comments.portableBatteryBaseCapacity);
     public final ConfigInt portableBatteryEnchantCapacity = i(10000, 1, "portableBatteryEnchantCapacity", Comments.portableBatteryEnchantCapacity);
 
+    public final ConfigFloat basinHeaterCurrent = f(10, 1, "basinHeaterCurrent", Comments.basinHeaterCurrent);
+//    public final ConfigFloat basinHeaterCurrentSeething = f(30, 1, "basinHeaterCurrentSeething", Comments.basinHeaterCurrentSeething);
+
     @Override
     public String getName() {
         return "electricity";
@@ -53,5 +56,8 @@ public class CElectricity extends ConfigBase {
         public static final String portableBatteryResistance = "Resistance of Portable Battery";
         public static final String portableBatteryBaseCapacity = "Portable Battery Forge Energy capacity before enchants";
         public static final String portableBatteryEnchantCapacity = "Portable Battery Forge Energy capacity increase per level of Capacity enchant";
+
+        public static final String basinHeaterCurrent = "Current required for normal level of heating with the basin heater";
+//        public static final String basinHeaterCurrentSeething = "Current required for seething level of heating with the basin heater";
     }
 }

@@ -15,13 +15,17 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
+import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public abstract class HorizontalElectricBlock extends ElectricBlock {
     public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
@@ -40,5 +44,19 @@ public abstract class HorizontalElectricBlock extends ElectricBlock {
     public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
         var player = ctx.getPlayer() == null || !ctx.getPlayer().isSneaking() ? ctx.getHorizontalPlayerFacing() : ctx.getHorizontalPlayerFacing().getOpposite();
         return getDefaultState().with(HORIZONTAL_FACING, player);
+    }
+
+    public static BlockStateTerminalCollection horizontalNorthTerminals(Block block, TerminalBoundingBox[] terminals, VoxelShape northShape) {
+        var shaper = VoxelShaper.forHorizontal(northShape, Direction.NORTH);
+        return BlockStateTerminalCollection.builder(block)
+                .forAllStates(state -> BlockStateTerminalCollection.each(terminals, terminal -> switch(state.get(HORIZONTAL_FACING)) {
+                    case NORTH -> terminal;
+                    case SOUTH -> terminal.rotateAroundY(180);
+                    case EAST -> terminal.rotateAroundY(90);
+                    case WEST -> terminal.rotateAroundY(-90);
+                    default -> throw new IllegalStateException();
+                }))
+                .withShapeMapper(state -> shaper.get(state.get(HORIZONTAL_FACING)))
+                .build();
     }
 }

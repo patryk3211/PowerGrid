@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.network.ClientBoundPackets;
 
 public class UpdateComponentBiPacket extends SimplePacketBase {
     private final BlockPos pos;
@@ -93,7 +94,7 @@ public class UpdateComponentBiPacket extends SimplePacketBase {
     @Override
     @Environment(EnvType.CLIENT)
     public void handle(MinecraftClient client, ClientPlayNetworkHandler listener, PacketSender responseSender, SimpleChannel channel) {
-        var world = client.world;
+        var world = ClientBoundPackets.world();
         if(client.isOnThread()) {
             handle(world);
         } else {

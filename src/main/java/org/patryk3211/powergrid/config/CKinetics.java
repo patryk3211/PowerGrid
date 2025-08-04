@@ -26,6 +26,8 @@ public class CKinetics extends ConfigBase {
     public final ConfigFloat lightningAttractorSailFactor = f(1 / 8f, 0, "lightningAttractorSailFactor", Comments.lightningAttractorSailFactor);
     public final ConfigFloat lightningAttractorMaxFrequency = f(1 / 20f, 0, "lightningAttractorMaxFrequency", Comments.lightningAttractorMaxFrequency);
 
+    public final ConfigInt rotorAssemblyMaxSize = i(8, 3, "rotorAssemblyMaxSize", Comments.rotorAssemblyMaxSize);
+
     @Override
     public String getName() {
         return "kinetics";
@@ -37,5 +39,6 @@ public class CKinetics extends ConfigBase {
         public static final String lightningAttractorSpeedFactor = "How much lightning rod linear velocity is needed to reach the maximum lightning attractor firing rate";
         public static final String lightningAttractorSailFactor = "How many sail blocks are needed to reach the maximum lightning attractor firing rate";
         public static final String lightningAttractorMaxFrequency = "How often can the lightning attractor fire";
+        public static final String rotorAssemblyMaxSize = "Maximum length of a rotor assembly";
     }
 }

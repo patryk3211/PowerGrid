@@ -20,6 +20,9 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsScreen;
 import com.simibubi.create.foundation.gui.ScreenOpener;
+import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -29,6 +32,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@Environment(EnvType.CLIENT)
 public class CustomValueSettingsScreen extends ValueSettingsScreen {
     public static ValueSettingsBoard makeBoard(Text title, int maxValue, int milestoneInterval, List<Text> rows) {
         return new ValueSettingsBoard(title, maxValue, milestoneInterval, rows, new ValueSettingsFormatter(CustomValueSettingsScreen::simpleFormat));

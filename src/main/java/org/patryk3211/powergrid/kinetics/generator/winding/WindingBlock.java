@@ -21,6 +21,7 @@ import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -29,6 +30,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
@@ -303,14 +305,6 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
                 .orElse(null);
     }
 
-    @Override
-    public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
-        var stacks = super.getDroppedStacks(state, builder);
-//        if(state.get(PART) != 1)
-//            stacks.add(AllBlocks.SHAFT.asStack());
-        return stacks;
-    }
-
     public Direction.Axis getParallelCheckAxis(BlockState state) {
         var along = state.get(ALONG_FIRST_AXIS);
         return switch(state.get(AXIS)) {
@@ -341,7 +335,46 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
 
     @Override
     public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
-        return ActionResult.FAIL;
+        var world = context.getWorld();
+        var pos = context.getBlockPos();
+        var player = context.getPlayer();
+
+        var part = state.get(PART);
+        var axis = state.get(AXIS);
+        switch(part) {
+            case 0 -> {
+                if(world.getBlockState(pos.offset(axis, 1)).get(PART) != 1)
+                    return ActionResult.FAIL;
+            }
+            case 1 -> {
+                return ActionResult.FAIL;
+            }
+            case 2 -> {
+                if(world.getBlockState(pos.offset(axis, -1)).get(PART) != 1)
+                    return ActionResult.FAIL;
+            }
+        }
+
+        boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
+        if(!shouldBreak)
+            return ActionResult.SUCCESS;
+
+        if(!(world instanceof ServerWorld serverWorld))
+            return ActionResult.SUCCESS;
+
+        if(player != null && !player.isCreative()) {
+            Block.getDroppedStacks(state.with(PART, 1), serverWorld, pos, world.getBlockEntity(pos), player, context.getStack())
+                    .forEach(stack -> player.getInventory().offerOrDrop(stack));
+        }
+        state.with(PART, 1).onStacksDropped(serverWorld, pos, ItemStack.EMPTY, true);
+        world.setBlockState(pos, Blocks.AIR.getDefaultState());
+        var newPos = pos.offset(axis, 1 - part);
+        world.setBlockState(newPos, state);
+        if(state.get(PART) == 0)
+            withBlockEntityDo(world, newPos, WindingBlockEntity::makeMain);
+
+        playRemoveSound(world, pos);
+        return ActionResult.SUCCESS;
     }
 
     @Override

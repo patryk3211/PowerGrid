@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "powergrid:block/servo/block_vertical",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "powergrid:block/servo/block",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/servo/block"
+    },
+    "facing=south": {
+      "model": "powergrid:block/servo/block",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "powergrid:block/servo/block_vertical",
+      "x": -90
+    },
+    "facing=west": {
+      "model": "powergrid:block/servo/block",
+      "y": -90
+    }
+  }
+}

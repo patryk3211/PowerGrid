@@ -34,7 +34,7 @@ public abstract class TransformerCoupling extends CouplingNode {
     @Override
     public void couple(DMatrixRMaj conductance) {
         // Unlike other fields, this one holds resistance instead of conductance.
-        conductance.set(this.index, this.index, resistance);
+        conductance.add(this.index, this.index, resistance);
     }
 
     @Override
@@ -42,11 +42,17 @@ public abstract class TransformerCoupling extends CouplingNode {
         return coupledNodes;
     }
 
+    public abstract void setRatio(float ratio);
+
     public void setResistance(float resistance) {
         if(network != null) {
             network.alterConductanceMatrix(this.index, this.index, resistance - this.resistance);
         }
         this.resistance = resistance;
+    }
+
+    public float getResistance() {
+        return resistance;
     }
 
     public static TransformerCoupling create(float ratio, IElectricNode primary, IElectricNode secondary) {
@@ -86,10 +92,20 @@ public abstract class TransformerCoupling extends CouplingNode {
         @Override
         public void couple(DMatrixRMaj conductance) {
             super.couple(conductance);
-            conductance.set(this.index, primary.getIndex(), ratio);
-            conductance.set(this.index, secondary.getIndex(), -1);
-            conductance.set(secondary.getIndex(), this.index, 1);
-            conductance.set(primary.getIndex(), this.index, -ratio);
+            conductance.add(this.index, primary.getIndex(), ratio);
+            conductance.add(this.index, secondary.getIndex(), -1);
+            conductance.add(secondary.getIndex(), this.index, 1);
+            conductance.add(primary.getIndex(), this.index, -ratio);
+        }
+
+        @Override
+        public void setRatio(float ratio) {
+            if(network != null) {
+                float change = ratio - this.ratio;
+                network.alterConductanceMatrix(this.index, primary.getIndex(), change);
+                network.alterConductanceMatrix(primary.getIndex(), this.index, -change);
+            }
+            this.ratio = ratio;
         }
     }
 
@@ -108,12 +124,22 @@ public abstract class TransformerCoupling extends CouplingNode {
         @Override
         public void couple(DMatrixRMaj conductance) {
             super.couple(conductance);
-            conductance.set(this.index, primary.getIndex(), ratio);
-            conductance.set(this.index, secondary1.getIndex(), -1.0);
-            conductance.set(this.index, secondary2.getIndex(),  1.0);
-            conductance.set(secondary1.getIndex(), this.index,  1.0);
-            conductance.set(secondary2.getIndex(), this.index, -1.0);
-            conductance.set(primary.getIndex(), this.index, -ratio);
+            conductance.add(this.index, primary.getIndex(), ratio);
+            conductance.add(this.index, secondary1.getIndex(), -1.0);
+            conductance.add(this.index, secondary2.getIndex(),  1.0);
+            conductance.add(secondary1.getIndex(), this.index,  1.0);
+            conductance.add(secondary2.getIndex(), this.index, -1.0);
+            conductance.add(primary.getIndex(), this.index, -ratio);
+        }
+
+        @Override
+        public void setRatio(float ratio) {
+            if(network != null) {
+                float change = ratio - this.ratio;
+                network.alterConductanceMatrix(this.index, primary.getIndex(), change);
+                network.alterConductanceMatrix(primary.getIndex(), this.index, -change);
+            }
+            this.ratio = ratio;
         }
     }
 
@@ -134,14 +160,26 @@ public abstract class TransformerCoupling extends CouplingNode {
         @Override
         public void couple(DMatrixRMaj conductance) {
             super.couple(conductance);
-            conductance.set(this.index, primary1.getIndex(),  ratio);
-            conductance.set(this.index, primary2.getIndex(), -ratio);
-            conductance.set(this.index, secondary1.getIndex(), -1.0);
-            conductance.set(this.index, secondary2.getIndex(),  1.0);
-            conductance.set(secondary1.getIndex(), this.index,  1.0);
-            conductance.set(secondary2.getIndex(), this.index, -1.0);
-            conductance.set(primary1.getIndex(), this.index, -ratio);
-            conductance.set(primary2.getIndex(), this.index,  ratio);
+            conductance.add(this.index, primary1.getIndex(),  ratio);
+            conductance.add(this.index, primary2.getIndex(), -ratio);
+            conductance.add(this.index, secondary1.getIndex(), -1.0);
+            conductance.add(this.index, secondary2.getIndex(),  1.0);
+            conductance.add(secondary1.getIndex(), this.index,  1.0);
+            conductance.add(secondary2.getIndex(), this.index, -1.0);
+            conductance.add(primary1.getIndex(), this.index, -ratio);
+            conductance.add(primary2.getIndex(), this.index,  ratio);
+        }
+
+        @Override
+        public void setRatio(float ratio) {
+            if(network != null) {
+                float change = ratio - this.ratio;
+                network.alterConductanceMatrix(this.index, primary1.getIndex(),  change);
+                network.alterConductanceMatrix(this.index, primary2.getIndex(), -change);
+                network.alterConductanceMatrix(primary1.getIndex(), this.index, -change);
+                network.alterConductanceMatrix(primary2.getIndex(), this.index,  change);
+            }
+            this.ratio = ratio;
         }
     }
 }

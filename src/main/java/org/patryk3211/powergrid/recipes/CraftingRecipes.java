@@ -22,6 +22,7 @@ import net.minecraft.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
+@SuppressWarnings("unused")
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
 
@@ -192,10 +193,11 @@ public class CraftingRecipes extends StandardRecipeProvider {
     GENERATOR_HOUSING = create(ModdedBlocks.GENERATOR_HOUSING)
             .unlockedBy(() -> AllItems.IRON_SHEET)
             .shaped(b -> b
-                    .pattern("II")
-                    .pattern("CI")
+                    .pattern("IC")
+                    .pattern("EI")
                     .input('I', RecipeTags.ironSheet())
-                    .input('C', RecipeTags.copperSheet())),
+                    .input('C', RecipeTags.copperSheet())
+                    .input('E', RecipeTags.conductiveCasing())),
 
     LV_SWITCH = create(ModdedBlocks.LV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
@@ -223,6 +225,27 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .input('L', Items.LEVER)
                     .input('S', RecipeTags.copperSheet())
                     .input('A', AllBlocks.ANDESITE_CASING)),
+
+    CONTACTOR = create(ModdedBlocks.CONTACTOR)
+            .unlockedBy(() -> ModdedItems.COPPER_COIL)
+            .shaped(b -> b
+                    .pattern("PCP")
+                    .pattern("PIP")
+                    .pattern(" E ")
+                    .input('P', RecipeTags.copperSheet())
+                    .input('C', RecipeTags.copperCoil())
+                    .input('I', RecipeTags.ironIngot())
+                    .input('E', RecipeTags.conductiveCasing())),
+
+    SPARK_GAP = create(ModdedBlocks.SPARK_GAP)
+            .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
+            .shaped(b -> b
+                    .pattern("C C")
+                    .pattern("I I")
+                    .pattern(" A ")
+                    .input('C', RecipeTags.copperNugget())
+                    .input('I', RecipeTags.ironSheet())
+                    .input('A', RecipeTags.andesiteCasing())),
 
     CAPACITOR = create(ModdedItems.CAPACITOR)
             .unlockedBy(() -> AllItems.IRON_SHEET)
@@ -271,7 +294,51 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
             .shapeless(b -> b
                     .input(ModdedBlocks.ELECTRIC_MOTOR)
-                    .input(AllBlocks.ENCASED_FAN))
+                    .input(AllBlocks.ENCASED_FAN)),
+
+    SERVO = create(ModdedBlocks.SERVO)
+            .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
+            .shapeless(b -> b
+                    .input(ModdedBlocks.ELECTRIC_MOTOR)
+                    .input(ModdedItems.ELECTRICAL_GIZMO)
+                    .input(AllItems.PRECISION_MECHANISM)),
+
+    FUSE_HOLDER = create(ModdedBlocks.FUSE_HOLDER)
+            .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
+            .shaped(b -> b
+                    .pattern("I")
+                    .pattern("A")
+                    .pattern("C")
+                    .input('I', RecipeTags.ironSheet())
+                    .input('A', AllBlocks.ANDESITE_CASING)
+                    .input('C', RecipeTags.copperSheet())),
+
+    DEVICE_CONNECTOR = create(ModdedBlocks.DEVICE_CONNECTOR)
+            .unlockedBy(() -> AllItems.COPPER_SHEET)
+            .shaped(b -> b
+                    .pattern(" Z ")
+                    .pattern("CAC")
+                    .input('C', RecipeTags.copperSheet())
+                    .input('Z', RecipeTags.zincSheet())
+                    .input('A', AllItems.ANDESITE_ALLOY)),
+
+    ALARM_BELL = create(ModdedBlocks.ALARM_BELL)
+            .unlockedBy(() -> AllItems.BRASS_SHEET)
+            .shaped(b -> b
+                    .pattern(" B ")
+                    .pattern("BAB")
+                    .pattern(" CI")
+                    .input('B', RecipeTags.brassSheet())
+                    .input('A', AllItems.ANDESITE_ALLOY)
+                    .input('C', RecipeTags.copperCoil())
+                    .input('I', RecipeTags.ironIngot())),
+
+    POTATO_BATTERY = create(ModdedBlocks.POTATO_BATTERY)
+            .unlockedBy(() -> Items.POTATO)
+            .shapeless(b -> b
+                    .input(Items.POTATO)
+                    .input(RecipeTags.zincSheet())
+                    .input(RecipeTags.copperSheet()))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {

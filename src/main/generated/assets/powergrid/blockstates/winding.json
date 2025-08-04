@@ -13,7 +13,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v_case_p",
+        "model": "powergrid:block/winding/end_v_case_n",
         "y": -90
       },
       "when": {
@@ -25,7 +25,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v_case_n",
+        "model": "powergrid:block/winding/end_v_case_p",
         "y": -90
       },
       "when": {
@@ -83,7 +83,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle_v_case_p",
+        "model": "powergrid:block/winding/middle_v_case_n",
         "y": -90
       },
       "when": {
@@ -95,7 +95,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle_v_case_n",
+        "model": "powergrid:block/winding/middle_v_case_p",
         "y": -90
       },
       "when": {
@@ -153,7 +153,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v_case_n",
+        "model": "powergrid:block/winding/end_v_case_p",
         "y": 90
       },
       "when": {
@@ -165,7 +165,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v_case_p",
+        "model": "powergrid:block/winding/end_v_case_n",
         "y": 90
       },
       "when": {
@@ -258,7 +258,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_case_p",
+        "model": "powergrid:block/winding/end_case_n",
         "x": 90
       },
       "when": {
@@ -270,7 +270,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_case_n",
+        "model": "powergrid:block/winding/end_case_p",
         "x": 90
       },
       "when": {
@@ -328,7 +328,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle_case_p",
+        "model": "powergrid:block/winding/middle_case_n",
         "x": 90
       },
       "when": {
@@ -340,7 +340,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle_case_n",
+        "model": "powergrid:block/winding/middle_case_p",
         "x": 90
       },
       "when": {
@@ -363,7 +363,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v_case_n",
+        "model": "powergrid:block/winding/end_v_case_p",
         "x": 270
       },
       "when": {
@@ -375,7 +375,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v_case_p",
+        "model": "powergrid:block/winding/end_v_case_n",
         "x": 270
       },
       "when": {

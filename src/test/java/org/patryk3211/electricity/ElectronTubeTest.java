@@ -102,8 +102,8 @@ public class ElectronTubeTest extends TestHelper {
         for(int i = 0; i < 5; ++i)
             Net.calculate();
 
-        Assertions.assertEquals(0.011f, V1.getCurrent(), 1e-3f, "Anode current is incorrect");
-        Assertions.assertEquals(49.888f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
+        Assertions.assertEquals(0.005f, V1.getCurrent(), 1e-3f, "Anode current is incorrect");
+        Assertions.assertEquals(49.95f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
     }
 
     @Test

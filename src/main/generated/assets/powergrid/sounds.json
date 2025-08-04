@@ -1,4 +1,21 @@
 {
+  "alarm_bell": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:alarm_bell"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.alarm_bell"
+  },
+  "alarm_bell_end": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:alarm_bell_end"
+      }
+    ]
+  },
   "component_explode": {
     "sounds": [
       {
@@ -8,6 +25,24 @@
     ],
     "subtitle": "powergrid.subtitle.component_explode"
   },
+  "contactor_off": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:contactor_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.contactor_off"
+  },
+  "contactor_on": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:contactor_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.contactor_on"
+  },
   "electrozapper_shoot": {
     "sounds": [
       {
@@ -16,6 +51,24 @@
       }
     ],
     "subtitle": "powergrid.subtitle.electrozapper_shoot"
+  },
+  "fuse_install": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.add_item"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.fuse_install"
+  },
+  "fuse_pops": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.firework_rocket.blast"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.fuse_pops"
   },
   "generator": {
     "sounds": [
@@ -117,8 +170,7 @@
         "type": "event",
         "name": "minecraft:block.note_block.bass"
       }
-    ],
-    "subtitle": "powergrid.subtitle.ui.action.fail"
+    ]
   },
   "ui.click": {
     "sounds": [
@@ -126,8 +178,7 @@
         "type": "event",
         "name": "minecraft:ui.button.click"
       }
-    ],
-    "subtitle": "powergrid.subtitle.ui.click"
+    ]
   },
   "ui.component_rotate": {
     "sounds": [
@@ -135,8 +186,7 @@
         "type": "event",
         "name": "minecraft:entity.item_frame.rotate_item"
       }
-    ],
-    "subtitle": "powergrid.subtitle.ui.component_rotate"
+    ]
   },
   "ui.delete_area": {
     "sounds": [
@@ -144,8 +194,7 @@
         "type": "event",
         "name": "minecraft:entity.item_frame.remove_item"
       }
-    ],
-    "subtitle": "powergrid.subtitle.ui.delete_area"
+    ]
   },
   "ui.place_component": {
     "sounds": [
@@ -153,8 +202,7 @@
         "type": "event",
         "name": "minecraft:entity.item_frame.add_item"
       }
-    ],
-    "subtitle": "powergrid.subtitle.ui.place_component"
+    ]
   },
   "ui.place_trace": {
     "sounds": [
@@ -162,8 +210,7 @@
         "type": "event",
         "name": "minecraft:block.metal.place"
       }
-    ],
-    "subtitle": "powergrid.subtitle.ui.place_trace"
+    ]
   },
   "ui.select_component": {
     "sounds": [
@@ -171,8 +218,7 @@
         "type": "event",
         "name": "minecraft:ui.button.click"
       }
-    ],
-    "subtitle": "powergrid.subtitle.ui.select_component"
+    ]
   },
   "uswitch_off": {
     "sounds": [

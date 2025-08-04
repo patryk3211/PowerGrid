@@ -15,11 +15,8 @@
  */
 package org.patryk3211.powergrid.kinetics.motor;
 
-import com.simibubi.create.content.kinetics.RotationPropagator;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
-import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import com.simibubi.create.infrastructure.config.AllConfigs;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
@@ -108,63 +105,13 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     @Override
     public void applyNewSpeed(float prevSpeed, float speed) {
-        // Speed changed to 0
-        if (speed == 0) {
-            if (hasSource()) {
-                notifyStressCapacityChange(0);
-                getOrCreateNetwork().updateStressFor(this, calculateStressApplied());
-                return;
+        super.applyNewSpeed(prevSpeed, speed);
+        if(Math.signum(prevSpeed) == Math.signum(speed)) {
+            // HACK: To prevent varying voltage from annihilating the network through flickering speed,
+            // the electric motor removes the score it added through its speed update.
+            for (var entry : getOrCreateNetwork().members.keySet()) {
+                ((KineticBlockEntityAccessor) entry).setFlickerTally(Math.max(entry.getFlickerScore() - 5, 0));
             }
-            detachKinetics();
-            setSpeed(0);
-            setNetwork(null);
-            return;
-        }
-
-        // Now turning - create a new Network
-        if (prevSpeed == 0) {
-            setSpeed(speed);
-            setNetwork(createNetworkId());
-            attachKinetics();
-            return;
-        }
-
-        // Change speed when overpowered by other generator
-        if (hasSource()) {
-
-            // Staying below Overpowered speed
-            if (Math.abs(prevSpeed) >= Math.abs(speed)) {
-                if (Math.signum(prevSpeed) != Math.signum(speed))
-                    world.breakBlock(pos, true);
-                return;
-            }
-
-            // Faster than attached network -> become the new source
-            detachKinetics();
-            setSpeed(speed);
-            source = null;
-            setNetwork(createNetworkId());
-            attachKinetics();
-            return;
-        }
-
-        if (Math.signum(prevSpeed) != Math.signum(speed)) {
-            // Go with the default update procedure
-            detachKinetics();
-            setSpeed(speed);
-            attachKinetics();
-            return;
-        }
-
-        // Try to update without flickering
-        detachKinetics();
-        setSpeed(speed);
-        attachKinetics();
-
-        // HACK: To prevent varying voltage from annihilating the network through flickering speed,
-        // the electric motor removes the score it added through its speed update.
-        for(var entry : getOrCreateNetwork().members.keySet()) {
-            ((KineticBlockEntityAccessor) entry).setFlickerTally(Math.max(entry.getFlickerScore() - 5, 0));
         }
     }
 

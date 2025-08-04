@@ -15,11 +15,17 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.rotor;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.MovingSoundInstance;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
+@Environment(EnvType.CLIENT)
 public class RotorSoundInstance extends MovingSoundInstance {
     private final RotorBehaviour behaviour;
 
@@ -45,6 +51,26 @@ public class RotorSoundInstance extends MovingSoundInstance {
         if(behaviour.blockEntity.isRemoved() || !behaviour.isController()) {
             setDone();
         } else {
+            var closest = new MutableObject<BlockPos>();
+            var playerPos = MinecraftClient.getInstance().player.getBlockPos();
+            behaviour.forEachSegment(segment -> {
+                if(closest.getValue() == null) {
+                    closest.setValue(segment.getPos());
+                } else {
+                    var dCurrent = closest.getValue().getSquaredDistance(playerPos);
+                    var dNew = segment.getPos().getSquaredDistance(playerPos);
+                    if(dNew < dCurrent) {
+                        closest.setValue(segment.getPos());
+                    }
+                }
+            });
+            if(closest.getValue() != null) {
+                var pos = closest.getValue().toCenterPos();
+                this.x = pos.x;
+                this.y = pos.y;
+                this.z = pos.z;
+            }
+
             var velocity = Math.abs(behaviour.getAngularVelocity());
             var pitch = velocity / 128f;
             if(velocity < 32) {

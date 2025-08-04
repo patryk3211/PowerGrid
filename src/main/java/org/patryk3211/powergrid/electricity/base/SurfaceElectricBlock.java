@@ -15,20 +15,52 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
+import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.Property;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
+import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
     public SurfaceElectricBlock(Settings settings) {
         super(settings);
+    }
+
+    public static BlockStateTerminalCollection surfaceTerminals(Block block, TerminalBoundingBox[] terminalsDown, VoxelShape shapeDown1, VoxelShape shapeDown2, Property<?>... ignored) {
+        var shaper = VoxelShaper.forDirectional(shapeDown1, Direction.DOWN);
+        var shaper2 = VoxelShaper.forDirectional(shapeDown2, Direction.DOWN);
+        return BlockStateTerminalCollection.builder(block)
+                .forAllStatesExcept(state -> BlockStateTerminalCollection.each(terminalsDown, terminal -> {
+                    var facing = state.get(FACING);
+                    terminal = switch(facing) {
+                        case DOWN -> terminal;
+                        case UP -> terminal.rotateAroundX(180);
+                        case EAST -> terminal.rotateAroundZ(-90);
+                        case WEST -> terminal.rotateAroundZ(90);
+                        case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
+                        case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
+                    };
+                    if(!state.get(ALONG_FIRST_AXIS)) {
+                        terminal = terminal.rotate(facing.getAxis(), 90);
+                    }
+                    return terminal;
+                }), ignored)
+                .withShapeMapper(state -> {
+                    var facing = state.get(FACING);
+                    var axis_along = state.get(ALONG_FIRST_AXIS);
+                    var prov = (axis_along ^ facing.getAxis() == Direction.Axis.Y) ? shaper2 : shaper;
+                    return prov.get(facing);
+                })
+                .build();
     }
 
     @Override

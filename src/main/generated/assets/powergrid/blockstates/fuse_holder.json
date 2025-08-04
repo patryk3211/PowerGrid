@@ -1,0 +1,248 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder_h",
+        "y": -90
+      },
+      "when": {
+        "axis_along_first": "true",
+        "facing": "north"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder_h",
+        "x": -90,
+        "y": -90
+      },
+      "when": {
+        "axis_along_first": "false",
+        "facing": "north"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse",
+        "x": 90
+      },
+      "when": {
+        "facing": "north",
+        "state": "closed"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_blown",
+        "x": 90
+      },
+      "when": {
+        "facing": "north",
+        "state": "blown"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder_h"
+      },
+      "when": {
+        "axis_along_first": "true",
+        "facing": "east"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder_h",
+        "x": -90
+      },
+      "when": {
+        "axis_along_first": "false",
+        "facing": "east"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse",
+        "x": 90,
+        "y": -90
+      },
+      "when": {
+        "facing": "east",
+        "state": "closed"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_blown",
+        "x": 90,
+        "y": -90
+      },
+      "when": {
+        "facing": "east",
+        "state": "blown"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder_h",
+        "y": 90
+      },
+      "when": {
+        "axis_along_first": "true",
+        "facing": "south"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder_h",
+        "x": -90,
+        "y": 90
+      },
+      "when": {
+        "axis_along_first": "false",
+        "facing": "south"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse",
+        "x": -90
+      },
+      "when": {
+        "facing": "south",
+        "state": "closed"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_blown",
+        "x": -90
+      },
+      "when": {
+        "facing": "south",
+        "state": "blown"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder_h",
+        "y": 180
+      },
+      "when": {
+        "axis_along_first": "true",
+        "facing": "west"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder_h",
+        "x": -90,
+        "y": 180
+      },
+      "when": {
+        "axis_along_first": "false",
+        "facing": "west"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse",
+        "x": 90,
+        "y": 90
+      },
+      "when": {
+        "facing": "west",
+        "state": "closed"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_blown",
+        "x": 90,
+        "y": 90
+      },
+      "when": {
+        "facing": "west",
+        "state": "blown"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder",
+        "x": 180
+      },
+      "when": {
+        "axis_along_first": "true",
+        "facing": "up"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder",
+        "x": 180,
+        "y": 90
+      },
+      "when": {
+        "axis_along_first": "false",
+        "facing": "up"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse",
+        "x": 180
+      },
+      "when": {
+        "facing": "up",
+        "state": "closed"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_blown",
+        "x": 180
+      },
+      "when": {
+        "facing": "up",
+        "state": "blown"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder"
+      },
+      "when": {
+        "axis_along_first": "true",
+        "facing": "down"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_holder",
+        "y": 90
+      },
+      "when": {
+        "axis_along_first": "false",
+        "facing": "down"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse"
+      },
+      "when": {
+        "facing": "down",
+        "state": "closed"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/fuse_blown"
+      },
+      "when": {
+        "facing": "down",
+        "state": "blown"
+      }
+    }
+  ]
+}

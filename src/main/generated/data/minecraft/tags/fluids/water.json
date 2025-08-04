@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "powergrid:flowing_etching_acid",
-    "powergrid:etching_acid"
+    "powergrid:flowing_acid",
+    "powergrid:acid"
   ]
 }

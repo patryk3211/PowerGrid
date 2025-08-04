@@ -15,61 +15,67 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
-import com.simibubi.create.foundation.block.IBE;
-import com.tterrag.registrate.util.entry.BlockEntry;
-import net.minecraft.block.Block;
+import com.simibubi.create.api.connectivity.ConnectivityHandler;
+import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import org.patryk3211.powergrid.PowerGridRegistrate;
+import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.TerminalPlacement;
+import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 
-public class BatteryBlock extends ElectricBlock implements IBE<BatteryBlockEntity> {
-    private static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
-            Block.createCuboidShape(1, 0, 1, 15, 10, 15),
-            Block.createCuboidShape(3, 10, 3, 6, 12, 6),
-            Block.createCuboidShape(10, 10, 3, 13, 12, 6)
-    );
-
-    private static final TerminalPlacement TERMINAL_1 = new TerminalPlacement(4.5, 11.0, 4.5, 2.0);
-    private static final TerminalPlacement TERMINAL_2 = new TerminalPlacement(11.5, 11.0, 4.5, 2.0);
+public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> implements IAcceptConnector {
+    protected BatterySpec spec;
 
     public BatteryBlock(Settings settings) {
         super(settings);
     }
 
-    @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return SHAPE_NORTH;
+    public static <T extends BatteryBlock, P> NonNullUnaryOperator<BlockBuilder<T, P>> setSpec(BatterySpec spec) {
+        return b -> b.onRegister(block -> block.spec = spec);
+    }
+
+    public BatterySpec getSpec() {
+        return spec;
     }
 
     @Override
-    public Class<BatteryBlockEntity> getBlockEntityClass() {
-        return BatteryBlockEntity.class;
+    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean moved) {
+        if(oldState.getBlock() == state.getBlock())
+            return;
+        if(moved)
+            return;
+        // fabric: see comment in FluidTankItem
+//        Consumer<FluidTankBlockEntity> consumer = FluidTankItem.IS_PLACING_NBT
+//                ? FluidTankBlockEntity::queueConnectivityUpdate
+//                : FluidTankBlockEntity::updateConnectivity;
+        withBlockEntityDo(world, pos, MultiBlockBatteryEntity::updateConnectivity);
     }
 
     @Override
-    public BlockEntityType<? extends BatteryBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.BATTERY.get();
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        if (state.hasBlockEntity() && (state.getBlock() != newState.getBlock() || !newState.hasBlockEntity())) {
+            var be = world.getBlockEntity(pos);
+            if (!(be instanceof MultiBlockBatteryEntity battery))
+                return;
+            super.onStateReplaced(state, world, pos, newState, moved);
+            CustomConnectivityHandler.splitMulti(battery);
+        }
     }
 
     @Override
-    public int terminalCount() {
-        return 2;
+    public Class<MultiBlockBatteryEntity> getBlockEntityClass() {
+        return MultiBlockBatteryEntity.class;
     }
 
     @Override
-    public TerminalPlacement terminal(BlockState state, int index) {
-        return switch (index) {
-            case 0 -> TERMINAL_1;
-            case 1 -> TERMINAL_2;
-            default -> null;
-        };
+    public BlockEntityType<? extends MultiBlockBatteryEntity> getBlockEntityType() {
+        return ModdedBlockEntities.MULTIBLOCK_BATTERY.get();
+    }
+
+    @Override
+    public boolean isPolarized() {
+        return true;
     }
 }

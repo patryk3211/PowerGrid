@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "blaze=fading": {
+      "model": "powergrid:block/basin_heater_on"
+    },
+    "blaze=kindled": {
+      "model": "powergrid:block/basin_heater_on"
+    },
+    "blaze=none": {
+      "model": "powergrid:block/basin_heater"
+    },
+    "blaze=seething": {
+      "model": "powergrid:block/basin_heater_seething"
+    },
+    "blaze=smouldering": {
+      "model": "powergrid:block/basin_heater"
+    }
+  }
+}

@@ -17,19 +17,22 @@ package org.patryk3211.powergrid.electricity.transformer;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.sound.MovingSoundInstance;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.math.MathHelper;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 @Environment(EnvType.CLIENT)
 public class TransformerSoundInstance extends MovingSoundInstance {
-    protected final TransformerBlockEntity be;
+    protected final BlockEntity be;
+    protected final TransformerVolumeProvider provider;
 
-    protected TransformerSoundInstance(TransformerBlockEntity be) {
+    public  <T extends BlockEntity& TransformerVolumeProvider> TransformerSoundInstance(T be) {
         super(ModdedSoundEvents.TRANSFORMER_HUM.getMainEvent(), SoundCategory.AMBIENT, be.getWorld().random);
 
         this.be = be;
+        this.provider = be;
+
         var pos = be.getPos().toCenterPos();
         this.x = pos.x;
         this.y = pos.y;
@@ -49,13 +52,9 @@ public class TransformerSoundInstance extends MovingSoundInstance {
         if(be.isRemoved()) {
             setDone();
         } else {
-            this.volume = getVolume(be.lastCurrent);
+            this.volume = provider.getVolume();
             if(this.volume == 0)
                 setDone();
         }
-    }
-
-    public static float getVolume(float power) {
-        return MathHelper.clamp((power / 40) - 0.25f, 0, 1);
     }
 }

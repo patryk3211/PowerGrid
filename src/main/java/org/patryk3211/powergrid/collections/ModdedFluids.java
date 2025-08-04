@@ -31,8 +31,8 @@ import net.minecraft.util.Identifier;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedFluids {
-    public static final FluidEntry<SimpleFlowableFluid.Flowing> ETCHING_ACID =
-            REGISTRATE.fluid("etching_acid", new Identifier("block/water_still"), new Identifier("block/water_flowing"))
+    public static final FluidEntry<SimpleFlowableFluid.Flowing> ACID =
+            REGISTRATE.fluid("acid", new Identifier("block/water_still"), new Identifier("block/water_flowing"))
                     .renderType(() -> RenderLayer::getTranslucent)
                     .tag(FluidTags.WATER)
                     .source(SimpleFlowableFluid.Source::new)

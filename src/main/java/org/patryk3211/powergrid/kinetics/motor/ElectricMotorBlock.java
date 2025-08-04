@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.kinetics.motor;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.Iterate;
-import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
@@ -33,20 +32,22 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.WorldView;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
-import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
 
-public class ElectricMotorBlock extends ElectricKineticBlock implements IElectric, IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
+public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty FACING = Properties.FACING;
+
+    private static final VoxelShape NORTH_SHAPE = createCuboidShape(3, 3, 0, 13, 13, 16);
 
     private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 2.5, 11.5, 6.5, 4.5, 13.5, 9.5)
@@ -57,22 +58,18 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IElectri
 
     public ElectricMotorBlock(Settings properties) {
         super(properties);
-        var shaper = VoxelShaper.forDirectional(
-                createCuboidShape(3, 3, 0, 13, 13, 16),
-                Direction.NORTH
-        );
-
-        setTerminalCollection(BlockStateTerminalCollection.builder(this)
-                .forAllStates(state -> BlockStateTerminalCollection.each(NORTH_TERMINALS, terminal -> switch(state.get(FACING)) {
-                    case NORTH -> terminal;
-                    case SOUTH -> terminal.rotateAroundY(180);
-                    case EAST -> terminal.rotateAroundY(90);
-                    case WEST -> terminal.rotateAroundY(-90);
-                    case UP -> terminal.rotateAroundX(-90);
-                    case DOWN -> terminal.rotateAroundX(90);
-                }))
-                .withShapeMapper(state -> shaper.get(state.get(FACING)))
-                .build());
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE));
+//        setTerminalCollection(BlockStateTerminalCollection.builder(this)
+//                .forAllStates(state -> BlockStateTerminalCollection.each(NORTH_TERMINALS, terminal -> switch(state.get(FACING)) {
+//                    case NORTH -> terminal;
+//                    case SOUTH -> terminal.rotateAroundY(180);
+//                    case EAST -> terminal.rotateAroundY(90);
+//                    case WEST -> terminal.rotateAroundY(-90);
+//                    case UP -> terminal.rotateAroundX(-90);
+//                    case DOWN -> terminal.rotateAroundX(90);
+//                }))
+//                .withShapeMapper(state -> shaper.get(state.get(FACING)))
+//                .build());
     }
 
     @Override

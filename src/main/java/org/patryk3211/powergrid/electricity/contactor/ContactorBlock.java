@@ -1,0 +1,103 @@
+/*
+ * Copyright 2025 patryk3211
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.patryk3211.powergrid.electricity.contactor;
+
+import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.WorldView;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.utility.Lang;
+
+import java.util.List;
+
+public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<ContactorBlockEntity>, IHaveElectricProperties, IAcceptConnector {
+    public static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
+            createCuboidShape(0, 0, 0, 16, 12, 16),
+            createCuboidShape(0, 12, 4, 16, 14, 12),
+            createCuboidShape(6, 12, 0, 10, 13, 4),
+            createCuboidShape(6, 12, 12, 10, 13, 16)
+    );
+
+    public static final Text SWITCH1 = Lang.builder()
+            .translate("contactor.switch1")
+            .style(Formatting.GRAY)
+            .component();
+    public static final Text SWITCH2 = Lang.builder()
+            .translate("contactor.switch2")
+            .style(Formatting.GRAY)
+            .component();
+
+    public static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
+            null, null,
+            new TerminalBoundingBox(SWITCH1, 2, 10, 0, 6, 12, 4),
+            new TerminalBoundingBox(SWITCH1, 2, 10, 12, 6, 12, 16),
+            new TerminalBoundingBox(SWITCH2, 10, 10, 0, 14, 12, 4),
+            new TerminalBoundingBox(SWITCH2, 10, 10, 12, 14, 12, 16)
+    };
+
+    public ContactorBlock(Settings settings) {
+        super(settings);
+        setTerminalCollection(horizontalZTerminals(this, TERMINALS_NORTH, SHAPE_NORTH));
+    }
+
+    @Override
+    public boolean accepts(ItemStack wireStack) {
+        return true;
+    }
+
+    @Override
+    public Class<ContactorBlockEntity> getBlockEntityClass() {
+        return ContactorBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends ContactorBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.CONTACTOR.get();
+    }
+
+    public static float coilResistance() {
+        return 12f;
+    }
+
+    public static float switchResistance() {
+        return 0.05f;
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+        Resistance.coil(coilResistance(), player, tooltip);
+        Resistance.switchResistance(switchResistance(), player, tooltip);
+    }
+
+    @Override
+    public boolean canConnect(WorldView world, BlockPos pos, BlockState state, Direction side) {
+        return side.getAxis() != Direction.Axis.Y && state.get(HORIZONTAL_AXIS) != side.getAxis();
+    }
+}

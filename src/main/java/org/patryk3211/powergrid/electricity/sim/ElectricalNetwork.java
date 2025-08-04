@@ -23,17 +23,14 @@ import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ElectricalNetwork {
     private static final double PRECISION = 1e-6;
 
     private final Set<AbstractElectricWire> wires = new HashSet<>();
     private final Set<ICouplingNode> couplings = new HashSet<>();
-    private final ArrayList<INode> nodes = new ArrayList<>();
+    private final List<INode> nodes = new ArrayList<>();
 
     private final ISolver solver;
     private boolean[] voltageSources;
@@ -41,6 +38,8 @@ public class ElectricalNetwork {
     private DMatrixRMaj AMatrix;
     private DMatrixRMaj currentMatrix;
     private int sourceCount;
+
+    private DMatrixRMaj lastGuess;
 
     private boolean dirty;
     private boolean recalculating;
@@ -239,6 +238,14 @@ public class ElectricalNetwork {
             solver.addHook(hook);
     }
 
+    public Collection<INode> getNodes() {
+        return nodes;
+    }
+
+    public DMatrixRMaj getLastGuess() {
+        return lastGuess;
+    }
+
     public void updateVoltage(VoltageSourceNode node, double oldVoltage) {
         if(conductanceMatrix == null || dirty)
             return;
@@ -356,7 +363,8 @@ public class ElectricalNetwork {
         } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
-            LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
+            if(LOGGER != null)
+                LOGGER.trace("Cumulated conductance updates triggered admittance matrix recalculation");
             populateConductanceMatrix();
             populateCurrentMatrix();
         }
@@ -367,6 +375,7 @@ public class ElectricalNetwork {
         }
 
         var result = solver.solve(AMatrix, currentMatrix);
+        lastGuess = result;
         if(printResult) {
             System.out.println(result);
         }

@@ -15,10 +15,14 @@
  */
 package org.patryk3211.powergrid.recipes;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllTags;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
 
 public class RecipeTags {
     public static TagKey<Item> ironSheet() {
@@ -59,5 +63,29 @@ public class RecipeTags {
 
     public static TagKey<Item> planks() {
         return ItemTags.PLANKS;
+    }
+
+    public static TagKey<Item> brassSheet() {
+        return AllTags.forgeItemTag("brass_plates");
+    }
+
+    public static ItemConvertible conductiveCasing() {
+        return ModdedBlocks.CONDUCTIVE_CASING;
+    }
+
+    public static ItemConvertible transformerCore() {
+        return ModdedBlocks.TRANSFORMER_CORE;
+    }
+
+    public static ItemConvertible shaft() {
+        return AllBlocks.SHAFT;
+    }
+
+    public static ItemConvertible andesiteCasing() {
+        return AllBlocks.ANDESITE_CASING;
+    }
+
+    public static ItemConvertible resistiveCoil() {
+        return ModdedItems.RESISTIVE_COIL;
     }
 }

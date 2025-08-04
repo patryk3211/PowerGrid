@@ -10,8 +10,10 @@
     "powergrid:lv_button",
     "powergrid:mv_switch",
     "powergrid:hv_switch",
+    "powergrid:spark_gap",
     "powergrid:light_fixture",
     "powergrid:electric_fan",
-    "powergrid:circuit_design_table"
+    "powergrid:circuit_design_table",
+    "powergrid:fuse_holder"
   ]
 }

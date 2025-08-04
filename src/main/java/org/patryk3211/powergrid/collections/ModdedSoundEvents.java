@@ -57,6 +57,14 @@ public class ModdedSoundEvents {
             .category(SoundCategory.BLOCKS)
             .build(),
 
+    CONTACTOR_ON = create("contactor_on").subtitle("Contactor connects")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    CONTACTOR_OFF = create("contactor_off").subtitle("Contactor disconnects")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
     WIRE_CUT = create("wire_cut").subtitle("Wire cut")
             .playExisting(SoundEvents.ENTITY_SHEEP_SHEAR, 0.75f, 1.25f)
             .category(SoundCategory.BLOCKS)
@@ -71,31 +79,31 @@ public class ModdedSoundEvents {
             .category(SoundCategory.PLAYERS)
             .build(),
 
-    UI_CLICK = create("ui.click")
+    UI_CLICK = create("ui.click").noSubtitle()
             .playExisting(SoundEvents.UI_BUTTON_CLICK)
             .build(),
 
-    UI_COMPONENT_ROTATE = create("ui.component_rotate")
+    UI_COMPONENT_ROTATE = create("ui.component_rotate").noSubtitle()
             .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ROTATE_ITEM, 0.75f, 0.75f)
             .build(),
 
-    UI_PLACE_TRACE = create("ui.place_trace")
+    UI_PLACE_TRACE = create("ui.place_trace").noSubtitle()
             .playExisting(SoundEvents.BLOCK_METAL_PLACE, 0.75f, 1.75f)
             .build(),
 
-    UI_DELETE_AREA = create("ui.delete_area")
+    UI_DELETE_AREA = create("ui.delete_area").noSubtitle()
             .playExisting(SoundEvents.ENTITY_ITEM_FRAME_REMOVE_ITEM, 0.5f, 1.0f)
             .build(),
 
-    UI_PLACE_COMPONENT = create("ui.place_component")
+    UI_PLACE_COMPONENT = create("ui.place_component").noSubtitle()
             .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ADD_ITEM, 0.5f, 1.0f)
             .build(),
 
-    UI_FAIL = create("ui.action.fail")
+    UI_FAIL = create("ui.action.fail").noSubtitle()
             .playExisting(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), 1.0f, 0.5f)
             .build(),
 
-    UI_SELECT_COMPONENT = create("ui.select_component")
+    UI_SELECT_COMPONENT = create("ui.select_component").noSubtitle()
             .playExisting(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f)
             .build(),
 
@@ -106,6 +114,11 @@ public class ModdedSoundEvents {
 
     COMPONENT_EXPLODE = create("component_explode").subtitle("Component pops")
             .playExisting(SoundEvents.ENTITY_FIREWORK_ROCKET_BLAST, 0.25f, 2.0f)
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    FUSE_POPS = create("fuse_pops").subtitle("Fuse pops")
+            .playExisting(SoundEvents.ENTITY_FIREWORK_ROCKET_BLAST, 0.5f, 1.6f)
             .category(SoundCategory.BLOCKS)
             .build(),
 
@@ -134,6 +147,19 @@ public class ModdedSoundEvents {
             .build(),
 
     GENERATOR = create("generator").subtitle("Generator spinning")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    ALARM_BELL = create("alarm_bell").subtitle("Alarm bell rings")
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    ALARM_BELL_END = create("alarm_bell_end").noSubtitle()
+            .category(SoundCategory.BLOCKS)
+            .build(),
+
+    FUSE_INSTALL = create("fuse_install").subtitle("Fuse installed")
+            .playExisting(SoundEvents.ENTITY_ITEM_FRAME_ADD_ITEM, 0.8f, 0.7f)
             .category(SoundCategory.BLOCKS)
             .build()
 

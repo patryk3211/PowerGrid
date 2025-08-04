@@ -33,16 +33,16 @@ import java.util.function.UnaryOperator;
 public class MixingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
-    ETCHING_ACID = create("etching_acid", b -> b
+    ACID = create("acid", b -> b
             .require(Items.REDSTONE)
             .require(Items.BLAZE_POWDER)
             .require(Fluids.WATER, FluidConstants.BOTTLE)
             .requiresHeat(HeatCondition.HEATED)
-            .output(ModdedFluids.ETCHING_ACID.getSource(), FluidConstants.BOTTLE)),
+            .output(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)),
 
     ETCHED_CIRCUIT_BOARD = create("etched_circuit_board", b -> b
             .require(ModdedItems.UNETCHED_CIRCUIT)
-            .require(ModdedFluids.ETCHING_ACID.getSource(), FluidConstants.BOTTLE)
+            .require(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)
             .requiresHeat(HeatCondition.HEATED)
             .output(ModdedItems.INCOMPLETE_CIRCUIT))
     ;

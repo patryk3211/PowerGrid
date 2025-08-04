@@ -15,7 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.simibubi.create.AllSoundEvents;
+import com.simibubi.create.AllSpecialTextures;
+import com.simibubi.create.CreateClient;
 import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
+import com.simibubi.create.foundation.utility.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -24,15 +28,18 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
@@ -43,6 +50,7 @@ import org.patryk3211.powergrid.utility.PlacementOverlay;
 @Environment(EnvType.CLIENT)
 public class WirePreview {
     private static final boolean DEBUG_BLOCK_TRACING = false;
+    public static final Object outlineSlot = new Object();
 
     public static int wireItemCount;
 
@@ -78,32 +86,7 @@ public class WirePreview {
         if(endpoint == null)
             return;
 
-//        if(!tag.contains("Position") || !tag.contains("Terminal")) {
-//            if(tag.contains("Turns") && !player.isCreative()) {
-//                int requiredItemCount = tag.getInt("Turns");
-//                PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
-//            }
-//            return;
-//        }
-
-//        var posArray = tag.getIntArray("Position");
-//        var firstPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
-//        var firstTerminal = tag.getInt("Terminal");
-
-        var currentPos = endpoint.getExactPosition(world); //IElectric.getTerminalPos(firstPosition, world.getBlockState(firstPosition), firstTerminal);
-//        boolean hasSegments = false;
-//        float length = 0;
-//        if(tag.contains("Segments")) {
-//            currentPos = BlockTrace.alignPosition(currentPos);
-//            for(var entry : tag.getList("Segments", NbtElement.COMPOUND_TYPE)) {
-//                var point = new BlockWireEntity.Point((NbtCompound) entry);
-//                var nextPos = currentPos.add(point.vector());
-//                BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x60AAFFFF, currentPos, point.direction, thickness, point.length, 0);
-//                currentPos = nextPos;
-//                length += point.length;
-//            }
-//            hasSegments = true;
-//        }
+        var currentPos = endpoint.getExactPosition(world);
 
         var hitPoint = target.getPos();
         ITerminalPlacement hitTerminal = null;
@@ -182,5 +165,14 @@ public class WirePreview {
 
         buffer.draw();
         matrixStack.pop();
+    }
+
+    public static void notifyOfBlock(BlockPos pos) {
+        CreateClient.OUTLINER.showAABB(outlineSlot, new Box(pos), 50)
+                .colored(Color.RED.brighter())
+                .withFaceTexture(AllSpecialTextures.CHECKERED)
+                .lineWidth(0.05f);
+        MinecraftClient.getInstance().getSoundManager()
+                .play(PositionedSoundInstance.master(AllSoundEvents.DENY.getMainEvent(), 1));
     }
 }

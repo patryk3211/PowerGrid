@@ -21,6 +21,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -66,6 +67,22 @@ public class WindingItem extends Item {
         }
 
         var hitState = world.getBlockState(pos);
+        if(hitState.isOf(ModdedBlocks.WINDING.get())) {
+            var side = context.getSide();
+            if(hitState.get(AXIS) != side.getAxis())
+                return ActionResult.FAIL;
+            var newPos = pos.offset(side);
+            if(!world.getBlockState(newPos).isReplaceable())
+                return ActionResult.FAIL;
+            if(!world.isClient) {
+                stack.decrement(1);
+                world.setBlockState(pos, hitState.with(PART, 1));
+                world.setBlockState(newPos, hitState);
+                world.playSound(null, pos, hitState.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, 1, 1);
+            }
+            return ActionResult.SUCCESS;
+        }
+
         if(!hitState.isOf(AllBlocks.SHAFT.get()))
             return ActionResult.FAIL;
         
@@ -133,6 +150,7 @@ public class WindingItem extends Item {
             }
             stack.setNbt(null);
             PlayerUtilities.removeItems(context.getPlayer(), stack, length + 1);
+            world.playSound(null, pos, baseState.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, 1, 1);
         } else {
             if(world.isClient)
                 return ActionResult.SUCCESS;

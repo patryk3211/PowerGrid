@@ -20,6 +20,8 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehavio
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.utility.Components;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -50,11 +52,8 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "potentiometer_resistance", 1000, 100, 100000);
     public static final IntProperty VALUE = new IntProperty(PowerGrid.MOD_ID, "potentiometer_value", 50, 0, 100);
 
-    private static final ValueSettingsBoard BOARD = CustomValueSettingsScreen.makeBoard(
-            Lang.translateDirect("gui.potentiometer.setting"),
-            100, 10,
-            List.of(Components.literal("Value"))
-    );
+    @Environment(EnvType.CLIENT)
+    private static ValueSettingsBoard BOARD;
 
     public PotentiometerComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -93,6 +92,12 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     public ActionResult use(CircuitBoardBlockEntity be, PlacedComponent component, PlayerEntity player) {
         component.onClientWorld(() -> world -> {
             var value = component.get(VALUE);
+            if(BOARD == null) {
+                BOARD = CustomValueSettingsScreen.makeBoard(
+                        Lang.translateDirect("gui.potentiometer.setting"),
+                        100, 10,
+                        List.of(Components.literal("Value")));
+            }
             CustomValueSettingsScreen.beginInteraction(() -> new CustomValueSettingsScreen(
                     be.getPos(), BOARD, new ValueSettingsBehaviour.ValueSettings(0, value),
                     setting -> {
@@ -120,6 +125,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
         var buffer = CachedBufferer.partial(ModdedPartialModels.POTENTIOMETER_KNOB, be.getCachedState());
         var angle = 135 - 135 * 2 * (placed.get(VALUE) / 100.0f);

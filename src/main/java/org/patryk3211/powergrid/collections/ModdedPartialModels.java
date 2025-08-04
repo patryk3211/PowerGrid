@@ -40,6 +40,9 @@ public class ModdedPartialModels {
     public static final PartialModel GROWTH_LAMP_BROKEN = block("lamps/growth_lamp_broken");
 
     public static final PartialModel HV_SWITCH_ROD = block("switches/hv_switch_rod");
+    public static final PartialModel VARIAC_ARMATURE = block("variac/armature");
+
+    public static final PartialModel SPARK_GAP_ARM = block("spark_gap/arm");
 
     public static final PartialModel LED_BULB = model("component/led_bulb");
     public static final PartialModel POTENTIOMETER_KNOB = model("component/potentiometer_knob");

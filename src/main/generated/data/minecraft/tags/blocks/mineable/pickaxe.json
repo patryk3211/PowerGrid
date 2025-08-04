@@ -1,9 +1,11 @@
 {
   "replace": false,
   "values": [
+    "powergrid:conductive_casing",
     "powergrid:wire_connector",
     "powergrid:heavy_wire_connector",
     "powergrid:heating_coil",
+    "powergrid:basin_heater",
     "powergrid:andesite_voltage_gauge",
     "powergrid:brass_voltage_gauge",
     "powergrid:andesite_current_gauge",
@@ -17,6 +19,8 @@
     "powergrid:lv_button",
     "powergrid:mv_switch",
     "powergrid:hv_switch",
+    "powergrid:spark_gap",
+    "powergrid:contactor",
     "powergrid:creative_voltage_source",
     "powergrid:creative_current_source",
     "powergrid:creative_resistor",
@@ -24,11 +28,16 @@
     "powergrid:transformer_core",
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
+    "powergrid:variac",
     "powergrid:electric_motor",
+    "powergrid:servo",
     "powergrid:electromagnet",
     "powergrid:electric_fan",
     "powergrid:portable_battery",
     "powergrid:circuit_board",
-    "powergrid:winding"
+    "powergrid:winding",
+    "powergrid:device_connector",
+    "powergrid:fuse_holder",
+    "powergrid:alarm_bell"
   ]
 }

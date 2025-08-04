@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.function.UnaryOperator;
 
+@SuppressWarnings("unused")
 public class MechanicalCraftingRecipes extends CreateRecipeProvider {
     GeneratedRecipe
 
@@ -39,9 +40,11 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .key('M', ModdedItems.MAGNET)
                     .key('I', RecipeTags.ironSheet())
                     .key('S', AllBlocks.SHAFT)
+                    .key('E', RecipeTags.conductiveCasing())
                     .patternLine(" ICI ")
                     .patternLine("CMSMC")
                     .patternLine(" ICI ")
+                    .patternLine("  E  ")
             ),
 
     GENERATOR_ROTOR = create(ModdedBlocks.GENERATOR_ROTOR::get)
@@ -121,7 +124,27 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
                     .key('G', AllBlocks.COGWHEEL)
                     .patternLine("I  ")
                     .patternLine("I  ")
-                    .patternLine("AGI"))
+                    .patternLine("AGI")),
+
+    VARIAC = create(ModdedBlocks.VARIAC::get)
+            .recipe(b -> b
+                    .key('C', RecipeTags.coal())
+                    .key('T', RecipeTags.transformerCore())
+                    .key('W', RecipeTags.copperCoil())
+                    .key('E', RecipeTags.conductiveCasing())
+                    .key('S', RecipeTags.shaft())
+                    .patternLine("CS ")
+                    .patternLine("WTW")
+                    .patternLine("WEW")),
+
+    BASIN_HEATER = create(ModdedBlocks.BASIN_HEATER::get)
+            .recipe(b -> b
+                    .key('R', RecipeTags.resistiveCoil())
+                    .key('E', RecipeTags.conductiveCasing())
+                    .key('C', RecipeTags.copperSheet())
+                    .patternLine("RRRRR")
+                    .patternLine(" C C ")
+                    .patternLine(" CEC "))
             ;
 
 

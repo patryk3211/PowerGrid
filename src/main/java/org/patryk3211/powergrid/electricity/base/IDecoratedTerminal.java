@@ -34,10 +34,15 @@ public interface IDecoratedTerminal {
             .translate("generic.terminal")
             .style(Formatting.GRAY)
             .component();
+    Text CONTROL = Lang.builder()
+            .translate("generic.control_terminal")
+            .style(Formatting.DARK_GREEN)
+            .component();
 
     int RED = 0xFF3B3B;
     int BLUE = 0x3B80FF;
     int GRAY = 0xAAAAAA;
+    int GREEN = 0x00AA00;
 
     @Nullable
     Text getName();

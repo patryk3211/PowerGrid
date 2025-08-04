@@ -15,7 +15,9 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
+import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
@@ -24,19 +26,19 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
 import io.github.fabricators_of_create.porting_lib.models.generators.ModelFile;
 import io.github.fabricators_of_create.porting_lib.models.generators.block.MultiPartBlockStateBuilder;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.item.Items;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
+import net.minecraft.loot.condition.BlockStatePropertyLootCondition;
 import net.minecraft.loot.condition.SurvivesExplosionLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.function.CopyNbtLootFunction;
 import net.minecraft.loot.function.SetCountLootFunction;
 import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
+import net.minecraft.predicate.StatePredicate;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
@@ -44,19 +46,28 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
+import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
+import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
+import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
+import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
+import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
+import org.patryk3211.powergrid.electricity.contactor.ContactorBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
+import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
+import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -70,6 +81,8 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
+import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
+import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
 import java.util.function.Function;
 
@@ -81,7 +94,42 @@ import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
 public class ModdedBlocks {
     public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
             .blockstate((ctx, prov) ->
-                    prov.simpleBlock(ctx.getEntry(), modModel(prov, "block/battery")))
+                    prov.simpleBlock(ctx.getEntry(), prov.models().cubeColumn(ctx.getName(),
+                            prov.modLoc("block/battery/battery_side"),
+                            prov.modLoc("block/battery/battery_top")
+                    )))
+            .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
+            .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<PotatoBatteryBlock> POTATO_BATTERY = REGISTRATE.block("potato_battery", PotatoBatteryBlock::new)
+            .blockstate(horizontalBlock(state -> state.get(PotatoBatteryBlock.BAKED) ? "block/baked_potato_battery" : "block/potato_battery"))
+            .initialProperties(() -> Blocks.NETHER_WART)
+            .loot((tables, block) ->
+                    tables.addDrop(block, b -> LootTable.builder()
+                            .pool(LootPool.builder()
+                                    .conditionally(SurvivesExplosionLootCondition.builder())
+                                    .conditionally(BlockStatePropertyLootCondition.builder(b)
+                                            .properties(StatePredicate.Builder.create().exactMatch(PotatoBatteryBlock.BAKED, false)))
+                                    .with(ItemEntry.builder(b))
+                                    .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
+                                            .withOperation("Energy", "Energy", CopyNbtLootFunction.Operator.REPLACE)))
+                            .pool(LootPool.builder()
+                                    .conditionally(SurvivesExplosionLootCondition.builder())
+                                    .conditionally(BlockStatePropertyLootCondition.builder(b)
+                                            .properties(StatePredicate.Builder.create().exactMatch(PotatoBatteryBlock.BAKED, true)))
+                                    .with(ItemEntry.builder(Items.BAKED_POTATO)))
+                    ))
+            .item()
+                .model((ctx, prov) -> prov.generated(ctx::getEntry))
+                .build()
+            .register();
+
+    public static final BlockEntry<CasingBlock> CONDUCTIVE_CASING = REGISTRATE.block("conductive_casing", CasingBlock::new)
+            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry()))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
             .simpleItem()
             .register();
 
@@ -106,6 +154,24 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .defaultLoot()
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<BasinHeaterBlock> BASIN_HEATER = REGISTRATE.block("basin_heater", BasinHeaterBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                        var builder = ConfiguredModel.builder();
+                        var model = switch(state.get(BasinHeaterBlock.HEAT_LEVEL)) {
+                            case NONE, SMOULDERING -> "block/basin_heater";
+                            case FADING, KINDLED -> "block/basin_heater_on";
+                            case SEETHING -> "block/basin_heater_seething";
+                        };
+                        builder.modelFile(modModel(prov, model));
+                        return builder.build();
+                    }))
+            .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderLayer::getCutoutMipped)
+            .transform(pickaxeOnly())
             .simpleItem()
             .register();
 
@@ -180,14 +246,15 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<InductionRotorBlock> GENERATOR_INDUCTION_ROTOR = REGISTRATE.block("generator_induction_rotor", InductionRotorBlock::new)
-            .blockstate(rotorModel("block/generator/rotor"))
+            .blockstate(rotorModel("block/generator/induction_rotor"))
             .initialProperties(SharedProperties::softMetal)
             .properties(AbstractBlock.Settings::nonOpaque)
             .transform(pickaxeOnly())
             .transform(BlockStressDefaults.setImpact(4))
             .defaultLoot()
             .item()
-                .model((ctx, prov) -> {})
+                .model((ctx, prov) ->
+                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/induction_rotor")))
                 .build()
             .register();
 
@@ -338,6 +405,22 @@ public class ModdedBlocks {
             .build()
             .register();
 
+    public static final BlockEntry<SparkGapBlock> SPARK_GAP = REGISTRATE.block("spark_gap", SparkGapBlock::new)
+            .blockstate(horizontalAxisBlock("block/spark_gap/block"))
+            .initialProperties(SharedProperties::wooden)
+            .transform(axeOrPickaxe())
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/spark_gap/item")))
+                .build()
+            .register();
+
+    public static final BlockEntry<ContactorBlock> CONTACTOR = REGISTRATE.block("contactor", ContactorBlock::new)
+            .blockstate(horizontalAxisBlock("block/contactor"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .simpleItem()
+            .register();
+
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)
             .blockstate(horizontalAxisBlock("block/creative_voltage_source"))
             .initialProperties(SharedProperties::stone)
@@ -448,6 +531,15 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .register();
 
+    public static final BlockEntry<VariacBlock> VARIAC = REGISTRATE.block("variac", VariacBlock::new)
+            .initialProperties(TRANSFORMER_CORE)
+            .blockstate(horizontalBlock("block/variac/block"))
+            .transform(pickaxeOnly())
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "powergrid:block/variac/item"))
+                .build()
+            .register();
+
     public static final BlockEntry<ElectricMotorBlock> ELECTRIC_MOTOR = REGISTRATE.block("electric_motor", ElectricMotorBlock::new)
             .blockstate(alternateDirectionalBlock(state -> switch(state.get(ElectricMotorBlock.FACING).getAxis()) {
                         case X, Z -> "block/electric_motor/block";
@@ -459,6 +551,20 @@ public class ModdedBlocks {
             .defaultLoot()
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_motor/item")))
+                .build()
+            .register();
+
+    public static final BlockEntry<ServoBlock> SERVO = REGISTRATE.block("servo", ServoBlock::new)
+            .blockstate(alternateDirectionalBlock(state -> switch(state.get(ElectricMotorBlock.FACING).getAxis()) {
+                case X, Z -> "block/servo/block";
+                case Y -> "block/servo/block_vertical";
+            }))
+            .initialProperties(() -> Blocks.IRON_BLOCK)
+            .transform(BlockStressDefaults.setCapacity(32))
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .item()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/servo/item")))
                 .build()
             .register();
 
@@ -576,15 +682,74 @@ public class ModdedBlocks {
                         });
                         return builder.build();
                     }, DeviceConnectorBlock.POLARIZED))
+            .transform(pickaxeOnly())
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<FuseHolderBlock> FUSE_HOLDER = REGISTRATE.block("fuse_holder", FuseHolderBlock::new)
+            .blockstate((ctx, prov) -> {
+                var builder = prov.getMultipartBuilder(ctx.getEntry());
+                for(var facing : FACING.getValues()) {
+                    for(var axis : ALONG_FIRST_AXIS.getValues()) {
+                        var state = ctx.getEntry().getDefaultState()
+                                .with(FACING, facing)
+                                .with(ALONG_FIRST_AXIS, axis);
+                        surfaceFacingTransforms(state, (x, y, vertical) -> {
+                            var part = builder.part();
+                            if (vertical) {
+                                part.modelFile(modModel(prov, "block/fuse_holder"));
+                            } else {
+                                part.modelFile(modModel(prov, "block/fuse_holder_h"));
+                            }
+                            part.rotationX(x).rotationY(y);
+                            part.addModel().condition(FACING, facing).condition(ALONG_FIRST_AXIS, axis);
+                        });
+                    }
+                    var part = builder.part();
+                    part.modelFile(modModel(prov, "block/fuse"));
+                    rotateDownFacingModel(part, facing);
+                    part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.CLOSED);
+
+                    part = builder.part();
+                    part.modelFile(modModel(prov, "block/fuse_blown"));
+                    rotateDownFacingModel(part, facing);
+                    part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.BLOWN);
+                }
+            })
+            .initialProperties(SharedProperties::wooden)
+            .transform(axeOrPickaxe())
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<AlarmBellBlock> ALARM_BELL = REGISTRATE.block("alarm_bell", AlarmBellBlock::new)
+            .blockstate(horizontalBlock("alarm_bell"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
             .simpleItem()
             .register();
 
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 
+    public static void rotateDownFacingModel(ConfiguredModel.Builder<?> builder, Direction facing) {
+        switch(facing) {
+            case UP -> builder.rotationX(180);
+            case NORTH -> builder.rotationX(90);
+            case SOUTH -> builder.rotationX(-90);
+            case WEST -> builder.rotationX(90).rotationY(90);
+            case EAST -> builder.rotationX(90).rotationY(-90);
+        }
+    }
+
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(String model) {
         return (ctx, prov) -> {
             prov.horizontalBlock(ctx.getEntry(), modModel(prov, model));
+        };
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(Function<BlockState, String> model) {
+        return (ctx, prov) -> {
+            prov.horizontalBlock(ctx.getEntry(), state -> modModel(prov, model.apply(state)));
         };
     }
 
@@ -741,7 +906,14 @@ public class ModdedBlocks {
         };
 
         Function<Boolean, ModelFile.ExistingModelFile> caseModel = half -> {
-            var halfStr = (!half ^ (part == 2 && alongFirst)) ? "p" : "n";
+            boolean condition = !half;
+            if(axis == Direction.Axis.Z)
+                condition ^= alongFirst && part == 2;
+            else if(axis == Direction.Axis.Y)
+                condition ^= !alongFirst && part != 2;
+            else
+                condition ^= alongFirst && part != 2;
+            var halfStr = condition ? "p" : "n";
             return switch(part) {
                 case 0, 2 -> modModel(prov, "block/winding/end" + (alongFirst ? "_v" : "") + "_case_" + halfStr);
                 case 1 -> modModel(prov, "block/winding/middle" + (alongFirst ? "_v" : "") + "_case_" + halfStr);

@@ -107,9 +107,13 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             // If wire is overheated it is considered dead.
             energy -= dissipationFactor * (temperature - BASE_TEMPERATURE) / 20f;
         }
+        // This should allow fuses to act
+        boolean isSafe = temperature < overheatTemperature - 50f;
         temperature += energy / thermalMass;
-        dataTracker.set(TEMPERATURE, temperature);
+        if(temperature >= overheatTemperature && isSafe)
+            temperature = overheatTemperature - 25f;
 
+        dataTracker.set(TEMPERATURE, temperature);
     }
 
     public boolean isOverheated() {
