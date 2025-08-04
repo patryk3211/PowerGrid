@@ -251,6 +251,13 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         }
     }
 
+    public double getIndividualEnergy() {
+        var controller = getControllerBE();
+        if(controller == null)
+            return getEnergy();
+        return controller.getEnergy() / controller.getSize();
+    }
+
     @Override
     public void invalidate() {
         if(world.isClient) {
@@ -266,6 +273,10 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     @Override
     public BlockPos getLastKnownPos() {
         return lastKnownPos;
+    }
+
+    public void queueConnectivityUpdate() {
+        updateConnectivity = true;
     }
 
     @Override

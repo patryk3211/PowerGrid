@@ -15,11 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
-import com.simibubi.create.api.connectivity.ConnectivityHandler;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
@@ -54,7 +56,7 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
 //        Consumer<FluidTankBlockEntity> consumer = FluidTankItem.IS_PLACING_NBT
 //                ? FluidTankBlockEntity::queueConnectivityUpdate
 //                : FluidTankBlockEntity::updateConnectivity;
-        withBlockEntityDo(world, pos, MultiBlockBatteryEntity::updateConnectivity);
+        withBlockEntityDo(world, pos, MultiBlockBatteryEntity::queueConnectivityUpdate);
     }
 
     @Override
@@ -68,10 +70,25 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
             CustomConnectivityHandler.splitMulti(battery);
 
             // Rewire all wires that still target the stale behaviour
-            // TODO: Rewire must also happen on the client
             wires.forEach(WireEntity::dropWire);
             wires.forEach(WireEntity::makeWire);
         }
+    }
+
+    @Override
+    public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
+        var stacks = super.getDroppedStacks(state, builder);
+        var be = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
+        if(be instanceof MultiBlockBatteryEntity battery) {
+            for(var stack : stacks) {
+                if(stack.isOf(this.asItem())) {
+                    var tag = stack.getOrCreateNbt();
+                    tag.putDouble("Energy", Math.floor(battery.getIndividualEnergy()));
+                    break;
+                }
+            }
+        }
+        return stacks;
     }
 
     @Override
