@@ -111,9 +111,10 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if (coil.current() > 2.0f) {
+        var I = Math.abs(coil.current());
+        if (I > 2.0f) {
             setState(true);
-        } else if (coil.current() < 1.9f) {
+        } else if (I < 1.9f) {
             setState(false);
         }
     }
