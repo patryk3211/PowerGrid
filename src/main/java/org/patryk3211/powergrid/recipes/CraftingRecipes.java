@@ -338,7 +338,18 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .shapeless(b -> b
                     .input(Items.POTATO)
                     .input(RecipeTags.zincSheet())
-                    .input(RecipeTags.copperSheet()))
+                    .input(RecipeTags.copperSheet())),
+
+    PORTABLE_BATTERY = create(ModdedItems.PORTABLE_BATTERY)
+            .unlockedBy(() -> ModdedBlocks.BATTERY)
+            .shaped(b -> b
+                    .pattern(" C ")
+                    .pattern("ZDZ")
+                    .pattern("ZBZ")
+                    .input('C', ModdedBlocks.DEVICE_CONNECTOR)
+                    .input('Z', RecipeTags.zincSheet())
+                    .input('D', RecipeTags.electricalGizmo())
+                    .input('B', ModdedBlocks.BATTERY))
             ;
 
     public CraftingRecipes(FabricDataOutput output) {

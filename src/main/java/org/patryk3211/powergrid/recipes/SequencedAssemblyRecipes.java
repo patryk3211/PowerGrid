@@ -17,11 +17,13 @@ package org.patryk3211.powergrid.recipes;
 
 import com.google.gson.JsonObject;
 import com.simibubi.create.AllItems;
+import com.simibubi.create.content.fluids.transfer.FillingRecipe;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeBuilder;
 import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.data.server.recipe.RecipeJsonProvider;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.RecipeSerializer;
@@ -30,10 +32,12 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedFluids;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.function.UnaryOperator;
 
+@SuppressWarnings("unused")
 public class SequencedAssemblyRecipes extends CreateRecipeProvider {
     GeneratedRecipe
 
@@ -69,7 +73,18 @@ public class SequencedAssemblyRecipes extends CreateRecipeProvider {
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.EMPTY_CIRCUIT))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.DOUGH))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
-            .addStep(PressingRecipe::new, rb -> rb))
+            .addStep(PressingRecipe::new, rb -> rb)),
+
+    BATTERY = create("battery", b -> b.require(ModdedBlocks.CONDUCTIVE_CASING)
+            .transitionTo(ModdedItems.INCOMPLETE_BATTERY)
+            .addOutput(ModdedBlocks.BATTERY, 100)
+            .addOutput(ModdedBlocks.CONDUCTIVE_CASING, 5)
+            .addOutput(AllItems.COPPER_SHEET, 2)
+            .addOutput(ModdedItems.ZINC_SHEET, 2)
+            .loops(3)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.zincSheet()))
+            .addStep(FillingRecipe::new, rb -> rb.require(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)))
 
             ;
 

@@ -86,6 +86,7 @@
   "item.powergrid.empty_circuit": "Empty Circuit",
   "item.powergrid.golden_wire": "Golden Wire",
   "item.powergrid.growth_lamp": "Growth Lamp",
+  "item.powergrid.incomplete_battery": "Incomplete Battery",
   "item.powergrid.incomplete_circuit": "Incomplete Circuit",
   "item.powergrid.incomplete_circuit.tooltip.summary": "Use _Mechanical Arms_ to insert used components and complete the circuit",
   "item.powergrid.incomplete_electrical_gizmo": "Incomplete Electrical Gizmo",

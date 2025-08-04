@@ -114,6 +114,7 @@ public class ModdedItems {
     public static final ItemEntry<IncompleteCircuitItem> INCOMPLETE_CIRCUIT = REGISTRATE.item("incomplete_circuit", IncompleteCircuitItem::new)
             .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
             .register();
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BATTERY = sequencedIngredient("incomplete_battery");
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
             .transform(CreateRegistrate.customRenderedItem(() -> ElectroZapperItemRenderer::new))

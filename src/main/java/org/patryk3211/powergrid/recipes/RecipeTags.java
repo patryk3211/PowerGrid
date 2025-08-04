@@ -88,4 +88,8 @@ public class RecipeTags {
     public static ItemConvertible resistiveCoil() {
         return ModdedItems.RESISTIVE_COIL;
     }
+
+    public static ItemConvertible electricalGizmo() {
+        return ModdedItems.ELECTRICAL_GIZMO;
+    }
 }
