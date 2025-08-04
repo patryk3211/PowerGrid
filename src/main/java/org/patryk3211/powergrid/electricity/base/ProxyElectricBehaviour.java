@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.generator.winding;
+package org.patryk3211.powergrid.electricity.base;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
@@ -30,7 +28,7 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
     private final Supplier<BlockPos> behaviourPosition;
 
     public <T extends SmartBlockEntity & IElectricEntity> ProxyElectricBehaviour(T be, Supplier<BlockPos> behaviourPosition) {
-        super(be);
+        super(be, false);
         this.behaviourPosition = behaviourPosition;
     }
 

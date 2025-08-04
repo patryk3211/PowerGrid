@@ -21,8 +21,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardRenderer;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlockEntity;
-import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
-import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
+import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlockEntity;
 import org.patryk3211.powergrid.electricity.contactor.ContactorBlockEntity;
@@ -77,8 +76,8 @@ public class ModdedBlockEntities {
                     .validBlocks(ModdedBlocks.WIRE_CONNECTOR, ModdedBlocks.HEAVY_WIRE_CONNECTOR)
                     .register();
 
-    public static final BlockEntityEntry<BatteryBlockEntity> BATTERY =
-            REGISTRATE.blockEntity("battery", BatteryBlockEntity::new)
+    public static final BlockEntityEntry<MultiBlockBatteryEntity> MULTIBLOCK_BATTERY =
+            REGISTRATE.blockEntity("battery", MultiBlockBatteryEntity::new)
                     .validBlock(ModdedBlocks.BATTERY)
                     .register();
 

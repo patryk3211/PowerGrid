@@ -46,11 +46,16 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     private boolean rebuildOnClient = false;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
+        this(be, true);
+    }
+
+    protected <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be, boolean buildCircuit) {
         super(be);
         this.element = be;
-
-        var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
-        element.buildCircuit(builder);
+        if(buildCircuit) {
+            var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
+            element.buildCircuit(builder);
+        }
     }
 
     @Nullable

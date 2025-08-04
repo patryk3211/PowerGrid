@@ -29,11 +29,13 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     protected TransformerCoupling coupling;
 
     protected final BatterySpec spec;
+    protected double capacity;
     protected double energy;
 
     public BatteryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         spec = ((AbstractBatteryBlock<?>) state.getBlock()).getSpec();
+        capacity = spec.getMaxCharge();
         energy = spec.getInitialCharge();
         updateParameters();
         setLazyTickRate(20);
@@ -46,7 +48,9 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     }
 
     public void updateParameters() {
-        float chargeLevel = (float) energy / spec.getMaxCharge();
+        if(energy <= 0)
+            return;
+        float chargeLevel = (float) (energy / capacity);
         sourceNode.setVoltage(spec.calculateVoltage(chargeLevel));
         coupling.setResistance(spec.calculateResistance(chargeLevel));
     }
@@ -63,6 +67,9 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     public void tick() {
         super.tick();
 
+        if(sourceNode == null)
+            return;
+
         // Internal resistive losses
         var I = sourceNode.getCurrent();
         applyLostPower(I * I * coupling.getResistance());
@@ -76,8 +83,8 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
             energy = 0;
             sourceNode.setVoltage(0);
             return;
-        } else if(energy >= spec.getMaxCharge()) {
-            energy = spec.getMaxCharge();
+        } else if(energy >= capacity) {
+            energy = capacity;
             // TODO: Convert excess energy into heat
         }
         markDirty();

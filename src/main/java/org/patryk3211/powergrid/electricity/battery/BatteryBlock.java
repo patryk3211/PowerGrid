@@ -15,13 +15,17 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
+import com.simibubi.create.api.connectivity.ConnectivityHandler;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 
-public class BatteryBlock extends AbstractBatteryBlock<BatteryBlockEntity> implements IAcceptConnector {
+public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> implements IAcceptConnector {
     protected BatterySpec spec;
 
     public BatteryBlock(Settings settings) {
@@ -37,13 +41,37 @@ public class BatteryBlock extends AbstractBatteryBlock<BatteryBlockEntity> imple
     }
 
     @Override
-    public Class<BatteryBlockEntity> getBlockEntityClass() {
-        return BatteryBlockEntity.class;
+    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean moved) {
+        if(oldState.getBlock() == state.getBlock())
+            return;
+        if(moved)
+            return;
+        // fabric: see comment in FluidTankItem
+//        Consumer<FluidTankBlockEntity> consumer = FluidTankItem.IS_PLACING_NBT
+//                ? FluidTankBlockEntity::queueConnectivityUpdate
+//                : FluidTankBlockEntity::updateConnectivity;
+        withBlockEntityDo(world, pos, MultiBlockBatteryEntity::updateConnectivity);
     }
 
     @Override
-    public BlockEntityType<? extends BatteryBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.BATTERY.get();
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        if (state.hasBlockEntity() && (state.getBlock() != newState.getBlock() || !newState.hasBlockEntity())) {
+            var be = world.getBlockEntity(pos);
+            if (!(be instanceof MultiBlockBatteryEntity battery))
+                return;
+            super.onStateReplaced(state, world, pos, newState, moved);
+            CustomConnectivityHandler.splitMulti(battery);
+        }
+    }
+
+    @Override
+    public Class<MultiBlockBatteryEntity> getBlockEntityClass() {
+        return MultiBlockBatteryEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends MultiBlockBatteryEntity> getBlockEntityType() {
+        return ModdedBlockEntities.MULTIBLOCK_BATTERY.get();
     }
 
     @Override

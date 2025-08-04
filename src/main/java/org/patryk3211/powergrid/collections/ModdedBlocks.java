@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.kinetics.BlockStressDefaults;
+import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
@@ -47,6 +48,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
+import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
@@ -92,8 +94,12 @@ import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
 public class ModdedBlocks {
     public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
             .blockstate((ctx, prov) ->
-                    prov.simpleBlock(ctx.getEntry(), modModel(prov, "block/battery")))
+                    prov.simpleBlock(ctx.getEntry(), prov.models().cubeColumn(ctx.getName(),
+                            prov.modLoc("block/battery/battery_side"),
+                            prov.modLoc("block/battery/battery_top")
+                    )))
             .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
+            .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
             .simpleItem()
             .register();
 

@@ -19,8 +19,8 @@ import java.util.function.Function;
 
 public class SimpleBatterySpec implements BatterySpec {
     public static final SimpleBatterySpec ACID_BATTERY = new SimpleBatterySpec(
-            43200, // This should amount to 1Ah at 12V
-            38880, // Initial charge level is 90%
+            7200, // This should amount to 1A for 1 minute at 12V
+            6480, // Initial charge level is 90%
             2.0f,
             0.75f,
             e -> 1.2f * e + 11.5f,
