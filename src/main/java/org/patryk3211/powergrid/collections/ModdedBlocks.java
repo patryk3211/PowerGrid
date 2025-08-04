@@ -98,6 +98,8 @@ public class ModdedBlocks {
                             prov.modLoc("block/battery/battery_side"),
                             prov.modLoc("block/battery/battery_top")
                     )))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
             .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
             .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
             .simpleItem()

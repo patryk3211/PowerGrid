@@ -23,7 +23,11 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
+
+import java.util.List;
 
 public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> implements IAcceptConnector {
     protected BatterySpec spec;
@@ -59,8 +63,14 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
             var be = world.getBlockEntity(pos);
             if (!(be instanceof MultiBlockBatteryEntity battery))
                 return;
+            var wires = GlobalElectricNetworks.getWorldNetworks(world).findConnectedWires(battery.getElectricBehaviour());
             super.onStateReplaced(state, world, pos, newState, moved);
             CustomConnectivityHandler.splitMulti(battery);
+
+            // Rewire all wires that still target the stale behaviour
+            // TODO: Rewire must also happen on the client
+            wires.forEach(WireEntity::dropWire);
+            wires.forEach(WireEntity::makeWire);
         }
     }
 

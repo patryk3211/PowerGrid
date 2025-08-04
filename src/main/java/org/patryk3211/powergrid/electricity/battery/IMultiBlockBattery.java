@@ -26,4 +26,7 @@ public interface IMultiBlockBattery extends IMultiBlockEntityContainer {
 
     void setCapacitySize(int blocks);
     int getSize();
+
+    void updateBehaviour();
+    void markRewire();
 }

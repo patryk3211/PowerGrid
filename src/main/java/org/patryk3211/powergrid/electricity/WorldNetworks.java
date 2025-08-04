@@ -26,6 +26,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
@@ -47,6 +48,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
     public final Set<TransmissionLine> transmissionLines = new HashSet<>();
     public final NetworkGraph globalGraph = new NetworkGraph();
     public final List<UnresolvedTransmissionLine> unresolvedLines = new ArrayList<>();
+    private final Set<WireEntity> deferredRewireEntities = new HashSet<>();
     private int syncTicks = 0;
 
     public WorldNetworks(World world) {
@@ -65,6 +67,13 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
     }
 
     public void tick() {
+        deferredRewireEntities.removeIf(entity -> {
+            if(entity.isRemoved())
+                return true;
+            entity.makeWire();
+            return entity.getWire() != null;
+        });
+
         var iter = subnetworks.iterator();
         while(iter.hasNext()) {
             var network = iter.next();
@@ -345,6 +354,33 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
                 line.splitAt(node);
             }
         }
+    }
+
+    public List<WireEntity> findConnectedWires(ElectricBehaviour behaviour) {
+        var wires = new ArrayList<WireEntity>();
+        for(var node : behaviour.getExternalNodes()) {
+            var nodes = globalGraph.getConnectedNodes(node);
+            nodes.stream()
+                    .flatMap(connected -> globalGraph.getWires(node, connected).stream())
+                    .filter(wire -> wire instanceof TransmissionLine)
+                    .map(wire -> {
+                        var line = (TransmissionLine) wire;
+                        if(line.getNode1() == node)
+                            return line.segments.get(0);
+                        else if(line.getNode2() == node)
+                            return line.segments.get(line.segments.size() - 1);
+                        else
+                            return null;
+                    })
+                    .filter(segment -> segment != null && segment.owner != null)
+                    .forEach(segment -> wires.add(segment.owner));
+        }
+        return wires;
+    }
+
+    public void deferredRewire(Collection<WireEntity> wires) {
+        wires.forEach(WireEntity::dropWire);
+        deferredRewireEntities.addAll(wires);
     }
 
     @Override

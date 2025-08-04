@@ -58,6 +58,11 @@ public class SolverStateS2CPacket extends SimplePacketBase {
             // Ordering is important here, first serialize external, then internal nodes
             var external = behaviour.getExternalNodes();
             var internal = behaviour.getInternalNodes();
+            if(external.isEmpty())
+                continue;
+            if(external.get(0).getNetwork() != network)
+                continue;
+
             var doubles = new double[external.size() + internal.size()];
             int index = 0;
             for(var eNode : behaviour.getExternalNodes()) {

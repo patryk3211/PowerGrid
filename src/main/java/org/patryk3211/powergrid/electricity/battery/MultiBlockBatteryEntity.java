@@ -23,8 +23,10 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.List;
 
@@ -32,6 +34,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     protected int width = 1;
     protected int height = 1;
     protected boolean updateConnectivity;
+    private boolean rewire;
 
     protected BlockPos lastKnownPos;
     protected BlockPos controller;
@@ -48,7 +51,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     @Override
     public void updateParameters() {
-        if(energy <= 0)
+        if(energy <= 0 || sourceNode == null)
             return;
         float chargeLevel = (float) (energy / capacity);
         sourceNode.setVoltage(spec.calculateVoltage(chargeLevel));
@@ -78,7 +81,12 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         CustomConnectivityHandler.formMulti(this);
     }
 
-    private void updateBehaviour() {
+    @Override
+    public void updateBehaviour() {
+        // This also finds wires connected through device connectors/proxy behaviours
+        List<WireEntity> wires = null;
+        if(world != null)
+            wires = GlobalElectricNetworks.getWorldNetworks(world).findConnectedWires(electricBehaviour);
         if(isController()) {
             if(electricBehaviour instanceof ProxyElectricBehaviour proxy) {
                 electricBehaviour = new ElectricBehaviour(this);
@@ -97,6 +105,17 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 coupling = null;
             }
         }
+        if(wires != null) {
+            // Rewire connected wires.
+            wires.forEach(WireEntity::dropWire);
+            wires.forEach(WireEntity::makeWire);
+        }
+        updateParameters();
+    }
+
+    public void markRewire() {
+        rewire = true;
+        sendData();
     }
 
     @Override
@@ -111,6 +130,11 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
         if (updateConnectivity)
             updateConnectivity();
+
+        if(world.isClient && rewire) {
+            updateBehaviour();
+            rewire = false;
+        }
     }
 
     private void onPositionChanged() {
@@ -196,9 +220,13 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         boolean changeOfController = controllerBefore == null ? controller != null : !controllerBefore.equals(controller);
         if(world != null && (changeOfController || prevSize != width || prevHeight != height)) {
             world.scheduleBlockRerenderIfNeeded(getPos(), Blocks.AIR.getDefaultState(), getCachedState());
-        }
-        if(changeOfController)
             updateBehaviour();
+        }
+
+        if(clientPacket) {
+            if(compound.getBoolean("Rewire"))
+                rewire = true;
+        }
     }
 
     @Override
@@ -214,6 +242,25 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
             compound.putInt("Height", height);
         }
         super.write(compound, clientPacket);
+
+        if(clientPacket) {
+            if(rewire) {
+                compound.putBoolean("Rewire", true);
+                rewire = false;
+            }
+        }
+    }
+
+    @Override
+    public void invalidate() {
+        if(world.isClient) {
+            // We defer the rewire because all block entities need to update their behaviours,
+            // but after this invalidate we lose reference to nodes provided by the controller.
+            var global = GlobalElectricNetworks.getWorldNetworks(world);
+            var wires = global.findConnectedWires(electricBehaviour);
+            global.deferredRewire(wires);
+        }
+        super.invalidate();
     }
 
     @Override

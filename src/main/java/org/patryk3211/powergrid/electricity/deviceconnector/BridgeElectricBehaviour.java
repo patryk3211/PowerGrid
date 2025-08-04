@@ -34,7 +34,6 @@ import java.util.function.Supplier;
 
 public class BridgeElectricBehaviour extends ElectricBehaviour {
     private final BlockPos behaviourPosition;
-    private ElectricBehaviour mainBehaviour;
     private FEBridgeEnergyStorage bridgeBehaviour;
     private long readEnergy;
     private long currentRate;
@@ -50,7 +49,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     private void constructBehaviours() {
         fetched = true;
         var world = getWorld();
-        mainBehaviour = get(world, behaviourPosition, TYPE);
+        var mainBehaviour = get(world, behaviourPosition, TYPE);
         if(mainBehaviour != null)
             return;
         var facing = blockEntity.getCachedState().get(DeviceConnectorBlock.FACING);
@@ -66,7 +65,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     public Optional<ElectricBehaviour> getMainBehaviour() {
         if(!fetched)
             constructBehaviours();
-        return Optional.ofNullable(mainBehaviour);
+        return Optional.ofNullable(get(getWorld(), behaviourPosition, TYPE));
     }
 
     @Nullable

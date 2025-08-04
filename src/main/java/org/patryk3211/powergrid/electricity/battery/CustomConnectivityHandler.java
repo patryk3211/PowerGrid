@@ -318,6 +318,9 @@ public class CustomConnectivityHandler {
                 }
             }
         }
+        // Rewires everything into the individual battery blocks.
+        be.updateBehaviour();
+        be.markRewire();
         if (tryReconnect)
             formMulti(be.getType(), be.getSpec(), level, cache == null ? new SearchCache<>() : cache, frontier);
     }
