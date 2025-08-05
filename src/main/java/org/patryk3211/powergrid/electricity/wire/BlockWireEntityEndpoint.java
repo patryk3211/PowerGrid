@@ -20,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
@@ -70,6 +71,7 @@ public class BlockWireEntityEndpoint implements IWireEndpoint {
     }
 
     @Override
+    @NotNull
     public Vec3d getExactPosition(World world) {
         var entity = getEntity(world);
         if(entity == null)

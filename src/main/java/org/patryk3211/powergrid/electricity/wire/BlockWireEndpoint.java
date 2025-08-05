@@ -20,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -80,6 +81,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
+    @NotNull
     public Vec3d getExactPosition(World world) {
         return IElectric.getTerminalPos(world, pos, this.terminal);
     }

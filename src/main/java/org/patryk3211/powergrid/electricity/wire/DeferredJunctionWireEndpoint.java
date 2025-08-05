@@ -20,6 +20,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
@@ -64,6 +66,7 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
         nbt.putInt("Point", segmentPoint);
     }
 
+    @Nullable
     public BlockWireEntity getEntity(World world) {
         var entities = world.getEntitiesByClass(BlockWireEntity.class, new Box(entityPos), e -> entityId.equals(e.getUuid()));
         if(entities.isEmpty())
@@ -72,14 +75,22 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
+    @NotNull
     public Vec3d getExactPosition(World world) {
         var wire = getEntity(world);
+        if(wire == null)
+            return entityPos.toCenterPos();
+        if(segmentIndex >= wire.segments.size())
+            segmentIndex = wire.segments.size() - 1;
         var segment = wire.segments.get(segmentIndex);
         return segment.start.offset(segment.direction, segmentPoint / 16f);
     }
 
+    @Nullable
     public JunctionWireEndpoint resolve(World world) {
         var entity = getEntity(world);
+        if(entity == null)
+            return null;
         return entity.split(segmentIndex, segmentPoint);
     }
 

@@ -27,6 +27,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedTags;
@@ -124,6 +125,7 @@ public interface IElectric extends IWrenchable {
         return null;
     }
 
+    @NotNull
     static Vec3d getTerminalPos(World world, BlockPos position, int terminalIndex) {
         var electric = getAt(world, position);
         if(electric == null)

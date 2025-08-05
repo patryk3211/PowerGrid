@@ -178,11 +178,13 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
                     endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(world);
-                if(endpoint.isValid(world)) {
-                    endpoint.assignWireEntity(this);
-                } else {
-                    deferEndpointResolution |= 1;
-                    deferTicks = 0;
+                if(endpoint != null) {
+                    if (endpoint.isValid(world)) {
+                        endpoint.assignWireEntity(this);
+                    } else {
+                        deferEndpointResolution |= 1;
+                        deferTicks = 0;
+                    }
                 }
             }
             endpoint1 = endpoint;
@@ -198,11 +200,13 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
                     endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(world);
-                if(endpoint.isValid(world)) {
-                    endpoint.assignWireEntity(this);
-                } else {
-                    deferEndpointResolution |= 2;
-                    deferTicks = 0;
+                if(endpoint != null) {
+                    if (endpoint.isValid(world)) {
+                        endpoint.assignWireEntity(this);
+                    } else {
+                        deferEndpointResolution |= 2;
+                        deferTicks = 0;
+                    }
                 }
             }
             endpoint2 = endpoint;

@@ -16,13 +16,11 @@
 package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-
-import java.util.UUID;
 
 public class ImaginaryWireEndpoint implements IWireEndpoint {
     private Vec3d pos;
@@ -59,6 +57,7 @@ public class ImaginaryWireEndpoint implements IWireEndpoint {
     }
 
     @Override
+    @NotNull
     public Vec3d getExactPosition(World world) {
         return pos;
     }
