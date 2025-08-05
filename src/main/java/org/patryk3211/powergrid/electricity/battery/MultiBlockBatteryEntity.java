@@ -26,6 +26,7 @@ import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.List;
@@ -58,6 +59,17 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         coupling.setResistance(spec.calculateResistance(chargeLevel) / getSize());
     }
 
+    private void overheated() {
+        assert world != null;
+        if(isController()) {
+            var r = world.random;
+            var x = pos.getX() + r.nextBetween(0, getWidth());
+            var y = pos.getY() + r.nextBetween(0, getHeight());
+            var z = pos.getZ() + r.nextBetween(0, getWidth());
+            ThermalBehaviour.explode(world, new BlockPos(x, y, z), getCachedState(), getSize() * 0.5f);
+        }
+    }
+
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         if(isController()) {
@@ -67,7 +79,9 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         }
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = specifyThermalBehaviour();
+        thermalBehaviour = specifyThermalBehaviour()
+                .behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES)
+                .overheatCallback(this::overheated);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
     }
@@ -94,6 +108,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 removeBehaviour(ElectricBehaviour.TYPE);
                 attachBehaviourLate(electricBehaviour);
             }
+            updateThermals();
+            thermalBehaviour.track(null);
         } else {
             if(!(electricBehaviour instanceof ProxyElectricBehaviour)) {
                 var old = electricBehaviour;
@@ -104,6 +120,9 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 sourceNode = null;
                 coupling = null;
             }
+            var controller = getControllerBE();
+            if(controller != null)
+                thermalBehaviour.track(getControllerBE().thermalBehaviour);
         }
         if(wires != null) {
             // Rewire connected wires.
@@ -126,6 +145,12 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         else if (!lastKnownPos.equals(pos) && pos != null) {
             onPositionChanged();
             return;
+        }
+
+        if(!isController()) {
+            var controller = getControllerBE();
+            if (controller != null)
+                thermalBehaviour.track(getControllerBE().thermalBehaviour);
         }
 
         if (updateConnectivity)
@@ -293,6 +318,11 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         notifyUpdate();
     }
 
+    private void updateThermals() {
+        thermalBehaviour.setDissipationFactor(spec.getDissipationFactor() * getSize());
+        thermalBehaviour.setThermalMass(spec.getThermalMass() * getSize());
+    }
+
     @Override
     public Direction.Axis getMainConnectionAxis() {
         return Direction.Axis.Y;
@@ -353,6 +383,6 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     @Override
     public int getSize() {
-        return width * width * height;
+        return Math.max(width * width * height, 1);
     }
 }

@@ -29,7 +29,7 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         return new ThermalBehaviour(this, 0.2f, 0.01f, 100f)
-                .noOverheatBehaviour();
+                .behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);
     }
 
     @Override

@@ -20,6 +20,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
@@ -28,26 +29,36 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.explosion.Explosion;
+import net.minecraft.world.explosion.ExplosionBehavior;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 
 public class ThermalBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<ThermalBehaviour> TYPE = new BehaviourType<>("thermal");
     public static final float BASE_TEMPERATURE = 22.0f;
 
+    public static final int OVERHEAT_PARTICLES = 1;
+    public static final int OVERHEAT_EXPLOSION = 2;
+    public static final int IGNORE_EXTRA_COOLING = 4;
+
     private float temperature;
 
     // thermalMass = ΔE/ΔT
-    private final float thermalMass;
+    private float thermalMass;
     // dissipation coefficient * area
     private float dissipationFactor;
     private final float overheatTemperature;
 
     private AirCurrent coolingAir;
     private float coolingFactorMultiplier;
-    private boolean ignoreExtraCooling;
 
-    private boolean noOverheatBehaviour = false;
+    private BlockPos trackedBehaviour;
+
+    private int behaviourFlags = OVERHEAT_PARTICLES | OVERHEAT_EXPLOSION;
+    private Runnable overheatCallback;
     private boolean firstTick = true;
 
     public ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor, float overheatTemperature) {
@@ -74,14 +85,22 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         return new ThermalBehaviour(be, thermalMass, dissipation, overheatTemperature);
     }
 
-    public ThermalBehaviour noOverheatBehaviour() {
-        noOverheatBehaviour = true;
+    public ThermalBehaviour behaviourFlags(int flags) {
+        behaviourFlags = flags;
         return this;
     }
 
-    public ThermalBehaviour ignoreExtraCooling() {
-        ignoreExtraCooling = true;
+    public ThermalBehaviour overheatCallback(Runnable callback) {
+        this.overheatCallback = callback;
         return this;
+    }
+
+    public void track(@Nullable ThermalBehaviour other) {
+        if(other == this || other == null) {
+            this.trackedBehaviour = null;
+            return;
+        }
+        this.trackedBehaviour = other.getPos();
     }
 
     public void resetTemperature() {
@@ -92,13 +111,17 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         this.dissipationFactor = dissipationFactor;
     }
 
+    public void setThermalMass(float mass) {
+        this.thermalMass = mass;
+    }
+
     public void noCooling() {
         coolingFactorMultiplier = 1;
         coolingAir = null;
     }
 
     public void setCoolingMultiplier(AirCurrent current, float value) {
-        if(ignoreExtraCooling)
+        if((behaviourFlags & IGNORE_EXTRA_COOLING) != 0)
             return;
         coolingFactorMultiplier = value;
         coolingAir = current;
@@ -113,40 +136,52 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             return;
         }
 
+        var tracked = trackedBehaviour != null ? get(getWorld(), trackedBehaviour, TYPE) : null;
+        if(tracked != null) {
+            this.temperature = tracked.temperature;
+        }
+
         if(coolingAir != null && (coolingAir.source.isSourceRemoved() || coolingAir.source.getSpeed() == 0)) {
             noCooling();
         }
 
-        // Dissipate energy
-        float dissipatedPower = dissipationFactor * coolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
-        temperature -= dissipatedPower / 20f / thermalMass;
+        if(tracked == null) {
+            // Dissipate energy
+            float dissipatedPower = dissipationFactor * coolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
+            temperature -= dissipatedPower / 20f / thermalMass;
+            if(dissipatedPower != 0)
+                blockEntity.markDirty();
+        }
 
-        if(!noOverheatBehaviour) {
-            var world = getWorld();
-            var pos = getPos();
-            if (world.isClient) {
-                var random = getWorld().getRandom();
-                float x = pos.getX() + random.nextFloat();
-                float y = pos.getY() + random.nextFloat();
-                float z = pos.getZ() + random.nextFloat();
-                if (temperature >= overheatTemperature - 50) {
-                    float chance = (temperature - overheatTemperature + 100) / 100;
-                    if (random.nextFloat() < chance)
-                        world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
-                }
-            }
-
-            if (isOverheated() && !world.isClient) {
-                var registry = getWorld().getRegistryManager().get(RegistryKeys.DAMAGE_TYPE);
-                var source = new MachineOverloadDamageSource(registry.getEntry(ModdedDamageTypes.OVERLOADED_MACHINE).get(), blockEntity.getCachedState().getBlock());
-                // This block must be broken first to allow for damage to propagate.
-                world.breakBlock(getPos(), false);
-                world.createExplosion(null, source, null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, 1.0f, false, World.ExplosionSourceType.BLOCK);
+        var world = getWorld();
+        var pos = getPos();
+        if(world.isClient && ((behaviourFlags & OVERHEAT_PARTICLES) != 0)) {
+            var random = getWorld().getRandom();
+            float x = pos.getX() + random.nextFloat();
+            float y = pos.getY() + random.nextFloat();
+            float z = pos.getZ() + random.nextFloat();
+            if (temperature >= overheatTemperature - 50) {
+                float chance = (temperature - overheatTemperature + 100) / 100;
+                if (random.nextFloat() < chance)
+                    world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
             }
         }
 
-        if(dissipatedPower != 0)
-            blockEntity.markDirty();
+        if(isOverheated() && !world.isClient) {
+            if((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
+                explode(world, pos, blockEntity.getCachedState(), 1.0f);
+            }
+            if(overheatCallback != null)
+                overheatCallback.run();
+        }
+    }
+
+    public static void explode(World world, BlockPos pos, BlockState state, float power) {
+        var registry = world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE);
+        var source = new MachineOverloadDamageSource(registry.getEntry(ModdedDamageTypes.OVERLOADED_MACHINE).get(), state.getBlock());
+        // This block must be broken first to allow for damage to propagate.
+        world.breakBlock(pos, false);
+        world.createExplosion(null, source, null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, power, false, World.ExplosionSourceType.BLOCK);
     }
 
     public boolean isOverheated() {
