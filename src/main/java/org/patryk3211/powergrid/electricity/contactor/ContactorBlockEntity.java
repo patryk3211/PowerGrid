@@ -19,9 +19,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
@@ -41,6 +43,11 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
 
     public ContactorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return ThermalBehaviour.forMaxPower(this, 2.0f, 2000f);
     }
 
     private void checkPos(BlockPos pos, boolean newState, List<BlockPos> checkQueue) {
@@ -117,6 +124,10 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
         } else if (I < 1.9f) {
             setState(false);
         }
+
+        applyLostPower(switch1.power());
+        applyLostPower(switch2.power());
+        applyLostPower(coil.power());
     }
 
     @Override
