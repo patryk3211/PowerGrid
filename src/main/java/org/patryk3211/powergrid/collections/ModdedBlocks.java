@@ -401,10 +401,18 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .transform(BlockStressDefaults.setImpact(2))
+            .loot((tables, block) ->
+                    tables.addDrop(block, b -> LootTable.builder()
+                            .pool(LootPool.builder()
+                                    .conditionally(SurvivesExplosionLootCondition.builder())
+                                    .conditionally(BlockStatePropertyLootCondition.builder(b)
+                                            .properties(StatePredicate.Builder.create().exactMatch(HvSwitchBlock.PART, 0)))
+                                    .with(ItemEntry.builder(block)))
+                    ))
             .lang("HV Switch")
             .item()
-            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/hv_switch")))
-            .build()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/hv_switch")))
+                .build()
             .register();
 
     public static final BlockEntry<SparkGapBlock> SPARK_GAP = REGISTRATE.block("spark_gap", SparkGapBlock::new)

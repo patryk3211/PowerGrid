@@ -29,6 +29,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.text.Text;
@@ -160,10 +161,12 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         super.onBreak(world, pos, state, player);
         var facing = state.get(HORIZONTAL_FACING);
-        if(state.get(PART) == 0) {
-            world.breakBlock(pos.offset(facing), false);
-        } else {
-            world.breakBlock(pos.offset(facing.getOpposite()), false);
+        if(player == null || !player.isCreative()) {
+            if (state.get(PART) == 0) {
+                world.breakBlock(pos.offset(facing), true);
+            } else {
+                world.breakBlock(pos.offset(facing.getOpposite()), true);
+            }
         }
     }
 
@@ -222,14 +225,21 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
     @Override
     public ActionResult onSneakWrenched(BlockState state, ItemUsageContext context) {
         var result = super.onSneakWrenched(state, context);
-        if(result == ActionResult.SUCCESS) {
+        if(result == ActionResult.SUCCESS && context.getWorld() instanceof ServerWorld serverWorld) {
             var pos = context.getBlockPos();
             var facing = state.get(HORIZONTAL_FACING);
             var world = context.getWorld();
             if(state.get(PART) == 0) {
                 world.breakBlock(pos.offset(facing), false);
             } else {
-                world.breakBlock(pos.offset(facing.getOpposite()), false);
+                var pos2 = pos.offset(facing.getOpposite());
+                var player = context.getPlayer();
+                if(player != null && !player.isCreative()) {
+                    Block.getDroppedStacks(state, serverWorld, pos2, world.getBlockEntity(pos2), player, context.getStack())
+                            .forEach(stack -> player.getInventory().offerOrDrop(stack));
+                }
+                state.onStacksDropped(serverWorld, pos2, ItemStack.EMPTY, true);
+                world.breakBlock(pos2, false);
             }
         }
         return result;

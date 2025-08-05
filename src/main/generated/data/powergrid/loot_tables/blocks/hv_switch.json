@@ -6,6 +6,13 @@
       "conditions": [
         {
           "condition": "minecraft:survives_explosion"
+        },
+        {
+          "block": "powergrid:hv_switch",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "part": "0"
+          }
         }
       ],
       "entries": [
