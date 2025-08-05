@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.ponder.scenes;
 
+import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.ponder.SceneBuilder;
 import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
 import com.simibubi.create.foundation.ponder.element.InputWindowElement;
@@ -32,6 +33,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
@@ -414,5 +416,46 @@ public class DeviceScenes {
 
         scene.markAsFinished();
         electric.unload();
+    }
+
+    public static void basinHeater(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("basin_heater", "High power heating");
+        scene.configureBasePlate(0, 0, 5);
+
+        var target = util.grid.at(2, 1, 2);
+
+        scene.showBasePlate();
+        scene.idle(5);
+
+        scene.world.showSection(util.select.position(target), Direction.DOWN);
+        scene.idle(10);
+
+        scene.world.showSection(util.select.position(target.up()), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay.showText(80)
+                .text("The Basin Heater can provide Heat to Items processed in a Basin")
+                .pointAt(util.vector.blockSurface(target, Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world.hideSection(util.select.position(target.up()), Direction.UP);
+        scene.idle(20);
+
+        scene.world.modifyBlock(target, state -> state.with(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.KINDLED), false);
+        scene.idle(40);
+
+        scene.overlay.showText(80)
+                .text("When given enough power the heater can give the highest level of heat")
+                .pointAt(util.vector.topOf(target))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+
+        scene.world.modifyBlock(target, state -> state.with(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.SEETHING), false);
+        scene.idle(50);
+
+        scene.markAsFinished();
     }
 }

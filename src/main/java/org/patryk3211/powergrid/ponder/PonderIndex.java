@@ -38,15 +38,15 @@ public class PonderIndex {
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic)
                 .addStoryBoard("heating_coil/speed", DeviceScenes::heatingCoilSpeed);
 
-        HELPER.forComponents(ModdedBlocks.GENERATOR_ROTOR)
-                .addStoryBoard("generator/rotor", GeneratorScenes::rotor)
-                .addStoryBoard("generator/generator", GeneratorScenes::generator);
+//        HELPER.forComponents(ModdedBlocks.GENERATOR_ROTOR)
+//                .addStoryBoard("generator/rotor", GeneratorScenes::rotor)
+//                .addStoryBoard("generator/generator", GeneratorScenes::generator);
 
 //        HELPER.forComponents(ModdedBlocks.GENERATOR_COIL)
 //                .addStoryBoard("generator/coil", GeneratorScenes::coil)
 //                .addStoryBoard("generator/generator", GeneratorScenes::generator);
 
-        HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing);
+//        HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing);
 
         HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE)
                 .addStoryBoard("wire/simple", WireScenes::simple)
@@ -68,5 +68,7 @@ public class PonderIndex {
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet);
         HELPER.addStoryBoard(new Identifier("lightning_rod"), "lightning_attractor", MagnetScenes::lightningAttractor);
+
+        HELPER.addStoryBoard(ModdedBlocks.BASIN_HEATER, "basin_heater", DeviceScenes::basinHeater);
     }
 }
