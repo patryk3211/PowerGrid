@@ -124,7 +124,7 @@ public class ZapProjectileEntity extends ProjectileEntity {
         if(target instanceof WitherEntity wither && wither.shouldRenderOverlay())
             return;
 
-        float damage = 4;
+        float damage = 8;
 
         var effectBB = new Box(target.getBlockPos()).expand(2);
         var world = getWorld();
