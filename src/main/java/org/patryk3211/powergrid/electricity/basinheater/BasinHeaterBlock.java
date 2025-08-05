@@ -19,6 +19,7 @@ import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -27,6 +28,9 @@ import net.minecraft.state.property.EnumProperty;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldView;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
@@ -37,12 +41,22 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import java.util.List;
 
 public class BasinHeaterBlock extends ElectricBlock implements IBE<BasinHeaterBlockEntity>, IAcceptConnector, IHaveElectricProperties {
+    public static final VoxelShape SHAPE = VoxelShapes.union(
+            createCuboidShape(0, 0, 0, 16, 9, 16),
+            createCuboidShape(1, 9, 1, 15, 14, 15)
+    );
+
     public static final EnumProperty<BlazeBurnerBlock.HeatLevel> HEAT_LEVEL = BlazeBurnerBlock.HEAT_LEVEL;
 
     public BasinHeaterBlock(Settings settings) {
         super(settings);
         setDefaultState(getDefaultState()
                 .with(HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.NONE));
+    }
+
+    @Override
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        return SHAPE;
     }
 
     @Override
