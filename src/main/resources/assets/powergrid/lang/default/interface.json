@@ -28,12 +28,14 @@
   "powergrid.generic.unit.ohm": "Ω",
   "powergrid.generic.unit.watt": "W",
   "powergrid.generic.unit.temperature": "°C",
+  "powergrid.generic.unit.block": "blocks",
 
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
   "powergrid.tooltip.resistance.coil": "Coil resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
+  "powergrid.tooltip.range.max": "Maximum range:",
 
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.power.rated": "Rated power:",

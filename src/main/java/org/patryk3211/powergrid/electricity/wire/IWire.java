@@ -19,6 +19,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Range;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public interface IWire extends IHaveElectricProperties {
     @Override
     default void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
         Resistance.series(getResistance(), player, tooltip);
+        Range.max((int) getMaximumLength(), tooltip);
     }
 
     static boolean holdsWire(PlayerEntity player) {
