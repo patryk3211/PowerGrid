@@ -33,7 +33,6 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLine;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.SolverStateS2CPacket;
@@ -131,10 +130,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
     }
 
     public void add(IWireEndpoint endpoint) {
-        if (endpoint instanceof BlockWireEndpoint blockEndpoint) {
-            var block = world.getBlockState(blockEndpoint.getPos());
-            globalGraph.addNode(endpoint.getNode(world));
-        }
+        globalGraph.addNode(endpoint.getNode(world));
     }
 
     public int connectionCount(IWireEndpoint endpoint) {
