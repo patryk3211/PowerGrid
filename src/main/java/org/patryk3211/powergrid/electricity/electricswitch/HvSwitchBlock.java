@@ -161,12 +161,11 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         super.onBreak(world, pos, state, player);
         var facing = state.get(HORIZONTAL_FACING);
-        if(player == null || !player.isCreative()) {
-            if (state.get(PART) == 0) {
-                world.breakBlock(pos.offset(facing), true);
-            } else {
-                world.breakBlock(pos.offset(facing.getOpposite()), true);
-            }
+        var drop = player == null || !player.isCreative();
+        if (state.get(PART) == 0) {
+            world.breakBlock(pos.offset(facing), drop);
+        } else {
+            world.breakBlock(pos.offset(facing.getOpposite()), drop);
         }
     }
 
