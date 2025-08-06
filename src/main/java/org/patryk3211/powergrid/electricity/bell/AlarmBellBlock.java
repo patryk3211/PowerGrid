@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 
 import java.util.List;
 
@@ -81,5 +82,6 @@ public class AlarmBellBlock extends HorizontalElectricBlock implements IBE<Alarm
     @Override
     public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
         Resistance.series(resistance(), player, tooltip);
+        Voltage.rated(10, player, tooltip);
     }
 }

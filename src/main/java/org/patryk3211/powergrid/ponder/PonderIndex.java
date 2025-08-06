@@ -61,6 +61,7 @@ public class PonderIndex {
         HELPER.forComponents(ModdedBlocks.TRANSFORMER_CORE)
                 .addStoryBoard("transformer/sizes", DeviceScenes::transformerSizes, PonderTags.ELECTRIC_RELAYS)
                 .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding, PonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.VARIAC, "variac", RelayScenes::variac, PonderTags.ELECTRIC_RELAYS);
 
         HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB)
                 .addStoryBoard("lightbulb", DeviceScenes::light, PonderTags.ELECTRIC_DEVICES);
@@ -68,8 +69,10 @@ public class PonderIndex {
 
         HELPER.forComponents(ModdedBlocks.WIRE_CONNECTOR, ModdedBlocks.HEAVY_WIRE_CONNECTOR)
                 .addStoryBoard("wire/connector", WireScenes::connector, PonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.DEVICE_CONNECTOR, "device_connector", RelayScenes::deviceConnector, PonderTags.ELECTRIC_RELAYS);
 
-        HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor, PonderTags.ELECTRIC_DEVICES);
+        HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor, AllPonderTags.KINETIC_SOURCES, PonderTags.ELECTRIC_DEVICES);
+        HELPER.addStoryBoard(ModdedBlocks.SERVO, "servo", DeviceScenes::servo, AllPonderTags.KINETIC_SOURCES, PonderTags.ELECTRIC_DEVICES);
 
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet);
@@ -80,5 +83,18 @@ public class PonderIndex {
         HELPER.addStoryBoard(ModdedBlocks.LV_SWITCH, "switch", RelayScenes.switchSceneFor(ModdedBlocks.LV_SWITCH, "lv_switch"), PonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.LV_BUTTON, "switch", RelayScenes.switchSceneFor(ModdedBlocks.LV_BUTTON, "lv_button"), PonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.MV_SWITCH, "switch", RelayScenes.switchSceneFor(ModdedBlocks.MV_SWITCH, "mv_switch"), PonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.HV_SWITCH, "hv_switch", RelayScenes::hvSwitch, PonderTags.ELECTRIC_RELAYS);
+
+        HELPER.forComponents(ModdedBlocks.CONTACTOR)
+                .addStoryBoard("contactor", RelayScenes::contactor, PonderTags.ELECTRIC_RELAYS)
+                .addStoryBoard("contactor_stack", RelayScenes::contactorStack, PonderTags.ELECTRIC_RELAYS);
+
+        HELPER.addStoryBoard(ModdedBlocks.FUSE_HOLDER, "fuse", RelayScenes::fuse, PonderTags.ELECTRIC_RELAYS);
+
+        HELPER.addStoryBoard(ModdedBlocks.ALARM_BELL, "bell", DeviceScenes::bell, PonderTags.ELECTRIC_DEVICES);
+
+        HELPER.addStoryBoard(ModdedBlocks.ELECTROMAGNET, "electromagnet", DeviceScenes::electromagnet, PonderTags.ELECTRIC_DEVICES);
+
+        HELPER.addStoryBoard(ModdedBlocks.BATTERY, "battery", DeviceScenes::battery);
     }
 }

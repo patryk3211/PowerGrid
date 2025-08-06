@@ -118,7 +118,7 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
         var pos = getPos();
 
         if(!running || world == null) {
-            if(world != null && !world.isClient) {
+            if(world != null && (!world.isClient || blockEntity.isVirtual())) {
                 if(specifics.getFieldStrength() == 0)
                     return;
                 if(entityScanCooldown > 0)
@@ -173,7 +173,7 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
                 blockEntity.sendData();
         }
 
-        if(!world.isClient && runningTicks > CYCLE) {
+        if((!world.isClient || blockEntity.isVirtual()) && runningTicks > CYCLE) {
             running = false;
             specifics.onMagnetizationComplete();
             blockEntity.sendData();

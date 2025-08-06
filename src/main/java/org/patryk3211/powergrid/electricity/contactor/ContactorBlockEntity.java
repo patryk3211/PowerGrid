@@ -118,16 +118,17 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
+
+        applyLostPower(switch1.power());
+        applyLostPower(switch2.power());
+        applyLostPower(coil.power());
+
         var I = Math.abs(coil.current());
         if (I > 2.0f) {
             setState(true);
         } else if (I < 1.9f) {
             setState(false);
         }
-
-        applyLostPower(switch1.power());
-        applyLostPower(switch2.power());
-        applyLostPower(coil.power());
     }
 
     @Override

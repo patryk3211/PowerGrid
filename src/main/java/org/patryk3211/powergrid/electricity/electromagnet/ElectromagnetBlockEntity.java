@@ -115,7 +115,10 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
 
     @Override
     public float getFieldStrength() {
-        var field = Math.abs(wire.current() * 0.1f);
+        var I = wire.current();
+        if(isVirtual())
+            I = (float) (wire.potentialDifference() * wire.conductance());
+        var field = Math.abs(I * 0.1f);
         if(field < 0.25f)
             return 0;
         return field;
@@ -129,5 +132,9 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
 
         magnetizingInv.setStack(0, item);
         return world.getRecipeManager().getFirstMatch(MagnetizingRecipe.TYPE_INFO.getType(), magnetizingInv, world);
+    }
+
+    public MagnetizingBehaviour getMagnetizingBehaviour() {
+        return magnetizingBehaviour;
     }
 }

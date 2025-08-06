@@ -16,10 +16,13 @@
 package org.patryk3211.powergrid.ponder.scenes;
 
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
+import com.simibubi.create.foundation.ponder.PonderScene;
 import com.simibubi.create.foundation.ponder.SceneBuilder;
 import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
 import com.simibubi.create.foundation.ponder.element.InputWindowElement;
 import com.simibubi.create.foundation.ponder.instruction.EmitParticlesInstruction;
+import com.simibubi.create.foundation.ponder.instruction.PonderInstruction;
+import com.simibubi.create.foundation.ponder.instruction.TickingInstruction;
 import com.simibubi.create.foundation.utility.Pointing;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -34,11 +37,16 @@ import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
+import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
+import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
+import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
+import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.UnaryOperator;
 
@@ -451,5 +459,273 @@ public class DeviceScenes {
         scene.idle(50);
 
         scene.markAsFinished();
+    }
+
+    public static void servo(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("servo", "Precise movements");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world.showSection(util.select.layer(1), Direction.DOWN);
+        scene.idle(10);
+        scene.world.showSection(util.select.layer(2), Direction.DOWN);
+        scene.idle(10);
+
+        var plank = scene.world.showIndependentSection(util.select.layer(3), Direction.DOWN);
+        scene.world.moveSection(plank, util.vector.of(0, 0, 0), 0);
+
+        scene.overlay.showText(80)
+                .text("A Servo can be used to precisely control mechanical movements using an electric signal")
+                .pointAt(util.vector.topOf(4, 1, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        var bearing = util.grid.at(2, 2, 2);
+        var rotationDuration = 37 * 2;
+
+        scene.world.setKineticSpeed(util.select.layer(1), 16);
+        scene.world.setKineticSpeed(util.select.position(2, 1, 2), -16);
+        scene.effects.rotationSpeedIndicator(util.grid.at(4, 1, 2));
+        scene.world.rotateBearing(bearing, 360, rotationDuration);
+        scene.world.rotateSection(plank, 0, 360, 0, rotationDuration);
+        scene.idle(rotationDuration);
+
+        rotationDuration = 69;
+        scene.world.setKineticSpeed(util.select.layer(1), -16);
+        scene.world.setKineticSpeed(util.select.position(2, 1, 2), 16);
+        scene.effects.rotationSpeedIndicator(util.grid.at(4, 1, 2));
+        scene.world.rotateBearing(bearing, -315, rotationDuration);
+        scene.world.rotateSection(plank, 0, -315, 0, rotationDuration);
+        scene.idle(rotationDuration);
+
+        scene.world.setKineticSpeed(util.select.layer(1), 0);
+
+        scene.overlay.showText(80)
+                .text("The control pin accepts a voltage between -5 and 5 volts, which maps to -360 and 360 degrees of rotation")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void bell(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("bell", "Alarm bell");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world.showSection(util.select.position(2, 1, 3), Direction.DOWN);
+        scene.world.showSection(util.select.position(2, 2, 3), Direction.DOWN);
+        scene.idle(10);
+        scene.world.showSection(util.select.position(2, 2, 2), Direction.SOUTH);
+        scene.idle(10);
+
+        scene.overlay.showText(80)
+                .text("The Alarm Bell is an electric device which makes sound when you power it.")
+                .pointAt(util.vector.centerOf(2, 2, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void electromagnet(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("electromagnet", "Processing Items with the Electromagnet");
+        scene.configureBasePlate(0, 0, 5);
+        scene.world.showSection(util.select.layer(0), Direction.UP);
+        scene.idle(5);
+
+        var depot = scene.world.showIndependentSection(util.select.position(2, 1, 1), Direction.DOWN);
+        scene.world.moveSection(depot, util.vector.of(0, 0, 1), 0);
+        scene.idle(10);
+
+        var magnet = util.select.position(2, 3, 2);
+        var magnetPos = util.grid.at(2, 3, 2);
+        var depotPos = util.grid.at(2, 1, 1);
+
+        scene.world.modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be -> {
+            var nodes = be.getElectricBehaviour().getExternalNodes();
+            // Override node voltage
+            nodes.get(0).receiveResult(200f);
+            nodes.get(1).receiveResult(0f);
+        });
+        scene.world.showSection(magnet, Direction.DOWN);
+        scene.idle(10);
+
+        scene.world.showSection(util.select.fromTo(2, 1, 3, 2, 1, 5), Direction.NORTH);
+        scene.idle(3);
+        scene.world.showSection(util.select.position(2, 2, 3), Direction.SOUTH);
+        scene.idle(3);
+        scene.world.showSection(util.select.position(2, 3, 3), Direction.NORTH);
+
+        scene.effects.indicateSuccess(magnetPos);
+        scene.idle(10);
+
+        var pressSide = util.vector.blockSurface(magnetPos, Direction.WEST);
+        scene.overlay.showText(60)
+                .pointAt(pressSide)
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("The Electromagnet can process items provided beneath it");
+        scene.idle(70);
+        scene.overlay.showText(60)
+                .pointAt(pressSide.subtract(0, 2, 0))
+                .placeNearTarget()
+                .text("The Input items can be dropped or placed on a Depot under the Electromagnet");
+        scene.idle(50);
+        var iron = new ItemStack(Items.IRON_INGOT);
+        scene.world.createItemOnBeltLike(depotPos, Direction.NORTH, iron);
+        var depotCenter = util.vector.centerOf(depotPos.south());
+        scene.overlay.showControls(new InputWindowElement(depotCenter, Pointing.UP).withItem(iron), 30);
+        scene.idle(10);
+        var type = ElectromagnetBlockEntity.class;
+        scene.world.modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
+                .start(MagnetizingBehaviour.Mode.BELT, util.vector.of(2.5f, 1.8125f, 2.5f)));
+        int processingTime = 50;
+        scene.idle(processingTime);
+        scene.world.removeItemsFromBelt(depotPos);
+        var magnetStack = ModdedItems.MAGNET.asStack();
+        scene.world.createItemOnBeltLike(depotPos, Direction.UP, magnetStack);
+        scene.idle(10);
+        scene.overlay.showControls(new InputWindowElement(depotCenter, Pointing.UP).withItem(magnetStack), 50);
+        scene.idle(60);
+
+        scene.world.hideIndependentSection(depot, Direction.NORTH);
+        scene.idle(5);
+        scene.world.showSection(util.select.fromTo(0, 1, 3, 0, 2, 3), Direction.DOWN);
+        scene.idle(10);
+        scene.world.showSection(util.select.fromTo(4, 1, 2, 0, 2, 2), Direction.SOUTH);
+        scene.idle(20);
+        var beltPos = util.grid.at(0, 1, 2);
+        scene.overlay.showText(40)
+                .pointAt(util.vector.blockSurface(beltPos, Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("When items are provided on a belt...");
+        scene.idle(30);
+
+        var ingot = scene.world.createItemOnBelt(beltPos, Direction.SOUTH, iron);
+        scene.idle(15);
+        var ingot2 = scene.world.createItemOnBelt(beltPos, Direction.SOUTH, iron);
+        scene.idle(15);
+        scene.world.stallBeltItem(ingot, true);
+        scene.world.modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
+                .start(MagnetizingBehaviour.Mode.BELT, util.vector.of(2.5f, 1.8125f, 2.5f)));
+
+        scene.overlay.showText(50)
+                .pointAt(pressSide)
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("The Electromagnet will hold and process them automatically");
+
+        scene.idle(processingTime);
+        scene.world.removeItemsFromBelt(magnetPos.down(2));
+        ingot = scene.world.createItemOnBelt(magnetPos.down(2), Direction.UP, magnetStack);
+        scene.world.stallBeltItem(ingot, true);
+        scene.idle(15);
+        scene.world.stallBeltItem(ingot, false);
+        scene.idle(15);
+        scene.world.stallBeltItem(ingot2, true);
+        scene.world.modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
+                .start(MagnetizingBehaviour.Mode.BELT, util.vector.of(2.5f, 1.8125f, 2.5f)));
+        scene.idle(processingTime);
+        scene.world.removeItemsFromBelt(magnetPos.down(2));
+        ingot2 = scene.world.createItemOnBelt(magnetPos.down(2), Direction.UP, magnetStack);
+        scene.world.stallBeltItem(ingot2, true);
+        scene.idle(15);
+        scene.world.stallBeltItem(ingot2, false);
+
+        scene.markAsFinished();
+    }
+
+    private static class DisChargeBattery extends TickingInstruction {
+        private final BlockPos battery;
+        private final int time;
+        private final float targetEnergyLevel;
+
+        private float energyPerTick;
+
+        public DisChargeBattery(int time, float targetEnergyLevel, BlockPos battery) {
+            super(false, time);
+            this.time = time;
+            this.targetEnergyLevel = targetEnergyLevel;
+            this.battery = battery;
+        }
+
+        protected Optional<BatteryBlockEntity> getBattery(PonderScene scene) {
+            var be = scene.getWorld().getBlockEntity(battery);
+            if(be instanceof MultiBlockBatteryEntity mbe)
+                return Optional.ofNullable(mbe.getControllerBE());
+            if(be instanceof BatteryBlockEntity battery)
+                return Optional.of(battery);
+            return Optional.empty();
+        }
+
+        @Override
+        protected void firstTick(PonderScene scene) {
+            super.firstTick(scene);
+            getBattery(scene).ifPresent(battery -> {
+                var target = targetEnergyLevel * battery.getCapacity();
+                energyPerTick = (float) ((target - battery.getEnergy()) / time);
+            });
+        }
+
+        @Override
+        public void tick(PonderScene scene) {
+            super.tick(scene);
+            if(!isComplete()) {
+                getBattery(scene).ifPresent(battery ->
+                    battery.setEnergy(battery.getEnergy() + energyPerTick));
+            }
+        }
+    }
+
+    public static void battery(SceneBuilder scene, SceneBuildingUtil util) {
+        var electric = ElectricInstructions.of(scene);
+        scene.title("battery", "Storing electricity");
+        scene.configureBasePlate(0, 0, 5);
+
+        var battery = util.grid.at(2, 1, 3);
+        var meter = util.grid.at(2, 1, 1);
+        var connector = util.grid.at(2, 2, 2);
+
+        scene.showBasePlate();
+        scene.idle(10);
+
+        scene.world.showSection(util.select.position(battery), Direction.DOWN);
+        scene.world.showSection(util.select.position(battery.up()), Direction.DOWN);
+        scene.idle(10);
+        scene.world.showSection(util.select.position(meter), Direction.DOWN);
+        scene.idle(10);
+        scene.world.showSection(util.select.position(connector), Direction.SOUTH);
+        scene.idle(10);
+        electric.connect(connector, 0, meter, 1);
+        electric.connect(connector, 1, meter, 0);
+        electric.tickFor(10);
+        scene.idle(10);
+
+        scene.overlay.showText(80)
+                .text("The Battery allows you to store electricity for later use")
+                .pointAt(util.vector.topOf(battery.up()))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay.showText(80)
+                .text("As the battery discharges, its electrical parameters will begin to change")
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(40);
+        electric.tickFor(30);
+        scene.addInstruction(new DisChargeBattery(30, 0.0f, battery));
+        scene.idle(50);
+
+        scene.markAsFinished();
+        electric.unload();
     }
 }

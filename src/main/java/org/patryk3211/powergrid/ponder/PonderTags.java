@@ -61,20 +61,27 @@ public class PonderTags {
                 .add(ModdedBlocks.HV_SWITCH)
                 .add(ModdedBlocks.CONTACTOR)
                 .add(ModdedBlocks.SPARK_GAP)
+                .add(ModdedBlocks.FUSE_HOLDER)
                 .add(ModdedBlocks.TRANSFORMER_CORE)
                 .add(ModdedBlocks.VARIAC)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
-                .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR);
+                .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
+                .add(ModdedBlocks.DEVICE_CONNECTOR);
 
         PonderRegistry.TAGS.forTag(ELECTRIC_DEVICES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR)
                 .add(ModdedBlocks.SERVO)
                 .add(ModdedBlocks.HEATING_COIL)
+                .add(ModdedBlocks.ELECTRIC_FAN)
                 .add(ModdedBlocks.BASIN_HEATER)
                 .add(ModdedItems.LIGHT_BULB)
                 .add(ModdedItems.GROWTH_LAMP);
 
         PonderRegistry.TAGS.forTag(AllPonderTags.KINETIC_APPLIANCES)
                 .add(ModdedBlocks.GENERATOR_CLUTCH);
+
+        PonderRegistry.TAGS.forTag(AllPonderTags.KINETIC_SOURCES)
+                .add(ModdedBlocks.ELECTRIC_MOTOR)
+                .add(ModdedBlocks.SERVO);
     }
 }

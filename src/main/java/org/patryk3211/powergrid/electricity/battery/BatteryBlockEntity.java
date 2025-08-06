@@ -124,4 +124,12 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
         updateParameters();
         notifyUpdate();
     }
+
+    public double getCapacity() {
+        return capacity;
+    }
+
+    public double getEnergy() {
+        return energy;
+    }
 }

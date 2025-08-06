@@ -27,5 +27,7 @@
 
   "block.powergrid.circuit_design_table.tooltip.summary": "Design and write _Circuit Schematics_. If you want to place components, you must have them in your inventory.",
   "block.powergrid.circuit_design_table.tooltip.condition1": "When given an Empty Schematic",
-  "block.powergrid.circuit_design_table.tooltip.behaviour1": "Writes the current design into a schematic item"
+  "block.powergrid.circuit_design_table.tooltip.behaviour1": "Writes the current design into a schematic item",
+
+  "block.powergrid.potato_battery.tooltip.summary": "An all natural source of green energy"
 }
