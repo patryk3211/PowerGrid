@@ -34,7 +34,6 @@ import net.minecraft.util.math.Vec3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
-import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -271,11 +270,6 @@ public class DeviceScenes {
         var electric = ElectricInstructions.of(scene);
         scene.title("light", "Lighting up the world with electricity");
         scene.configureBasePlate(0, 0, 5);
-
-//        var source = util.grid.at(2, 1, 3);
-//        electric.setSource(source, 60);
-//        electric.connectInvisible(source, 0, util.grid.at(0, 2, 2), 0);
-//        electric.connectInvisible(source, 1, util.grid.at(4, 2, 2), 0);
 
         var light = util.grid.at(2, 2, 2);
         scene.showBasePlate();

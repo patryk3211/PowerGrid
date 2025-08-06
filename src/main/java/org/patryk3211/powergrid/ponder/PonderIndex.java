@@ -16,9 +16,7 @@
 package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.foundation.ponder.PonderRegistrationHelper;
-import com.tterrag.registrate.util.entry.ItemProviderEntry;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.Items;
+import com.simibubi.create.infrastructure.ponder.AllPonderTags;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
@@ -35,40 +33,52 @@ public class PonderIndex {
         HELPER.addStoryBoard(ModdedBlocks.BRASS_CURRENT_METER, "gauges", GaugeScenes::current);
 
         HELPER.forComponents(ModdedBlocks.HEATING_COIL)
-                .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic)
-                .addStoryBoard("heating_coil/speed", DeviceScenes::heatingCoilSpeed);
+                .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic, PonderTags.ELECTRIC_DEVICES)
+                .addStoryBoard("heating_coil/speed", DeviceScenes::heatingCoilSpeed, PonderTags.ELECTRIC_DEVICES);
 
-//        HELPER.forComponents(ModdedBlocks.GENERATOR_ROTOR)
-//                .addStoryBoard("generator/rotor", GeneratorScenes::rotor)
-//                .addStoryBoard("generator/generator", GeneratorScenes::generator);
+        HELPER.forComponents(ModdedBlocks.GENERATOR_ROTOR)
+                .addStoryBoard("generator/rotor", GeneratorScenes::rotor, PonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/generator", GeneratorScenes::generator, PonderTags.GENERATOR_ASSEMBLY);
 
-//        HELPER.forComponents(ModdedBlocks.GENERATOR_COIL)
-//                .addStoryBoard("generator/coil", GeneratorScenes::coil)
-//                .addStoryBoard("generator/generator", GeneratorScenes::generator);
+        HELPER.forComponents(ModdedBlocks.WINDING, ModdedItems.COPPER_COIL)
+                .addStoryBoard("generator/winding", GeneratorScenes::winding, PonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/parallel_windings", GeneratorScenes::parallelWinding, PonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/generator", GeneratorScenes::generator, PonderTags.GENERATOR_ASSEMBLY);
 
-//        HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing);
+        HELPER.forComponents(ModdedBlocks.GENERATOR_CLUTCH)
+                .addStoryBoard("generator/clutch", GeneratorScenes::clutch, PonderTags.GENERATOR_ASSEMBLY, AllPonderTags.KINETIC_APPLIANCES)
+                .addStoryBoard("generator/generator", GeneratorScenes::generator, PonderTags.GENERATOR_ASSEMBLY);
+
+        HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing, PonderTags.GENERATOR_ASSEMBLY);
+
+        HELPER.forComponents(ModdedBlocks.GENERATOR_INDUCTION_ROTOR, ModdedBlocks.GENERATOR_COMMUTATOR)
+                .addStoryBoard("generator/inductive", GeneratorScenes::inductive, PonderTags.GENERATOR_ASSEMBLY, PonderTags.ELECTRIC_DEVICES);
 
         HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE)
                 .addStoryBoard("wire/simple", WireScenes::simple)
                 .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
 
         HELPER.forComponents(ModdedBlocks.TRANSFORMER_CORE)
-                .addStoryBoard("transformer/sizes", DeviceScenes::transformerSizes)
-                .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding);
+                .addStoryBoard("transformer/sizes", DeviceScenes::transformerSizes, PonderTags.ELECTRIC_RELAYS)
+                .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding, PonderTags.ELECTRIC_RELAYS);
 
         HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB)
-                .addStoryBoard("lightbulb", DeviceScenes::light);
-        HELPER.addStoryBoard(ModdedItems.GROWTH_LAMP, "growth_lamp", DeviceScenes::growthLamp);
+                .addStoryBoard("lightbulb", DeviceScenes::light, PonderTags.ELECTRIC_DEVICES);
+        HELPER.addStoryBoard(ModdedItems.GROWTH_LAMP, "growth_lamp", DeviceScenes::growthLamp, PonderTags.ELECTRIC_DEVICES);
 
         HELPER.forComponents(ModdedBlocks.WIRE_CONNECTOR, ModdedBlocks.HEAVY_WIRE_CONNECTOR)
-                .addStoryBoard("wire/connector", WireScenes::connector);
+                .addStoryBoard("wire/connector", WireScenes::connector, PonderTags.ELECTRIC_RELAYS);
 
-        HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor);
+        HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor, PonderTags.ELECTRIC_DEVICES);
 
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet);
         HELPER.addStoryBoard(new Identifier("lightning_rod"), "lightning_attractor", MagnetScenes::lightningAttractor);
 
-        HELPER.addStoryBoard(ModdedBlocks.BASIN_HEATER, "basin_heater", DeviceScenes::basinHeater);
+        HELPER.addStoryBoard(ModdedBlocks.BASIN_HEATER, "basin_heater", DeviceScenes::basinHeater, PonderTags.ELECTRIC_DEVICES);
+
+        HELPER.addStoryBoard(ModdedBlocks.LV_SWITCH, "switch", RelayScenes.switchSceneFor(ModdedBlocks.LV_SWITCH, "lv_switch"), PonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.LV_BUTTON, "switch", RelayScenes.switchSceneFor(ModdedBlocks.LV_BUTTON, "lv_button"), PonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.MV_SWITCH, "switch", RelayScenes.switchSceneFor(ModdedBlocks.MV_SWITCH, "mv_switch"), PonderTags.ELECTRIC_RELAYS);
     }
 }

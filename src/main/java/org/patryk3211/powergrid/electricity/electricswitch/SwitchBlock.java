@@ -56,6 +56,10 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
         builder.add(OPEN);
     }
 
+    public boolean isButton() {
+        return isButton;
+    }
+
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if(!player.isSneaking()) {

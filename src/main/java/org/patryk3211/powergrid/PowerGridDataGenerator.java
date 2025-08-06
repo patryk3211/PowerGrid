@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.ponder.PonderIndex;
+import org.patryk3211.powergrid.ponder.PonderTags;
 import org.patryk3211.powergrid.recipes.*;
 
 import java.util.function.BiConsumer;
@@ -79,6 +80,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 	}
 
 	private static void providePonderLang(BiConsumer<String, String> consumer) {
+		PonderTags.register();
 		PonderIndex.register();
 
 		SharedText.gatherText();

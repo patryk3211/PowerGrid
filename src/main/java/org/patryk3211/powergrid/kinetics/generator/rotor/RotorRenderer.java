@@ -40,7 +40,14 @@ public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
             return;
 
         var state = rotor.getCachedState();
-        var axis = state.get(Properties.AXIS);
+        Direction.Axis axis;
+        if(state.contains(Properties.AXIS)) {
+            axis = state.get(Properties.AXIS);
+        } else if(state.contains(Properties.HORIZONTAL_AXIS)) {
+            axis = state.get(Properties.HORIZONTAL_AXIS);
+        } else {
+            return;
+        }
 
         var rotorModel = getModelForState(state);
         var rotorAngle = getRotorAngle(rotor, partialTicks);

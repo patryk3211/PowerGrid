@@ -19,170 +19,133 @@ import com.simibubi.create.foundation.ponder.SceneBuilder;
 import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
 import com.simibubi.create.foundation.ponder.element.InputWindowElement;
 import com.simibubi.create.foundation.utility.Pointing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import org.patryk3211.powergrid.collections.ModIcons;
+import net.minecraft.util.math.Vec3d;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
 
 public class GeneratorScenes {
     public static void rotor(SceneBuilder scene, SceneBuildingUtil util) {
         scene.title("generator_rotor", "Spinning magnets");
-        scene.configureBasePlate(2, 0, 5);
+        scene.configureBasePlate(1, 0, 5);
 
         scene.showBasePlate();
-        scene.world.showSection(util.select.position(1, 0, 2), Direction.UP);
-        scene.world.showSection(util.select.position(1, 1, 3), Direction.UP);
+        scene.world.showSection(util.select.position(0, 0, 2), Direction.UP);
+        scene.world.showSection(util.select.position(0, 1, 3), Direction.UP);
+        scene.idle(10);
+
+        scene.world.showSection(util.select.position(1, 1, 3), Direction.DOWN);
+        scene.idle(5);
+        scene.world.showSection(util.select.position(2, 1, 3), Direction.DOWN);
+        scene.world.showSection(util.select.position(2, 1, 2), Direction.DOWN);
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(2, 1, 3), Direction.DOWN);
-        scene.idle(2);
-        scene.world.showSection(util.select.position(2, 1, 2), Direction.DOWN);
-        scene.idle(2);
-        scene.world.showSection(util.select.position(2, 1, 1), Direction.DOWN);
-        scene.idle(2);
-        scene.world.showSection(util.select.position(3, 1, 3), Direction.DOWN);
-        scene.idle(2);
-
-        var target = util.grid.at(4, 1, 3);
-//        scene.world.setBlock(target, ModdedBlocks.GENERATOR_ROTOR.getDefaultState()
-//                .with(RotorBlock.AXIS, Direction.Axis.X).with(RotorBlock.SHAFT_DIRECTION, ShaftDirection.NEGATIVE), false);
+        var target = util.grid.at(3, 1, 3);
         scene.world.showSection(util.select.position(target), Direction.DOWN);
         scene.idle(5);
 
-        var secondTarget = util.grid.at(5, 1, 3);
-//        scene.world.setBlock(secondTarget, ModdedBlocks.GENERATOR_ROTOR.getDefaultState()
-//                .with(RotorBlock.AXIS, Direction.Axis.X).with(RotorBlock.SHAFT_DIRECTION, ShaftDirection.NONE), false);
-        scene.world.showSection(util.select.position(secondTarget), Direction.DOWN);
-        scene.idle(5);
-
         scene.overlay.showText(80)
-                .text("The generator rotor is a weakly coupled kinetic device that will try to spin up to the speed provided at its input")
+                .text("The Rotor is the most basic part of a generator assembly. It provides a constant magnetic field.")
                 .attachKeyFrame()
                 .pointAt(util.vector.topOf(target))
                 .placeNearTarget();
 
         scene.idle(40);
-        scene.world.toggleRedstonePower(util.select.fromTo(2, 1, 1, 2, 1, 3));
-        scene.effects.indicateRedstone(util.grid.at(2, 1, 1));
-        scene.world.setKineticSpeed(util.select.fromTo(2, 1, 3, 4, 1, 3), -64);
+        scene.world.toggleRedstonePower(util.select.fromTo(2, 1, 2, 2, 1, 3));
+        scene.effects.indicateRedstone(util.grid.at(2, 1, 2));
+        scene.world.modifyBlockEntity(util.grid.at(2, 1, 3), GeneratorClutchBlockEntity.class,
+                be -> be.updateStrength(0));
         scene.idle(50);
 
+        scene.world.showSection(util.select.position(target.east()), Direction.NORTH);
+        scene.idle(10);
+
         scene.overlay.showText(80)
-                .text("You can extend the rotor by placing more rotor blocks at the back")
+                .text("You can extend the rotor assembly by placing more rotor blocks")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(secondTarget))
+                .pointAt(util.vector.topOf(target.east()))
                 .placeNearTarget();
         scene.idle(90);
-
-        scene.world.hideSection(util.select.fromTo(1, 1, 1, 3, 1, 3), Direction.WEST);
-        scene.world.hideSection(util.select.position(1, 0, 2), Direction.WEST);
-        scene.world.setKineticSpeed(util.select.position(target), 0);
-        scene.idle(15);
-
-        scene.overlay.showText(80)
-                .text("There can only ever be one input shaft")
-                .attachKeyFrame()
-                .pointAt(util.vector.topOf(secondTarget))
-                .placeNearTarget();
-        scene.overlay.showControls(new InputWindowElement(util.vector.blockSurface(secondTarget, Direction.EAST), Pointing.RIGHT).withWrench(), 30);
-        scene.idle(20);
-
-//        scene.world.setBlock(target, ModdedBlocks.GENERATOR_ROTOR.getDefaultState()
-//                .with(RotorBlock.AXIS, Direction.Axis.X).with(RotorBlock.SHAFT_DIRECTION, ShaftDirection.NONE), false);
-//        scene.world.setBlock(secondTarget, ModdedBlocks.GENERATOR_ROTOR.getDefaultState()
-//                .with(RotorBlock.AXIS, Direction.Axis.X).with(RotorBlock.SHAFT_DIRECTION, ShaftDirection.POSITIVE), false);
-        scene.idle(70);
 
         scene.markAsFinished();
     }
 
-    public static void coil(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("generator_coil", "Coils of wire");
+    public static void winding(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("generator_winding", "Coils of wire");
         scene.configureBasePlate(0, 0, 5);
 
-        scene.world.showSection(util.select.layer(0), Direction.UP);
+        scene.showBasePlate();
+        scene.world.showSection(util.select.fromTo(0, 1, 2, 4, 1, 2), Direction.DOWN);
         scene.idle(10);
 
-        var coil = util.grid.at(2, 1, 2);
-        scene.world.showSection(util.select.position(coil), Direction.DOWN);
-        scene.idle(10);
-
-        scene.overlay.showText(60)
-                .text("A generator coil alone can't do much")
-                .attachKeyFrame()
-                .pointAt(util.vector.topOf(coil))
-                .placeNearTarget();
-        scene.idle(70);
-
-        scene.overlay.showText(80)
-                .text("By using the wrench you can add terminals to the coil")
-                .attachKeyFrame()
-                .pointAt(util.vector.topOf(coil))
-                .placeNearTarget();
-        scene.idle(50);
-
-        scene.overlay.showControls(new InputWindowElement(util.vector.topOf(coil), Pointing.RIGHT).withWrench(), 30);
+        var stack = ModdedItems.COPPER_COIL.asStack();
+        scene.overlay.showControls(new InputWindowElement(util.vector.topOf(4, 1, 2), Pointing.LEFT)
+                .rightClick()
+                .withItem(stack), 50);
         scene.idle(20);
-//        scene.world.setBlock(coil, ModdedBlocks.GENERATOR_COIL.getDefaultState()
-//                .with(CoilBlock.FACING, Direction.DOWN).with(CoilBlock.HAS_TERMINALS, true), false);
-        scene.idle(40);
+        scene.overlay.showControls(new InputWindowElement(util.vector.topOf(0, 1, 2), Pointing.LEFT)
+                .rightClick()
+                .withItem(stack), 30);
+        scene.idle(20);
 
-//        var state = ModdedBlocks.GENERATOR_COIL.getDefaultState()
-//                .with(CoilBlock.FACING, Direction.DOWN).with(CoilBlock.HAS_TERMINALS, false);
-        var posList = new BlockPos[] {
-                coil.west(),
-                coil.north(),
-                coil.east(),
-                coil.west().south()
-        };
-        for(var pos : posList) {
-//            scene.world.setBlock(pos, state, false);
-            scene.world.showSection(util.select.position(pos), Direction.DOWN);
-            scene.idle(5);
-        }
+        var state = ModdedBlocks.WINDING.getDefaultState()
+                .with(WindingBlock.AXIS, Direction.Axis.X)
+                .with(WindingBlock.ALONG_FIRST_AXIS, false)
+                .with(WindingBlock.CASE_RIGHT, false)
+                .with(WindingBlock.CASE_LEFT, false);
+        scene.world.setBlock(util.grid.at(4, 1, 2), state.with(WindingBlock.PART, 2), true);
+        scene.world.setBlock(util.grid.at(3, 1, 2), state.with(WindingBlock.PART, 1), true);
+        scene.world.setBlock(util.grid.at(2, 1, 2), state.with(WindingBlock.PART, 1), true);
+        scene.world.setBlock(util.grid.at(1, 1, 2), state.with(WindingBlock.PART, 1), true);
+        scene.world.setBlock(util.grid.at(0, 1, 2), state.with(WindingBlock.PART, 0), true);
+        scene.idle(20);
 
-        var vec = util.vector.topOf(coil.west());
-        scene.idle(10);
         scene.overlay.showText(80)
-                .text("Coils placed next to each other connect to form one large coil")
+                .text("Right-Clicking two shafts with a coil item will create a winding")
+                .pointAt(util.vector.topOf(2, 1, 2))
                 .attachKeyFrame()
                 .placeNearTarget();
         scene.idle(90);
 
-        scene.overlay.showText(60)
-                .text("You can select between different aggregation types")
-                .placeNearTarget();
-        scene.idle(70);
+        scene.markAsFinished();
+    }
 
-        scene.overlay.showText(80)
-                .text("Coils connected in series sum their voltage but also their resistance")
-                .attachKeyFrame()
-                .pointAt(vec)
-                .placeNearTarget();
+    public static void parallelWinding(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("parallel_generator_winding", "Connected coils of wire");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.world.showSection(util.select.fromTo(1, 1, 2, 3, 1, 2), Direction.DOWN);
+        scene.idle(20);
+
+        scene.world.showSection(util.select.fromTo(1, 1, 1, 3, 1, 1), Direction.SOUTH);
         scene.idle(10);
-        scene.overlay.showControls(new InputWindowElement(vec, Pointing.RIGHT).showing(ModIcons.I_SERIES), 50);
-        scene.idle(80);
-
-        scene.overlay.showText(80)
-                .text("Voltage of coils connected in parallel is limited by the smallest voltage out of all of the coils...")
-                .attachKeyFrame()
-                .pointAt(vec)
-                .placeNearTarget();
+        scene.world.modifyBlocks(util.select.fromTo(1, 1, 1, 3, 1, 1), state -> state.with(WindingBlock.CASE_RIGHT, true), false);
+        scene.world.modifyBlocks(util.select.fromTo(1, 1, 2, 3, 1, 2), state -> state.with(WindingBlock.CASE_LEFT, true), false);
         scene.idle(10);
-        scene.overlay.showControls(new InputWindowElement(vec, Pointing.RIGHT).showing(ModIcons.I_PARALLEL), 50);
-        scene.idle(80);
+
+        scene.world.showSection(util.select.fromTo(1, 1, 3, 3, 1, 3), Direction.SOUTH);
+        scene.idle(10);
+        scene.world.modifyBlocks(util.select.fromTo(1, 1, 3, 3, 1, 3), state -> state.with(WindingBlock.CASE_LEFT, true), false);
+        scene.world.modifyBlocks(util.select.fromTo(1, 1, 2, 3, 1, 2), state -> state.with(WindingBlock.CASE_RIGHT, true), false);
+        scene.idle(10);
 
         scene.overlay.showText(80)
-                .text("...but their resistance gets smaller when you add more coils")
-                .pointAt(util.vector.topOf(coil.north()))
-                .placeNearTarget();
+                .text("Windings placed next to each other will connect. This reduces their resistance and allows higher current to flow...")
+                .pointAt(util.vector.topOf(2, 1, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
         scene.idle(90);
 
         scene.overlay.showText(80)
-                .text("You can have only one coil be the output of the whole aggregate")
-                .attachKeyFrame()
-                .pointAt(util.vector.topOf(coil))
-                .placeNearTarget();
+                .text("...but their voltage is limited to the lowest voltage generated by a single winding.")
+                .pointAt(util.vector.topOf(2, 1, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
         scene.idle(90);
 
         scene.markAsFinished();
@@ -208,15 +171,16 @@ public class GeneratorScenes {
         scene.idle(5);
 
         var gauge = util.grid.at(4, 2, 1);
-        var coil = util.grid.at(4, 2, 3);
-        electric.connect(gauge, 0, coil, 0);
-        electric.connect(gauge, 1, coil, 1);
+        var windingP = util.grid.at(3, 2, 3);
+        var windingN = util.grid.at(4, 2, 3);
+        electric.connect(gauge, 1, windingP, 0);
+        electric.connect(gauge, 0, windingN, 1);
         scene.idle(5);
 
         scene.overlay.showText(80)
-                .text("When coils are facing a spinning rotor they start generating electricity")
+                .text("When windings are facing a spinning rotor they start generating electricity")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(coil))
+                .pointAt(util.vector.of(4, 2, 3))
                 .placeNearTarget();
         scene.idle(90);
 
@@ -227,7 +191,7 @@ public class GeneratorScenes {
         scene.idle(40);
         electric.tickFor(10);
         scene.world.multiplyKineticSpeed(util.select.everywhere(), 2.0f);
-        scene.effects.rotationSpeedIndicator(util.grid.at(2, 1, 3));
+        scene.effects.rotationSpeedIndicator(util.grid.at(1, 1, 3));
         scene.idle(50);
 
         scene.overlay.showText(80)
@@ -236,14 +200,14 @@ public class GeneratorScenes {
                 .placeNearTarget();
         scene.idle(40);
 
-        electric.connect(coil, 0, coil, 1, 0.01f);
+        electric.connect(gauge, 0, gauge, 1, 0.01f);
         electric.tickFor(10);
         scene.idle(50);
 
         scene.overlay.showText(80)
                 .text("If you draw too much current your coils will start to overheat and explode!")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(coil.west()))
+                .pointAt(util.vector.of(4, 3, 3.5))
                 .placeNearTarget();
         scene.idle(90);
 
@@ -251,35 +215,150 @@ public class GeneratorScenes {
         electric.unload();
     }
 
-    public static void housing(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("generator_housing", "Connecting coils at an angle");
-        scene.configureBasePlate(0, 0, 5);
+    public static void clutch(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("generator_clutch", "Dosing kinetic energy");
+        scene.configureBasePlate(1, 0, 5);
 
         scene.showBasePlate();
-        scene.idle(5);
+        scene.world.showSection(util.select.position(0, 0, 2), Direction.DOWN);
+        scene.idle(10);
 
-        scene.world.showSection(util.select.position(2, 1, 2), Direction.SOUTH);
-        scene.world.showSection(util.select.position(2, 3, 2), Direction.SOUTH);
-        scene.world.showSection(util.select.position(1, 2, 2), Direction.SOUTH);
-        scene.world.showSection(util.select.position(3, 2, 2), Direction.SOUTH);
-        scene.idle(5);
+        scene.world.showSection(util.select.fromTo(0, 1, 3, 2, 1, 3), Direction.DOWN);
+        scene.idle(10);
 
-        scene.world.showSection(util.select.fromTo(2, 2, 1, 2, 2, 3), Direction.NORTH);
+        var target = util.grid.at(3, 1, 3);
+        scene.world.showSection(util.select.position(target), Direction.DOWN);
         scene.idle(5);
+        scene.world.showSection(util.select.position(target.east()), Direction.WEST);
+        scene.idle(10);
 
-        scene.world.showSection(util.select.position(3, 1, 2), Direction.WEST);
-        scene.world.showSection(util.select.position(3, 3, 2), Direction.WEST);
-        scene.world.showSection(util.select.position(1, 1, 2), Direction.EAST);
-        scene.world.showSection(util.select.position(1, 3, 2), Direction.EAST);
+        scene.overlay.showText(60)
+                .text("The Generator Clutch is the base of all generator assemblies")
+                .pointAt(util.vector.topOf(target))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay.showText(80)
+                .text("It provides a weak coupling between your kinetic network and the generator shaft")
+                .pointAt(util.vector.topOf(target.east()))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world.showSection(util.select.position(target.north()), Direction.DOWN);
         scene.idle(10);
 
         scene.overlay.showText(80)
-                .text("The generator housing can be used to aggregate all coils around the rotor")
+                .text("You can use a redstone signal to change the coupling strength")
+                .pointAt(util.vector.centerOf(target.north()))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+
+        scene.world.toggleRedstonePower(util.select.fromTo(3, 1, 2, 3, 1, 3));
+        scene.world.modifyBlockEntity(target, GeneratorClutchBlockEntity.class, be -> be.updateStrength(15));
+        scene.effects.indicateRedstone(target.north());
+        scene.idle(50);
+
+        scene.markAsFinished();
+    }
+
+    public static void housing(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("generator_housing", "Connecting windings at an angle");
+        scene.configureBasePlate(0, 0, 5);
+
+        var target = util.grid.at(1, 2, 2);
+
+        scene.showBasePlate();
+        scene.world.showSection(util.select.position(target), Direction.DOWN);
+        scene.idle(10);
+
+        scene.world.showSection(util.select.fromTo(1, 1, 1, 1, 1, 3), Direction.EAST);
+        scene.idle(10);
+
+        scene.world.showSection(util.select.fromTo(2, 2, 1, 2, 2, 3), Direction.DOWN);
+        scene.idle(20);
+
+        scene.world.setBlock(target, ModdedBlocks.GENERATOR_HOUSING.getDefaultState()
+                .with(GeneratorHousing.HORIZONTAL_FACING, Direction.EAST)
+                .with(GeneratorHousing.UP, false), true);
+        scene.world.modifyBlock(util.grid.at(1, 1, 2), state -> state.with(WindingBlock.CASE_RIGHT, true), false);
+        scene.world.modifyBlock(util.grid.at(2, 2, 2), state -> state.with(WindingBlock.CASE_LEFT, true), false);
+
+        scene.overlay.showText(80)
+                .text("The generator housing can be used to connect windings around a rotor")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(1, 3, 2))
+                .pointAt(util.vector.blockSurface(target, Direction.NORTH))
                 .placeNearTarget();
         scene.idle(90);
 
         scene.markAsFinished();
+    }
+
+    public static void inductive(SceneBuilder scene, SceneBuildingUtil util) {
+        var electric = ElectricInstructions.of(scene);
+        scene.title("generator_inductive", "Variable magnetic fields");
+        scene.configureBasePlate(0, 0, 7);
+
+        scene.showBasePlate();
+        scene.world.showSection(util.select.position(7, 0, 2), Direction.UP);
+        scene.idle(10);
+
+        scene.world.showSection(util.select.fromTo(2, 1, 3, 7, 1, 3), Direction.DOWN);
+        scene.idle(10);
+
+        scene.world.showSection(util.select.fromTo(3, 2, 3, 4, 2, 3), Direction.DOWN);
+        scene.world.showSection(util.select.position(1, 1, 2), Direction.DOWN);
+        scene.world.showSection(util.select.fromTo(4, 1, 1, 4, 2, 1), Direction.DOWN);
+        scene.idle(10);
+
+        var rotor = util.grid.at(3, 1, 3);
+
+        var source = util.grid.at(0, 1, 3);
+        var commutator = util.grid.at(2, 1, 3);
+        var meter1 = util.grid.at(1, 1, 2);
+        var meter2 = util.grid.at(4, 2, 1);
+        var windingP = util.grid.at(3, 2, 3);
+        var windingN = util.grid.at(4, 2, 3);
+
+        electric.connectInvisible(source, 0, commutator, 0);
+        electric.connectInvisible(source, 1, commutator, 1);
+
+        electric.connect(commutator, 0, meter1, 0);
+        electric.connect(commutator, 1, meter1, 1);
+        electric.connect(windingP, 0, meter2, 1);
+        electric.connect(windingN, 1, meter2, 0);
+
+        electric.setSource(source, 5);
+        electric.tickFor(10);
+        scene.idle(10);
+
+        scene.overlay.showText(80)
+                .text("Inductive Rotors let you control the strength of their magnetic field")
+                .pointAt(util.vector.blockSurface(rotor, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay.showText(80)
+                .text("To power them you need to add a Commutator to your rotor assembly")
+                .pointAt(util.vector.topOf(commutator))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay.showText(80)
+                .text("By changing the voltage, you essentially change the amount of kinetic energy that gets converted into electricity")
+                .pointAt(util.vector.blockSurface(meter1, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+        electric.setSource(source, 15);
+        electric.tickFor(10);
+        scene.idle(50);
+
+        scene.markAsFinished();
+        electric.unload();
     }
 }

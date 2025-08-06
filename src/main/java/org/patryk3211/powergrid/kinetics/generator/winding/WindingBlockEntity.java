@@ -623,7 +623,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     public void remove() {
         super.remove();
         // Always break connections when the winding is modified.
-        mainBE.electricBehaviour.breakConnections();
+        if(mainBE != null)
+            mainBE.electricBehaviour.breakConnections();
         if(mainBE == this) {
             if(parallelPositions != null) {
                 // This is the owner

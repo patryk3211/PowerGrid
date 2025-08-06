@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extends BlockEntityBehaviour {
     @Nullable
     protected BlockPos controllerPos;
+    protected BlockPos lastKnownPos;
     protected Set<T> segments;
     @Nullable
     protected Runnable changeCallback;
@@ -51,6 +52,26 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
 
     @Override
     public void initialize() {
+        if(checkSizeConstraint()) {
+            makeController();
+            super.initialize();
+            checkConnectivity(null);
+        }
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        var pos = getPos();
+        if (lastKnownPos == null)
+            lastKnownPos = pos;
+        else if (!lastKnownPos.equals(pos) && pos != null) {
+            onPositionChanged();
+        }
+    }
+
+    protected void onPositionChanged() {
+        // Reinitialize
         if(checkSizeConstraint()) {
             makeController();
             super.initialize();
@@ -135,6 +156,10 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
                 checkConnectivity(null);
             readController(compound, clientPacket);
         }
+        if(compound.contains("LastKnownPos")) {
+            var posArray = compound.getIntArray("LastKnownPos");
+            lastKnownPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
+        }
     }
 
     @Override
@@ -144,6 +169,9 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             writeController(compound, clientPacket);
         } else {
             compound.putIntArray("Controller", new int[] { controllerPos.getX(), controllerPos.getY(), controllerPos.getZ() });
+        }
+        if(lastKnownPos != null) {
+            compound.putIntArray("LastKnownPos", new int[]{lastKnownPos.getX(), lastKnownPos.getY(), lastKnownPos.getZ()});
         }
     }
 

@@ -43,10 +43,10 @@ public class GeneratorClutchRenderer extends KineticBlockEntityRenderer<Generato
         super.renderSafe(be, partialTicks, ms, buffer, light, overlay);
 
         var state = be.getCachedState();
-        var axis = state.get(Properties.FACING).getAxis();
+        var facing = state.get(Properties.FACING);
+        var axis = facing.getAxis();
 
-        var facing = Direction.from(axis, Direction.AxisDirection.POSITIVE);
-        var rotorModel = CachedBufferer.partialFacing(ModdedPartialModels.CLUTCH_SHAFT, state, facing);
+        var rotorModel = CachedBufferer.partialFacing(ModdedPartialModels.CLUTCH_SHAFT, state, facing.getOpposite());
         var rotorAngle = getRotorAngle(be, partialTicks);
 
         rotorModel.light(light);

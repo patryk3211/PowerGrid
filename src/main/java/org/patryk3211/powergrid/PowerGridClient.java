@@ -44,6 +44,7 @@ import org.patryk3211.powergrid.electricity.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.ponder.PonderIndex;
+import org.patryk3211.powergrid.ponder.PonderTags;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
 
@@ -73,6 +74,7 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 		PlacementOverlay.init();
 		ClientTickEvents.END_CLIENT_TICK.register(this::clientTick);
 
+		PonderTags.register();
 		PonderIndex.register();
 	}
 
