@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.config;
 import com.simibubi.create.foundation.config.ConfigBase;
 
 public class CElectricity extends ConfigBase {
-    public final ConfigFloat heaterResistance = f(10, 0.1f, "heaterResistance", Comments.heaterResistance);
     public final ConfigFloat heaterFanProcessingSpeedMultiplier = f(0.75f, 0, "heaterFanProcessingSpeedMultiplier", Comments.heaterFanProcessingSpeedMultiplier);
 
     public final ConfigInt growthLampRadius = i(2, 1, "growthLampRadius", Comments.growthLampRadius);
@@ -34,7 +33,6 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt portableBatteryEnchantCapacity = i(10000, 1, "portableBatteryEnchantCapacity", Comments.portableBatteryEnchantCapacity);
 
     public final ConfigFloat basinHeaterCurrent = f(10, 1, "basinHeaterCurrent", Comments.basinHeaterCurrent);
-//    public final ConfigFloat basinHeaterCurrentSeething = f(30, 1, "basinHeaterCurrentSeething", Comments.basinHeaterCurrentSeething);
 
     @Override
     public String getName() {
@@ -42,7 +40,6 @@ public class CElectricity extends ConfigBase {
     }
 
     private static class Comments {
-        public static final String heaterResistance = "Heating coil electrical resistance";
         public static final String heaterFanProcessingSpeedMultiplier = "Multiplier of the base fan bulk processing time applied to items processed with the heating coil (lower value means faster processing)";
 
         public static final String growthLampRadius = "Radius of the area affected by growth lamp effect";
@@ -58,6 +55,5 @@ public class CElectricity extends ConfigBase {
         public static final String portableBatteryEnchantCapacity = "Portable Battery Forge Energy capacity increase per level of Capacity enchant";
 
         public static final String basinHeaterCurrent = "Current required for normal level of heating with the basin heater";
-//        public static final String basinHeaterCurrentSeething = "Current required for seething level of heating with the basin heater";
     }
 }

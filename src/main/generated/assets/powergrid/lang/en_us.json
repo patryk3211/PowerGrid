@@ -350,5 +350,6 @@
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
+  "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
   "powergrid.variac.tap": "Tap"
 }

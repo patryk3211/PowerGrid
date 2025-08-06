@@ -28,6 +28,8 @@ public class CKinetics extends ConfigBase {
 
     public final ConfigInt rotorAssemblyMaxSize = i(8, 3, "rotorAssemblyMaxSize", Comments.rotorAssemblyMaxSize);
 
+    public final ConfigFloat motorRPMPerVolt = f(0.5f, 0, "motorRPMPerVolt", Comments.motorRPMPerVolt);
+
     @Override
     public String getName() {
         return "kinetics";
@@ -40,5 +42,6 @@ public class CKinetics extends ConfigBase {
         public static final String lightningAttractorSailFactor = "How many sail blocks are needed to reach the maximum lightning attractor firing rate";
         public static final String lightningAttractorMaxFrequency = "How often can the lightning attractor fire";
         public static final String rotorAssemblyMaxSize = "Maximum length of a rotor assembly";
+        public static final String motorRPMPerVolt = "Rotation speed of the electric motor for every volt across it";
     }
 }

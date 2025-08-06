@@ -22,6 +22,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.config.CResistance;
 import org.patryk3211.powergrid.config.CServer;
 
 import java.util.EnumMap;
@@ -38,6 +39,10 @@ public class ModdedConfigs {
 
     public static CServer server() {
         return server;
+    }
+
+    public static CResistance resistance() {
+        return server.resistance;
     }
 
     public static ConfigBase byType(ModConfig.Type type) {

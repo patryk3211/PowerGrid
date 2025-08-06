@@ -47,7 +47,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = new ThermalBehaviour(this, 3.5f, 0.75f);
+        thermalBehaviour = new ThermalBehaviour(this, 3.5f, 1.75f);
         behaviours.add(thermalBehaviour);
     }
 
@@ -85,7 +85,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         applyLostPower(coil.power());
         var voltage = coil.potentialDifference();
         if(!world.isClient || isVirtual()) {
-            var newSpeed = (int) (voltage * 2.0f);
+            var newSpeed = (int) (voltage * ElectricMotorBlock.rpmPerVolt());
             // Max speed constraints.
             if(newSpeed > 256)
                 newSpeed = 256;

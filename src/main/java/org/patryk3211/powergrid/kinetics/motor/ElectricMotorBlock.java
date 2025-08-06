@@ -35,11 +35,13 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.WorldView;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
@@ -59,17 +61,6 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     public ElectricMotorBlock(Settings properties) {
         super(properties);
         setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE));
-//        setTerminalCollection(BlockStateTerminalCollection.builder(this)
-//                .forAllStates(state -> BlockStateTerminalCollection.each(NORTH_TERMINALS, terminal -> switch(state.get(FACING)) {
-//                    case NORTH -> terminal;
-//                    case SOUTH -> terminal.rotateAroundY(180);
-//                    case EAST -> terminal.rotateAroundY(90);
-//                    case WEST -> terminal.rotateAroundY(-90);
-//                    case UP -> terminal.rotateAroundX(-90);
-//                    case DOWN -> terminal.rotateAroundX(90);
-//                }))
-//                .withShapeMapper(state -> shaper.get(state.get(FACING)))
-//                .build());
     }
 
     @Override
@@ -131,12 +122,17 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     }
 
     public static float resistance() {
-        return 10f;
+        return ModdedConfigs.resistance().motorResistance.getF();
+    }
+
+    public static float rpmPerVolt() {
+        return ModdedConfigs.server().kinetics.motorRPMPerVolt.getF();
     }
 
     @Override
     public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
         Resistance.series(resistance(), player, tooltip);
+        Voltage.rpm(rpmPerVolt(), player, tooltip);
     }
 
     @Override

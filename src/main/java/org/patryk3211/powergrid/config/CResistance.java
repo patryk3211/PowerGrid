@@ -17,21 +17,18 @@ package org.patryk3211.powergrid.config;
 
 import com.simibubi.create.foundation.config.ConfigBase;
 
-public class CServer extends ConfigBase {
-    public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
-    public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
-    public final CRecipes recipes = nested(0, CRecipes::new, Comments.recipes);
-    public final CResistance resistance = nested(0, CResistance::new, Comments.resistance);
+public class CResistance extends ConfigBase {
+    public final ConfigFloat heaterResistance = f(10, 0.1f, "heaterResistance", Comments.heaterResistance);
+    public final ConfigFloat motorResistance = f(2, 0.001f, "motorResistance", Comments.motorResistance);
 
     @Override
     public String getName() {
-        return "server";
+        return "resistance";
     }
 
     private static class Comments {
-        public static final String electricity = "All things related to purely electrical devices";
-        public static final String kinetics = "Things related to kinetic and electrokinetic devices";
-        public static final String recipes = "Recipe configuration values";
-        public static final String resistance = "Resistance values for all devices";
+        public static final String heaterResistance = "Heating coil electrical resistance";
+
+        public static final String motorResistance = "Electric motor resistance";
     }
 }

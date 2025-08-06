@@ -155,6 +155,6 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
     }
 
     public static float resistance() {
-        return ModdedConfigs.server().electricity.heaterResistance.getF();
+        return ModdedConfigs.resistance().heaterResistance.getF();
     }
 }
