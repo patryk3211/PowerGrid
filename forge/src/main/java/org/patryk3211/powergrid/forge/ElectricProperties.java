@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.info;
+package org.patryk3211.powergrid.forge;
 
 import com.simibubi.create.foundation.item.TooltipModifier;
-import com.simibubi.create.foundation.utility.Components;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-
-import java.util.LinkedList;
-import java.util.List;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 
 public class ElectricProperties implements TooltipModifier {
     private final IHaveElectricProperties properties;
@@ -47,12 +41,17 @@ public class ElectricProperties implements TooltipModifier {
     }
 
     @Override
-    public void modify(ItemStack itemStack, PlayerEntity playerEntity, TooltipContext tooltipContext, List<Text> tooltip) {
-        List<Text> lines = new LinkedList<>();
-        properties.appendProperties(itemStack, playerEntity, lines);
-        if(!lines.isEmpty()) {
-            tooltip.add(Components.immutableEmpty());
-            tooltip.addAll(lines);
-        }
+    public void modify(ItemTooltipEvent context) {
+        properties.appendProperties(context.getItemStack(), context.getEntity(), context.getToolTip());
     }
+
+//    @Override
+//    public void modify(ItemStack itemStack, Player playerEntity, TooltipContext tooltipContext, List<Message> tooltip) {
+//        List<Text> lines = new LinkedList<>();
+//        properties.appendProperties(itemStack, playerEntity, lines);
+//        if(!lines.isEmpty()) {
+//            tooltip.add(Components.immutableEmpty());
+//            tooltip.addAll(lines);
+//        }
+//    }
 }

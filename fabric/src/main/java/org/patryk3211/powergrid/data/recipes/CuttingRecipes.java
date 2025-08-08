@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.recipes;
+package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;

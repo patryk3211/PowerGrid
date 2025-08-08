@@ -17,23 +17,23 @@ package org.patryk3211.powergrid.data;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.block.Blocks;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.core.HolderLookup;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.concurrent.CompletableFuture;
 
-public class BlockTagProvider extends FabricTagProvider.BlockTagProvider {
-    public BlockTagProvider(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-        super(output, registriesFuture);
+public class ItemTagProvider extends FabricTagProvider.ItemTagProvider {
+    public ItemTagProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> completableFuture) {
+        super(output, completableFuture, null);
     }
 
     @Override
-    protected void configure(RegistryWrapper.WrapperLookup lookup) {
-        getOrCreateTagBuilder(ModdedTags.Block.AFFECTED_BY_LAMP.tag)
-                .addOptionalTag(BlockTags.BEE_GROWABLES)
-                .add(Blocks.CACTUS)
-                .add(Blocks.SUGAR_CANE);
+    protected void addTags(HolderLookup.Provider provider) {
+        var builder = getOrCreateTagBuilder(ModdedTags.Item.CIRCUIT_COMPONENT.tag);
+        for(var component : ComponentRegistry.REGISTRY) {
+            var item = component.getRequiredItem();
+            builder.add(item);
+        }
     }
 }

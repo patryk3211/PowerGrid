@@ -13,46 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.recipes;
+package org.patryk3211.powergrid.data.recipes;
 
-import com.simibubi.create.AllItems;
+import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.Items;
+import net.minecraft.entity.passive.PandaEntity;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-public class MagnetizingRecipes extends ProcessingRecipeGen {
+public class PressingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
-    MAGNET = create(() -> Items.IRON_INGOT, b -> b
-            .output(ModdedItems.MAGNET)
-    ),
+    ZINC_SHEET = create("zinc_sheet", b -> b
+            .require(RecipeTags.zincIngot())
+            .output(ModdedItems.ZINC_SHEET.get())
+    );
 
-    IRON_SEPARATION = create(() -> AllItems.CRUSHED_IRON, b -> b
-            .output(Items.IRON_NUGGET, 8)
-            .output(0.4f, Items.IRON_NUGGET, 3)
-    )
-            ;
-
-    protected <T extends ProcessingRecipe<?>> GeneratedRecipe create(Supplier<ItemConvertible> singleIngredient, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
-        return super.create(PowerGrid.MOD_ID, singleIngredient, transform);
+    public PressingRecipes(FabricDataOutput generator) {
+        super(generator);
     }
 
-    public MagnetizingRecipes(FabricDataOutput generator) {
-        super(generator);
+    <T extends ProcessingRecipe<?>> GeneratedRecipe create(String name, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
+        return create(PowerGrid.asResource(name), transform);
     }
 
     @Override
     protected IRecipeTypeInfo getRecipeType() {
-        return MagnetizingRecipe.TYPE_INFO;
+        return AllRecipeTypes.PRESSING;
     }
 }

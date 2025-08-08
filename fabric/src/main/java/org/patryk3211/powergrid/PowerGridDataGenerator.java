@@ -25,9 +25,9 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
+import org.patryk3211.powergrid.data.recipes.*;
 import org.patryk3211.powergrid.ponder.PonderIndex;
 import org.patryk3211.powergrid.ponder.PonderTags;
-import org.patryk3211.powergrid.recipes.*;
 
 import java.util.function.BiConsumer;
 
@@ -45,7 +45,13 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(MechanicalCraftingRecipes::new);
 		pack.addProvider(MixingRecipes::new);
 		pack.addProvider(PressingRecipes::new);
-		pack.addProvider(ModdedSoundEvents::provider);
+		pack.addProvider((output, registriesFuture) ->
+				ModdedSoundEvents.provider(new FabricDataGenerator(
+					output.getOutputFolder(),
+					output.getModContainer(),
+					output.isStrictValidationEnabled(),
+					registriesFuture
+				)));
 		pack.addProvider(MagnetizingRecipes::new);
 		pack.addProvider(BlockTagProvider::new);
 		pack.addProvider(ItemTagProvider::new);

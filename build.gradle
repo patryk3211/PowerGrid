@@ -1,147 +1,198 @@
 plugins {
-	id 'fabric-loom' version '1.10-SNAPSHOT'
 	id 'maven-publish'
+	id 'architectury-plugin' version '3.4-SNAPSHOT'
+	id 'dev.architectury.loom' version '1.9+' apply false
 }
 
-group = project.maven_group
-base.archivesName = project.archives_base_name
+architectury {
+	minecraft = project.minecraft_version
+}
 
-String buildNumber = System.getenv("GITHUB_RUN_NUMBER")
-version = "${project.mod_version}+${project.minecraft_version}" + (buildNumber != null ? "-build.$buildNumber" : "")
+allprojects {
+	apply plugin: "java"
+	apply plugin: "architectury-plugin"
+	apply plugin: "dev.architectury.loom"
 
-repositories {
-	maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
+	base.archivesName.set(project.archives_base_name)
+	group = project.maven_group
+	version = "${project.mod_version}-mc${project.minecraft_version}"
 
-	maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
-	maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
-	maven { url = "https://modmaven.dev/" } // Flywheel
-	maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
-	maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" } // Forge Config API Port
-
-	maven { // Fabric ASM for Porting Lib
-		url = "https://jitpack.io/"
-		content { includeGroupAndSubgroups("com.github") }
+	tasks.withType(JavaCompile).configureEach {
+		it.options.release = 17
 	}
 
-	maven { url = "https://maven.shedaniel.me" } // Cloth Config, REI
-	maven { url = "https://maven.blamejared.com" } // JEI
+	repositories {
+		maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
 
-	maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
-}
+		maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
+		maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
+		maven { url = "https://modmaven.dev/" } // Flywheel
+		maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
+		maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" } // Forge Config API Port
+//		maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
+		maven { url = "https://maven.tterrag.com/" } // Registrate
 
-configurations {
-	extraLibs
-}
+		maven {
+			url = "https://maven.createmod.net"
+			content {
+				includeGroupAndSubgroups("net.createmod")
+				includeGroupAndSubgroups("dev.engine-room")
+				includeGroupAndSubgroups("com.simibubi")
+			}
+		} // Flywheel, Registrate, Create
 
-configurations.configureEach {
-	resolutionStrategy {
-		// Make sure the desired version of loader is used. Sometimes old versions are pulled in transitively.
-		force("net.fabricmc:fabric-loader:${project.loader_version}")
+		maven { // Fabric ASM for Porting Lib
+			url = "https://jitpack.io/"
+			content { includeGroupAndSubgroups("com.github") }
+		}
+
+		maven { url = "https://maven.shedaniel.me" } // Cloth Config, REI
+		maven { url = "https://maven.blamejared.com" } // JEI
+
+		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
+	}
+
+//	var common = configurations.creating.copy();//Configuration by configurations.creating
+	dependencies {
+//		common(project(":root", "namedElements")) { transitive false }
+//		common(project.("namedElements")) { transitive false }
+	}
+
+	loom {
+		//	splitEnvironmentSourceSets()
+
+//		mods {
+//			"powergrid" {
+//				sourceSet sourceSets.main
+//	//			sourceSet sourceSets.client
+//			}
+//		}
+
+//		runs {
+//			named("datagen") {
+//				vmArg("-Dfabric-api.datagen")
+//				vmArg("-Dfabric-api.datagen.modid=powergrid")
+//				vmArg("-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
+//			}
+//
+//			named("client") {
+//				vmArg("-enableassertions")
+//				vmArg("-Dfabric.development=true")
+//				vmArg("-javaagent:\"/home/patryk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar\"")
+//			}
+//		}
+
+		log4jConfigs.from(file('log4j-dev.xml'))
+	}
+
+	configurations {
+		extraLibs
+	}
+
+	dependencies {
+		minecraft "net.minecraft:minecraft:${project.minecraft_version}"
+
+//		mappings(loom.layered {
+//			it.officialMojangMappings { nameSyntheticMembers = false }
+//			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
+//		})
+		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
+		// Support for unit tests
+//		testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+
+		// Create - dependencies are added transitively
+//		modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_version}")
+
+//		modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
+
+		// TechReborn Forge Energy API
+//		include modApi("teamreborn:energy:${project.energy_api_version}")
+
+		// Development QOL
+//		modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
+//		modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+
+		configurations.implementation.extendsFrom(configurations.extraLibs)
+	}
+
+	java {
+		withSourcesJar()
+
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
 	}
 }
 
-fabricApi {
-	configureDataGeneration {
-		client = true
-	}
-}
-
-loom {
-//	splitEnvironmentSourceSets()
-
-	mods {
-		"powergrid" {
-			sourceSet sourceSets.main
-//			sourceSet sourceSets.client
+subprojects {
+	configurations.configureEach {
+		resolutionStrategy {
+			// Make sure the desired version of loader is used. Sometimes old versions are pulled in transitively.
+			force("net.fabricmc:fabric-loader:${project.loader_version}")
 		}
 	}
 
-	runs {
-		named("datagen") {
-			vmArg("-Dfabric-api.datagen")
-			vmArg("-Dfabric-api.datagen.modid=powergrid")
-			vmArg("-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
+	architectury {
+		platformSetupLoomIde()
+	}
+
+	processResources {
+		var properties = [
+				version              : project.version,
+				create_forge_version : project.create_forge_version,
+				create_fabric_version: project.create_fabric_version,
+				forge_version        : project.forge_version,
+				fabric_version       : project.fabric_version,
+				loader_version       : project.loader_version,
+				minecraft_version    : project.minecraft_version
+		]
+
+		inputs.properties(properties)
+
+		filesMatching(["fabric.mod.json", "mods.toml"]) {
+			expand(properties)
 		}
-
-		named("client") {
-			vmArg("-enableassertions")
-			vmArg("-Dfabric.development=true")
-			vmArg("-javaagent:\"/home/patryk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar\"")
-		}
 	}
 
-	log4jConfigs.from(file('log4j-dev.xml'))
-}
-
-dependencies {
-	extraLibs "org.ejml:ejml-all:0.44.0"
-//	implementation "org.ejml:ejml-all:0.44.0"
-
-	minecraft "net.minecraft:minecraft:${project.minecraft_version}"
-//	mappings(loom.layered {
-//		it.officialMojangMappings { nameSyntheticMembers = false }
-//		it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
-//	})
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-	// Support for unit tests
-	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
-
-	// Create - dependencies are added transitively
-	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_version}")
-
-	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
-
-	// TechReborn Forge Energy API
-	include modApi("teamreborn:energy:${project.energy_api_version}")
-
-	// Development QOL
-	modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
-	modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
-
-	configurations.implementation.extendsFrom(configurations.extraLibs)
-}
-
-processResources {
-	inputs.property "version", project.version
-	inputs.property "create_version", project.create_version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version, "create_version": inputs.properties.create_version
-	}
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
-}
-
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
-}
-
-jar {
-	inputs.property "archivesName", project.base.archivesName
-
-	from("LICENSE") {
-		rename { "${it}_${inputs.properties.archivesName}" }
+	configurations {
+		common
+		shadowCommon
+		compileClasspath.extendsFrom common
+		runtimeClasspath.extendsFrom common
 	}
 
-	from("NOTICE") {
-		rename { "${it}_${inputs.properties.archivesName}" }
+	dependencies {
+		common(project(path: rootProject.path, configuration: "namedElements")) { transitive false }
+		shadowCommon(project(path: rootProject.path, configuration: "transformProductionForge")) { transitive false }
 	}
 
-	from {
-		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
-	}
+	tasks.register("devBuild", {
+		version = "${project.mod_version}+${project.minecraft_version}-${getGitHash}"
+		dependsOn tasks.build
+	})
 }
+
+//fabricApi {
+//	configureDataGeneration {
+//		client = true
+//	}
+//}
+
+//jar {
+//	inputs.property "archivesName", project.base.archivesName
+//
+//	from("LICENSE") {
+//		rename { "${it}_${inputs.properties.archivesName}" }
+//	}
+//
+//	from("NOTICE") {
+//		rename { "${it}_${inputs.properties.archivesName}" }
+//	}
+//
+//	from {
+//		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+//	}
+//}
 
 def getGitHash = { ->
 	def stdout = new ByteArrayOutputStream()
@@ -152,28 +203,61 @@ def getGitHash = { ->
 	return stdout.toString().trim()
 }
 
-test {
-	useJUnitPlatform()
-}
-tasks.register("devBuild", {
-	version = "${project.mod_version}+${project.minecraft_version}-${getGitHash}"
-	dependsOn tasks.build
-})
+//test {
+//	useJUnitPlatform()
+//}
 
 // configure the maven publication
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
-			from components.java
-		}
-	}
+//publishing {
+//	publications {
+//		create("mavenJava", MavenPublication) {
+//			artifactId = project.archives_base_name
+//			from components.java
+//		}
+//	}
+//
+//	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+//	repositories {
+//		// Add repositories to publish to here.
+//		// Notice: This block does NOT have the same function as the block in the top level.
+//		// The repositories here will be used for publishing your artifact, not for
+//		// retrieving dependencies.
+//	}
+//}
 
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
+/*    -------========= COMMON PROJECT CONFIGURATION =========-------    */
+
+architectury {
+	common(rootProject.enabled_platforms.split(','))
+//	common {
+//		for(p in rootProject.subprojects) {
+////			if(p != project) {
+////			}
+//		}
+//	}
+}
+
+dependencies {
+	extraLibs "org.ejml:ejml-all:0.44.0"
+
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_fabric_version}")
+	modCompileOnly("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
+
+//	modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
+//	modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_forge_version}") { transitive false }
+//	modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_forge_version}") { transitive false }
+//	modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}") { transitive false }
+//	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}") { transitive false }
+
+	modImplementation "dev.architectury:architectury:${rootProject.architectury_api_version}"
+}
+
+sourceSets.main {
+	resources {
+		srcDir('src/main/generated')
+		exclude(".cache/**")
+		exclude("assets/create/**")
 	}
 }

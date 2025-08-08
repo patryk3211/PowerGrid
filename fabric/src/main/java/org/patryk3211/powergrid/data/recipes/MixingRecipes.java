@@ -13,30 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.recipes;
+package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllRecipeTypes;
+import com.simibubi.create.content.processing.recipe.HeatCondition;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
-import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.entity.passive.PandaEntity;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedFluids;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.function.UnaryOperator;
 
-public class PressingRecipes extends ProcessingRecipeGen {
+public class MixingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
-    ZINC_SHEET = create("zinc_sheet", b -> b
-            .require(RecipeTags.zincIngot())
-            .output(ModdedItems.ZINC_SHEET.get())
-    );
+    ACID = create("acid", b -> b
+            .require(Items.REDSTONE)
+            .require(Items.BLAZE_POWDER)
+            .require(Fluids.WATER, FluidConstants.BOTTLE)
+            .requiresHeat(HeatCondition.HEATED)
+            .output(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)),
 
-    public PressingRecipes(FabricDataOutput generator) {
-        super(generator);
+    ETCHED_CIRCUIT_BOARD = create("etched_circuit_board", b -> b
+            .require(ModdedItems.UNETCHED_CIRCUIT)
+            .require(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)
+            .requiresHeat(HeatCondition.HEATED)
+            .output(ModdedItems.INCOMPLETE_CIRCUIT))
+    ;
+
+    public MixingRecipes(FabricDataOutput output) {
+        super(output);
     }
 
     <T extends ProcessingRecipe<?>> GeneratedRecipe create(String name, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
@@ -44,7 +56,7 @@ public class PressingRecipes extends ProcessingRecipeGen {
     }
 
     @Override
-    protected IRecipeTypeInfo getRecipeType() {
-        return AllRecipeTypes.PRESSING;
+    protected AllRecipeTypes getRecipeType() {
+        return AllRecipeTypes.MIXING;
     }
 }
