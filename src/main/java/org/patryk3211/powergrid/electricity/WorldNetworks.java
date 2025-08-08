@@ -102,7 +102,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
                     continue;
                 try {
                     var packet = new TransmissionLineS2CPacket(line);
-                    ModdedPackets.getChannel().sendToClients(packet, players);
+                    ModdedPackets.sendToClients(packet, players);
                 } catch (RuntimeException e) {
                     PowerGrid.LOGGER.error("Failed to send a transmission line packet", e);
                 }
@@ -116,7 +116,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
                     for(var chunk : packet.chunks) {
                         tracking.addAll(PlayerLookup.tracking(serverWorld, chunk));
                     }
-                    ModdedPackets.getChannel().sendToClients(packet, tracking);
+                    ModdedPackets.sendToClients(packet, tracking);
                 }
                 syncTicks = 0;
             }

@@ -49,7 +49,7 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
             lightningEntity.setCosmetic(false);
             ((ServerWorld) context.world).spawnNewEntityAndPassengers(lightningEntity);
         }
-        ModdedPackets.getChannel().sendToClientsTracking(new LightningSyncS2CPacket(context), context.contraption.entity);
+        ModdedPackets.sendToClientsTracking(new LightningSyncS2CPacket(context), context.contraption.entity);
     }
 
     public void pickController(MovementContext context) {

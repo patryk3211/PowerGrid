@@ -151,7 +151,7 @@ public class PlacedComponent {
             var circuit = (CircuitBoardBlockEntity) world.getBlockEntity(pos);
             if(circuit == null)
                 return;
-            ModdedPackets.getChannel().sendToClientsTracking(new UpdateComponentBiPacket(circuit, this, property), circuit);
+            ModdedPackets.sendToClientsTracking(new UpdateComponentBiPacket(circuit, this, property), circuit);
         });
     }
 
@@ -160,7 +160,7 @@ public class PlacedComponent {
             var circuit = (CircuitBoardBlockEntity) world.getBlockEntity(pos);
             if(circuit == null)
                 return;
-            ModdedPackets.getChannel().sendToClientsTracking(new UpdateComponentBiPacket(circuit, this, propertyId), circuit);
+            ModdedPackets.sendToClientsTracking(new UpdateComponentBiPacket(circuit, this, propertyId), circuit);
         });
     }
 

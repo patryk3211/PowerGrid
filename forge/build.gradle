@@ -39,10 +39,13 @@ dependencies {
     // Roughly Enough Items - Forge
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
     modRuntimeOnly "me.shedaniel:RoughlyEnoughItems-forge:$rei_version"
+
+    compileOnly("io.github.llamalad7:mixinextras-common:${mixin_extras_version}")
+    annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")))
 }
 
 loom {
     forge {
-
+        mixinConfigs("powergrid.mixins.json", "powergrid.client.mixins.json")
     }
 }

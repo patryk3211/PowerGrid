@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.utility;
+package org.patryk3211.powergrid.electricity.deviceconnector.fabric;
 
-import java.text.NumberFormat;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
+import team.reborn.energy.api.EnergyStorage;
 
-public class PreciseNumberFormat {
-    private static final PreciseNumberFormat instance = new PreciseNumberFormat();
-
-    private NumberFormat format;
-
-    private PreciseNumberFormat() {
-        format = NumberFormat.getInstance();
-        format.setMaximumFractionDigits(3);
-        format.setMinimumFractionDigits(0);
-        format.setGroupingUsed(true);
-    }
-
-    public static String format(double number) {
-        return instance.format.format(number).replace(" ", " ");
+public class DeviceConnectorBlockImpl {
+    public static boolean hasEnergyStorage(World world, BlockPos pos, Direction side) {
+        var storage = EnergyStorage.SIDED.find(world, pos, side);
+        return storage != null && storage.supportsInsertion();
     }
 }

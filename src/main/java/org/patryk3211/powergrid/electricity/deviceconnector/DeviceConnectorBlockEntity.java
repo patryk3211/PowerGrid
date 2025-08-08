@@ -19,11 +19,8 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
-import team.reborn.energy.api.EnergyStorage;
 
 import java.util.List;
 
@@ -47,10 +44,5 @@ public class DeviceConnectorBlockEntity extends ElectricBlockEntity {
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
         converterWire = builder.connectSwitch(100, builder.terminalNode(0), builder.terminalNode(1));
-    }
-
-    @Nullable
-    public EnergyStorage getEnergyStorage(@Nullable Direction direction) {
-        return proxyBehaviour.getBridgeBehaviour();
     }
 }

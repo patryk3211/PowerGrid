@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.utility;
+package org.patryk3211.powergrid.electricity.febridge;
 
-import java.text.NumberFormat;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
-public class PreciseNumberFormat {
-    private static final PreciseNumberFormat instance = new PreciseNumberFormat();
+public interface IFEBridgeHandler {
+    long getAmount();
+    void setAmount(long amount);
 
-    private NumberFormat format;
-
-    private PreciseNumberFormat() {
-        format = NumberFormat.getInstance();
-        format.setMaximumFractionDigits(3);
-        format.setMinimumFractionDigits(0);
-        format.setGroupingUsed(true);
-    }
-
-    public static String format(double number) {
-        return instance.format.format(number).replace(" ", " ");
-    }
+    void charge(SwitchedWire wire);
+    long moveEnergy();
+    void manageWire(SwitchedWire wire);
 }

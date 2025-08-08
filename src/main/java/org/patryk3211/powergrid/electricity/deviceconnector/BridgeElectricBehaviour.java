@@ -16,25 +16,24 @@
 package org.patryk3211.powergrid.electricity.deviceconnector;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
-import org.patryk3211.powergrid.electricity.febridge.FEBridgeEnergyStorage;
+import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import team.reborn.energy.api.EnergyStorage;
-import team.reborn.energy.api.EnergyStorageUtil;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public class BridgeElectricBehaviour extends ElectricBehaviour {
     private final BlockPos behaviourPosition;
-    private FEBridgeEnergyStorage bridgeBehaviour;
+    private IFEBridgeHandler bridgeBehaviour;
     private long readEnergy;
     private long currentRate;
     private boolean fetched = false;
@@ -52,14 +51,12 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
         var mainBehaviour = get(world, behaviourPosition, TYPE);
         if(mainBehaviour != null)
             return;
-        var facing = blockEntity.getCachedState().get(DeviceConnectorBlock.FACING);
-        var energyStorage = EnergyStorage.SIDED.find(world, getPos().offset(facing), facing.getOpposite());
-        if(energyStorage != null) {
-            bridgeBehaviour = new FEBridgeEnergyStorage(blockEntity);
-            bridgeBehaviour.amount = readEnergy;
-        } else {
+        bridgeBehaviour = makeFEHandler(blockEntity);
+        if(bridgeBehaviour == null) {
             world.breakBlock(getPos(), true);
+            return;
         }
+        bridgeBehaviour.setAmount(readEnergy);
     }
 
     public Optional<ElectricBehaviour> getMainBehaviour() {
@@ -69,7 +66,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     }
 
     @Nullable
-    public FEBridgeEnergyStorage getBridgeBehaviour() {
+    public IFEBridgeHandler getBridgeBehaviour() {
         if(!fetched)
             constructBehaviours();
         return bridgeBehaviour;
@@ -101,7 +98,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     public void read(NbtCompound nbt, boolean clientPacket) {
         super.read(nbt, clientPacket);
         if(bridgeBehaviour != null) {
-            bridgeBehaviour.amount = nbt.getLong("Energy");
+            bridgeBehaviour.setAmount(nbt.getLong("Energy"));
         } else {
             readEnergy = nbt.getLong("Energy");
         }
@@ -113,7 +110,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     public void write(NbtCompound nbt, boolean clientPacket) {
         super.write(nbt, clientPacket);
         if(bridgeBehaviour != null) {
-            nbt.putLong("Energy", bridgeBehaviour.amount);
+            nbt.putLong("Energy", bridgeBehaviour.getAmount());
             if(clientPacket)
                 nbt.putLong("Rate", currentRate);
         }
@@ -130,26 +127,23 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
         var world = getWorld();
 
         energyStorage.charge(wire);
-
-        if(energyStorage.amount > 0) {
-            // Try to move energy
-            var facing = blockEntity.getCachedState().get(Properties.FACING);
-            var sideStorage = EnergyStorage.SIDED.find(world, getPos().offset(facing), facing.getOpposite());
-            var moved = EnergyStorageUtil.move(energyStorage, sideStorage, Long.MAX_VALUE, null);
-            if(!world.isClient) {
-                if(moved != currentRate) {
-                    currentRate = moved;
-                    blockEntity.sendData();
-                }
-            } else if(moved == 0) {
-                // Since some things might not sync this to client, this is necessary
-                // to provide a valid, client-side simulation parameters.
-                energyStorage.amount -= currentRate;
-                if(energyStorage.amount < 0)
-                    energyStorage.amount = 0;
+        var moved = energyStorage.moveEnergy();
+        if(!world.isClient) {
+            if(moved != currentRate) {
+                currentRate = moved;
+                blockEntity.sendData();
             }
+        } else if(moved == 0) {
+            // Since some things might not sync this to client, this is necessary
+            // to provide a valid, client-side simulation parameters.
+            var amount = energyStorage.getAmount();
+            energyStorage.setAmount(Math.max(amount - currentRate, 0));
         }
-
         energyStorage.manageWire(wire);
+    }
+
+    @ExpectPlatform
+    public static IFEBridgeHandler makeFEHandler(BlockEntity be) {
+        throw new AssertionError();
     }
 }

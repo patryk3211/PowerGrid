@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -25,6 +24,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -78,7 +78,7 @@ public class ClientWireInteractions {
         } else {
             var secondSegment = getSegment(entity, target.getPos());
             if(secondSegment != null) {
-                ClientPlayNetworking.send(new BlockWireCutC2SPacket(entity, firstSegmentIndex, firstSegmentPoint, secondSegment.getLeft(), secondSegment.getRight()));
+                ModdedPackets.sendToServer(new BlockWireCutC2SPacket(entity, firstSegmentIndex, firstSegmentPoint, secondSegment.getLeft(), secondSegment.getRight()));
                 currentEntity = null;
                 return ActionResult.SUCCESS;
             }
@@ -103,7 +103,7 @@ public class ClientWireInteractions {
         if(segment == null)
             return ActionResult.FAIL;
 
-        ClientPlayNetworking.send(new BlockWireAttachC2SPacket(entity, segment.getLeft(), segment.getRight()));
+        ModdedPackets.sendToServer(new BlockWireAttachC2SPacket(entity, segment.getLeft(), segment.getRight()));
         return ActionResult.SUCCESS;
     }
 }

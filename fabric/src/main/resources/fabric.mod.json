@@ -17,10 +17,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-          "org.patryk3211.powergrid.PowerGrid"
+          "org.patryk3211.powergrid.fabric.PowerGridImpl"
 		],
 		"client": [
-			"org.patryk3211.powergrid.PowerGridClient"
+			"org.patryk3211.powergrid.fabric.PowerGridClientImpl"
 		],
 		"fabric-datagen": [
 			"org.patryk3211.powergrid.PowerGridDataGenerator"

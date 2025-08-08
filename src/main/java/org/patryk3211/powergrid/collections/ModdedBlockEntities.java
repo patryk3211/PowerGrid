@@ -66,7 +66,6 @@ import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
 import org.patryk3211.powergrid.kinetics.variac.VariacInstance;
 import org.patryk3211.powergrid.kinetics.variac.VariacRenderer;
-import team.reborn.energy.api.EnergyStorage;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -240,8 +239,6 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<DeviceConnectorBlockEntity> DEVICE_CONNECTOR =
             REGISTRATE.blockEntity("device_connector", DeviceConnectorBlockEntity::new)
                     .validBlock(ModdedBlocks.DEVICE_CONNECTOR)
-                    .onRegister(beType ->
-                            EnergyStorage.SIDED.registerForBlockEntity(DeviceConnectorBlockEntity::getEnergyStorage, beType))
                     .register();
 
     public static final BlockEntityEntry<FuseHolderBlockEntity> FUSE_HOLDER =

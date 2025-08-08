@@ -39,6 +39,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -234,14 +235,14 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public void sendExtraData() {
-        createExtraDataPacket().send();
+        ModdedPackets.sendToClientsTracking(createExtraDataPacket(), this);
     }
 
     @Override
     public Packet<ClientPlayPacketListener> createSpawnPacket() {
         var base = super.createSpawnPacket();
         var extra = createExtraDataPacket();
-        return new BundleS2CPacket(List.of(base, extra.packet()));
+        return new BundleS2CPacket(List.of(base, extra.clientBoundPacket()));
     }
 
     @Override

@@ -117,8 +117,8 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
 
         ShootableGadgetItemMethods.applyCooldown(user, stack, hand, this::isZapper, 10);
         Function<Boolean, ElectroZapperPacket> factory = b -> new ElectroZapperPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
-        ModdedPackets.getChannel().sendToClientsTracking(factory.apply(false), user);
-        ModdedPackets.getChannel().sendToClient(factory.apply(true), (ServerPlayerEntity) user);
+        ModdedPackets.sendToClientsTracking(factory.apply(false), user);
+        ModdedPackets.sendToClient(factory.apply(true), (ServerPlayerEntity) user);
         if(!BatteryUtils.drawEnergy(user, fePerUse()))
             stack.damage(1, user, $ -> {});
         return TypedActionResult.success(user.getStackInHand(hand));

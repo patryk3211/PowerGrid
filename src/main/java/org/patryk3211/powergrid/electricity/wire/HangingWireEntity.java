@@ -32,6 +32,7 @@ import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
@@ -317,7 +318,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 list.add(NbtFloat.of((float) terminalPos2.z));
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
-                packet.send();
+                ModdedPackets.sendToClientsTracking(packet, this);
             }
         }
     }

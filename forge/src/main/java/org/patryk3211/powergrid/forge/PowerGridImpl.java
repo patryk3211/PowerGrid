@@ -13,36 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid;
+package org.patryk3211.powergrid.forge;
 
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.text.Text;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
+import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
+import org.patryk3211.powergrid.ForgePowerGridRegistrate;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.forge.ElectricProperties;
 
 @Mod(PowerGrid.MOD_ID)
 @Mod.EventBusSubscriber
 public class PowerGridImpl {
     static IEventBus bus;
 
-    private static final DeferredRegister<CreativeModeTab> TAB_REGISTER =
-            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, PowerGrid.MOD_ID);
+    private static final DeferredRegister<ItemGroup> TAB_REGISTER =
+            DeferredRegister.create(RegistryKeys.ITEM_GROUP, PowerGrid.MOD_ID);
 
     public PowerGridImpl() {
         bus = FMLJavaModLoadingContext.get().getModEventBus();
         TAB_REGISTER.register(bus);
-//        PowerGrid.init();
+        PowerGrid.init();
     }
 
     public static AbstractPowerGridRegistrate createRegistrate() {
@@ -53,7 +54,7 @@ public class PowerGridImpl {
                                 .andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
                 )
                 .defaultCreativeTab("main", builder -> builder
-                        .title(Component.translatable("itemGroup.powergrid.main"))
+                        .displayName(Text.translatable("itemGroup.powergrid.main"))
                         .icon(() -> new ItemStack(ModdedItems.WIRE)))
                 .build();
     }

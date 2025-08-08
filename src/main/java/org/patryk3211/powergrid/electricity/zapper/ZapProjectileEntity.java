@@ -146,7 +146,7 @@ public class ZapProjectileEntity extends ProjectileEntity {
                 if(damagedEntities.size() >= 2)
                     break;
             }
-            ModdedPackets.getChannel().sendToClientsAround(new ZapProjectileS2CPacket(target, damagedEntities), (ServerWorld) getWorld(), getPos(), 50);
+            ModdedPackets.sendToClientsAround(new ZapProjectileS2CPacket(target, damagedEntities), (ServerWorld) getWorld(), getPos(), 50);
         }
 
         if(target.getType() == EntityType.ENDERMAN)
@@ -192,7 +192,7 @@ public class ZapProjectileEntity extends ProjectileEntity {
     protected void onBlockHit(BlockHitResult hit) {
         super.onBlockHit(hit);
         if(!getWorld().isClient) {
-            ModdedPackets.getChannel().sendToClientsTracking(new ZapProjectileS2CPacket(hit), this);
+            ModdedPackets.sendToClientsTracking(new ZapProjectileS2CPacket(hit), this);
         }
         kill();
     }

@@ -17,6 +17,10 @@ package org.patryk3211.powergrid.network;
 
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.listener.ServerPlayPacketListener;
+import net.minecraft.network.packet.Packet;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 
 import java.util.function.Supplier;
 
@@ -24,4 +28,12 @@ public interface SimplePacket {
     void encode(PacketByteBuf buf);
 
     void handle(Supplier<NetworkManager.PacketContext> context);
+
+    default Packet<ClientPlayPacketListener> clientBoundPacket() {
+        return (Packet<ClientPlayPacketListener>) ModdedPackets.getChannel().toPacket(NetworkManager.Side.S2C, this);
+    }
+
+    default Packet<ServerPlayPacketListener> serverBoundPacket() {
+        return (Packet<ServerPlayPacketListener>) ModdedPackets.getChannel().toPacket(NetworkManager.Side.C2S, this);
+    }
 }

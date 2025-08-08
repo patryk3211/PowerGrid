@@ -17,7 +17,6 @@ package org.patryk3211.powergrid;
 
 import com.simibubi.create.AllMovementBehaviours;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
@@ -32,21 +31,14 @@ import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PowerGrid implements ModInitializer {
+public class PowerGrid  {
 	public static final String MOD_ID = "powergrid";
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("PowerGrid");
 
-//	public static final ItemGroup ITEM_GROUP = FabricItemGroup.builder()
-//			.icon(() -> new ItemStack(ModdedItems.WIRE))
-//			.displayName(Text.translatable("itemGroup.powergrid.main"))
-//			.build();
-//	public static RegistryKey<ItemGroup> ITEM_GROUP_KEY;
-
 	public static AbstractPowerGridRegistrate REGISTRATE;
 
-	@Override
-	public void onInitialize() {
+	public static void init() {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
 		ElectricalNetwork.LOGGER = LOGGER;
 

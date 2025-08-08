@@ -16,9 +16,7 @@
 package org.patryk3211.powergrid;
 
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback;
-import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.client.MinecraftClient;
@@ -27,8 +25,6 @@ import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.util.Window;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardModel;
-import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
@@ -42,13 +38,10 @@ import org.patryk3211.powergrid.ponder.PonderTags;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
 
-public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin {
+public class PowerGridClient {
 	public static final ElectroZapperRenderHandler ELECTRO_ZAPPER_RENDER_HANDLER = new ElectroZapperRenderHandler();
 
-	@Override
-	public void onInitializeClient() {
-		ModelLoadingPlugin.register(this);
-
+	public static void initClient() {
 		ModdedKeys.register();
 
 		ModdedPartialModels.register();
@@ -62,16 +55,16 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 
 		ClientElectricNetwork.init();
 		TerminalHandler.init();
-		ModdedPackets.getChannel().initClientListener();
+
 		WirePreview.init();
 		PlacementOverlay.init();
-		ClientTickEvents.END_CLIENT_TICK.register(this::clientTick);
+		ClientTickEvents.END_CLIENT_TICK.register(PowerGridClient::clientTick);
 
 		PonderTags.register();
 		PonderIndex.register();
 	}
 
-	private void clientTick(MinecraftClient client) {
+	private static void clientTick(MinecraftClient client) {
 		if(client.world == null || client.player == null)
 			return;
 
@@ -81,26 +74,11 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 		TransformerWindingScreen.clientTick();
 	}
 
-	public void registerOverlays() {
+	public static void registerOverlays() {
 		HudRenderCallback.EVENT.register((graphics, partialTicks) -> {
 			Window window = MinecraftClient.getInstance().getWindow();
 			PlacementOverlay.renderOverlay(MinecraftClient.getInstance().inGameHud, graphics);
         });
-	}
-
-	@Override
-	public void onInitializeModelLoader(Context context) {
-		var componentModels = ComponentModels.collectIds();
-		context.addModels(componentModels);
-		context.resolveModel().register(innerContext -> {
-			final var id = innerContext.id();
-			if(id != null) {
-				if(id.equals(CircuitBoardModel.MODEL_ID)) {
-					return new CircuitBoardModel();
-				}
-			}
-			return null;
-		});
 	}
 
 	public static void addEntityRendererLayers(EntityType<? extends LivingEntity> entityType, LivingEntityRenderer<?, ?> entityRenderer,

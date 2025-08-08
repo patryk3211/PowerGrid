@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.deviceconnector;
 
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.utility.VoxelShaper;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -40,7 +41,6 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
-import team.reborn.energy.api.EnergyStorage;
 
 public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity> {
     public static final DirectionProperty FACING = Properties.FACING;
@@ -125,9 +125,9 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
                 .with(POLARIZED, polarized);
     }
 
+    @ExpectPlatform
     public static boolean hasEnergyStorage(World world, BlockPos pos, Direction side) {
-        var storage = EnergyStorage.SIDED.find(world, pos, side);
-        return storage != null && storage.supportsInsertion();
+        throw new AssertionError();
     }
 
     public static VoxelShape makeCheckShape(Direction side) {

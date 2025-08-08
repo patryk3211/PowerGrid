@@ -17,12 +17,20 @@ package org.patryk3211.powergrid.collections;
 
 import dev.architectury.networking.NetworkChannel;
 import dev.architectury.networking.NetworkManager;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.electricity.zapper.ElectroZapperPacket;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperS2CPacket;
 import org.patryk3211.powergrid.network.SimplePacket;
 import org.patryk3211.powergrid.network.packets.*;
+import org.patryk3211.powergrid.utility.PlayerLookup;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -80,5 +88,33 @@ public enum ModdedPackets {
         private void register() {
             getChannel().register(type, encoder, decoder, handler);
         }
+    }
+
+    public static <T> void sendToServer(T packet) {
+        channel.sendToServer(packet);
+    }
+
+    public static <T> void sendToClient(T packet, ServerPlayerEntity player) {
+        channel.sendToPlayer(player, packet);
+    }
+
+    public static <T> void sendToClients(T packet, Iterable<ServerPlayerEntity> players) {
+        channel.sendToPlayers(players, packet);
+    }
+
+    public static <T> void sendToClientsTracking(T packet, BlockEntity be) {
+        channel.sendToPlayers(PlayerLookup.tracking(be), packet);
+    }
+
+    public static <T> void sendToClientsTracking(T packet, Entity e) {
+        channel.sendToPlayers(PlayerLookup.tracking(e), packet);
+    }
+
+    public static <T> void sendToClientsAround(T packet, ServerWorld world, Vec3d position, double radius) {
+        channel.sendToPlayers(PlayerLookup.around(world, position, radius), packet);
+    }
+
+    public static <T> void sendToClientsAround(T packet, ServerWorld world, Vec3i position, double radius) {
+        channel.sendToPlayers(PlayerLookup.around(world, position, radius), packet);
     }
 }

@@ -256,6 +256,8 @@ dependencies {
 //	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}") { transitive false }
 
 	modImplementation "dev.architectury:architectury:${rootProject.architectury_api_version}"
+
+	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 }
 
 sourceSets.main {

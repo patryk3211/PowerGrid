@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.febridge;
+package org.patryk3211.powergrid.electricity.deviceconnector;
 
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.state.property.Properties;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import team.reborn.energy.api.EnergyStorage;
+import team.reborn.energy.api.EnergyStorageUtil;
 
-public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements EnergyStorage {
+public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements EnergyStorage, IFEBridgeHandler {
     private final BlockEntity be;
     public long capacity;
     public long amount;
@@ -89,6 +92,12 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
         return capacity;
     }
 
+    @Override
+    public void setAmount(long amount) {
+        this.amount = amount;
+    }
+
+    @Override
     public void charge(SwitchedWire wire) {
         float ampToFe = FEBridgeEnergyStorage.ampToFE();
         if(wire.getState()) {
@@ -97,6 +106,18 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
         }
     }
 
+    @Override
+    public long moveEnergy() {
+        if(amount > 0) {
+            // Try to move energy
+            var facing = be.getCachedState().get(Properties.FACING);
+            var sideStorage = EnergyStorage.SIDED.find(be.getWorld(), be.getPos().offset(facing), facing.getOpposite());
+            return EnergyStorageUtil.move(this, sideStorage, Long.MAX_VALUE, null);
+        }
+        return 0;
+    }
+
+    @Override
     public void manageWire(SwitchedWire wire) {
         long maxCharge = (long) (wire.potentialDifference() * FEBridgeEnergyStorage.voltToFE());
         capacity = maxCharge;
