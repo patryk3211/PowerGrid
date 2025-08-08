@@ -17,37 +17,11 @@ package org.patryk3211.powergrid.network;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.world.World;
-import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 @Environment(EnvType.CLIENT)
 public class ClientBoundPackets {
-    public static void init() {
-        entityDataPacket();
-    }
-
-    private static void entityDataPacket() {
-        ClientPlayNetworking.registerGlobalReceiver(ModdedPackets.ENTITY_DATA_PACKET, (client, handler, buf, response) -> {
-            var packet = new EntityDataS2CPacket(buf);
-            packet.buffer.retain();
-            client.execute(() -> {
-                if(client.world == null) {
-                    PowerGrid.LOGGER.warn("Received entity data packet without a world");
-                    return;
-                }
-                var entity = client.world.getEntityById(packet.entityId);
-                if(entity instanceof EntityDataS2CPacket.IConsumer consumer) {
-                    consumer.onEntityDataPacket(packet);
-                }
-                packet.buffer.release();
-            });
-        });
-    }
-
     public static World world() {
         return MinecraftClient.getInstance().world;
     }

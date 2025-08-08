@@ -15,27 +15,27 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import org.joml.Math;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
+import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class ZapProjectileS2CPacket extends SimplePacketBase {
+public class ZapProjectileS2CPacket implements SimplePacket {
     private enum Type {
         BLOCK_HIT,
         ENTITY_HIT
@@ -80,7 +80,7 @@ public class ZapProjectileS2CPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeEnumConstant(type);
         switch(type) {
             case BLOCK_HIT -> {
@@ -99,10 +99,10 @@ public class ZapProjectileS2CPacket extends SimplePacketBase {
 
     @Override
     @Environment(EnvType.CLIENT)
-    public boolean handle(Context context) {
-        context.enqueueWork(() -> {
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        context.get().queue(() -> {
             // TODO: That looks stupid, why does ClientWorld try to load on server if the method is marked as client-side?
-            World world = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().world);
+            var world = ClientBoundPackets.world();
             switch(type) {
                 case BLOCK_HIT -> SparkParticleData.explodeParticles(world, pos.x, pos.y, pos.z, dir, 20);
                 case ENTITY_HIT -> {
@@ -119,9 +119,9 @@ public class ZapProjectileS2CPacket extends SimplePacketBase {
                         var r = world.random;
                         for(int i = 0; i < 10; ++i) {
                             float pos = r.nextFloat();
-                            var x = MathHelper.lerp(pos, origin.x, end.x);
-                            var y = MathHelper.lerp(pos, origin.y, end.y);
-                            var z = MathHelper.lerp(pos, origin.z, end.z);
+                            var x = Math.lerp(pos, origin.x, end.x);
+                            var y = Math.lerp(pos, origin.y, end.y);
+                            var z = Math.lerp(pos, origin.z, end.z);
                             world.addParticle(SparkParticleData.INSTANCE, x, y, z,
                                     r.nextFloat() - 0.5f, r.nextFloat() - 0.5f, r.nextFloat() - 0.5f);
                         }
@@ -129,6 +129,5 @@ public class ZapProjectileS2CPacket extends SimplePacketBase {
                 }
             }
         });
-        return true;
     }
 }

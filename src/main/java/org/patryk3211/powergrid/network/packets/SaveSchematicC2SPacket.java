@@ -15,17 +15,20 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.Text;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.network.SimplePacket;
 
-public class SaveSchematicC2SPacket extends SimplePacketBase {
+import java.util.function.Supplier;
+
+public class SaveSchematicC2SPacket implements SimplePacket {
     private final BlockPos pos;
     private NbtCompound nbt;
     @Nullable
@@ -57,7 +60,7 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeBoolean(nbt != null);
         if(nbt != null) {
@@ -72,9 +75,10 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
     }
 
     @Override
-    public boolean handle(Context context) {
-        context.enqueueWork(() -> {
-            var world = context.sender().getWorld();
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        var ctx = context.get();
+        ctx.queue(() -> {
+            var world = ctx.getPlayer().getWorld();
             var be = world.getBlockEntity(pos);
             if(be instanceof CircuitDesignTableBlockEntity table) {
                 if(nbt != null) {
@@ -83,7 +87,7 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
                     table.notifyUpdate();
 
                     // Saved successfully.
-                    IMultiScreenHandlerFactory.openScreen(context.sender(), table, table::sendToMenu, 0);
+                    IMultiScreenHandlerFactory.openScreen((ServerPlayerEntity) ctx.getPlayer(), table, table::sendToMenu, 0);
                 } else {
                     if(load) {
                         // Load schematic from item
@@ -95,6 +99,5 @@ public class SaveSchematicC2SPacket extends SimplePacketBase {
                 }
             }
         });
-        return true;
     }
 }

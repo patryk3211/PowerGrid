@@ -19,16 +19,9 @@ import com.simibubi.create.foundation.data.CreateBlockEntityBuilder;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder;
-import com.tterrag.registrate.builders.Builder;
-import com.tterrag.registrate.fabric.RegistryObject;
-import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.Item;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentBuilder;
@@ -36,36 +29,21 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
 import java.util.function.Function;
 
-public class PowerGridRegistrate extends AbstractRegistrate<PowerGridRegistrate> {
+public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<AbstractPowerGridRegistrate> {
     protected Function<Item, TooltipModifier> tooltipModifierFactory;
 
-    protected PowerGridRegistrate(String modid) {
+    protected AbstractPowerGridRegistrate(String modid) {
         super(modid);
     }
 
-    public static PowerGridRegistrate create(String modid) {
-        return new PowerGridRegistrate(modid);
-    }
-
-    public PowerGridRegistrate setTooltipModifierFactory(Function<Item, TooltipModifier> factory) {
+    public AbstractPowerGridRegistrate setTooltipModifierFactory(Function<Item, TooltipModifier> factory) {
         this.tooltipModifierFactory = factory;
         return this.self();
     }
 
     @NotNull
     @Override
-    protected <R, T extends R> RegistryEntry<T> accept(String name, RegistryKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
-        RegistryEntry<T> entry = super.accept(name, type, builder, creator, entryFactory);
-        if(type.equals(RegistryKeys.ITEM) && this.tooltipModifierFactory != null) {
-            TooltipModifier.REGISTRY.registerDeferred(entry.getId(), this.tooltipModifierFactory);
-        }
-
-        return entry;
-    }
-
-    @NotNull
-    @Override
-    public <T extends BlockEntity> CreateBlockEntityBuilder<T, PowerGridRegistrate> blockEntity(String name, BlockEntityBuilder.BlockEntityFactory<T> factory) {
+    public <T extends BlockEntity> CreateBlockEntityBuilder<T, AbstractPowerGridRegistrate> blockEntity(String name, BlockEntityBuilder.BlockEntityFactory<T> factory) {
         return this.blockEntity(this.self(), name, factory);
     }
 
@@ -75,7 +53,7 @@ public class PowerGridRegistrate extends AbstractRegistrate<PowerGridRegistrate>
         return (CreateBlockEntityBuilder<T, P>) this.entry(name, (callback) -> CreateBlockEntityBuilder.create(this, parent, name, callback, factory));
     }
 
-    public <T extends Component> ComponentBuilder<T, PowerGridRegistrate> component(String name, NonNullFunction<ComponentFootprint, T> factory) {
+    public <T extends Component> ComponentBuilder<T, AbstractPowerGridRegistrate> component(String name, NonNullFunction<ComponentFootprint, T> factory) {
         return component(this.self(), name, factory);
     }
 

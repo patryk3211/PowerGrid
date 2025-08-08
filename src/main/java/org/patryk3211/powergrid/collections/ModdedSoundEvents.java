@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.collections;
 
 import com.google.gson.JsonObject;
 import com.simibubi.create.AllSoundEvents;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.data.DataOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.DataWriter;
@@ -189,12 +188,12 @@ public class ModdedSoundEvents {
                 consumer.accept(entry.getSubtitleKey(), entry.getSubtitle());
     }
 
-    public static DataProvider provider(FabricDataOutput output) {
+    public static DataProvider provider(DataOutput output) {
         return new SoundEntryProvider(output);
     }
 
     private static class SoundEntryProvider implements DataProvider {
-        private DataOutput output;
+        private final DataOutput output;
 
         public SoundEntryProvider(DataOutput output) {
             this.output = output;

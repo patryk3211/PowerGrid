@@ -15,15 +15,14 @@
  */
 package org.patryk3211.powergrid;
 
-import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
@@ -39,10 +38,10 @@ public class ForgePowerGridRegistrate extends AbstractPowerGridRegistrate {
 
     @NotNull
     @Override
-    protected <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
+    protected <R, T extends R> RegistryEntry<T> accept(String name, RegistryKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
         RegistryEntry<T> entry = super.accept(name, type, builder, creator, entryFactory);
-        if(type.equals(Registries.ITEM) && this.tooltipModifierFactory != null) {
-            this.addRegisterCallback(name, Registries.ITEM, item -> {
+        if(type.equals(RegistryKeys.ITEM) && this.tooltipModifierFactory != null) {
+            this.addRegisterCallback(name, RegistryKeys.ITEM, item -> {
                 TooltipModifier modifier = tooltipModifierFactory.apply(item);
                 TooltipModifier.REGISTRY.register(item, modifier);
             });

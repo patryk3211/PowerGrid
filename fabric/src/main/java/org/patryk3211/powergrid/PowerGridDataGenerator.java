@@ -22,6 +22,8 @@ import com.tterrag.registrate.providers.ProviderType;
 import io.github.fabricators_of_create.porting_lib.data.ExistingFileHelper;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.data.DataProvider;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
@@ -45,12 +47,11 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(MechanicalCraftingRecipes::new);
 		pack.addProvider(MixingRecipes::new);
 		pack.addProvider(PressingRecipes::new);
-		pack.addProvider((output, registriesFuture) ->
-				ModdedSoundEvents.provider(new FabricDataGenerator(
-					output.getOutputFolder(),
-					output.getModContainer(),
-					output.isStrictValidationEnabled(),
-					registriesFuture
+		pack.addProvider((FabricDataGenerator.Pack.Factory<DataProvider>) output ->
+				ModdedSoundEvents.provider(new FabricDataOutput(
+						output.getModContainer(),
+						output.getPath(),
+						output.isStrictValidationEnabled()
 				)));
 		pack.addProvider(MagnetizingRecipes::new);
 		pack.addProvider(BlockTagProvider::new);

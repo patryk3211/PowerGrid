@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.PacketByteBuf;
@@ -24,8 +24,11 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+import org.patryk3211.powergrid.network.SimplePacket;
 
-public class TransmissionLineS2CPacket extends SimplePacketBase {
+import java.util.function.Supplier;
+
+public class TransmissionLineS2CPacket implements SimplePacket {
     public final IWireEndpoint endpoint1;
     public final IWireEndpoint endpoint2;
     public final float lineResistance;
@@ -49,7 +52,7 @@ public class TransmissionLineS2CPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeNbt(endpoint1.serialize());
         buf.writeNbt(endpoint2.serialize());
         buf.writeFloat(lineResistance);
@@ -59,8 +62,7 @@ public class TransmissionLineS2CPacket extends SimplePacketBase {
 
     @Override
     @Environment(EnvType.CLIENT)
-    public boolean handle(Context context) {
-        context.enqueueWork(() -> ClientElectricNetwork.partialTrackedLine(this));
-        return true;
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        context.get().queue(() -> ClientElectricNetwork.partialTrackedLine(this));
     }
 }

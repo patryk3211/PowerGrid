@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.network;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
-import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
+import dev.architectury.networking.NetworkManager;
+import net.minecraft.network.PacketByteBuf;
 
-public class ServerBoundPackets {
-    public static void init() {
-        ServerPlayNetworking.registerGlobalReceiver(BlockWireCutC2SPacket.TYPE, BlockWireCutC2SPacket::handler);
-        ServerPlayNetworking.registerGlobalReceiver(BlockWireAttachC2SPacket.TYPE, BlockWireAttachC2SPacket::handler);
-    }
+import java.util.function.Supplier;
+
+public interface SimplePacket {
+    void encode(PacketByteBuf buf);
+
+    void handle(Supplier<NetworkManager.PacketContext> context);
 }

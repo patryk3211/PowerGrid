@@ -15,15 +15,18 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Hand;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+import org.patryk3211.powergrid.network.SimplePacket;
 
-public class TransformerWindingC2SPacket extends SimplePacketBase {
+import java.util.function.Supplier;
+
+public class TransformerWindingC2SPacket implements SimplePacket {
     private final int nTurns;
     private final Hand hand;
 
@@ -38,15 +41,16 @@ public class TransformerWindingC2SPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeInt(nTurns);
         buf.writeEnumConstant(hand);
     }
 
     @Override
-    public boolean handle(Context context) {
-        context.enqueueWork(() -> {
-            var stack = context.getSender().getStackInHand(hand);
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        var ctx = context.get();
+        ctx.queue(() -> {
+            var stack = ctx.getPlayer().getStackInHand(hand);
             if(!(stack.getItem() instanceof IWire) || !stack.hasNbt())
                 return;
             if(stack.getNbt().contains("Turns")) {
@@ -66,6 +70,5 @@ public class TransformerWindingC2SPacket extends SimplePacketBase {
                 stack.setNbt(nbt);
             }
         });
-        return true;
     }
 }

@@ -15,84 +15,70 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import me.pepperbell.simplenetworking.SimpleChannel;
+import dev.architectury.networking.NetworkChannel;
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.electricity.zapper.ElectroZapperPacket;
+import org.patryk3211.powergrid.electricity.zapper.ElectroZapperS2CPacket;
+import org.patryk3211.powergrid.network.SimplePacket;
 import org.patryk3211.powergrid.network.packets.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-import static com.simibubi.create.foundation.networking.SimplePacketBase.NetworkDirection.PLAY_TO_CLIENT;
-import static com.simibubi.create.foundation.networking.SimplePacketBase.NetworkDirection.PLAY_TO_SERVER;
+public enum ModdedPackets {
+    ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket::new),
+    ZAP_PROJECTILE(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new),
+    SOLVER_SYNC(SolverStateS2CPacket.class, SolverStateS2CPacket::new),
+    TRANSMISSION_LINE(TransmissionLineS2CPacket.class, TransmissionLineS2CPacket::new),
+    LIGHTNING_SYNC(LightningSyncS2CPacket.class, LightningSyncS2CPacket::new),
+    ENTITY_DATA(EntityDataS2CPacket.class, EntityDataS2CPacket::new),
 
-/**
- * @see com.simibubi.create.AllPackets
- */
-public class ModdedPackets {
+    TRANSFORMER_WINDING(TransformerWindingC2SPacket.class, TransformerWindingC2SPacket::new),
+    CHANGE_SCREEN(ChangeScreenC2SPacket.class, ChangeScreenC2SPacket::new),
+    SAVE_SCHEMATIC(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new),
+    BLOCK_WIRE_CUT(BlockWireCutC2SPacket.class, BlockWireCutC2SPacket::new),
+    BLOCK_WIRE_ATTACH(BlockWireAttachC2SPacket.class, BlockWireAttachC2SPacket::new),
+
+    UPDATE_COMPONENT(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new),
+    ;
+
     public static final Identifier CHANNEL_NAME = PowerGrid.asResource("main");
-    private static final List<PacketType<?>> allPackets = new ArrayList<>();
-    private static SimpleChannel channel;
+    private static NetworkChannel channel;
 
-    // TODO: Move all packets to the simple packet thing
-    public static final Identifier ENTITY_DATA_PACKET = new Identifier(PowerGrid.MOD_ID, "entity_data");
+    private final PacketType<?> type;
 
-    public static final Identifier BLOCK_WIRE_CUT = PowerGrid.asResource("block_wire_cut");
-    public static final Identifier BLOCK_WIRE_ATTACH = PowerGrid.asResource("block_wire_attach");
-
-    public static final PacketType<ElectroZapperPacket> ELECTRO_ZAPPER_SHOOT = register(ElectroZapperPacket.class, ElectroZapperPacket::new, PLAY_TO_CLIENT);
-    public static final PacketType<ZapProjectileS2CPacket> ZAP_PROJECTILE = register(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new, PLAY_TO_CLIENT);
-
-    public static final PacketType<LightningSyncS2CPacket> LIGHTNING_SYNC = register(LightningSyncS2CPacket.class, LightningSyncS2CPacket::new, PLAY_TO_CLIENT);
-    public static final PacketType<SolverStateS2CPacket> SOLVER_STATE_SYNC = register(SolverStateS2CPacket.class, SolverStateS2CPacket::new, PLAY_TO_CLIENT);
-
-    public static final PacketType<ChangeScreenC2SPacket> CHANGE_SCREEN = register(ChangeScreenC2SPacket.class, ChangeScreenC2SPacket::new, PLAY_TO_SERVER);
-    public static final PacketType<SaveSchematicC2SPacket> SAVE_SCHEMATIC = register(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new, PLAY_TO_SERVER);
-    public static final PacketType<TransformerWindingC2SPacket> TRANSFORMER_WINDING = register(TransformerWindingC2SPacket.class, TransformerWindingC2SPacket::new, PLAY_TO_SERVER);
-
-    public static final PacketType<UpdateComponentBiPacket> UPDATE_COMPONENT_S2C = register(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new, PLAY_TO_CLIENT);
-    public static final PacketType<UpdateComponentBiPacket> UPDATE_COMPONENT_C2S = register(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new, PLAY_TO_SERVER);
-
-    public static final PacketType<TransmissionLineS2CPacket> TRANSMISSION_LINE = register(TransmissionLineS2CPacket.class, TransmissionLineS2CPacket::new, PLAY_TO_CLIENT);
-
-    private static <T extends SimplePacketBase> PacketType<T> register(Class<T> type, Function<PacketByteBuf, T> factory, SimplePacketBase.NetworkDirection direction) {
-        var packetType = new PacketType<>(type, factory, direction);
-        allPackets.add(packetType);
-        return packetType;
+    <T extends SimplePacket> ModdedPackets(Class<T> type, Function<PacketByteBuf, T> factory) {
+        this.type = new PacketType<>(type, SimplePacket::encode, factory, SimplePacket::handle);
     }
 
     public static void registerPackets() {
-        channel = new SimpleChannel(CHANNEL_NAME);
-        for(var packet : allPackets)
-            packet.register();
+        channel = NetworkChannel.create(CHANNEL_NAME);
+        for(var packet : values())
+            packet.type.register();
     }
 
-    public static SimpleChannel getChannel() {
+    public static NetworkChannel getChannel() {
         return channel;
     }
 
-    public static class PacketType<T extends SimplePacketBase> {
-        private static int index = 0;
+    public static class PacketType<T> {
+        private final BiConsumer<T, PacketByteBuf> encoder;
+        private final Function<PacketByteBuf, T> decoder;
+        private final BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler;
+        private final Class<T> type;
 
-        private Function<PacketByteBuf, T> decoder;
-        private Class<T> type;
-        private SimplePacketBase.NetworkDirection direction;
-
-        private PacketType(Class<T> type, Function<PacketByteBuf, T> factory, SimplePacketBase.NetworkDirection direction) {
-            decoder = factory;
+        private PacketType(Class<T> type, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler) {
+            this.encoder = encoder;
+            this.decoder = decoder;
+            this.handler = handler;
             this.type = type;
-            this.direction = direction;
         }
 
         private void register() {
-            switch (direction) {
-                case PLAY_TO_CLIENT -> getChannel().registerS2CPacket(type, index++, decoder);
-                case PLAY_TO_SERVER -> getChannel().registerC2SPacket(type, index++, decoder);
-            }
+            getChannel().register(type, encoder, decoder, handler);
         }
     }
 }

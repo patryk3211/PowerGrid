@@ -242,8 +242,12 @@ dependencies {
 
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_fabric_version}")
+	modCompileOnly("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_fabric_version}")
 	modCompileOnly("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
+
+	// Roughly Enough Items - Common
+	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api:${rei_version}"
+//	modCompileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin:${rei_version}"
 
 //	modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
 //	modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_forge_version}") { transitive false }

@@ -16,12 +16,16 @@
 package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
+import org.patryk3211.powergrid.network.SimplePacket;
 
-public class ChangeScreenC2SPacket extends SimplePacketBase {
+import java.util.function.Supplier;
+
+public class ChangeScreenC2SPacket implements SimplePacket {
     private final BlockPos blockPos;
     private final int screenIndex;
 
@@ -36,23 +40,23 @@ public class ChangeScreenC2SPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeBlockPos(blockPos);
         buf.writeInt(screenIndex);
     }
 
     @Override
-    public boolean handle(Context context) {
-        context.enqueueWork(() -> {
-            var player = context.sender();
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        var ctx = context.get();
+        ctx.queue(() -> {
+            var player = ctx.getPlayer();
             if(player == null)
                 return;
             var genericBe = player.getWorld().getBlockEntity(blockPos);
             if(!(genericBe instanceof SmartBlockEntity) || !(genericBe instanceof IMultiScreenHandlerFactory))
                 return;
             var be = (SmartBlockEntity & IMultiScreenHandlerFactory) genericBe;
-            IMultiScreenHandlerFactory.openScreen(player, be, be::sendToMenu, screenIndex);
+            IMultiScreenHandlerFactory.openScreen((ServerPlayerEntity) player, be, be::sendToMenu, screenIndex);
         });
-        return true;
     }
 }

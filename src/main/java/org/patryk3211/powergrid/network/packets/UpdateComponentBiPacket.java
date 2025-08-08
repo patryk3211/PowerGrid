@@ -15,19 +15,12 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import com.simibubi.create.foundation.mixin.fabric.BlockableEventLoopAccessor;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
-import me.pepperbell.simplenetworking.SimpleChannel;
+import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -36,8 +29,11 @@ import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.network.SimplePacket;
 
-public class UpdateComponentBiPacket extends SimplePacketBase {
+import java.util.function.Supplier;
+
+public class UpdateComponentBiPacket implements SimplePacket {
     private final BlockPos pos;
     private final int componentId;
     private final Identifier propertyId;
@@ -69,13 +65,12 @@ public class UpdateComponentBiPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeInt(componentId);
         buf.writeIdentifier(propertyId);
         buf.writeNbt(propertyValue);
     }
-
 
     public void handle(World world) {
         var be = world.getBlockEntity(pos, ModdedBlockEntities.CIRCUIT_BOARD.get());
@@ -91,31 +86,27 @@ public class UpdateComponentBiPacket extends SimplePacketBase {
         });
     }
 
-    @Override
     @Environment(EnvType.CLIENT)
-    public void handle(MinecraftClient client, ClientPlayNetworkHandler listener, PacketSender responseSender, SimpleChannel channel) {
+    public void handleClient() {
         var world = ClientBoundPackets.world();
-        if(client.isOnThread()) {
-            handle(world);
-        } else {
-            ((BlockableEventLoopAccessor) client).callSubmitAsync(() -> handle(world));
-        }
+        handle(world);
     }
 
-    @Override
-    public void handle(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler listener, PacketSender responseSender, SimpleChannel channel) {
+    public void handleServer(PlayerEntity player) {
         var world = player.getWorld();
         if(!player.canModifyAt(world, pos))
             return;
-        if(server.isOnThread()) {
-            handle(world);
-        } else {
-            ((BlockableEventLoopAccessor) server).callSubmitAsync(() -> handle(world));
-        }
+        handle(world);
     }
 
     @Override
-    public boolean handle(Context context) {
-        return true;
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        var ctx = context.get();
+        ctx.queue(() -> {
+            switch (ctx.getEnv()) {
+                case CLIENT -> handleClient();
+                case SERVER -> handleServer(ctx.getPlayer());
+            }
+        });
     }
 }

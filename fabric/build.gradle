@@ -27,6 +27,12 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_fabric_version}")
+
+    // Roughly Enough Items - Fabric
+    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
+    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+
+    modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
 }
 
 loom {

@@ -21,17 +21,12 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
-import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
-import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
-import net.minecraft.client.render.model.BakedModelManager;
-import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.Window;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.collections.*;
@@ -42,7 +37,6 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
-import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.ponder.PonderIndex;
 import org.patryk3211.powergrid.ponder.PonderTags;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
@@ -68,7 +62,6 @@ public class PowerGridClient implements ClientModInitializer, ModelLoadingPlugin
 
 		ClientElectricNetwork.init();
 		TerminalHandler.init();
-		ClientBoundPackets.init();
 		ModdedPackets.getChannel().initClientListener();
 		WirePreview.init();
 		PlacementOverlay.init();

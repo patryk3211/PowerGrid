@@ -15,53 +15,58 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
-import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.network.SimplePacket;
 
-import java.util.List;
+import java.util.function.Supplier;
 
-public class EntityDataS2CPacket {
-    private Entity entity;
+public class EntityDataS2CPacket implements SimplePacket {
     public final int entityId;
-    public final PacketByteBuf buffer;
-    public final byte type;
+    public final NbtCompound data;
 
-    public EntityDataS2CPacket(Entity entity, int type) {
-        this.entity = entity;
-        this.type = (byte) type;
-        buffer = PacketByteBufs.create();
+    public EntityDataS2CPacket(Entity entity, NbtCompound data) {
         entityId = entity.getId();
-        buffer.writeInt(entityId);
-        buffer.writeByte(type);
+        this.data = data;
     }
 
     public EntityDataS2CPacket(PacketByteBuf buffer) {
         entityId = buffer.readInt();
-        type = buffer.readByte();
-        this.buffer = buffer;
+        data = buffer.readNbt();
     }
 
-    public Packet<ClientPlayPacketListener> packet() {
-        return ServerPlayNetworking.createS2CPacket(ModdedPackets.ENTITY_DATA_PACKET, this.buffer);
+    @Override
+    public void encode(PacketByteBuf buf) {
+        buf.writeInt(entityId);
+        buf.writeNbt(data);
     }
 
-    public void send() {
-        if(entity == null)
-            throw new IllegalStateException();
-        for(var player : PlayerLookup.tracking(entity)) {
-            ServerPlayNetworking.send(player, ModdedPackets.ENTITY_DATA_PACKET, buffer);
-        }
+    @Override
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        context.get().queue(() -> {
+            var world = ClientBoundPackets.world();
+            var entity = world.getEntityById(entityId);
+            if(entity instanceof IConsumer consumer)
+                consumer.onEntityDataPacket(data);
+        });
     }
+
+    //    public Packet<ClientPlayPacketListener> packet() {
+//        return ServerPlayNetworking.createS2CPacket(ModdedPackets.ENTITY_DATA_PACKET, this.buffer);
+//    }
+
+//    public void send() {
+//        if(entity == null)
+//            throw new IllegalStateException();
+//        for(var player : PlayerLookup.tracking(entity)) {
+//            ServerPlayNetworking.send(player, ModdedPackets.ENTITY_DATA_PACKET, buffer);
+//        }
+//    }
 
     public interface IConsumer {
-        void onEntityDataPacket(EntityDataS2CPacket packet);
+        void onEntityDataPacket(NbtCompound packet);
     }
 }

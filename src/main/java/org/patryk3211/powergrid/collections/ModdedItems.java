@@ -22,15 +22,14 @@ import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
+import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.PowerGridRegistrate;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
-import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
@@ -154,7 +153,7 @@ public class ModdedItems {
         return REGISTRATE.item(name, SequencedAssemblyItem::new).register();
     }
 
-    private static ItemBuilder<SequencedAssemblyItem, PowerGridRegistrate> sequencedIngredientBuilder(String name) {
+    private static ItemBuilder<SequencedAssemblyItem, AbstractPowerGridRegistrate> sequencedIngredientBuilder(String name) {
         return REGISTRATE.item(name, SequencedAssemblyItem::new);
     }
 

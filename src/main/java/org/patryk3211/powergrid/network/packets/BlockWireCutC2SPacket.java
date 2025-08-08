@@ -15,18 +15,15 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
+import org.patryk3211.powergrid.network.SimplePacket;
 
-public class BlockWireCutC2SPacket implements FabricPacket {
-    public static final PacketType<BlockWireCutC2SPacket> TYPE = PacketType.create(ModdedPackets.BLOCK_WIRE_CUT, BlockWireCutC2SPacket::new);
+import java.util.function.Supplier;
 
+public class BlockWireCutC2SPacket implements SimplePacket {
     public final int entityId;
     public final int index1;
     public final int point1;
@@ -50,7 +47,7 @@ public class BlockWireCutC2SPacket implements FabricPacket {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeInt(entityId);
         buf.writeInt(index1);
         buf.writeInt(point1);
@@ -59,17 +56,14 @@ public class BlockWireCutC2SPacket implements FabricPacket {
     }
 
     @Override
-    public PacketType<?> getType() {
-        return TYPE;
-    }
-
-    public static void handler(BlockWireCutC2SPacket packet, ServerPlayerEntity player, PacketSender response) {
-        var entity = player.getWorld().getEntityById(packet.entityId);
-        if(!(entity instanceof BlockWireEntity wire)) {
-            PowerGrid.LOGGER.error("Received block wire cut packet with invalid entity");
-            return;
-        }
-
-
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        var ctx = context.get();
+        ctx.queue(() -> {
+            var entity = ctx.getPlayer().getWorld().getEntityById(entityId);
+            if(!(entity instanceof BlockWireEntity wire)) {
+                PowerGrid.LOGGER.error("Received block wire cut packet with invalid entity");
+                return;
+            }
+        });
     }
 }

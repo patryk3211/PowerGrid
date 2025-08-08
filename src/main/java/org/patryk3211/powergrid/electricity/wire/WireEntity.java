@@ -227,12 +227,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     private EntityDataS2CPacket createExtraDataPacket() {
-        var extra = new EntityDataS2CPacket(this, 0);
-        extra.buffer.writeInt(dataVersion++);
         var tag = new NbtCompound();
         writeCustomDataToNbt(tag);
-        extra.buffer.writeNbt(tag);
-        return extra;
+        tag.putInt("Version", dataVersion++);
+        return new EntityDataS2CPacket(this, tag);
     }
 
     public void sendExtraData() {
@@ -252,18 +250,14 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     @Override
-    public void onEntityDataPacket(EntityDataS2CPacket packet) {
-        if(packet.type == 0) {
-            int version = packet.buffer.readInt();
-            if(version < dataVersion) {
-                // Discard outdated packet.
-                return;
-            }
-            var tag = packet.buffer.readNbt();
-            if (tag != null)
-                readCustomDataFromNbt(tag);
-            dataVersion = version + 1;
+    public void onEntityDataPacket(NbtCompound data) {
+        int version = data.getInt("Version");
+        if(version < dataVersion) {
+            // Discard outdated packet.
+            return;
         }
+        readCustomDataFromNbt(data);
+        dataVersion = version + 1;
     }
 
     @Override

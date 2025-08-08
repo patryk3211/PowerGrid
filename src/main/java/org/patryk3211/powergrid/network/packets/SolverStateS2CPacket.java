@@ -16,11 +16,10 @@
 package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.World;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
@@ -28,13 +27,15 @@ import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
-public class SolverStateS2CPacket extends SimplePacketBase {
+public class SolverStateS2CPacket implements SimplePacket {
     private final Map<BlockPos, double[]> solverValues = new HashMap<>();
     public final Set<ChunkPos> chunks = new HashSet<>();
 
@@ -87,7 +88,7 @@ public class SolverStateS2CPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void encode(PacketByteBuf buf) {
         buf.writeInt(solverValues.size());
         for(var entry : solverValues.entrySet()) {
             buf.writeBlockPos(entry.getKey());
@@ -99,12 +100,12 @@ public class SolverStateS2CPacket extends SimplePacketBase {
     }
 
     @Override
-    public boolean handle(Context context) {
-        context.enqueueWork(() -> {
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        context.get().queue(() -> {
             var world = ClientBoundPackets.world();
             for(var entry : solverValues.entrySet()) {
                 var pos = entry.getKey();
-                if(!world.isChunkLoaded(ChunkSectionPos.getSectionCoord(pos.getX()), ChunkSectionPos.getSectionCoord(pos.getZ())))
+                if(!world.isChunkLoaded(pos))
                     continue;
                 var behaviour = BlockEntityBehaviour.get(world, pos, ElectricBehaviour.TYPE);
                 if(behaviour == null)
@@ -136,6 +137,5 @@ public class SolverStateS2CPacket extends SimplePacketBase {
                 }
             }
         });
-        return true;
     }
 }

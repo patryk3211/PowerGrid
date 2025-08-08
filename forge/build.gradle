@@ -35,6 +35,10 @@ dependencies {
     modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
 
     modImplementation "dev.architectury:architectury-forge:${rootProject.architectury_api_version}"
+
+    // Roughly Enough Items - Forge
+    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
+    modRuntimeOnly "me.shedaniel:RoughlyEnoughItems-forge:$rei_version"
 }
 
 loom {

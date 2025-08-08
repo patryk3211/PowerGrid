@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.equipment;
 
+import com.simibubi.create.AllItems;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.recipes.RecipeTags;
 
 public class ZincArmorMaterial implements ArmorMaterial {
     public static final ZincArmorMaterial INSTANCE = new ZincArmorMaterial();
@@ -56,7 +56,7 @@ public class ZincArmorMaterial implements ArmorMaterial {
 
     @Override
     public Ingredient getRepairIngredient() {
-        return Ingredient.fromTag(RecipeTags.zincIngot());
+        return Ingredient.ofItems(AllItems.ZINC_INGOT);
     }
 
     @Override

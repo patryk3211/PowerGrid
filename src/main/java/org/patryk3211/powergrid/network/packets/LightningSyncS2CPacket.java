@@ -17,14 +17,17 @@ package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
-import com.simibubi.create.foundation.networking.SimplePacketBase;
+import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.PacketByteBuf;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.network.SimplePacket;
 
-public class LightningSyncS2CPacket extends SimplePacketBase {
+import java.util.function.Supplier;
+
+public class LightningSyncS2CPacket implements SimplePacket {
     private final int entityId;
 
     public LightningSyncS2CPacket(MovementContext context) {
@@ -36,14 +39,14 @@ public class LightningSyncS2CPacket extends SimplePacketBase {
     }
 
     @Override
-    public void write(PacketByteBuf buffer) {
+    public void encode(PacketByteBuf buffer) {
         buffer.writeInt(entityId);
     }
 
     @Override
     @Environment(EnvType.CLIENT)
-    public boolean handle(Context context) {
-        context.enqueueWork(() -> {
+    public void handle(Supplier<NetworkManager.PacketContext> context) {
+        context.get().queue(() -> {
             var world = ClientBoundPackets.world();
             if(world.getEntityById(entityId) instanceof AbstractContraptionEntity entity) {
                 entity.getContraption().forEachActor(world, (behaviour, movementContext) -> {
@@ -58,6 +61,5 @@ public class LightningSyncS2CPacket extends SimplePacketBase {
                 });
             }
         });
-        return true;
     }
 }

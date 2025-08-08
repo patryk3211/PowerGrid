@@ -21,6 +21,9 @@ import net.fabricmc.api.Environment;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtFloat;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
@@ -185,14 +188,13 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
-    public void onEntityDataPacket(EntityDataS2CPacket packet) {
-        if(packet.type == 1) {
-            var buffer = packet.buffer;
-            terminalPos1 = new Vec3d(buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
-            terminalPos2 = new Vec3d(buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
-            updateRenderParams();
+    public void onEntityDataPacket(NbtCompound data) {
+        if(data.contains("V")) {
+            var list = data.getList("V", NbtElement.FLOAT_TYPE);
+            terminalPos1 = new Vec3d(list.getFloat(0), list.getFloat(1), list.getFloat(2));
+            terminalPos2 = new Vec3d(list.getFloat(3), list.getFloat(4), list.getFloat(5));
         } else {
-            super.onEntityDataPacket(packet);
+            super.onEntityDataPacket(data);
         }
     }
 
@@ -304,18 +306,19 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 // I guess we have to do position update like that because otherwise,
                 // the update method would have to go into the tick function
                 // and that is probably slower.
-                var packet = new EntityDataS2CPacket(this, 1);
-                var buffer = packet.buffer;
-                buffer.writeFloat((float) terminalPos1.x);
-                buffer.writeFloat((float) terminalPos1.y);
-                buffer.writeFloat((float) terminalPos1.z);
-                buffer.writeFloat((float) terminalPos2.x);
-                buffer.writeFloat((float) terminalPos2.y);
-                buffer.writeFloat((float) terminalPos2.z);
+
+                var tag = new NbtCompound();
+                var list = new NbtList();
+                list.add(NbtFloat.of((float) terminalPos1.x));
+                list.add(NbtFloat.of((float) terminalPos1.y));
+                list.add(NbtFloat.of((float) terminalPos1.z));
+                list.add(NbtFloat.of((float) terminalPos2.x));
+                list.add(NbtFloat.of((float) terminalPos2.y));
+                list.add(NbtFloat.of((float) terminalPos2.z));
+                tag.put("V", list);
+                var packet = new EntityDataS2CPacket(this, tag);
                 packet.send();
             }
-
-            // TODO: There should be some line-of-sight check here to forbid wires going through blocks (it should also be in the entity's tick function).
         }
     }
 }

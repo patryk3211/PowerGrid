@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.equipment;
 
+import com.simibubi.create.AllItems;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.recipe.Ingredient;
-import org.patryk3211.powergrid.recipes.RecipeTags;
 
 public class ZincToolMaterial implements ToolMaterial {
     public static final ZincToolMaterial INSTANCE = new ZincToolMaterial();
@@ -49,6 +49,6 @@ public class ZincToolMaterial implements ToolMaterial {
 
     @Override
     public Ingredient getRepairIngredient() {
-        return Ingredient.fromTag(RecipeTags.zincIngot());
+        return Ingredient.ofItems(AllItems.ZINC_INGOT);
     }
 }
