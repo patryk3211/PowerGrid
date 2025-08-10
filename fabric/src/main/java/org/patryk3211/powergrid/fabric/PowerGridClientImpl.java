@@ -17,14 +17,15 @@ package org.patryk3211.powergrid.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardModel;
+import org.patryk3211.powergrid.PowerGridClient;
+import org.patryk3211.powergrid.circuits.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 
 public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPlugin {
     @Override
     public void onInitializeClient() {
         ModelLoadingPlugin.register(this);
-
+        PowerGridClient.initClient();
     }
 
     @Override

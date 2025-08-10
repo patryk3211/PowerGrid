@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.2"
-}
-
-architectury {
-    forge()
-}
+architectury.forge()
 
 configurations {
     developmentForge.extendsFrom common
@@ -42,6 +36,8 @@ dependencies {
 
     compileOnly("io.github.llamalad7:mixinextras-common:${mixin_extras_version}")
     annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")))
+
+    shadowCommon(project(path: rootProject.path, configuration: "transformProductionForge")) { transitive false }
 }
 
 loom {

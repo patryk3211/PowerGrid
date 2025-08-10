@@ -19,6 +19,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
@@ -26,15 +27,29 @@ import java.util.*;
 
 @Environment(EnvType.CLIENT)
 public class ComponentModels {
-    public static Identifier modelId(Identifier componentId) {
+    public static ModelIdentifier modelId(Identifier componentId) {
+        return new ModelIdentifier(new Identifier(componentId.getNamespace(), "component/" + componentId.getPath()), "component");
+    }
+
+    public static Identifier rawModelId(Identifier componentId) {
         return new Identifier(componentId.getNamespace(), "component/" + componentId.getPath());
     }
 
-    public static Set<Identifier> collectIds() {
-        var ids = new HashSet<Identifier>();
+    public static Set<ModelIdentifier> collectIds() {
+        var ids = new HashSet<ModelIdentifier>();
         for(var component : ComponentRegistry.REGISTRY) {
             for(var id : component.requestedModels()) {
                 ids.add(modelId(id));
+            }
+        }
+        return ids;
+    }
+
+    public static Set<Identifier> collectRawIds() {
+        var ids = new HashSet<Identifier>();
+        for(var component : ComponentRegistry.REGISTRY) {
+            for(var id : component.requestedModels()) {
+                ids.add(rawModelId(id));
             }
         }
         return ids;

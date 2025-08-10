@@ -2,6 +2,7 @@ plugins {
 	id 'maven-publish'
 	id 'architectury-plugin' version '3.4-SNAPSHOT'
 	id 'dev.architectury.loom' version '1.9+' apply false
+	id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
 architectury {
@@ -68,25 +69,15 @@ allprojects {
 //			}
 //		}
 
-//		runs {
-//			named("datagen") {
-//				vmArg("-Dfabric-api.datagen")
-//				vmArg("-Dfabric-api.datagen.modid=powergrid")
-//				vmArg("-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
-//			}
-//
-//			named("client") {
-//				vmArg("-enableassertions")
-//				vmArg("-Dfabric.development=true")
-//				vmArg("-javaagent:\"/home/patryk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar\"")
-//			}
-//		}
-
 		log4jConfigs.from(file('log4j-dev.xml'))
 	}
 
 	configurations {
+		common
+		shadowCommon
 		extraLibs
+		compileClasspath.extendsFrom extraLibs
+		runtimeClasspath.extendsFrom extraLibs
 	}
 
 	dependencies {
@@ -98,22 +89,7 @@ allprojects {
 //		})
 		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 
-		// Support for unit tests
-//		testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
-
-		// Create - dependencies are added transitively
-//		modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_version}")
-
-//		modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
-
-		// TechReborn Forge Energy API
-//		include modApi("teamreborn:energy:${project.energy_api_version}")
-
-		// Development QOL
-//		modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
-//		modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
-
-		configurations.implementation.extendsFrom(configurations.extraLibs)
+//		configurations.implementation.extendsFrom(configurations.extraLibs)
 	}
 
 	java {
@@ -125,6 +101,8 @@ allprojects {
 }
 
 subprojects {
+	apply plugin: "com.github.johnrengelman.shadow"
+
 	configurations.configureEach {
 		resolutionStrategy {
 			// Make sure the desired version of loader is used. Sometimes old versions are pulled in transitively.
@@ -155,42 +133,62 @@ subprojects {
 	}
 
 	configurations {
-		common
-		shadowCommon
+		common.extendsFrom extraLibs
 		compileClasspath.extendsFrom common
 		runtimeClasspath.extendsFrom common
 	}
 
 	dependencies {
 		common(project(path: rootProject.path, configuration: "namedElements")) { transitive false }
-		shadowCommon(project(path: rootProject.path, configuration: "transformProductionForge")) { transitive false }
 	}
 
 	tasks.register("devBuild", {
 		version = "${project.mod_version}+${project.minecraft_version}-${getGitHash}"
 		dependsOn tasks.build
 	})
+
+	tasks.named("jar") {
+		inputs.property "archivesName", project.base.archivesName
+
+		from("LICENSE") {
+			rename { "${it}_${inputs.properties.archivesName}" }
+		}
+
+		from("NOTICE") {
+			rename { "${it}_${inputs.properties.archivesName}" }
+		}
+
+		from {
+			configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+		}
+	}
+
+	tasks.named("remapJar") {
+		inputFile.set shadowJar.archiveFile
+		dependsOn shadowJar
+	}
+
+	tasks.named("shadowJar") {
+		configurations = [ project.configurations.shadowCommon ]
+		archiveClassifier = "dev-shadow"
+	}
+
+	tasks.named("sourcesJar") {
+		def commonSources = rootProject.sourcesJar
+		dependsOn commonSources
+		from commonSources.archiveFile.map { zipTree(it) }
+	}
+
+	components.named("java") {
+		withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+			skip()
+		}
+	}
 }
 
 //fabricApi {
 //	configureDataGeneration {
 //		client = true
-//	}
-//}
-
-//jar {
-//	inputs.property "archivesName", project.base.archivesName
-//
-//	from("LICENSE") {
-//		rename { "${it}_${inputs.properties.archivesName}" }
-//	}
-//
-//	from("NOTICE") {
-//		rename { "${it}_${inputs.properties.archivesName}" }
-//	}
-//
-//	from {
-//		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
 //	}
 //}
 
@@ -202,10 +200,6 @@ def getGitHash = { ->
 	}
 	return stdout.toString().trim()
 }
-
-//test {
-//	useJUnitPlatform()
-//}
 
 // configure the maven publication
 //publishing {
@@ -228,13 +222,7 @@ def getGitHash = { ->
 /*    -------========= COMMON PROJECT CONFIGURATION =========-------    */
 
 architectury {
-	common(rootProject.enabled_platforms.split(','))
-//	common {
-//		for(p in rootProject.subprojects) {
-////			if(p != project) {
-////			}
-//		}
-//	}
+	common(project.enabled_platforms.split(','))
 }
 
 dependencies {
@@ -255,9 +243,16 @@ dependencies {
 //	modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}") { transitive false }
 //	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}") { transitive false }
 
-	modImplementation "dev.architectury:architectury:${rootProject.architectury_api_version}"
+	// Support for unit tests
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+
+	modApi "dev.architectury:architectury:${project.architectury_api_version}"
 
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
+}
+
+test {
+	useJUnitPlatform()
 }
 
 sourceSets.main {

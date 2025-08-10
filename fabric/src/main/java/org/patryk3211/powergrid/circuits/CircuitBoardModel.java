@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.circuits.circuitboard;
+package org.patryk3211.powergrid.circuits;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -34,6 +34,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockRenderView;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.circuits.components.IRenderedComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
@@ -120,7 +121,6 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
         return this;
     }
 
-    @Override
     public boolean isVanillaAdapter() {
         return false;
     }

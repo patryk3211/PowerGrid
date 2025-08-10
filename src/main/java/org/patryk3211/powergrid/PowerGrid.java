@@ -24,7 +24,6 @@ import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
@@ -44,9 +43,6 @@ public class PowerGrid  {
 
 		ComponentRegistry.init();
 		ModdedSoundEvents.prepare();
-
-//		Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, "main"), ITEM_GROUP);
-//		ITEM_GROUP_KEY = Registries.ITEM_GROUP.getKey(ITEM_GROUP).get();
 
 		REGISTRATE = createRegistrate();
 
@@ -78,13 +74,6 @@ public class PowerGrid  {
 		AllMovementBehaviours.registerBehaviour(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
 	}
 
-	private static void registerRecipes() {
-		var magnetizing = MagnetizingRecipe.TYPE_INFO;
-		// TODO: Fix
-//		Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, magnetizing.getId(), magnetizing.getSerializer());
-//		Registry.register(BuiltInRegistries.RECIPE_TYPE, magnetizing.getId(), magnetizing.getType());
-	}
-
 	public static Identifier asResource(String path) {
 		return new Identifier(MOD_ID, path);
 	}
@@ -95,6 +84,11 @@ public class PowerGrid  {
 
 	@ExpectPlatform
 	public static AbstractPowerGridRegistrate createRegistrate() {
+		throw new AssertionError();
+	}
+
+	@ExpectPlatform
+	public static void registerRecipes() {
 		throw new AssertionError();
 	}
 

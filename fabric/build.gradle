@@ -13,29 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-architectury {
-    fabric()
-}
+architectury.fabric()
 
 configurations {
-    development.extendsFrom common
+    developmentFabric.extendsFrom common
 }
 
 dependencies {
+    implementation "org.ejml:ejml-all:0.44.0"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_fabric_version}")
 
+    modApi "dev.architectury:architectury-fabric:${project.architectury_api_version}"
+
     // Roughly Enough Items - Fabric
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
-    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 
     // TechReborn Forge Energy API
     include modApi("teamreborn:energy:${project.energy_api_version}")
 
+    // Development QOL
     modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
+    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+
+    shadowCommon(project(path: rootProject.path, configuration: "transformProductionFabric")) { transitive false }
 }
 
 loom {
@@ -49,10 +52,10 @@ loom {
             vmArg("-Dporting_lib.datagen.existing_resources=${file("src/main/resources")}")
         }
 
-//        named("client") {
-//            vmArg("-enableassertions")
-//            vmArg("-Dfabric.development=true")
-//            vmArg("-javaagent:\"/home/patryk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar\"")
-//        }
+        named("client") {
+            vmArg("-enableassertions")
+            vmArg("-Dfabric.development=true")
+            vmArg("-javaagent:\"/home/patryk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar\"")
+        }
     }
 }
