@@ -15,11 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
-import com.jozufozu.flywheel.backend.Backend;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import dev.engine_room.flywheel.api.visualization.VisualizationManager;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -34,23 +34,23 @@ public class HvSwitchRenderer extends KineticBlockEntityRenderer<HvSwitchBlockEn
 
     @Override
     protected void renderSafe(HvSwitchBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
-        if(Backend.canUseInstancing(be.getWorld()))
+        if(VisualizationManager.supportsVisualization(be.getWorld()))
             return;
 
         var state = be.getCachedState();
         super.renderSafe(be, partialTicks, ms, buffer, light, overlay);
 
         var facing = state.get(HvSwitchBlock.HORIZONTAL_FACING);
-        var rod = CachedBufferer.partialFacing(ModdedPartialModels.HV_SWITCH_ROD, state, facing);
+        var rod = CachedBuffers.partialFacing(ModdedPartialModels.HV_SWITCH_ROD, state, facing);
         float angle = (1.0f - be.rod.getValue(partialTicks)) * (float) Math.PI * 0.5f;
         rod
-                .rotateCentered(facing.rotateYClockwise(), angle)
+                .rotateCentered(angle, facing.rotateYClockwise())
                 .light(light)
                 .renderInto(ms, buffer.getBuffer(RenderLayer.getSolid()));
     }
 
     @Override
     protected SuperByteBuffer getRotatedModel(HvSwitchBlockEntity be, BlockState state) {
-        return CachedBufferer.partialFacingVertical(AllPartialModels.COGWHEEL_SHAFT, state, state.get(HvSwitchBlock.HORIZONTAL_FACING).rotateYClockwise());
+        return CachedBuffers.partialFacingVertical(AllPartialModels.COGWHEEL_SHAFT, state, state.get(HvSwitchBlock.HORIZONTAL_FACING).rotateYClockwise());
     }
 }

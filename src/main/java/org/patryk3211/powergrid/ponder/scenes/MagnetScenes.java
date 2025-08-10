@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.ponder.scenes;
 
-import com.simibubi.create.foundation.ponder.SceneBuilder;
-import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
-import com.simibubi.create.foundation.ponder.element.InputWindowElement;
-import com.simibubi.create.foundation.utility.Pointing;
+import net.createmod.catnip.math.Pointing;
+import net.createmod.ponder.api.scene.SceneBuilder;
+import net.createmod.ponder.api.scene.SceneBuildingUtil;
+import net.createmod.ponder.foundation.element.InputWindowElement;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
@@ -35,38 +35,38 @@ public class MagnetScenes {
         scene.showBasePlate();
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(2, 1, 2), Direction.DOWN);
+        scene.world().showSection(util.select().position(2, 1, 2), Direction.DOWN);
         scene.idle(10);
 
         var stack = new ItemStack(Items.IRON_INGOT);
-        var item1 = scene.world.createItemEntity(util.vector.of(3.2f, 2.0f, 2.0f), Vec3d.ZERO, stack);
-        var item2 = scene.world.createItemEntity(util.vector.of(1.5f, 2.0f, 4.3f), Vec3d.ZERO, stack);
-        var item3 = scene.world.createItemEntity(util.vector.of(2.9f, 2.0f, 3.1f), Vec3d.ZERO, stack);
-        var item4 = scene.world.createItemEntity(util.vector.of(1.2f, 2.0f, 1.1f), Vec3d.ZERO, stack);
+        var item1 = scene.world().createItemEntity(util.vector().of(3.2f, 2.0f, 2.0f), Vec3d.ZERO, stack);
+        var item2 = scene.world().createItemEntity(util.vector().of(1.5f, 2.0f, 4.3f), Vec3d.ZERO, stack);
+        var item3 = scene.world().createItemEntity(util.vector().of(2.9f, 2.0f, 3.1f), Vec3d.ZERO, stack);
+        var item4 = scene.world().createItemEntity(util.vector().of(1.2f, 2.0f, 1.1f), Vec3d.ZERO, stack);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("When lightning strikes near an iron ingot it has a chance to magnetize it")
                 .attachKeyFrame()
                 .placeNearTarget();
         scene.idle(30);
 
-        scene.world.createEntity(world -> {
+        scene.world().createEntity(world -> {
             var entity = EntityType.LIGHTNING_BOLT.create(world);
             if(entity != null) {
-                entity.refreshPositionAfterTeleport(util.vector.of(2.5, 1.0, 2.5));
+                entity.refreshPositionAfterTeleport(util.vector().of(2.5, 1.0, 2.5));
                 entity.setCosmetic(false);
             }
             return entity;
         });
 
         var magnetStack = new ItemStack(ModdedItems.MAGNET);
-        scene.world.modifyEntity(item1, entity -> {
+        scene.world().modifyEntity(item1, entity -> {
             ((ItemEntity) entity).setStack(magnetStack);
             entity.setVelocity(0, 0.2, 0);
         });
         scene.idle(30);
 
-        scene.overlay.showControls(new InputWindowElement(util.vector.of(3.2f, 1.3f, 2.0f), Pointing.RIGHT)
+        scene.overlay().showControls(new InputWindowElement(util.vector().of(3.2f, 1.3f, 2.0f), Pointing.RIGHT)
                 .withItem(magnetStack), 50);
         scene.idle(60);
 
@@ -80,20 +80,20 @@ public class MagnetScenes {
         scene.showBasePlate();
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(3, 1, 3), Direction.DOWN);
+        scene.world().showSection(util.select().position(3, 1, 3), Direction.DOWN);
         scene.idle(5);
-        scene.world.showSection(util.select.fromTo(1, 2, 3, 5, 2, 3), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(1, 2, 3, 5, 2, 3), Direction.DOWN);
         scene.idle(5);
-        scene.world.showSection(util.select.fromTo(1, 3, 3, 5, 3, 3), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(1, 3, 3, 5, 3, 3), Direction.DOWN);
         scene.idle(10);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("You can build a lightning attractor using lightning rods and wool placed on a Mechanical Bearing")
                 .attachKeyFrame()
                 .placeNearTarget();
         scene.idle(90);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("When you spin it fast enough during a thunderstorm it will make lightning strikes more frequent")
                 .attachKeyFrame()
                 .placeNearTarget();

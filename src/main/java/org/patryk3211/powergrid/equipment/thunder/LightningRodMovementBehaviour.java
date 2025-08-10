@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.equipment.thunder;
 
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.bearing.BearingContraption;
-import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import net.minecraft.entity.EntityType;
 import net.minecraft.particle.ParticleTypes;

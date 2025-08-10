@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import com.simibubi.create.foundation.ponder.PonderWorld;
+import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.EntityType;
@@ -288,7 +288,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     public void refreshTerminalPositions() {
         var world = getWorld();
-        if(world != null && (!world.isClient || world instanceof PonderWorld)) {
+        if(world != null && (!world.isClient || world instanceof PonderLevel)) {
             terminalPos1 = getEndpoint1().getExactPosition(world);
             terminalPos2 = getEndpoint2().getExactPosition(world);
 

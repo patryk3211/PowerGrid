@@ -15,8 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
-import com.simibubi.create.foundation.utility.Iterate;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import net.createmod.catnip.data.Iterate;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;

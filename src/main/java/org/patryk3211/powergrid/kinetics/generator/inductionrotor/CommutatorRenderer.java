@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -48,23 +48,23 @@ public class CommutatorRenderer extends RotorRenderer {
         var sin = Math.sin(brushAngle);
         var brushOffset = sin * sin * 1 / 16f;
 
-        var brush = CachedBufferer.partial(ModdedPartialModels.COMMUTATOR_BRUSH, state);
+        var brush = CachedBuffers.partial(ModdedPartialModels.COMMUTATOR_BRUSH, state);
         brush.light(light)
-                .centre()
+                .center()
                 .rotateToFace(facing)
-                .unCentre()
+                .uncenter()
                 .translate(-brushOffset, 0, 0)
                 .renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
         brush
-                .centre()
+                .center()
                 .rotateToFace(facing.getOpposite())
-                .unCentre()
+                .uncenter()
                 .translate(-brushOffset, 0, 0)
                 .renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
     }
 
     @Override
     protected SuperByteBuffer getModelForState(BlockState state) {
-        return CachedBufferer.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.from(state.get(HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE));
+        return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.from(state.get(HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE));
     }
 }

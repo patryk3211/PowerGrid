@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.light.bulb;
 
-import com.jozufozu.flywheel.core.PartialModel;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.minecraft.item.Item;
 import net.minecraft.server.world.ServerWorld;
 import org.patryk3211.powergrid.collections.ModdedConfigs;

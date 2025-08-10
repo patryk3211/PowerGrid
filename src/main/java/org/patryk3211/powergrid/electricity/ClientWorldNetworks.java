@@ -21,7 +21,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.OwnedElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;

@@ -15,14 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
-import com.simibubi.create.foundation.utility.VoxelShaper;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
+import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;

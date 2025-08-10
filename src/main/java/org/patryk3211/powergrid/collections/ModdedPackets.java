@@ -26,7 +26,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.electricity.zapper.ElectroZapperPacket;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperS2CPacket;
 import org.patryk3211.powergrid.network.SimplePacket;
 import org.patryk3211.powergrid.network.packets.*;

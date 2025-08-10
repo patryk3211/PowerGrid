@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.electricity.zapper;
 
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetItemMethods;
 import com.simibubi.create.foundation.item.CustomArmPoseItem;
-import com.simibubi.create.foundation.utility.Components;
 import io.github.fabricators_of_create.porting_lib.item.EntitySwingListenerItem;
 import io.github.fabricators_of_create.porting_lib.item.ReequipAnimationItem;
 import net.minecraft.block.BlockState;
@@ -116,7 +115,7 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
         world.spawnEntity(projectile);
 
         ShootableGadgetItemMethods.applyCooldown(user, stack, hand, this::isZapper, 10);
-        Function<Boolean, ElectroZapperPacket> factory = b -> new ElectroZapperPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
+        Function<Boolean, ElectroZapperS2CPacket> factory = b -> new ElectroZapperS2CPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
         ModdedPackets.sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayerEntity) user);
         if(!BatteryUtils.drawEnergy(user, fePerUse()))
@@ -126,14 +125,14 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        tooltip.add(Components.immutableEmpty());
-        tooltip.add(Components.translatable("powergrid.electrozapper.bolt").append(Components.literal(":"))
+        tooltip.add(Text.empty());
+        tooltip.add(Text.translatable("powergrid.electrozapper.bolt").append(Text.literal(":"))
                 .formatted(Formatting.GRAY));
-        var spacing = Components.literal(" ");
+        var spacing = Text.literal(" ");
 
         float damageF = 4;//type.getDamage() * additionalDamageMult;
-        var damage = Components.literal(damageF == MathHelper.floor(damageF) ? "" + MathHelper.floor(damageF) : "" + damageF);
-        var reloadTicks = Components.literal("10");
+        var damage = Text.literal(damageF == MathHelper.floor(damageF) ? "" + MathHelper.floor(damageF) : "" + damageF);
+        var reloadTicks = Text.literal("10");
 
 //        damage = damage.formatted(Formatting.DARK_GREEN);
 

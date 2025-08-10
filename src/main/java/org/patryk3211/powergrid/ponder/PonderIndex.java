@@ -15,18 +15,18 @@
  */
 package org.patryk3211.powergrid.ponder;
 
-import com.simibubi.create.foundation.ponder.PonderRegistrationHelper;
-import com.simibubi.create.infrastructure.ponder.AllPonderTags;
+import com.tterrag.registrate.util.entry.ItemProviderEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
+import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.util.Identifier;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.ponder.scenes.*;
 
 public class PonderIndex {
-    static final PonderRegistrationHelper HELPER = new PonderRegistrationHelper(PowerGrid.MOD_ID);
+    public static void register(PonderSceneRegistrationHelper<Identifier> helper) {
+        PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
-    public static void register() {
         HELPER.addStoryBoard(ModdedBlocks.ANDESITE_VOLTAGE_METER, "gauges", GaugeScenes::voltage);
         HELPER.addStoryBoard(ModdedBlocks.BRASS_VOLTAGE_METER, "gauges", GaugeScenes::voltage);
         HELPER.addStoryBoard(ModdedBlocks.ANDESITE_CURRENT_METER, "gauges", GaugeScenes::current);

@@ -6,7 +6,7 @@ plugins {
 }
 
 architectury {
-	minecraft = project.minecraft_version
+	minecraft = minecraft_version
 }
 
 allprojects {
@@ -51,17 +51,10 @@ allprojects {
 		maven { url = "https://maven.blamejared.com" } // JEI
 
 		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
-	}
-
-//	var common = configurations.creating.copy();//Configuration by configurations.creating
-	dependencies {
-//		common(project(":root", "namedElements")) { transitive false }
-//		common(project.("namedElements")) { transitive false }
+		maven { url = "$rootDir/local-maven" } // Create Fabric v6
 	}
 
 	loom {
-		//	splitEnvironmentSourceSets()
-
 //		mods {
 //			"powergrid" {
 //				sourceSet sourceSets.main
@@ -81,7 +74,9 @@ allprojects {
 	}
 
 	dependencies {
-		minecraft "net.minecraft:minecraft:${project.minecraft_version}"
+		minecraft "com.mojang:minecraft:${project.minecraft_version}"
+
+		include implementation("org.ejml:ejml-all:0.44.0")
 
 //		mappings(loom.layered {
 //			it.officialMojangMappings { nameSyntheticMembers = false }
@@ -114,7 +109,7 @@ subprojects {
 		platformSetupLoomIde()
 	}
 
-	processResources {
+	tasks.processResources {
 		var properties = [
 				version              : project.version,
 				create_forge_version : project.create_forge_version,
@@ -127,7 +122,7 @@ subprojects {
 
 		inputs.properties(properties)
 
-		filesMatching(["fabric.mod.json", "mods.toml"]) {
+		filesMatching(["fabric.mod.json", "META-INF/mods.toml"]) {
 			expand(properties)
 		}
 	}
@@ -147,7 +142,7 @@ subprojects {
 		dependsOn tasks.build
 	})
 
-	tasks.named("jar") {
+	tasks.jar {
 		inputs.property "archivesName", project.base.archivesName
 
 		from("LICENSE") {
@@ -226,7 +221,7 @@ architectury {
 }
 
 dependencies {
-	extraLibs "org.ejml:ejml-all:0.44.0"
+//	include "org.ejml:ejml-all:0.44.0"
 
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 

@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.config;
 
-import com.simibubi.create.foundation.config.ConfigBase;
+import net.createmod.catnip.config.ConfigBase;
 
 public class CElectricity extends ConfigBase {
     public final ConfigFloat heaterFanProcessingSpeedMultiplier = f(0.75f, 0, "heaterFanProcessingSpeedMultiplier", Comments.heaterFanProcessingSpeedMultiplier);

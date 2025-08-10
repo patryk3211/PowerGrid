@@ -15,11 +15,13 @@
  */
 package org.patryk3211.powergrid.fabric;
 
+import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.circuits.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
+import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 
 public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPlugin {
     @Override
@@ -30,7 +32,7 @@ public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPl
 
     @Override
     public void onInitializeModelLoader(Context context) {
-        var componentModels = ComponentModels.collectIds();
+        var componentModels = ComponentModels.collectRawIds();
         context.addModels(componentModels);
         context.resolveModel().register(innerContext -> {
             final var id = innerContext.id();
@@ -41,5 +43,9 @@ public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPl
             }
             return null;
         });
+    }
+
+    public static void registerPlatformEvents() {
+        ClientWorldEvents.UNLOAD.register(ClientElectricNetwork::unloadWorld);
     }
 }

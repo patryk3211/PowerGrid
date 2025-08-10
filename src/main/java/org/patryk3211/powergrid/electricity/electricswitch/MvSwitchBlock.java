@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
-import com.simibubi.create.foundation.utility.VoxelShaper;
+import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;

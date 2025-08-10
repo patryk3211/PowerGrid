@@ -17,9 +17,10 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllSpecialTextures;
-import com.simibubi.create.CreateClient;
-import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
-import com.simibubi.create.foundation.utility.Color;
+import net.createmod.catnip.outliner.Outliner;
+import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
+import net.createmod.catnip.render.SuperRenderTypeBuffer;
+import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -33,9 +34,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -154,7 +152,7 @@ public class WirePreview {
         var cameraPos = context.camera().getPos();
         matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        var buffer = SuperRenderTypeBuffer.getInstance();
+        var buffer = DefaultSuperRenderTypeBuffer.getInstance();
         var player = MinecraftClient.getInstance().player;
 
         var world = context.world();
@@ -168,7 +166,7 @@ public class WirePreview {
     }
 
     public static void notifyOfBlock(BlockPos pos) {
-        CreateClient.OUTLINER.showAABB(outlineSlot, new Box(pos), 50)
+        Outliner.getInstance().showAABB(outlineSlot, new Box(pos), 50)
                 .colored(Color.RED.brighter())
                 .withFaceTexture(AllSpecialTextures.CHECKERED)
                 .lineWidth(0.05f);

@@ -15,13 +15,11 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.rotor;
 
-import com.jozufozu.flywheel.backend.Backend;
-import com.jozufozu.flywheel.core.PartialModel;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import dev.engine_room.flywheel.api.visualization.VisualizationManager;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -36,7 +34,7 @@ public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
 
     @Override
     protected void renderSafe(RotorBlockEntity rotor, float partialTicks, MatrixStack matrixStack, VertexConsumerProvider buffer, int light, int overlay) {
-        if(Backend.canUseInstancing(rotor.getWorld()))
+        if(VisualizationManager.supportsVisualization(rotor.getWorld()))
             return;
 
         var state = rotor.getCachedState();
@@ -53,7 +51,7 @@ public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
         var rotorAngle = getRotorAngle(rotor, partialTicks);
 
         rotorModel.light(light);
-        rotorModel.rotateCentered(Direction.get(Direction.AxisDirection.POSITIVE, axis), rotorAngle);
+        rotorModel.rotateCentered(rotorAngle, Direction.get(Direction.AxisDirection.POSITIVE, axis));
         rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
     }
 
@@ -65,6 +63,6 @@ public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
     }
 
     protected SuperByteBuffer getModelForState(BlockState state) {
-        return CachedBufferer.block(state);
+        return CachedBuffers.block(state);
     }
 }

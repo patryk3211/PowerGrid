@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.utility;
 
 import com.google.common.collect.Sets;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.Item;

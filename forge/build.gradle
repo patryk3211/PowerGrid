@@ -20,28 +20,35 @@ configurations {
 }
 
 dependencies {
-    forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
+    forge "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
     modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
     modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_forge_version}")
     modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_forge_version}")
-    modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}")
     modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
 
-    modImplementation "dev.architectury:architectury-forge:${rootProject.architectury_api_version}"
+    modImplementation "dev.architectury:architectury-forge:${architectury_api_version}"
 
     // Roughly Enough Items - Forge
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
-    modRuntimeOnly "me.shedaniel:RoughlyEnoughItems-forge:$rei_version"
 
     compileOnly("io.github.llamalad7:mixinextras-common:${mixin_extras_version}")
     annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")))
 
     shadowCommon(project(path: rootProject.path, configuration: "transformProductionForge")) { transitive false }
+
+    modLocalRuntime("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}")
+    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
 }
 
 loom {
     forge {
         mixinConfigs("powergrid.mixins.json", "powergrid.client.mixins.json")
+    }
+
+    runs {
+        named("client") {
+            vmArg("-enableassertions")
+        }
     }
 }

@@ -15,13 +15,12 @@
  */
 package org.patryk3211.powergrid.compat.rei;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.compat.rei.category.CreateRecipeCategory;
 import com.simibubi.create.compat.rei.category.WidgetUtil;
-import com.simibubi.create.compat.rei.category.animations.AnimatedPress;
 import com.simibubi.create.compat.rei.display.CreateDisplay;
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
-import com.simibubi.create.foundation.utility.Lang;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
@@ -31,6 +30,7 @@ import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,9 +53,12 @@ public class MagnetizingCategory extends CreateRecipeCategory<MagnetizingRecipe>
 
         for (int outputIndex = 0; outputIndex < results.size(); outputIndex++) {
             List<Text> tooltip = new ArrayList<>();
-            if (results.get(outputIndex).getChance() != 1)
-                tooltip.add(Lang.translateDirect("recipe.processing.chance", results.get(outputIndex).getChance() < 0.01 ? "<1" : (int) (results.get(outputIndex).getChance() * 100))
-                        .formatted(Formatting.GOLD));
+            if (results.get(outputIndex).getChance() != 1) {
+                Lang.builder(Create.ID)
+                        .translate("recipe.processing.chance", results.get(outputIndex).getChance() < 0.01 ? "<1" : (int) (results.get(outputIndex).getChance() * 100))
+                        .style(Formatting.GOLD)
+                        .addTo(tooltip);
+            }
             widgets.add(Widgets.createSlot(new Point((origin.x + 131 + 19 * outputIndex) + 1, (origin.y + 50) + 1))
                     .disableBackground().markOutput()
                     .entry(EntryStack.of(VanillaEntryTypes.ITEM, results.get(outputIndex).getStack()).tooltip(tooltip)));

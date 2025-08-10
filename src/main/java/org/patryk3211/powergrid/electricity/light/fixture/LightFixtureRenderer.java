@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.electricity.light.fixture;
 
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
@@ -41,7 +41,7 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
         var model = bulbState.getModel();
         if(model == null)
             return;
-        var buffer = CachedBufferer.partial(model, state);
+        var buffer = CachedBuffers.partial(model, state);
 
         var facing = state.get(LightFixtureBlock.FACING);
         rotateToFacing(buffer, facing)
@@ -53,10 +53,10 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
     public SuperByteBuffer rotateToFacing(SuperByteBuffer buffer, Direction facing) {
         return switch (facing) {
             case UP -> buffer;
-            case DOWN -> buffer.rotateCentered(Direction.EAST, (float) Math.PI);
+            case DOWN -> buffer.rotateCentered((float) Math.PI, Direction.EAST);
             default -> {
-                buffer.rotateCentered(Direction.EAST, (float) Math.PI * 0.5f);
-                yield buffer.rotateCentered(Direction.SOUTH, (float) ((facing.asRotation()) / 180f * Math.PI));
+                buffer.rotateCentered((float) Math.PI * 0.5f, Direction.EAST);
+                yield buffer.rotateCentered((float) ((facing.asRotation()) / 180f * Math.PI), Direction.SOUTH);
             }
         };
     }

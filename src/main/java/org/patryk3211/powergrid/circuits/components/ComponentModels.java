@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.util.Identifier;
@@ -55,9 +55,8 @@ public class ComponentModels {
         return ids;
     }
 
+    @ExpectPlatform
     public static BakedModel getModel(PlacedComponent placed) {
-        var manager = MinecraftClient.getInstance().getBakedModelManager();
-        var model = manager.getModel(modelId(placed.component.getModelId(placed)));
-        return model != null ? model : manager.getMissingModel();
+        throw new AssertionError();
     }
 }

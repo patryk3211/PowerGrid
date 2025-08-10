@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.zapper;
 
-import com.jozufozu.flywheel.util.transform.TransformStack;
+import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.*;
@@ -41,7 +41,7 @@ public class ZapProjectileRenderer extends EntityRenderer<ZapProjectileEntity> {
 
         var normalMatrix = matrices.peek().getNormalMatrix();
 
-        var stack = TransformStack.cast(matrices);
+        var stack = TransformStack.of(matrices);
         stack.pushPose();
         stack.translate(0, 0.125f, 0);
 

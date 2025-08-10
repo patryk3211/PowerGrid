@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.clutch;
 
-import com.simibubi.create.content.kinetics.BlockStressValues;
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.block.BlockState;

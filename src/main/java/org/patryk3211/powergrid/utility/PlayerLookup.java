@@ -1,20 +1,15 @@
 package org.patryk3211.powergrid.utility;
 
-import net.fabricmc.fabric.mixin.networking.accessor.EntityTrackerAccessor;
-import net.fabricmc.fabric.mixin.networking.accessor.ThreadedAnvilChunkStorageAccessor;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.EntityTrackingListener;
-import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.chunk.ChunkManager;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -86,24 +81,9 @@ public final class PlayerLookup {
      * @return the players tracking the entity
      * @throws IllegalArgumentException if the entity is not in a server world
      */
+    @ExpectPlatform
     public static Collection<ServerPlayerEntity> tracking(Entity entity) {
-        Objects.requireNonNull(entity, "Entity cannot be null");
-        ChunkManager manager = entity.getWorld().getChunkManager();
-
-        if (manager instanceof ServerChunkManager) {
-            ThreadedAnvilChunkStorage storage = ((ServerChunkManager) manager).threadedAnvilChunkStorage;
-            EntityTrackerAccessor tracker = ((ThreadedAnvilChunkStorageAccessor) storage).getEntityTrackers().get(entity.getId());
-
-            // return an immutable collection to guard against accidental removals.
-            if (tracker != null) {
-                return Collections.unmodifiableCollection(tracker.getPlayersTracking()
-                        .stream().map(EntityTrackingListener::getPlayer).collect(Collectors.toSet()));
-            }
-
-            return Collections.emptySet();
-        }
-
-        throw new IllegalArgumentException("Only supported on server worlds!");
+        throw new AssertionError();
     }
 
     /**

@@ -15,9 +15,10 @@
  */
 package org.patryk3211.powergrid.ponder.base;
 
-import com.simibubi.create.foundation.ponder.ElementLink;
-import com.simibubi.create.foundation.ponder.SceneBuilder;
-import com.simibubi.create.foundation.ponder.instruction.FadeOutOfSceneInstruction;
+import net.createmod.ponder.api.element.ElementLink;
+import net.createmod.ponder.api.scene.SceneBuilder;
+import net.createmod.ponder.foundation.element.ElementLinkImpl;
+import net.createmod.ponder.foundation.instruction.FadeOutOfSceneInstruction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -39,7 +40,8 @@ public class ElectricInstructions {
     }
 
     public ElementLink<WireElement> connect(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
-        var link = new ElementLink<>(WireElement.class);
+
+        var link = new ElementLinkImpl<>(WireElement.class);
         var element = new WireElement(pos1, terminal1, pos2, terminal2, resistance);
         builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
         builder.addInstruction(ponder -> ponder.linkElement(element, link));
@@ -51,7 +53,7 @@ public class ElectricInstructions {
     }
 
     public ElementLink<WireElement> connectInvisible(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
-        var link = new ElementLink<>(WireElement.class);
+        var link = new ElementLinkImpl<>(WireElement.class);
         var element = new InvisibleWireElement(pos1, terminal1, pos2, terminal2, resistance);
         builder.addInstruction(new CreateWireInstruction(0, Direction.DOWN, element));
         builder.addInstruction(ponder -> ponder.linkElement(element, link));

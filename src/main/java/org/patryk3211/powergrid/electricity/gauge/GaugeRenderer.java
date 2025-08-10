@@ -15,12 +15,12 @@
  */
 package org.patryk3211.powergrid.electricity.gauge;
 
-import com.jozufozu.flywheel.core.PartialModel;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
-import com.simibubi.create.foundation.utility.Iterate;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.createmod.catnip.data.Iterate;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
@@ -29,7 +29,6 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
@@ -41,8 +40,8 @@ public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
 //        if (Backend.canUseInstancing(be.getWorld())) return;
         var gaugeState = be.getCachedState();
 
-        SuperByteBuffer headBuffer = CachedBufferer.partial(getHeadModel(gaugeState, be), gaugeState);
-        SuperByteBuffer dialBuffer = CachedBufferer.partial(getDialModel(gaugeState), gaugeState);
+        var headBuffer = CachedBuffers.partial(getHeadModel(gaugeState, be), gaugeState);
+        var dialBuffer = CachedBuffers.partial(getDialModel(gaugeState), gaugeState);
 
         float progress = MathHelper.lerp(partialTicks, be.prevDialState, be.dialState);
 
@@ -53,7 +52,7 @@ public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
             float dialPivot = 5.75f / 16;
             VertexConsumer vb = buffer.getBuffer(RenderLayer.getSolid());
             rotateBufferTowards(dialBuffer, facing).translate(0, dialPivot, dialPivot)
-                    .rotate(Direction.EAST, (float) (Math.PI / 2 * -progress))
+                    .rotate(Direction.EAST.getAxis(), (float) (Math.PI / 2 * -progress))
                     .translate(0, -dialPivot, -dialPivot)
                     .light(light)
                     .renderInto(ms, vb);
@@ -63,7 +62,7 @@ public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
     }
 
     protected SuperByteBuffer rotateBufferTowards(SuperByteBuffer buffer, Direction target) {
-        return buffer.rotateCentered(Direction.UP, (float) ((-target.asRotation() - 90) / 180 * Math.PI));
+        return buffer.rotateCentered((float) ((-target.asRotation() - 90) / 180 * Math.PI), Direction.UP);
     }
 
     public static PartialModel getHeadModel(BlockState state, GaugeBlockEntity entity) {

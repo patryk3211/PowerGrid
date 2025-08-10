@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.kinetics.variac;
 
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -37,17 +37,17 @@ public class VariacRenderer extends KineticBlockEntityRenderer<VariacBlockEntity
         super.renderSafe(be, partialTicks, ms, provider, light, overlay);
 
         var state = be.getCachedState();
-        var buffer = CachedBufferer.partialFacing(ModdedPartialModels.VARIAC_ARMATURE, state, state.get(VariacBlock.HORIZONTAL_FACING).getOpposite());
+        var buffer = CachedBuffers.partialFacing(ModdedPartialModels.VARIAC_ARMATURE, state, state.get(VariacBlock.HORIZONTAL_FACING).getOpposite());
 
         float angle = be.arm.getValue(partialTicks) * (float) Math.PI * 1.75f;
         buffer
-                .rotateCentered(Direction.UP, angle)
+                .rotateCentered(angle, Direction.UP)
                 .light(light)
                 .renderInto(ms, provider.getBuffer(RenderLayer.getSolid()));
     }
 
     @Override
     protected SuperByteBuffer getRotatedModel(VariacBlockEntity be, BlockState state) {
-        return CachedBufferer.partialFacing(AllPartialModels.SHAFT_HALF, state, Direction.UP);
+        return CachedBuffers.partialFacing(AllPartialModels.SHAFT_HALF, state, Direction.UP);
     }
 }

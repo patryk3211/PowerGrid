@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.particles;
 
-import com.simibubi.create.foundation.render.SuperRenderTypeBuffer;
+import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleTextureSheet;
 import net.minecraft.client.render.Camera;
@@ -128,7 +128,7 @@ public class ZapParticle extends Particle {
 
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
-        var bufferProvider = SuperRenderTypeBuffer.getInstance();
+        var bufferProvider = DefaultSuperRenderTypeBuffer.getInstance();
         var buffer = bufferProvider.getBuffer(ModdedRenderLayers.getColor());
 
         var camPos = camera.getPos();

@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.circuits.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
+import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.minecraft.client.gui.DrawContext;
 import org.jetbrains.annotations.NotNull;
 

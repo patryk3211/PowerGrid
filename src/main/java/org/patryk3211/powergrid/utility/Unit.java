@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.utility;
 
-import com.simibubi.create.foundation.utility.LangBuilder;
+import net.createmod.catnip.lang.LangBuilder;
 
 public enum Unit {
     VOLTAGE("generic.unit.volt"),

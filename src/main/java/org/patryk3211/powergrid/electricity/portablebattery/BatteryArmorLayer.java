@@ -17,12 +17,8 @@ package org.patryk3211.powergrid.electricity.portablebattery;
 
 import com.simibubi.create.content.equipment.armor.BacktankArmorLayer;
 import com.simibubi.create.content.equipment.armor.BacktankBlock;
-import com.simibubi.create.content.equipment.armor.BacktankItem;
-import com.simibubi.create.content.equipment.armor.BacktankRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
-import com.simibubi.create.foundation.utility.AngleHelper;
-import com.simibubi.create.foundation.utility.AnimationTickHolder;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
@@ -60,14 +56,13 @@ public class BatteryArmorLayer<T extends LivingEntity, M extends EntityModel<T>>
             return;
 
         M entityModel = getContextModel();
-        if (!(entityModel instanceof BipedEntityModel))
+        if (!(entityModel instanceof BipedEntityModel<?> model))
             return;
 
-        BipedEntityModel<?> model = (BipedEntityModel<?>) entityModel;
         RenderLayer renderType = TexturedRenderLayers.getEntityCutout();
         BlockState renderedState = item.getBlock().getDefaultState()
                 .with(BacktankBlock.HORIZONTAL_FACING, Direction.NORTH);
-        SuperByteBuffer backtank = CachedBufferer.block(renderedState);
+        SuperByteBuffer backtank = CachedBuffers.block(renderedState);
 
         ms.push();
 
@@ -75,9 +70,11 @@ public class BatteryArmorLayer<T extends LivingEntity, M extends EntityModel<T>>
         ms.translate(-1 / 2f, 10 / 16f, 1f);
         ms.scale(1, -1, -1);
 
-        backtank.forEntityRender()
-                .light(light)
+        backtank.light(light)
                 .renderInto(ms, buffer.getBuffer(renderType));
+//        backtank.forEntityRender()
+//                .light(light)
+//                .renderInto(ms, buffer.getBuffer(renderType));
 
         ms.pop();
     }

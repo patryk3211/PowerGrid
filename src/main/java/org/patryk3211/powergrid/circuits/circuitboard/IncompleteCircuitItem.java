@@ -15,8 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.circuitboard;
 
-import com.simibubi.create.foundation.utility.Color;
-import com.simibubi.create.foundation.utility.Components;
+import net.createmod.catnip.theme.Color;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.Item;
@@ -152,7 +151,7 @@ public class IncompleteCircuitItem extends Item {
         } else {
             assemblyTag = stack.getSubNbt("Assembly");
         }
-        tooltip.add(Components.immutableEmpty());
+        tooltip.add(Text.empty());
         tooltip.add(Lang.translate("tooltip.circuit_assembly")
                 .style(Formatting.GRAY)
                 .component());

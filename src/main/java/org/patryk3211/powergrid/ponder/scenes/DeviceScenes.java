@@ -16,14 +16,12 @@
 package org.patryk3211.powergrid.ponder.scenes;
 
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
-import com.simibubi.create.foundation.ponder.PonderScene;
-import com.simibubi.create.foundation.ponder.SceneBuilder;
-import com.simibubi.create.foundation.ponder.SceneBuildingUtil;
-import com.simibubi.create.foundation.ponder.element.InputWindowElement;
-import com.simibubi.create.foundation.ponder.instruction.EmitParticlesInstruction;
-import com.simibubi.create.foundation.ponder.instruction.PonderInstruction;
-import com.simibubi.create.foundation.ponder.instruction.TickingInstruction;
-import com.simibubi.create.foundation.utility.Pointing;
+import net.createmod.catnip.math.Pointing;
+import net.createmod.ponder.api.scene.SceneBuilder;
+import net.createmod.ponder.api.scene.SceneBuildingUtil;
+import net.createmod.ponder.foundation.PonderScene;
+import net.createmod.ponder.foundation.element.InputWindowElement;
+import net.createmod.ponder.foundation.instruction.TickingInstruction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.ItemEntity;
@@ -48,7 +46,6 @@ import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
 
 import java.util.Optional;
 import java.util.Random;
-import java.util.function.UnaryOperator;
 
 public class DeviceScenes {
     public static void heatingCoilBasic(SceneBuilder scene, SceneBuildingUtil util) {
@@ -57,38 +54,38 @@ public class DeviceScenes {
         scene.configureBasePlate(0, 0, 5);
 
         scene.showBasePlate();
-        scene.world.showSection(util.select.fromTo(4, 1, 1, 5, 1, 3), Direction.UP);
-        scene.world.showSection(util.select.position(0, 1, 2), Direction.UP);
-        scene.world.showSection(util.select.position(5, 1, 2), Direction.UP);
+        scene.world().showSection(util.select().fromTo(4, 1, 1, 5, 1, 3), Direction.UP);
+        scene.world().showSection(util.select().position(0, 1, 2), Direction.UP);
+        scene.world().showSection(util.select().position(5, 1, 2), Direction.UP);
         scene.idle(5);
 
-        var heatingCoil = util.grid.at(3, 1, 2);
-        var voltageSource = util.grid.at(6, 2, 2);
-        scene.world.showSection(util.select.position(4, 2, 1), Direction.DOWN);
-        scene.world.showSection(util.select.position(4, 2, 3), Direction.DOWN);
-        scene.world.showSection(util.select.position(heatingCoil), Direction.DOWN);
+        var heatingCoil = util.grid().at(3, 1, 2);
+        var voltageSource = util.grid().at(6, 2, 2);
+        scene.world().showSection(util.select().position(4, 2, 1), Direction.DOWN);
+        scene.world().showSection(util.select().position(4, 2, 3), Direction.DOWN);
+        scene.world().showSection(util.select().position(heatingCoil), Direction.DOWN);
         scene.idle(10);
 
-        electric.connect(util.grid.at(4, 2, 1), 0, heatingCoil, 0);
-        electric.connect(util.grid.at(4, 2, 3), 0, heatingCoil, 1);
-        electric.connectInvisible(util.grid.at(4, 2, 1), 0, voltageSource, 0);
-        electric.connectInvisible(util.grid.at(4, 2, 3), 0, voltageSource, 1);
+        electric.connect(util.grid().at(4, 2, 1), 0, heatingCoil, 0);
+        electric.connect(util.grid().at(4, 2, 3), 0, heatingCoil, 1);
+        electric.connectInvisible(util.grid().at(4, 2, 1), 0, voltageSource, 0);
+        electric.connectInvisible(util.grid().at(4, 2, 3), 0, voltageSource, 1);
         scene.idle(5);
 
-        scene.overlay.showText(60)
+        scene.overlay().showText(60)
                 .text("The heating coil can be used to heat up the passing Air Flow if enough power is applied to it")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(heatingCoil))
+                .pointAt(util.vector().topOf(heatingCoil))
                 .placeNearTarget();
 
         electric.setSource(voltageSource, 32);
         electric.tickFor(10);
         scene.idle(100);
 
-        scene.overlay.showText(60)
+        scene.overlay().showText(60)
                 .text("By applying a bigger voltage the Air Flow can be used for bulk blasting")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(heatingCoil))
+                .pointAt(util.vector().topOf(heatingCoil))
                 .placeNearTarget();
 
         electric.setSource(voltageSource, 38);
@@ -105,57 +102,57 @@ public class DeviceScenes {
         scene.configureBasePlate(0, 0, 5);
 
         scene.showBasePlate();
-        scene.world.showSection(util.select.fromTo(0, 1, 4, 3, 1, 5), Direction.UP);
-        scene.world.showSection(util.select.fromTo(1, 1, 0, 3, 1, 0), Direction.UP);
-        scene.world.showSection(util.select.position(2, 0, 5), Direction.UP);
+        scene.world().showSection(util.select().fromTo(0, 1, 4, 3, 1, 5), Direction.UP);
+        scene.world().showSection(util.select().fromTo(1, 1, 0, 3, 1, 0), Direction.UP);
+        scene.world().showSection(util.select().position(2, 0, 5), Direction.UP);
         scene.idle(5);
 
-        var heatingCoil = util.grid.at(1, 1, 3);
-        var voltageSource = util.grid.at(2, 1, 6);
-        scene.world.showSection(util.select.position(0, 2, 4), Direction.DOWN);
-        scene.world.showSection(util.select.position(2, 2, 4), Direction.DOWN);
-        scene.world.showSection(util.select.position(heatingCoil), Direction.DOWN);
+        var heatingCoil = util.grid().at(1, 1, 3);
+        var voltageSource = util.grid().at(2, 1, 6);
+        scene.world().showSection(util.select().position(0, 2, 4), Direction.DOWN);
+        scene.world().showSection(util.select().position(2, 2, 4), Direction.DOWN);
+        scene.world().showSection(util.select().position(heatingCoil), Direction.DOWN);
         scene.idle(10);
 
-        electric.connect(util.grid.at(0, 2, 4), 0, heatingCoil, 1);
-        electric.connect(util.grid.at(2, 2, 4), 0, heatingCoil, 0);
-        electric.connectInvisible(util.grid.at(0, 2, 4), 0, voltageSource, 0);
-        electric.connectInvisible(util.grid.at(2, 2, 4), 0, voltageSource, 1);
+        electric.connect(util.grid().at(0, 2, 4), 0, heatingCoil, 1);
+        electric.connect(util.grid().at(2, 2, 4), 0, heatingCoil, 0);
+        electric.connectInvisible(util.grid().at(0, 2, 4), 0, voltageSource, 0);
+        electric.connectInvisible(util.grid().at(2, 2, 4), 0, voltageSource, 1);
         electric.setSource(voltageSource, 32);
         electric.tickFor(10);
         scene.idle(10);
 
-        scene.world.setBlock(util.grid.at(3, 1, 3), Blocks.FIRE.getDefaultState(), false);
-        scene.world.showSection(util.select.position(3, 1, 3), Direction.WEST);
+        scene.world().setBlock(util.grid().at(3, 1, 3), Blocks.FIRE.getDefaultState(), false);
+        scene.world().showSection(util.select().position(3, 1, 3), Direction.WEST);
 
-        scene.overlay.showText(60)
+        scene.overlay().showText(60)
                 .text("The heating coil allows for faster bulk processing")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(heatingCoil))
+                .pointAt(util.vector().topOf(heatingCoil))
                 .placeNearTarget();
         scene.idle(20);
 
         var stack = new ItemStack(Items.BEEF);
         var cooked = new ItemStack(Items.COOKED_BEEF);
 
-        var heaterEntity = scene.world.createItemEntity(util.vector.centerOf(1, 2, 1), util.vector.of(0, 0.1, 0), stack);
-        var fireEntity = scene.world.createItemEntity(util.vector.centerOf(3, 2, 1), util.vector.of(0, 0.1, 0), stack);
+        var heaterEntity = scene.world().createItemEntity(util.vector().centerOf(1, 2, 1), util.vector().of(0, 0.1, 0), stack);
+        var fireEntity = scene.world().createItemEntity(util.vector().centerOf(3, 2, 1), util.vector().of(0, 0.1, 0), stack);
         scene.idle(10);
-        scene.world.modifyEntity(heaterEntity, e -> e.setVelocity(0, 0, -0.2f));
-        scene.world.modifyEntity(fireEntity, e -> e.setVelocity(0, 0, -0.2f));
+        scene.world().modifyEntity(heaterEntity, e -> e.setVelocity(0, 0, -0.2f));
+        scene.world().modifyEntity(fireEntity, e -> e.setVelocity(0, 0, -0.2f));
 
-        var item1Vec = util.vector.blockSurface(util.grid.at(1, 1, 0), Direction.SOUTH).add(0, 0, 0.1);
-        var item2Vec = util.vector.blockSurface(util.grid.at(3, 1, 0), Direction.SOUTH).add(0, 0, 0.1);
+        var item1Vec = util.vector().blockSurface(util.grid().at(1, 1, 0), Direction.SOUTH).add(0, 0, 0.1);
+        var item2Vec = util.vector().blockSurface(util.grid().at(3, 1, 0), Direction.SOUTH).add(0, 0, 0.1);
 
-        scene.effects.emitParticles(item1Vec.add(0, 0.2f, 0), EmitParticlesInstruction.Emitter.simple(ParticleTypes.LARGE_SMOKE, Vec3d.ZERO), 1, 60);
-        scene.effects.emitParticles(item2Vec.add(0, 0.2f, 0), EmitParticlesInstruction.Emitter.simple(ParticleTypes.LARGE_SMOKE, Vec3d.ZERO), 1, 100);
+        scene.effects().emitParticles(item1Vec.add(0, 0.2f, 0), EmitParticlesInstruction.Emitter.simple(ParticleTypes.LARGE_SMOKE, Vec3d.ZERO), 1, 60);
+        scene.effects().emitParticles(item2Vec.add(0, 0.2f, 0), EmitParticlesInstruction.Emitter.simple(ParticleTypes.LARGE_SMOKE, Vec3d.ZERO), 1, 100);
 
         scene.idle(60);
-        scene.world.modifyEntity(heaterEntity, e -> ((ItemEntity) e).setStack(cooked));
-        scene.overlay.showControls(new InputWindowElement(item1Vec, Pointing.DOWN).withItem(cooked), 20);
+        scene.world().modifyEntity(heaterEntity, e -> ((ItemEntity) e).setStack(cooked));
+        scene.overlay().showControls(new InputWindowElement(item1Vec, Pointing.DOWN).withItem(cooked), 20);
         scene.idle(40);
-        scene.world.modifyEntity(fireEntity, e -> ((ItemEntity) e).setStack(cooked));
-        scene.overlay.showControls(new InputWindowElement(item2Vec, Pointing.DOWN).withItem(cooked), 20);
+        scene.world().modifyEntity(fireEntity, e -> ((ItemEntity) e).setStack(cooked));
+        scene.overlay().showControls(new InputWindowElement(item2Vec, Pointing.DOWN).withItem(cooked), 20);
 
         scene.idle(20);
         scene.markAsFinished();
@@ -169,36 +166,36 @@ public class DeviceScenes {
         scene.showBasePlate();
         scene.idle(5);
 
-        var smallTr = util.grid.at(2, 1, 1);
-        scene.world.showSection(util.select.position(smallTr), Direction.DOWN);
+        var smallTr = util.grid().at(2, 1, 1);
+        scene.world().showSection(util.select().position(smallTr), Direction.DOWN);
         scene.idle(20);
 
-        scene.overlay.showControls(new InputWindowElement(util.vector.blockSurface(smallTr, Direction.NORTH), Pointing.RIGHT).withWrench(), 30);
+        scene.overlay().showControls(new InputWindowElement(util.vector().blockSurface(smallTr, Direction.NORTH), Pointing.RIGHT).withWrench(), 30);
         scene.idle(20);
-        scene.world.setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
-        scene.idle(20);
-
-        var mediumTr = util.grid.at(2, 1, 3);
-        scene.world.showSection(util.select.fromTo(mediumTr, mediumTr.west().up()), Direction.DOWN);
+        scene.world().setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
         scene.idle(20);
 
-        scene.overlay.showControls(new InputWindowElement(util.vector.blockSurface(mediumTr.up(), Direction.NORTH), Pointing.RIGHT).withWrench(), 30);
+        var mediumTr = util.grid().at(2, 1, 3);
+        scene.world().showSection(util.select().fromTo(mediumTr, mediumTr.west().up()), Direction.DOWN);
         scene.idle(20);
-        scene.world.setBlock(mediumTr, ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+
+        scene.overlay().showControls(new InputWindowElement(util.vector().blockSurface(mediumTr.up(), Direction.NORTH), Pointing.RIGHT).withWrench(), 30);
+        scene.idle(20);
+        scene.world().setBlock(mediumTr, ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
                 .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
                 .with(TransformerMediumBlock.PART, 1), false);
-        scene.world.setBlock(mediumTr.west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+        scene.world().setBlock(mediumTr.west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
                 .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
                 .with(TransformerMediumBlock.PART, 0), false);
-        scene.world.setBlock(mediumTr.up(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+        scene.world().setBlock(mediumTr.up(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
                 .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
                 .with(TransformerMediumBlock.PART, 3), false);
-        scene.world.setBlock(mediumTr.up().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+        scene.world().setBlock(mediumTr.up().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
                 .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
                 .with(TransformerMediumBlock.PART, 2), false);
         scene.idle(20);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("Transformers come in different sizes, each of them offering different power capabilities and winding capacities")
                 .attachKeyFrame()
                 .placeNearTarget();
@@ -214,58 +211,58 @@ public class DeviceScenes {
         scene.showBasePlate();
         scene.idle(10);
 
-        var tr = util.grid.at(2, 1, 2);
-        scene.world.showSection(util.select.position(tr), Direction.DOWN);
+        var tr = util.grid().at(2, 1, 2);
+        scene.world().showSection(util.select().position(tr), Direction.DOWN);
         scene.idle(15);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("To wind a transformer, first select the starting terminal for your winding")
                 .attachKeyFrame()
                 .placeNearTarget();
         scene.idle(90);
 
         var stack = new ItemStack(ModdedItems.WIRE, 1);
-        scene.overlay.showControls(new InputWindowElement(util.vector.of(2.8, 1.9, 2.0), Pointing.RIGHT).withItem(stack), 30);
+        scene.overlay().showControls(new InputWindowElement(util.vector().of(2.8, 1.9, 2.0), Pointing.RIGHT).withItem(stack), 30);
         scene.idle(30);
 
-        var side = util.vector.blockSurface(tr, Direction.NORTH);
-        scene.overlay.showText(80)
+        var side = util.vector().blockSurface(tr, Direction.NORTH);
+        scene.overlay().showText(80)
                 .text("Next, click on the transformer body and pick the number of turn you want to add")
                 .attachKeyFrame()
                 .pointAt(side)
                 .placeNearTarget();
         scene.idle(50);
-        scene.overlay.showControls(new InputWindowElement(side, Pointing.UP).withItem(stack), 30);
+        scene.overlay().showControls(new InputWindowElement(side, Pointing.UP).withItem(stack), 30);
         scene.idle(40);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("Lastly, select the end terminal for your winding")
                 .attachKeyFrame()
                 .placeNearTarget();
         scene.idle(90);
 
-        scene.overlay.showControls(new InputWindowElement(util.vector.of(2.2, 1.9, 2.0), Pointing.LEFT).withItem(stack), 30);
+        scene.overlay().showControls(new InputWindowElement(util.vector().of(2.2, 1.9, 2.0), Pointing.LEFT).withItem(stack), 30);
         scene.idle(20);
-        scene.world.setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
+        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
                 .with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
                 .with(TransformerSmallBlock.COILS, 1), false);
         scene.idle(10);
 
-        scene.effects.indicateSuccess(tr);
+        scene.effects().indicateSuccess(tr);
         scene.idle(10);
 
-        scene.overlay.showText(60)
+        scene.overlay().showText(60)
                 .text("Repeat for the secondary winding")
                 .placeNearTarget();
         scene.idle(50);
 
-        scene.world.setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
+        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
                 .with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
                 .with(TransformerSmallBlock.COILS, 2), false);
-        scene.effects.indicateSuccess(tr);
+        scene.effects().indicateSuccess(tr);
         scene.idle(30);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("Your transformer will now transform voltage with the ratio you wound")
                 .attachKeyFrame()
                 .placeNearTarget();
@@ -279,40 +276,40 @@ public class DeviceScenes {
         scene.title("light", "Lighting up the world with electricity");
         scene.configureBasePlate(0, 0, 5);
 
-        var light = util.grid.at(2, 2, 2);
+        var light = util.grid().at(2, 2, 2);
         scene.showBasePlate();
         scene.idle(5);
 
-        scene.world.showSection(util.select.fromTo(0, 1, 2, 4, 1, 2), Direction.NORTH);
+        scene.world().showSection(util.select().fromTo(0, 1, 2, 4, 1, 2), Direction.NORTH);
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(0, 2, 2), Direction.DOWN);
-        scene.world.showSection(util.select.position(4, 2, 2), Direction.DOWN);
+        scene.world().showSection(util.select().position(0, 2, 2), Direction.DOWN);
+        scene.world().showSection(util.select().position(4, 2, 2), Direction.DOWN);
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(light), Direction.DOWN);
+        scene.world().showSection(util.select().position(light), Direction.DOWN);
         scene.idle(5);
 
-        electric.connect(util.grid.at(0, 2, 2), 0, light, 0);
-        electric.connect(util.grid.at(4, 2, 2), 0, light, 1);
+        electric.connect(util.grid().at(0, 2, 2), 0, light, 0);
+        electric.connect(util.grid().at(4, 2, 2), 0, light, 1);
         scene.idle(15);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("When light bulbs are inserted into fixtures and powered on they turn electricity into light")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(light).subtract(0, 0.5, 0))
+                .pointAt(util.vector().topOf(light).subtract(0, 0.5, 0))
                 .placeNearTarget();
         scene.idle(40);
-        scene.world.modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 2), false);
+        scene.world().modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 2), false);
         scene.idle(70);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("If the voltage is not high enough, the light bulb will be dimmer")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(light).subtract(0, 0.5, 0))
+                .pointAt(util.vector().topOf(light).subtract(0, 0.5, 0))
                 .placeNearTarget();
         scene.idle(40);
-        scene.world.modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 1), false);
+        scene.world().modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 1), false);
         scene.idle(50);
 
         scene.markAsFinished();
@@ -323,34 +320,34 @@ public class DeviceScenes {
         scene.title("growth_lamp", "Accelerating crop growth");
         scene.configureBasePlate(0, 0, 5);
 
-        var light = util.grid.at(2, 2, 2);
+        var light = util.grid().at(2, 2, 2);
         scene.showBasePlate();
-        scene.world.showSection(util.select.fromTo(1, 1, 1, 3, 1, 2), Direction.UP);
+        scene.world().showSection(util.select().fromTo(1, 1, 1, 3, 1, 2), Direction.UP);
         scene.idle(10);
 
-        scene.world.showSection(util.select.fromTo(2, 1, 2, 2, 3, 4), Direction.NORTH);
+        scene.world().showSection(util.select().fromTo(2, 1, 2, 2, 3, 4), Direction.NORTH);
         scene.idle(15);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("The growth lamp is a special type of light bulb which accelerates crop growth in a certain area when powered on")
                 .attachKeyFrame()
-                .pointAt(util.vector.blockSurface(light, Direction.WEST))
+                .pointAt(util.vector().blockSurface(light, Direction.WEST))
                 .placeNearTarget();
         scene.idle(40);
-        scene.world.modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 2), false);
+        scene.world().modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 2), false);
 //        scene.idle(70);
 
         var crops = new BlockPos[] {
-                util.grid.at(1, 1, 1),
-                util.grid.at(2, 1, 1),
-                util.grid.at(1, 1, 2),
-                util.grid.at(3, 1, 2)
+                util.grid().at(1, 1, 1),
+                util.grid().at(2, 1, 1),
+                util.grid().at(1, 1, 2),
+                util.grid().at(3, 1, 2)
         };
 
         var random = new Random();
         UnaryOperator<BlockState> growCrop = state -> state.with(Properties.AGE_7, Math.min(state.get(Properties.AGE_7) + 1, 7));
         for(int i = 0; i < 15; ++i) {
-            scene.world.modifyBlock(crops[random.nextInt(crops.length)], growCrop, false);
+            scene.world().modifyBlock(crops[random.nextInt(crops.length)], growCrop, false);
             scene.idle(10);
         }
 
@@ -362,58 +359,58 @@ public class DeviceScenes {
         scene.title("electric_motor", "Turning electricity into rotation");
         scene.configureBasePlate(1, 0, 5);
 
-        var source = util.grid.at(4, 1, 4);
-        var motor = util.grid.at(4, 1, 2);
-        var gauge = util.grid.at(5, 2, 2);
-        electric.connectInvisible(source, 0, util.grid.at(5, 1, 1), 0);
-        electric.connectInvisible(source, 1, util.grid.at(5, 1, 3), 0);
+        var source = util.grid().at(4, 1, 4);
+        var motor = util.grid().at(4, 1, 2);
+        var gauge = util.grid().at(5, 2, 2);
+        electric.connectInvisible(source, 0, util.grid().at(5, 1, 1), 0);
+        electric.connectInvisible(source, 1, util.grid().at(5, 1, 3), 0);
 
         scene.showBasePlate();
-        scene.world.showSection(util.select.position(gauge.down()), Direction.UP);
+        scene.world().showSection(util.select().position(gauge.down()), Direction.UP);
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(gauge), Direction.DOWN);
-        scene.world.showSection(util.select.position(5, 1, 1), Direction.DOWN);
-        scene.world.showSection(util.select.position(5, 1, 3), Direction.DOWN);
+        scene.world().showSection(util.select().position(gauge), Direction.DOWN);
+        scene.world().showSection(util.select().position(5, 1, 1), Direction.DOWN);
+        scene.world().showSection(util.select().position(5, 1, 3), Direction.DOWN);
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(0, 0, 3), Direction.EAST);
-        scene.world.showSection(util.select.fromTo(0, 1, 2, 1, 1, 2), Direction.EAST);
-        scene.world.showSection(util.select.fromTo(2, 1, 2, 3, 1, 2), Direction.DOWN);
+        scene.world().showSection(util.select().position(0, 0, 3), Direction.EAST);
+        scene.world().showSection(util.select().fromTo(0, 1, 2, 1, 1, 2), Direction.EAST);
+        scene.world().showSection(util.select().fromTo(2, 1, 2, 3, 1, 2), Direction.DOWN);
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(motor), Direction.DOWN);
+        scene.world().showSection(util.select().position(motor), Direction.DOWN);
         scene.idle(5);
 
-        electric.connect(util.grid.at(5, 1, 1), 0, gauge, 0);
-        electric.connect(util.grid.at(5, 1, 1), 0, motor, 1);
-        electric.connect(util.grid.at(5, 1, 3), 0, gauge, 1);
-        electric.connect(util.grid.at(5, 1, 3), 0, motor, 0);
+        electric.connect(util.grid().at(5, 1, 1), 0, gauge, 0);
+        electric.connect(util.grid().at(5, 1, 1), 0, motor, 1);
+        electric.connect(util.grid().at(5, 1, 3), 0, gauge, 1);
+        electric.connect(util.grid().at(5, 1, 3), 0, motor, 0);
         electric.setSource(source, 50);
         electric.tickFor(10);
 
-        scene.world.setKineticSpeed(util.select.fromTo(0, 1, 2, 4, 1, 2), 64);
-        scene.world.setKineticSpeed(util.select.position(0, 0, 3), -32);
-        scene.effects.rotationSpeedIndicator(motor.west());
+        scene.world().setKineticSpeed(util.select().fromTo(0, 1, 2, 4, 1, 2), 64);
+        scene.world().setKineticSpeed(util.select().position(0, 0, 3), -32);
+        scene.effects().rotationSpeedIndicator(motor.west());
         scene.idle(15);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("The electric motor lets you convert electricity into rotation")
                 .attachKeyFrame()
-                .pointAt(util.vector.topOf(motor))
+                .pointAt(util.vector().topOf(motor))
                 .placeNearTarget();
         scene.idle(90);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("The speed of the motor depends on the voltage you provide")
                 .attachKeyFrame()
-                .pointAt(util.vector.blockSurface(gauge, Direction.WEST))
+                .pointAt(util.vector().blockSurface(gauge, Direction.WEST))
                 .placeNearTarget();
         scene.idle(40);
         electric.setSource(source, 100);
         electric.tickFor(10);
-        scene.world.multiplyKineticSpeed(util.select.everywhere(), 2.0f);
-        scene.effects.rotationSpeedIndicator(motor.west());
+        scene.world().multiplyKineticSpeed(util.select().everywhere(), 2.0f);
+        scene.effects().rotationSpeedIndicator(motor.west());
         scene.idle(50);
 
         scene.markAsFinished();
@@ -424,38 +421,38 @@ public class DeviceScenes {
         scene.title("basin_heater", "High power heating");
         scene.configureBasePlate(0, 0, 5);
 
-        var target = util.grid.at(2, 1, 2);
+        var target = util.grid().at(2, 1, 2);
 
         scene.showBasePlate();
         scene.idle(5);
 
-        scene.world.showSection(util.select.position(target), Direction.DOWN);
+        scene.world().showSection(util.select().position(target), Direction.DOWN);
         scene.idle(10);
 
-        scene.world.showSection(util.select.position(target.up()), Direction.DOWN);
+        scene.world().showSection(util.select().position(target.up()), Direction.DOWN);
         scene.idle(10);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("The Basin Heater can provide Heat to Items processed in a Basin")
-                .pointAt(util.vector.blockSurface(target, Direction.WEST))
+                .pointAt(util.vector().blockSurface(target, Direction.WEST))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
-        scene.world.hideSection(util.select.position(target.up()), Direction.UP);
+        scene.world().hideSection(util.select().position(target.up()), Direction.UP);
         scene.idle(20);
 
-        scene.world.modifyBlock(target, state -> state.with(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.KINDLED), false);
+        scene.world().modifyBlock(target, state -> state.with(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.KINDLED), false);
         scene.idle(40);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("When given enough power the heater can give the highest level of heat")
-                .pointAt(util.vector.topOf(target))
+                .pointAt(util.vector().topOf(target))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(40);
 
-        scene.world.modifyBlock(target, state -> state.with(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.SEETHING), false);
+        scene.world().modifyBlock(target, state -> state.with(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.SEETHING), false);
         scene.idle(50);
 
         scene.markAsFinished();
@@ -467,42 +464,42 @@ public class DeviceScenes {
 
         scene.showBasePlate();
         scene.idle(10);
-        scene.world.showSection(util.select.layer(1), Direction.DOWN);
+        scene.world().showSection(util.select().layer(1), Direction.DOWN);
         scene.idle(10);
-        scene.world.showSection(util.select.layer(2), Direction.DOWN);
+        scene.world().showSection(util.select().layer(2), Direction.DOWN);
         scene.idle(10);
 
-        var plank = scene.world.showIndependentSection(util.select.layer(3), Direction.DOWN);
-        scene.world.moveSection(plank, util.vector.of(0, 0, 0), 0);
+        var plank = scene.world().showIndependentSection(util.select().layer(3), Direction.DOWN);
+        scene.world().moveSection(plank, util.vector().of(0, 0, 0), 0);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("A Servo can be used to precisely control mechanical movements using an electric signal")
-                .pointAt(util.vector.topOf(4, 1, 2))
+                .pointAt(util.vector().topOf(4, 1, 2))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
-        var bearing = util.grid.at(2, 2, 2);
+        var bearing = util.grid().at(2, 2, 2);
         var rotationDuration = 37 * 2;
 
-        scene.world.setKineticSpeed(util.select.layer(1), 16);
-        scene.world.setKineticSpeed(util.select.position(2, 1, 2), -16);
-        scene.effects.rotationSpeedIndicator(util.grid.at(4, 1, 2));
-        scene.world.rotateBearing(bearing, 360, rotationDuration);
-        scene.world.rotateSection(plank, 0, 360, 0, rotationDuration);
+        scene.world().setKineticSpeed(util.select().layer(1), 16);
+        scene.world().setKineticSpeed(util.select().position(2, 1, 2), -16);
+        scene.effects().rotationSpeedIndicator(util.grid().at(4, 1, 2));
+        scene.world().rotateBearing(bearing, 360, rotationDuration);
+        scene.world().rotateSection(plank, 0, 360, 0, rotationDuration);
         scene.idle(rotationDuration);
 
         rotationDuration = 69;
-        scene.world.setKineticSpeed(util.select.layer(1), -16);
-        scene.world.setKineticSpeed(util.select.position(2, 1, 2), 16);
-        scene.effects.rotationSpeedIndicator(util.grid.at(4, 1, 2));
-        scene.world.rotateBearing(bearing, -315, rotationDuration);
-        scene.world.rotateSection(plank, 0, -315, 0, rotationDuration);
+        scene.world().setKineticSpeed(util.select().layer(1), -16);
+        scene.world().setKineticSpeed(util.select().position(2, 1, 2), 16);
+        scene.effects().rotationSpeedIndicator(util.grid().at(4, 1, 2));
+        scene.world().rotateBearing(bearing, -315, rotationDuration);
+        scene.world().rotateSection(plank, 0, -315, 0, rotationDuration);
         scene.idle(rotationDuration);
 
-        scene.world.setKineticSpeed(util.select.layer(1), 0);
+        scene.world().setKineticSpeed(util.select().layer(1), 0);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("The control pin accepts a voltage between -5 and 5 volts, which maps to -360 and 360 degrees of rotation")
                 .placeNearTarget()
                 .attachKeyFrame();
@@ -517,15 +514,15 @@ public class DeviceScenes {
 
         scene.showBasePlate();
         scene.idle(10);
-        scene.world.showSection(util.select.position(2, 1, 3), Direction.DOWN);
-        scene.world.showSection(util.select.position(2, 2, 3), Direction.DOWN);
+        scene.world().showSection(util.select().position(2, 1, 3), Direction.DOWN);
+        scene.world().showSection(util.select().position(2, 2, 3), Direction.DOWN);
         scene.idle(10);
-        scene.world.showSection(util.select.position(2, 2, 2), Direction.SOUTH);
+        scene.world().showSection(util.select().position(2, 2, 2), Direction.SOUTH);
         scene.idle(10);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("The Alarm Bell is an electric device which makes sound when you power it.")
-                .pointAt(util.vector.centerOf(2, 2, 2))
+                .pointAt(util.vector().centerOf(2, 2, 2))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
@@ -536,108 +533,108 @@ public class DeviceScenes {
     public static void electromagnet(SceneBuilder scene, SceneBuildingUtil util) {
         scene.title("electromagnet", "Processing Items with the Electromagnet");
         scene.configureBasePlate(0, 0, 5);
-        scene.world.showSection(util.select.layer(0), Direction.UP);
+        scene.world().showSection(util.select().layer(0), Direction.UP);
         scene.idle(5);
 
-        var depot = scene.world.showIndependentSection(util.select.position(2, 1, 1), Direction.DOWN);
-        scene.world.moveSection(depot, util.vector.of(0, 0, 1), 0);
+        var depot = scene.world().showIndependentSection(util.select().position(2, 1, 1), Direction.DOWN);
+        scene.world().moveSection(depot, util.vector().of(0, 0, 1), 0);
         scene.idle(10);
 
-        var magnet = util.select.position(2, 3, 2);
-        var magnetPos = util.grid.at(2, 3, 2);
-        var depotPos = util.grid.at(2, 1, 1);
+        var magnet = util.select().position(2, 3, 2);
+        var magnetPos = util.grid().at(2, 3, 2);
+        var depotPos = util.grid().at(2, 1, 1);
 
-        scene.world.modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be -> {
+        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be -> {
             var nodes = be.getElectricBehaviour().getExternalNodes();
             // Override node voltage
             nodes.get(0).receiveResult(200f);
             nodes.get(1).receiveResult(0f);
         });
-        scene.world.showSection(magnet, Direction.DOWN);
+        scene.world().showSection(magnet, Direction.DOWN);
         scene.idle(10);
 
-        scene.world.showSection(util.select.fromTo(2, 1, 3, 2, 1, 5), Direction.NORTH);
+        scene.world().showSection(util.select().fromTo(2, 1, 3, 2, 1, 5), Direction.NORTH);
         scene.idle(3);
-        scene.world.showSection(util.select.position(2, 2, 3), Direction.SOUTH);
+        scene.world().showSection(util.select().position(2, 2, 3), Direction.SOUTH);
         scene.idle(3);
-        scene.world.showSection(util.select.position(2, 3, 3), Direction.NORTH);
+        scene.world().showSection(util.select().position(2, 3, 3), Direction.NORTH);
 
-        scene.effects.indicateSuccess(magnetPos);
+        scene.effects().indicateSuccess(magnetPos);
         scene.idle(10);
 
-        var pressSide = util.vector.blockSurface(magnetPos, Direction.WEST);
-        scene.overlay.showText(60)
+        var pressSide = util.vector().blockSurface(magnetPos, Direction.WEST);
+        scene.overlay().showText(60)
                 .pointAt(pressSide)
                 .placeNearTarget()
                 .attachKeyFrame()
                 .text("The Electromagnet can process items provided beneath it");
         scene.idle(70);
-        scene.overlay.showText(60)
+        scene.overlay().showText(60)
                 .pointAt(pressSide.subtract(0, 2, 0))
                 .placeNearTarget()
                 .text("The Input items can be dropped or placed on a Depot under the Electromagnet");
         scene.idle(50);
         var iron = new ItemStack(Items.IRON_INGOT);
-        scene.world.createItemOnBeltLike(depotPos, Direction.NORTH, iron);
-        var depotCenter = util.vector.centerOf(depotPos.south());
-        scene.overlay.showControls(new InputWindowElement(depotCenter, Pointing.UP).withItem(iron), 30);
+        scene.world().createItemOnBeltLike(depotPos, Direction.NORTH, iron);
+        var depotCenter = util.vector().centerOf(depotPos.south());
+        scene.overlay().showControls(new InputWindowElement(depotCenter, Pointing.UP).withItem(iron), 30);
         scene.idle(10);
         var type = ElectromagnetBlockEntity.class;
-        scene.world.modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
-                .start(MagnetizingBehaviour.Mode.BELT, util.vector.of(2.5f, 1.8125f, 2.5f)));
+        scene.world().modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
+                .start(MagnetizingBehaviour.Mode.BELT, util.vector().of(2.5f, 1.8125f, 2.5f)));
         int processingTime = 50;
         scene.idle(processingTime);
-        scene.world.removeItemsFromBelt(depotPos);
+        scene.world().removeItemsFromBelt(depotPos);
         var magnetStack = ModdedItems.MAGNET.asStack();
-        scene.world.createItemOnBeltLike(depotPos, Direction.UP, magnetStack);
+        scene.world().createItemOnBeltLike(depotPos, Direction.UP, magnetStack);
         scene.idle(10);
-        scene.overlay.showControls(new InputWindowElement(depotCenter, Pointing.UP).withItem(magnetStack), 50);
+        scene.overlay().showControls(new InputWindowElement(depotCenter, Pointing.UP).withItem(magnetStack), 50);
         scene.idle(60);
 
-        scene.world.hideIndependentSection(depot, Direction.NORTH);
+        scene.world().hideIndependentSection(depot, Direction.NORTH);
         scene.idle(5);
-        scene.world.showSection(util.select.fromTo(0, 1, 3, 0, 2, 3), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(0, 1, 3, 0, 2, 3), Direction.DOWN);
         scene.idle(10);
-        scene.world.showSection(util.select.fromTo(4, 1, 2, 0, 2, 2), Direction.SOUTH);
+        scene.world().showSection(util.select().fromTo(4, 1, 2, 0, 2, 2), Direction.SOUTH);
         scene.idle(20);
-        var beltPos = util.grid.at(0, 1, 2);
-        scene.overlay.showText(40)
-                .pointAt(util.vector.blockSurface(beltPos, Direction.WEST))
+        var beltPos = util.grid().at(0, 1, 2);
+        scene.overlay().showText(40)
+                .pointAt(util.vector().blockSurface(beltPos, Direction.WEST))
                 .placeNearTarget()
                 .attachKeyFrame()
                 .text("When items are provided on a belt...");
         scene.idle(30);
 
-        var ingot = scene.world.createItemOnBelt(beltPos, Direction.SOUTH, iron);
+        var ingot = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, iron);
         scene.idle(15);
-        var ingot2 = scene.world.createItemOnBelt(beltPos, Direction.SOUTH, iron);
+        var ingot2 = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, iron);
         scene.idle(15);
-        scene.world.stallBeltItem(ingot, true);
-        scene.world.modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
-                .start(MagnetizingBehaviour.Mode.BELT, util.vector.of(2.5f, 1.8125f, 2.5f)));
+        scene.world().stallBeltItem(ingot, true);
+        scene.world().modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
+                .start(MagnetizingBehaviour.Mode.BELT, util.vector().of(2.5f, 1.8125f, 2.5f)));
 
-        scene.overlay.showText(50)
+        scene.overlay().showText(50)
                 .pointAt(pressSide)
                 .placeNearTarget()
                 .attachKeyFrame()
                 .text("The Electromagnet will hold and process them automatically");
 
         scene.idle(processingTime);
-        scene.world.removeItemsFromBelt(magnetPos.down(2));
-        ingot = scene.world.createItemOnBelt(magnetPos.down(2), Direction.UP, magnetStack);
-        scene.world.stallBeltItem(ingot, true);
+        scene.world().removeItemsFromBelt(magnetPos.down(2));
+        ingot = scene.world().createItemOnBelt(magnetPos.down(2), Direction.UP, magnetStack);
+        scene.world().stallBeltItem(ingot, true);
         scene.idle(15);
-        scene.world.stallBeltItem(ingot, false);
+        scene.world().stallBeltItem(ingot, false);
         scene.idle(15);
-        scene.world.stallBeltItem(ingot2, true);
-        scene.world.modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
-                .start(MagnetizingBehaviour.Mode.BELT, util.vector.of(2.5f, 1.8125f, 2.5f)));
+        scene.world().stallBeltItem(ingot2, true);
+        scene.world().modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
+                .start(MagnetizingBehaviour.Mode.BELT, util.vector().of(2.5f, 1.8125f, 2.5f)));
         scene.idle(processingTime);
-        scene.world.removeItemsFromBelt(magnetPos.down(2));
-        ingot2 = scene.world.createItemOnBelt(magnetPos.down(2), Direction.UP, magnetStack);
-        scene.world.stallBeltItem(ingot2, true);
+        scene.world().removeItemsFromBelt(magnetPos.down(2));
+        ingot2 = scene.world().createItemOnBelt(magnetPos.down(2), Direction.UP, magnetStack);
+        scene.world().stallBeltItem(ingot2, true);
         scene.idle(15);
-        scene.world.stallBeltItem(ingot2, false);
+        scene.world().stallBeltItem(ingot2, false);
 
         scene.markAsFinished();
     }
@@ -689,33 +686,33 @@ public class DeviceScenes {
         scene.title("battery", "Storing electricity");
         scene.configureBasePlate(0, 0, 5);
 
-        var battery = util.grid.at(2, 1, 3);
-        var meter = util.grid.at(2, 1, 1);
-        var connector = util.grid.at(2, 2, 2);
+        var battery = util.grid().at(2, 1, 3);
+        var meter = util.grid().at(2, 1, 1);
+        var connector = util.grid().at(2, 2, 2);
 
         scene.showBasePlate();
         scene.idle(10);
 
-        scene.world.showSection(util.select.position(battery), Direction.DOWN);
-        scene.world.showSection(util.select.position(battery.up()), Direction.DOWN);
+        scene.world().showSection(util.select().position(battery), Direction.DOWN);
+        scene.world().showSection(util.select().position(battery.up()), Direction.DOWN);
         scene.idle(10);
-        scene.world.showSection(util.select.position(meter), Direction.DOWN);
+        scene.world().showSection(util.select().position(meter), Direction.DOWN);
         scene.idle(10);
-        scene.world.showSection(util.select.position(connector), Direction.SOUTH);
+        scene.world().showSection(util.select().position(connector), Direction.SOUTH);
         scene.idle(10);
         electric.connect(connector, 0, meter, 1);
         electric.connect(connector, 1, meter, 0);
         electric.tickFor(10);
         scene.idle(10);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("The Battery allows you to store electricity for later use")
-                .pointAt(util.vector.topOf(battery.up()))
+                .pointAt(util.vector().topOf(battery.up()))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
-        scene.overlay.showText(80)
+        scene.overlay().showText(80)
                 .text("As the battery discharges, its electrical parameters will begin to change")
                 .placeNearTarget()
                 .attachKeyFrame();

@@ -15,11 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.zapper;
 
-import com.jozufozu.flywheel.core.PartialModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.simibubi.create.foundation.item.render.PartialItemModelRenderer;
-import com.simibubi.create.foundation.utility.AnimationTickHolder;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -36,7 +36,7 @@ import org.patryk3211.powergrid.PowerGridClient;
  * @see com.simibubi.create.content.equipment.potatoCannon.PotatoCannonItemRenderer
  */
 public class ElectroZapperItemRenderer extends CustomRenderedItemModelRenderer {
-    protected static final PartialModel COG = new PartialModel(PowerGrid.asResource("item/electrozapper/cog"));
+    protected static final PartialModel COG = PartialModel.of(PowerGrid.asResource("item/electrozapper/cog"));
 
     @Override
     protected void render(ItemStack stack, CustomRenderedItemModel model, PartialItemModelRenderer renderer, ModelTransformationMode transformType, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {

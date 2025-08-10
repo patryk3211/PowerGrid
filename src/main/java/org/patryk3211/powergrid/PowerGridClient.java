@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid;
 
+import dev.architectury.event.events.client.ClientTickEvent;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -26,7 +28,7 @@ import net.minecraft.client.util.Window;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import org.patryk3211.powergrid.collections.*;
-import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.portablebattery.BatteryArmorLayer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
@@ -53,15 +55,26 @@ public class PowerGridClient {
 
 		registerOverlays();
 
-		ClientElectricNetwork.init();
 		TerminalHandler.init();
 
 		WirePreview.init();
 		PlacementOverlay.init();
-		ClientTickEvents.END_CLIENT_TICK.register(PowerGridClient::clientTick);
+
+		registerArchitecturyEvents();
+		registerPlatformEvents();
 
 		PonderTags.register();
 		PonderIndex.register();
+	}
+
+	public static void registerArchitecturyEvents() {
+		ClientTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
+		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
+	}
+
+	@ExpectPlatform
+	public static void registerPlatformEvents() {
+		throw new AssertionError();
 	}
 
 	private static void clientTick(MinecraftClient client) {

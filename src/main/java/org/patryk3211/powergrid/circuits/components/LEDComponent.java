@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.utility.Color;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.theme.Color;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -64,7 +64,7 @@ public class LEDComponent extends OrientableComponent implements IRenderedCompon
 
     @Override
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
-        var buffer = CachedBufferer.partial(ModdedPartialModels.LED_BULB, be.getCachedState());
+        var buffer = CachedBuffers.partial(ModdedPartialModels.LED_BULB, be.getCachedState());
         var color = new Color(placed.get(RED), placed.get(GREEN), placed.get(BLUE));
         if(!placed.wires.isEmpty()) {
             var wire = placed.wires.get(0);

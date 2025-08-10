@@ -15,12 +15,11 @@
  */
 package org.patryk3211.powergrid.circuits.gui;
 
-import com.simibubi.create.foundation.gui.widget.AbstractSimiWidget;
+import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 

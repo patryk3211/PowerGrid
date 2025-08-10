@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[@FORGE_LOADER_MAJOR@,)"
+loaderVersion = "[47,)"
 issueTrackerURL = "https://github.com/patryk3211/PowerGrid/issues"
 license = "Apache-2.0"
 

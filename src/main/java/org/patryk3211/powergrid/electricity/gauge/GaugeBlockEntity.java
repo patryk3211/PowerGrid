@@ -15,14 +15,14 @@
  */
 package org.patryk3211.powergrid.electricity.gauge;
 
-import com.simibubi.create.content.equipment.goggles.IHaveGoggleInformation;
-import com.simibubi.create.foundation.utility.Lang;
+import com.simibubi.create.Create;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
@@ -61,7 +61,7 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
     @Override
     public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
         // Use default Create header here.
-        Lang.translate("gui.gauge.info_header").forGoggles(tooltip);
+        Lang.builder(Create.ID).translate("gui.gauge.info_header").forGoggles(tooltip);
         return true;
     }
 }

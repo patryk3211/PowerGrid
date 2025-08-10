@@ -15,12 +15,12 @@
  */
 package org.patryk3211.powergrid.circuits.gui;
 
-import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.navigation.GuiNavigation;
 import net.minecraft.client.gui.navigation.GuiNavigationPath;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
@@ -32,7 +32,7 @@ public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends Prop
 
     public TextFieldPropertyWidget(TextRenderer textRenderer, int x, int y, P property) {
         super(textRenderer, x, y, property);
-        widget = new TextFieldWidget(textRenderer, x + 8, y + 6, 46, 18, Components.immutableEmpty());
+        widget = new TextFieldWidget(textRenderer, x + 8, y + 6, 46, 18, Text.empty());
         widget.setText(property.stringValue());
         widget.setEditableColor(-1);
         widget.setUneditableColor(-1);

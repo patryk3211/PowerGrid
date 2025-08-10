@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.electricity.info;
 
 import com.simibubi.create.content.equipment.goggles.GogglesItem;
-import com.simibubi.create.foundation.utility.LangBuilder;
+import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;

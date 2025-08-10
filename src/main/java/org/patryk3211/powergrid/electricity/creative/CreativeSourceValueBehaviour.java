@@ -22,7 +22,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehavio
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
-import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -41,8 +40,8 @@ public class CreativeSourceValueBehaviour extends ScrollValueBehaviour {
 
     public ValueSettingsBoard createBoard(PlayerEntity player, BlockHitResult hitResult) {
         ImmutableList<Text> rows = ImmutableList.of(
-                Components.literal("+"),//.formatted(Formatting.BOLD),
-                Components.literal("-")//.formatted(Formatting.BOLD)
+                Text.literal("+"),//.formatted(Formatting.BOLD),
+                Text.literal("-")//.formatted(Formatting.BOLD)
         );
         ValueSettingsFormatter formatter = new ValueSettingsFormatter(this::formatSettings);
         return new ValueSettingsBoard(this.label, 250, 20, rows, formatter);

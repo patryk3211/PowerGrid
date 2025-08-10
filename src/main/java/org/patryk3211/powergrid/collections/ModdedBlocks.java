@@ -16,10 +16,10 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
-import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
+import com.simibubi.create.infrastructure.config.CStress;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.util.entry.BlockEntry;
@@ -239,7 +239,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .properties(AbstractBlock.Settings::nonOpaque)
             .transform(pickaxeOnly())
-            .transform(BlockStressDefaults.setImpact(4))
+            .transform(CStress.setImpact(4))
             .defaultLoot()
             .item()
                 .model((ctx, prov) ->
@@ -253,7 +253,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .properties(AbstractBlock.Settings::nonOpaque)
             .transform(pickaxeOnly())
-            .transform(BlockStressDefaults.setImpact(4))
+            .transform(CStress.setImpact(4))
             .defaultLoot()
             .item()
                 .model((ctx, prov) ->
@@ -267,7 +267,7 @@ public class ModdedBlocks {
             ))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
-            .transform(BlockStressDefaults.setImpact(4))
+            .transform(CStress.setImpact(4))
             .defaultLoot()
             .item()
                 .model((ctx, prov) ->
@@ -279,7 +279,7 @@ public class ModdedBlocks {
             .blockstate(alternateDirectionalBlock(state -> state.get(POWERED) ? "block/generator/clutch_on" : "block/generator/clutch"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
-            .transform(BlockStressDefaults.setImpact(4))
+            .transform(CStress.setImpact(4))
             .defaultLoot()
             .item()
                 .model((ctx, prov) ->
@@ -401,7 +401,7 @@ public class ModdedBlocks {
                     }))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .transform(BlockStressDefaults.setImpact(2))
+            .transform(CStress.setImpact(2))
             .loot((tables, block) ->
                     tables.addDrop(block, b -> LootTable.builder()
                             .pool(LootPool.builder()
@@ -557,7 +557,7 @@ public class ModdedBlocks {
                         case Y -> "block/electric_motor/block_vertical";
                     }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
-            .transform(BlockStressDefaults.setCapacity(64))
+            .transform(CStress.setCapacity(64))
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()
@@ -571,7 +571,7 @@ public class ModdedBlocks {
                 case Y -> "block/servo/block_vertical";
             }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
-            .transform(BlockStressDefaults.setCapacity(32))
+            .transform(CStress.setCapacity(32))
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()

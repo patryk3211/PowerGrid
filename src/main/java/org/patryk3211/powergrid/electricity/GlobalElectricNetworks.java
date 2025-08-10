@@ -17,9 +17,6 @@ package org.patryk3211.powergrid.electricity;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -36,17 +33,15 @@ import java.util.*;
 public class GlobalElectricNetworks {
     protected static final Map<World, WorldNetworks> worldNetworks = new HashMap<>();
 
-    public static void init() {
-        ServerTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
-        ServerWorldEvents.UNLOAD.register((server, world) -> worldNetworks.remove(world));
-        ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
-    }
-
-    protected static void tick(World world) {
+    public static void tick(World world) {
         var networks = worldNetworks.get(world);
         if(networks == null)
             return;
         networks.tick();
+    }
+
+    public static void unloadWorld(ServerWorld world) {
+        worldNetworks.remove(world);
     }
 
     @Environment(EnvType.CLIENT)

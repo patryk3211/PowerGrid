@@ -17,13 +17,13 @@ package org.patryk3211.powergrid.electricity.transformer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.blockEntity.behaviour.*;
-import com.simibubi.create.foundation.gui.ScreenOpener;
-import com.simibubi.create.foundation.utility.Color;
-import com.simibubi.create.foundation.utility.Components;
+import net.createmod.catnip.gui.ScreenOpener;
+import net.createmod.catnip.theme.Color;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
@@ -42,7 +42,7 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
                 Lang.translateDirect("gui.transformer.turns"),
                 block.getMaxTurns(),
                 10,
-                List.of(Components.literal("N")),
+                List.of(Text.literal("N")),
                 new ValueSettingsFormatter(TransformerWindingScreen::formatSettings)
         );
     }
@@ -69,7 +69,7 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
     }
 
     public TransformerWindingScreen(TransformerBlock block, Hand hand, int current, int primaryTurns) {
-        super(null, makeBoard(block), new ValueSettingsBehaviour.ValueSettings(0, current), setting -> {});
+        super(null, makeBoard(block), new ValueSettingsBehaviour.ValueSettings(0, current), setting -> {}, 1000);
         this.hand = hand;
         this.cap = block.getMaxTurns() - primaryTurns;
     }

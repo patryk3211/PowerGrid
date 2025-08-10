@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.ponder.base;
 
-import com.simibubi.create.foundation.ponder.instruction.FadeIntoSceneInstruction;
+import net.createmod.ponder.foundation.instruction.FadeIntoSceneInstruction;
 import net.minecraft.util.math.Direction;
 
 public class CreateWireInstruction extends FadeIntoSceneInstruction<WireElement> {

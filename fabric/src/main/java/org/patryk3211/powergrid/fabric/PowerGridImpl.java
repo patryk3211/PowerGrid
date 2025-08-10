@@ -20,6 +20,7 @@ import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -30,6 +31,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.ElectricProperties;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 public class PowerGridImpl implements ModInitializer {
     public void onInitialize() {
@@ -57,5 +59,9 @@ public class PowerGridImpl implements ModInitializer {
         var magnetizing = MagnetizingRecipe.TYPE_INFO;
 		Registry.register(Registries.RECIPE_SERIALIZER, magnetizing.getId(), magnetizing.getSerializer());
 		Registry.register(Registries.RECIPE_TYPE, magnetizing.getId(), magnetizing.getType());
+    }
+
+    public static void registerPlatformEvents() {
+        ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
     }
 }

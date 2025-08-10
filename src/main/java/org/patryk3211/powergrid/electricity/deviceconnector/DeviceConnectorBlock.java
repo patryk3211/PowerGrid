@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.electricity.deviceconnector;
 
 import com.simibubi.create.foundation.block.IBE;
-import com.simibubi.create.foundation.utility.VoxelShaper;
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

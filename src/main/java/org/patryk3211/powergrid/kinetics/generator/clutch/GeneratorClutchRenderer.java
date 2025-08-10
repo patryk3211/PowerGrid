@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.clutch;
 
-import com.jozufozu.flywheel.backend.Backend;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import dev.engine_room.flywheel.api.visualization.VisualizationManager;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -37,7 +37,7 @@ public class GeneratorClutchRenderer extends KineticBlockEntityRenderer<Generato
 
     @Override
     protected void renderSafe(GeneratorClutchBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
-        if(Backend.canUseInstancing(be.getWorld()))
+        if(VisualizationManager.supportsVisualization(be.getWorld()))
             return;
 
         super.renderSafe(be, partialTicks, ms, buffer, light, overlay);
@@ -46,17 +46,17 @@ public class GeneratorClutchRenderer extends KineticBlockEntityRenderer<Generato
         var facing = state.get(Properties.FACING);
         var axis = facing.getAxis();
 
-        var rotorModel = CachedBufferer.partialFacing(ModdedPartialModels.CLUTCH_SHAFT, state, facing.getOpposite());
+        var rotorModel = CachedBuffers.partialFacing(ModdedPartialModels.CLUTCH_SHAFT, state, facing.getOpposite());
         var rotorAngle = getRotorAngle(be, partialTicks);
 
         rotorModel.light(light);
-        rotorModel.rotateCentered(Direction.get(Direction.AxisDirection.POSITIVE, axis), rotorAngle);
+        rotorModel.rotateCentered(rotorAngle, Direction.get(Direction.AxisDirection.POSITIVE, axis));
         rotorModel.renderInto(ms, buffer.getBuffer(RenderLayer.getSolid()));
     }
 
     @Override
     protected SuperByteBuffer getRotatedModel(GeneratorClutchBlockEntity be, BlockState state) {
         var facing = state.get(GeneratorClutchBlock.FACING);
-        return CachedBufferer.partialFacing(ModdedPartialModels.SHAFT_BIT, state, facing);
+        return CachedBuffers.partialFacing(ModdedPartialModels.SHAFT_BIT, state, facing);
     }
 }

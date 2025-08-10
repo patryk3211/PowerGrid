@@ -20,7 +20,6 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.simibubi.create.foundation.utility.Components;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -136,7 +135,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     @Override
     protected void init() {
-        setWindowSize(WIDTH, HEIGHT + 4 + PLAYER_INVENTORY.height);
+        setWindowSize(WIDTH, HEIGHT + 4 + PLAYER_INVENTORY.getHeight());
         setWindowOffset(11, 0);
 
         super.init();
@@ -145,7 +144,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         propertiesWidget = new ComponentPropertiesWidget(textRenderer, x - 15, y + 12);
 
         var name = handler.contentHolder.getSchematicName();
-        nameField = new TextFieldWidget(textRenderer, x + 4 - 11, y + 3, 148, 9, Components.immutableEmpty());
+        nameField = new TextFieldWidget(textRenderer, x + 4 - 11, y + 3, 148, 9, Text.empty());
         nameField.setText(name);
         nameField.setEditableColor(-1);
         nameField.setUneditableColor(-1);
@@ -310,7 +309,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     protected void drawBackground(DrawContext ctx, float delta, int mouseX, int mouseY) {
         int bgX = getLeftOfCentered(WIDTH);
         int invY = y + HEIGHT + 4;
-        renderPlayerInventory(ctx, bgX + WIDTH - PLAYER_INVENTORY.width, invY);
+        renderPlayerInventory(ctx, bgX + WIDTH - PLAYER_INVENTORY.getWidth(), invY);
 
         for(int k = 0; k < this.handler.slots.size(); ++k) {
             var slot = this.handler.slots.get(k);

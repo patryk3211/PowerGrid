@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.electricity.fan;
 
 import com.simibubi.create.content.logistics.chute.AbstractChuteBlock;
 import com.simibubi.create.foundation.block.IBE;
-import com.simibubi.create.foundation.utility.VoxelShaper;
-import com.simibubi.create.foundation.utility.worldWrappers.WrappedWorld;
+import net.createmod.catnip.levelWrappers.WrappedLevel;
+import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
@@ -112,7 +112,7 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
     }
 
     protected void blockUpdate(BlockState state, WorldAccess worldIn, BlockPos pos) {
-        if(worldIn instanceof WrappedWorld)
+        if(worldIn instanceof WrappedLevel)
             return;
         notifyFanBlockEntity(worldIn, pos);
     }

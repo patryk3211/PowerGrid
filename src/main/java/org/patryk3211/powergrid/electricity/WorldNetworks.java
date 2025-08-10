@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity;
 
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -37,6 +36,7 @@ import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.SolverStateS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
+import org.patryk3211.powergrid.utility.PlayerLookup;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.*;

@@ -15,14 +15,13 @@
  */
 package org.patryk3211.powergrid.ponder.base;
 
-import com.simibubi.create.foundation.ponder.ElementLink;
-import com.simibubi.create.foundation.ponder.PonderScene;
-import com.simibubi.create.foundation.ponder.PonderWorld;
-import com.simibubi.create.foundation.ponder.element.AnimatedSceneElement;
+import net.createmod.ponder.api.level.PonderLevel;
+import net.createmod.ponder.foundation.PonderScene;
+import net.createmod.ponder.foundation.element.AnimatedSceneElementBase;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -30,7 +29,7 @@ import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
-public class WireElement extends AnimatedSceneElement {
+public class WireElement extends AnimatedSceneElementBase {
     protected WireEntity wire;
 
     protected BlockPos pos1, pos2;
@@ -55,7 +54,7 @@ public class WireElement extends AnimatedSceneElement {
     }
 
     @Override
-    protected void renderLast(PonderWorld world, VertexConsumerProvider buffer, MatrixStack ms, float fade, float pt) {
+    protected void renderLast(PonderLevel world, VertexConsumerProvider buffer, DrawContext graphics, float fade, float pt) {
         EntityRenderDispatcher dispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
         if(wire == null && isVisible()) {
             var hWire = HangingWireEntity.create(world, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
@@ -63,6 +62,7 @@ public class WireElement extends AnimatedSceneElement {
             wire = hWire;
         }
 
+        var ms = graphics.getMatrices();
         ms.push();
         ms.translate(
                 MathHelper.lerp(pt, wire.prevX, wire.getX()),

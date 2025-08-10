@@ -18,14 +18,14 @@ package org.patryk3211.powergrid.circuits.components;
 import com.google.common.collect.ImmutableCollection;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.utility.Components;
+import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.shape.VoxelShape;
@@ -96,7 +96,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
                 BOARD = CustomValueSettingsScreen.makeBoard(
                         Lang.translateDirect("gui.potentiometer.setting"),
                         100, 10,
-                        List.of(Components.literal("Value")));
+                        List.of(Text.literal("Value")));
             }
             CustomValueSettingsScreen.beginInteraction(() -> new CustomValueSettingsScreen(
                     be.getPos(), BOARD, new ValueSettingsBehaviour.ValueSettings(0, value),
@@ -127,7 +127,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     @Override
     @Environment(EnvType.CLIENT)
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
-        var buffer = CachedBufferer.partial(ModdedPartialModels.POTENTIOMETER_KNOB, be.getCachedState());
+        var buffer = CachedBuffers.partial(ModdedPartialModels.POTENTIOMETER_KNOB, be.getCachedState());
         var angle = 135 - 135 * 2 * (placed.get(VALUE) / 100.0f);
         buffer
                 .translate(2.5 / 16, 0, 2.5 / 16)

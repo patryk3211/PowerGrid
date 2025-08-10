@@ -15,26 +15,13 @@
  */
 package org.patryk3211.powergrid.kinetics.variac;
 
-import com.jozufozu.flywheel.api.Instancer;
-import com.jozufozu.flywheel.api.MaterialManager;
-import com.jozufozu.flywheel.api.instance.DynamicInstance;
 import com.simibubi.create.AllPartialModels;
-import com.simibubi.create.content.kinetics.base.ShaftInstance;
-import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
-import net.minecraft.util.math.Direction;
+import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
+import dev.engine_room.flywheel.api.visualization.VisualizationContext;
+import dev.engine_room.flywheel.lib.model.Models;
 
-public class VariacInstance extends ShaftInstance<VariacBlockEntity> implements DynamicInstance {
-    public VariacInstance(MaterialManager materialManager, VariacBlockEntity blockEntity) {
-        super(materialManager, blockEntity);
-    }
-
-    @Override
-    protected Instancer<RotatingData> getModel() {
-        return getRotatingMaterial().getModel(AllPartialModels.SHAFT_HALF, blockState, Direction.UP);
-    }
-
-    @Override
-    public void beginFrame() {
-
+public class VariacInstance extends SingleAxisRotatingVisual<VariacBlockEntity> {
+    public VariacInstance(VisualizationContext context, VariacBlockEntity blockEntity, float partialTick) {
+        super(context, blockEntity, partialTick, Models.partial(AllPartialModels.SHAFT_HALF));
     }
 }

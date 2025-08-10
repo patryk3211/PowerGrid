@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid;
 
 import com.simibubi.create.AllMovementBehaviours;
+import dev.architectury.event.events.common.LifecycleEvent;
+import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 
 import net.minecraft.block.Blocks;
@@ -48,8 +50,15 @@ public class PowerGrid  {
 
 		register();
 
-		GlobalElectricNetworks.init();
+		registerArchitecturyEvents();
+		registerPlatformEvents();
+
 		ModdedPackets.registerPackets();
+	}
+
+	public static void registerArchitecturyEvents() {
+		TickEvent.ServerLevelTick.SERVER_LEVEL_PRE.register(GlobalElectricNetworks::tick);
+		LifecycleEvent.SERVER_LEVEL_UNLOAD.register(GlobalElectricNetworks::unloadWorld);
 	}
 
 	private static void register() {
@@ -94,6 +103,11 @@ public class PowerGrid  {
 
 	@ExpectPlatform
 	public static void finalizeRegistrate() {
+		throw new AssertionError();
+	}
+
+	@ExpectPlatform
+	public static void registerPlatformEvents() {
 		throw new AssertionError();
 	}
 }

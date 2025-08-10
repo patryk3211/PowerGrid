@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.zapper;
 
-import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetRenderHandler;
+import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -42,14 +42,14 @@ public class ElectroZapperRenderHandler extends ShootableGadgetRenderHandler {
     protected void transformTool(MatrixStack ms, float flip, float equipProgress, float recoil, float pt) {
         ms.translate(flip * -.1f, 0, .14f);
         ms.scale(.75f, .75f, .75f);
-        TransformStack.cast(ms)
+        TransformStack.of(ms)
                 .rotateX(recoil * 80);
     }
 
     @Override
     protected void transformHand(MatrixStack ms, float flip, float equipProgress, float recoil, float pt) {
         ms.translate(flip * -.09, -.275, -.25);
-        TransformStack.cast(ms)
+        TransformStack.of(ms)
                 .rotateZ(flip * -10);
     }
 }

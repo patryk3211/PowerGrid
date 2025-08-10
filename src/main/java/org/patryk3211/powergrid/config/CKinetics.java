@@ -15,7 +15,8 @@
  */
 package org.patryk3211.powergrid.config;
 
-import com.simibubi.create.foundation.config.ConfigBase;
+
+import net.createmod.catnip.config.ConfigBase;
 
 public class CKinetics extends ConfigBase {
     public final ConfigFloat encasedFanCoolingStrength = f(0.01f, 0, "encasedFanCooling", Comments.encasedFanCoolingStrength);

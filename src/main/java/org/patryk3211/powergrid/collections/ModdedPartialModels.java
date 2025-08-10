@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.jozufozu.flywheel.core.PartialModel;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPartialModels {
@@ -48,11 +48,11 @@ public class ModdedPartialModels {
     public static final PartialModel POTENTIOMETER_KNOB = model("component/potentiometer_knob");
 
     private static PartialModel block(String path) {
-        return new PartialModel(PowerGrid.asResource("block/" + path));
+        return PartialModel.of(PowerGrid.asResource("block/" + path));
     }
 
     private static PartialModel model(String path) {
-        return new PartialModel(PowerGrid.asResource(path));
+        return PartialModel.of(PowerGrid.asResource(path));
     }
 
     @SuppressWarnings("EmptyMethod")

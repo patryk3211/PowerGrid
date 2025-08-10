@@ -20,7 +20,6 @@ configurations {
 }
 
 dependencies {
-    implementation "org.ejml:ejml-all:0.44.0"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 

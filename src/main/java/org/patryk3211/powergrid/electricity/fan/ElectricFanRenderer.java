@@ -17,11 +17,10 @@ package org.patryk3211.powergrid.electricity.fan;
 
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.utility.AnimationTickHolder;
+import net.createmod.catnip.animation.AnimationTickHolder;
+import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
@@ -39,7 +38,7 @@ public class ElectricFanRenderer extends SafeBlockEntityRenderer<ElectricFanBloc
         var direction = be.getCachedState().get(FACING);
         var vb = buffer.getBuffer(RenderLayer.getCutoutMipped());
 
-        var fan = CachedBufferer.partialFacing(AllPartialModels.ENCASED_FAN_INNER, be.getCachedState(), direction.getOpposite());
+        var fan = CachedBuffers.partialFacing(AllPartialModels.ENCASED_FAN_INNER, be.getCachedState(), direction.getOpposite());
 
         float time = AnimationTickHolder.getRenderTime(be.getWorld());
         float speed = be.getSpeed() * 5;
@@ -53,7 +52,7 @@ public class ElectricFanRenderer extends SafeBlockEntityRenderer<ElectricFanBloc
 
         fan
                 .light(light)
-                .rotateCentered(Direction.get(Direction.AxisDirection.POSITIVE, direction.getAxis()), angle)
+                .rotateCentered(angle, Direction.get(Direction.AxisDirection.POSITIVE, direction.getAxis()))
                 .renderInto(ms, vb);
     }
 }

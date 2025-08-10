@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.mixin.client;
 
 import com.simibubi.create.content.equipment.blueprint.BlueprintOverlayRenderer;
-import com.simibubi.create.foundation.utility.Pair;
+import net.createmod.catnip.data.Pair;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;

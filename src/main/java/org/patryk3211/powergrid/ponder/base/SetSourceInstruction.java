@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.ponder.base;
 
-import com.simibubi.create.foundation.ponder.PonderScene;
-import com.simibubi.create.foundation.ponder.instruction.PonderInstruction;
+import net.createmod.ponder.foundation.PonderScene;
+import net.createmod.ponder.foundation.instruction.PonderInstruction;
 import net.minecraft.util.math.BlockPos;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;

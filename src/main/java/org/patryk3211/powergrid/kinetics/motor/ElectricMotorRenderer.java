@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.kinetics.motor;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 
@@ -28,6 +28,6 @@ public class ElectricMotorRenderer extends KineticBlockEntityRenderer<ElectricMo
 
     @Override
     protected SuperByteBuffer getRotatedModel(ElectricMotorBlockEntity be, BlockState state) {
-        return CachedBufferer.block(shaft(state.get(ElectricMotorBlock.FACING).getAxis()));
+        return CachedBuffers.block(shaft(state.get(ElectricMotorBlock.FACING).getAxis()));
     }
 }

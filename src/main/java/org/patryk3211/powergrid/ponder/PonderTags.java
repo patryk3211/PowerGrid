@@ -15,73 +15,73 @@
  */
 package org.patryk3211.powergrid.ponder;
 
-import com.simibubi.create.foundation.ponder.PonderRegistry;
-import com.simibubi.create.foundation.ponder.PonderTag;
-import com.simibubi.create.infrastructure.ponder.AllPonderTags;
+import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
+import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
+import net.createmod.ponder.foundation.PonderTag;
+import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 public class PonderTags {
-    public static final PonderTag
-        GENERATOR_ASSEMBLY = create("generator_assembly")
-            .item(ModdedBlocks.GENERATOR_ROTOR)
-            .defaultLang("Generator Parts", "Components which can be used to build a generator")
-            .addToIndex();
+    public static final Identifier
+            GENERATOR_ASSEMBLY = id("generator_assembly"),
+            ELECTRIC_RELAYS = id("electric_relays"),
+            ELECTRIC_DEVICES = id("electric_devices");
 
-    public static final PonderTag
-        ELECTRIC_RELAYS = create("electric_relays")
-            .item(ModdedBlocks.MV_SWITCH)
-            .defaultLang("Electric Relays", "Components which help guide electricity in the right direction")
-            .addToIndex();
-
-    public static final PonderTag
-        ELECTRIC_DEVICES = create("electric_devices")
-            .item(ModdedBlocks.ELECTRIC_MOTOR)
-            .defaultLang("Electric Devices", "Components which use electricity to do something")
-            .addToIndex();
-
-    private static PonderTag create(String id) {
-        return new PonderTag(PowerGrid.asResource(id));
+    private static Identifier id(String name) {
+        return PowerGrid.asResource(name);
     }
 
-    public static void register() {
-        PonderRegistry.TAGS.forTag(GENERATOR_ASSEMBLY)
-                .add(ModdedBlocks.GENERATOR_ROTOR)
-                .add(ModdedBlocks.GENERATOR_CLUTCH)
-                .add(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
-                .add(ModdedBlocks.GENERATOR_COMMUTATOR)
-                .add(ModdedItems.COPPER_COIL)
-                .add(ModdedBlocks.GENERATOR_HOUSING);
+    public static void register(PonderTagRegistrationHelper<Identifier> helper) {
+        helper.registerTag(GENERATOR_ASSEMBLY)
+                .title("Generator Parts")
+                .description("Components which can be used to build a generator")
+                .item(ModdedBlocks.GENERATOR_ROTOR)
+                .item(ModdedBlocks.GENERATOR_CLUTCH)
+                .item(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
+                .item(ModdedBlocks.GENERATOR_COMMUTATOR)
+                .item(ModdedItems.COPPER_COIL)
+                .item(ModdedBlocks.GENERATOR_HOUSING)
+                .addToIndex()
+                .register();
 
-        PonderRegistry.TAGS.forTag(ELECTRIC_RELAYS)
-                .add(ModdedBlocks.LV_SWITCH)
-                .add(ModdedBlocks.LV_BUTTON)
-                .add(ModdedBlocks.MV_SWITCH)
-                .add(ModdedBlocks.HV_SWITCH)
-                .add(ModdedBlocks.CONTACTOR)
-                .add(ModdedBlocks.SPARK_GAP)
-                .add(ModdedBlocks.FUSE_HOLDER)
-                .add(ModdedBlocks.TRANSFORMER_CORE)
-                .add(ModdedBlocks.VARIAC)
-                .add(ModdedBlocks.WIRE_CONNECTOR)
-                .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
-                .add(ModdedBlocks.DEVICE_CONNECTOR);
+        helper.registerTag(ELECTRIC_RELAYS)
+                .title("Electricity Relays")
+                .description("Components which help guide electricity in the right direction")
+                .item(ModdedBlocks.LV_SWITCH)
+                .item(ModdedBlocks.LV_BUTTON)
+                .item(ModdedBlocks.MV_SWITCH)
+                .item(ModdedBlocks.HV_SWITCH)
+                .item(ModdedBlocks.CONTACTOR)
+                .item(ModdedBlocks.SPARK_GAP)
+                .item(ModdedBlocks.FUSE_HOLDER)
+                .item(ModdedBlocks.TRANSFORMER_CORE)
+                .item(ModdedBlocks.VARIAC)
+                .item(ModdedBlocks.WIRE_CONNECTOR)
+                .item(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
+                .item(ModdedBlocks.DEVICE_CONNECTOR)
+                .addToIndex()
+                .register();
 
-        PonderRegistry.TAGS.forTag(ELECTRIC_DEVICES)
-                .add(ModdedBlocks.ELECTRIC_MOTOR)
-                .add(ModdedBlocks.SERVO)
-                .add(ModdedBlocks.HEATING_COIL)
-                .add(ModdedBlocks.ELECTRIC_FAN)
-                .add(ModdedBlocks.BASIN_HEATER)
-                .add(ModdedItems.LIGHT_BULB)
-                .add(ModdedItems.GROWTH_LAMP);
+        helper.registerTag(ELECTRIC_DEVICES)
+                .title("Electric Devices")
+                .description("Components which use electricity to do something")
+                .item(ModdedBlocks.ELECTRIC_MOTOR)
+                .item(ModdedBlocks.SERVO)
+                .item(ModdedBlocks.HEATING_COIL)
+                .item(ModdedBlocks.ELECTRIC_FAN)
+                .item(ModdedBlocks.BASIN_HEATER)
+                .item(ModdedItems.LIGHT_BULB)
+                .item(ModdedItems.GROWTH_LAMP)
+                .addToIndex()
+                .register();
 
-        PonderRegistry.TAGS.forTag(AllPonderTags.KINETIC_APPLIANCES)
-                .add(ModdedBlocks.GENERATOR_CLUTCH);
+        helper.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)
+                .add(ModdedBlocks.GENERATOR_CLUTCH.getId());
 
-        PonderRegistry.TAGS.forTag(AllPonderTags.KINETIC_SOURCES)
-                .add(ModdedBlocks.ELECTRIC_MOTOR)
-                .add(ModdedBlocks.SERVO);
+        helper.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
+                .add(ModdedBlocks.ELECTRIC_MOTOR.getId())
+                .add(ModdedBlocks.SERVO.getId());
     }
 }

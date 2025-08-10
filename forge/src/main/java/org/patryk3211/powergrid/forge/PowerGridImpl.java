@@ -28,7 +28,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
-import org.patryk3211.powergrid.ForgePowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 

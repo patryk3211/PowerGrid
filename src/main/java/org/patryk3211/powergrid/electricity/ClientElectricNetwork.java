@@ -15,21 +15,20 @@
  */
 package org.patryk3211.powergrid.electricity;
 
-import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
 
 @Environment(EnvType.CLIENT)
 public class ClientElectricNetwork extends GlobalElectricNetworks {
-    public static void init() {
-        ClientTickEvents.START_WORLD_TICK.register(GlobalElectricNetworks::tick);
-        ClientWorldEvents.UNLOAD.register((client, world) -> worldNetworks.remove(world));
-    }
-
     public static void partialTrackedLine(TransmissionLineS2CPacket packet) {
         ((ClientWorldNetworks) getWorldNetworks(ClientBoundPackets.world())).partialLine(packet);
+    }
+
+    public static void unloadWorld(MinecraftClient minecraftClient, ClientWorld world) {
+        worldNetworks.remove(world);
     }
 }

@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.kinetics.servo;
 
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 
@@ -29,6 +29,6 @@ public class ServoRenderer extends KineticBlockEntityRenderer<ServoBlockEntity> 
 
     @Override
     protected SuperByteBuffer getRotatedModel(ServoBlockEntity be, BlockState state) {
-        return CachedBufferer.partialFacing(AllPartialModels.SHAFT_HALF, state, state.get(ServoBlock.FACING));
+        return CachedBuffers.partialFacing(AllPartialModels.SHAFT_HALF, state, state.get(ServoBlock.FACING));
     }
 }

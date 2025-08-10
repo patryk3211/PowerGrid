@@ -15,12 +15,12 @@
  */
 package org.patryk3211.powergrid.compat.rei;
 
-import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.compat.rei.category.animations.AnimatedKinetics;
 import com.simibubi.create.content.kinetics.mechanicalArm.ArmRenderer;
-import com.simibubi.create.foundation.utility.AnimationTickHolder;
+import dev.engine_room.flywheel.lib.transform.TransformStack;
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.LightmapTextureManager;
@@ -62,8 +62,8 @@ public class AnimatedMechanicalArm extends AnimatedKinetics {
                 .atLocal(0, 1.5f, 0)
                 .render(graphics);
 
-        var trStack = TransformStack.cast(matrixStack);
-        trStack.centre();
+        var trStack = TransformStack.of(matrixStack);
+        trStack.center();
 
         // The whole animation takes 65 ticks (about 3 seconds)
         float animationTick = AnimationTickHolder.getRenderTime() % 65;

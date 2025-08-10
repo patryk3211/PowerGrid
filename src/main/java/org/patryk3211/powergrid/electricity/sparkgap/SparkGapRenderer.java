@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.electricity.sparkgap;
 
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
+import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
@@ -30,24 +30,24 @@ public class SparkGapRenderer extends SafeBlockEntityRenderer<SparkGapBlockEntit
     @Override
     protected void renderSafe(SparkGapBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
         var state = be.getCachedState();
-        var buffer = CachedBufferer.partial(ModdedPartialModels.SPARK_GAP_ARM, state);
+        var buffer = CachedBuffers.partial(ModdedPartialModels.SPARK_GAP_ARM, state);
         var facing = Direction.from(state.get(SparkGapBlock.HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE);
         float offset = be.setting.getValue() / 18f * (3 / 16f);
 
         var consumer = bufferSource.getBuffer(RenderLayer.getSolid());
         buffer
                 .light(light)
-                .centre()
+                .center()
                 .rotateToFace(facing)
-                .unCentre()
+                .uncenter()
                 .translate(0, 0, -offset)
                 .renderInto(ms, consumer);
         buffer
                 .light(light)
-                .centre()
+                .center()
                 .rotateToFace(facing)
                 .rotateY(180)
-                .unCentre()
+                .uncenter()
                 .translate(0, 0, -offset)
                 .renderInto(ms, consumer);
     }

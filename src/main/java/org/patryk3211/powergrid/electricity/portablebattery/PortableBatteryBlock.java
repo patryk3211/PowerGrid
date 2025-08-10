@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.electricity.portablebattery;
 
 import com.simibubi.create.AllEnchantments;
+import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.equipment.armor.BacktankItem;
-import com.simibubi.create.content.schematics.requirement.ISpecialBlockItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
 import net.fabricmc.fabric.api.entity.FakePlayer;
@@ -53,7 +53,7 @@ import org.patryk3211.powergrid.electricity.wire.IWire;
 
 import java.util.List;
 
-public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE<PortableBatteryBlockEntity>, ISpecialBlockItemRequirement {
+public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE<PortableBatteryBlockEntity>, SpecialBlockItemRequirement {
     private static final VoxelShape SHAPE = VoxelShapes.union(
             createCuboidShape(4, 0, 4, 12, 9, 12),
             createCuboidShape(5, 9, 5, 11, 12, 11)

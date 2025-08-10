@@ -15,35 +15,29 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.clutch;
 
-import com.jozufozu.flywheel.api.Instancer;
-import com.jozufozu.flywheel.api.MaterialManager;
-import com.jozufozu.flywheel.api.instance.DynamicInstance;
-import com.jozufozu.flywheel.core.Materials;
-import com.jozufozu.flywheel.core.materials.model.ModelData;
-import com.simibubi.create.content.kinetics.base.ShaftInstance;
-import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
-import com.simibubi.create.foundation.utility.AnimationTickHolder;
+import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
+import dev.engine_room.flywheel.api.visualization.VisualizationContext;
+import dev.engine_room.flywheel.lib.instance.InstanceTypes;
+import dev.engine_room.flywheel.lib.instance.TransformedInstance;
+import dev.engine_room.flywheel.lib.model.Models;
+import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 import static net.minecraft.state.property.Properties.FACING;
 import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.getRotorAngle;
 
-public class GeneratorClutchInstance extends ShaftInstance<GeneratorClutchBlockEntity> implements DynamicInstance {
-    protected ModelData assembly;
+public class GeneratorClutchInstance extends SingleAxisRotatingVisual<GeneratorClutchBlockEntity> implements SimpleDynamicVisual {
+    protected TransformedInstance assembly;
 
-    public GeneratorClutchInstance(MaterialManager materialManager, GeneratorClutchBlockEntity blockEntity) {
-        super(materialManager, blockEntity);
-        assembly = materialManager.defaultSolid()
-                .material(Materials.TRANSFORMED)
-                .getModel(ModdedPartialModels.CLUTCH_SHAFT, blockState, blockState.get(FACING).getOpposite())
-                .createInstance();
+    public GeneratorClutchInstance(VisualizationContext context, GeneratorClutchBlockEntity blockEntity, float partialTick) {
+        super(context, blockEntity, partialTick, Models.partial(ModdedPartialModels.SHAFT_BIT));
+        assembly = instancerProvider()
+                .instancer(InstanceTypes.TRANSFORMED, Models.partial(ModdedPartialModels.CLUTCH_SHAFT))
+                .createInstance()
+                .rotateToFace(blockState.get(FACING).getOpposite());
         transformAssembly();
-    }
-
-    @Override
-    protected Instancer<RotatingData> getModel() {
-        return getRotatingMaterial().getModel(ModdedPartialModels.SHAFT_BIT, blockState, blockState.get(FACING));
     }
 
     public void transformAssembly() {
@@ -51,27 +45,27 @@ public class GeneratorClutchInstance extends ShaftInstance<GeneratorClutchBlockE
         var rotorAngle = getRotorAngle(blockEntity, partial);
 
         var dir = Direction.from(blockState.get(GeneratorClutchBlock.FACING).getAxis(), Direction.AxisDirection.POSITIVE);
-        assembly.loadIdentity()
-                .translate(getInstancePosition())
-                .centre()
-                .rotate(dir, rotorAngle)
-                .unCentre();
+        assembly.setIdentityTransform()
+                .translate(getVisualPosition())
+                .center()
+                .rotate(rotorAngle, dir)
+                .uncenter();
     }
 
     @Override
-    public void beginFrame() {
+    public void beginFrame(Context context) {
         transformAssembly();
     }
 
     @Override
-    public void updateLight() {
-        super.updateLight();
-        relight(pos, assembly);
+    public void updateLight(float partialTick) {
+        super.updateLight(partialTick);
+        relight(assembly);
     }
 
     @Override
-    public void remove() {
-        super.remove();
+    protected void _delete() {
+        super._delete();
         assembly.delete();
     }
 }

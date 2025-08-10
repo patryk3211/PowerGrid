@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.config;
 
-import com.simibubi.create.foundation.config.ConfigBase;
+import net.createmod.catnip.config.ConfigBase;
 
 public class CServer extends ConfigBase {
     public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);

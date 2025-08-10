@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.config;
 
-import com.simibubi.create.foundation.config.ConfigBase;
+import net.createmod.catnip.config.ConfigBase;
 
 public class CResistance extends ConfigBase {
     public final ConfigFloat heaterResistance = f(10, 0.1f, "heaterResistance", Comments.heaterResistance);

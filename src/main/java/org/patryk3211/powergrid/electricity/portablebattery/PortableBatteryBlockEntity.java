@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.electricity.portablebattery;
 
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.foundation.utility.VecHelper;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;

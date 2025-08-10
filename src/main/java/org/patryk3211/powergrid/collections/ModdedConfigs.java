@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.foundation.config.ConfigBase;
 import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
 import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import net.createmod.catnip.config.ConfigBase;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;

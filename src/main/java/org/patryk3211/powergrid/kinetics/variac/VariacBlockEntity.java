@@ -15,8 +15,7 @@
  */
 package org.patryk3211.powergrid.kinetics.variac;
 
-import com.jozufozu.flywheel.core.materials.model.ModelData;
-import com.simibubi.create.foundation.utility.animation.LerpedFloat;
+import net.createmod.catnip.animation.LerpedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
@@ -39,7 +38,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     public static final float COUPLING_FACTOR = 0.9999f;
     public static final float PRIMARY_INDUCTANCE = PRIMARY_TURNS * PRIMARY_TURNS * CORE_AL;
 
-    protected ModelData assembly;
+//    protected ModelData assembly;
     protected LerpedFloat arm;
 
     protected ElectricWire primaryStray;

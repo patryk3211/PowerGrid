@@ -15,14 +15,14 @@
  */
 package org.patryk3211.powergrid.electricity;
 
-import com.simibubi.create.foundation.ponder.PonderWorld;
+import net.createmod.ponder.api.level.PonderLevel;
 
 public class PonderElectricNetwork extends GlobalElectricNetworks {
-    public static void tickWorldNetworks(PonderWorld world) {
+    public static void tickWorldNetworks(PonderLevel world) {
         GlobalElectricNetworks.tick(world);
     }
 
-    public static void removeWorldEntry(PonderWorld world) {
+    public static void removeWorldEntry(PonderLevel world) {
         worldNetworks.remove(world);
     }
 }

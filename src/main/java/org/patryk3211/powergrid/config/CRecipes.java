@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.config;
 
-import com.simibubi.create.foundation.config.ConfigBase;
+import net.createmod.catnip.config.ConfigBase;
 
 public class CRecipes extends ConfigBase {
     public final ConfigFloat lightningMagnetizationChance = f(0.05f, 0, 1, "encasedFanCooling", Comments.lightningMagnetizationChance);

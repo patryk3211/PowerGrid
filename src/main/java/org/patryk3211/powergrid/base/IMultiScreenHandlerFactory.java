@@ -15,21 +15,18 @@
  */
 package org.patryk3211.powergrid.base;
 
-import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.ServerPlayerAccessor;
-import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import dev.architectury.registry.menu.ExtendedMenuProvider;
+import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
-
-import static io.github.fabricators_of_create.porting_lib.util.NetworkHooks.OPEN_ID;
 
 public interface IMultiScreenHandlerFactory extends NamedScreenHandlerFactory {
     @Override
@@ -45,21 +42,21 @@ public interface IMultiScreenHandlerFactory extends NamedScreenHandlerFactory {
      * @see io.github.fabricators_of_create.porting_lib.util.NetworkHooks#openScreen(ServerPlayerEntity, NamedScreenHandlerFactory, Consumer)
      */
     static void openScreen(ServerPlayerEntity player, IMultiScreenHandlerFactory factory, Consumer<PacketByteBuf> extraDataWriter, int menuIndex) {
-        player.onHandledScreenClosed();
-        ((ServerPlayerAccessor)player).callNextContainerCounter();
-        int openContainerId = ((ServerPlayerAccessor)player).getContainerCounter();
-        PacketByteBuf extraData = new PacketByteBuf(Unpooled.buffer());
-        extraDataWriter.accept(extraData);
-        extraData.readerIndex(0);
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        ScreenHandler menu = factory.createMenu(openContainerId, player.getInventory(), player, menuIndex);
-        buf.writeVarInt(Registries.SCREEN_HANDLER.getRawId(menu.getType()));
-        buf.writeVarInt(openContainerId);
-        buf.writeText(factory.getDisplayName());
-        buf.writeVarInt(extraData.readableBytes());
-        buf.writeBytes(extraData);
-        ServerPlayNetworking.send(player, OPEN_ID, buf);
-        player.currentScreenHandler = menu;
-        ((ServerPlayerAccessor)player).callInitMenu(menu);
+        MenuRegistry.openExtendedMenu(player, new ExtendedMenuProvider() {
+            @Override
+            public void saveExtraData(PacketByteBuf buf) {
+                extraDataWriter.accept(buf);
+            }
+
+            @Override
+            public Text getDisplayName() {
+                return factory.getDisplayName();
+            }
+
+            @Override
+            public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+                return factory.createMenu(syncId, playerInventory, player, menuIndex);
+            }
+        });
     }
 }

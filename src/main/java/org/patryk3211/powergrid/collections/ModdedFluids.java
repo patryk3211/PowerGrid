@@ -20,9 +20,6 @@ import com.tterrag.registrate.fabric.SimpleFlowableFluid;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
-import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributeHandler;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.FluidTags;
@@ -35,15 +32,21 @@ public class ModdedFluids {
             REGISTRATE.fluid("acid", new Identifier("block/water_still"), new Identifier("block/water_flowing"))
                     .renderType(() -> RenderLayer::getTranslucent)
                     .tag(FluidTags.WATER)
-                    .source(SimpleFlowableFluid.Source::new)
-                    .fluidAttributes(() -> new FluidVariantAttributeHandler() { })
+//                    .fluidAttributes(() -> new Create)
+//                    .source(properties -> {
+//
+////                        new ArchitecturyFlowingFluid.Source(new SimpleArchitecturyFluidAttributes())
+//                    })
+//                    .source(SimpleFlowableFluid.Source::new)
+
+//                    .fluidAttributes(() -> new FluidVariantAttributeHandler() { })
                     .onRegisterAfter(RegistryKeys.FLUID, flowing -> EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> registerSimpleFluidRenderer(flowing, 0xFFFFEE80)))
                     .register();
 
     @Environment(EnvType.CLIENT)
     private static void registerSimpleFluidRenderer(SimpleFlowableFluid.Flowing fluid, int tint) {
-        var handler = SimpleFluidRenderHandler.coloredWater(tint);
-        FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
+//        var handler = SimpleFluidRenderHandler.coloredWater(tint);
+//        FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
     }
 
     @SuppressWarnings("EmptyMethod")

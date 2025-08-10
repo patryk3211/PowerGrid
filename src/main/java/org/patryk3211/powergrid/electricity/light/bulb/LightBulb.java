@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.light.bulb;
 
-import com.jozufozu.flywheel.core.PartialModel;
 import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.fabric.EnvExecutor;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.player.PlayerEntity;
