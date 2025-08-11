@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.ponder.scenes;
 
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.createmod.ponder.foundation.instruction.EmitParticlesInstruction;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -123,8 +122,8 @@ public class WireScenes {
         scene.idle(20);
 
         for(int i = 0; i < 10; ++i) {
-            scene.effects().emitParticles(util.vector().of(0.75f + i * 0.5f, 1.3, 2.5), EmitParticlesInstruction.simple(ParticleTypes.SMOKE, Vec3d.ZERO), 0.2f, 60);
-            scene.effects().emitParticles(util.vector().of(0.75f + i * 0.5f, 1.3, 4.5), EmitParticlesInstruction.simple(ParticleTypes.SMOKE, Vec3d.ZERO), 0.2f, 60);
+            scene.effects().emitParticles(util.vector().of(0.75f + i * 0.5f, 1.3, 2.5), scene.effects().simpleParticleEmitter(ParticleTypes.SMOKE, Vec3d.ZERO), 0.2f, 60);
+            scene.effects().emitParticles(util.vector().of(0.75f + i * 0.5f, 1.3, 4.5), scene.effects().simpleParticleEmitter(ParticleTypes.SMOKE, Vec3d.ZERO), 0.2f, 60);
         }
         scene.idle(70);
 

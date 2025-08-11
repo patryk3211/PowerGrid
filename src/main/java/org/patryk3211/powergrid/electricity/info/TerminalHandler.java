@@ -16,14 +16,13 @@
 package org.patryk3211.powergrid.electricity.info;
 
 import com.simibubi.create.AllSpecialTextures;
-import com.simibubi.create.CreateClient;
 import com.simibubi.create.content.equipment.goggles.GogglesItem;
+import net.createmod.catnip.outliner.Outliner;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +66,7 @@ public class TerminalHandler {
                 return;
             targetTerminal = decorated;
 
-            CreateClient.OUTLINER.showAABB(outlineSlot, decorated.getOutline().offset(blockPos))
+            Outliner.getInstance().showAABB(outlineSlot, decorated.getOutline().offset(blockPos))
                     .colored(decorated.getColor())
                     .withFaceTexture(AllSpecialTextures.CUTOUT_CHECKERED)
                     .lineWidth(0.020f);

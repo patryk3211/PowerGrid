@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.transformer;
 
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
@@ -205,7 +206,7 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
                 processOffset.accept(0, y);
                 processOffset.accept(x, y);
 
-                this.playRemoveSound(world, pos);
+                IWrenchable.playRemoveSound(world, pos);
                 return ActionResult.SUCCESS;
             }
         } else {

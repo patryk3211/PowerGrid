@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllItems;
+import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
-import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.item.ItemConvertible;
@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingReci
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+@SuppressWarnings("unused")
 public class MagnetizingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
@@ -48,7 +49,7 @@ public class MagnetizingRecipes extends ProcessingRecipeGen {
     }
 
     public MagnetizingRecipes(FabricDataOutput generator) {
-        super(generator);
+        super(generator, PowerGrid.MOD_ID);
     }
 
     @Override

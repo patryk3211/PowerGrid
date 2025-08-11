@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.ponder;
 
+import com.simibubi.create.foundation.ponder.PonderWorldBlockEntityFix;
+import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.api.registration.PonderPlugin;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
@@ -24,16 +26,21 @@ import org.patryk3211.powergrid.PowerGrid;
 public class PowerGridPonderPlugin implements PonderPlugin {
     @Override
     public void registerScenes(PonderSceneRegistrationHelper<Identifier> helper) {
-        PonderIndex.register(helper);
+        PowerGridPonderScenes.register(helper);
     }
 
     @Override
     public void registerTags(PonderTagRegistrationHelper<Identifier> helper) {
-        PonderTags.register(helper);
+        PowerGridPonderTags.register(helper);
     }
 
     @Override
     public String getModId() {
         return PowerGrid.MOD_ID;
+    }
+
+    @Override
+    public void onPonderLevelRestore(PonderLevel ponderLevel) {
+        PonderWorldBlockEntityFix.fixControllerBlockEntities(ponderLevel);
     }
 }

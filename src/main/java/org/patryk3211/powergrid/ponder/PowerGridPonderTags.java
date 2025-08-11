@@ -17,13 +17,12 @@ package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
-import net.createmod.ponder.foundation.PonderTag;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
-public class PonderTags {
+public class PowerGridPonderTags {
     public static final Identifier
             GENERATOR_ASSEMBLY = id("generator_assembly"),
             ELECTRIC_RELAYS = id("electric_relays"),

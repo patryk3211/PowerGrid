@@ -19,7 +19,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehavio
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsScreen;
-import com.simibubi.create.foundation.gui.ScreenOpener;
+import net.createmod.catnip.gui.ScreenOpener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -57,7 +57,7 @@ public class CustomValueSettingsScreen extends ValueSettingsScreen {
     private final Consumer<ValueSettingsBehaviour.ValueSettings> saveCallback;
 
     public CustomValueSettingsScreen(BlockPos pos, ValueSettingsBoard board, ValueSettingsBehaviour.ValueSettings valueSettings, Consumer<ValueSettingsBehaviour.ValueSettings> saveCallback) {
-        super(pos, board, valueSettings, $ -> {});
+        super(pos, board, valueSettings, $ -> {}, 1001);
         this.saveCallback = saveCallback;
     }
 

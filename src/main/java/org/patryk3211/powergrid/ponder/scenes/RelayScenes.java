@@ -16,9 +16,10 @@
 package org.patryk3211.powergrid.ponder.scenes;
 
 import com.tterrag.registrate.util.entry.BlockEntry;
+import net.createmod.catnip.math.Pointing;
+import net.createmod.ponder.api.scene.PonderStoryBoard;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.createmod.ponder.foundation.PonderStoryBoardEntry;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.Direction;
 import org.patryk3211.powergrid.base.CustomProperties;
@@ -31,9 +32,10 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
+import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 public class RelayScenes {
-    public static PonderStoryBoardEntry.PonderStoryBoard switchSceneFor(BlockEntry<? extends SurfaceSwitchBlock> block, String suffix) {
+    public static PonderStoryBoard switchSceneFor(BlockEntry<? extends SurfaceSwitchBlock> block, String suffix) {
         return (scene, util) -> switchScene(scene, util, block.get(), suffix);
     }
 
@@ -212,8 +214,9 @@ public class RelayScenes {
         scene.markAsFinished();
     }
 
-    public static void variac(SceneBuilder scene, SceneBuildingUtil util) {
-        var electric = ElectricInstructions.of(scene);
+    public static void variac(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+
         scene.title("variac", "Variable transformer");
         scene.configureBasePlate(0, 0, 5);
 
@@ -231,14 +234,14 @@ public class RelayScenes {
         scene.world().showSection(util.select().fromTo(target, target.up()), Direction.DOWN);
         scene.idle(10);
 
-        electric.connectInvisible(source, 0, meter1, 0);
-        electric.connectInvisible(source, 1, meter1, 1);
-        electric.connect(meter1, 0, target, 0);
-        electric.connect(meter1, 1, target, 1);
-        electric.connect(meter2, 0, target, 1);
-        electric.connect(meter2, 1, target, 2);
-        electric.setSource(source, 160);
-        electric.tickFor(10);
+        scene.electric().connectInvisible(source, 0, meter1, 0);
+        scene.electric().connectInvisible(source, 1, meter1, 1);
+        scene.electric().connect(meter1, 0, target, 0);
+        scene.electric().connect(meter1, 1, target, 1);
+        scene.electric().connect(meter2, 0, target, 1);
+        scene.electric().connect(meter2, 1, target, 2);
+        scene.electric().setSource(source, 160);
+        scene.electric().tickFor(10);
         scene.idle(10);
 
         scene.overlay().showText(80)
@@ -251,13 +254,12 @@ public class RelayScenes {
         scene.world().setKineticSpeed(util.select().fromTo(target, target.up()), 16);
         scene.world().modifyBlockEntity(target, VariacBlockEntity.class, be -> be.onSpeedChanged(0));
         scene.effects().rotationSpeedIndicator(target.up());
-        electric.tickFor(40);
+        scene.electric().tickFor(40);
         scene.idle(40);
         scene.world().setKineticSpeed(util.select().fromTo(target, target.up()), 0);
         scene.world().modifyBlockEntity(target, VariacBlockEntity.class, be -> be.onSpeedChanged(16));
 
         scene.markAsFinished();
-        electric.unload();
     }
 
     public static void deviceConnector(SceneBuilder scene, SceneBuildingUtil util) {
@@ -320,9 +322,9 @@ public class RelayScenes {
         electric.connect(util.grid().at(4, 1, 2), 0, target, 0);
         scene.idle(10);
 
-        scene.overlay().showControls(new InputWindowElement(util.vector().centerOf(target), Pointing.LEFT)
+        scene.overlay().showControls(util.vector().centerOf(target), Pointing.LEFT, 40)
                 .rightClick()
-                .withItem(ModdedItems.IRON_WIRE.asStack()), 40);
+                .withItem(ModdedItems.IRON_WIRE.asStack());
         scene.idle(30);
         scene.world().modifyBlock(target, state -> state.with(FuseHolderBlock.STATE, FuseState.CLOSED), false);
         scene.idle(20);

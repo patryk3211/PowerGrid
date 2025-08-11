@@ -68,30 +68,6 @@ public class GeneratorHousing extends Block implements IWrenchable {
         };
     }
 
-//    @Override
-//    public boolean connects(BlockState state, Direction side, BlockState checkState) {
-//        // Generator housing can only connect to windings.
-//        if(!checkState.isOf(ModdedBlocks.WINDING.get()))
-//            return false;
-//        if(side.getAxis() == Direction.Axis.Y) {
-//            // Up or down side, coil facing must reflect housing facing.
-//            return state.get(HORIZONTAL_FACING) == checkState.get();
-//        } else {
-//            // Other sides, coil facing must be up or down, depending on the housing up value.
-//            var coilFacing = checkState.get(CoilBlock.FACING);
-//            var up = state.get(UP);
-//            return up ? coilFacing == Direction.UP : coilFacing == Direction.DOWN;
-//        }
-//    }
-
-//    @Override
-//    public boolean canPropagate(BlockState state, Direction direction) {
-//        if(direction == state.get(HORIZONTAL_FACING))
-//            return true;
-//        var up = state.get(UP);
-//        return up ? direction == Direction.UP : direction == Direction.DOWN;
-//    }
-
     @Override
     public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
         BlockState newState = null;
@@ -119,7 +95,7 @@ public class GeneratorHousing extends Block implements IWrenchable {
 
         var world = context.getWorld();
         world.setBlockState(context.getBlockPos(), newState);
-        this.playRotateSound(world, context.getBlockPos());
+        IWrenchable.playRotateSound(world, context.getBlockPos());
 
         return ActionResult.SUCCESS;
     }

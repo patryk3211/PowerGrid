@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.fabric;
 
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
-import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import net.createmod.catnip.lang.FontHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.item.ItemStack;
@@ -41,7 +41,7 @@ public class PowerGridImpl implements ModInitializer {
     public static AbstractPowerGridRegistrate createRegistrate() {
         return FabricPowerGridRegistrate.create(PowerGrid.MOD_ID)
                 .setTooltipModifierFactory(item ->
-                        new ItemDescription.Modifier(item, TooltipHelper.Palette.STANDARD_CREATE)
+                        new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                                 .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
                                 .andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
                 )

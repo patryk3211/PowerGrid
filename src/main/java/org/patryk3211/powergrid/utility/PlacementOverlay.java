@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.utility;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.simibubi.create.foundation.utility.Color;
-import com.simibubi.create.foundation.utility.Pair;
+import net.createmod.catnip.data.Pair;
+import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

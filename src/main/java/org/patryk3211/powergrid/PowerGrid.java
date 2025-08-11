@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid;
 
-import com.simibubi.create.AllMovementBehaviours;
+import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.injectables.annotations.ExpectPlatform;
@@ -80,7 +80,7 @@ public class PowerGrid  {
 
 		ModdedSoundEvents.register();
 
-		AllMovementBehaviours.registerBehaviour(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
+		MovementBehaviour.REGISTRY.register(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
 	}
 
 	public static Identifier asResource(String path) {

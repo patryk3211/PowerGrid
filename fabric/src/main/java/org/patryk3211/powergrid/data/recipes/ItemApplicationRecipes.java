@@ -17,19 +17,20 @@ package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
+import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 
+@SuppressWarnings("unused")
 public class ItemApplicationRecipes extends ProcessingRecipeGen {
     GeneratedRecipe CONDUCTIVE_CASING = create(PowerGrid.asResource("conductive_casing"), b -> b.require(AllBlocks.ANDESITE_CASING)
             .require(RecipeTags.zincIngot())
             .output(ModdedBlocks.CONDUCTIVE_CASING));
 
     public ItemApplicationRecipes(FabricDataOutput generator) {
-        super(generator);
+        super(generator, PowerGrid.MOD_ID);
     }
 
     @Override

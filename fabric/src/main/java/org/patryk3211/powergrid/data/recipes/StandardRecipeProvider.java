@@ -16,198 +16,366 @@
 package org.patryk3211.powergrid.data.recipes;
 
 import com.google.common.base.Supplier;
+import com.google.gson.JsonObject;
 import com.simibubi.create.Create;
-import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
-import com.simibubi.create.foundation.data.recipe.StandardRecipeGen;
-import com.simibubi.create.foundation.utility.RegisteredObjects;
+import com.simibubi.create.api.data.recipe.BaseRecipeProvider;
+import com.tterrag.registrate.util.entry.ItemProviderEntry;
+import net.createmod.catnip.platform.CatnipServices;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.data.server.recipe.CookingRecipeJsonBuilder;
-import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
-import net.minecraft.data.server.recipe.ShapelessRecipeJsonBuilder;
+import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
+import net.fabricmc.fabric.api.resource.conditions.v1.DefaultResourceConditions;
+import net.minecraft.data.server.recipe.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
+import net.minecraft.item.Items;
 import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.PowerGrid;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-public abstract class StandardRecipeProvider extends CreateRecipeProvider {
+/**
+ * @see com.simibubi.create.foundation.data.recipe.CreateStandardRecipeGen
+ */
+public abstract class StandardRecipeProvider extends BaseRecipeProvider {
     public StandardRecipeProvider(FabricDataOutput output) {
-        super(output);
+        super(output, PowerGrid.MOD_ID);
     }
 
-    protected RecipeBuilder create(Supplier<ItemConvertible> result) {
-        return new RecipeBuilder(result);
-    }
+    static class Marker {
+	}
 
-    protected RecipeBuilder create(ItemConvertible result) {
-        return new RecipeBuilder(() -> result);
-    }
+	String currentFolder = "";
 
-    GeneratedRecipe blastCrushedMetal(Supplier<? extends ItemConvertible> result, Supplier<? extends ItemConvertible> ingredient) {
-        return create(result::get).suffix("_from_crushed")
-                .cooking(ingredient)
-                .rewardXP(.1f)
-                .inBlastFurnace();
-    }
+	Marker enterFolder(String folder) {
+		currentFolder = folder;
+		return new Marker();
+	}
 
-    /**
-     * @see StandardRecipeGen.GeneratedRecipeBuilder
-     */
-    protected class RecipeBuilder {
-        private final Supplier<ItemConvertible> result;
-        private int amount;
-        private Supplier<ItemPredicate> unlockedBy;
-        private String suffix;
+	GeneratedRecipeBuilder create(Supplier<ItemConvertible> result) {
+		return new GeneratedRecipeBuilder(currentFolder, result);
+	}
 
-        public RecipeBuilder(Supplier<ItemConvertible> result) {
-            this.result = result;
-            this.amount = 1;
-            this.unlockedBy = null;
-            this.suffix = "";
-        }
+	GeneratedRecipeBuilder create(Identifier result) {
+		return new GeneratedRecipeBuilder(currentFolder, result);
+	}
 
-        public RecipeBuilder amount(int amount) {
-            this.amount = amount;
-            return this;
-        }
+	GeneratedRecipeBuilder create(ItemProviderEntry<? extends ItemConvertible> result) {
+		return create(result::get);
+	}
 
-        public RecipeBuilder suffix(String nameSuffix) {
-            this.suffix = nameSuffix;
-            return this;
-        }
+	GeneratedRecipe createSpecial(Supplier<? extends SpecialRecipeSerializer<?>> serializer, String recipeType,
+                                  String path) {
+		Identifier location = Create.asResource(recipeType + "/" + currentFolder + "/" + path);
+		return register(consumer -> {
+			ComplexRecipeJsonBuilder b = ComplexRecipeJsonBuilder.create(serializer.get());
+			b.offerTo(consumer, location.toString());
+		});
+	}
 
-        public RecipeBuilder unlockedBy(Supplier<? extends ItemConvertible> unlockedBy) {
-            this.unlockedBy = () -> ItemPredicate.Builder.create()
-                    .items(unlockedBy.get())
-                    .build();
-            return this;
-        }
+	GeneratedRecipe conversionCycle(List<ItemProviderEntry<? extends ItemConvertible>> cycle) {
+		GeneratedRecipe result = null;
+		for (int i = 0; i < cycle.size(); i++) {
+			ItemProviderEntry<? extends ItemConvertible> currentEntry = cycle.get(i);
+			ItemProviderEntry<? extends ItemConvertible> nextEntry = cycle.get((i + 1) % cycle.size());
+			result = create(nextEntry).withSuffix("_from_conversion")
+				.unlockedBy(currentEntry::get)
+				.viaShapeless(b -> b.input(currentEntry.get()));
+		}
+		return result;
+	}
 
-        public RecipeBuilder unlockedByTag(Supplier<TagKey<Item>> unlockedBy) {
-            this.unlockedBy = () -> ItemPredicate.Builder.create()
-                    .tag(unlockedBy.get())
-                    .build();
-            return this;
-        }
+	GeneratedRecipe clearData(ItemProviderEntry<? extends ItemConvertible> item) {
+		return create(item).withSuffix("_clear")
+			.unlockedBy(item::get)
+			.viaShapeless(b -> b.input(item.get()));
+	}
 
-        public GeneratedRecipe shaped(UnaryOperator<ShapedRecipeJsonBuilder> builder) {
-            return register(consumer -> {
-                ShapedRecipeJsonBuilder b = builder.apply(ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, result.get(), amount));
-                if(unlockedBy != null)
-                    b.criterion("has_item", conditionsFromItemPredicates(unlockedBy.get()));
-                b.offerTo(consumer, createLocation("crafting"));
-            });
-        }
+	@Override
+	public void generate(Consumer<RecipeJsonProvider> p_200404_1_) {
+		all.forEach(c -> c.register(p_200404_1_));
+		Create.LOGGER.info(getName() + " registered " + all.size() + " recipe" + (all.size() == 1 ? "" : "s"));
+	}
 
-        public GeneratedRecipe shapeless(UnaryOperator<ShapelessRecipeJsonBuilder> builder) {
-            return register(consumer -> {
-                ShapelessRecipeJsonBuilder b = builder.apply(ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, result.get(), amount));
-                if (unlockedBy != null)
-                    b.criterion("has_item", conditionsFromItemPredicates(unlockedBy.get()));
+	protected GeneratedRecipe register(GeneratedRecipe recipe) {
+		all.add(recipe);
+		return recipe;
+	}
 
-                b.offerTo(result -> {
-                    consumer.accept(result);
-//                    consumer.accept(
-//                            !recipeConditions.isEmpty() ? new StandardRecipeGen.ConditionSupportingShapelessRecipeResult(result, recipeConditions)
-//                                    : result);
-                }, createLocation("crafting"));
-            });
-        }
+	class GeneratedRecipeBuilder {
+		private String path;
+		private String suffix;
+		private Supplier<? extends ItemConvertible> result;
+		private Identifier compatDatagenOutput;
+		List<ConditionJsonProvider> recipeConditions;
 
-        private Identifier createSimpleLocation(String recipeType) {
-            return Create.asResource(recipeType + "/" + getRegistryName().getPath() + suffix);
-        }
+		private Supplier<ItemPredicate> unlockedBy;
+		private int amount;
 
-        private Identifier createLocation(String recipeType) {
-            return Create.asResource(recipeType + "/" + getRegistryName().getPath() + suffix);
-        }
+		private GeneratedRecipeBuilder(String path) {
+			this.path = path;
+			this.recipeConditions = new ArrayList<>();
+			this.suffix = "";
+			this.amount = 1;
+		}
 
-        private Identifier getRegistryName() {
-            return RegisteredObjects.getKeyOrThrow(result.get().asItem());
-        }
+		public GeneratedRecipeBuilder(String path, Supplier<? extends ItemConvertible> result) {
+			this(path);
+			this.result = result;
+		}
 
-        CookingRecipeBuilder cooking(Supplier<? extends ItemConvertible> item) {
-            return unlockedBy(item).cookingIngredient(() -> Ingredient.ofItems(item.get()));
-        }
+		public GeneratedRecipeBuilder(String path, Identifier result) {
+			this(path);
+			this.compatDatagenOutput = result;
+		}
 
-        RecipeBuilder.CookingRecipeBuilder cookingTag(Supplier<TagKey<Item>> tag) {
-            return unlockedByTag(tag).cookingIngredient(() -> Ingredient.fromTag(tag.get()));
-        }
+		GeneratedRecipeBuilder returns(int amount) {
+			this.amount = amount;
+			return this;
+		}
 
-        CookingRecipeBuilder cookingIngredient(Supplier<Ingredient> ingredient) {
-            return new RecipeBuilder.CookingRecipeBuilder(ingredient);
-        }
+		GeneratedRecipeBuilder unlockedBy(Supplier<? extends ItemConvertible> item) {
+			this.unlockedBy = () -> ItemPredicate.Builder.create()
+				.items(item.get())
+				.build();
+			return this;
+		}
 
-        class CookingRecipeBuilder {
-            private Supplier<Ingredient> ingredient;
-            private float exp;
-            private int cookingTime;
+		GeneratedRecipeBuilder unlockedByTag(Supplier<TagKey<Item>> tag) {
+			this.unlockedBy = () -> ItemPredicate.Builder.create()
+				.tag(tag.get())
+				.build();
+			return this;
+		}
 
-            private final RecipeSerializer<? extends AbstractCookingRecipe> FURNACE = RecipeSerializer.SMELTING,
-                    SMOKER = RecipeSerializer.SMOKING, BLAST = RecipeSerializer.BLASTING,
-                    CAMPFIRE = RecipeSerializer.CAMPFIRE_COOKING;
+		GeneratedRecipeBuilder whenModLoaded(String modid) {
+			return withCondition(DefaultResourceConditions.allModsLoaded(modid));
+		}
 
-            CookingRecipeBuilder(Supplier<Ingredient> ingredient) {
-                this.ingredient = ingredient;
-                cookingTime = 200;
-                exp = 0;
-            }
+		GeneratedRecipeBuilder whenModMissing(String modid) {
+			return withCondition(DefaultResourceConditions.not(DefaultResourceConditions.allModsLoaded(modid)));
+		}
 
-            CookingRecipeBuilder forDuration(int duration) {
-                cookingTime = duration;
-                return this;
-            }
+		GeneratedRecipeBuilder withCondition(ConditionJsonProvider condition) {
+			recipeConditions.add(condition);
+			return this;
+		}
 
-            CookingRecipeBuilder rewardXP(float xp) {
-                exp = xp;
-                return this;
-            }
+		GeneratedRecipeBuilder withSuffix(String suffix) {
+			this.suffix = suffix;
+			return this;
+		}
 
-            GeneratedRecipe inFurnace() {
-                return inFurnace(b -> b);
-            }
+		GeneratedRecipe viaShaped(UnaryOperator<ShapedRecipeJsonBuilder> builder) {
+			return register(consumer -> {
+				ShapedRecipeJsonBuilder b =
+					builder.apply(ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, result.get(), amount));
+				if (unlockedBy != null)
+					b.criterion("has_item", conditionsFromItemPredicates(unlockedBy.get()));
+				b.offerTo(consumer, createLocation("crafting"));
+			});
+		}
 
-            GeneratedRecipe inFurnace(UnaryOperator<CookingRecipeJsonBuilder> builder) {
-                return create(FURNACE, builder, 1);
-            }
+		GeneratedRecipe viaShapeless(UnaryOperator<ShapelessRecipeJsonBuilder> builder) {
+			return register(consumer -> {
+				ShapelessRecipeJsonBuilder b =
+					builder.apply(ShapelessRecipeJsonBuilder.create(RecipeCategory.MISC, result.get(), amount));
+				if (unlockedBy != null)
+					b.criterion("has_item", conditionsFromItemPredicates(unlockedBy.get()));
 
-            GeneratedRecipe inSmoker() {
-                return inSmoker(b -> b);
-            }
+				b.offerTo(result -> {
+					consumer.accept(!recipeConditions.isEmpty()
+						? new ConditionSupportingShapelessRecipeResult(result, recipeConditions)
+						: result);
+				}, createLocation("crafting"));
+			});
+		}
 
-            GeneratedRecipe inSmoker(UnaryOperator<CookingRecipeJsonBuilder> builder) {
-                create(FURNACE, builder, 1);
-                create(CAMPFIRE, builder, 3);
-                return create(SMOKER, builder, .5f);
-            }
+		GeneratedRecipe viaNetheriteSmithing(Supplier<? extends Item> base, Supplier<Ingredient> upgradeMaterial) {
+			return register(consumer -> {
+				SmithingTransformRecipeJsonBuilder b =
+					SmithingTransformRecipeJsonBuilder.create(Ingredient.ofItems(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE),
+						Ingredient.ofItems(base.get()), upgradeMaterial.get(), RecipeCategory.COMBAT, result.get()
+							.asItem());
+				b.criterion("has_item", conditionsFromItemPredicates(ItemPredicate.Builder.create()
+					.items(base.get())
+					.build()));
+				b.offerTo(consumer, createLocation("crafting"));
+			});
+		}
 
-            CreateRecipeProvider.GeneratedRecipe inBlastFurnace() {
-                return inBlastFurnace(b -> b);
-            }
+		private Identifier createSimpleLocation(String recipeType) {
+			return Create.asResource(recipeType + "/" + getRegistryName().getPath() + suffix);
+		}
 
-            GeneratedRecipe inBlastFurnace(UnaryOperator<CookingRecipeJsonBuilder> builder) {
-                create(FURNACE, builder, 1);
-                return create(BLAST, builder, .5f);
-            }
+		private Identifier createLocation(String recipeType) {
+			return Create.asResource(recipeType + "/" + path + "/" + getRegistryName().getPath() + suffix);
+		}
 
-            private GeneratedRecipe create(RecipeSerializer<? extends AbstractCookingRecipe> serializer, UnaryOperator<CookingRecipeJsonBuilder> builder, float cookingTimeModifier) {
-                return register(consumer -> {
-                    CookingRecipeJsonBuilder b = builder.apply(CookingRecipeJsonBuilder.create(ingredient.get(),
-                            RecipeCategory.MISC, result.get(), exp,
-                            (int) (cookingTime * cookingTimeModifier), serializer));
+		private Identifier getRegistryName() {
+			return compatDatagenOutput == null ? CatnipServices.REGISTRIES.getKeyOrThrow(result.get()
+				.asItem()) : compatDatagenOutput;
+		}
 
-                    if (unlockedBy != null)
-                        b.criterion("has_item", conditionsFromItemPredicates(unlockedBy.get()));
+		GeneratedCookingRecipeBuilder viaCooking(Supplier<? extends ItemConvertible> item) {
+			return unlockedBy(item).viaCookingIngredient(() -> Ingredient.ofItems(item.get()));
+		}
 
-                    b.offerTo(consumer, createSimpleLocation(RegisteredObjects.getKeyOrThrow(serializer).getPath()));
-                });
-            }
-        }
-    }
+		GeneratedCookingRecipeBuilder viaCookingTag(Supplier<TagKey<Item>> tag) {
+			return unlockedByTag(tag).viaCookingIngredient(() -> Ingredient.fromTag(tag.get()));
+		}
+
+		GeneratedCookingRecipeBuilder viaCookingIngredient(Supplier<Ingredient> ingredient) {
+			return new GeneratedCookingRecipeBuilder(ingredient);
+		}
+
+		class GeneratedCookingRecipeBuilder {
+			private Supplier<Ingredient> ingredient;
+			private float exp;
+			private int cookingTime;
+
+			private final RecipeSerializer<? extends AbstractCookingRecipe> FURNACE = RecipeSerializer.SMELTING,
+				SMOKER = RecipeSerializer.SMOKING, BLAST = RecipeSerializer.BLASTING,
+				CAMPFIRE = RecipeSerializer.CAMPFIRE_COOKING;
+
+			GeneratedCookingRecipeBuilder(Supplier<Ingredient> ingredient) {
+				this.ingredient = ingredient;
+				cookingTime = 200;
+				exp = 0;
+			}
+
+			GeneratedCookingRecipeBuilder forDuration(int duration) {
+				cookingTime = duration;
+				return this;
+			}
+
+			GeneratedCookingRecipeBuilder rewardXP(float xp) {
+				exp = xp;
+				return this;
+			}
+
+			GeneratedRecipe inFurnace() {
+				return inFurnace(b -> b);
+			}
+
+			GeneratedRecipe inFurnace(UnaryOperator<CookingRecipeJsonBuilder> builder) {
+				return create(FURNACE, builder, 1);
+			}
+
+			GeneratedRecipe inSmoker() {
+				return inSmoker(b -> b);
+			}
+
+			GeneratedRecipe inSmoker(UnaryOperator<CookingRecipeJsonBuilder> builder) {
+				create(FURNACE, builder, 1);
+				create(CAMPFIRE, builder, 3);
+				return create(SMOKER, builder, .5f);
+			}
+
+			GeneratedRecipe inBlastFurnace() {
+				return inBlastFurnace(b -> b);
+			}
+
+			GeneratedRecipe inBlastFurnace(UnaryOperator<CookingRecipeJsonBuilder> builder) {
+				create(FURNACE, builder, 1);
+				return create(BLAST, builder, .5f);
+			}
+
+			private GeneratedRecipe create(RecipeSerializer<? extends AbstractCookingRecipe> serializer,
+																	  UnaryOperator<CookingRecipeJsonBuilder> builder, float cookingTimeModifier) {
+				return register(consumer -> {
+					boolean isOtherMod = compatDatagenOutput != null;
+
+					CookingRecipeJsonBuilder b = builder.apply(CookingRecipeJsonBuilder.create(ingredient.get(),
+						RecipeCategory.MISC, isOtherMod ? Items.DIRT : result.get(), exp,
+						(int) (cookingTime * cookingTimeModifier), serializer));
+
+					if (unlockedBy != null)
+						b.criterion("has_item", conditionsFromItemPredicates(unlockedBy.get()));
+
+					b.offerTo(result -> {
+						consumer.accept(
+							isOtherMod ? new ModdedCookingRecipeResult(result, compatDatagenOutput, recipeConditions)
+								: result);
+					}, createSimpleLocation(CatnipServices.REGISTRIES.getKeyOrThrow(serializer)
+						.getPath()));
+				});
+			}
+		}
+	}
+
+	@Override
+	public String getName() {
+		return modid + "'s Standard Recipes";
+	}
+
+	private record ModdedCookingRecipeResult(RecipeJsonProvider wrapped, Identifier outputOverride,
+		List<ConditionJsonProvider> conditions) implements RecipeJsonProvider {
+		@Override
+		public Identifier getRecipeId() {
+			return wrapped.getRecipeId();
+		}
+
+		@Override
+		public RecipeSerializer<?> getSerializer() {
+			return wrapped.getSerializer();
+		}
+
+		@Override
+		public JsonObject toAdvancementJson() {
+			return wrapped.toAdvancementJson();
+		}
+
+		@Override
+		public Identifier getAdvancementId() {
+			return wrapped.getAdvancementId();
+		}
+
+		@Override
+		public void serialize(JsonObject object) {
+			wrapped.serialize(object);
+			object.addProperty("result", outputOverride.toString());
+
+			ConditionJsonProvider.write(object, conditions.toArray(new ConditionJsonProvider[0]));
+		}
+	}
+
+	private record ConditionSupportingShapelessRecipeResult(RecipeJsonProvider wrapped, List<ConditionJsonProvider> conditions) implements RecipeJsonProvider {
+		@Override
+		public Identifier getRecipeId() {
+			return wrapped.getRecipeId();
+		}
+
+		@Override
+		public RecipeSerializer<?> getSerializer() {
+			return wrapped.getSerializer();
+		}
+
+		@Override
+		public JsonObject toAdvancementJson() {
+			return wrapped.toAdvancementJson();
+		}
+
+		@Override
+		public Identifier getAdvancementId() {
+			return wrapped.getAdvancementId();
+		}
+
+		@Override
+		public void serialize(@NotNull JsonObject pJson) {
+			wrapped.serialize(pJson);
+
+			ConditionJsonProvider.write(pJson, conditions.toArray(new ConditionJsonProvider[0]));
+		}
+	}
 }

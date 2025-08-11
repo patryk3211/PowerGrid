@@ -15,23 +15,17 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
-import com.google.common.base.Supplier;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
-import com.simibubi.create.foundation.data.recipe.MechanicalCraftingRecipeBuilder;
-import com.simibubi.create.foundation.utility.RegisteredObjects;
+import com.simibubi.create.api.data.recipe.MechanicalCraftingRecipeGen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
-import java.util.function.UnaryOperator;
-
 @SuppressWarnings("unused")
-public class MechanicalCraftingRecipes extends CreateRecipeProvider {
+public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
     GeneratedRecipe
 
     ELECTRIC_MOTOR = create(ModdedBlocks.ELECTRIC_MOTOR::get)
@@ -149,45 +143,6 @@ public class MechanicalCraftingRecipes extends CreateRecipeProvider {
 
 
     public MechanicalCraftingRecipes(FabricDataOutput output) {
-        super(output);
-    }
-
-    GeneratedRecipeBuilder create(Supplier<ItemConvertible> result) {
-        return new GeneratedRecipeBuilder(result);
-    }
-
-    @Override
-    public String getName() {
-        return "Power Grid's Mechanical Crafting Recipes";
-    }
-
-    public class GeneratedRecipeBuilder {
-        private final Supplier<ItemConvertible> result;
-        private String suffix;
-        private int amount;
-
-        public GeneratedRecipeBuilder(Supplier<ItemConvertible> result) {
-            this.suffix = "";
-            this.result = result;
-            this.amount = 1;
-        }
-
-        GeneratedRecipeBuilder returns(int amount) {
-            this.amount = amount;
-            return this;
-        }
-
-        GeneratedRecipeBuilder withSuffix(String suffix) {
-            this.suffix = suffix;
-            return this;
-        }
-
-        GeneratedRecipe recipe(UnaryOperator<MechanicalCraftingRecipeBuilder> builder) {
-            return register(consumer -> {
-                var b = builder.apply(MechanicalCraftingRecipeBuilder.shapedRecipe(result.get(), amount));
-                var location = PowerGrid.asResource("mechanical_crafting/" + RegisteredObjects.getKeyOrThrow(result.get().asItem()).getPath() + suffix);
-                b.build(consumer, location);
-            });
-        }
+        super(output, PowerGrid.MOD_ID);
     }
 }

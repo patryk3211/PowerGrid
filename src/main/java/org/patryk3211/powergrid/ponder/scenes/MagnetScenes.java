@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.ponder.scenes;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.createmod.ponder.foundation.element.InputWindowElement;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
@@ -66,8 +65,8 @@ public class MagnetScenes {
         });
         scene.idle(30);
 
-        scene.overlay().showControls(new InputWindowElement(util.vector().of(3.2f, 1.3f, 2.0f), Pointing.RIGHT)
-                .withItem(magnetStack), 50);
+        scene.overlay().showControls(util.vector().of(3.2f, 1.3f, 2.0f), Pointing.RIGHT, 50)
+                .withItem(magnetStack);
         scene.idle(60);
 
         scene.markAsFinished();

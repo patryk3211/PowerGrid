@@ -65,7 +65,7 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
 
     @Override
     protected void init() {
-        setWindowSize(WIDTH, HEIGHT + 4 + PLAYER_INVENTORY.height);
+        setWindowSize(WIDTH, HEIGHT + 4 + PLAYER_INVENTORY.getHeight());
         setWindowOffset(11, 0);
 
         super.init();

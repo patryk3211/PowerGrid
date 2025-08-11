@@ -17,29 +17,14 @@ package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
-import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
+import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
-import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.electricity.info.Power;
 
-import java.util.List;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-
+@SuppressWarnings("unused")
 public class CuttingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
@@ -60,15 +45,7 @@ public class CuttingRecipes extends ProcessingRecipeGen {
             ;
 
     public CuttingRecipes(FabricDataOutput output) {
-        super(output);
-    }
-
-    protected <T extends ProcessingRecipe<?>> GeneratedRecipe create(Supplier<ItemConvertible> singleIngredient, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
-        return super.create(PowerGrid.MOD_ID, singleIngredient, transform);
-    }
-
-    protected <T extends ProcessingRecipe<?>> GeneratedRecipe create(String name, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
-        return super.create(PowerGrid.asResource(name), transform);
+        super(output, PowerGrid.MOD_ID);
     }
 
     @Override

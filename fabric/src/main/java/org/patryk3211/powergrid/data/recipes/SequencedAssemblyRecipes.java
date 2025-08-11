@@ -15,30 +15,21 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
-import com.google.gson.JsonObject;
 import com.simibubi.create.AllItems;
+import com.simibubi.create.api.data.recipe.SequencedAssemblyRecipeGen;
 import com.simibubi.create.content.fluids.transfer.FillingRecipe;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
-import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipeBuilder;
-import com.simibubi.create.foundation.data.recipe.CreateRecipeProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
-import net.minecraft.data.server.recipe.RecipeJsonProvider;
 import net.minecraft.item.Items;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedFluids;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
-import java.util.function.UnaryOperator;
-
 @SuppressWarnings("unused")
-public class SequencedAssemblyRecipes extends CreateRecipeProvider {
+public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
     GeneratedRecipe
 
     TRANSFORMER_CORE = create("transformer_core", b -> b.require(RecipeTags.ironSheet())
@@ -89,45 +80,7 @@ public class SequencedAssemblyRecipes extends CreateRecipeProvider {
             ;
 
     public SequencedAssemblyRecipes(FabricDataOutput output) {
-        super(output);
-    }
-
-    protected GeneratedRecipe create(String name, UnaryOperator<SequencedAssemblyRecipeBuilder> transform) {
-        GeneratedRecipe recipe = c -> transform.apply(new SequencedAssemblyRecipeBuilder(PowerGrid.asResource(name)))
-                .build(c);
-        all.add(recipe);
-        return recipe;
-    }
-
-    protected GeneratedRecipe createSpecial(RecipeSerializer<?> serializer) {
-        GeneratedRecipe recipe = c -> c.accept(new RecipeJsonProvider() {
-            @Override
-            public void serialize(JsonObject json) {
-            }
-
-            @Override
-            public Identifier getRecipeId() {
-                var serializerId = Registries.RECIPE_SERIALIZER.getId(serializer).getPath();
-                return new Identifier(PowerGrid.MOD_ID, "special/" + serializerId);
-            }
-
-            @Override
-            public RecipeSerializer<?> getSerializer() {
-                return serializer;
-            }
-
-            @Override
-            public @Nullable JsonObject toAdvancementJson() {
-                return null;
-            }
-
-            @Override
-            public @Nullable Identifier getAdvancementId() {
-                return null;
-            }
-        });
-        all.add(recipe);
-        return recipe;
+        super(output, PowerGrid.MOD_ID);
     }
 
     @Override

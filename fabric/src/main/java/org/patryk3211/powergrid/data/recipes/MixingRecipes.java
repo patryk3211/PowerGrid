@@ -16,10 +16,8 @@
 package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllRecipeTypes;
+import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.content.processing.recipe.HeatCondition;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
-import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.fluid.Fluids;
@@ -28,14 +26,14 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedFluids;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
-import java.util.function.UnaryOperator;
-
+@SuppressWarnings("unused")
 public class MixingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
     ACID = create("acid", b -> b
             .require(Items.REDSTONE)
             .require(Items.BLAZE_POWDER)
+            // TODO: This is different on forge
             .require(Fluids.WATER, FluidConstants.BOTTLE)
             .requiresHeat(HeatCondition.HEATED)
             .output(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)),
@@ -48,11 +46,7 @@ public class MixingRecipes extends ProcessingRecipeGen {
     ;
 
     public MixingRecipes(FabricDataOutput output) {
-        super(output);
-    }
-
-    <T extends ProcessingRecipe<?>> GeneratedRecipe create(String name, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
-        return create(PowerGrid.asResource(name), transform);
+        super(output, PowerGrid.MOD_ID);
     }
 
     @Override

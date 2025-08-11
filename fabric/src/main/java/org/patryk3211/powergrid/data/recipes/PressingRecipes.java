@@ -16,17 +16,13 @@
 package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
-import com.simibubi.create.foundation.data.recipe.ProcessingRecipeGen;
+import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.entity.passive.PandaEntity;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
-import java.util.function.UnaryOperator;
-
+@SuppressWarnings("unused")
 public class PressingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
@@ -36,11 +32,7 @@ public class PressingRecipes extends ProcessingRecipeGen {
     );
 
     public PressingRecipes(FabricDataOutput generator) {
-        super(generator);
-    }
-
-    <T extends ProcessingRecipe<?>> GeneratedRecipe create(String name, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
-        return create(PowerGrid.asResource(name), transform);
+        super(generator, PowerGrid.MOD_ID);
     }
 
     @Override

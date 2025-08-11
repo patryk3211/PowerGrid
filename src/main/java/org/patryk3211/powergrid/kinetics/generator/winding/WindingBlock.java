@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.kinetics.generator.winding;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
@@ -370,7 +371,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         if(state.get(PART) == 0)
             withBlockEntityDo(world, newPos, WindingBlockEntity::makeMain);
 
-        playRemoveSound(world, pos);
+        IWrenchable.playRemoveSound(world, pos);
         return ActionResult.SUCCESS;
     }
 
@@ -402,7 +403,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             }
         });
 
-        playRemoveSound(world, pos);
+        IWrenchable.playRemoveSound(world, pos);
         return ActionResult.SUCCESS;
     }
 

@@ -77,7 +77,7 @@ public class TransformerCoreBlock extends Block implements IWrenchable {
                         .with(TransformerSmallBlock.HORIZONTAL_AXIS, context.getHorizontalPlayerFacing().rotateYClockwise().getAxis()));
             }
         }
-        playRotateSound(world, pos);
+        IWrenchable.playRotateSound(world, pos);
         return ActionResult.SUCCESS;
     }
 }

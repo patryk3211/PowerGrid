@@ -44,7 +44,7 @@ public class BooleanPropertyWidget extends PropertyWidget<Boolean, PropertyEntry
 
         var bg = hovered ? AllGuiTextures.BUTTON_HOVER : AllGuiTextures.BUTTON;
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        ctx.drawTexture(bg.location, x + 29, y + 1, bg.startX, bg.startY, bg.width, bg.height);
+        ctx.drawTexture(bg.location, x + 29, y + 1, bg.getStartX(), bg.getStartY(), bg.getWidth(), bg.getHeight());
         ModIcons.I_TOGGLE.render(ctx, x + 30, y + 2);
     }
 

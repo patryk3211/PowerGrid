@@ -18,6 +18,7 @@ package org.patryk3211.powergrid;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback;
+import net.createmod.ponder.foundation.PonderIndex;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
@@ -35,8 +36,9 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
-import org.patryk3211.powergrid.ponder.PonderIndex;
-import org.patryk3211.powergrid.ponder.PonderTags;
+import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
+import org.patryk3211.powergrid.ponder.PowerGridPonderScenes;
+import org.patryk3211.powergrid.ponder.PowerGridPonderTags;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
 
@@ -63,8 +65,7 @@ public class PowerGridClient {
 		registerArchitecturyEvents();
 		registerPlatformEvents();
 
-		PonderTags.register();
-		PonderIndex.register();
+		PonderIndex.addPlugin(new PowerGridPonderPlugin());
 	}
 
 	public static void registerArchitecturyEvents() {
