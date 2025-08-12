@@ -75,12 +75,12 @@ allprojects {
 	dependencies {
 		minecraft "com.mojang:minecraft:${project.minecraft_version}"
 
-		include implementation("org.ejml:ejml-all:0.44.0")
-
 		mappings(loom.layered {
 			it.officialMojangMappings { nameSyntheticMembers = false }
 			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
 		})
+
+		implementation(include("org.ejml:ejml-all:0.44.0"))
 //		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	}
 
@@ -216,8 +216,6 @@ architectury {
 }
 
 dependencies {
-//	include "org.ejml:ejml-all:0.44.0"
-
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	modCompileOnly("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_fabric_version}")
