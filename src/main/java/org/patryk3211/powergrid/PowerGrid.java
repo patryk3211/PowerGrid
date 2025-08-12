@@ -16,16 +16,22 @@
 package org.patryk3211.powergrid;
 
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
+import com.simibubi.create.api.registry.CreateRegistries;
+import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 
+import dev.architectury.registry.registries.DeferredRegister;
 import net.minecraft.block.Blocks;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.RecipeType;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
-import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
@@ -37,13 +43,16 @@ public class PowerGrid  {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("PowerGrid");
 
+	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(MOD_ID, RegistryKeys.RECIPE_SERIALIZER);
+	public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(MOD_ID, RegistryKeys.RECIPE_TYPE);
+	public static final DeferredRegister<FanProcessingType> FAN_PROCESSING_TYPES = DeferredRegister.create(MOD_ID, CreateRegistries.FAN_PROCESSING_TYPE);
+
 	public static AbstractPowerGridRegistrate REGISTRATE;
 
 	public static void init() {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
 		ElectricalNetwork.LOGGER = LOGGER;
 
-		ComponentRegistry.init();
 		ModdedSoundEvents.prepare();
 
 		REGISTRATE = createRegistrate();
@@ -51,7 +60,6 @@ public class PowerGrid  {
 		register();
 
 		registerArchitecturyEvents();
-		registerPlatformEvents();
 
 		ModdedPackets.registerPackets();
 	}
@@ -63,13 +71,13 @@ public class PowerGrid  {
 
 	private static void register() {
 		registerRecipes();
+		HeaterFanProcessingTypes.register();
 
 		ModdedBlocks.register();
 		ModdedItems.register();
 		ModdedFluids.register();
 		ModdedBlockEntities.register();
 		ModdedEntities.register();
-		HeaterFanProcessingTypes.register();
 		ModdedConfigs.register();
 		ModdedMenus.register();
 		Components.register();
@@ -77,8 +85,10 @@ public class PowerGrid  {
 		ModdedParticles.register();
 
 		finalizeRegistrate();
-
-		ModdedSoundEvents.register();
+		RECIPE_SERIALIZERS.register();
+		RECIPE_TYPES.register();
+		FAN_PROCESSING_TYPES.register();
+		ModdedParticles.PARTICLE_TYPES.register();
 
 		MovementBehaviour.REGISTRY.register(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
 	}
@@ -96,18 +106,14 @@ public class PowerGrid  {
 		throw new AssertionError();
 	}
 
-	@ExpectPlatform
 	public static void registerRecipes() {
-		throw new AssertionError();
+		var magnetizing = MagnetizingRecipe.TYPE_INFO;
+		RECIPE_SERIALIZERS.register(magnetizing.getId(), magnetizing::getSerializer);
+		RECIPE_TYPES.register(magnetizing.getId(), magnetizing::getType);
 	}
 
 	@ExpectPlatform
 	public static void finalizeRegistrate() {
-		throw new AssertionError();
-	}
-
-	@ExpectPlatform
-	public static void registerPlatformEvents() {
 		throw new AssertionError();
 	}
 }

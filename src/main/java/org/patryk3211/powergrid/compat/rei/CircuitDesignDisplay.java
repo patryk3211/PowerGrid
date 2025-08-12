@@ -31,7 +31,7 @@ public class CircuitDesignDisplay implements Display {
     private final List<EntryIngredient> output = new ArrayList<>();
 
     public CircuitDesignDisplay() {
-        for(var component : ComponentRegistry.REGISTRY) {
+        for(var component : ComponentRegistry.entries()) {
             var stack = EntryStack.of(VanillaEntryTypes.ITEM, component.getRequiredItem().getDefaultStack());
             ingredients.add(EntryIngredient.of(stack));
         }

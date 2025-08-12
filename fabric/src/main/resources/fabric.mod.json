@@ -39,5 +39,16 @@
 		"java": ">=17",
 		"fabric-api": "*",
 		"create": "${create_fabric_version}"
+	},
+	"custom": {
+		"loom:injected_interfaces": {
+			"org/patryk3211/powergrid/electricity/zapper/ElectroZapperItem": [
+				"io/github/fabricators_of_create/porting_lib/item/EntitySwingListenerItem",
+				"io/github/fabricators_of_create/porting_lib/item/ReequipAnimationItem"
+			],
+			"org/patryk3211/powergrid/electricity/light/fixture/LightFixtureBlockEntity": [
+				"io/github/fabricators_of_create/porting_lib/block/CustomRenderBoundingBoxBlockEntity"
+			]
+		}
 	}
 }

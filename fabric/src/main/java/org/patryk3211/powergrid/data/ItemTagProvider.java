@@ -31,7 +31,7 @@ public class ItemTagProvider extends FabricTagProvider.ItemTagProvider {
     @Override
     protected void configure(RegistryWrapper.WrapperLookup provider) {
         var builder = getOrCreateTagBuilder(ModdedTags.Item.CIRCUIT_COMPONENT.tag);
-        for(var component : ComponentRegistry.REGISTRY) {
+        for(var component : ComponentRegistry.entries()) {
             var item = component.getRequiredItem();
             builder.add(item);
         }

@@ -2,6 +2,7 @@
   "required": true,
   "package": "org.patryk3211.powergrid.mixin",
   "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8.3",
   "mixins": [
     "AirCurrentMixin",
     "ArmBlockEntityMixin",
@@ -9,7 +10,6 @@
     "BasinRecipeMixin",
     "EntityMixin",
     "FanProcessingMixin",
-    "FanProcessingTypeAccessor",
     "LightningAccessor",
     "KineticBlockEntityAccessor",
     "RecipeApplierMixin"

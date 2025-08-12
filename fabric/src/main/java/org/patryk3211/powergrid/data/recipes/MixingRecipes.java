@@ -36,11 +36,11 @@ public class MixingRecipes extends ProcessingRecipeGen {
             // TODO: This is different on forge
             .require(Fluids.WATER, FluidConstants.BOTTLE)
             .requiresHeat(HeatCondition.HEATED)
-            .output(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)),
+            .output(ModdedFluids.acid(), FluidConstants.BOTTLE)),
 
     ETCHED_CIRCUIT_BOARD = create("etched_circuit_board", b -> b
             .require(ModdedItems.UNETCHED_CIRCUIT)
-            .require(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)
+            .require(ModdedFluids.acid(), FluidConstants.BOTTLE)
             .requiresHeat(HeatCondition.HEATED)
             .output(ModdedItems.INCOMPLETE_CIRCUIT))
     ;

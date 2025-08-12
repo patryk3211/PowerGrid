@@ -15,40 +15,26 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.tterrag.registrate.fabric.EnvExecutor;
-import com.tterrag.registrate.fabric.SimpleFlowableFluid;
-import com.tterrag.registrate.util.entry.FluidEntry;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.util.Identifier;
-
-import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
+import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.minecraft.fluid.Fluid;
 
 public class ModdedFluids {
-    public static final FluidEntry<SimpleFlowableFluid.Flowing> ACID =
-            REGISTRATE.fluid("acid", new Identifier("block/water_still"), new Identifier("block/water_flowing"))
-                    .renderType(() -> RenderLayer::getTranslucent)
-                    .tag(FluidTags.WATER)
-//                    .fluidAttributes(() -> new Create)
-//                    .source(properties -> {
-//
-////                        new ArchitecturyFlowingFluid.Source(new SimpleArchitecturyFluidAttributes())
-//                    })
-//                    .source(SimpleFlowableFluid.Source::new)
-
-//                    .fluidAttributes(() -> new FluidVariantAttributeHandler() { })
-                    .onRegisterAfter(RegistryKeys.FLUID, flowing -> EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> registerSimpleFluidRenderer(flowing, 0xFFFFEE80)))
-                    .register();
-
-    @Environment(EnvType.CLIENT)
-    private static void registerSimpleFluidRenderer(SimpleFlowableFluid.Flowing fluid, int tint) {
-//        var handler = SimpleFluidRenderHandler.coloredWater(tint);
-//        FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
+    @ExpectPlatform
+    public static Fluid acid() {
+        throw new AssertionError();
     }
 
-    @SuppressWarnings("EmptyMethod")
-    public static void register() { /* Initialize static fields. */ }
+    @ExpectPlatform
+    public static Fluid acidFlowing() {
+        throw new AssertionError();
+    }
+
+    public static void register() {
+        platformInit();
+    }
+
+    @ExpectPlatform
+    public static void platformInit() {
+        throw new AssertionError();
+    }
 }

@@ -17,12 +17,12 @@ package org.patryk3211.powergrid.circuits.editor;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlottedStackStorage;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandler;
@@ -38,22 +38,27 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import java.util.List;
 
 public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements IMultiScreenHandlerFactory {
-    private final CircuitDesignTableInventory inventory = new CircuitDesignTableInventory();
+    private final Inventory inventory = new SimpleInventory(3);
 
     CircuitSchematic schematic = new CircuitSchematic();
     boolean schematicChanged = false;
 
-    private class CircuitDesignTableInventory extends ItemStackHandler {
-        public CircuitDesignTableInventory() {
-            super(3);
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
-            super.onContentsChanged(slot);
-            markDirty();
-        }
-    }
+//    private class CircuitDesignTableInventory extends SimpleInventory {
+//        public CircuitDesignTableInventory() {
+//            super(3);
+//        }
+//
+//        @Override
+//        public void addListener(InventoryChangedListener listener) {
+//            super.addListener(listener);
+//        }
+//
+//        @Override
+//        protected void onContentsChanged(int slot) {
+//            super.onContentsChanged(slot);
+//            markDirty();
+//        }
+//    }
 
     public CircuitDesignTableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -67,14 +72,14 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
     @Override
     protected void write(NbtCompound tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        tag.put("Inventory", inventory.serializeNBT());
+//        tag.put("Inventory", inventory.serializeNBT());
         tag.put("Schematic", schematic.serializeNbt());
     }
 
     @Override
     protected void read(NbtCompound tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        inventory.deserializeNBT(tag.getCompound("Inventory"));
+//        inventory.deserializeNBT(tag.getCompound("Inventory"));
         schematic.deserializeNbt(tag.getCompound("Schematic"));
         if(clientPacket)
             schematicChanged = true;
@@ -90,24 +95,24 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
     }
 
     public void writeToItem() {
-        var stack = inventory.getStackInSlot(1);
+        var stack = inventory.getStack(1);
         if(stack.isEmpty() || world.isClient)
             return;
         stack.decrement(1);
         var result = schematic.toItemStack();
-        inventory.setStackInSlot(2, result);
+        inventory.setStack(2, result);
         schematic.clear();
         notifyUpdate();
     }
 
     public void readFromItem() {
-        var stack = inventory.getStackInSlot(0);
+        var stack = inventory.getStack(0);
         if(stack.isEmpty() || world.isClient || !stack.hasNbt())
             return;
-        if(inventory.getStackInSlot(1).isEmpty() && stack.isOf(ModdedItems.CIRCUIT_SCHEMATIC.get())) {
+        if(inventory.getStack(1).isEmpty() && stack.isOf(ModdedItems.CIRCUIT_SCHEMATIC.get())) {
             // Move to save slot
-            inventory.setStackInSlot(0, ItemStack.EMPTY);
-            inventory.setStackInSlot(1, stack);
+            inventory.setStack(0, ItemStack.EMPTY);
+            inventory.setStack(1, stack);
         }
         try {
             schematic.deserializeNbt(stack.getNbt().getCompound("Schematic"));
@@ -134,7 +139,7 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
             notifyUpdate();
     }
 
-    public SlottedStackStorage getInventory() {
+    public Inventory getInventory() {
         return inventory;
     }
 

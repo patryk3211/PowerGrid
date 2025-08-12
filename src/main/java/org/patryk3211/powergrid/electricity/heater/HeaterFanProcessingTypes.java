@@ -15,12 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.heater;
 
-import org.patryk3211.powergrid.mixin.FanProcessingTypeAccessor;
+import org.patryk3211.powergrid.PowerGrid;
 
 public class HeaterFanProcessingTypes {
-    public static final HeaterBlastingType BLASTING = FanProcessingTypeAccessor.invokeRegister("heater_blasting", new HeaterBlastingType());
-    public static final HeaterSmokingType SMOKING = FanProcessingTypeAccessor.invokeRegister("heater_smoking", new HeaterSmokingType());
-
-    @SuppressWarnings("EmptyMethod")
-    public static void register() { /* Initialize static fields. */ }
+    public static void register() {
+        PowerGrid.FAN_PROCESSING_TYPES.register("heater_blasting", HeaterBlastingType::new);
+        PowerGrid.FAN_PROCESSING_TYPES.register("heater_smoking", HeaterSmokingType::new);
+    }
 }

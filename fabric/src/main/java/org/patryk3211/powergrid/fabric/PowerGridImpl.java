@@ -21,21 +21,31 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.FabricPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
+import org.patryk3211.powergrid.circuits.components.fabric.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.fabric.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.electricity.ElectricProperties;
-import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 public class PowerGridImpl implements ModInitializer {
     public void onInitialize() {
+        ComponentRegistryImpl.REGISTRY = FabricRegistryBuilder
+                .createSimple(ComponentRegistry.REGISTRY_KEY)
+                .buildAndRegister();
+
         PowerGrid.init();
+
+        ModdedSoundEventsImpl.register();
+
+        // Register platform events
+        ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
     }
 
     public static AbstractPowerGridRegistrate createRegistrate() {
@@ -53,15 +63,5 @@ public class PowerGridImpl implements ModInitializer {
 
     public static void finalizeRegistrate() {
         PowerGrid.REGISTRATE.register();
-    }
-
-    public static void registerRecipes() {
-        var magnetizing = MagnetizingRecipe.TYPE_INFO;
-		Registry.register(Registries.RECIPE_SERIALIZER, magnetizing.getId(), magnetizing.getSerializer());
-		Registry.register(Registries.RECIPE_TYPE, magnetizing.getId(), magnetizing.getType());
-    }
-
-    public static void registerPlatformEvents() {
-        ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
     }
 }

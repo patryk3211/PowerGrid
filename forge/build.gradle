@@ -21,6 +21,7 @@ configurations {
 
 dependencies {
     forge "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    forgeRuntimeLibrary "org.ejml:ejml-all:0.44.0"
 
     modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
     modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_forge_version}")
@@ -43,7 +44,7 @@ dependencies {
 
 loom {
     forge {
-        mixinConfigs("powergrid.mixins.json", "powergrid.client.mixins.json")
+        mixinConfigs("powergrid.mixins.json", "powergrid.client.mixins.json", "powergrid-forge.mixins.json")
     }
 
     runs {

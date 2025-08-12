@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
@@ -51,8 +51,10 @@ public class CircuitSchematicItem extends Item {
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        var player = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().player);
-        if(context.isCreative() || (player != null && player.isCreative())) {
+        var player = EnvExecutor.getInEnv(Env.CLIENT, () -> () -> MinecraftClient.getInstance().player)
+                .map(PlayerEntity::isCreative)
+                .orElse(false);
+        if(context.isCreative() || player) {
             tooltip.add(Text.translatable(getTranslationKey() + ".tooltip.creative")
                     .formatted(Formatting.DARK_PURPLE, Formatting.ITALIC));
         }

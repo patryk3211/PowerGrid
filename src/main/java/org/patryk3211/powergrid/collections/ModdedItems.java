@@ -17,9 +17,11 @@ package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
-import com.simibubi.create.foundation.data.CreateRegistrate;
+import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
@@ -36,6 +38,8 @@ import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
+
+import java.util.function.Supplier;
 
 import static com.simibubi.create.AllTags.forgeItemTag;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -116,7 +120,7 @@ public class ModdedItems {
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BATTERY = sequencedIngredient("incomplete_battery");
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
-            .transform(CreateRegistrate.customRenderedItem(() -> ElectroZapperItemRenderer::new))
+            .transform(customRenderer(() -> ElectroZapperItemRenderer::new))
             .model((ctx, prov) -> prov
                     .withExistingParent(ctx.getName(), PowerGrid.asResource("item/electrozapper/item")))
             .lang("Electro-Zapper")
@@ -164,5 +168,10 @@ public class ModdedItems {
     @SafeVarargs
     private static ItemEntry<Item> ingredient(String name, TagKey<Item>... tags) {
         return REGISTRATE.item(name, Item::new).tag(tags).register();
+    }
+
+    @ExpectPlatform
+    public static <T extends Item, P> NonNullUnaryOperator<ItemBuilder<T, P>> customRenderer(Supplier<Supplier<CustomRenderedItemModelRenderer>> renderer) {
+        throw new AssertionError();
     }
 }

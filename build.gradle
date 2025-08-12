@@ -9,6 +9,7 @@ architectury {
 	minecraft = minecraft_version
 }
 
+var logConfig = file('log4j-dev.xml')
 allprojects {
 	apply plugin: "java"
 	apply plugin: "architectury-plugin"
@@ -62,15 +63,12 @@ allprojects {
 //			}
 //		}
 
-		log4jConfigs.from(file('log4j-dev.xml'))
+		log4jConfigs.from(logConfig)
 	}
 
 	configurations {
 		common
 		shadowCommon
-		extraLibs
-		compileClasspath.extendsFrom extraLibs
-		runtimeClasspath.extendsFrom extraLibs
 	}
 
 	dependencies {
@@ -83,8 +81,6 @@ allprojects {
 //			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
 //		})
 		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-
-//		configurations.implementation.extendsFrom(configurations.extraLibs)
 	}
 
 	java {
@@ -128,7 +124,6 @@ subprojects {
 	}
 
 	configurations {
-		common.extendsFrom extraLibs
 		compileClasspath.extendsFrom common
 		runtimeClasspath.extendsFrom common
 	}
@@ -151,10 +146,6 @@ subprojects {
 
 		from("NOTICE") {
 			rename { "${it}_${inputs.properties.archivesName}" }
-		}
-
-		from {
-			configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
 		}
 	}
 

@@ -17,9 +17,9 @@ package org.patryk3211.powergrid.electricity.light.fixture;
 
 import com.simibubi.create.foundation.block.IBE;
 import com.tterrag.registrate.builders.BlockBuilder;
-import com.tterrag.registrate.fabric.EnvExecutor;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -36,8 +36,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
@@ -106,14 +104,14 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
 
     public static <B extends LightFixtureBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setBulbModelOffset(Vec3d modelOffset) {
         return b -> {
-            EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> b.onRegister(block -> block.modelOffset = modelOffset));
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> b.onRegister(block -> block.modelOffset = modelOffset));
             return b;
         };
     }
 
     public static <B extends LightFixtureBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setBulbModelOffset(float x, float y, float z) {
         return b -> {
-            EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> b.onRegister(block -> block.modelOffset = new Vec3d(x, y, z)));
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> b.onRegister(block -> block.modelOffset = new Vec3d(x, y, z)));
             return b;
         };
     }

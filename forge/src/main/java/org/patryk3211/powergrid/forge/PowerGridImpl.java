@@ -15,34 +15,75 @@
  */
 package org.patryk3211.powergrid.forge;
 
+import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import dev.architectury.platform.forge.EventBuses;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.lang.FontHelper;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.NewRegistryEvent;
+import net.minecraftforge.registries.RegisterEvent;
+import net.minecraftforge.registries.RegistryBuilder;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
+import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 
 @Mod(PowerGrid.MOD_ID)
 @Mod.EventBusSubscriber
 public class PowerGridImpl {
-    static IEventBus bus;
-
-    private static final DeferredRegister<ItemGroup> TAB_REGISTER =
-            DeferredRegister.create(RegistryKeys.ITEM_GROUP, PowerGrid.MOD_ID);
+    public static FMLJavaModLoadingContext context;
+    public static IEventBus bus;
 
     public PowerGridImpl() {
-        bus = FMLJavaModLoadingContext.get().getModEventBus();
-        TAB_REGISTER.register(bus);
+        context = FMLJavaModLoadingContext.get();
+        bus = context.getModEventBus();
+        EventBuses.registerModEventBus(PowerGrid.MOD_ID, bus);
+
         PowerGrid.init();
+
+        MinecraftForge.EVENT_BUS.register(ForgeEvents.class);
+
+        // Client init
+        EnvExecutor.runInEnv(Env.CLIENT, () -> PowerGridClientImpl::init);
+    }
+
+    @SubscribeEvent
+    public static void newRegistryEvent(NewRegistryEvent event) {
+        event.<Component>create(
+                RegistryBuilder.of(ComponentRegistry.REGISTRY_KEY.getValue()),
+                registry -> ComponentRegistryImpl.REGISTRY = registry
+        );
+    }
+
+    @SubscribeEvent
+    public static void configLoad(ModConfigEvent.Loading event) {
+        ModdedConfigs.onLoad(event.getConfig());
+    }
+
+    @SubscribeEvent
+    public static void configReload(ModConfigEvent.Reloading event) {
+        ModdedConfigs.onReload(event.getConfig());
+    }
+
+    @SubscribeEvent
+    public static void soundEventRegister(RegisterEvent event) {
+        event.register(RegistryKeys.SOUND_EVENT, ModdedSoundEventsImpl::register);
     }
 
     public static AbstractPowerGridRegistrate createRegistrate() {

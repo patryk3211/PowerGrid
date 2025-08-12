@@ -16,12 +16,12 @@
 package org.patryk3211.powergrid.circuits.editor;
 
 import com.simibubi.create.AllItems;
-import io.github.fabricators_of_create.porting_lib.transfer.item.SlotItemHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.slot.Slot;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedMenus;
@@ -45,19 +45,19 @@ public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
         final int Y_OFFSET = 0;
 
         var beInv = contentHolder.getInventory();
-        addSlot(new SlotItemHandler(beInv, 0, X_OFFSET + 16, Y_OFFSET + 44) {
+        addSlot(new Slot(beInv, 0, X_OFFSET + 16, Y_OFFSET + 44) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return ModdedItems.CIRCUIT_SCHEMATIC.isIn(stack) || ModdedBlocks.CIRCUIT_BOARD.isIn(stack);
             }
         });
-        addSlot(new SlotItemHandler(beInv, 1, X_OFFSET + 117, Y_OFFSET + 21) {
+        addSlot(new Slot(beInv, 1, X_OFFSET + 117, Y_OFFSET + 21) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return AllItems.EMPTY_SCHEMATIC.isIn(stack) || ModdedItems.CIRCUIT_SCHEMATIC.isIn(stack);
             }
         });
-        addSlot(new SlotItemHandler(beInv, 2, X_OFFSET + 145, Y_OFFSET + 44) {
+        addSlot(new Slot(beInv, 2, X_OFFSET + 145, Y_OFFSET + 44) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return false;
@@ -79,5 +79,12 @@ public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
             insertItem(stack, 0, 2, false);
         }
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public void onClosed(PlayerEntity playerIn) {
+        super.onClosed(playerIn);
+        dropInventory(playerIn, contentHolder.getInventory());
+//        this.context.run((world, pos) -> this.dropInventory(player, this.input));
     }
 }

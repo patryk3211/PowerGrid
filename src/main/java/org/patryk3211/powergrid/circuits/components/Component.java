@@ -115,19 +115,19 @@ public abstract class Component {
     @NotNull
     @Environment(EnvType.CLIENT)
     public Identifier getModelId(@NotNull PlacedComponent component) {
-        return ComponentRegistry.REGISTRY.getId(this);
+        return ComponentRegistry.getId(this);
     }
 
     @NotNull
     @Environment(EnvType.CLIENT)
     public Collection<Identifier> requestedModels() {
-        return List.of(ComponentRegistry.REGISTRY.getId(this));
+        return List.of(ComponentRegistry.getId(this));
     }
 
     public static Component forItem(Item item) {
         if(COMPONENT_MAP.containsKey(item))
             return COMPONENT_MAP.get(item);
-        for(var entry : ComponentRegistry.REGISTRY) {
+        for(var entry : ComponentRegistry.entries()) {
             if(entry.item.get() == item) {
                 COMPONENT_MAP.put(item, entry);
                 return entry;

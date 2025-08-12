@@ -15,17 +15,30 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
-import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ComponentRegistry {
     public static final RegistryKey<Registry<Component>> REGISTRY_KEY = RegistryKey.ofRegistry(PowerGrid.asResource("components"));
-    public static final Registry<Component> REGISTRY = FabricRegistryBuilder
-            .createSimple(REGISTRY_KEY)
-            .buildAndRegister();
 
-    @SuppressWarnings("EmptyMethod")
-    public static void init() { /* Initialize static fields. */ }
+    @ExpectPlatform
+    public static Iterable<Component> entries() {
+        throw new AssertionError();
+    }
+
+    @NotNull
+    @ExpectPlatform
+    public static Identifier getId(@NotNull Component component) {
+        throw new AssertionError();
+    }
+
+    @NotNull
+    @ExpectPlatform
+    public static Component get(@NotNull Identifier id) {
+        throw new AssertionError();
+    }
 }

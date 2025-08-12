@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.circuits.editor;
 
 import com.simibubi.create.foundation.block.IBE;
-import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
+import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
@@ -48,7 +48,7 @@ public class CircuitDesignTableBlock extends Block implements IBE<CircuitDesignT
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if(world.isClient)
             return ActionResult.SUCCESS;
-        withBlockEntityDo(world, pos, be -> NetworkHooks.openScreen((ServerPlayerEntity) player, be, be::sendToMenu));
+        withBlockEntityDo(world, pos, be -> MenuRegistry.openExtendedMenu((ServerPlayerEntity) player, be, be::sendToMenu));
         return ActionResult.SUCCESS;
 
     }

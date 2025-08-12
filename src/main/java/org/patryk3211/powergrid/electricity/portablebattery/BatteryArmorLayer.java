@@ -19,13 +19,10 @@ import com.simibubi.create.content.equipment.armor.BacktankArmorLayer;
 import com.simibubi.create.content.equipment.armor.BacktankBlock;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
@@ -70,21 +67,11 @@ public class BatteryArmorLayer<T extends LivingEntity, M extends EntityModel<T>>
         ms.translate(-1 / 2f, 10 / 16f, 1f);
         ms.scale(1, -1, -1);
 
-        backtank.light(light)
+        backtank.disableDiffuse()
+                .light(light)
                 .renderInto(ms, buffer.getBuffer(renderType));
-//        backtank.forEntityRender()
-//                .light(light)
-//                .renderInto(ms, buffer.getBuffer(renderType));
 
         ms.pop();
     }
 
-    public static void registerOn(EntityRenderer<?> entityRenderer, LivingEntityFeatureRendererRegistrationCallback.RegistrationHelper helper) {
-        if (!(entityRenderer instanceof LivingEntityRenderer<?, ?> livingRenderer))
-            return;
-        if (!(livingRenderer.getModel() instanceof BipedEntityModel))
-            return;
-        BatteryArmorLayer<?, ?> layer = new BatteryArmorLayer<>(livingRenderer);
-        helper.register(layer);
-    }
 }

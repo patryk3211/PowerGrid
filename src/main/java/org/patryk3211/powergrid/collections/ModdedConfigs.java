@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
-import fuzs.forgeconfigapiport.api.config.v2.ModConfigEvents;
+import com.simibubi.create.api.stress.BlockStressValues;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.createmod.catnip.config.ConfigBase;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
@@ -24,6 +24,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.config.CResistance;
 import org.patryk3211.powergrid.config.CServer;
+import org.patryk3211.powergrid.config.CStress;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -33,7 +34,7 @@ import java.util.function.Supplier;
  * @see com.simibubi.create.infrastructure.config.AllConfigs
  */
 public class ModdedConfigs {
-    private static final Map<ModConfig.Type, ConfigBase> CONFIGS = new EnumMap<>(ModConfig.Type.class);
+    public static final Map<ModConfig.Type, ConfigBase> CONFIGS = new EnumMap<>(ModConfig.Type.class);
 
     private static CServer server;
 
@@ -62,14 +63,19 @@ public class ModdedConfigs {
         return config;
     }
 
+    @ExpectPlatform
+    public static void registerPlatform() {
+        throw new AssertionError();
+    }
+
     public static void register() {
         server = register(CServer::new, ModConfig.Type.SERVER);
 
-        for(Map.Entry<ModConfig.Type, ConfigBase> pair : CONFIGS.entrySet())
-            ForgeConfigRegistry.INSTANCE.register(PowerGrid.MOD_ID, pair.getKey(), pair.getValue().specification);
+        registerPlatform();
 
-        ModConfigEvents.loading(PowerGrid.MOD_ID).register(ModdedConfigs::onLoad);
-        ModConfigEvents.reloading(PowerGrid.MOD_ID).register(ModdedConfigs::onReload);
+        CStress stress = server().kinetics.stressValues;
+        BlockStressValues.IMPACTS.registerProvider(stress::getImpact);
+        BlockStressValues.CAPACITIES.registerProvider(stress::getCapacity);
     }
 
     public static void onLoad(ModConfig modConfig) {

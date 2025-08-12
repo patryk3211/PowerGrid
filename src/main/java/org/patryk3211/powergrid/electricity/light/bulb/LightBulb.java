@@ -16,8 +16,9 @@
 package org.patryk3211.powergrid.electricity.light.bulb;
 
 import com.tterrag.registrate.builders.ItemBuilder;
-import com.tterrag.registrate.fabric.EnvExecutor;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -55,7 +56,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
 
     public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setModelProvider(Supplier<Function<State, PartialModel>> provider) {
         return b -> {
-            EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> b.onRegister(item -> item.modelSupplier = provider));
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> b.onRegister(item -> item.modelSupplier = provider));
             return b;
         };
     }
@@ -123,7 +124,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
 
         public <T extends Item & ILightBulb> SimpleState(T bulb, LightFixtureBlockEntity fixture, Supplier<Function<State, PartialModel>> modelProviderSupplier) {
             super(bulb, fixture);
-            EnvExecutor.runWhenOn(EnvType.CLIENT, () -> () -> modelProvider = modelProviderSupplier.get());
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> modelProvider = modelProviderSupplier.get());
         }
 
         @Override

@@ -38,9 +38,6 @@ public interface IMultiScreenHandlerFactory extends NamedScreenHandlerFactory {
     @Nullable
     ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player, int menuIndex);
 
-    /**
-     * @see io.github.fabricators_of_create.porting_lib.util.NetworkHooks#openScreen(ServerPlayerEntity, NamedScreenHandlerFactory, Consumer)
-     */
     static void openScreen(ServerPlayerEntity player, IMultiScreenHandlerFactory factory, Consumer<PacketByteBuf> extraDataWriter, int menuIndex) {
         MenuRegistry.openExtendedMenu(player, new ExtendedMenuProvider() {
             @Override

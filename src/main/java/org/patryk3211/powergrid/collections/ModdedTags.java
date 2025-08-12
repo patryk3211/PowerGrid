@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import com.simibubi.create.AllTags;
-import net.minecraft.registry.Registries;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedTags {
+    // TODO: Different on forge
     public static final String FORGE_NAMESPACE = "c";
 
     public enum Item {
@@ -45,7 +45,7 @@ public class ModdedTags {
         }
 
         Item(String namespace, String name) {
-            tag = AllTags.optionalTag(Registries.ITEM, new Identifier(namespace, name));
+            tag = itemTag(new Identifier(namespace, name));
         }
     }
 
@@ -61,7 +61,17 @@ public class ModdedTags {
         }
 
         Block(String namespace, String name) {
-            tag = AllTags.optionalTag(Registries.BLOCK, new Identifier(namespace, name));
+            tag = blockTag(new Identifier(namespace, name));
         }
+    }
+
+    @ExpectPlatform
+    public static TagKey<net.minecraft.block.Block> blockTag(Identifier id) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static TagKey<net.minecraft.item.Item> itemTag(Identifier id) {
+        throw new AssertionError();
     }
 }

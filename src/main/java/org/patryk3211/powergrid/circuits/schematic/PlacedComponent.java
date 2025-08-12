@@ -76,7 +76,7 @@ public class PlacedComponent {
     }
 
     private static Component get(String id) {
-        return ComponentRegistry.REGISTRY.get(new Identifier(id));
+        return ComponentRegistry.get(new Identifier(id));
     }
 
     public PlacedComponent(Component component, int x, int y, UUID uuid) {
@@ -113,7 +113,7 @@ public class PlacedComponent {
     public NbtCompound serializeNbt() {
         var tag = new NbtCompound();
 
-        var id = ComponentRegistry.REGISTRY.getId(component);
+        var id = ComponentRegistry.getId(component);
         tag.putString("Id", id.toString());
         tag.putInt("X", x);
         tag.putInt("Y", y);

@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.electricity.portablebattery;
 
 import com.simibubi.create.AllEnchantments;
-import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EquipmentSlot;
@@ -66,38 +66,36 @@ public class BatteryUtils {
     public static boolean isBarVisible(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return false;
-        var player = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().player);
-        if(player == null)
-            return false;
-        var battery = getBattery(player);
-        if(battery != null && getCurrentCharge(battery) > fePerUse)
-            return true;
-        return stack.isDamaged();
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> MinecraftClient.getInstance().player)
+                .map(player -> {
+                    var battery = getBattery(player);
+                    if(battery != null && getCurrentCharge(battery) > fePerUse)
+                        return true;
+                    return stack.isDamaged();
+                }).orElse(false);
     }
 
     public static int getBarWidth(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return 13;
-        var player = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().player);
-        if(player == null)
-            return 13;
-
-        var battery = getBattery(player);
-        if(battery == null)
-            return Math.round(13.0F - (float) stack.getDamage() / stack.getMaxDamage() * 13.0F);
-        return battery.getItemBarStep();
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> MinecraftClient.getInstance().player)
+                .map(player -> {
+                    var battery = getBattery(player);
+                    if(battery == null)
+                        return Math.round(13.0F - (float) stack.getDamage() / stack.getMaxDamage() * 13.0F);
+                    return battery.getItemBarStep();
+                }).orElse(13);
     }
 
     public static int getBarColor(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return 0;
-        PlayerEntity player = EnvExecutor.callWhenOn(EnvType.CLIENT, () -> () -> MinecraftClient.getInstance().player);
-        if(player == null)
-            return 0;
-
-        var battery = getBattery(player);
-        if(battery == null)
-            return MathHelper.hsvToRgb(Math.max(0.0F, 1.0F - (float) stack.getDamage() / stack.getMaxDamage()) / 3.0F, 1.0F, 1.0F);
-        return battery.getItemBarColor();
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> MinecraftClient.getInstance().player)
+                .map(player -> {
+                    var battery = getBattery(player);
+                    if(battery == null)
+                        return MathHelper.hsvToRgb(Math.max(0.0F, 1.0F - (float) stack.getDamage() / stack.getMaxDamage()) / 3.0F, 1.0F, 1.0F);
+                    return battery.getItemBarColor();
+                }).orElse(0);
     }
 }

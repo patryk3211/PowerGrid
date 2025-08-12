@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.client.option.KeyBinding;
 import org.lwjgl.glfw.GLFW;
 import org.patryk3211.powergrid.PowerGrid;
@@ -35,13 +35,12 @@ public enum ModdedKeys {
     ;
 
     public static final String CATEGORY = "Power Grid";
-    private static String currentCategory = CATEGORY;
 
-    private KeyBinding keybind;
-    private String description;
-    private int key;
+    public KeyBinding keybind;
+    public String description;
+    public int key;
 
-    private String category;
+    public String category;
 
     ModdedKeys(String description, int defaultKey) {
         this.description = PowerGrid.MOD_ID + ".keyinfo." + description;
@@ -50,17 +49,6 @@ public enum ModdedKeys {
 
     ModdedKeys(String category) {
         this.category = category;
-    }
-
-    public static void register() {
-        for(var key : values()) {
-            if(key.description == null) {
-                currentCategory = key.category;
-            } else {
-                key.keybind = new KeyBinding(key.description, key.key, currentCategory);
-                KeyBindingHelper.registerKeyBinding(key.keybind);
-            }
-        }
     }
 
     public KeyBinding getKeybind() {
@@ -73,10 +61,6 @@ public enum ModdedKeys {
 
     public String getBoundKey() {
         return keybind.getBoundKeyLocalizedText().getString().toUpperCase();
-    }
-
-    public int getBoundCode() {
-        return KeyBindingHelper.getBoundKeyOf(keybind).getCode();
     }
 
     public boolean matchesKey(int keyCode, int scanCode) {

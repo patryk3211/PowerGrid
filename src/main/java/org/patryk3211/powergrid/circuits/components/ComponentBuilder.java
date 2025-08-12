@@ -18,9 +18,7 @@ package org.patryk3211.powergrid.circuits.components;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.AbstractBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
-import com.tterrag.registrate.fabric.RegistryObject;
 import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import com.tterrag.registrate.util.nullness.NonnullType;
@@ -68,17 +66,5 @@ public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Co
         if(footprint == null)
             throw new IllegalStateException("Cannot create entry without a set footprint");
         return factory.apply(footprint);
-    }
-
-    @Override
-    @NotNull
-    protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
-        return new ComponentEntry<>(getOwner(), delegate);
-    }
-
-    @Override
-    @NotNull
-    public ComponentEntry<T> register() {
-        return (ComponentEntry<T>) super.register();
     }
 }

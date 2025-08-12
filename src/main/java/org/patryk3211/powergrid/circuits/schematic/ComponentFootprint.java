@@ -26,7 +26,6 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.circuits.components.ComponentEntry;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 
 import java.util.*;

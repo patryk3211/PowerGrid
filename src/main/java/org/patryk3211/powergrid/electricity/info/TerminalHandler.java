@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.electricity.info;
 import com.simibubi.create.AllSpecialTextures;
 import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.createmod.catnip.outliner.Outliner;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
@@ -34,11 +33,7 @@ public class TerminalHandler {
     private static final Object outlineSlot = new Object();
     private static IDecoratedTerminal targetTerminal = null;
 
-    public static void init() {
-        ClientTickEvents.END_WORLD_TICK.register(TerminalHandler::tick);
-    }
-
-    private static void tick(ClientWorld world) {
+    public static void tick(ClientWorld world) {
         targetTerminal = null;
         var client = MinecraftClient.getInstance();
         var target = client.crosshairTarget;

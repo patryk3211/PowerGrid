@@ -23,8 +23,6 @@ import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.LightmapTextureManager;
@@ -52,10 +50,6 @@ public class WirePreview {
 
     public static int wireItemCount;
 
-    public static void init() {
-        WorldRenderEvents.BEFORE_ENTITIES.register(WirePreview::render);
-    }
-
     @Nullable
     public static ItemStack getUsedWireStack(PlayerEntity player) {
         var stack1 = player.getMainHandStack();
@@ -69,7 +63,7 @@ public class WirePreview {
         }
     }
 
-    private static void render(SuperRenderTypeBuffer buffer, MatrixStack matrixStack, ClientWorld world, ClientPlayerEntity player, HitResult target) {
+    public static void render(SuperRenderTypeBuffer buffer, MatrixStack matrixStack, ClientWorld world, ClientPlayerEntity player, HitResult target) {
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return;
@@ -142,27 +136,6 @@ public class WirePreview {
             int requiredItemCount = Math.max(Math.round(length), 1);
             PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
         }
-    }
-
-    private static void render(WorldRenderContext context) {
-        var matrixStack = context.matrixStack();
-        matrixStack.push();
-
-        var partialTicks = context.tickDelta();
-        var cameraPos = context.camera().getPos();
-        matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-
-        var buffer = DefaultSuperRenderTypeBuffer.getInstance();
-        var player = MinecraftClient.getInstance().player;
-
-        var world = context.world();
-        var target = MinecraftClient.getInstance().crosshairTarget;
-        if(player != null && target != null) {
-            render(buffer, matrixStack, world, player, target);
-        }
-
-        buffer.draw();
-        matrixStack.pop();
     }
 
     public static void notifyOfBlock(BlockPos pos) {

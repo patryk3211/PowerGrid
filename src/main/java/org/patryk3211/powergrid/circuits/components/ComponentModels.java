@@ -37,7 +37,7 @@ public class ComponentModels {
 
     public static Set<ModelIdentifier> collectIds() {
         var ids = new HashSet<ModelIdentifier>();
-        for(var component : ComponentRegistry.REGISTRY) {
+        for(var component : ComponentRegistry.entries()) {
             for(var id : component.requestedModels()) {
                 ids.add(modelId(id));
             }
@@ -47,7 +47,7 @@ public class ComponentModels {
 
     public static Set<Identifier> collectRawIds() {
         var ids = new HashSet<Identifier>();
-        for(var component : ComponentRegistry.REGISTRY) {
+        for(var component : ComponentRegistry.entries()) {
             for(var id : component.requestedModels()) {
                 ids.add(rawModelId(id));
             }

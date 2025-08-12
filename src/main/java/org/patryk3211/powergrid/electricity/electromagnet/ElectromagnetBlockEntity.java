@@ -19,13 +19,12 @@ import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.recipe.RecipeApplier;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerContainer;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -77,7 +76,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         if(simulate)
             return true;
 
-        var outputs = RecipeApplier.applyRecipeOn(world, ItemHandlerHelper.copyStackWithSize(input.stack, 1), recipe.get());
+        var outputs = RecipeApplier.applyRecipeOn(world, input.stack.copyWithCount(1), recipe.get());
 //        for(ItemStack created : outputs) {
 //            if(!created.isEmpty()) {
 //                onItemPressed(created);
@@ -98,7 +97,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         if(simulate)
             return true;
 
-        for(var result : RecipeApplier.applyRecipeOn(world, ItemHandlerHelper.copyStackWithSize(item, 1), recipe.get())) {
+        for(var result : RecipeApplier.applyRecipeOn(world, item.copyWithCount(1), recipe.get())) {
             var created = new ItemEntity(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), result);
             created.setToDefaultPickupDelay();
             created.setVelocity(VecHelper.offsetRandomly(Vec3d.ZERO, world.random, .05f));
@@ -124,7 +123,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         return field;
     }
 
-    private static final Inventory magnetizingInv = new ItemStackHandlerContainer(1);
+    private static final Inventory magnetizingInv = new SimpleInventory(1);
     public Optional<MagnetizingRecipe> getRecipe(ItemStack item) {
         Optional<MagnetizingRecipe> assemblyRecipe = SequencedAssemblyRecipe.getRecipe(world, item, MagnetizingRecipe.TYPE_INFO.getType(), MagnetizingRecipe.class);
         if(assemblyRecipe.isPresent())

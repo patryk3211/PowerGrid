@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.mixin;
+package org.patryk3211.powergrid.mixin.forge;
 
-import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
-import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
+import net.minecraft.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Invoker;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(AllFanProcessingTypes.class)
-public interface FanProcessingTypeAccessor {
-    @Invoker(value = "register", remap = false)
-    static <T extends FanProcessingType> T invokeRegister(String id, T type) {
-        throw new AssertionError();
-    }
+@Mixin(Item.class)
+public interface ItemAccessor {
+    @Accessor("renderProperties")
+    void setRenderProperties(Object object);
 }

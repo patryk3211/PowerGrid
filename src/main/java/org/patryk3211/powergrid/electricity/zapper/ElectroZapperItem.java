@@ -17,8 +17,6 @@ package org.patryk3211.powergrid.electricity.zapper;
 
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetItemMethods;
 import com.simibubi.create.foundation.item.CustomArmPoseItem;
-import io.github.fabricators_of_create.porting_lib.item.EntitySwingListenerItem;
-import io.github.fabricators_of_create.porting_lib.item.ReequipAnimationItem;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -47,7 +45,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPoseItem, EntitySwingListenerItem, ReequipAnimationItem {
+public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPoseItem {
     public static final int MAX_DAMAGE = 50;
 
     public ElectroZapperItem(Settings settings) {
@@ -149,12 +147,10 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
         return null;
     }
 
-    @Override
     public boolean onEntitySwing(ItemStack itemStack, LivingEntity livingEntity) {
         return true;
     }
 
-    @Override
     public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
         return slotChanged || newStack.getItem() != oldStack.getItem();
     }

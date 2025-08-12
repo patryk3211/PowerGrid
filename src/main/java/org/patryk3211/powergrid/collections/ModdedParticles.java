@@ -16,14 +16,14 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.foundation.particle.ICustomParticleData;
+import dev.architectury.registry.registries.DeferredRegister;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizationParticleData;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class ModdedParticles {
+    public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(PowerGrid.MOD_ID, RegistryKeys.PARTICLE_TYPE);
+
     private static final List<ParticleEntry<?>> all = new ArrayList<>();
 
     public static final ParticleType<MagnetizationParticleData> MAGNETIZATION = register("magnetization", MagnetizationParticleData::new);
@@ -42,8 +44,9 @@ public class ModdedParticles {
     public static final ParticleType<ZapParticleData> ZAP = register("zap", ZapParticleData::new);
 
     private static <T extends ParticleEffect> ParticleType<T> register(String name, Supplier<? extends ICustomParticleData<T>> typeFactory) {
-        var type = Registry.register(Registries.PARTICLE_TYPE, PowerGrid.asResource(name), typeFactory.get().createType());
-        all.add(new ParticleEntry<T>(type, typeFactory));
+        var type = typeFactory.get().createType();
+        var typeEntry = PARTICLE_TYPES.register(name, () -> type);
+        all.add(new ParticleEntry<>(type, typeFactory));
         return type;
     }
 

@@ -34,7 +34,7 @@ public class CircuitAssemblyDisplay implements Display {
 
     public CircuitAssemblyDisplay() {
         ingredients.add(EntryIngredient.of(EntryStack.of(VanillaEntryTypes.ITEM, ModdedItems.INCOMPLETE_CIRCUIT.asStack())));
-        for(var component : ComponentRegistry.REGISTRY) {
+        for(var component : ComponentRegistry.entries()) {
             var stack = EntryStack.of(VanillaEntryTypes.ITEM, component.getRequiredItem().getDefaultStack());
             ingredients.add(EntryIngredient.of(stack));
             components.add(stack);

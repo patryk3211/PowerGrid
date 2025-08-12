@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.circuits.components;
+package org.patryk3211.powergrid.collections.forge;
 
-import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.fabric.RegistryObject;
-import com.tterrag.registrate.util.entry.RegistryEntry;
+import net.createmod.catnip.config.ConfigBase;
+import net.minecraftforge.fml.config.ModConfig;
+import org.patryk3211.powergrid.forge.PowerGridImpl;
 
-public class ComponentEntry<T extends Component> extends RegistryEntry<T> {
-    public ComponentEntry(AbstractRegistrate<?> owner, RegistryObject<T> delegate) {
-        super(owner, delegate);
+import java.util.Map;
+
+import static org.patryk3211.powergrid.collections.ModdedConfigs.CONFIGS;
+
+public class ModdedConfigsImpl {
+    public static void registerPlatform() {
+        for(Map.Entry<ModConfig.Type, ConfigBase> pair : CONFIGS.entrySet())
+            PowerGridImpl.context.registerConfig(pair.getKey(), pair.getValue().specification);
     }
 }

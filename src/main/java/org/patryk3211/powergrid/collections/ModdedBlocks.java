@@ -19,14 +19,7 @@ import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
-import com.simibubi.create.infrastructure.config.CStress;
-import com.tterrag.registrate.providers.DataGenContext;
-import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.util.entry.BlockEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import io.github.fabricators_of_create.porting_lib.models.generators.ConfiguredModel;
-import io.github.fabricators_of_create.porting_lib.models.generators.ModelFile;
-import io.github.fabricators_of_create.porting_lib.models.generators.block.MultiPartBlockStateBuilder;
 import net.minecraft.block.*;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Items;
@@ -41,12 +34,9 @@ import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.predicate.StatePredicate;
 import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.Direction;
-import org.apache.logging.log4j.util.TriConsumer;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
+import org.patryk3211.powergrid.config.CStress;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
@@ -61,7 +51,6 @@ import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
-import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
@@ -78,27 +67,20 @@ import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
-import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
-import java.util.function.Function;
-
 import static com.simibubi.create.foundation.data.TagGen.*;
 import static net.minecraft.state.property.Properties.*;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
-import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
+import static org.patryk3211.powergrid.utility.BlockStateProviders.*;
 
 public class ModdedBlocks {
     public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.simpleBlock(ctx.getEntry(), prov.models().cubeColumn(ctx.getName(),
-                            prov.modLoc("block/battery/battery_side"),
-                            prov.modLoc("block/battery/battery_top")
-                    )))
+            .blockstate(cubeColumn("block/battery/battery_side", "block/battery/battery_top"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
@@ -161,17 +143,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<BasinHeaterBlock> BASIN_HEATER = REGISTRATE.block("basin_heater", BasinHeaterBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder();
-                        var model = switch(state.get(BasinHeaterBlock.HEAT_LEVEL)) {
-                            case NONE, SMOULDERING -> "block/basin_heater";
-                            case FADING, KINDLED -> "block/basin_heater_on";
-                            case SEETHING -> "block/basin_heater_seething";
-                        };
-                        builder.modelFile(modModel(prov, model));
-                        return builder.build();
-                    }))
+            .blockstate(basinHeater("block/basin_heater"))
             .initialProperties(SharedProperties::softMetal)
             .addLayer(() -> RenderLayer::getCutoutMipped)
             .transform(pickaxeOnly())
@@ -262,9 +234,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CommutatorBlock> GENERATOR_COMMUTATOR = REGISTRATE.block("generator_commutator", CommutatorBlock::new)
-            .blockstate(rotorModel(
-                    prov -> modModel(prov, "block/generator/commutator_base_horizontal")
-            ))
+            .blockstate(rotorModel("block/generator/commutator_base_horizontal"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(CStress.setImpact(4))
@@ -288,21 +258,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<GeneratorHousing> GENERATOR_HOUSING = REGISTRATE.block("generator_housing", GeneratorHousing::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder().modelFile(modModel(prov, "block/generator/housing"));
-                        int x = 0;
-                        int y = 0;
-                        var facing = state.get(GeneratorHousing.HORIZONTAL_FACING);
-                        if(facing.getAxis() == Direction.Axis.X)
-                            y = -90;
-                        if(facing.getDirection() == Direction.AxisDirection.NEGATIVE)
-                            x = -90;
-                        if(state.get(GeneratorHousing.UP)) {
-                            x = 90 - x;
-                        }
-                        return builder.rotationX(x).rotationY(y).build();
-                    }))
+            .blockstate(housing("block/generator/housing"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .addLayer(() -> RenderLayer::getCutoutMipped)
@@ -314,20 +270,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<LvSwitchBlock> LV_SWITCH = REGISTRATE.block("lv_switch", LvSwitchBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder();
-                        var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
-                        surfaceFacingTransforms(state, (x, y, vertical) -> {
-                            if(vertical) {
-                                builder.modelFile(modModel(prov, "block/switches/lv_switch" + suffix + "_v"));
-                            } else {
-                                builder.modelFile(modModel(prov, "block/switches/lv_switch" + suffix + "_h"));
-                            }
-                            builder.rotationX(x).rotationY(y);
-                        });
-                        return builder.build();
-                    }))
+            .blockstate(surfaceSwitch("block/switches/lv_switch"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .lang("LV Switch")
@@ -338,20 +281,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<LvButtonBlock> LV_BUTTON = REGISTRATE.block("lv_button", LvButtonBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder();
-                        var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
-                        surfaceFacingTransforms(state, (x, y, vertical) -> {
-                            if(vertical) {
-                                builder.modelFile(modModel(prov, "block/switches/lv_button" + suffix + "_v"));
-                            } else {
-                                builder.modelFile(modModel(prov, "block/switches/lv_button" + suffix + "_h"));
-                            }
-                            builder.rotationX(x).rotationY(y);
-                        });
-                        return builder.build();
-                    }))
+            .blockstate(surfaceSwitch("block/switches/lv_button"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .lang("LV Button")
@@ -362,20 +292,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<MvSwitchBlock> MV_SWITCH = REGISTRATE.block("mv_switch", MvSwitchBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder();
-                        var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
-                        surfaceFacingTransforms(state, (x, y, vertical) -> {
-                            if(vertical) {
-                                builder.modelFile(modModel(prov, "block/switches/mv_switch" + suffix + "_v"));
-                            } else {
-                                builder.modelFile(modModel(prov, "block/switches/mv_switch" + suffix + "_h"));
-                            }
-                            builder.rotationX(x).rotationY(y);
-                        });
-                        return builder.build();
-                    }))
+            .blockstate(surfaceSwitch("block/switches/mv_switch"))
             .lang("MV Switch")
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
@@ -386,19 +303,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<HvSwitchBlock> HV_SWITCH = REGISTRATE.block("hv_switch", HvSwitchBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder();
-                        var part = state.get(HvSwitchBlock.PART);
-                        if(part == 0) {
-                            builder.modelFile(modModel(prov, "block/switches/hv_switch_body"));
-                        } else {
-                            builder.modelFile(modModel(prov, "block/switches/hv_switch_receptacle"));
-                        }
-                        var facing = state.get(HORIZONTAL_FACING);
-                        builder.rotationY((int) facing.asRotation());
-                        return builder.build();
-                    }))
+            .blockstate(hvSwitch("block/switches/hv_switch"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(2))
@@ -455,25 +360,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStatesExcept(state -> {
-                        var builder = ConfiguredModel.builder().modelFile(modModel(prov, "block/light_fixture"));
-                        int x = 0, y = 0;
-                        var facing = state.get(LightFixtureBlock.FACING);
-                        switch(facing) {
-                            case DOWN -> x = 180;
-                            case NORTH -> x = 90;
-                            case SOUTH -> x = -90;
-                            case EAST -> { x = 90; y = 90; }
-                            case WEST -> { x = 90; y = -90; }
-                        }
-                        if(!state.get(LightFixtureBlock.ALONG_FIRST_AXIS)) {
-                            if(facing.getAxis() == Direction.Axis.Y)
-                                y = 90;
-                            // Other states would need a different model.
-                        }
-                        return builder.rotationX(x).rotationY(y).build();
-                    }, LightFixtureBlock.POWER))
+            .blockstate(surfaceBlock("block/fixtures/light_fixture"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(LightFixtureBlock.setBulbModelOffset(0, 0.125f, 0))
@@ -482,8 +369,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.simpleBlockWithItem(ctx.getEntry(), prov.models().cubeAll(ctx.getName(), prov.modLoc("block/transformer/core"))))
+            .blockstate(cubeAllWithItem("block/transformer/core"))
             .initialProperties(SharedProperties::softMetal)
             .properties(properties -> properties.sounds(BlockSoundGroup.NETHERITE))
             .transform(pickaxeOnly())
@@ -491,49 +377,15 @@ public class ModdedBlocks {
             .simpleItem()
             .register();
     public static final BlockEntry<TransformerSmallBlock> TRANSFORMER_SMALL = REGISTRATE.block("transformer_small", TransformerSmallBlock::new)
-            .initialProperties(() -> TRANSFORMER_CORE.get())
-            .blockstate((ctx, prov) ->
-                    prov.getMultipartBuilder(ctx.getEntry())
-                        .part()
-                        .modelFile(modModel(prov, "block/transformer/small")).addModel()
-                        .condition(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.Z)
-                        .end()
-                        .part()
-                        .modelFile(modModel(prov, "block/transformer/small_coil1")).addModel()
-                        .condition(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.Z)
-                        .condition(TransformerSmallBlock.COILS, 1, 2)
-                        .end()
-                        .part()
-                        .modelFile(modModel(prov, "block/transformer/small_coil2")).addModel()
-                        .condition(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.Z)
-                        .condition(TransformerSmallBlock.COILS, 2)
-                        .end()
-                        .part()
-                        .modelFile(modModel(prov, "block/transformer/small")).rotationY(90).addModel()
-                        .condition(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                        .end()
-                        .part()
-                        .modelFile(modModel(prov, "block/transformer/small_coil1")).rotationY(90).addModel()
-                        .condition(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                        .condition(TransformerSmallBlock.COILS, 1, 2)
-                        .end()
-                        .part()
-                        .modelFile(modModel(prov, "block/transformer/small_coil2")).rotationY(90).addModel()
-                        .condition(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                        .condition(TransformerSmallBlock.COILS, 2)
-                        .end()
-            )
+            .initialProperties(TRANSFORMER_CORE)
+            .blockstate(transformerSmall())
             .loot((tables, block) -> tables.addDrop(block, TRANSFORMER_CORE.get()))
             .properties(properties -> properties.sounds(BlockSoundGroup.NETHERITE))
             .transform(pickaxeOnly())
             .register();
     public static final BlockEntry<TransformerMediumBlock> TRANSFORMER_MEDIUM = REGISTRATE.block("transformer_medium", TransformerMediumBlock::new)
-            .initialProperties(() -> TRANSFORMER_CORE.get())
-            .blockstate((ctx, prov) -> {
-                var builder = prov.getMultipartBuilder(ctx.getEntry());
-                transformerMedium(builder, prov, Direction.Axis.Z);
-                transformerMedium(builder, prov, Direction.Axis.X);
-            })
+            .initialProperties(TRANSFORMER_CORE)
+            .blockstate(transformerMedium())
             .loot((tables, block) ->
                     tables.addDrop(block, tables.drops(TRANSFORMER_CORE.get())
                             .apply(SetCountLootFunction.builder(ConstantLootNumberProvider.create(4)))
@@ -580,19 +432,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                        var builder = ConfiguredModel.builder();
-                        builder.modelFile(modModel(prov, "block/electromagnet"));
-                        switch(state.get(FACING)) {
-                            case UP -> builder.rotationX(180);
-                            case NORTH -> builder.rotationX(-90);
-                            case SOUTH -> builder.rotationX(90);
-                            case EAST -> builder.rotationX(90).rotationY(-90);
-                            case WEST -> builder.rotationX(90).rotationY(90);
-                        }
-                        return builder.build();
-                    }))
+            .blockstate(downFacing("block/electromagnet"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .defaultLoot()
@@ -601,18 +441,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<ElectricFanBlock> ELECTRIC_FAN = REGISTRATE.block("electric_fan", ElectricFanBlock::new)
-            .blockstate((ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                var builder = ConfiguredModel.builder();
-                builder.modelFile(modModel(prov, "block/electric_fan/block"));
-                switch(state.get(FACING)) {
-                    case DOWN -> builder.rotationX(180);
-                    case NORTH -> builder.rotationX(90);
-                    case SOUTH -> builder.rotationX(-90);
-                    case EAST -> builder.rotationX(90).rotationY(90);
-                    case WEST -> builder.rotationX(90).rotationY(-90);
-                }
-                return builder.build();
-            }))
+            .blockstate(upFacing("block/electric_fan/block"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .addLayer(() -> RenderLayer::getCutoutMipped)
@@ -623,27 +452,20 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<PortableBatteryBlock> PORTABLE_BATTERY = REGISTRATE.block("portable_battery", PortableBatteryBlock::new)
-            .blockstate((ctx, prov) -> prov.horizontalBlock(ctx.getEntry(), modModel(prov, "block/portable_battery/block")))
+            .blockstate(horizontalBlock("block/portable_battery/block"))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(pickaxeOnly())
-            .loot((tables, block) -> {
-                tables.addDrop(block, LootTable.builder()
-                        .pool(LootPool.builder()
-                                .conditionally(SurvivesExplosionLootCondition.builder())
-                                .with(ItemEntry.builder(ModdedItems.PORTABLE_BATTERY)))
-                        .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
-                                .withOperation("Charge", "Charge", CopyNbtLootFunction.Operator.REPLACE))
-                );
-            })
+            .loot((tables, block) -> tables.addDrop(block, LootTable.builder()
+                    .pool(LootPool.builder()
+                            .conditionally(SurvivesExplosionLootCondition.builder())
+                            .with(ItemEntry.builder(ModdedItems.PORTABLE_BATTERY)))
+                    .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
+                            .withOperation("Charge", "Charge", CopyNbtLootFunction.Operator.REPLACE))
+            ))
             .register();
 
     public static final BlockEntry<CircuitDesignTableBlock> CIRCUIT_DESIGN_TABLE = REGISTRATE.block("circuit_design_table", CircuitDesignTableBlock::new)
-            .blockstate((ctx, prov) -> prov
-                    .simpleBlock(ctx.getEntry(), prov.models()
-                            .cubeBottomTop(ctx.getName(),
-                                    prov.modLoc("block/circuit_design_table_side"),
-                                    prov.mcLoc("block/spruce_planks"),
-                                    prov.modLoc("block/circuit_design_table_top"))))
+            .blockstate(circuitDesignTable())
             .initialProperties(() -> Blocks.CRAFTING_TABLE)
             .transform(axeOnly())
             .defaultLoot()
@@ -651,10 +473,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CircuitBoardBlock> CIRCUIT_BOARD = REGISTRATE.block("circuit_board", CircuitBoardBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
-                            ConfiguredModel.builder().modelFile(unchecked("circuit_board")).build()
-                    ))
+            .blockstate(circuitBoard())
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .loot((tables, block) ->
@@ -681,53 +500,13 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<DeviceConnectorBlock> DEVICE_CONNECTOR = REGISTRATE.block("device_connector", DeviceConnectorBlock::new)
-            .blockstate((ctx, prov) ->
-                    prov.getVariantBuilder(ctx.getEntry()).forAllStatesExcept(state -> {
-                        var builder = ConfiguredModel.builder();
-                        surfaceFacingTransforms(state, (x, y, vertical) -> {
-                            if(vertical) {
-                                builder.modelFile(modModel(prov, "block/device_connector"));
-                            } else {
-                                builder.modelFile(modModel(prov, "block/device_connector_h"));
-                            }
-                            builder.rotationX(x).rotationY(y);
-                        });
-                        return builder.build();
-                    }, DeviceConnectorBlock.POLARIZED))
+            .blockstate(surfaceBlock("block/device_connector"))
             .transform(pickaxeOnly())
             .simpleItem()
             .register();
 
     public static final BlockEntry<FuseHolderBlock> FUSE_HOLDER = REGISTRATE.block("fuse_holder", FuseHolderBlock::new)
-            .blockstate((ctx, prov) -> {
-                var builder = prov.getMultipartBuilder(ctx.getEntry());
-                for(var facing : FACING.getValues()) {
-                    for(var axis : ALONG_FIRST_AXIS.getValues()) {
-                        var state = ctx.getEntry().getDefaultState()
-                                .with(FACING, facing)
-                                .with(ALONG_FIRST_AXIS, axis);
-                        surfaceFacingTransforms(state, (x, y, vertical) -> {
-                            var part = builder.part();
-                            if (vertical) {
-                                part.modelFile(modModel(prov, "block/fuse_holder"));
-                            } else {
-                                part.modelFile(modModel(prov, "block/fuse_holder_h"));
-                            }
-                            part.rotationX(x).rotationY(y);
-                            part.addModel().condition(FACING, facing).condition(ALONG_FIRST_AXIS, axis);
-                        });
-                    }
-                    var part = builder.part();
-                    part.modelFile(modModel(prov, "block/fuse"));
-                    rotateDownFacingModel(part, facing);
-                    part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.CLOSED);
-
-                    part = builder.part();
-                    part.modelFile(modModel(prov, "block/fuse_blown"));
-                    rotateDownFacingModel(part, facing);
-                    part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.BLOWN);
-                }
-            })
+            .blockstate(fuseHolder())
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .simpleItem()
@@ -743,225 +522,5 @@ public class ModdedBlocks {
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 
-    public static void rotateDownFacingModel(ConfiguredModel.Builder<?> builder, Direction facing) {
-        switch(facing) {
-            case UP -> builder.rotationX(180);
-            case NORTH -> builder.rotationX(90);
-            case SOUTH -> builder.rotationX(-90);
-            case WEST -> builder.rotationX(90).rotationY(90);
-            case EAST -> builder.rotationX(90).rotationY(-90);
-        }
-    }
 
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(String model) {
-        return (ctx, prov) -> {
-            prov.horizontalBlock(ctx.getEntry(), modModel(prov, model));
-        };
-    }
-
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(Function<BlockState, String> model) {
-        return (ctx, prov) -> {
-            prov.horizontalBlock(ctx.getEntry(), state -> modModel(prov, model.apply(state)));
-        };
-    }
-
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> alternateDirectionalBlock(String model) {
-        return alternateDirectionalBlock($ -> model);
-    }
-
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> alternateDirectionalBlock(Function<BlockState, String> modelProvider) {
-        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
-                .forAllStates(state -> {
-                    var builder = ConfiguredModel.builder().modelFile(modModel(prov, modelProvider.apply(state)));
-                    switch(state.get(FACING)) {
-                        case SOUTH -> builder.rotationY(180);
-                        case EAST -> builder.rotationY(90);
-                        case WEST -> builder.rotationY(-90);
-                        case UP -> builder.rotationX(-90);
-                        case DOWN -> builder.rotationX(90);
-                    }
-                    return builder.build();
-                });
-    }
-
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalAxisBlock(String model) {
-        return (ctx, prov) ->
-                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                    var builder = ConfiguredModel.builder().modelFile(modModel(prov, model));
-                    if(state.get(Properties.HORIZONTAL_AXIS) == Direction.Axis.X)
-                        builder.rotationY(90);
-                    return builder.build();
-                });
-    }
-
-    // This function needs two models. One for Y axis and one for other axis.
-    public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
-        var facing = state.get(FACING);
-        var axis_along_first = state.get(ALONG_FIRST_AXIS);
-
-        int x = 0, y = 0;
-        boolean verticalModel = false;
-        switch(facing) {
-            case UP -> { x = 180; verticalModel = true; }
-            case DOWN -> verticalModel = true;
-            case WEST -> y = 180;
-            case NORTH -> y = -90;
-            case SOUTH -> y = 90;
-        };
-
-        if(!axis_along_first) {
-            if(verticalModel) {
-                y = 90;
-            } else {
-                x = -90;
-            }
-        }
-
-        transformer.accept(x, y, verticalModel);
-    }
-
-    public static ModelFile.ExistingModelFile modModel(RegistrateBlockstateProvider prov, String name) {
-        return prov.models().getExistingFile(prov.modLoc(name));
-    }
-
-    private static ModelFile.UncheckedModelFile unchecked(String name) {
-        return new ModelFile.UncheckedModelFile(PowerGrid.asResource(name));
-    }
-
-    private static void transformerMedium(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, Direction.Axis axis) {
-        transformerMediumPart(builder, prov, "block/transformer/medium_bottom", axis, 0).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_bottom", axis, 1).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_top", axis, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_top", axis, 3).end();
-
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 0)
-                .condition(TransformerMediumBlock.COILS, 1, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 1)
-                .condition(TransformerMediumBlock.COILS, 1, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 2)
-                .condition(TransformerMediumBlock.COILS, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 3)
-                .condition(TransformerMediumBlock.COILS, 2).end();
-    }
-
-    private static MultiPartBlockStateBuilder.PartBuilder transformerMediumPart(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, String model, Direction.Axis axis, int part) {
-        int y = 0;
-        if(part % 2 == 1)
-            y = 180;
-        if(axis == Direction.Axis.X)
-            y -= 90;
-        return builder.part()
-                .modelFile(modModel(prov, model))
-                .rotationY(y)
-                .addModel()
-                .condition(TransformerMediumBlock.HORIZONTAL_AXIS, axis)
-                .condition(TransformerMediumBlock.PART, part);
-    }
-
-
-    private static <T extends AbstractRotorBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> rotorModel(String model) {
-        return rotorModel(prov -> prov.models().getExistingFile(prov.modLoc(model)));
-    }
-
-    private static <T extends AbstractRotorBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> rotorModel(Function<RegistrateBlockstateProvider, ModelFile> baseModel) {
-        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-            int x = 90;
-            int y = 0;
-            var model = baseModel.apply(prov);
-            var builder = ConfiguredModel.builder().modelFile(model);
-            Direction.Axis axis;
-            if(state.contains(AXIS)) {
-                axis = state.get(AXIS);
-            } else if(state.contains(HORIZONTAL_AXIS)) {
-                axis = state.get(HORIZONTAL_AXIS);
-            } else {
-                axis = Direction.Axis.Z;
-            }
-            switch(axis) {
-                case X -> builder.rotationY(y - 90);
-                case Z -> builder.rotationY(y);
-                case Y -> builder.rotationX(x);
-            };
-            return builder.build();
-        });
-    }
-
-    private static <T extends WindingBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> windingModel() {
-        return (ctx, prov) -> {
-            var builder = prov.getMultipartBuilder(ctx.getEntry());
-            for(var axis : Direction.Axis.values()) {
-                for(int i = 0; i <= 2; ++i) {
-                    windingModel(axis, i, true, builder, prov);
-                    windingModel(axis, i, false, builder, prov);
-                }
-            }
-        };
-    }
-
-    private static void windingModel(Direction.Axis axis, int part, boolean alongFirst, MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov) {
-        int x = 0, y = 0;
-        switch(axis) {
-            case X -> y = -90;
-            case Y -> x =  90;
-        }
-        if(part == 2) {
-            if(axis == Direction.Axis.Y) {
-                x += 180;
-            } else {
-                y += 180;
-            }
-        }
-        var model = switch(part) {
-            case 0, 2 -> modModel(prov, alongFirst ? "block/winding/end_v" : "block/winding/end");
-            case 1 -> modModel(prov, alongFirst ? "block/winding/middle_v" : "block/winding/middle");
-            default -> throw new IllegalStateException();
-        };
-
-        Function<Boolean, ModelFile.ExistingModelFile> caseModel = half -> {
-            boolean condition = !half;
-            if(axis == Direction.Axis.Z)
-                condition ^= alongFirst && part == 2;
-            else if(axis == Direction.Axis.Y)
-                condition ^= !alongFirst && part != 2;
-            else
-                condition ^= alongFirst && part != 2;
-            var halfStr = condition ? "p" : "n";
-            return switch(part) {
-                case 0, 2 -> modModel(prov, "block/winding/end" + (alongFirst ? "_v" : "") + "_case_" + halfStr);
-                case 1 -> modModel(prov, "block/winding/middle" + (alongFirst ? "_v" : "") + "_case_" + halfStr);
-                default -> throw new IllegalStateException();
-            };
-        };
-
-        builder.part()
-                    .modelFile(model)
-                    .rotationX(x)
-                    .rotationY(y)
-                .addModel()
-                    .condition(AXIS, axis)
-                    .condition(WindingBlock.PART, part)
-                    .condition(ALONG_FIRST_AXIS, alongFirst)
-                .end();
-        // Case halves
-        builder.part()
-                    .modelFile(caseModel.apply(false))
-                    .rotationX(x)
-                    .rotationY(y)
-                .addModel()
-                    .condition(AXIS, axis)
-                    .condition(WindingBlock.PART, part)
-                    .condition(ALONG_FIRST_AXIS, alongFirst)
-                    .condition(WindingBlock.CASE_LEFT, true)
-                .end();
-        builder.part()
-                    .modelFile(caseModel.apply(true))
-                    .rotationX(x)
-                    .rotationY(y)
-                .addModel()
-                    .condition(AXIS, axis)
-                    .condition(WindingBlock.PART, part)
-                    .condition(ALONG_FIRST_AXIS, alongFirst)
-                    .condition(WindingBlock.CASE_RIGHT, true)
-                .end();
-    }
 }

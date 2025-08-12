@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.collections;
 
 import com.google.gson.JsonObject;
 import com.simibubi.create.AllSoundEvents;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.data.DataOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.DataWriter;
@@ -103,7 +104,7 @@ public class ModdedSoundEvents {
             .build(),
 
     UI_SELECT_COMPONENT = create("ui.select_component").noSubtitle()
-            .playExisting(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f)
+            .playExisting(SoundEvents.UI_BUTTON_CLICK.value(), 1.0f, 1.0f)
             .build(),
 
     RELAY_CLICK = create("relay_click").subtitle("Relay clicks")
@@ -175,11 +176,6 @@ public class ModdedSoundEvents {
     public static void prepare() {
         for(AllSoundEvents.SoundEntry entry : ALL.values())
             entry.prepare();
-    }
-
-    public static void register() {
-        for(AllSoundEvents.SoundEntry entry : ALL.values())
-            entry.register();
     }
 
     public static void provideLang(BiConsumer<String, String> consumer) {

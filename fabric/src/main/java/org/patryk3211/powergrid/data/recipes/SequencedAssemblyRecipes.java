@@ -75,7 +75,7 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .loops(3)
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.zincSheet()))
-            .addStep(FillingRecipe::new, rb -> rb.require(ModdedFluids.ACID.getSource(), FluidConstants.BOTTLE)))
+            .addStep(FillingRecipe::new, rb -> rb.require(ModdedFluids.acid(), FluidConstants.BOTTLE)))
 
             ;
 
