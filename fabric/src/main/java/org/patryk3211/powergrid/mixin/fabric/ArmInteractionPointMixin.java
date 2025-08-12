@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.mixin;
+package org.patryk3211.powergrid.mixin.fabric;
 
 import com.simibubi.create.content.kinetics.belt.BeltHelper;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
@@ -29,7 +29,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,6 +41,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import javax.annotation.Nullable;
 import java.util.List;
 
+@SuppressWarnings("UnstableApiUsage")
 @Mixin(value = ArmInteractionPoint.class, remap = false)
 public abstract class ArmInteractionPointMixin {
     @Shadow @Nullable protected abstract Storage<ItemVariant> getHandler();
@@ -64,9 +64,9 @@ public abstract class ArmInteractionPointMixin {
                 if(circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get())) {
                     if(handler.extract(view.getResource(), 1, ctx) == 0)
                         continue;
-                    var newCircuit = IncompleteCircuitItem.insert(circuit, stack);
+                    var newCircuit = IncompleteCircuitItem.insert(circuit.toStack(), stack);
                     if(newCircuit != null) {
-                        if(handler.insert(newCircuit, 1, ctx) == 1) {
+                        if(handler.insert(ItemVariant.of(newCircuit), 1, ctx) == 1) {
                             var result = ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - 1);
                             inner.commit();
                             return result;

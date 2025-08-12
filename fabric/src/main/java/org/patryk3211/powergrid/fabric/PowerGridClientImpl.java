@@ -27,8 +27,8 @@ import net.minecraft.entity.LivingEntity;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.circuits.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
-import org.patryk3211.powergrid.collections.ModdedParticles;
 import org.patryk3211.powergrid.collections.fabric.ModdedKeysImpl;
+import org.patryk3211.powergrid.collections.fabric.ModdedParticlesImpl;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.portablebattery.fabric.BatteryArmorLayerImpl;
 
@@ -43,7 +43,7 @@ public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPl
         PowerGridClient.initClient();
 
         PowerGridClient.ELECTRO_ZAPPER_RENDER_HANDLER.registerListeners();
-        ParticleManagerRegistrationCallback.EVENT.register(ModdedParticles::registerFactories);
+        ParticleManagerRegistrationCallback.EVENT.register(ModdedParticlesImpl::registerFactories);
 
         // Register platform events
         ClientWorldEvents.UNLOAD.register(ClientElectricNetwork::unloadWorld);

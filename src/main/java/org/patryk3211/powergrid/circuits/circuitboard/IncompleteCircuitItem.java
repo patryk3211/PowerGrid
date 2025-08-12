@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.createmod.catnip.theme.Color;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -37,7 +36,7 @@ import java.util.List;
 
 public class IncompleteCircuitItem extends Item {
     public IncompleteCircuitItem(Settings settings) {
-        super(settings);
+        super(settings.maxCount(1));
     }
 
     private static NbtCompound makeAssemblyTag(NbtCompound schematicTag) {
@@ -77,27 +76,27 @@ public class IncompleteCircuitItem extends Item {
         return true;
     }
 
-    @Nullable
-    public static ItemVariant insert(ItemVariant circuit, ItemStack component) {
-        if(!circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get()))
-            return null;
-        var tag = circuit.copyNbt();
-        if(!tag.contains("Assembly")) {
-            tag.put("Assembly", makeAssemblyTag(tag.getCompound("Schematic")));
-        }
-        if(!insertComponent(tag.getCompound("Assembly"), component))
-            return null;
-        var missing = tag.getCompound("Assembly").getCompound("Missing");
-        if(missing.isEmpty()) {
-            tag.remove("Assembly");
-            return ItemVariant.of(ModdedBlocks.CIRCUIT_BOARD, tag);
-        }
-        return ItemVariant.of(ModdedItems.INCOMPLETE_CIRCUIT, tag);
-    }
+//    @Nullable
+//    public static ItemVariant insert(ItemVariant circuit, ItemStack component) {
+//        if(!circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get()))
+//            return null;
+//        var tag = circuit.copyNbt();
+//        if(!tag.contains("Assembly")) {
+//            tag.put("Assembly", makeAssemblyTag(tag.getCompound("Schematic")));
+//        }
+//        if(!insertComponent(tag.getCompound("Assembly"), component))
+//            return null;
+//        var missing = tag.getCompound("Assembly").getCompound("Missing");
+//        if(missing.isEmpty()) {
+//            tag.remove("Assembly");
+//            return ItemVariant.of(ModdedBlocks.CIRCUIT_BOARD, tag);
+//        }
+//        return ItemVariant.of(ModdedItems.INCOMPLETE_CIRCUIT, tag);
+//    }
 
     @Nullable
     public static ItemStack insert(ItemStack circuit, ItemStack component) {
-        if(!circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get()))
+        if(!circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get()) || !circuit.hasNbt())
             return null;
         var tag = circuit.getNbt().copy();
         if(!tag.contains("Assembly")) {

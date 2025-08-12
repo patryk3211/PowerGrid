@@ -45,7 +45,6 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 
 @Mod(PowerGrid.MOD_ID)
-@Mod.EventBusSubscriber
 public class PowerGridImpl {
     public static FMLJavaModLoadingContext context;
     public static IEventBus bus;
@@ -53,6 +52,7 @@ public class PowerGridImpl {
     public PowerGridImpl() {
         context = FMLJavaModLoadingContext.get();
         bus = context.getModEventBus();
+        bus.register(PowerGridImpl.class);
         EventBuses.registerModEventBus(PowerGrid.MOD_ID, bus);
 
         PowerGrid.init();

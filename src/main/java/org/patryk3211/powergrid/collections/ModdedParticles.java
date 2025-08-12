@@ -16,11 +16,8 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.foundation.particle.ICustomParticleData;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import dev.architectury.registry.registries.DeferredRegister;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.registry.RegistryKeys;
@@ -29,14 +26,10 @@ import org.patryk3211.powergrid.electricity.electromagnet.MagnetizationParticleD
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class ModdedParticles {
     public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(PowerGrid.MOD_ID, RegistryKeys.PARTICLE_TYPE);
-
-    private static final List<ParticleEntry<?>> all = new ArrayList<>();
 
     public static final ParticleType<MagnetizationParticleData> MAGNETIZATION = register("magnetization", MagnetizationParticleData::new);
 
@@ -45,26 +38,16 @@ public class ModdedParticles {
 
     private static <T extends ParticleEffect> ParticleType<T> register(String name, Supplier<? extends ICustomParticleData<T>> typeFactory) {
         var type = typeFactory.get().createType();
-        var typeEntry = PARTICLE_TYPES.register(name, () -> type);
-        all.add(new ParticleEntry<>(type, typeFactory));
+        PARTICLE_TYPES.register(name, () -> type);
+        addEntry(type, typeFactory);
         return type;
     }
 
-    @Environment(EnvType.CLIENT)
-    public static void registerFactories() {
-        var manager = MinecraftClient.getInstance().particleManager;
-        for(var entry : all) {
-            entry.registerFactory(manager);
-        }
+    @ExpectPlatform
+    public static <T extends ParticleEffect> void addEntry(ParticleType<T> type, Supplier<? extends ICustomParticleData<T>> typeFactory) {
+        throw new AssertionError();
     }
 
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
-
-    private record ParticleEntry<T extends ParticleEffect>(ParticleType<T> type, Supplier<? extends ICustomParticleData<T>> typeFactory) {
-        @Environment(EnvType.CLIENT)
-        public void registerFactory(ParticleManager particleManager) {
-            typeFactory.get().register(type, particleManager);
-        }
-    }
 }

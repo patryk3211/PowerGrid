@@ -6,8 +6,6 @@
   "mixins": [
     "AirCurrentMixin",
     "ArmBlockEntityMixin",
-    "ArmInteractionPointMixin",
-    "BasinRecipeMixin",
     "EntityMixin",
     "FanProcessingMixin",
     "LightningAccessor",

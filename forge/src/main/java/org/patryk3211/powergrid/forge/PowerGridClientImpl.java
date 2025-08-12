@@ -26,6 +26,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.collections.ModdedParticles;
 import org.patryk3211.powergrid.collections.forge.ModdedKeysImpl;
+import org.patryk3211.powergrid.collections.forge.ModdedParticlesImpl;
 import org.patryk3211.powergrid.electricity.portablebattery.forge.BatteryArmorLayerImpl;
 import org.patryk3211.powergrid.electricity.wire.forge.WirePreviewImpl;
 
@@ -45,7 +46,7 @@ public class PowerGridClientImpl {
 
     @SubscribeEvent
     public static void particleManagerRegistration(RegisterParticleProvidersEvent event) {
-        ModdedParticles.registerFactories();
+        ModdedParticlesImpl.registerFactories(event);
     }
 
     @SubscribeEvent

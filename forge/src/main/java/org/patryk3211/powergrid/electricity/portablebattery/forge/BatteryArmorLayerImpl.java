@@ -23,7 +23,7 @@ import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.entity.player.PlayerEntity;
 
 public class BatteryArmorLayerImpl {
-    @SuppressWarnings("rawtypes,unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static void registerOn(EntityRenderer<?> entityRenderer) {
         if (!(entityRenderer instanceof LivingEntityRenderer<?, ?> livingRenderer))
             return;
