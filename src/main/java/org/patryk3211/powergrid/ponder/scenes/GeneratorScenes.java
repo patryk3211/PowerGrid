@@ -177,7 +177,7 @@ public class GeneratorScenes {
         scene.idle(5);
 
         scene.overlay().showText(80)
-                .text("When windings are facing a spinning rotor they start generating scene.electric()ity")
+                .text("When windings are facing a spinning rotor they start generating electricity")
                 .attachKeyFrame()
                 .pointAt(util.vector().of(4, 2, 3))
                 .placeNearTarget();

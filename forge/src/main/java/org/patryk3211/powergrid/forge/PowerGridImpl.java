@@ -18,11 +18,15 @@ package org.patryk3211.powergrid.forge;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import com.simibubi.create.foundation.utility.FilesHelper;
+import com.tterrag.registrate.providers.ProviderType;
 import dev.architectury.platform.forge.EventBuses;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.lang.FontHelper;
+import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.data.event.GatherDataEvent;
@@ -47,6 +51,9 @@ import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
+import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
+
+import java.util.function.BiConsumer;
 
 @Mod(PowerGrid.MOD_ID)
 public class PowerGridImpl {
@@ -95,6 +102,16 @@ public class PowerGridImpl {
         var generator = event.getGenerator();
         var output = generator.getPackOutput();
 
+        PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
+            BiConsumer<String, String> langConsumer = provider::add;
+            provideDefaultLang("interface", langConsumer);
+            provideDefaultLang("messages", langConsumer);
+            provideDefaultLang("tooltips", langConsumer);
+
+            providePonderLang(langConsumer);
+            ModdedSoundEvents.provideLang(langConsumer);
+        });
+
         generator.addProvider(true, new CookingRecipes(output));
         generator.addProvider(true, new CraftingRecipes(output));
         generator.addProvider(true, new CuttingRecipes(output));
@@ -111,6 +128,25 @@ public class PowerGridImpl {
         generator.addProvider(true, ModdedSoundEvents.provider(output));
     }
 
+    private static void provideDefaultLang(String fileName, BiConsumer<String, String> consumer) {
+        var path = "assets/powergrid/lang/default/" + fileName + ".json";
+        var jsonElement = FilesHelper.loadJsonResource(path);
+        if (jsonElement == null) {
+            throw new IllegalStateException(String.format("Could not find default lang file: %s", path));
+        }
+        var jsonObject = jsonElement.getAsJsonObject();
+        for(var entry : jsonObject.entrySet()) {
+            var key = entry.getKey();
+            var value = entry.getValue().getAsString();
+            consumer.accept(key, value);
+        }
+    }
+
+    private static void providePonderLang(BiConsumer<String, String> consumer) {
+        PonderIndex.addPlugin(new PowerGridPonderPlugin());
+        PonderIndex.getLangAccess().provideLang(PowerGrid.MOD_ID, consumer);
+    }
+
     public static AbstractPowerGridRegistrate createRegistrate() {
         return ForgePowerGridRegistrate.create(PowerGrid.MOD_ID)
                 .setTooltipModifierFactory(item ->
@@ -118,9 +154,10 @@ public class PowerGridImpl {
                                 .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
                                 .andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
                 )
-                .defaultCreativeTab("main", builder -> builder
+                .defaultCreativeTab("power_grid" , builder -> builder
                         .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
                         .icon(() -> new ItemStack(ModdedItems.WIRE)))
+//                .lang(tab -> "itemGroup.powergrid.main", "Create: Power Grid")
                 .build();
     }
 

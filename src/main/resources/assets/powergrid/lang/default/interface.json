@@ -1,6 +1,4 @@
 {
-  "itemGroup.powergrid.main": "Create: Power Grid",
-
   "powergrid.gui.voltage_meter.title": "Measured voltage",
   "powergrid.gui.current_meter.title": "Measured current",
 

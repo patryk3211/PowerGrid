@@ -276,7 +276,7 @@ public class DeviceScenes {
 
     public static void light(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
-        scene.title("light", "Lighting up the world with scene.electric()ity");
+        scene.title("light", "Lighting up the world with electricity");
         scene.configureBasePlate(0, 0, 5);
 
         var light = util.grid().at(2, 2, 2);
@@ -298,7 +298,7 @@ public class DeviceScenes {
         scene.idle(15);
 
         scene.overlay().showText(80)
-                .text("When light bulbs are inserted into fixtures and powered on they turn scene.electric()ity into light")
+                .text("When light bulbs are inserted into fixtures and powered on they turn electricity into light")
                 .attachKeyFrame()
                 .pointAt(util.vector().topOf(light).subtract(0, 0.5, 0))
                 .placeNearTarget();
@@ -358,7 +358,7 @@ public class DeviceScenes {
 
     public static void motor(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
-        scene.title("scene.electric()_motor", "Turning electricity into rotation");
+        scene.title("electric_motor", "Turning electricity into rotation");
         scene.configureBasePlate(1, 0, 5);
 
         var source = util.grid().at(4, 1, 4);
@@ -397,7 +397,7 @@ public class DeviceScenes {
         scene.idle(15);
 
         scene.overlay().showText(80)
-                .text("The scene.electric() motor lets you convert electricity into rotation")
+                .text("The electric motor lets you convert electricity into rotation")
                 .attachKeyFrame()
                 .pointAt(util.vector().topOf(motor))
                 .placeNearTarget();
@@ -476,7 +476,7 @@ public class DeviceScenes {
         scene.world().moveSection(plank, util.vector().of(0, 0, 0), 0);
 
         scene.overlay().showText(80)
-                .text("A Servo can be used to precisely control mechanical movements using an scene.electric() signal")
+                .text("A Servo can be used to precisely control mechanical movements using an electric signal")
                 .pointAt(util.vector().topOf(4, 1, 2))
                 .placeNearTarget()
                 .attachKeyFrame();
@@ -524,7 +524,7 @@ public class DeviceScenes {
         scene.idle(10);
 
         scene.overlay().showText(80)
-                .text("The Alarm Bell is an scene.electric() device which makes sound when you power it.")
+                .text("The Alarm Bell is an electric device which makes sound when you power it.")
                 .pointAt(util.vector().centerOf(2, 2, 2))
                 .placeNearTarget()
                 .attachKeyFrame();
@@ -687,7 +687,7 @@ public class DeviceScenes {
 
     public static void battery(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
-        scene.title("battery", "Storing scene.electric()ity");
+        scene.title("battery", "Storing electricity");
         scene.configureBasePlate(0, 0, 5);
 
         var battery = util.grid().at(2, 1, 3);
@@ -710,14 +710,14 @@ public class DeviceScenes {
         scene.idle(10);
 
         scene.overlay().showText(80)
-                .text("The Battery allows you to store scene.electric()ity for later use")
+                .text("The Battery allows you to store electricity for later use")
                 .pointAt(util.vector().topOf(battery.above()))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
         scene.overlay().showText(80)
-                .text("As the battery discharges, its scene.electric()al parameters will begin to change")
+                .text("As the battery discharges, its electrical parameters will begin to change")
                 .placeNearTarget()
                 .attachKeyFrame();
 
