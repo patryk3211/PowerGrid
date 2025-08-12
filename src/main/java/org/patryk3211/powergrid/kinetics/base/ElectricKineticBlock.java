@@ -17,13 +17,13 @@ package org.patryk3211.powergrid.kinetics.base;
 
 import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -33,7 +33,7 @@ public abstract class ElectricKineticBlock extends KineticBlock implements IElec
     private BlockStateTerminalCollection terminals = null;
     private ImmutableMap<BlockState, VoxelShape> outlines = null;
 
-    public ElectricKineticBlock(Settings properties) {
+    public ElectricKineticBlock(Properties properties) {
         super(properties);
     }
 
@@ -41,14 +41,14 @@ public abstract class ElectricKineticBlock extends KineticBlock implements IElec
         this.terminals = terminals;
         var mapper = terminals.shapeMapper();
         if(mapper != null)
-            outlines = getShapesForStates(mapper);
+            outlines = getShapeForEachState(mapper);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         if(outlines != null)
             return outlines.get(state);
-        return super.getOutlineShape(state, world, pos, context);
+        return super.getShape(state, world, pos, context);
     }
 
     @Override
@@ -66,10 +66,10 @@ public abstract class ElectricKineticBlock extends KineticBlock implements IElec
     }
 
     @Override
-    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         var result = super.onWrenched(state, context);
-        if(result == ActionResult.SUCCESS && !context.getWorld().isClient)
-            ElectricBlock.refreshConnectionEntities(context.getWorld(), context.getBlockPos());
+        if(result == InteractionResult.SUCCESS && !context.getLevel().isClientSide)
+            ElectricBlock.refreshConnectionEntities(context.getLevel(), context.getClickedPos());
         return result;
     }
 }

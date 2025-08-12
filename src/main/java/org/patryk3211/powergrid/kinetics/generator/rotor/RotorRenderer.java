@@ -15,34 +15,34 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.rotor;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
-    public RotorRenderer(BlockEntityRendererFactory.Context context) {
+    public RotorRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     @Override
-    protected void renderSafe(RotorBlockEntity rotor, float partialTicks, MatrixStack matrixStack, VertexConsumerProvider buffer, int light, int overlay) {
-        if(VisualizationManager.supportsVisualization(rotor.getWorld()))
+    protected void renderSafe(RotorBlockEntity rotor, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, int overlay) {
+        if(VisualizationManager.supportsVisualization(rotor.getLevel()))
             return;
 
-        var state = rotor.getCachedState();
+        var state = rotor.getBlockState();
         Direction.Axis axis;
-        if(state.contains(Properties.AXIS)) {
-            axis = state.get(Properties.AXIS);
-        } else if(state.contains(Properties.HORIZONTAL_AXIS)) {
-            axis = state.get(Properties.HORIZONTAL_AXIS);
+        if(state.hasProperty(BlockStateProperties.AXIS)) {
+            axis = state.getValue(BlockStateProperties.AXIS);
+        } else if(state.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
+            axis = state.getValue(BlockStateProperties.HORIZONTAL_AXIS);
         } else {
             return;
         }
@@ -52,7 +52,7 @@ public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
 
         rotorModel.light(light);
         rotorModel.rotateCentered(rotorAngle, Direction.get(Direction.AxisDirection.POSITIVE, axis));
-        rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
+        rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
     }
 
     public static float getRotorAngle(SmartBlockEntity rotor, float partialTicks) {

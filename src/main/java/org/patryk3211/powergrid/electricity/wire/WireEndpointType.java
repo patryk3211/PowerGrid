@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Contract;
 
 import java.util.function.Supplier;
@@ -40,15 +40,15 @@ public enum WireEndpointType {
         return connectable;
     }
 
-    public NbtCompound serialize(IWireEndpoint endpoint) {
-        var tag = new NbtCompound();
+    public CompoundTag serialize(IWireEndpoint endpoint) {
+        var tag = new CompoundTag();
         tag.putInt("Type", ordinal());
         endpoint.write(tag);
         return tag;
     }
 
     @Contract("null -> null")
-    public static IWireEndpoint deserialize(NbtCompound tag) {
+    public static IWireEndpoint deserialize(CompoundTag tag) {
         if(tag == null)
             return null;
         if(!tag.contains("Type"))

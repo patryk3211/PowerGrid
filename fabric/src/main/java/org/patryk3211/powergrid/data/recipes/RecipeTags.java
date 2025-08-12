@@ -17,10 +17,10 @@ package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllTags;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -69,27 +69,27 @@ public class RecipeTags {
         return AllTags.forgeItemTag("brass_plates");
     }
 
-    public static ItemConvertible conductiveCasing() {
+    public static ItemLike conductiveCasing() {
         return ModdedBlocks.CONDUCTIVE_CASING;
     }
 
-    public static ItemConvertible transformerCore() {
+    public static ItemLike transformerCore() {
         return ModdedBlocks.TRANSFORMER_CORE;
     }
 
-    public static ItemConvertible shaft() {
+    public static ItemLike shaft() {
         return AllBlocks.SHAFT;
     }
 
-    public static ItemConvertible andesiteCasing() {
+    public static ItemLike andesiteCasing() {
         return AllBlocks.ANDESITE_CASING;
     }
 
-    public static ItemConvertible resistiveCoil() {
+    public static ItemLike resistiveCoil() {
         return ModdedItems.RESISTIVE_COIL;
     }
 
-    public static ItemConvertible electricalGizmo() {
+    public static ItemLike electricalGizmo() {
         return ModdedItems.ELECTRICAL_GIZMO;
     }
 }

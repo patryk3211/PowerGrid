@@ -16,12 +16,12 @@
 package org.patryk3211.powergrid.utility;
 
 import com.google.common.collect.Sets;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
@@ -31,36 +31,36 @@ import java.util.List;
 import java.util.Set;
 
 public class PlayerUtilities {
-    public static boolean hasEnoughItems(PlayerEntity player, Item item, int requiredCount) {
+    public static boolean hasEnoughItems(Player player, Item item, int requiredCount) {
         if(player.isCreative())
             return true;
         var inv = player.getInventory();
-        return inv.count(item) >= requiredCount;
+        return inv.countItem(item) >= requiredCount;
     }
 
-    public static boolean hasEnoughItems(@Nullable PlayerEntity player, ItemStack usedStack, int requiredCount) {
+    public static boolean hasEnoughItems(@Nullable Player player, ItemStack usedStack, int requiredCount) {
         if(player != null)
             return hasEnoughItems(player, usedStack.getItem(), requiredCount);
         return usedStack.getCount() >= requiredCount;
     }
 
-    public static void removeItems(PlayerEntity player, Item item, int count) {
+    public static void removeItems(Player player, Item item, int count) {
         if(player.isCreative())
             return;
         var inv = player.getInventory();
-        Inventories.remove(inv, stack -> stack.isOf(item), count, false);
+        ContainerHelper.clearOrCountMatchingItems(inv, stack -> stack.is(item), count, false);
     }
 
-    public static void removeItems(@Nullable PlayerEntity player, ItemStack usedStack, int count) {
+    public static void removeItems(@Nullable Player player, ItemStack usedStack, int count) {
         if(player != null) {
             removeItems(player, usedStack.getItem(), count);
             return;
         }
-        usedStack.decrement(Math.min(count, usedStack.getCount()));
+        usedStack.shrink(Math.min(count, usedStack.getCount()));
     }
 
     @NotNull
-    public static Collection<ServerPlayerEntity> partialTracking(@NotNull ServerWorld world, @NotNull TransmissionLine line) {
+    public static Collection<ServerPlayer> partialTracking(@NotNull ServerLevel world, @NotNull TransmissionLine line) {
         if(line.segments.isEmpty())
             return List.of();
         var firstSegment = line.segments.get(0);
@@ -68,7 +68,7 @@ public class PlayerUtilities {
         if(firstSegment.owner == null || lastSegment.owner == null)
             return List.of();
 
-        Set<ServerPlayerEntity> players1 = null, players2 = null;
+        Set<ServerPlayer> players1 = null, players2 = null;
         players1 = Set.copyOf(PlayerLookup.tracking(firstSegment.owner));
         players2 = Set.copyOf(PlayerLookup.tracking(lastSegment.owner));
         return Sets.symmetricDifference(players1, players2);

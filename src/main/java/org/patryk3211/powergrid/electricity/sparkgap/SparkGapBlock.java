@@ -16,22 +16,22 @@
 package org.patryk3211.powergrid.electricity.sparkgap;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class SparkGapBlock extends HorizontalAxisElectricBlock implements IBE<SparkGapBlockEntity> {
-    public static final VoxelShape SHAPE_NORTH = createCuboidShape(2, 0, 0, 14, 9, 16);
+    public static final VoxelShape SHAPE_NORTH = box(2, 0, 0, 14, 9, 16);
 
     public static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 9, 0.5, 10, 11, 2.5),
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 9, 13.5, 10, 11, 15.5)
     };
 
-    public SparkGapBlock(Settings settings) {
+    public SparkGapBlock(Properties settings) {
         super(settings);
         setTerminalCollection(horizontalZTerminals(this, TERMINALS_NORTH, SHAPE_NORTH));
     }

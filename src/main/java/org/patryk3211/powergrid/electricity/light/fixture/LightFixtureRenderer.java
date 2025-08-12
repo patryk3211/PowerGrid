@@ -15,35 +15,35 @@
  */
 package org.patryk3211.powergrid.electricity.light.fixture;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
 
 public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBlockEntity> {
-    public LightFixtureRenderer(BlockEntityRendererFactory.Context context) {
+    public LightFixtureRenderer(BlockEntityRendererProvider.Context context) {
         super();
     }
 
     @Override
-    protected void renderSafe(LightFixtureBlockEntity be, float partialTicks, MatrixStack matrices, VertexConsumerProvider consumer, int light, int overlay) {
+    protected void renderSafe(LightFixtureBlockEntity be, float partialTicks, PoseStack matrices, MultiBufferSource consumer, int light, int overlay) {
         var bulbState = be.getBulbState();
         if(bulbState == null)
             return;
 
-        var state = be.getCachedState();
-        var vb = consumer.getBuffer(RenderLayer.getCutout());
+        var state = be.getBlockState();
+        var vb = consumer.getBuffer(RenderType.cutout());
 
         var model = bulbState.getModel();
         if(model == null)
             return;
         var buffer = CachedBuffers.partial(model, state);
 
-        var facing = state.get(LightFixtureBlock.FACING);
+        var facing = state.getValue(LightFixtureBlock.FACING);
         rotateToFacing(buffer, facing)
                 .translate(((LightFixtureBlock) state.getBlock()).modelOffset)
                 .light(light)
@@ -56,7 +56,7 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
             case DOWN -> buffer.rotateCentered((float) Math.PI, Direction.EAST);
             default -> {
                 buffer.rotateCentered((float) Math.PI * 0.5f, Direction.EAST);
-                yield buffer.rotateCentered((float) ((facing.asRotation()) / 180f * Math.PI), Direction.SOUTH);
+                yield buffer.rotateCentered((float) ((facing.toYRot()) / 180f * Math.PI), Direction.SOUTH);
             }
         };
     }

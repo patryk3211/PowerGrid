@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.collections;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.fluid.Fluid;
+import net.minecraft.world.level.material.Fluid;
 
 public class ModdedFluids {
     @ExpectPlatform

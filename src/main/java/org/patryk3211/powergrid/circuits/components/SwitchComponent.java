@@ -16,10 +16,10 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -64,22 +64,22 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
     }
 
     @Override
-    public ActionResult use(CircuitBoardBlockEntity be, PlacedComponent placed, PlayerEntity player) {
+    public InteractionResult use(CircuitBoardBlockEntity be, PlacedComponent placed, Player player) {
         var newState = !placed.get(STATE);
         placed.set(STATE, newState);
 
-        if(be.getWorld().isClient) {
-            Component.modelChanged(be.getPos());
+        if(be.getLevel().isClientSide) {
+            Component.modelChanged(be.getBlockPos());
         } else {
             if(newState) {
-                ModdedSoundEvents.MICROSWITCH_ON.playOnServer(be.getWorld(), be.getPos());
+                ModdedSoundEvents.MICROSWITCH_ON.playOnServer(be.getLevel(), be.getBlockPos());
             } else {
-                ModdedSoundEvents.MICROSWITCH_OFF.playOnServer(be.getWorld(), be.getPos());
+                ModdedSoundEvents.MICROSWITCH_OFF.playOnServer(be.getLevel(), be.getBlockPos());
             }
             placed.notifyClients(STATE);
         }
-        be.markDirty();
-        return ActionResult.SUCCESS;
+        be.setChanged();
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -91,14 +91,14 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
     }
 
     @Override
-    public @NotNull Identifier getModelId(@NotNull PlacedComponent component) {
+    public @NotNull ResourceLocation getModelId(@NotNull PlacedComponent component) {
         return component.get(STATE)
                 ? PowerGrid.asResource("switch_on")
                 : PowerGrid.asResource("switch");
     }
 
     @Override
-    public @NotNull Collection<Identifier> requestedModels() {
+    public @NotNull Collection<ResourceLocation> requestedModels() {
         return List.of(
                 PowerGrid.asResource("switch"),
                 PowerGrid.asResource("switch_on")

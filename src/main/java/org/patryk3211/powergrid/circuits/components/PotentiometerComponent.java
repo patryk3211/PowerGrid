@@ -16,19 +16,19 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -69,7 +69,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var R = placed.get(RESISTANCE);
         // Remap setting to prevent infinite conductance.
-        var V = MathHelper.map(placed.get(VALUE) / 100.0f, 0, 1, 0.01f, 0.99f);
+        var V = Mth.map(placed.get(VALUE) / 100.0f, 0, 1, 0.01f, 0.99f);
         var wire1 = builder.connect(R * V, builder.terminalNode(0), builder.terminalNode(1));
         var wire2 = builder.connect(R * (1 - V), builder.terminalNode(1), builder.terminalNode(2));
 
@@ -89,24 +89,24 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     }
 
     @Override
-    public ActionResult use(CircuitBoardBlockEntity be, PlacedComponent component, PlayerEntity player) {
+    public InteractionResult use(CircuitBoardBlockEntity be, PlacedComponent component, Player player) {
         component.onClientWorld(() -> world -> {
             var value = component.get(VALUE);
             if(BOARD == null) {
                 BOARD = CustomValueSettingsScreen.makeBoard(
                         Lang.translateDirect("gui.potentiometer.setting"),
                         100, 10,
-                        List.of(Text.literal("Value")));
+                        List.of(Component.literal("Value")));
             }
             CustomValueSettingsScreen.beginInteraction(() -> new CustomValueSettingsScreen(
-                    be.getPos(), BOARD, new ValueSettingsBehaviour.ValueSettings(0, value),
+                    be.getBlockPos(), BOARD, new ValueSettingsBehaviour.ValueSettings(0, value),
                     setting -> {
                         component.set(VALUE, setting.value());
                         ModdedPackets.getChannel().sendToServer(new UpdateComponentBiPacket(be, component, VALUE));
                     }
             ));
         });
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -116,7 +116,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
 
         var R = placed.get(RESISTANCE);
         // Remap setting to prevent infinite conductance.
-        var V = MathHelper.map(placed.get(VALUE) / 100.0f, 0, 1, 0.01f, 0.99f);
+        var V = Mth.map(placed.get(VALUE) / 100.0f, 0, 1, 0.01f, 0.99f);
         var wire1 = (ElectricWire) placed.wires.get(0);
         var wire2 = (ElectricWire) placed.wires.get(1);
 
@@ -126,14 +126,14 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
 
     @Override
     @Environment(EnvType.CLIENT)
-    public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
-        var buffer = CachedBuffers.partial(ModdedPartialModels.POTENTIOMETER_KNOB, be.getCachedState());
+    public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
+        var buffer = CachedBuffers.partial(ModdedPartialModels.POTENTIOMETER_KNOB, be.getBlockState());
         var angle = 135 - 135 * 2 * (placed.get(VALUE) / 100.0f);
         buffer
                 .translate(2.5 / 16, 0, 2.5 / 16)
                 .rotateY(angle)
                 .translate(-2.5 / 16, 0, -2.5 / 16)
                 .light(light)
-                .renderInto(ms, bufferSource.getBuffer(RenderLayer.getSolid()));
+                .renderInto(ms, bufferSource.getBuffer(RenderType.solid()));
     }
 }

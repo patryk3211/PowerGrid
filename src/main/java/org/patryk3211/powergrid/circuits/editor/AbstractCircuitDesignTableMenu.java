@@ -16,24 +16,24 @@
 package org.patryk3211.powergrid.circuits.editor;
 
 import com.simibubi.create.foundation.gui.menu.MenuBase;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 
 public abstract class AbstractCircuitDesignTableMenu extends MenuBase<CircuitDesignTableBlockEntity> {
-    protected AbstractCircuitDesignTableMenu(ScreenHandlerType<?> type, int id, PlayerInventory inv, PacketByteBuf extraData) {
+    protected AbstractCircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
-    protected AbstractCircuitDesignTableMenu(ScreenHandlerType<?> type, int id, PlayerInventory inv, CircuitDesignTableBlockEntity contentHolder) {
+    protected AbstractCircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, CircuitDesignTableBlockEntity contentHolder) {
         super(type, id, inv, contentHolder);
     }
 
     @Override
-    protected CircuitDesignTableBlockEntity createOnClient(PacketByteBuf extraData) {
-        var world = MinecraftClient.getInstance().world;
+    protected CircuitDesignTableBlockEntity createOnClient(FriendlyByteBuf extraData) {
+        var world = Minecraft.getInstance().level;
         var be = world.getBlockEntity(extraData.readBlockPos());
         if(be instanceof CircuitDesignTableBlockEntity bench) {
             bench.readClient(extraData.readNbt());

@@ -18,25 +18,26 @@ package org.patryk3211.powergrid.circuits.components;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.util.ModelIdentifier;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Environment(EnvType.CLIENT)
 public class ComponentModels {
-    public static ModelIdentifier modelId(Identifier componentId) {
-        return new ModelIdentifier(new Identifier(componentId.getNamespace(), "component/" + componentId.getPath()), "component");
+    public static ModelResourceLocation modelId(ResourceLocation componentId) {
+        return new ModelResourceLocation(new ResourceLocation(componentId.getNamespace(), "component/" + componentId.getPath()), "component");
     }
 
-    public static Identifier rawModelId(Identifier componentId) {
-        return new Identifier(componentId.getNamespace(), "component/" + componentId.getPath());
+    public static ResourceLocation rawModelId(ResourceLocation componentId) {
+        return new ResourceLocation(componentId.getNamespace(), "component/" + componentId.getPath());
     }
 
-    public static Set<ModelIdentifier> collectIds() {
-        var ids = new HashSet<ModelIdentifier>();
+    public static Set<ModelResourceLocation> collectIds() {
+        var ids = new HashSet<ModelResourceLocation>();
         for(var component : ComponentRegistry.entries()) {
             for(var id : component.requestedModels()) {
                 ids.add(modelId(id));
@@ -45,8 +46,8 @@ public class ComponentModels {
         return ids;
     }
 
-    public static Set<Identifier> collectRawIds() {
-        var ids = new HashSet<Identifier>();
+    public static Set<ResourceLocation> collectRawIds() {
+        var ids = new HashSet<ResourceLocation>();
         for(var component : ComponentRegistry.entries()) {
             for(var id : component.requestedModels()) {
                 ids.add(rawModelId(id));

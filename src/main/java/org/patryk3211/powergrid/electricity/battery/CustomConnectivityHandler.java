@@ -16,12 +16,12 @@
 package org.patryk3211.powergrid.electricity.battery;
 
 import net.createmod.catnip.data.Iterate;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -36,11 +36,11 @@ public class CustomConnectivityHandler {
         SearchCache<T> cache = new SearchCache<>();
         List<T> frontier = new ArrayList<>();
         frontier.add(be);
-        formMulti(be.getType(), be.getSpec(), be.getWorld(), cache, frontier);
+        formMulti(be.getType(), be.getSpec(), be.getLevel(), cache, frontier);
     }
 
     private static <T extends BlockEntity & IMultiBlockBattery> void formMulti(BlockEntityType<?> type, BatterySpec spec,
-                                                                                       BlockView level, SearchCache<T> cache, List<T> frontier) {
+                                                                                       BlockGetter level, SearchCache<T> cache, List<T> frontier) {
         PriorityQueue<Pair<Integer, T>> creationQueue = makeCreationQueue();
         Set<BlockPos> visited = new HashSet<>();
         Direction.Axis mainAxis = frontier.get(0)
@@ -54,7 +54,7 @@ public class CustomConnectivityHandler {
         int minZ = (mainAxis == Direction.Axis.Y ? Integer.MAX_VALUE : Integer.MIN_VALUE);
 
         for (T be : frontier) {
-            BlockPos pos = be.getPos();
+            BlockPos pos = be.getBlockPos();
             minX = Math.min(pos.getX(), minX);
             minY = Math.min(pos.getY(), minY);
             minZ = Math.min(pos.getZ(), minZ);
@@ -71,7 +71,7 @@ public class CustomConnectivityHandler {
 
         while (!frontier.isEmpty()) {
             T part = frontier.remove(0);
-            BlockPos partPos = part.getPos();
+            BlockPos partPos = part.getBlockPos();
             if (visited.contains(partPos))
                 continue;
 
@@ -84,7 +84,7 @@ public class CustomConnectivityHandler {
 
             for (Direction.Axis axis : Iterate.axes) {
                 Direction dir = Direction.get(Direction.AxisDirection.NEGATIVE, axis);
-                BlockPos next = partPos.offset(dir);
+                BlockPos next = partPos.relative(dir);
 
                 if (next.getX() <= minX || next.getY() <= minY || next.getZ() <= minZ)
                     continue;
@@ -103,10 +103,10 @@ public class CustomConnectivityHandler {
         while (!creationQueue.isEmpty()) {
             Pair<Integer, T> next = creationQueue.poll();
             T toCreate = next.getValue();
-            if (visited.contains(toCreate.getPos()))
+            if (visited.contains(toCreate.getBlockPos()))
                 continue;
 
-            visited.add(toCreate.getPos());
+            visited.add(toCreate.getBlockPos());
             tryToFormNewMulti(toCreate, cache, false);
         }
     }
@@ -150,10 +150,10 @@ public class CustomConnectivityHandler {
         int amount = 0;
         int height = 0;
         BlockEntityType<?> type = be.getType();
-        World level = be.getWorld();
+        Level level = be.getLevel();
         if (level == null)
             return 0;
-        BlockPos origin = be.getPos();
+        BlockPos origin = be.getBlockPos();
 
         Direction.Axis axis = be.getMainConnectionAxis();
 
@@ -162,9 +162,9 @@ public class CustomConnectivityHandler {
             for (int xOffset = 0; xOffset < width; xOffset++) {
                 for (int zOffset = 0; zOffset < width; zOffset++) {
                     BlockPos pos = switch (axis) {
-                        case X -> origin.add(yOffset, xOffset, zOffset);
-                        case Y -> origin.add(xOffset, yOffset, zOffset);
-                        case Z -> origin.add(xOffset, zOffset, yOffset);
+                        case X -> origin.offset(yOffset, xOffset, zOffset);
+                        case Y -> origin.offset(xOffset, yOffset, zOffset);
+                        case Z -> origin.offset(xOffset, zOffset, yOffset);
                     };
                     Optional<T> part = cache.getOrCache(type, be.getSpec(), level, pos);
                     if (part.isEmpty())
@@ -181,7 +181,7 @@ public class CustomConnectivityHandler {
                     if (axis != conAxis)
                         break Search;
 
-                    BlockPos conPos = controller.getPos();
+                    BlockPos conPos = controller.getBlockPos();
                     if (!conPos.equals(origin)) {
                         if (axis == Direction.Axis.Y) { // vertical multi, like a FluidTank
                             if (conPos.getX() < origin.getX())
@@ -227,9 +227,9 @@ public class CustomConnectivityHandler {
             for (int xOffset = 0; xOffset < width; xOffset++) {
                 for (int zOffset = 0; zOffset < width; zOffset++) {
                     BlockPos pos = switch (axis) {
-                        case X -> origin.add(yOffset, xOffset, zOffset);
-                        case Y -> origin.add(xOffset, yOffset, zOffset);
-                        case Z -> origin.add(xOffset, zOffset, yOffset);
+                        case X -> origin.offset(yOffset, xOffset, zOffset);
+                        case Y -> origin.offset(xOffset, yOffset, zOffset);
+                        case Z -> origin.offset(xOffset, zOffset, yOffset);
                     };
                     T part = partAt(type, be.getSpec(), level, pos);
                     if (part == null)
@@ -263,7 +263,7 @@ public class CustomConnectivityHandler {
     // tryReconnect helps whenever only a few tanks have been removed
     private static <T extends BlockEntity & IMultiBlockBattery> void splitMultiAndInvalidate(T be,
                                                                                                      @Nullable SearchCache<T> cache, boolean tryReconnect) {
-        World level = be.getWorld();
+        Level level = be.getLevel();
         if (level == null)
             return;
 
@@ -276,7 +276,7 @@ public class CustomConnectivityHandler {
         if (width == 1 && height == 1)
             return;
 
-        BlockPos origin = be.getPos();
+        BlockPos origin = be.getBlockPos();
         List<T> frontier = new ArrayList<>();
         Direction.Axis axis = be.getMainConnectionAxis();
 
@@ -289,9 +289,9 @@ public class CustomConnectivityHandler {
                 for (int zOffset = 0; zOffset < width; zOffset++) {
 
                     BlockPos pos = switch (axis) {
-                        case X -> origin.add(yOffset, xOffset, zOffset);
-                        case Y -> origin.add(xOffset, yOffset, zOffset);
-                        case Z -> origin.add(xOffset, zOffset, yOffset);
+                        case X -> origin.offset(yOffset, xOffset, zOffset);
+                        case Y -> origin.offset(xOffset, yOffset, zOffset);
+                        case Z -> origin.offset(xOffset, zOffset, yOffset);
                     };
 
                     T partAt = partAt(be.getType(), be.getSpec(), level, pos);
@@ -329,7 +329,7 @@ public class CustomConnectivityHandler {
     }
 
     @Nullable
-    public static <T extends BlockEntity & IMultiBlockBattery> T partAt(BlockEntityType<?> type, BatterySpec spec, BlockView level,
+    public static <T extends BlockEntity & IMultiBlockBattery> T partAt(BlockEntityType<?> type, BatterySpec spec, BlockGetter level,
                                                                                 BlockPos pos) {
         BlockEntity be = level.getBlockEntity(pos);
         if (be != null && be.getType() == type && !be.isRemoved())
@@ -364,7 +364,7 @@ public class CustomConnectivityHandler {
             return controllerMap.containsKey(pos);
         }
 
-        Optional<T> getOrCache(BlockEntityType<?> type, BatterySpec spec, BlockView level, BlockPos pos) {
+        Optional<T> getOrCache(BlockEntityType<?> type, BatterySpec spec, BlockGetter level, BlockPos pos) {
             if (hasVisited(pos))
                 return controllerMap.get(pos);
 

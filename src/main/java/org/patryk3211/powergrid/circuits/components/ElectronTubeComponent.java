@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -81,7 +81,7 @@ public class ElectronTubeComponent extends OrientableComponent {
                 .setOverheatTemperature(1500f)
                 .setDissipationFactor(dissipationFactor)
                 .withTemperatureCallback(temperature -> tube.setSaturationCurrent(
-                        MathHelper.clamp(temperature - 1300f, 0, 150) * saturationCurrent / 100
+                        Mth.clamp(temperature - 1300f, 0, 150) * saturationCurrent / 100
                 ));
     }
 }

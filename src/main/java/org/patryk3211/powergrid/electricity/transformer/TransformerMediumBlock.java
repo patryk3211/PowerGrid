@@ -18,28 +18,28 @@ package org.patryk3211.powergrid.electricity.transformer;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -49,49 +49,49 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class TransformerMediumBlock extends TransformerBlock implements IBE<TransformerMediumBlockEntity> {
-    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = Properties.HORIZONTAL_AXIS;
-    public static final IntProperty PART = IntProperty.of("part", 0, 3);
+    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+    public static final IntegerProperty PART = IntegerProperty.create("part", 0, 3);
 
     private static final TerminalBoundingBox TERMINAL_Z_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 9, 6, 5, 16, 10);
     private static final TerminalBoundingBox TERMINAL_Z_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 9, 6, 16, 16, 10);
 
-    private static final TerminalBoundingBox TERMINAL_X_1 = TERMINAL_Z_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox TERMINAL_X_2 = TERMINAL_Z_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox TERMINAL_X_1 = TERMINAL_Z_1.rotateAroundY(Rotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox TERMINAL_X_2 = TERMINAL_Z_2.rotateAroundY(Rotation.CLOCKWISE_90);
 
-    private static final VoxelShape SHAPE_Z_BOTTOM = createCuboidShape(2, 0, 0, 14, 16, 16);
-    private static final VoxelShape SHAPE_X_BOTTOM = createCuboidShape(0, 0, 2, 16, 16, 14);
+    private static final VoxelShape SHAPE_Z_BOTTOM = box(2, 0, 0, 14, 16, 16);
+    private static final VoxelShape SHAPE_X_BOTTOM = box(0, 0, 2, 16, 16, 14);
 
-    private static final VoxelShape SHAPE_Z_TOP = VoxelShapes.union(
-            createCuboidShape(2, 0, 0, 14, 12, 16),
+    private static final VoxelShape SHAPE_Z_TOP = Shapes.or(
+            box(2, 0, 0, 14, 12, 16),
             TERMINAL_Z_1.getShape(),
             TERMINAL_Z_2.getShape()
     );
-    private static final VoxelShape SHAPE_X_TOP = VoxelShapes.union(
-            createCuboidShape(0, 0, 2, 16, 12, 14),
+    private static final VoxelShape SHAPE_X_TOP = Shapes.or(
+            box(0, 0, 2, 16, 12, 14),
             TERMINAL_X_1.getShape(),
             TERMINAL_X_2.getShape()
     );
 
-    public TransformerMediumBlock(Settings settings) {
+    public TransformerMediumBlock(Properties settings) {
         super(settings, 240);
-        setDefaultState(getDefaultState().with(COILS, 0));
+        registerDefaultState(defaultBlockState().setValue(COILS, 0));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(HORIZONTAL_AXIS, PART, COILS);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch(state.get(HORIZONTAL_AXIS)) {
-            case Z -> switch(state.get(PART)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch(state.getValue(HORIZONTAL_AXIS)) {
+            case Z -> switch(state.getValue(PART)) {
                 case 0, 1 -> SHAPE_Z_BOTTOM;
                 case 2, 3 -> SHAPE_Z_TOP;
                 default -> throw new IllegalStateException();
             };
-            case X -> switch (state.get(PART)) {
+            case X -> switch (state.getValue(PART)) {
                 case 0, 1 -> SHAPE_X_BOTTOM;
                 case 2, 3 -> SHAPE_X_TOP;
                 default -> throw new IllegalStateException();
@@ -101,12 +101,12 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     }
 
     @Override
-    public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
-        super.onBroken(world, pos, state);
-        var axis = state.get(HORIZONTAL_AXIS);
+    public void destroy(LevelAccessor world, BlockPos pos, BlockState state) {
+        super.destroy(world, pos, state);
+        var axis = state.getValue(HORIZONTAL_AXIS);
         int x = 0;
         int y = 0;
-        switch(state.get(PART)) {
+        switch(state.getValue(PART)) {
             case 0:
                 x = 1;
                 y = 1;
@@ -124,9 +124,9 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
                 y = -1;
                 break;
         }
-        world.breakBlock(pos.offset(axis, x), false);
-        world.breakBlock(pos.offset(Direction.Axis.Y, y), false);
-        world.breakBlock(pos.offset(axis, x).offset(Direction.Axis.Y, y), false);
+        world.destroyBlock(pos.relative(axis, x), false);
+        world.destroyBlock(pos.relative(Direction.Axis.Y, y), false);
+        world.destroyBlock(pos.relative(axis, x).relative(Direction.Axis.Y, y), false);
     }
 
     @Override
@@ -136,12 +136,12 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
 
     @Override
     public ITerminalPlacement terminal(BlockState state, int index) {
-        var part = state.get(PART);
+        var part = state.getValue(PART);
         if(part == 0 || part == 1) {
             // Bottom parts have no terminals
             return null;
         }
-        return switch(state.get(HORIZONTAL_AXIS)) {
+        return switch(state.getValue(HORIZONTAL_AXIS)) {
             case Z -> switch(index) {
                 case 0, 2 -> TERMINAL_Z_1;
                 case 1, 3 -> TERMINAL_Z_2;
@@ -157,24 +157,24 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     }
 
     @Override
-    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
-        return ActionResult.PASS;
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        return InteractionResult.PASS;
     }
 
     @Override
-    public ActionResult onSneakWrenched(BlockState state, ItemUsageContext context) {
-        var world = context.getWorld();
-        var pos = context.getBlockPos();
+    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+        var world = context.getLevel();
+        var pos = context.getClickedPos();
         var player = context.getPlayer();
-        if(world instanceof ServerWorld serverLevel) {
+        if(world instanceof ServerLevel serverLevel) {
             boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
             if(!shouldBreak) {
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             } else {
-                var axis = state.get(HORIZONTAL_AXIS);
+                var axis = state.getValue(HORIZONTAL_AXIS);
                 int x = 0;
                 int y = 0;
-                switch(state.get(PART)) {
+                switch(state.getValue(PART)) {
                     case 0:
                         x = 1;
                         y = 1;
@@ -193,13 +193,13 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
                         break;
                 }
                 if (player != null && !player.isCreative()) {
-                    Block.getDroppedStacks(state, serverLevel, pos, world.getBlockEntity(pos), player, context.getStack()).forEach((itemStack) -> player.getInventory().offerOrDrop(itemStack));
+                    Block.getDrops(state, serverLevel, pos, world.getBlockEntity(pos), player, context.getItemInHand()).forEach((itemStack) -> player.getInventory().placeItemBackInInventory(itemStack));
                 }
-                state.onStacksDropped(serverLevel, pos, ItemStack.EMPTY, true);
+                state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
 
                 BiConsumer<Integer, Integer> processOffset = (offsetX, offsetY) -> {
-                    var offsetPos = pos.offset(axis, offsetX).offset(Direction.Axis.Y, offsetY);
-                    world.breakBlock(offsetPos, false);
+                    var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
+                    world.destroyBlock(offsetPos, false);
                 };
                 processOffset.accept(0, 0);
                 processOffset.accept(x, 0);
@@ -207,18 +207,18 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
                 processOffset.accept(x, y);
 
                 IWrenchable.playRemoveSound(world, pos);
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         } else {
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
     }
 
     @Override
-    public int terminalIndexAt(BlockState state, Vec3d pos) {
+    public int terminalIndexAt(BlockState state, Vec3 pos) {
         var index = super.terminalIndexAt(state, pos);
         if(index >= 0) {
-            if(state.get(PART) == 3) {
+            if(state.getValue(PART) == 3) {
                 // Part 2 gets the default indices but part 3 is offset to
                 // allow using a single block entity.
                 return index + 2;
@@ -228,14 +228,14 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     }
 
     @Override
-    public Optional<TransformerBlockEntity> getBlockEntity(World world, BlockPos pos, BlockState state) {
+    public Optional<TransformerBlockEntity> getBlockEntity(Level world, BlockPos pos, BlockState state) {
         // Block entity is held by part 0
-        var axis = state.get(HORIZONTAL_AXIS);
-        var bePos = switch(state.get(PART)) {
+        var axis = state.getValue(HORIZONTAL_AXIS);
+        var bePos = switch(state.getValue(PART)) {
             case 0 -> pos;
-            case 1 -> pos.offset(axis, -1);
-            case 2 -> pos.offset(Direction.Axis.Y, -1);
-            case 3 -> pos.offset(axis, -1).offset(Direction.Axis.Y, -1);
+            case 1 -> pos.relative(axis, -1);
+            case 2 -> pos.relative(Direction.Axis.Y, -1);
+            case 3 -> pos.relative(axis, -1).relative(Direction.Axis.Y, -1);
             default -> throw new IllegalStateException();
         };
         return Optional.ofNullable(getBlockEntity(world, bePos));
@@ -245,7 +245,7 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     protected boolean isInitiator(BlockPos pos, BlockState state, BlockPos initiator) {
         // Initiator can either be part 2 or 3 since they have the terminals.
         int y, x;
-        switch(state.get(PART)) {
+        switch(state.getValue(PART)) {
             case 0 -> {
                 x = 1;
                 y = 1;
@@ -264,8 +264,8 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
             }
             default -> throw new IllegalStateException();
         }
-        var p1 = pos.offset(Direction.Axis.Y, y);
-        var p2 = p1.offset(state.get(HORIZONTAL_AXIS), x);
+        var p1 = pos.relative(Direction.Axis.Y, y);
+        var p2 = p1.relative(state.getValue(HORIZONTAL_AXIS), x);
         return initiator.equals(p1) || initiator.equals(p2);
     }
 
@@ -280,9 +280,9 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     }
 
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        if(state.get(PART) == 0)
-            return IBE.super.createBlockEntity(pos, state);
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        if(state.getValue(PART) == 0)
+            return IBE.super.newBlockEntity(pos, state);
         return null;
     }
 }

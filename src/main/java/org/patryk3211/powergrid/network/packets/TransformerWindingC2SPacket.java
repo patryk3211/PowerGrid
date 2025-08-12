@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Hand;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
@@ -28,46 +28,46 @@ import java.util.function.Supplier;
 
 public class TransformerWindingC2SPacket implements SimplePacket {
     private final int nTurns;
-    private final Hand hand;
+    private final InteractionHand hand;
 
-    public TransformerWindingC2SPacket(int nTurns, Hand hand) {
+    public TransformerWindingC2SPacket(int nTurns, InteractionHand hand) {
         this.nTurns = nTurns;
         this.hand = hand;
     }
 
-    public TransformerWindingC2SPacket(PacketByteBuf buf) {
+    public TransformerWindingC2SPacket(FriendlyByteBuf buf) {
         nTurns = buf.readInt();
-        hand = buf.readEnumConstant(Hand.class);
+        hand = buf.readEnum(InteractionHand.class);
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeInt(nTurns);
-        buf.writeEnumConstant(hand);
+        buf.writeEnum(hand);
     }
 
     @Override
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         var ctx = context.get();
         ctx.queue(() -> {
-            var stack = ctx.getPlayer().getStackInHand(hand);
-            if(!(stack.getItem() instanceof IWire) || !stack.hasNbt())
+            var stack = ctx.getPlayer().getItemInHand(hand);
+            if(!(stack.getItem() instanceof IWire) || !stack.hasTag())
                 return;
-            if(stack.getNbt().contains("Turns")) {
+            if(stack.getTag().contains("Turns")) {
                 // Alter existing tag
-                stack.getNbt().putInt("Turns", nTurns);
+                stack.getTag().putInt("Turns", nTurns);
             } else {
                 // Create a new tag
-                var endpoint = WireEndpointType.deserialize(stack.getNbt());
+                var endpoint = WireEndpointType.deserialize(stack.getTag());
                 if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
                     return;
                 var blockEndpoint = (BlockWireEndpoint) endpoint;
-                var nbt = new NbtCompound();
+                var nbt = new CompoundTag();
                 nbt.putInt("Turns", nTurns);
                 var pos = blockEndpoint.getPos();
                 nbt.putIntArray("Initiator", new int[]{pos.getX(), pos.getY(), pos.getZ()});
                 nbt.putInt("Terminal", blockEndpoint.getTerminal());
-                stack.setNbt(nbt);
+                stack.setTag(nbt);
             }
         });
     }

@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class ComponentProperty<T> {
@@ -35,8 +35,8 @@ public abstract class ComponentProperty<T> {
         return this;
     }
 
-    public Identifier id() {
-        return new Identifier(namespace, name);
+    public ResourceLocation id() {
+        return new ResourceLocation(namespace, name);
     }
 
     public String translationKey() {
@@ -50,8 +50,8 @@ public abstract class ComponentProperty<T> {
     public abstract T parse(String value) throws RuntimeException;
     public abstract String toString(T value);
 
-    public abstract T read(@Nullable NbtElement element);
-    public abstract NbtElement write(T value);
+    public abstract T read(@Nullable Tag element);
+    public abstract Tag write(T value);
 
     public abstract T defaultValue();
 

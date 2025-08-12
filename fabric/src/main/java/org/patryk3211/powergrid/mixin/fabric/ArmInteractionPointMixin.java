@@ -25,9 +25,9 @@ import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelp
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -46,7 +46,7 @@ import java.util.List;
 public abstract class ArmInteractionPointMixin {
     @Shadow @Nullable protected abstract Storage<ItemVariant> getHandler();
 
-    @Shadow public abstract World getLevel();
+    @Shadow public abstract Level getLevel();
 
     @Shadow public abstract BlockPos getPos();
 
@@ -98,7 +98,7 @@ public abstract class ArmInteractionPointMixin {
                     inserted.setTrue();
                     TransactionCallback.onSuccess(ctx, () -> {
                         var result = new TransportedItemStack(newCircuit);
-                        result.lockedExternally = newCircuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get());
+                        result.lockedExternally = newCircuit.is(ModdedItems.INCOMPLETE_CIRCUIT.get());
                         transport.handleProcessingOnItem(tis,
                                 TransportedItemStackHandlerBehaviour.TransportedResult.convertToAndLeaveHeld(List.of(), result)
                         );

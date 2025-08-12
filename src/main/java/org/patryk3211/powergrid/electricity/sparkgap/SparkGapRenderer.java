@@ -15,26 +15,26 @@
  */
 package org.patryk3211.powergrid.electricity.sparkgap;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import net.createmod.catnip.render.CachedBuffers;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 public class SparkGapRenderer extends SafeBlockEntityRenderer<SparkGapBlockEntity> {
-    public SparkGapRenderer(BlockEntityRendererFactory.Context context) { }
+    public SparkGapRenderer(BlockEntityRendererProvider.Context context) { }
 
     @Override
-    protected void renderSafe(SparkGapBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
-        var state = be.getCachedState();
+    protected void renderSafe(SparkGapBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
+        var state = be.getBlockState();
         var buffer = CachedBuffers.partial(ModdedPartialModels.SPARK_GAP_ARM, state);
-        var facing = Direction.from(state.get(SparkGapBlock.HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE);
+        var facing = Direction.fromAxisAndDirection(state.getValue(SparkGapBlock.HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE);
         float offset = be.setting.getValue() / 18f * (3 / 16f);
 
-        var consumer = bufferSource.getBuffer(RenderLayer.getSolid());
+        var consumer = bufferSource.getBuffer(RenderType.solid());
         buffer
                 .light(light)
                 .center()

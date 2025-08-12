@@ -17,10 +17,10 @@ package org.patryk3211.powergrid.kinetics.motor;
 
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -65,7 +65,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     }
 
     @Override
-    protected void read(NbtCompound compound, boolean clientPacket) {
+    protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         generatedSpeed = compound.getFloat("GeneratedSpeed");
         updateGeneratedRotation();
@@ -73,7 +73,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     }
 
     @Override
-    protected void write(NbtCompound compound, boolean clientPacket) {
+    protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putFloat("GeneratedSpeed", generatedSpeed);
     }
@@ -84,7 +84,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
         applyLostPower(coil.power());
         var voltage = coil.potentialDifference();
-        if(!world.isClient || isVirtual()) {
+        if(!level.isClientSide || isVirtual()) {
             var newSpeed = (int) (voltage * ElectricMotorBlock.rpmPerVolt());
             // Max speed constraints.
             if(newSpeed > 256)
@@ -128,7 +128,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     @Override
     public float getGeneratedSpeed() {
-        return convertToDirection(generatedSpeed, getCachedState().get(ElectricMotorBlock.FACING));
+        return convertToDirection(generatedSpeed, getBlockState().getValue(ElectricMotorBlock.FACING));
     }
 
     @Override

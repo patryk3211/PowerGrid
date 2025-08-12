@@ -15,11 +15,11 @@
  */
 package org.patryk3211.powergrid.circuits.gui;
 
-import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Font;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 
 public class FloatPropertyWidget extends TextFieldPropertyWidget<Float, PropertyEntry<Float>> {
-    public FloatPropertyWidget(TextRenderer textRenderer, int x, int y, PropertyEntry<Float> property) {
+    public FloatPropertyWidget(Font textRenderer, int x, int y, PropertyEntry<Float> property) {
         super(textRenderer, x, y, property);
     }
 }

@@ -15,24 +15,24 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.util.ActionResult;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.UseOnContext;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 public class DebugItem extends Item {
-    public DebugItem(Settings settings) {
+    public DebugItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        var world = context.getWorld();
-        var opt = world.getBlockEntity(context.getBlockPos(), ModdedBlockEntities.WIRE_CONNECTOR.get());
+    public InteractionResult useOn(UseOnContext context) {
+        var world = context.getLevel();
+        var opt = world.getBlockEntity(context.getClickedPos(), ModdedBlockEntities.WIRE_CONNECTOR.get());
         return opt.map(be -> {
             GlobalElectricNetworks.inspect(be.getElectricBehaviour().getTerminal(0), context.getPlayer());
-            return ActionResult.SUCCESS;
-        }).orElse(ActionResult.FAIL);
+            return InteractionResult.SUCCESS;
+        }).orElse(InteractionResult.FAIL);
     }
 }

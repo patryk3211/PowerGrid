@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -49,15 +49,15 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
         if(wire.potentialDifference() > maxVoltage && overvoltResistance == null) {
             wire.setState(true);
             // Pick a random resistance for failed switches to spice things up.
-            overvoltResistance = world.random.nextFloat() * 1000f;
+            overvoltResistance = level.random.nextFloat() * 1000f;
             wire.setResistance(overvoltResistance);
         }
         if(isButton && buttonTimeout > 0) {
             --buttonTimeout;
             if(buttonTimeout == 0) {
-                var block = (SwitchBlock) getCachedState().getBlock();
-                world.setBlockState(pos, getCachedState().with(SwitchBlock.OPEN, true));
-                block.useSound(world, pos, true);
+                var block = (SwitchBlock) getBlockState().getBlock();
+                level.setBlockAndUpdate(worldPosition, getBlockState().setValue(SwitchBlock.OPEN, true));
+                block.useSound(level, worldPosition, true);
                 setState(false);
             }
         }
@@ -73,7 +73,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if(clientPacket) {
             switchState = tag.getBoolean("State");
@@ -89,7 +89,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if(clientPacket) {
             tag.putBoolean("State", switchState);
@@ -106,10 +106,10 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
         var node1 = builder.addExternalNode();
         var node2 = builder.addExternalNode();
 
-        if(!(getCachedState().getBlock() instanceof SwitchBlock block))
+        if(!(getBlockState().getBlock() instanceof SwitchBlock block))
             throw new IllegalArgumentException("Blocks with SwitchBlockEntity must inherit from SwitchBlock");
         maxVoltage = block.getMaxVoltage();
-        switchState = !getCachedState().get(SwitchBlock.OPEN);
+        switchState = !getBlockState().getValue(SwitchBlock.OPEN);
         wire = builder.connectSwitch(block.getResistance(), node1, node2, switchState);
         if(overvoltResistance != null) {
             wire.setResistance(overvoltResistance);

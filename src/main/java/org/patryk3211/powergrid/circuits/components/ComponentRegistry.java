@@ -16,14 +16,14 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ComponentRegistry {
-    public static final RegistryKey<Registry<Component>> REGISTRY_KEY = RegistryKey.ofRegistry(PowerGrid.asResource("components"));
+    public static final ResourceKey<Registry<Component>> REGISTRY_KEY = ResourceKey.createRegistryKey(PowerGrid.asResource("components"));
 
     @ExpectPlatform
     public static Iterable<Component> entries() {
@@ -32,13 +32,13 @@ public class ComponentRegistry {
 
     @NotNull
     @ExpectPlatform
-    public static Identifier getId(@NotNull Component component) {
+    public static ResourceLocation getId(@NotNull Component component) {
         throw new AssertionError();
     }
 
     @NotNull
     @ExpectPlatform
-    public static Component get(@NotNull Identifier id) {
+    public static Component get(@NotNull ResourceLocation id) {
         throw new AssertionError();
     }
 }

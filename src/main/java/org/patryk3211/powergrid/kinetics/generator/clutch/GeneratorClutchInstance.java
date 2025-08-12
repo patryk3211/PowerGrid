@@ -22,10 +22,10 @@ import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.model.Models;
 import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
 import net.createmod.catnip.animation.AnimationTickHolder;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
-import static net.minecraft.state.property.Properties.FACING;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.getRotorAngle;
 
 public class GeneratorClutchInstance extends SingleAxisRotatingVisual<GeneratorClutchBlockEntity> implements SimpleDynamicVisual {
@@ -36,7 +36,7 @@ public class GeneratorClutchInstance extends SingleAxisRotatingVisual<GeneratorC
         assembly = instancerProvider()
                 .instancer(InstanceTypes.TRANSFORMED, Models.partial(ModdedPartialModels.CLUTCH_SHAFT))
                 .createInstance()
-                .rotateToFace(blockState.get(FACING).getOpposite());
+                .rotateToFace(blockState.getValue(FACING).getOpposite());
         transformAssembly();
     }
 
@@ -44,7 +44,7 @@ public class GeneratorClutchInstance extends SingleAxisRotatingVisual<GeneratorC
         var partial = AnimationTickHolder.getPartialTicks();
         var rotorAngle = getRotorAngle(blockEntity, partial);
 
-        var dir = Direction.from(blockState.get(GeneratorClutchBlock.FACING).getAxis(), Direction.AxisDirection.POSITIVE);
+        var dir = Direction.fromAxisAndDirection(blockState.getValue(GeneratorClutchBlock.FACING).getAxis(), Direction.AxisDirection.POSITIVE);
         assembly.setIdentityTransform()
                 .translate(getVisualPosition())
                 .center()

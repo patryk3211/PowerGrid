@@ -17,7 +17,7 @@ package org.patryk3211.powergrid.ponder.base;
 
 import net.createmod.ponder.api.element.ElementLink;
 import net.createmod.ponder.foundation.instruction.FadeOutOfSceneInstruction;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
 
 public class RemoveWireInstruction extends FadeOutOfSceneInstruction<WireElement> {
     public RemoveWireInstruction(int fadeOutTicks, Direction fadeOutTo, ElementLink<WireElement> link) {

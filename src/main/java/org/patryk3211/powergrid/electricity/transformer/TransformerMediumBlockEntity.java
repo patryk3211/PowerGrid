@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.transformer;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
@@ -33,18 +33,18 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
     }
 
     private void updateState(BlockPos pos, int coils) {
-        var state = world.getBlockState(pos);
-        world.setBlockState(pos, state.with(TransformerBlock.COILS, coils));
+        var state = level.getBlockState(pos);
+        level.setBlockAndUpdate(pos, state.setValue(TransformerBlock.COILS, coils));
     }
 
     @Override
     public void updateCoilBlockState() {
         int coilCount = secondaryCoil.isDefined() ? 2 : primaryCoil.isDefined() ? 1 : 0;
 
-        var axis = getCachedState().get(TransformerMediumBlock.HORIZONTAL_AXIS);
-        updateState(pos, coilCount);
-        updateState(pos.offset(axis, 1), coilCount);
-        updateState(pos.offset(Direction.Axis.Y, 1), coilCount);
-        updateState(pos.offset(axis, 1).offset(Direction.Axis.Y, 1), coilCount);
+        var axis = getBlockState().getValue(TransformerMediumBlock.HORIZONTAL_AXIS);
+        updateState(worldPosition, coilCount);
+        updateState(worldPosition.relative(axis, 1), coilCount);
+        updateState(worldPosition.relative(Direction.Axis.Y, 1), coilCount);
+        updateState(worldPosition.relative(axis, 1).relative(Direction.Axis.Y, 1), coilCount);
     }
 }

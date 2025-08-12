@@ -15,32 +15,32 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 
-import static net.minecraft.state.property.Properties.HORIZONTAL_AXIS;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_AXIS;
 
 public class CommutatorRenderer extends RotorRenderer {
-    public CommutatorRenderer(BlockEntityRendererFactory.Context context) {
+    public CommutatorRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    protected void renderSafe(RotorBlockEntity rotor, float partialTicks, MatrixStack matrixStack, VertexConsumerProvider buffer, int light, int overlay) {
+    protected void renderSafe(RotorBlockEntity rotor, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, int overlay) {
         super.renderSafe(rotor, partialTicks, matrixStack, buffer, light, overlay);
 
-        var state = rotor.getCachedState();
-        var axis = state.get(HORIZONTAL_AXIS);
-        var facing = Direction.from(axis, Direction.AxisDirection.POSITIVE);
+        var state = rotor.getBlockState();
+        var axis = state.getValue(HORIZONTAL_AXIS);
+        var facing = Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE);
 
         var rotorAngle = getRotorAngle(rotor, partialTicks);
         var brushAngle = rotorAngle * 2;
@@ -54,17 +54,17 @@ public class CommutatorRenderer extends RotorRenderer {
                 .rotateToFace(facing)
                 .uncenter()
                 .translate(-brushOffset, 0, 0)
-                .renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
+                .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
         brush
                 .center()
                 .rotateToFace(facing.getOpposite())
                 .uncenter()
                 .translate(-brushOffset, 0, 0)
-                .renderInto(matrixStack, buffer.getBuffer(RenderLayer.getSolid()));
+                .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
     }
 
     @Override
     protected SuperByteBuffer getModelForState(BlockState state) {
-        return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.from(state.get(HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE));
+        return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.fromAxisAndDirection(state.getValue(HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE));
     }
 }

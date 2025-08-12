@@ -17,20 +17,20 @@ package org.patryk3211.powergrid.data;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.core.HolderLookup;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ItemTagProvider extends FabricTagProvider.ItemTagProvider {
-    public ItemTagProvider(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> completableFuture) {
+    public ItemTagProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> completableFuture) {
         super(output, completableFuture, null);
     }
 
     @Override
-    protected void configure(RegistryWrapper.WrapperLookup provider) {
-        var builder = getOrCreateTagBuilder(ModdedTags.Item.CIRCUIT_COMPONENT.tag);
+    protected void addTags(HolderLookup.Provider provider) {
+        var builder = tag(ModdedTags.Item.CIRCUIT_COMPONENT.tag);
         for(var component : ComponentRegistry.entries()) {
             var item = component.getRequiredItem();
             builder.add(item);

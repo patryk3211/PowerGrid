@@ -15,21 +15,21 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 public class ImaginaryWireEndpoint implements IWireEndpoint {
-    private Vec3d pos;
+    private Vec3 pos;
 
     public ImaginaryWireEndpoint() {
         pos = null;
     }
 
-    public ImaginaryWireEndpoint(Vec3d pos) {
+    public ImaginaryWireEndpoint(Vec3 pos) {
         this.pos = pos;
     }
 
@@ -39,9 +39,9 @@ public class ImaginaryWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void read(NbtCompound nbt) {
+    public void read(CompoundTag nbt) {
         var tag = nbt.getCompound("Pos");
-        pos = new Vec3d(
+        pos = new Vec3(
                 tag.getFloat("X"),
                 tag.getFloat("Y"),
                 tag.getFloat("Z")
@@ -49,8 +49,8 @@ public class ImaginaryWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void write(NbtCompound nbt) {
-        var tag = new NbtCompound();
+    public void write(CompoundTag nbt) {
+        var tag = new CompoundTag();
         tag.putFloat("X", (float) pos.x);
         tag.putFloat("Y", (float) pos.y);
         tag.putFloat("Z", (float) pos.z);
@@ -58,17 +58,17 @@ public class ImaginaryWireEndpoint implements IWireEndpoint {
 
     @Override
     @NotNull
-    public Vec3d getExactPosition(World world) {
+    public Vec3 getExactPosition(Level world) {
         return pos;
     }
 
     @Override
-    public IElectricNode getNode(World world) {
+    public IElectricNode getNode(Level world) {
         return null;
     }
 
     @Override
-    public void joinNetwork(World world, ElectricalNetwork network) {
+    public void joinNetwork(Level world, ElectricalNetwork network) {
         throw new IllegalStateException("Cannot join network");
     }
 

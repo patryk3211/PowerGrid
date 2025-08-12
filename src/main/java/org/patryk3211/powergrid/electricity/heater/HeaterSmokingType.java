@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.electricity.heater;
 
 import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 
 public class HeaterSmokingType extends AllFanProcessingTypes.SmokingType implements IProcessingTypeModifier {
@@ -32,7 +32,7 @@ public class HeaterSmokingType extends AllFanProcessingTypes.SmokingType impleme
     }
 
     @Override
-    public boolean isValidAt(World level, BlockPos pos) {
+    public boolean isValidAt(Level level, BlockPos pos) {
         if(level.getBlockEntity(pos) instanceof HeaterBlockEntity heatingCoil) {
             return heatingCoil.getState() == HeaterBlockEntity.State.SMOKING;
         }

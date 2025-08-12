@@ -17,49 +17,47 @@ package org.patryk3211.powergrid.electricity.bell;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.sound.MovingSoundInstance;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.sound.SoundManager;
-import net.minecraft.client.sound.WeightedSoundSet;
-import net.minecraft.sound.SoundCategory;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundSource;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 @Environment(EnvType.CLIENT)
-public class AlarmBellSoundInstance extends MovingSoundInstance {
+public class AlarmBellSoundInstance extends AbstractTickableSoundInstance {
     private final AlarmBellBlockEntity be;
 
     protected AlarmBellSoundInstance(AlarmBellBlockEntity be) {
-        super(ModdedSoundEvents.ALARM_BELL.getMainEvent(), SoundCategory.BLOCKS, be.getWorld().random);
+        super(ModdedSoundEvents.ALARM_BELL.getMainEvent(), SoundSource.BLOCKS, be.getLevel().random);
         this.be = be;
 
-        var pos = be.getPos().toCenterPos();
+        var pos = be.getBlockPos().getCenter();
         this.x = pos.x;
         this.y = pos.y;
         this.z = pos.z;
-        this.attenuationType = AttenuationType.LINEAR;
-        this.repeat = true;
-        this.repeatDelay = 0;
+        this.attenuation = Attenuation.LINEAR;
+        this.looping = true;
+        this.delay = 0;
         this.volume = 0.0F;
     }
 
-    public boolean shouldAlwaysPlay() {
+    public boolean canStartSilent() {
         return true;
     }
 
     public void playEnd() {
-        var manager = MinecraftClient.getInstance().getSoundManager();
-        manager.play(new PositionedSoundInstance(ModdedSoundEvents.ALARM_BELL_END.getMainEvent(), SoundCategory.BLOCKS, volume, pitch, random, x, y, z));
+        var manager = Minecraft.getInstance().getSoundManager();
+        manager.play(new SimpleSoundInstance(ModdedSoundEvents.ALARM_BELL_END.getMainEvent(), SoundSource.BLOCKS, volume, pitch, random, x, y, z));
     }
 
     @Override
     public void tick() {
         if(be.isRemoved()) {
-            setDone();
+            stop();
         } else {
             var newVolume = be.getVolume();
             if(newVolume == 0) {
-                setDone();
+                stop();
                 playEnd();
             }
             volume = be.getVolume();

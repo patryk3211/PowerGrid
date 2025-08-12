@@ -20,17 +20,17 @@ import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.api.registration.PonderPlugin;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class PowerGridPonderPlugin implements PonderPlugin {
     @Override
-    public void registerScenes(PonderSceneRegistrationHelper<Identifier> helper) {
+    public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         PowerGridPonderScenes.register(helper);
     }
 
     @Override
-    public void registerTags(PonderTagRegistrationHelper<Identifier> helper) {
+    public void registerTags(PonderTagRegistrationHelper<ResourceLocation> helper) {
         PowerGridPonderTags.register(helper);
     }
 

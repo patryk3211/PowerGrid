@@ -15,31 +15,31 @@
  */
 package org.patryk3211.powergrid.circuits.circuitboard;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import org.patryk3211.powergrid.circuits.components.IRenderedComponent;
 
 @Environment(EnvType.CLIENT)
 public class CircuitBoardRenderer extends SafeBlockEntityRenderer<CircuitBoardBlockEntity> {
-    public CircuitBoardRenderer(BlockEntityRendererFactory.Context context) {
+    public CircuitBoardRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     @Override
-    protected void renderSafe(CircuitBoardBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider bufferSource, int light, int overlay) {
+    protected void renderSafe(CircuitBoardBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
         var components = be.getComponents(IRenderedComponent.class);
         if(components.isEmpty())
             return;
 
         for(var placed : components) {
             var rendered = (IRenderedComponent) placed.component;
-            ms.push();
+            ms.pushPose();
             ms.translate(placed.x / 16f, 2 / 16f, placed.y / 16f);
             rendered.render(be, placed, partialTicks, ms, bufferSource, light, overlay);
-            ms.pop();
+            ms.popPose();
         }
     }
 }

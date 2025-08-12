@@ -15,21 +15,21 @@
  */
 package org.patryk3211.powergrid.electricity.info;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
 public class Power {
-    public static void rated(float value, PlayerEntity player, List<Text> tooltip) {
+    public static void rated(float value, Player player, List<Component> tooltip) {
         Lang.translate("tooltip.power.rated")
-                .style(Formatting.GRAY).addTo(tooltip);
+                .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
-                .add(Text.of(" ")).add(Lang.number(value))
-                .add(Text.of(" ")).add(Unit.POWER.get())
-                .style(Formatting.YELLOW).addTo(tooltip);
+                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
+                .add(Component.nullToEmpty(" ")).add(Unit.POWER.get())
+                .style(ChatFormatting.YELLOW).addTo(tooltip);
     }
 }

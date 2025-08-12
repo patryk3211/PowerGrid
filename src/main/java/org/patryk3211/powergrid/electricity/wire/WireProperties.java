@@ -17,7 +17,7 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class WireProperties {
     public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setResistance(float resistance) {
@@ -44,7 +44,7 @@ public class WireProperties {
         };
     }
 
-    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setRenderingParams(Identifier texture, float horizontalCoefficient, float verticalCoefficient, float thickness) {
+    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setRenderingParams(ResourceLocation texture, float horizontalCoefficient, float verticalCoefficient, float thickness) {
         return b -> {
             b.onRegister(item -> {
                 item.wireTexture = texture;

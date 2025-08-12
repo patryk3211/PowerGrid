@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
-import net.minecraft.nbt.NbtByte;
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.ByteTag;
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 
 public class BooleanProperty extends ComponentProperty<Boolean> {
@@ -35,17 +35,17 @@ public class BooleanProperty extends ComponentProperty<Boolean> {
     }
 
     @Override
-    public Boolean read(@Nullable NbtElement element) {
+    public Boolean read(@Nullable Tag element) {
         if(element == null)
             return false;
-        if(element.getType() != NbtElement.BYTE_TYPE)
+        if(element.getId() != Tag.TAG_BYTE)
             return false;
-        return ((NbtByte) element).byteValue() != 0;
+        return ((ByteTag) element).getAsByte() != 0;
     }
 
     @Override
-    public NbtElement write(Boolean value) {
-        return NbtByte.of(value);
+    public Tag write(Boolean value) {
+        return ByteTag.valueOf(value);
     }
 
     @Override

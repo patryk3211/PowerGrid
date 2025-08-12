@@ -21,28 +21,28 @@ import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
 import net.fabricmc.fabric.api.entity.FakePlayer;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.pathing.NavigationType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
@@ -54,9 +54,9 @@ import org.patryk3211.powergrid.electricity.wire.IWire;
 import java.util.List;
 
 public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE<PortableBatteryBlockEntity>, SpecialBlockItemRequirement {
-    private static final VoxelShape SHAPE = VoxelShapes.union(
-            createCuboidShape(4, 0, 4, 12, 9, 12),
-            createCuboidShape(5, 9, 5, 11, 12, 11)
+    private static final VoxelShape SHAPE = Shapes.or(
+            box(4, 0, 4, 12, 9, 12),
+            box(5, 9, 5, 11, 12, 11)
     );
 
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
@@ -64,12 +64,12 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
         new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 9.5, 9.5, 6.5, 11.5, 12.5, 9.5)
     };
 
-    public PortableBatteryBlock(Settings settings) {
+    public PortableBatteryBlock(Properties settings) {
         super(settings);
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> BlockStateTerminalCollection
                         .each(TERMINALS_NORTH, terminal -> terminal
-                                .rotateAroundY((int) (180 - state.get(HORIZONTAL_FACING).asRotation()))))
+                                .rotateAroundY((int) (180 - state.getValue(HORIZONTAL_FACING).toYRot()))))
                 .withShapeMapper(state -> SHAPE)
                 .build());
     }
@@ -89,53 +89,53 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     }
 
     @Override
-    public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
-        var stacks = super.getDroppedStacks(state, builder);
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        var stacks = super.getDrops(state, builder);
         return stacks;
     }
 
     /**
-     * @see com.simibubi.create.content.equipment.armor.BacktankBlock#onUse(BlockState, World, BlockPos, PlayerEntity, Hand, BlockHitResult)
+     * @see com.simibubi.create.content.equipment.armor.BacktankBlock#use(BlockState, Level, BlockPos, Player, InteractionHand, BlockHitResult)
      */
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(player == null)
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         if(player instanceof FakePlayer)
-            return ActionResult.PASS;
-        if(player.isSneaking())
-            return ActionResult.PASS;
-        var heldItem = player.getMainHandStack().getItem();
+            return InteractionResult.PASS;
+        if(player.isShiftKeyDown())
+            return InteractionResult.PASS;
+        var heldItem = player.getMainHandItem().getItem();
         if(heldItem instanceof BlockItem || heldItem instanceof IWire)
-            return ActionResult.PASS;
-        if(!player.getEquippedStack(EquipmentSlot.CHEST).isEmpty())
-            return ActionResult.PASS;
-        if(!world.isClient) {
-            world.playSound(null, pos, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, .75f, 1);
-            player.equipStack(EquipmentSlot.CHEST, getPickStack(world, pos, state));
-            world.breakBlock(pos, false);
+            return InteractionResult.PASS;
+        if(!player.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
+            return InteractionResult.PASS;
+        if(!world.isClientSide) {
+            world.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .75f, 1);
+            player.setItemSlot(EquipmentSlot.CHEST, getCloneItemStack(world, pos, state));
+            world.destroyBlock(pos, false);
         }
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    public void onPlaced(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-        super.onPlaced(worldIn, pos, state, placer, stack);
-        if(worldIn.isClient)
+    public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(worldIn, pos, state, placer, stack);
+        if(worldIn.isClientSide)
             return;
         if(stack == null)
             return;
         withBlockEntityDo(worldIn, pos, be -> {
-            int level = EnchantmentHelper.getLevel(AllEnchantments.CAPACITY.get(), stack);
+            int level = EnchantmentHelper.getItemEnchantmentLevel(AllEnchantments.CAPACITY.get(), stack);
             be.setCapacityEnchantLevel(level);
             be.setCharge(BatteryUtils.getCurrentCharge(stack));
 
-            var vanillaTag = stack.getOrCreateNbt();
-            if(stack.hasCustomName())
-                be.setName(stack.getName());
+            var vanillaTag = stack.getOrCreateTag();
+            if(stack.hasCustomHoverName())
+                be.setName(stack.getHoverName());
 
             be.setTags(vanillaTag);
-            be.markDirty();
+            be.setChanged();
         });
     }
 
@@ -144,35 +144,35 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     }
 
     @Override
-    public boolean hasComparatorOutput(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+    public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
         return getBlockEntityOptional(world, pos).map(PortableBatteryBlockEntity::getComparatorOutput).orElse(0);
     }
 
     @Override
-    public boolean canPathfindThrough(BlockState state, BlockView world, BlockPos pos, NavigationType type) {
+    public boolean isPathfindable(BlockState state, BlockGetter world, BlockPos pos, PathComputationType type) {
         return false;
     }
 
     @Override
-    public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
         var item = asItem();
         if(item instanceof BacktankItem.BacktankBlockItem placeable)
             item = placeable.getActualItem();
 
         var be = getBlockEntityOptional(world, pos);
         var vanillaTag = be.map(PortableBatteryBlockEntity::getVanillaTag)
-                .orElse(new NbtCompound());
+                .orElse(new CompoundTag());
         var charge = be.map(PortableBatteryBlockEntity::getCharge)
                 .orElse(0);
 
         ItemStack stack = new ItemStack(item, 1);
         vanillaTag.putInt("Charge", charge);
-        stack.setNbt(vanillaTag);
+        stack.setTag(vanillaTag);
         return stack;
     }
 

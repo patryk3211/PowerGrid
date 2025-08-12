@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.compat.rei;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.simibubi.create.compat.rei.category.animations.AnimatedKinetics;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
@@ -31,45 +31,45 @@ import java.util.List;
 import java.util.Random;
 
 public class AnimatedMagnet extends AnimatedKinetics {
-    private static final Identifier ION_POSITIVE = PowerGrid.texture("particle/positive");
-    private static final Identifier ION_NEGATIVE = PowerGrid.texture("particle/negative");
+    private static final ResourceLocation ION_POSITIVE = PowerGrid.texture("particle/positive");
+    private static final ResourceLocation ION_NEGATIVE = PowerGrid.texture("particle/negative");
 
-    private final List<Pair<Integer, Integer>> ionPositions = new ArrayList<>();
+    private final List<Tuple<Integer, Integer>> ionPositions = new ArrayList<>();
     private Random r = new Random();
 
     public AnimatedMagnet() {
         for(int i = 0; i < 6; ++i) {
-            ionPositions.add(new Pair<>(
+            ionPositions.add(new Tuple<>(
                     r.nextInt(100), r.nextInt(70)
             ));
         }
     }
 
     @Override
-    public void draw(DrawContext graphics, int xOffset, int yOffset) {
-        MatrixStack matrixStack = graphics.getMatrices();
-        matrixStack.push();
+    public void draw(GuiGraphics graphics, int xOffset, int yOffset) {
+        PoseStack matrixStack = graphics.pose();
+        matrixStack.pushPose();
         matrixStack.translate(xOffset, yOffset, 200);
 
-        matrixStack.push();
-        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-15.5f));
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(22.5f));
+        matrixStack.pushPose();
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-15.5f));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(22.5f));
         int scale = 24;//basin ? 23 : 24;
 
-        blockElement(ModdedBlocks.ELECTROMAGNET.getDefaultState().with(ElectromagnetBlock.FACING, Direction.DOWN))
+        blockElement(ModdedBlocks.ELECTROMAGNET.getDefaultState().setValue(ElectromagnetBlock.FACING, Direction.DOWN))
                 .scale(scale)
                 .render(graphics);
-        matrixStack.pop();
+        matrixStack.popPose();
 
         matrixStack.translate(-5, -2, 0);
         for(int i = 0; i < ionPositions.size(); ++i) {
-            matrixStack.push();
+            matrixStack.pushPose();
             var texture = i % 2 == 0 ? ION_POSITIVE : ION_NEGATIVE;
             var pos = ionPositions.get(i);
-            matrixStack.translate(pos.getLeft() / 4f, pos.getRight() / 4f, 0);
+            matrixStack.translate(pos.getA() / 4f, pos.getB() / 4f, 0);
 
-            int x = pos.getLeft() + r.nextInt(-2, 3);
-            int y = pos.getRight() + r.nextInt(-2, 3);
+            int x = pos.getA() + r.nextInt(-2, 3);
+            int y = pos.getB() + r.nextInt(-2, 3);
             if(x < 0) x = 0;
             if(y < 0) y = 0;
             if(x > 100) x = 100;
@@ -79,13 +79,13 @@ public class AnimatedMagnet extends AnimatedKinetics {
                 x = r.nextInt(100);
                 y = r.nextInt(70);
             }
-            pos.setLeft(x);
-            pos.setRight(y);
+            pos.setA(x);
+            pos.setB(y);
 
-            graphics.drawTexture(texture, 0, 0, 16, 16, 16, 16, 16, 16);
-            matrixStack.pop();
+            graphics.blit(texture, 0, 0, 16, 16, 16, 16, 16, 16);
+            matrixStack.popPose();
         }
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 }

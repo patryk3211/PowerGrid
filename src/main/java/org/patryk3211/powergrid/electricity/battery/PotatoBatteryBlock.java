@@ -15,21 +15,20 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
@@ -46,8 +45,8 @@ public class PotatoBatteryBlock extends AbstractBatteryBlock<PotatoBatteryBlockE
             e -> (float) Math.exp(-6.15619f * e + 9.28731f) + 430
     );
 
-    public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
-    public static final BooleanProperty BAKED = BooleanProperty.of("baked");
+    public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final BooleanProperty BAKED = BooleanProperty.create("baked");
 
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 7, 3, 4.5, 9, 5.5, 6)
@@ -56,36 +55,36 @@ public class PotatoBatteryBlock extends AbstractBatteryBlock<PotatoBatteryBlockE
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    private static final VoxelShape SHAPE_NORTH = createCuboidShape(6, 0, 5, 10, 3, 11);
+    private static final VoxelShape SHAPE_NORTH = box(6, 0, 5, 10, 3, 11);
 
-    public PotatoBatteryBlock(Settings settings) {
+    public PotatoBatteryBlock(Properties settings) {
         super(settings);
-        setDefaultState(getDefaultState().with(BAKED, false));
+        registerDefaultState(defaultBlockState().setValue(BAKED, false));
         setTerminalCollection(HorizontalElectricBlock.horizontalNorthTerminals(this, TERMINALS_NORTH, SHAPE_NORTH));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(HORIZONTAL_FACING, BAKED);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        var player = ctx.getPlayer() == null || !ctx.getPlayer().isSneaking() ? ctx.getHorizontalPlayerFacing() : ctx.getHorizontalPlayerFacing().getOpposite();
-        return getDefaultState().with(HORIZONTAL_FACING, player.rotateYClockwise());
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var player = ctx.getPlayer() == null || !ctx.getPlayer().isShiftKeyDown() ? ctx.getHorizontalDirection() : ctx.getHorizontalDirection().getOpposite();
+        return defaultBlockState().setValue(HORIZONTAL_FACING, player.getClockWise());
     }
 
     @Override
-    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        return sideCoversSmallSquare(world, pos.down(), Direction.UP);
+    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+        return canSupportCenter(world, pos.below(), Direction.UP);
     }
 
     @Override
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        return direction == Direction.DOWN && !canPlaceAt(state, world, pos)
-                ? Blocks.AIR.getDefaultState()
-                : super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+        return direction == Direction.DOWN && !canSurvive(state, world, pos)
+                ? Blocks.AIR.defaultBlockState()
+                : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
 
     @Override

@@ -17,9 +17,9 @@ package org.patryk3211.powergrid.electricity.basinheater;
 
 import com.simibubi.create.content.kinetics.mixer.MechanicalMixerBlockEntity;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -32,14 +32,14 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
 
     public BasinHeaterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.state = state.get(BasinHeaterBlock.HEAT_LEVEL);
+        this.state = state.getValue(BasinHeaterBlock.HEAT_LEVEL);
     }
 
     public void setState(BlazeBurnerBlock.HeatLevel newState) {
-        assert world != null;
+        assert level != null;
         if(state != newState) {
             state = newState;
-            world.setBlockState(pos, getCachedState().with(BasinHeaterBlock.HEAT_LEVEL, state));
+            level.setBlockAndUpdate(worldPosition, getBlockState().setValue(BasinHeaterBlock.HEAT_LEVEL, state));
         }
     }
 
@@ -52,7 +52,7 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
     }
 
     public boolean mixerRunning() {
-        var be = world.getBlockEntity(pos.up(3));
+        var be = level.getBlockEntity(worldPosition.above(3));
         if(!(be instanceof MechanicalMixerBlockEntity mixer))
             return false;
         return mixer.running;

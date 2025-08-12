@@ -15,27 +15,26 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllSpecialTextures;
 import net.createmod.catnip.outliner.Outliner;
-import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
@@ -51,27 +50,27 @@ public class WirePreview {
     public static int wireItemCount;
 
     @Nullable
-    public static ItemStack getUsedWireStack(PlayerEntity player) {
-        var stack1 = player.getMainHandStack();
-        var stack2 = player.getOffHandStack();
-        if(stack1 != null && stack1.getItem() instanceof IWire && stack1.hasNbt()) {
+    public static ItemStack getUsedWireStack(Player player) {
+        var stack1 = player.getMainHandItem();
+        var stack2 = player.getOffhandItem();
+        if(stack1 != null && stack1.getItem() instanceof IWire && stack1.hasTag()) {
             return stack1;
-        } else if(stack2 != null && stack2.getItem() instanceof IWire && stack2.hasNbt()) {
+        } else if(stack2 != null && stack2.getItem() instanceof IWire && stack2.hasTag()) {
             return stack2;
         } else {
             return null;
         }
     }
 
-    public static void render(SuperRenderTypeBuffer buffer, MatrixStack matrixStack, ClientWorld world, ClientPlayerEntity player, HitResult target) {
+    public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target) {
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return;
         if(!(wireStack.getItem() instanceof WireItem wireItem))
             return;
 
-        var tag = wireStack.getNbt();
-        var consumer = buffer.getBuffer(RenderLayer.getEntityTranslucent(wireItem.getWireTexture()));
+        var tag = wireStack.getTag();
+        var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
         float thickness = wireItem.getWireThickness();
 
         var endpoint = WireEndpointType.deserialize(tag);
@@ -80,7 +79,7 @@ public class WirePreview {
 
         var currentPos = endpoint.getExactPosition(world);
 
-        var hitPoint = target.getPos();
+        var hitPoint = target.getLocation();
         ITerminalPlacement hitTerminal = null;
         if(target.getType() == HitResult.Type.BLOCK) {
             var blockTarget = (BlockHitResult) target;
@@ -104,7 +103,7 @@ public class WirePreview {
             if(output != null) {
                 if(DEBUG_BLOCK_TRACING) {
                     var lineBuffer = buffer.getBuffer(ModdedRenderLayers.getDebugLines());
-                    var state = output.getLeft();
+                    var state = output.getA();
                     for (var cell : state.states.values()) {
                         if (cell.backtrace == null)
                             continue;
@@ -113,22 +112,22 @@ public class WirePreview {
                             color |= 0xFF00;
                         if(!cell.backtrace.isSupported)
                             color |= 0xFF;
-                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightmapTextureManager.MAX_LIGHT_COORDINATE, color, state.transform(cell.position), state.transform(cell.backtrace.position));
+                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightTexture.FULL_BRIGHT, color, state.transform(cell.position), state.transform(cell.backtrace.position));
                     }
                 }
-                var points = output.getRight();
+                var points = output.getB();
                 if(points != null) {
                     for(var p : points.points()) {
                         var nextPos = currentPos.add(p.vector());
                         int color = points.reachedTarget() ? 0x80AAFFAA : 0x80FFAAAA;
-                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightmapTextureManager.MAX_LIGHT_COORDINATE, color, currentPos, p.direction, thickness, p.length(), 0);
+                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightTexture.FULL_BRIGHT, color, currentPos, p.direction, thickness, p.length(), 0);
                         currentPos = nextPos;
                         length += p.length();
                     }
                 }
             }
         } else {
-            HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightmapTextureManager.MAX_LIGHT_COORDINATE, 0x80AAFFAA);
+            HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightTexture.FULL_BRIGHT, 0x80AAFFAA);
             length = (float) currentPos.distanceTo(hitPoint);
         }
 
@@ -139,11 +138,11 @@ public class WirePreview {
     }
 
     public static void notifyOfBlock(BlockPos pos) {
-        Outliner.getInstance().showAABB(outlineSlot, new Box(pos), 50)
+        Outliner.getInstance().showAABB(outlineSlot, new AABB(pos), 50)
                 .colored(Color.RED.brighter())
                 .withFaceTexture(AllSpecialTextures.CHECKERED)
                 .lineWidth(0.05f);
-        MinecraftClient.getInstance().getSoundManager()
-                .play(PositionedSoundInstance.master(AllSoundEvents.DENY.getMainEvent(), 1));
+        Minecraft.getInstance().getSoundManager()
+                .play(SimpleSoundInstance.forUI(AllSoundEvents.DENY.getMainEvent(), 1));
     }
 }

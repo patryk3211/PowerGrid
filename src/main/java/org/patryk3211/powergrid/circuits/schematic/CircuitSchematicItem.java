@@ -17,46 +17,46 @@ package org.patryk3211.powergrid.circuits.schematic;
 
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 
 import java.util.List;
 
 public class CircuitSchematicItem extends Item {
-    public CircuitSchematicItem(Settings settings) {
-        super(settings.maxCount(1));
+    public CircuitSchematicItem(Properties settings) {
+        super(settings.stacksTo(1));
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        if(user.isCreative() && user.isSneaking()) {
+    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+        if(user.isCreative() && user.isShiftKeyDown()) {
             var block = new ItemStack(ModdedBlocks.CIRCUIT_BOARD, 1);
-            block.setNbt(user.getStackInHand(hand).getNbt());
-            block.removeCustomName();
-            return TypedActionResult.success(block);
+            block.setTag(user.getItemInHand(hand).getTag());
+            block.resetHoverName();
+            return InteractionResultHolder.success(block);
         } else {
             return super.use(world, user, hand);
         }
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        var player = EnvExecutor.getInEnv(Env.CLIENT, () -> () -> MinecraftClient.getInstance().player)
-                .map(PlayerEntity::isCreative)
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+        var player = EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
+                .map(Player::isCreative)
                 .orElse(false);
         if(context.isCreative() || player) {
-            tooltip.add(Text.translatable(getTranslationKey() + ".tooltip.creative")
-                    .formatted(Formatting.DARK_PURPLE, Formatting.ITALIC));
+            tooltip.add(Component.translatable(getDescriptionId() + ".tooltip.creative")
+                    .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
         }
     }
 }

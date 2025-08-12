@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.utility.forge;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 

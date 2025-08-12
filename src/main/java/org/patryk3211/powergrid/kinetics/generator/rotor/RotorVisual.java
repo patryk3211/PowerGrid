@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.rotor;
 
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import dev.engine_room.flywheel.api.instance.Instance;
 import dev.engine_room.flywheel.api.model.Model;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
@@ -25,20 +24,20 @@ import dev.engine_room.flywheel.lib.model.Models;
 import dev.engine_room.flywheel.lib.visual.AbstractBlockEntityVisual;
 import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
 import net.createmod.catnip.animation.AnimationTickHolder;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-import static net.minecraft.state.property.Properties.AXIS;
-import static net.minecraft.state.property.Properties.HORIZONTAL_AXIS;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.getRotorAngle;
 
 public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntityVisual<T> implements SimpleDynamicVisual {
     protected TransformedInstance assembly;
 
     public RotorVisual(VisualizationContext ctx, T blockEntity, float partialTick) {
-        this(ctx, blockEntity, partialTick, Models.block(blockEntity.getCachedState()));
+        this(ctx, blockEntity, partialTick, Models.block(blockEntity.getBlockState()));
     }
 
     public RotorVisual(VisualizationContext ctx, T blockEntity, float partialTick, Model model) {
@@ -46,16 +45,16 @@ public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntity
         assembly = instancerProvider()
                 .instancer(InstanceTypes.TRANSFORMED, model)
                 .createInstance()
-                .rotateToFace(Direction.from(getRotationAxis(), Direction.AxisDirection.POSITIVE));
+                .rotateToFace(Direction.fromAxisAndDirection(getRotationAxis(), Direction.AxisDirection.POSITIVE));
 
         transformAssembly();
     }
 
     public Direction.Axis getRotationAxis() {
-        if(blockState.contains(AXIS))
-            return blockState.get(AXIS);
-        if(blockState.contains(HORIZONTAL_AXIS))
-            return blockState.get(HORIZONTAL_AXIS);
+        if(blockState.hasProperty(AXIS))
+            return blockState.getValue(AXIS);
+        if(blockState.hasProperty(HORIZONTAL_AXIS))
+            return blockState.getValue(HORIZONTAL_AXIS);
         return Direction.Axis.X;
     }
 
@@ -83,7 +82,7 @@ public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntity
         var partial = AnimationTickHolder.getPartialTicks();
         var rotorAngle = getRotorAngle(blockEntity, partial);
 
-        var dir = Direction.from(getRotationAxis(), Direction.AxisDirection.POSITIVE);
+        var dir = Direction.fromAxisAndDirection(getRotationAxis(), Direction.AxisDirection.POSITIVE);
         assembly.setIdentityTransform()
                 .translate(getVisualPosition())
                 .center()

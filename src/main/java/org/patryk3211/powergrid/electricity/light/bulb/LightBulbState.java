@@ -18,12 +18,12 @@ package org.patryk3211.powergrid.electricity.light.bulb;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
@@ -62,15 +62,15 @@ public abstract class LightBulbState {
     }
 
     protected void updatePowerLevel(int newLevel) {
-        var world = fixture.getWorld();
-        var state = fixture.getCachedState();
-        if(newLevel != state.get(POWER)) {
-            world.setBlockState(fixture.getPos(), state.with(POWER, newLevel));
+        var world = fixture.getLevel();
+        var state = fixture.getBlockState();
+        if(newLevel != state.getValue(POWER)) {
+            world.setBlockAndUpdate(fixture.getBlockPos(), state.setValue(POWER, newLevel));
         }
     }
 
     public int getPowerLevel() {
-        return fixture.getCachedState().get(POWER);
+        return fixture.getBlockState().getValue(POWER);
     }
 
     public void tick() {
@@ -82,19 +82,19 @@ public abstract class LightBulbState {
         applyPower(filament.power() - dissipatedPower);
         filament.setResistance(bulb.resistanceFunction(temperature));
 
-        var world = fixture.getWorld();
+        var world = fixture.getLevel();
         if(isOverheated()) {
             burned = true;
             filament.setState(false);
-            if(world.isClient) {
-                var pos = fixture.getPos().toCenterPos();
+            if(world.isClientSide) {
+                var pos = fixture.getBlockPos().getCenter();
                 world.addParticle(ParticleTypes.FLASH, pos.x, pos.y, pos.z, 0, 0, 0);
             }
             updatePowerLevel(0);
             return;
         }
 
-        if(!world.isClient) {
+        if(!world.isClientSide) {
             int powerLevel = 0;
             if(temperature > 1400f) {
                 powerLevel = 2;
@@ -128,15 +128,15 @@ public abstract class LightBulbState {
     @Environment(EnvType.CLIENT)
     public abstract PartialModel getModel();
 
-    public void write(NbtCompound nbt) {
-        nbt.putString("Bulb", Registries.ITEM.getId(item).toString());
+    public void write(CompoundTag nbt) {
+        nbt.putString("Bulb", BuiltInRegistries.ITEM.getKey(item).toString());
         nbt.putFloat("Temperature", temperature);
         if(burned)
             nbt.putBoolean("Burned", true);
     }
 
-    public void read(NbtCompound nbt) {
-        var bulbItem = Registries.ITEM.get(new Identifier(nbt.getString("Bulb")));
+    public void read(CompoundTag nbt) {
+        var bulbItem = BuiltInRegistries.ITEM.get(new ResourceLocation(nbt.getString("Bulb")));
         if(bulbItem != item) {
             PowerGrid.LOGGER.error("Bulb item validation failed");
             return;
@@ -145,10 +145,10 @@ public abstract class LightBulbState {
         burned = nbt.getBoolean("Burned");
     }
 
-    public static Item getBulbItem(NbtCompound nbt) {
+    public static Item getBulbItem(CompoundTag nbt) {
         if(!nbt.contains("Bulb"))
             return null;
-        var bulbItem = Registries.ITEM.get(new Identifier(nbt.getString("Bulb")));
+        var bulbItem = BuiltInRegistries.ITEM.get(new ResourceLocation(nbt.getString("Bulb")));
         if(!(bulbItem instanceof ILightBulb)) {
             PowerGrid.LOGGER.error("Tried to use a non light bulb item for light bulb state");
             return null;

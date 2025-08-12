@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.components.fabric;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.Component;
 
@@ -30,12 +30,12 @@ public class ComponentRegistryImpl {
     }
 
     @NotNull
-    public static Identifier getId(@NotNull Component component) {
-        return Objects.requireNonNull(REGISTRY.getId(component), "This component is not registered");
+    public static ResourceLocation getId(@NotNull Component component) {
+        return Objects.requireNonNull(REGISTRY.getKey(component), "This component is not registered");
     }
 
     @NotNull
-    public static Component get(@NotNull Identifier id) {
+    public static Component get(@NotNull ResourceLocation id) {
         return Objects.requireNonNull(REGISTRY.get(id), "This id doesn't exist");
     }
 }

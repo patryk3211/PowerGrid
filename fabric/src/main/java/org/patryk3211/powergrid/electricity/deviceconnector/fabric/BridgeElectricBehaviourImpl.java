@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.deviceconnector.fabric;
 
-import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.FEBridgeEnergyStorage;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
@@ -23,8 +23,8 @@ import team.reborn.energy.api.EnergyStorage;
 
 public class BridgeElectricBehaviourImpl {
     public static IFEBridgeHandler makeFEHandler(BlockEntity be) {
-        var facing = be.getCachedState().get(DeviceConnectorBlock.FACING);
-        var energyStorage = EnergyStorage.SIDED.find(be.getWorld(), be.getPos().offset(facing), facing.getOpposite());
+        var facing = be.getBlockState().getValue(DeviceConnectorBlock.FACING);
+        var energyStorage = EnergyStorage.SIDED.find(be.getLevel(), be.getBlockPos().relative(facing), facing.getOpposite());
         if(energyStorage != null) {
             return new FEBridgeEnergyStorage(be);
         } else {

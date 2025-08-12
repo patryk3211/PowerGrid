@@ -15,37 +15,39 @@
  */
 package org.patryk3211.powergrid.electricity.particles;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Camera;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
-import net.minecraft.client.render.*;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.renderer.LightTexture;
 
 @Environment(EnvType.CLIENT)
-public class SparkParticle extends SpriteBillboardParticle {
-    protected SparkParticle(SparkParticleData data, ClientWorld world, double x, double y, double z, double vX, double vY, double vZ, SpriteProvider sprites) {
+public class SparkParticle extends TextureSheetParticle {
+    protected SparkParticle(SparkParticleData data, ClientLevel world, double x, double y, double z, double vX, double vY, double vZ, SpriteSet sprites) {
         super(world, x, y, z);
-        setSpriteForAge(sprites);
-        velocityX = vX;
-        velocityY = vY;
-        velocityZ = vZ;
+        setSpriteFromAge(sprites);
+        xd = vX;
+        yd = vY;
+        zd = vZ;
 
         var r = world.random;
         var color = r.nextFloat() * 0.3f + 0.3f;
-        blue = color;
-        red = 1;
-        green = 1;
+        bCol = color;
+        rCol = 1;
+        gCol = 1;
 
-        gravityStrength = data.getGravity() ? 3.0f : 0;
-        velocityMultiplier = 0.97f;
-        maxAge = data.getLife() < 0 ? r.nextInt(20) + 40 : data.getLife();
-        scale = r.nextFloat() * 0.1f + 0.1f;
-        collidesWithWorld = data.getCollision();
+        gravity = data.getGravity() ? 3.0f : 0;
+        friction = 0.97f;
+        lifetime = data.getLife() < 0 ? r.nextInt(20) + 40 : data.getLife();
+        quadSize = r.nextFloat() * 0.1f + 0.1f;
+        hasPhysics = data.getCollision();
     }
 
     @Override
-    protected int getBrightness(float tint) {
-        return LightmapTextureManager.MAX_LIGHT_COORDINATE;
+    protected int getLightColor(float tint) {
+        return LightTexture.FULL_BRIGHT;
     }
 
     @Override
@@ -57,16 +59,16 @@ public class SparkParticle extends SpriteBillboardParticle {
     }
 
     @Override
-    public ParticleTextureSheet getType() {
-        return ParticleTextureSheet.PARTICLE_SHEET_OPAQUE;
+    public ParticleRenderType getRenderType() {
+        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
     }
 
     /**
      * TODO:
-     * @see ElderGuardianAppearanceParticle
+     * @see MobAppearanceParticle
      */
     @Override
-    public void buildGeometry(VertexConsumer buffer, Camera camera, float tickDelta) {
+    public void render(VertexConsumer buffer, Camera camera, float tickDelta) {
 //        var camPos = camera.getPos();
 //        var x = (float) (MathHelper.lerp(tickDelta, this.prevPosX, this.x) - camPos.getX());
 //        var y = (float) (MathHelper.lerp(tickDelta, this.prevPosY, this.y) - camPos.getY());
@@ -108,17 +110,17 @@ public class SparkParticle extends SpriteBillboardParticle {
 //                    .light(light)
 //                    .next();
 //        }
-        super.buildGeometry(buffer, camera, tickDelta);
+        super.render(buffer, camera, tickDelta);
     }
 
-    public static class Factory implements ParticleFactory<SparkParticleData> {
-        private final SpriteProvider sprites;
+    public static class Factory implements ParticleProvider<SparkParticleData> {
+        private final SpriteSet sprites;
 
-        public Factory(SpriteProvider sprites) {
+        public Factory(SpriteSet sprites) {
             this.sprites = sprites;
         }
 
-        public Particle createParticle(SparkParticleData data, ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        public Particle createParticle(SparkParticleData data, ClientLevel world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
             return new SparkParticle(data, world, x, y, z, xSpeed, ySpeed, zSpeed, this.sprites);
         }
     }

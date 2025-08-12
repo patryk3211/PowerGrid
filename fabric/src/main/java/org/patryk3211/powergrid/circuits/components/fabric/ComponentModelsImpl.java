@@ -15,15 +15,15 @@
  */
 package org.patryk3211.powergrid.circuits.components.fabric;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.model.BakedModel;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
 import static org.patryk3211.powergrid.circuits.components.ComponentModels.rawModelId;
 
 public class ComponentModelsImpl {
     public static BakedModel getModel(PlacedComponent placed) {
-        var manager = MinecraftClient.getInstance().getBakedModelManager();
+        var manager = Minecraft.getInstance().getModelManager();
         var model = manager.getModel(rawModelId(placed.component.getModelId(placed)));
         return model != null ? model : manager.getMissingModel();
     }

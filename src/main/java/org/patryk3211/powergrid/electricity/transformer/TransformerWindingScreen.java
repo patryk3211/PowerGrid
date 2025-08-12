@@ -16,16 +16,23 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.simibubi.create.foundation.blockEntity.behaviour.*;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
+import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
+import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsScreen;
 import net.createmod.catnip.gui.ScreenOpener;
 import net.createmod.catnip.theme.Color;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.*;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.TransformerWindingC2SPacket;
@@ -35,25 +42,25 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class TransformerWindingScreen extends ValueSettingsScreen {
-    public static final Identifier CAP_TEXTURE = PowerGrid.texture("gui/brass_cover");
+    public static final ResourceLocation CAP_TEXTURE = PowerGrid.texture("gui/brass_cover");
 
     public static ValueSettingsBoard makeBoard(TransformerBlock block) {
         return new ValueSettingsBoard(
                 Lang.translateDirect("gui.transformer.turns"),
                 block.getMaxTurns(),
                 10,
-                List.of(Text.literal("N")),
+                List.of(Component.literal("N")),
                 new ValueSettingsFormatter(TransformerWindingScreen::formatSettings)
         );
     }
 
-    public static MutableText formatSettings(ValueSettingsBehaviour.ValueSettings settings) {
+    public static MutableComponent formatSettings(ValueSettingsBehaviour.ValueSettings settings) {
         return Lang
                 .number(Math.max(1, Math.abs(settings.value())))
                 .component();
     }
 
-    private final Hand hand;
+    private final InteractionHand hand;
     private int cap;
 
     private static int interactionTicks = -1;
@@ -68,7 +75,7 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
         return false;
     }
 
-    public TransformerWindingScreen(TransformerBlock block, Hand hand, int current, int primaryTurns) {
+    public TransformerWindingScreen(TransformerBlock block, InteractionHand hand, int current, int primaryTurns) {
         super(null, makeBoard(block), new ValueSettingsBehaviour.ValueSettings(0, current), setting -> {}, 1000);
         this.hand = hand;
         this.cap = block.getMaxTurns() - primaryTurns;
@@ -82,7 +89,7 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
         return value;
     }
 
-    public static void renderCropped(DrawContext graphics, int x, int y, int width, int height, int u, int v) {
+    public static void renderCropped(GuiGraphics graphics, int x, int y, int width, int height, int u, int v) {
         var left = x;
         var top = y;
         var right = left + width;
@@ -93,25 +100,25 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
         var u2 = u1 + width / 256f;
         var v2 = v1 + height / 256f;
 
-        var m = graphics.getMatrices().peek().getPositionMatrix();
+        var m = graphics.pose().last().pose();
         var c = Color.WHITE;
         int z = 0;
 
-        Tessellator tesselator = Tessellator.getInstance();
-        BufferBuilder bufferbuilder = tesselator.getBuffer();
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferbuilder = tesselator.getBuilder();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorTexProgram);
-        bufferbuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE);
-        bufferbuilder.vertex(m, (float) left , (float) bot, (float) z).color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()).texture(u1, v2).next();
-        bufferbuilder.vertex(m, (float) right, (float) bot, (float) z).color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()).texture(u2, v2).next();
-        bufferbuilder.vertex(m, (float) right, (float) top, (float) z).color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()).texture(u2, v1).next();
-        bufferbuilder.vertex(m, (float) left , (float) top, (float) z).color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()).texture(u1, v1).next();
-        tesselator.draw();
+        RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        bufferbuilder.vertex(m, (float) left , (float) bot, (float) z).color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()).uv(u1, v2).endVertex();
+        bufferbuilder.vertex(m, (float) right, (float) bot, (float) z).color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()).uv(u2, v2).endVertex();
+        bufferbuilder.vertex(m, (float) right, (float) top, (float) z).color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()).uv(u2, v1).endVertex();
+        bufferbuilder.vertex(m, (float) left , (float) top, (float) z).color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()).uv(u1, v1).endVertex();
+        tesselator.end();
         RenderSystem.disableBlend();
     }
 
-    public void renderBarCap(DrawContext graphics, int x, int y, int width, ValueSettingsBoard board) {
+    public void renderBarCap(GuiGraphics graphics, int x, int y, int width, ValueSettingsBoard board) {
         int milestoneCount = board.maxValue() / board.milestoneInterval();
         int milestoneSegmentWidth = width / milestoneCount;
         int scale = board.maxValue() > 128 ? 1 : 2;
@@ -146,10 +153,10 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
         }
     }
 
-    public void renderBarCapMilestone(DrawContext graphics, int x, int y, int milestone, ValueSettingsBoard board) {
+    public void renderBarCapMilestone(GuiGraphics graphics, int x, int y, int milestone, ValueSettingsBoard board) {
         var milestoneValue = milestone * board.milestoneInterval();
         if(milestoneValue > cap) {
-            graphics.drawTexture(CAP_TEXTURE, x, y + 1, 0, 11, 7, 8);
+            graphics.blit(CAP_TEXTURE, x, y + 1, 0, 11, 7, 8);
         }
     }
 
@@ -157,7 +164,7 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
         ValueSettingsBehaviour.ValueSettings closest = getClosestCoordinate((int) pMouseX, (int) pMouseY);
         var value = Math.max(closest.value(), 1);
         ModdedPackets.getChannel().sendToServer(new TransformerWindingC2SPacket(value, hand));
-        close();
+        onClose();
     }
 
     public static void clientTick() {
@@ -165,8 +172,8 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
             return;
 
         if(++interactionTicks <= 3) {
-            var mc = MinecraftClient.getInstance();
-            if (!mc.options.useKey.isPressed()) {
+            var mc = Minecraft.getInstance();
+            if (!mc.options.keyUse.isDown()) {
                 interactionTicks = -1;
                 return;
             }

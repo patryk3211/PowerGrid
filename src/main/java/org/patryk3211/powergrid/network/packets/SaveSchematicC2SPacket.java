@@ -16,10 +16,10 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
@@ -30,29 +30,29 @@ import java.util.function.Supplier;
 
 public class SaveSchematicC2SPacket implements SimplePacket {
     private final BlockPos pos;
-    private NbtCompound nbt;
+    private CompoundTag nbt;
     @Nullable
     private String name;
     private boolean load;
 
     public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, boolean load) {
-        pos = be.getPos();
+        pos = be.getBlockPos();
         nbt = null;
         this.load = load;
     }
 
     public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, @Nullable String name, CircuitSchematic schematic) {
-        pos = be.getPos();
+        pos = be.getBlockPos();
         nbt = schematic.serializeNbt();
         this.name = name;
     }
 
-    public SaveSchematicC2SPacket(PacketByteBuf buf) {
+    public SaveSchematicC2SPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
         if(buf.readBoolean()) {
             nbt = buf.readNbt();
             if(buf.readBoolean()) {
-                name = buf.readString();
+                name = buf.readUtf();
             }
         } else {
             load = buf.readBoolean();
@@ -60,14 +60,14 @@ public class SaveSchematicC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeBoolean(nbt != null);
         if(nbt != null) {
             buf.writeNbt(nbt);
             buf.writeBoolean(name != null);
             if(name != null) {
-                buf.writeString(name);
+                buf.writeUtf(name);
             }
         } else {
             buf.writeBoolean(load);
@@ -78,7 +78,7 @@ public class SaveSchematicC2SPacket implements SimplePacket {
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         var ctx = context.get();
         ctx.queue(() -> {
-            var world = ctx.getPlayer().getWorld();
+            var world = ctx.getPlayer().level();
             var be = world.getBlockEntity(pos);
             if(be instanceof CircuitDesignTableBlockEntity table) {
                 if(nbt != null) {
@@ -87,7 +87,7 @@ public class SaveSchematicC2SPacket implements SimplePacket {
                     table.notifyUpdate();
 
                     // Saved successfully.
-                    IMultiScreenHandlerFactory.openScreen((ServerPlayerEntity) ctx.getPlayer(), table, table::sendToMenu, 0);
+                    IMultiScreenHandlerFactory.openScreen((ServerPlayer) ctx.getPlayer(), table, table::sendToMenu, 0);
                 } else {
                     if(load) {
                         // Load schematic from item

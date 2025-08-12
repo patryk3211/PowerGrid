@@ -15,55 +15,55 @@
  */
 package org.patryk3211.powergrid.electricity.portablebattery;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.equipment.armor.BacktankArmorLayer;
 import com.simibubi.create.content.equipment.armor.BacktankBlock;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.TexturedRenderLayers;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.feature.FeatureRenderer;
-import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
-import net.minecraft.client.render.entity.model.EntityModel;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @see BacktankArmorLayer
  * @param <T>
  * @param <M>
  */
-public class BatteryArmorLayer<T extends LivingEntity, M extends EntityModel<T>> extends FeatureRenderer<T, M> {
-    public BatteryArmorLayer(FeatureRendererContext<T, M> renderer) {
+public class BatteryArmorLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
+    public BatteryArmorLayer(RenderLayerParent<T, M> renderer) {
         super(renderer);
     }
 
     @Override
-    public void render(MatrixStack ms, VertexConsumerProvider buffer, int light, LivingEntity entity, float yaw, float pitch,
+    public void render(PoseStack ms, MultiBufferSource buffer, int light, LivingEntity entity, float yaw, float pitch,
                        float pt, float p_225628_8_, float p_225628_9_, float p_225628_10_) {
-        if(entity.getPose() == EntityPose.SLEEPING)
+        if(entity.getPose() == Pose.SLEEPING)
             return;
 
         var item = PortableBatteryItem.getWornBy(entity);
         if(item == null)
             return;
 
-        M entityModel = getContextModel();
-        if (!(entityModel instanceof BipedEntityModel<?> model))
+        M entityModel = getParentModel();
+        if (!(entityModel instanceof HumanoidModel<?> model))
             return;
 
-        RenderLayer renderType = TexturedRenderLayers.getEntityCutout();
-        BlockState renderedState = item.getBlock().getDefaultState()
-                .with(BacktankBlock.HORIZONTAL_FACING, Direction.NORTH);
+        RenderType renderType = Sheets.cutoutBlockSheet();
+        BlockState renderedState = item.getBlock().defaultBlockState()
+                .setValue(BacktankBlock.HORIZONTAL_FACING, Direction.NORTH);
         SuperByteBuffer backtank = CachedBuffers.block(renderedState);
 
-        ms.push();
+        ms.pushPose();
 
-        model.body.rotate(ms);
+        model.body.translateAndRotate(ms);
         ms.translate(-1 / 2f, 10 / 16f, 1f);
         ms.scale(1, -1, -1);
 
@@ -71,7 +71,7 @@ public class BatteryArmorLayer<T extends LivingEntity, M extends EntityModel<T>>
                 .light(light)
                 .renderInto(ms, buffer.getBuffer(renderType));
 
-        ms.pop();
+        ms.popPose();
     }
 
 }

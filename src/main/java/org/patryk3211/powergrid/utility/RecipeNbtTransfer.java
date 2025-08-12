@@ -15,28 +15,28 @@
  */
 package org.patryk3211.powergrid.utility;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
 public class RecipeNbtTransfer {
     public static void transfer(Iterable<ItemStack> inputs, Iterable<ItemStack> outputs) {
-        NbtCompound schematic = null;
+        CompoundTag schematic = null;
         for(var consumed : inputs) {
-            if(consumed.isIn(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) && consumed.hasNbt()) {
-                var root = consumed.getNbt();
+            if(consumed.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) && consumed.hasTag()) {
+                var root = consumed.getTag();
                 if(root.contains("Schematic")) {
-                    schematic = consumed.getNbt().getCompound("Schematic").copy();
+                    schematic = consumed.getTag().getCompound("Schematic").copy();
                 }
             }
         }
         if(schematic == null)
             return;
         for(var output : outputs) {
-            if(output.isIn(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)) {
-                var tag = new NbtCompound();
+            if(output.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)) {
+                var tag = new CompoundTag();
                 tag.put("Schematic", schematic);
-                output.setNbt(tag);
+                output.setTag(tag);
             }
         }
     }

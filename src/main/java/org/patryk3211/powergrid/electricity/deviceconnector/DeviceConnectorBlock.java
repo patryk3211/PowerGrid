@@ -18,21 +18,21 @@ package org.patryk3211.powergrid.electricity.deviceconnector;
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.createmod.catnip.math.VoxelShaper;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.base.CustomProperties;
@@ -43,9 +43,9 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity> {
-    public static final DirectionProperty FACING = Properties.FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
-    public static final BooleanProperty POLARIZED = BooleanProperty.of("polarized");
+    public static final BooleanProperty POLARIZED = BooleanProperty.create("polarized");
 
     private final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, -0.5, 10.5, 6, 4.5),
@@ -61,19 +61,19 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    private static final VoxelShape SHAPE_DOWN = createCuboidShape(4.5, 0, 3.5, 11.5, 4, 12.5);
-    private static final VoxelShape SHAPE_DOWN_2 = createCuboidShape(3.5, 0, 4.5, 12.5, 4, 11.5);
+    private static final VoxelShape SHAPE_DOWN = box(4.5, 0, 3.5, 11.5, 4, 12.5);
+    private static final VoxelShape SHAPE_DOWN_2 = box(3.5, 0, 4.5, 12.5, 4, 11.5);
 
-    public DeviceConnectorBlock(AbstractBlock.Settings settings) {
+    public DeviceConnectorBlock(BlockBehaviour.Properties settings) {
         super(settings);
 
         var shaper = VoxelShaper.forDirectional(SHAPE_DOWN, Direction.DOWN);
         var shaper2 = VoxelShaper.forDirectional(SHAPE_DOWN_2, Direction.DOWN);
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> BlockStateTerminalCollection.each(
-                        state.get(POLARIZED) ? POLARIZED_TERMINALS_DOWN : TERMINALS_DOWN,
+                        state.getValue(POLARIZED) ? POLARIZED_TERMINALS_DOWN : TERMINALS_DOWN,
                         terminal -> {
-                            var facing = state.get(FACING);
+                            var facing = state.getValue(FACING);
                             terminal = switch(facing) {
                                 case DOWN -> terminal;
                                 case UP -> terminal.rotateAroundX(180);
@@ -82,15 +82,15 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
                                 case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
                                 case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
                             };
-                            if(!state.get(ALONG_FIRST_AXIS)) {
+                            if(!state.getValue(ALONG_FIRST_AXIS)) {
                                 terminal = terminal.rotate(facing.getAxis(), 90);
                             }
                             return terminal;
                         })
                 )
                 .withShapeMapper(state -> {
-                    var facing = state.get(FACING);
-                    var axis_along = state.get(ALONG_FIRST_AXIS);
+                    var facing = state.getValue(FACING);
+                    var axis_along = state.getValue(ALONG_FIRST_AXIS);
                     var prov = (axis_along ^ facing.getAxis() == Direction.Axis.Y) ? shaper2 : shaper;
                     return prov.get(facing);
                 })
@@ -98,35 +98,35 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(FACING, ALONG_FIRST_AXIS, POLARIZED);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        var facing = ctx.getSide().getOpposite();
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var facing = ctx.getClickedFace().getOpposite();
         boolean along = true;
         if(facing.getAxis() == Direction.Axis.Y) {
-            var player = ctx.getHorizontalPlayerFacing();
+            var player = ctx.getHorizontalDirection();
             if(player.getAxis() == Direction.Axis.X)
                 along = false;
         } else {
-            along = ctx.getPlayerLookDirection().getAxis() == facing.rotateYClockwise().getAxis();
+            along = ctx.getNearestLookingDirection().getAxis() == facing.getClockWise().getAxis();
         }
-        var neighbor = ctx.getWorld().getBlockState(ctx.getBlockPos().offset(facing));
+        var neighbor = ctx.getLevel().getBlockState(ctx.getClickedPos().relative(facing));
         var polarized = neighbor.getBlock() instanceof IAcceptConnector acceptor && acceptor.isPolarized();
 
-        if(ctx.getPlayer() != null && ctx.getPlayer().isSneaking())
+        if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
             along = !along;
-        return getDefaultState()
-                .with(FACING, facing)
-                .with(ALONG_FIRST_AXIS, along)
-                .with(POLARIZED, polarized);
+        return defaultBlockState()
+                .setValue(FACING, facing)
+                .setValue(ALONG_FIRST_AXIS, along)
+                .setValue(POLARIZED, polarized);
     }
 
     @ExpectPlatform
-    public static boolean hasEnergyStorage(World world, BlockPos pos, Direction side) {
+    public static boolean hasEnergyStorage(Level world, BlockPos pos, Direction side) {
         throw new AssertionError();
     }
 
@@ -140,24 +140,24 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
             case Z -> { min.z = 0; max.z = 1; }
         }
 
-        return VoxelShapes.cuboid(min.x, min.y, min.z, max.x, max.y, max.z);
+        return Shapes.box(min.x, min.y, min.z, max.x, max.y, max.z);
     }
 
-    public static boolean canSupport(WorldView world, BlockPos pos, BlockState state, Direction side) {
+    public static boolean canSupport(LevelReader world, BlockPos pos, BlockState state, Direction side) {
         var connectorShape = makeCheckShape(side);
         var shape = state.getCollisionShape(world, pos);
         // Check if side of the connector is covered by the supporting block's shape.
-        return VoxelShapes.isSideCovered(connectorShape, shape, side.getOpposite());
+        return Shapes.blockOccudes(connectorShape, shape, side.getOpposite());
     }
 
     @Override
-    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        var facing = state.get(FACING);
-        var neighborPos = pos.offset(facing);
+    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+        var facing = state.getValue(FACING);
+        var neighborPos = pos.relative(facing);
         var neighbor = world.getBlockState(neighborPos);
         if(neighbor.getBlock() == this)
             return false;
-        if(world instanceof World world1) {
+        if(world instanceof Level world1) {
             if(hasEnergyStorage(world1, neighborPos, facing.getOpposite()))
                 return canSupport(world, neighborPos, neighbor, facing.getOpposite());
         }
@@ -167,10 +167,10 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
-        super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
-        if(!canPlaceAt(state, world, pos))
-            world.breakBlock(pos, true);
+    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+        super.neighborChanged(state, world, pos, sourceBlock, sourcePos, notify);
+        if(!canSurvive(state, world, pos))
+            world.destroyBlock(pos, true);
     }
 
     @Override

@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Hand;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.SimplePacket;
@@ -35,14 +35,14 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
         this.gridPoint = gridPoint;
     }
 
-    public BlockWireAttachC2SPacket(PacketByteBuf buf) {
+    public BlockWireAttachC2SPacket(FriendlyByteBuf buf) {
         entityId = buf.readInt();
         index = buf.readInt();
         gridPoint = buf.readInt();
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeInt(entityId);
         buf.writeInt(index);
         buf.writeInt(gridPoint);
@@ -53,12 +53,12 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
         var ctx = context.get();
         ctx.queue(() -> {
             var player = ctx.getPlayer();
-            var entity = player.getWorld().getEntityById(entityId);
+            var entity = player.level().getEntity(entityId);
             if(!(entity instanceof BlockWireEntity wire)) {
                 PowerGrid.LOGGER.error("Received block wire attach packet with invalid entity");
                 return;
             }
-            var stack = player.getStackInHand(Hand.MAIN_HAND);
+            var stack = player.getItemInHand(InteractionHand.MAIN_HAND);
             if(!(stack.getItem() instanceof WireItem)) {
                 PowerGrid.LOGGER.error("Received wire attach packet for player whose not holding a wire");
                 return;
@@ -75,7 +75,7 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 return;
             }
 
-            var existingEndpoint = WireEndpointType.deserialize(stack.getNbt());
+            var existingEndpoint = WireEndpointType.deserialize(stack.getTag());
 
             IWireEndpoint endpoint;
             if(gridPoint <= 1 && index == 0) {
@@ -100,11 +100,11 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 endpoint = new DeferredJunctionWireEndpoint(wire, index, gridPoint);
             }
             if(endpoint != null && existingEndpoint == null) {
-                stack.setNbt(endpoint.serialize());
+                stack.setTag(endpoint.serialize());
             } else if(endpoint != null) {
-                var result = WireItem.connect(player.getWorld(), stack, player, existingEndpoint, endpoint);
-                if(result.getResult().isAccepted()) {
-                    stack.setNbt(null);
+                var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
+                if(result.getResult().consumesAction()) {
+                    stack.setTag(null);
                 }
             }
         });

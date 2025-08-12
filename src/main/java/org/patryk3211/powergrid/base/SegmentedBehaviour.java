@@ -18,9 +18,9 @@ package org.patryk3211.powergrid.base;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -103,8 +103,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         if(controller.segments.size() > maxSize) {
             // This assembly is too big.
             var world = getWorld();
-            if(!world.isClient)
-                world.breakBlock(getPos(), true);
+            if(!world.isClientSide)
+                world.destroyBlock(getPos(), true);
             return;
         }
 
@@ -128,7 +128,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         var world = getWorld();
         if(world == null)
             throw new IllegalCallerException("Tried to get controller before receiving world");
-        if(world.isChunkLoaded(ChunkSectionPos.getSectionCoord(controllerPos.getX()), ChunkSectionPos.getSectionCoord(controllerPos.getZ())))
+        if(world.hasChunk(SectionPos.blockToSectionCoord(controllerPos.getX()), SectionPos.blockToSectionCoord(controllerPos.getZ())))
             return Optional.ofNullable(get(world, controllerPos, getType()));
         return Optional.empty();
     }
@@ -138,11 +138,11 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         return getController().orElse((T) this);
     }
 
-    public abstract void readController(NbtCompound compound, boolean clientPacket);
-    public abstract void writeController(NbtCompound compound, boolean clientPacket);
+    public abstract void readController(CompoundTag compound, boolean clientPacket);
+    public abstract void writeController(CompoundTag compound, boolean clientPacket);
 
     @Override
-    public void read(NbtCompound compound, boolean clientPacket) {
+    public void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         if(compound.contains("Controller")) {
             var posArray = compound.getIntArray("Controller");
@@ -163,7 +163,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     }
 
     @Override
-    public void write(NbtCompound compound, boolean clientPacket) {
+    public void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         if(isController()) {
             writeController(compound, clientPacket);
@@ -186,8 +186,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         }
         if(totalSize > maxSize) {
             var world = getWorld();
-            if(!world.isClient)
-                world.breakBlock(getPos(), true);
+            if(!world.isClientSide)
+                world.destroyBlock(getPos(), true);
             return false;
         }
         return true;

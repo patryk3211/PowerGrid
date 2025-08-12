@@ -20,10 +20,10 @@ import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerR
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.LivingEntityRenderer;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.circuits.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
@@ -65,7 +65,7 @@ public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPl
     }
 
     public static void addEntityRendererLayers(EntityType<? extends LivingEntity> entityType, LivingEntityRenderer<?, ?> entityRenderer,
-                                               LivingEntityFeatureRendererRegistrationCallback.RegistrationHelper registrationHelper, EntityRendererFactory.Context context) {
+                                               LivingEntityFeatureRendererRegistrationCallback.RegistrationHelper registrationHelper, EntityRendererProvider.Context context) {
         BatteryArmorLayerImpl.registerOn(entityRenderer, registrationHelper);
     }
 }

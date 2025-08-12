@@ -15,37 +15,37 @@
  */
 package org.patryk3211.powergrid.electricity.fan;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.render.CachedBuffers;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 
-import static net.minecraft.state.property.Properties.FACING;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 
 public class ElectricFanRenderer extends SafeBlockEntityRenderer<ElectricFanBlockEntity> {
-    public ElectricFanRenderer(BlockEntityRendererFactory.Context context) {
+    public ElectricFanRenderer(BlockEntityRendererProvider.Context context) {
 
     }
 
     @Override
-    protected void renderSafe(ElectricFanBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
-        var direction = be.getCachedState().get(FACING);
-        var vb = buffer.getBuffer(RenderLayer.getCutoutMipped());
+    protected void renderSafe(ElectricFanBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
+        var direction = be.getBlockState().getValue(FACING);
+        var vb = buffer.getBuffer(RenderType.cutoutMipped());
 
-        var fan = CachedBuffers.partialFacing(AllPartialModels.ENCASED_FAN_INNER, be.getCachedState(), direction.getOpposite());
+        var fan = CachedBuffers.partialFacing(AllPartialModels.ENCASED_FAN_INNER, be.getBlockState(), direction.getOpposite());
 
-        float time = AnimationTickHolder.getRenderTime(be.getWorld());
+        float time = AnimationTickHolder.getRenderTime(be.getLevel());
         float speed = be.getSpeed() * 5;
         if(speed > 0)
-            speed = MathHelper.clamp(speed, 80, 64 * 20);
+            speed = Mth.clamp(speed, 80, 64 * 20);
         if(speed < 0)
-            speed = MathHelper.clamp(speed, -64 * 20, -80);
+            speed = Mth.clamp(speed, -64 * 20, -80);
         float angle = (time * speed * 3 / 10f) % 360;
         angle = angle / 180f * (float) Math.PI;
 

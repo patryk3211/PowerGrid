@@ -17,15 +17,15 @@ package org.patryk3211.powergrid.electricity.portablebattery.fabric;
 
 import com.simibubi.create.content.equipment.armor.BacktankArmorLayer;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.LivingEntityRenderer;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 
 public class BatteryArmorLayerImpl {
     public static void registerOn(EntityRenderer<?> entityRenderer, LivingEntityFeatureRendererRegistrationCallback.RegistrationHelper helper) {
         if (!(entityRenderer instanceof LivingEntityRenderer<?, ?> livingRenderer))
             return;
-        if (!(livingRenderer.getModel() instanceof BipedEntityModel))
+        if (!(livingRenderer.getModel() instanceof HumanoidModel))
             return;
         BacktankArmorLayer<?, ?> layer = new BacktankArmorLayer<>(livingRenderer);
         helper.register(layer);

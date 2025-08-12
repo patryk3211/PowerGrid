@@ -17,12 +17,12 @@ package org.patryk3211.powergrid.network;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.Level;
 
 @Environment(EnvType.CLIENT)
 public class ClientBoundPackets {
-    public static World world() {
-        return MinecraftClient.getInstance().world;
+    public static Level world() {
+        return Minecraft.getInstance().level;
     }
 }

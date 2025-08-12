@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.electricity.deviceconnector;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
@@ -34,8 +34,8 @@ public class DeviceConnectorBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        var state = getCachedState();
-        proxyBehaviour = new BridgeElectricBehaviour(this, pos.offset(state.get(DeviceConnectorBlock.FACING)), () -> converterWire);
+        var state = getBlockState();
+        proxyBehaviour = new BridgeElectricBehaviour(this, worldPosition.relative(state.getValue(DeviceConnectorBlock.FACING)), () -> converterWire);
         electricBehaviour = proxyBehaviour;
         behaviours.add(electricBehaviour);
     }

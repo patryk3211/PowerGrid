@@ -15,13 +15,15 @@
  */
 package org.patryk3211.powergrid.electricity.base.terminals;
 
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Rotation;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+;
 
 public class RotatedTerminalCollection {
     private final TerminalBoundingBox[][] terminals;
@@ -75,11 +77,11 @@ public class RotatedTerminalCollection {
     public static TerminalBoundingBox rotateNorthToFacing(TerminalBoundingBox terminal, Direction facing) {
         return switch(facing) {
             case NORTH -> terminal;
-            case SOUTH -> terminal.rotateAroundY(BlockRotation.CLOCKWISE_180);
-            case EAST -> terminal.rotateAroundY(BlockRotation.CLOCKWISE_90);
-            case WEST -> terminal.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
-            case UP -> terminal.rotateAroundX(BlockRotation.COUNTERCLOCKWISE_90);
-            case DOWN -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_90);
+            case SOUTH -> terminal.rotateAroundY(Rotation.CLOCKWISE_180);
+            case EAST -> terminal.rotateAroundY(Rotation.CLOCKWISE_90);
+            case WEST -> terminal.rotateAroundY(Rotation.COUNTERCLOCKWISE_90);
+            case UP -> terminal.rotateAroundX(Rotation.COUNTERCLOCKWISE_90);
+            case DOWN -> terminal.rotateAroundX(Rotation.CLOCKWISE_90);
         };
     }
 }

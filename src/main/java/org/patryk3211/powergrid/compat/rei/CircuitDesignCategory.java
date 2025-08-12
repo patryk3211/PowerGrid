@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.compat.rei;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.compat.rei.ItemIcon;
 import me.shedaniel.math.Point;
@@ -26,9 +27,8 @@ import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 
 public class CircuitDesignCategory implements DisplayCategory<CircuitDesignDisplay> {
     public static final CategoryIdentifier<CircuitDesignDisplay> IDENTIFIER = CategoryIdentifier.of(PowerGrid.asResource("circuit_design"));
-    public static final Identifier TEXTURE = PowerGrid.texture("gui/circuit_design_rei_overlay");
+    public static final ResourceLocation TEXTURE = PowerGrid.texture("gui/circuit_design_rei_overlay");
 
     private final Renderer icon;
 
@@ -55,7 +55,7 @@ public class CircuitDesignCategory implements DisplayCategory<CircuitDesignDispl
     }
 
     @Override
-    public Text getTitle() {
+    public Component getTitle() {
         return Lang.translateDirect("recipe.category.circuit_design");
     }
 
@@ -79,12 +79,12 @@ public class CircuitDesignCategory implements DisplayCategory<CircuitDesignDispl
         List<Widget> widgets = new ArrayList<>();
         widgets.add(Widgets.createRecipeBase(bounds));
         widgets.add(Widgets.createDrawableWidget((graphics, mouseX, mouseY, partialTick) -> {
-            MatrixStack poseStack = graphics.getMatrices();
-            poseStack.push();
+            PoseStack poseStack = graphics.pose();
+            poseStack.pushPose();
             poseStack.translate(bounds.getX() + 75 - 24, bounds.getY() + 4 + 65 - 24, 0);
             poseStack.scale(3, 3, 1);
             icon.render(graphics, new Rectangle(0, 0, 16, 16), mouseX, mouseY, partialTick);
-            poseStack.pop();
+            poseStack.popPose();
         }));
         widgets.add(Widgets.createTexturedWidget(TEXTURE, bounds, 0, 0));
 

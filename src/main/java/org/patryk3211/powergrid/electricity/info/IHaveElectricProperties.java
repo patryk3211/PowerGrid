@@ -15,12 +15,12 @@
  */
 package org.patryk3211.powergrid.electricity.info;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
 public interface IHaveElectricProperties {
-    void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip);
+    void appendProperties(ItemStack stack, Player player, List<Component> tooltip);
 }

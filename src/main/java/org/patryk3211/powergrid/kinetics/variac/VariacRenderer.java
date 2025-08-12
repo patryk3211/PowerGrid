@@ -15,35 +15,35 @@
  */
 package org.patryk3211.powergrid.kinetics.variac;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 public class VariacRenderer extends KineticBlockEntityRenderer<VariacBlockEntity> {
-    public VariacRenderer(BlockEntityRendererFactory.Context context) {
+    public VariacRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    protected void renderSafe(VariacBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider provider, int light, int overlay) {
+    protected void renderSafe(VariacBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource provider, int light, int overlay) {
         super.renderSafe(be, partialTicks, ms, provider, light, overlay);
 
-        var state = be.getCachedState();
-        var buffer = CachedBuffers.partialFacing(ModdedPartialModels.VARIAC_ARMATURE, state, state.get(VariacBlock.HORIZONTAL_FACING).getOpposite());
+        var state = be.getBlockState();
+        var buffer = CachedBuffers.partialFacing(ModdedPartialModels.VARIAC_ARMATURE, state, state.getValue(VariacBlock.HORIZONTAL_FACING).getOpposite());
 
         float angle = be.arm.getValue(partialTicks) * (float) Math.PI * 1.75f;
         buffer
                 .rotateCentered(angle, Direction.UP)
                 .light(light)
-                .renderInto(ms, provider.getBuffer(RenderLayer.getSolid()));
+                .renderInto(ms, provider.getBuffer(RenderType.solid()));
     }
 
     @Override

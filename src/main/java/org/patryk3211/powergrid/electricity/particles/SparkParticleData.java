@@ -20,24 +20,24 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.foundation.particle.ICustomParticleDataWithSprite;
-import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleType;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedParticles;
 
-public class SparkParticleData implements ParticleEffect, ICustomParticleDataWithSprite<SparkParticleData> {
-    public static final Factory<SparkParticleData> FACTORY = new Factory<>() {
+public class SparkParticleData implements ParticleOptions, ICustomParticleDataWithSprite<SparkParticleData> {
+    public static final Deserializer<SparkParticleData> FACTORY = new Deserializer<>() {
         @Override
-        public SparkParticleData read(ParticleType<SparkParticleData> type, StringReader reader) throws CommandSyntaxException {
+        public SparkParticleData fromCommand(ParticleType<SparkParticleData> type, StringReader reader) throws CommandSyntaxException {
             return new SparkParticleData();
         }
 
         @Override
-        public SparkParticleData read(ParticleType<SparkParticleData> type, PacketByteBuf buf) {
+        public SparkParticleData fromNetwork(ParticleType<SparkParticleData> type, FriendlyByteBuf buf) {
             return new SparkParticleData(buf.readInt(), buf.readBoolean(), buf.readBoolean());
         }
     };
@@ -74,11 +74,11 @@ public class SparkParticleData implements ParticleEffect, ICustomParticleDataWit
         return gravity;
     }
 
-    public static void explodeParticles(World world, float x, float y, float z, Direction dir, int count) {
+    public static void explodeParticles(Level world, float x, float y, float z, Direction dir, int count) {
         var r = world.random;
-        var offset = dir.getUnitVector().mul(0.1f);
+        var offset = dir.step().mul(0.1f);
         for(int i = 0; i < count; ++i) {
-            var heading = dir.getUnitVector();
+            var heading = dir.step();
             var pitch = (float) ((r.nextFloat() - 0.5f) * Math.PI) * 0.9f;
             var yaw = (float) ((r.nextFloat() - 0.5f) * Math.PI) * 0.9f;
             heading.rotateX(pitch).rotateY(yaw);
@@ -93,19 +93,19 @@ public class SparkParticleData implements ParticleEffect, ICustomParticleDataWit
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void writeToNetwork(FriendlyByteBuf buf) {
         buf.writeInt(life);
         buf.writeBoolean(collision);
         buf.writeBoolean(gravity);
     }
 
     @Override
-    public String asString() {
-        return Registries.PARTICLE_TYPE.getId(getType()).toString();
+    public String writeToString() {
+        return BuiltInRegistries.PARTICLE_TYPE.getKey(getType()).toString();
     }
 
     @Override
-    public Factory<SparkParticleData> getDeserializer() {
+    public Deserializer<SparkParticleData> getDeserializer() {
         return FACTORY;
     }
 
@@ -115,7 +115,7 @@ public class SparkParticleData implements ParticleEffect, ICustomParticleDataWit
     }
 
     @Override
-    public ParticleManager.SpriteAwareFactory<SparkParticleData> getMetaFactory() {
+    public ParticleEngine.SpriteParticleRegistration<SparkParticleData> getMetaFactory() {
         return SparkParticle.Factory::new;
     }
 }

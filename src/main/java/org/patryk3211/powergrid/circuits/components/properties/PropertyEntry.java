@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
 public class PropertyEntry<T> {
@@ -37,7 +37,7 @@ public class PropertyEntry<T> {
         }
     }
 
-    public void read(NbtCompound compound) {
+    public void read(CompoundTag compound) {
         if(property instanceof CalculatedProperty<T>)
             return;
         var element = compound.get(property.id().toString());
@@ -48,7 +48,7 @@ public class PropertyEntry<T> {
         }
     }
 
-    public void write(NbtCompound compound) {
+    public void write(CompoundTag compound) {
         var element = property.write(value);
         if(element == null)
             return;
@@ -88,9 +88,9 @@ public class PropertyEntry<T> {
         }
 
         @Override
-        public void read(NbtCompound compound) { }
+        public void read(CompoundTag compound) { }
         @Override
-        public void write(NbtCompound compound) { }
+        public void write(CompoundTag compound) { }
 
         @Override
         public void setValue(String value) {

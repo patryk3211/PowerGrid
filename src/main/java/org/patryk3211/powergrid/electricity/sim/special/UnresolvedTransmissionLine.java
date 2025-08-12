@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
@@ -65,33 +65,33 @@ public class UnresolvedTransmissionLine {
         }
     }
 
-    public UnresolvedTransmissionLine(NbtCompound nbt) {
+    public UnresolvedTransmissionLine(CompoundTag nbt) {
         endpoint1 = WireEndpointType.deserialize(nbt.getCompound("Node1"));
         endpoint2 = WireEndpointType.deserialize(nbt.getCompound("Node2"));
         resistance = nbt.getDouble("Resistance");
 
         segments = new ArrayList<>();
-        for(var segmentGeneric : nbt.getList("Segments", NbtElement.COMPOUND_TYPE)) {
-            var segment = (NbtCompound) segmentGeneric;
+        for(var segmentGeneric : nbt.getList("Segments", Tag.TAG_COMPOUND)) {
+            var segment = (CompoundTag) segmentGeneric;
             var endpoint = WireEndpointType.deserialize(segment.getCompound("Node"));
-            var id = segment.getUuid("Id");
+            var id = segment.getUUID("Id");
             var resistance2 = segment.getDouble("Resistance");
             segments.add(new UnresolvedTransmissionLine.Segment(endpoint, id, resistance2));
         }
     }
 
-    public NbtCompound writeNbt() {
-        var lineEntry = new NbtCompound();
+    public CompoundTag writeNbt() {
+        var lineEntry = new CompoundTag();
         lineEntry.put("Node1", endpoint1.serialize());
         lineEntry.put("Node2", endpoint2.serialize());
         lineEntry.putDouble("Resistance", resistance);
 
-        var segmentList = new NbtList();
+        var segmentList = new ListTag();
         lineEntry.put("Segments", segmentList);
         for(var segment : segments) {
-            var segmentEntry = new NbtCompound();
+            var segmentEntry = new CompoundTag();
             segmentEntry.put("Node", segment.endpoint.serialize());
-            segmentEntry.putUuid("Id", segment.id);
+            segmentEntry.putUUID("Id", segment.id);
             segmentEntry.putDouble("Resistance", segment.resistance);
             segmentList.add(segmentEntry);
         }
@@ -156,7 +156,7 @@ public class UnresolvedTransmissionLine {
         for(var segment : segments) {
             endpoint1 = endpoint2;
             endpoint2 = segment.endpoint;
-            if(segment.id.equals(entity.getUuid())) {
+            if(segment.id.equals(entity.getUUID())) {
                 // This is the segment.
                 var part = new TransmissionLinePart(segment.resistance, endpoint1.getNode(global.world), endpoint2.getNode(global.world), entity, null);
                 segment.resolvedWire = part;

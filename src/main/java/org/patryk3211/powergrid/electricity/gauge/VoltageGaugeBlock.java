@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.gauge;
 
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Voltage;
@@ -26,7 +26,7 @@ import org.patryk3211.powergrid.electricity.info.Voltage;
 import java.util.List;
 
 public class VoltageGaugeBlock extends GaugeBlock<VoltageGaugeBlockEntity> implements IHaveElectricProperties {
-    public VoltageGaugeBlock(Settings settings) {
+    public VoltageGaugeBlock(Properties settings) {
         super(settings);
     }
 
@@ -41,7 +41,7 @@ public class VoltageGaugeBlock extends GaugeBlock<VoltageGaugeBlockEntity> imple
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Voltage.max(maxValue, player, tooltip);
     }
 }

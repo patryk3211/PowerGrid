@@ -17,41 +17,41 @@ package org.patryk3211.powergrid.base;
 
 import dev.architectury.registry.menu.ExtendedMenuProvider;
 import dev.architectury.registry.menu.MenuRegistry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-public interface IMultiScreenHandlerFactory extends NamedScreenHandlerFactory {
+public interface IMultiScreenHandlerFactory extends MenuProvider {
     @Override
     @Nullable
-    default ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+    default AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
         return createMenu(syncId, playerInventory, player, 0);
     }
 
     @Nullable
-    ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player, int menuIndex);
+    AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player, int menuIndex);
 
-    static void openScreen(ServerPlayerEntity player, IMultiScreenHandlerFactory factory, Consumer<PacketByteBuf> extraDataWriter, int menuIndex) {
+    static void openScreen(ServerPlayer player, IMultiScreenHandlerFactory factory, Consumer<FriendlyByteBuf> extraDataWriter, int menuIndex) {
         MenuRegistry.openExtendedMenu(player, new ExtendedMenuProvider() {
             @Override
-            public void saveExtraData(PacketByteBuf buf) {
+            public void saveExtraData(FriendlyByteBuf buf) {
                 extraDataWriter.accept(buf);
             }
 
             @Override
-            public Text getDisplayName() {
+            public Component getDisplayName() {
                 return factory.getDisplayName();
             }
 
             @Override
-            public @Nullable ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+            public @Nullable AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
                 return factory.createMenu(syncId, playerInventory, player, menuIndex);
             }
         });

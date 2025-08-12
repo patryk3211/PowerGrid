@@ -15,12 +15,13 @@
  */
 package org.patryk3211.powergrid;
 
+import com.mojang.blaze3d.platform.Window;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.createmod.ponder.foundation.PonderIndex;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.Window;
-import org.patryk3211.powergrid.collections.*;
+import net.minecraft.client.Minecraft;
+import org.patryk3211.powergrid.collections.ModdedPartialModels;
+import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
@@ -51,8 +52,8 @@ public class PowerGridClient {
 		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
 	}
 
-	private static void clientTick(MinecraftClient client) {
-		if(client.world == null || client.player == null)
+	private static void clientTick(Minecraft client) {
+		if(client.level == null || client.player == null)
 			return;
 
 		ELECTRO_ZAPPER_RENDER_HANDLER.tick();
@@ -63,8 +64,8 @@ public class PowerGridClient {
 
 	public static void registerOverlays() {
 		ClientGuiEvent.RENDER_HUD.register((graphics, partialTicks) -> {
-			Window window = MinecraftClient.getInstance().getWindow();
-			PlacementOverlay.renderOverlay(MinecraftClient.getInstance().inGameHud, graphics);
+			Window window = Minecraft.getInstance().getWindow();
+			PlacementOverlay.renderOverlay(Minecraft.getInstance().gui, graphics);
         });
 	}
 }

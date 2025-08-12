@@ -20,9 +20,9 @@ import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
@@ -123,7 +123,7 @@ public class GaugeScenes {
             scene.idle(50);
         }
 
-        Vec3d blockSurface = util.vector().blockSurface(gaugePos, Direction.NORTH);
+        Vec3 blockSurface = util.vector().blockSurface(gaugePos, Direction.NORTH);
         scene.overlay().showControls(blockSurface, Pointing.RIGHT, 80).withItem(AllItems.GOGGLES.asStack());
         scene.idle(7);
         scene.overlay().showText(80)

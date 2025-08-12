@@ -18,8 +18,8 @@ package org.patryk3211.powergrid.electricity.base;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -111,7 +111,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
 
         var world = getWorld();
-        if(world != null && !world.isClient)
+        if(world != null && !world.isClientSide)
             rebuildOnClient = true;
     }
 
@@ -221,7 +221,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             return;
         destroying = true;
         var world = getWorld();
-        if(!world.isClient) {
+        if(!world.isClientSide) {
             for(var entry : connections.entrySet()) {
                 var endpoint = entry.getKey();
                 for(var entity : entry.getValue()) {
@@ -235,7 +235,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     @Override
-    public void read(NbtCompound nbt, boolean clientPacket) {
+    public void read(CompoundTag nbt, boolean clientPacket) {
         super.read(nbt, clientPacket);
         if(clientPacket) {
             if(nbt.getBoolean("Rebuild"))
@@ -244,7 +244,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     @Override
-    public void write(NbtCompound nbt, boolean clientPacket) {
+    public void write(CompoundTag nbt, boolean clientPacket) {
         super.write(nbt, clientPacket);
         if(clientPacket) {
             if(rebuildOnClient) {

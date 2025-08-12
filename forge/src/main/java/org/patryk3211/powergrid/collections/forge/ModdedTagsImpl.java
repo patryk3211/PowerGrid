@@ -15,20 +15,20 @@
  */
 package org.patryk3211.powergrid.collections.forge;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collections;
 
 public class ModdedTagsImpl {
-    public static TagKey<Block> blockTag(Identifier id) {
+    public static TagKey<Block> blockTag(ResourceLocation id) {
         return ForgeRegistries.BLOCKS.tags().createOptionalTagKey(id, Collections.emptySet());
     }
 
-    public static TagKey<Item> itemTag(Identifier id) {
+    public static TagKey<Item> itemTag(ResourceLocation id) {
         return ForgeRegistries.ITEMS.tags().createOptionalTagKey(id, Collections.emptySet());
     }
 }

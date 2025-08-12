@@ -18,12 +18,12 @@ package org.patryk3211.powergrid.ponder.scenes;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 public class MagnetScenes {
@@ -38,10 +38,10 @@ public class MagnetScenes {
         scene.idle(10);
 
         var stack = new ItemStack(Items.IRON_INGOT);
-        var item1 = scene.world().createItemEntity(util.vector().of(3.2f, 2.0f, 2.0f), Vec3d.ZERO, stack);
-        var item2 = scene.world().createItemEntity(util.vector().of(1.5f, 2.0f, 4.3f), Vec3d.ZERO, stack);
-        var item3 = scene.world().createItemEntity(util.vector().of(2.9f, 2.0f, 3.1f), Vec3d.ZERO, stack);
-        var item4 = scene.world().createItemEntity(util.vector().of(1.2f, 2.0f, 1.1f), Vec3d.ZERO, stack);
+        var item1 = scene.world().createItemEntity(util.vector().of(3.2f, 2.0f, 2.0f), Vec3.ZERO, stack);
+        var item2 = scene.world().createItemEntity(util.vector().of(1.5f, 2.0f, 4.3f), Vec3.ZERO, stack);
+        var item3 = scene.world().createItemEntity(util.vector().of(2.9f, 2.0f, 3.1f), Vec3.ZERO, stack);
+        var item4 = scene.world().createItemEntity(util.vector().of(1.2f, 2.0f, 1.1f), Vec3.ZERO, stack);
 
         scene.overlay().showText(80)
                 .text("When lightning strikes near an iron ingot it has a chance to magnetize it")
@@ -52,16 +52,16 @@ public class MagnetScenes {
         scene.world().createEntity(world -> {
             var entity = EntityType.LIGHTNING_BOLT.create(world);
             if(entity != null) {
-                entity.refreshPositionAfterTeleport(util.vector().of(2.5, 1.0, 2.5));
-                entity.setCosmetic(false);
+                entity.moveTo(util.vector().of(2.5, 1.0, 2.5));
+                entity.setVisualOnly(false);
             }
             return entity;
         });
 
         var magnetStack = new ItemStack(ModdedItems.MAGNET);
         scene.world().modifyEntity(item1, entity -> {
-            ((ItemEntity) entity).setStack(magnetStack);
-            entity.setVelocity(0, 0.2, 0);
+            ((ItemEntity) entity).setItem(magnetStack);
+            entity.setDeltaMovement(0, 0.2, 0);
         });
         scene.idle(30);
 

@@ -21,8 +21,8 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import net.createmod.catnip.config.ConfigBase;
 import net.createmod.catnip.platform.CatnipServices;
-import net.minecraft.block.Block;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,11 +41,11 @@ public class CStress extends ConfigBase {
 
     // IDs need to be used since configs load before registration
 
-    private static final Object2DoubleMap<Identifier> DEFAULT_IMPACTS = new Object2DoubleOpenHashMap<>();
-    private static final Object2DoubleMap<Identifier> DEFAULT_CAPACITIES = new Object2DoubleOpenHashMap<>();
+    private static final Object2DoubleMap<ResourceLocation> DEFAULT_IMPACTS = new Object2DoubleOpenHashMap<>();
+    private static final Object2DoubleMap<ResourceLocation> DEFAULT_CAPACITIES = new Object2DoubleOpenHashMap<>();
 
-    protected final Map<Identifier, ForgeConfigSpec.ConfigValue<Double>> capacities = new HashMap<>();
-    protected final Map<Identifier, ForgeConfigSpec.ConfigValue<Double>> impacts = new HashMap<>();
+    protected final Map<ResourceLocation, ForgeConfigSpec.ConfigValue<Double>> capacities = new HashMap<>();
+    protected final Map<ResourceLocation, ForgeConfigSpec.ConfigValue<Double>> impacts = new HashMap<>();
 
     @Override
     public void registerAll(ForgeConfigSpec.Builder builder) {
@@ -68,14 +68,14 @@ public class CStress extends ConfigBase {
 
     @Nullable
     public DoubleSupplier getImpact(Block block) {
-        Identifier id = CatnipServices.REGISTRIES.getKeyOrThrow(block);
+        ResourceLocation id = CatnipServices.REGISTRIES.getKeyOrThrow(block);
         ForgeConfigSpec.ConfigValue<Double> value = this.impacts.get(id);
         return value == null ? null : value::get;
     }
 
     @Nullable
     public DoubleSupplier getCapacity(Block block) {
-        Identifier id = CatnipServices.REGISTRIES.getKeyOrThrow(block);
+        ResourceLocation id = CatnipServices.REGISTRIES.getKeyOrThrow(block);
         ForgeConfigSpec.ConfigValue<Double> value = this.capacities.get(id);
         return value == null ? null : value::get;
     }
@@ -87,7 +87,7 @@ public class CStress extends ConfigBase {
     public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> setImpact(double value) {
         return builder -> {
             assertFromCreate(builder);
-            Identifier id = PowerGrid.asResource(builder.getName());
+            ResourceLocation id = PowerGrid.asResource(builder.getName());
             DEFAULT_IMPACTS.put(id, value);
             return builder;
         };
@@ -96,7 +96,7 @@ public class CStress extends ConfigBase {
     public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> setCapacity(double value) {
         return builder -> {
             assertFromCreate(builder);
-            Identifier id = PowerGrid.asResource(builder.getName());
+            ResourceLocation id = PowerGrid.asResource(builder.getName());
             DEFAULT_CAPACITIES.put(id, value);
             return builder;
         };

@@ -17,11 +17,11 @@ package org.patryk3211.powergrid.kinetics.servo;
 
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -60,7 +60,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     public void tick() {
         super.tick();
         // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
-        float newTarget = MathHelper.clamp(control.potentialDifference() / 5.0f * 360.0f, -360f, 360f);
+        float newTarget = Mth.clamp(control.potentialDifference() / 5.0f * 360.0f, -360f, 360f);
         newTarget = prevTarget * 0.5f + newTarget * 0.5f;
         prevTarget = newTarget;
 
@@ -79,7 +79,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         if(Math.abs(rotation) < 0.01f)
             rotation = 0;
 
-        var speed = MathHelper.clamp(rotation / 0.05f * 60.0f, -maxSpeed, maxSpeed);
+        var speed = Mth.clamp(rotation / 0.05f * 60.0f, -maxSpeed, maxSpeed);
         if(speed != generatedSpeed) {
             generatedSpeed = speed;
             updateGeneratedRotation();
@@ -116,7 +116,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     }
 
     @Override
-    protected void read(NbtCompound compound, boolean clientPacket) {
+    protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         generatedSpeed = compound.getFloat("GeneratedSpeed");
         currentAngle = compound.getFloat("Angle");
@@ -124,7 +124,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     }
 
     @Override
-    protected void write(NbtCompound compound, boolean clientPacket) {
+    protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putFloat("GeneratedSpeed", generatedSpeed);
         compound.putFloat("Angle", currentAngle);
@@ -132,6 +132,6 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
 
     @Override
     public float getGeneratedSpeed() {
-        return convertToDirection(generatedSpeed, getCachedState().get(ElectricMotorBlock.FACING));
+        return convertToDirection(generatedSpeed, getBlockState().getValue(ElectricMotorBlock.FACING));
     }
 }

@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.particles;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
+import net.minecraft.client.Camera;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleTextureSheet;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.Pair;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.util.Tuple;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
@@ -35,15 +35,15 @@ public class ZapParticle extends Particle {
     private final boolean anchorEnd;
     private final int segmentCount;
 
-    private final List<Pair<Vector3f, Vector3f>> segments = new ArrayList<>();
+    private final List<Tuple<Vector3f, Vector3f>> segments = new ArrayList<>();
 
-    public ZapParticle(ZapParticleData data, ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
+    public ZapParticle(ZapParticleData data, ClientLevel world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
         Vector3f end = data.getEnd();
         anchorEnd = data.isAnchored();
-        maxAge = data.getLife();
+        lifetime = data.getLife();
         segmentCount = data.getSegmentCount();
-        blue = 0.5f;
+        bCol = 0.5f;
 
         delta = new Vector3f((float) (end.x - this.x), (float) (end.y - this.y), (float) (end.z - this.z));
         var vec = new Vector3f(1 - delta.x, 1 - delta.y, 1 - delta.z);
@@ -56,11 +56,11 @@ public class ZapParticle extends Particle {
     }
 
     public void addSegment(Vector3f pos1, Vector3f pos2) {
-        segments.add(new Pair<>(pos1, pos2));
+        segments.add(new Tuple<>(pos1, pos2));
     }
 
     public void addSegment(float x1, float y1, float z1, float x2, float y2, float z2) {
-        segments.add(new Pair<>(new Vector3f(x1, y1, z1), new Vector3f(x2, y2, z2)));
+        segments.add(new Tuple<>(new Vector3f(x1, y1, z1), new Vector3f(x2, y2, z2)));
     }
 
     public void makeNewSegments() {
@@ -107,47 +107,47 @@ public class ZapParticle extends Particle {
 
     @Override
     public void tick() {
-        if(age++ >= maxAge) {
-            markDead();
+        if(age++ >= lifetime) {
+            remove();
         } else {
             makeNewSegments();
         }
     }
 
     public void renderSegment(VertexConsumer buffer, float x1, float y1, float z1, float x2, float y2, float z2, Vector3f cross1, Vector3f cross2) {
-        buffer.vertex(x1 + cross1.x, y1 + cross1.y, z1 + cross1.z).next();
-        buffer.vertex(x1 - cross1.x, y1 - cross1.y, z1 - cross1.z).next();
-        buffer.vertex(x2 - cross1.x, y2 - cross1.y, z2 - cross1.z).next();
-        buffer.vertex(x2 + cross1.x, y2 + cross1.y, z2 + cross1.z).next();
+        buffer.vertex(x1 + cross1.x, y1 + cross1.y, z1 + cross1.z).endVertex();
+        buffer.vertex(x1 - cross1.x, y1 - cross1.y, z1 - cross1.z).endVertex();
+        buffer.vertex(x2 - cross1.x, y2 - cross1.y, z2 - cross1.z).endVertex();
+        buffer.vertex(x2 + cross1.x, y2 + cross1.y, z2 + cross1.z).endVertex();
 
-        buffer.vertex(x1 + cross2.x, y1 + cross2.y, z1 + cross2.z).next();
-        buffer.vertex(x1 - cross2.x, y1 - cross2.y, z1 - cross2.z).next();
-        buffer.vertex(x2 - cross2.x, y2 - cross2.y, z2 - cross2.z).next();
-        buffer.vertex(x2 + cross2.x, y2 + cross2.y, z2 + cross2.z).next();
+        buffer.vertex(x1 + cross2.x, y1 + cross2.y, z1 + cross2.z).endVertex();
+        buffer.vertex(x1 - cross2.x, y1 - cross2.y, z1 - cross2.z).endVertex();
+        buffer.vertex(x2 - cross2.x, y2 - cross2.y, z2 - cross2.z).endVertex();
+        buffer.vertex(x2 + cross2.x, y2 + cross2.y, z2 + cross2.z).endVertex();
     }
 
     @Override
-    public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
+    public void render(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
         var bufferProvider = DefaultSuperRenderTypeBuffer.getInstance();
         var buffer = bufferProvider.getBuffer(ModdedRenderLayers.getColor());
 
-        var camPos = camera.getPos();
+        var camPos = camera.getPosition();
 
-        buffer.fixedColor((int) (red * 255), (int) (green * 255), (int) (blue * 255), (int) (alpha * 255));
+        buffer.defaultColor((int) (rCol * 255), (int) (gCol * 255), (int) (bCol * 255), (int) (alpha * 255));
 
         for(var segment : segments) {
-            var pos1 = new Vector3f(segment.getLeft()).sub(camPos.toVector3f());
-            var pos2 = new Vector3f(segment.getRight()).sub(camPos.toVector3f());
+            var pos1 = new Vector3f(segment.getA()).sub(camPos.toVector3f());
+            var pos2 = new Vector3f(segment.getB()).sub(camPos.toVector3f());
             renderSegment(buffer, pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z, cross1, cross2);
         }
 
-        buffer.unfixColor();
+        buffer.unsetDefaultColor();
 
         bufferProvider.draw();
     }
 
     @Override
-    public ParticleTextureSheet getType() {
-        return ParticleTextureSheet.CUSTOM;
+    public ParticleRenderType getRenderType() {
+        return ParticleRenderType.CUSTOM;
     }
 }

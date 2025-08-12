@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.electricity.wire.forge;
 
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
@@ -26,22 +26,22 @@ public class WirePreviewImpl {
     public static void render(RenderLevelStageEvent event) {
         if(event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
             var matrixStack = event.getPoseStack();
-            matrixStack.push();
+            matrixStack.pushPose();
 
-            var cameraPos = event.getCamera().getPos();
+            var cameraPos = event.getCamera().getPosition();
             matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
             var buffer = DefaultSuperRenderTypeBuffer.getInstance();
-            var player = MinecraftClient.getInstance().player;
+            var player = Minecraft.getInstance().player;
 
-            var world = MinecraftClient.getInstance().world;
-            var target = MinecraftClient.getInstance().crosshairTarget;
+            var world = Minecraft.getInstance().level;
+            var target = Minecraft.getInstance().hitResult;
             if (player != null && target != null) {
                 WirePreview.render(buffer, matrixStack, world, player, target);
             }
 
             buffer.draw();
-            matrixStack.pop();
+            matrixStack.popPose();
         }
     }
 }

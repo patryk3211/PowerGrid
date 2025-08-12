@@ -19,7 +19,7 @@ import com.tterrag.registrate.builders.EntityBuilder;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public interface EntityProperties {
     @ExpectPlatform

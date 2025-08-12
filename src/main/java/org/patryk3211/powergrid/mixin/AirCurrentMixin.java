@@ -18,7 +18,7 @@ package org.patryk3211.powergrid.mixin;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import com.simibubi.create.content.kinetics.fan.IAirCurrentSource;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.spongepowered.asm.mixin.Final;
@@ -57,7 +57,7 @@ public abstract class AirCurrentMixin {
         if(initialStrength == 0)
             return;
         for(int i = 1; i <= limit; ++i) {
-            var pos = start.offset(direction, i);
+            var pos = start.relative(direction, i);
             var thermal = BlockEntityBehaviour.get(world, pos, ThermalBehaviour.TYPE);
             if(thermal == null)
                 continue;

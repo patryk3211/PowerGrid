@@ -15,12 +15,12 @@
  */
 package org.patryk3211.powergrid.utility.forge;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.EntityTrackingListener;
-import net.minecraft.server.world.ServerChunkManager;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
-import net.minecraft.world.chunk.ChunkManager;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerPlayerConnection;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.chunk.ChunkSource;
 import org.patryk3211.powergrid.mixin.forge.EntityTrackerAccessor;
 import org.patryk3211.powergrid.mixin.forge.ThreadedAnvilChunkStorageAccessor;
 
@@ -33,18 +33,18 @@ public class PlayerLookupImpl {
     /**
      * Copy of fabric implementation but with custom mixins
      */
-    public static Collection<ServerPlayerEntity> tracking(Entity entity) {
+    public static Collection<ServerPlayer> tracking(Entity entity) {
         Objects.requireNonNull(entity, "Entity cannot be null");
-        ChunkManager manager = entity.getWorld().getChunkManager();
+        ChunkSource manager = entity.level().getChunkSource();
 
-        if (manager instanceof ServerChunkManager) {
-            ThreadedAnvilChunkStorage storage = ((ServerChunkManager) manager).threadedAnvilChunkStorage;
+        if (manager instanceof ServerChunkCache) {
+            ChunkMap storage = ((ServerChunkCache) manager).chunkMap;
             EntityTrackerAccessor tracker = ((ThreadedAnvilChunkStorageAccessor) storage).getEntityTrackers().get(entity.getId());
 
             // return an immutable collection to guard against accidental removals.
             if (tracker != null) {
                 return Collections.unmodifiableCollection(tracker.getPlayersTracking()
-                        .stream().map(EntityTrackingListener::getPlayer).collect(Collectors.toSet()));
+                        .stream().map(ServerPlayerConnection::getPlayer).collect(Collectors.toSet()));
             }
 
             return Collections.emptySet();

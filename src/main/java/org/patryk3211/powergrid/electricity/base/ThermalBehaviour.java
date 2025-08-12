@@ -19,20 +19,18 @@ import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
-import net.minecraft.world.explosion.ExplosionBehavior;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 
@@ -150,12 +148,12 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             float dissipatedPower = dissipationFactor * coolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
             temperature -= dissipatedPower / 20f / thermalMass;
             if(dissipatedPower != 0)
-                blockEntity.markDirty();
+                blockEntity.setChanged();
         }
 
         var world = getWorld();
         var pos = getPos();
-        if(world.isClient && ((behaviourFlags & OVERHEAT_PARTICLES) != 0)) {
+        if(world.isClientSide && ((behaviourFlags & OVERHEAT_PARTICLES) != 0)) {
             var random = getWorld().getRandom();
             float x = pos.getX() + random.nextFloat();
             float y = pos.getY() + random.nextFloat();
@@ -167,21 +165,21 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             }
         }
 
-        if(isOverheated() && !world.isClient) {
+        if(isOverheated() && !world.isClientSide) {
             if((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
-                explode(world, pos, blockEntity.getCachedState(), 1.0f);
+                explode(world, pos, blockEntity.getBlockState(), 1.0f);
             }
             if(overheatCallback != null)
                 overheatCallback.run();
         }
     }
 
-    public static void explode(World world, BlockPos pos, BlockState state, float power) {
-        var registry = world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE);
-        var source = new MachineOverloadDamageSource(registry.getEntry(ModdedDamageTypes.OVERLOADED_MACHINE).get(), state.getBlock());
+    public static void explode(Level world, BlockPos pos, BlockState state, float power) {
+        var registry = world.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
+        var source = new MachineOverloadDamageSource(registry.getHolder(ModdedDamageTypes.OVERLOADED_MACHINE).get(), state.getBlock());
         // This block must be broken first to allow for damage to propagate.
-        world.breakBlock(pos, false);
-        world.createExplosion(null, source, null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, power, false, World.ExplosionSourceType.BLOCK);
+        world.destroyBlock(pos, false);
+        world.explode(null, source, null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, power, false, Level.ExplosionInteraction.BLOCK);
     }
 
     public boolean isOverheated() {
@@ -191,17 +189,17 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     public void applyTickPower(float power) {
         var energy = power / 20f;
         temperature += energy / thermalMass;
-        blockEntity.markDirty();
+        blockEntity.setChanged();
     }
 
     @Override
-    public void read(NbtCompound nbt, boolean clientPacket) {
+    public void read(CompoundTag nbt, boolean clientPacket) {
         super.read(nbt, clientPacket);
         temperature = nbt.getFloat("Temperature");
     }
 
     @Override
-    public void write(NbtCompound nbt, boolean clientPacket) {
+    public void write(CompoundTag nbt, boolean clientPacket) {
         super.write(nbt, clientPacket);
         nbt.putFloat("Temperature", temperature);
     }
@@ -218,20 +216,20 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     public static class MachineOverloadDamageSource extends DamageSource {
         private final Block machine;
 
-        public MachineOverloadDamageSource(RegistryEntry<DamageType> type, Block machine) {
+        public MachineOverloadDamageSource(Holder<DamageType> type, Block machine) {
             super(type);
             this.machine = machine;
         }
 
         @Override
-        public Text getDeathMessage(LivingEntity killed) {
-            var translationId = "death.attack." + this.getType().msgId();
-            var primeAdversary = killed.getPrimeAdversary();
-            var machineName = Text.translatable(machine.getTranslationKey());
+        public Component getLocalizedDeathMessage(LivingEntity killed) {
+            var translationId = "death.attack." + this.type().msgId();
+            var primeAdversary = killed.getKillCredit();
+            var machineName = Component.translatable(machine.getDescriptionId());
             if(primeAdversary != null) {
-                return Text.translatable(translationId + ".player", killed.getDisplayName(), machineName, primeAdversary.getDisplayName());
+                return Component.translatable(translationId + ".player", killed.getDisplayName(), machineName, primeAdversary.getDisplayName());
             } else {
-                return Text.translatable(translationId, killed.getDisplayName(), machineName);
+                return Component.translatable(translationId, killed.getDisplayName(), machineName);
             }
         }
     }

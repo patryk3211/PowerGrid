@@ -32,7 +32,7 @@ public class CircuitDesignDisplay implements Display {
 
     public CircuitDesignDisplay() {
         for(var component : ComponentRegistry.entries()) {
-            var stack = EntryStack.of(VanillaEntryTypes.ITEM, component.getRequiredItem().getDefaultStack());
+            var stack = EntryStack.of(VanillaEntryTypes.ITEM, component.getRequiredItem().getDefaultInstance());
             ingredients.add(EntryIngredient.of(stack));
         }
         var stack = EntryStack.of(VanillaEntryTypes.ITEM, ModdedItems.CIRCUIT_SCHEMATIC.asStack());

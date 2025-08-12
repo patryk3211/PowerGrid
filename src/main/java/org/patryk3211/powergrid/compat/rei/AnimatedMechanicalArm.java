@@ -15,22 +15,22 @@
  */
 package org.patryk3211.powergrid.compat.rei;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.compat.rei.category.animations.AnimatedKinetics;
 import com.simibubi.create.content.kinetics.mechanicalArm.ArmRenderer;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.createmod.catnip.animation.AnimationTickHolder;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.function.Supplier;
 
@@ -40,16 +40,16 @@ public class AnimatedMechanicalArm extends AnimatedKinetics {
     private boolean grabbed = false;
 
     private static float animationPart(float tick, float start, float duration) {
-        return MathHelper.clamp((tick - start) / duration, 0, 1);
+        return Mth.clamp((tick - start) / duration, 0, 1);
     }
 
     @Override
-    public void draw(DrawContext graphics, int xOffset, int yOffset) {
-        MatrixStack matrixStack = graphics.getMatrices();
-        matrixStack.push();
+    public void draw(GuiGraphics graphics, int xOffset, int yOffset) {
+        PoseStack matrixStack = graphics.pose();
+        matrixStack.pushPose();
         matrixStack.translate(xOffset, yOffset, 200);
-        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-15.5f));
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(22.5f));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(-15.5f));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(22.5f));
         int scale = 23;
         matrixStack.scale(scale, scale, scale);
 
@@ -86,11 +86,11 @@ public class AnimatedMechanicalArm extends AnimatedKinetics {
         }
 
         boolean hasItem = !heldItem.isEmpty();
-        var itemRenderer = MinecraftClient.getInstance()
+        var itemRenderer = Minecraft.getInstance()
                 .getItemRenderer();
 
         var bakedModel = itemRenderer.getModel(heldItem, null, null, 0);
-        var isBlockItem = hasItem && (heldItem.getItem() instanceof BlockItem) && bakedModel.hasDepth();
+        var isBlockItem = hasItem && (heldItem.getItem() instanceof BlockItem) && bakedModel.isGui3d();
 
         ArmRenderer.transformBase(trStack, -90 + baseAnimation * 180);
         blockElement(AllPartialModels.ARM_BASE)
@@ -131,10 +131,10 @@ public class AnimatedMechanicalArm extends AnimatedKinetics {
             trStack.translate(0, isBlockItem ? -9 / 16f : -10 / 16f, 0);
             trStack.scale(itemScale, itemScale, itemScale);
 
-            itemRenderer.renderItem(heldItem, ModelTransformationMode.FIXED, false, matrixStack, graphics.getVertexConsumers(), LightmapTextureManager.MAX_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, bakedModel);
+            itemRenderer.render(heldItem, ItemDisplayContext.FIXED, false, matrixStack, graphics.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedModel);
             trStack.popPose();
         }
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 }

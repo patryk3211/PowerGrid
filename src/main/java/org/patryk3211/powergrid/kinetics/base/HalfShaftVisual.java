@@ -20,20 +20,20 @@ import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.model.Models;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public class HalfShaftVisual<T extends KineticBlockEntity> extends SingleAxisRotatingVisual<T> {
     public static Direction pickDir(BlockState state) {
-        Direction dir = state.getOrEmpty(Properties.FACING)
-                .or(() -> state.getOrEmpty(Properties.HORIZONTAL_FACING))
+        Direction dir = state.getOptionalValue(BlockStateProperties.FACING)
+                .or(() -> state.getOptionalValue(BlockStateProperties.HORIZONTAL_FACING))
                 .orElse(Direction.UP);
-        return Direction.from(Direction.Axis.Y, dir.getDirection());
+        return Direction.fromAxisAndDirection(Direction.Axis.Y, dir.getAxisDirection());
     }
 
     public HalfShaftVisual(VisualizationContext context, T blockEntity, float partialTick) {
         // This is a hacky way to flip the model to the correct facing.
-        super(context, blockEntity, partialTick, pickDir(blockEntity.getCachedState()), Models.partial(AllPartialModels.SHAFT_HALF));
+        super(context, blockEntity, partialTick, pickDir(blockEntity.getBlockState()), Models.partial(AllPartialModels.SHAFT_HALF));
     }
 }

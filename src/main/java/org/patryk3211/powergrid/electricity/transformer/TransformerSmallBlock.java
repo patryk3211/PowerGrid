@@ -16,68 +16,70 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.base.*;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 import java.util.Optional;
 
 public class TransformerSmallBlock extends TransformerBlock implements IBE<TransformerSmallBlockEntity> {
-    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = Properties.HORIZONTAL_AXIS;
+    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
 
     private static final TerminalBoundingBox Z_TERMINAL_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 12, 2, 4, 17, 5);
     private static final TerminalBoundingBox Z_TERMINAL_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 12, 11, 4, 17, 14);
     private static final TerminalBoundingBox Z_TERMINAL_3 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 12, 2, 15, 17, 5);
     private static final TerminalBoundingBox Z_TERMINAL_4 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 12, 11, 15, 17, 14);
 
-    private static final TerminalBoundingBox X_TERMINAL_1 = Z_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox X_TERMINAL_2 = Z_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox X_TERMINAL_3 = Z_TERMINAL_3.rotateAroundY(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox X_TERMINAL_4 = Z_TERMINAL_4.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox X_TERMINAL_1 = Z_TERMINAL_1.rotateAroundY(Rotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox X_TERMINAL_2 = Z_TERMINAL_2.rotateAroundY(Rotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox X_TERMINAL_3 = Z_TERMINAL_3.rotateAroundY(Rotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox X_TERMINAL_4 = Z_TERMINAL_4.rotateAroundY(Rotation.CLOCKWISE_90);
 
-    private static final VoxelShape SHAPE_Z = VoxelShapes.union(
-            createCuboidShape(2, 0, 0, 14, 14, 16),
+    private static final VoxelShape SHAPE_Z = Shapes.or(
+            box(2, 0, 0, 14, 14, 16),
             Z_TERMINAL_1.getShape(),
             Z_TERMINAL_2.getShape(),
             Z_TERMINAL_3.getShape(),
             Z_TERMINAL_4.getShape()
     );
 
-    private static final VoxelShape SHAPE_X = VoxelShapes.union(
-            createCuboidShape(0, 0, 2, 16, 14, 14),
+    private static final VoxelShape SHAPE_X = Shapes.or(
+            box(0, 0, 2, 16, 14, 14),
             X_TERMINAL_1.getShape(),
             X_TERMINAL_2.getShape(),
             X_TERMINAL_3.getShape(),
             X_TERMINAL_4.getShape()
     );
 
-    public TransformerSmallBlock(Settings settings) {
+    public TransformerSmallBlock(Properties settings) {
         super(settings, 60);
-        setDefaultState(getDefaultState().with(COILS, 0));
+        registerDefaultState(defaultBlockState().setValue(COILS, 0));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(HORIZONTAL_AXIS, COILS);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch(state.get(HORIZONTAL_AXIS)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch(state.getValue(HORIZONTAL_AXIS)) {
             case X -> SHAPE_X;
             case Z -> SHAPE_Z;
             default -> throw new IllegalStateException();
@@ -85,7 +87,7 @@ public class TransformerSmallBlock extends TransformerBlock implements IBE<Trans
     }
 
     @Override
-    public Optional<TransformerBlockEntity> getBlockEntity(World world, BlockPos pos, BlockState state) {
+    public Optional<TransformerBlockEntity> getBlockEntity(Level world, BlockPos pos, BlockState state) {
         return Optional.ofNullable(getBlockEntity(world, pos));
     }
 
@@ -101,7 +103,7 @@ public class TransformerSmallBlock extends TransformerBlock implements IBE<Trans
 
     @Override
     public ITerminalPlacement terminal(BlockState state, int index) {
-        return switch(state.get(HORIZONTAL_AXIS)) {
+        return switch(state.getValue(HORIZONTAL_AXIS)) {
             case X -> switch(index) {
                 case 0 -> X_TERMINAL_1;
                 case 1 -> X_TERMINAL_2;

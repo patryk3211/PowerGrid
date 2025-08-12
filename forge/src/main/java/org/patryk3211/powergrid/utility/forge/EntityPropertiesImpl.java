@@ -18,8 +18,8 @@ package org.patryk3211.powergrid.utility.forge;
 import com.tterrag.registrate.builders.EntityBuilder;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import org.patryk3211.powergrid.utility.EntityProperties;
 
 public class EntityPropertiesImpl implements EntityProperties {
@@ -35,20 +35,20 @@ public class EntityPropertiesImpl implements EntityProperties {
 
     @Override
     public EntityProperties dimensions(float width, float height) {
-        builder.setDimensions(width, height);
+        builder.sized(width, height);
         return this;
     }
 
     @Override
     public EntityProperties trackRangeChunks(int range) {
-        builder.maxTrackingRange(range);
+        builder.clientTrackingRange(range);
         builder.setTrackingRange(range);
         return this;
     }
 
     @Override
     public EntityProperties trackedUpdateRate(int rate) {
-        builder.trackingTickInterval(rate);
+        builder.updateInterval(rate);
         builder.setUpdateInterval(rate);
         return this;
     }

@@ -15,22 +15,22 @@
  */
 package org.patryk3211.powergrid.electricity.zapper;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetRenderHandler;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 @Environment(EnvType.CLIENT)
 public class ElectroZapperRenderHandler extends ShootableGadgetRenderHandler {
     @Override
-    protected void playSound(Hand hand, Vec3d position) {
-        ZapProjectileEntity.playLaunchSound(MinecraftClient.getInstance().world, position, 1);
+    protected void playSound(InteractionHand hand, Vec3 position) {
+        ZapProjectileEntity.playLaunchSound(Minecraft.getInstance().level, position, 1);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class ElectroZapperRenderHandler extends ShootableGadgetRenderHandler {
     }
 
     @Override
-    protected void transformTool(MatrixStack ms, float flip, float equipProgress, float recoil, float pt) {
+    protected void transformTool(PoseStack ms, float flip, float equipProgress, float recoil, float pt) {
         ms.translate(flip * -.1f, 0, .14f);
         ms.scale(.75f, .75f, .75f);
         TransformStack.of(ms)
@@ -47,7 +47,7 @@ public class ElectroZapperRenderHandler extends ShootableGadgetRenderHandler {
     }
 
     @Override
-    protected void transformHand(MatrixStack ms, float flip, float equipProgress, float recoil, float pt) {
+    protected void transformHand(PoseStack ms, float flip, float equipProgress, float recoil, float pt) {
         ms.translate(flip * -.09, -.275, -.25);
         TransformStack.of(ms)
                 .rotateZ(flip * -10);

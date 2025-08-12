@@ -33,12 +33,12 @@ import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import net.createmod.catnip.config.ConfigBase;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -58,7 +58,7 @@ import java.util.function.Supplier;
 import static com.simibubi.create.compat.rei.CreateREI.*;
 
 public class PowerGridREI implements REIClientPlugin {
-    private static final Identifier ID = PowerGrid.asResource("rei_plugin");
+    private static final ResourceLocation ID = PowerGrid.asResource("rei_plugin");
 
     private final List<CreateRecipeCategory<?>> allCategories = new ArrayList<>();
 
@@ -230,7 +230,7 @@ public class PowerGridREI implements REIClientPlugin {
             return this;
         }
 
-        public CategoryBuilder<T> catalyst(Supplier<ItemConvertible> supplier) {
+        public CategoryBuilder<T> catalyst(Supplier<ItemLike> supplier) {
             return catalystStack(() -> new ItemStack(supplier.get()
                     .asItem()));
         }
@@ -240,12 +240,12 @@ public class PowerGridREI implements REIClientPlugin {
             return this;
         }
 
-        public CategoryBuilder<T> itemIcon(ItemConvertible item) {
+        public CategoryBuilder<T> itemIcon(ItemLike item) {
             icon(new ItemIcon(() -> new ItemStack(item)));
             return this;
         }
 
-        public CategoryBuilder<T> doubleItemIcon(ItemConvertible item1, ItemConvertible item2) {
+        public CategoryBuilder<T> doubleItemIcon(ItemLike item1, ItemLike item2) {
             icon(new DoubleItemIcon(() -> new ItemStack(item1), () -> new ItemStack(item2)));
             return this;
         }

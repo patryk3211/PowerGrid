@@ -15,13 +15,12 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import net.minecraft.entity.damage.DamageType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.damagesource.DamageType;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedDamageTypes {
-    public static final RegistryKey<DamageType> OVERLOADED_MACHINE = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, PowerGrid.asResource("overloaded_machine"));
-    public static final RegistryKey<DamageType> ZAP = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, PowerGrid.asResource("zap"));
+    public static final ResourceKey<DamageType> OVERLOADED_MACHINE = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("overloaded_machine"));
+    public static final ResourceKey<DamageType> ZAP = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("zap"));
 }

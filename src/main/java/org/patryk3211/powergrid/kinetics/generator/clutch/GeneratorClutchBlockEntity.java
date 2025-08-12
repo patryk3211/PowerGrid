@@ -18,10 +18,10 @@ package org.patryk3211.powergrid.kinetics.generator.clutch;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
@@ -85,7 +85,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
                 newImpact = 8f * segmentCount;
             }
             if(newImpact != currentImpact) {
-                if(!world.isClient)
+                if(!level.isClientSide)
                     network.updateStressFor(this, newImpact);
                 currentImpact = newImpact;
             }
@@ -99,13 +99,13 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
     }
 
     @Override
-    protected void write(NbtCompound compound, boolean clientPacket) {
+    protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putByte("Power", (byte) currentRedstonePower);
     }
 
     @Override
-    protected void read(NbtCompound compound, boolean clientPacket) {
+    protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         currentRedstonePower = compound.getByte("Power");
     }

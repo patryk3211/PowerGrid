@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.electricity;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
 
@@ -28,7 +28,7 @@ public class ClientElectricNetwork extends GlobalElectricNetworks {
         ((ClientWorldNetworks) getWorldNetworks(ClientBoundPackets.world())).partialLine(packet);
     }
 
-    public static void unloadWorld(MinecraftClient minecraftClient, ClientWorld world) {
+    public static void unloadWorld(Minecraft minecraftClient, ClientLevel world) {
         worldNetworks.remove(world);
     }
 }

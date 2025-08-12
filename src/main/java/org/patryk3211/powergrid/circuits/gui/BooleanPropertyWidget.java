@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.circuits.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 import org.patryk3211.powergrid.collections.ModIcons;
@@ -26,25 +26,25 @@ import org.patryk3211.powergrid.collections.ModIcons;
 import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PROPERTIES;
 
 public class BooleanPropertyWidget extends PropertyWidget<Boolean, PropertyEntry<Boolean>> {
-    protected BooleanPropertyWidget(TextRenderer textRenderer, int x, int y, PropertyEntry<Boolean> property) {
+    protected BooleanPropertyWidget(Font textRenderer, int x, int y, PropertyEntry<Boolean> property) {
         super(textRenderer, x, y, property);
     }
 
     @Override
-    protected void doRender(@NotNull DrawContext ctx, int mouseX, int mouseY, float partialTicks) {
+    protected void doRender(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
         int x = getX();
         int y = getY();
 
-        ctx.drawTexture(PROPERTIES, x, y, 0, 78, 60, 20);
+        ctx.blit(PROPERTIES, x, y, 0, 78, 60, 20);
         if(property.get()) {
-            ctx.drawTexture(PROPERTIES, x + 48, y + 1, 60, 79, 6, 18);
+            ctx.blit(PROPERTIES, x + 48, y + 1, 60, 79, 6, 18);
         }
 
-        hovered = mouseX >= x + 29 && mouseY >= y + 1 && mouseX < x + 29 + 18 && mouseY < y + 1 + 18;
+        isHovered = mouseX >= x + 29 && mouseY >= y + 1 && mouseX < x + 29 + 18 && mouseY < y + 1 + 18;
 
-        var bg = hovered ? AllGuiTextures.BUTTON_HOVER : AllGuiTextures.BUTTON;
+        var bg = isHovered ? AllGuiTextures.BUTTON_HOVER : AllGuiTextures.BUTTON;
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        ctx.drawTexture(bg.location, x + 29, y + 1, bg.getStartX(), bg.getStartY(), bg.getWidth(), bg.getHeight());
+        ctx.blit(bg.location, x + 29, y + 1, bg.getStartX(), bg.getStartY(), bg.getWidth(), bg.getHeight());
         ModIcons.I_TOGGLE.render(ctx, x + 30, y + 2);
     }
 

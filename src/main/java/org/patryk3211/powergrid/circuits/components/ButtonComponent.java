@@ -16,11 +16,10 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -78,7 +77,7 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
     }
 
     @Override
-    public @NotNull Identifier getModelId(@NotNull PlacedComponent component) {
+    public @NotNull ResourceLocation getModelId(@NotNull PlacedComponent component) {
         if(component.get(STATE) == 0)
             return PowerGrid.asResource("button");
         else
@@ -86,7 +85,7 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
     }
 
     @Override
-    public @NotNull Collection<Identifier> requestedModels() {
+    public @NotNull Collection<ResourceLocation> requestedModels() {
         return List.of(
                 PowerGrid.asResource("button"),
                 PowerGrid.asResource("button_on")
@@ -99,12 +98,12 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
     }
 
     @Override
-    public ActionResult use(CircuitBoardBlockEntity be, PlacedComponent component, PlayerEntity player) {
+    public InteractionResult use(CircuitBoardBlockEntity be, PlacedComponent component, Player player) {
         if(component.get(STATE) == 0) {
             component.onServerWorld(() -> world -> ModdedSoundEvents.MICROBUTTON_ON.playOnServer(world, component.getPos()));
             component.onClientWorld(() -> world -> modelChanged(component.getPos()));
         }
         component.set(STATE, 10);
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 }

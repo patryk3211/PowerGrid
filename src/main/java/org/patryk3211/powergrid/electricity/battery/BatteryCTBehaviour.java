@@ -20,11 +20,11 @@ import com.simibubi.create.foundation.block.connected.AllCTTypes;
 import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
 import com.simibubi.create.foundation.block.connected.CTSpriteShifter;
 import com.simibubi.create.foundation.block.connected.ConnectedTextureBehaviour;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockRenderView;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 
@@ -42,14 +42,14 @@ public class BatteryCTBehaviour extends ConnectedTextureBehaviour.Base {
     );
 
     @Override
-    public @Nullable CTSpriteShiftEntry getShift(BlockState state, Direction direction, @Nullable Sprite sprite) {
+    public @Nullable CTSpriteShiftEntry getShift(BlockState state, Direction direction, @Nullable TextureAtlasSprite sprite) {
         if(direction.getAxis() == Direction.Axis.Y)
             return TOP_BOTTOM;
         return SIDES;
     }
 
     @Override
-    public boolean connectsTo(BlockState state, BlockState other, BlockRenderView reader, BlockPos pos, BlockPos otherPos, Direction face) {
+    public boolean connectsTo(BlockState state, BlockState other, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face) {
         return state == other && ConnectivityHandler.isConnected(reader, pos, otherPos);
     }
 }

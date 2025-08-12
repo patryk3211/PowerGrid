@@ -17,14 +17,14 @@ package org.patryk3211.powergrid.electricity.portablebattery;
 
 import com.simibubi.create.AllSoundEvents;
 import net.createmod.catnip.math.VecHelper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.Nameable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Nameable;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -37,9 +37,9 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
     private int maxCharge;
     private int capacityLevel;
     private SwitchedWire wire;
-    private Text name;
+    private Component name;
 
-    private NbtCompound vanillaTag = new NbtCompound();
+    private CompoundTag vanillaTag = new CompoundTag();
 
     public PortableBatteryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -55,13 +55,13 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
     public void tick() {
         super.tick();
         if(wire.getState()) {
-            if(!world.isClient) {
+            if(!level.isClientSide) {
                 int prevComparatorLevel = getComparatorOutput();
                 var fePerTick = Math.abs(wire.potentialDifference()) * ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
                 charge = (int) Math.min(charge + fePerTick, maxCharge);
-                markDirty();
+                setChanged();
                 if(getComparatorOutput() != prevComparatorLevel) {
-                    world.updateComparators(pos, getCachedState().getBlock());
+                    level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
                     sendData();
                 }
 //                if(charge == maxCharge)
@@ -79,19 +79,19 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
     }
 
     private void playFilledEffect() {
-        AllSoundEvents.CONFIRM.playAt(world, pos, 0.4f, 1, true);
-        var baseMotion = new Vec3d(.25, 0.1, 0);
-        var baseVec = pos.toCenterPos();
+        AllSoundEvents.CONFIRM.playAt(level, worldPosition, 0.4f, 1, true);
+        var baseMotion = new Vec3(.25, 0.1, 0);
+        var baseVec = worldPosition.getCenter();
         for(int i = 0; i < 360; i += 10) {
             var m = VecHelper.rotate(baseMotion, i, Direction.Axis.Y);
-            m = m.addRandom(world.random, 0.2f);
-            var v = baseVec.add(m.normalize().multiply(.25f));
-            world.addParticle(SparkParticleData.INSTANCE, v.x, v.y, v.z, m.x, m.y, m.z);
+            m = m.offsetRandom(level.random, 0.2f);
+            var v = baseVec.add(m.normalize().scale(.25f));
+            level.addParticle(SparkParticleData.INSTANCE, v.x, v.y, v.z, m.x, m.y, m.z);
         }
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         int prev = charge;
         charge = tag.getInt("Charge");
@@ -99,7 +99,7 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
         maxCharge = BatteryUtils.getMaxCharge(capacityLevel);
 
         if(tag.contains("CustomName")) {
-            name = Text.Serializer.fromJson(tag.getString("CustomName"));
+            name = Component.Serializer.fromJson(tag.getString("CustomName"));
         } else {
             name = null;
         }
@@ -109,12 +109,12 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putInt("Charge", charge);
         tag.putInt("CapacityLevel", capacityLevel);
         if(name != null)
-            tag.putString("CustomName", Text.Serializer.toJson(name));
+            tag.putString("CustomName", Component.Serializer.toJson(name));
         tag.put("VanillaTag", vanillaTag);
     }
 
@@ -125,24 +125,24 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
 
     public void setCharge(int charge) {
         this.charge = charge;
-        if(!world.isClient)
+        if(!level.isClientSide)
             sendData();
     }
 
     @Override
-    public Text getName() {
+    public Component getName() {
         return name;
     }
 
-    public void setName(Text name) {
+    public void setName(Component name) {
         this.name = name;
     }
 
-    public void setTags(NbtCompound vanillaTag) {
+    public void setTags(CompoundTag vanillaTag) {
         this.vanillaTag = vanillaTag;
     }
 
-    public NbtCompound getVanillaTag() {
+    public CompoundTag getVanillaTag() {
         return vanillaTag.copy();
     }
 

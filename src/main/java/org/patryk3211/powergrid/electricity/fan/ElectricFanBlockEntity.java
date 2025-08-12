@@ -21,13 +21,13 @@ import com.simibubi.create.content.logistics.chute.ChuteBlockEntity;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.infrastructure.config.AllConfigs;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.simibubi.create.content.kinetics.base.KineticBlockEntity.convertToDirection;
-import static net.minecraft.state.property.Properties.FACING;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 
 /**
  * @see com.simibubi.create.content.kinetics.fan.EncasedFanBlockEntity
@@ -62,14 +62,14 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
     }
 
     @Override
-    protected void read(NbtCompound compound, boolean clientPacket) {
+    protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         if (clientPacket)
             airCurrent.rebuild();
     }
 
     @Override
-    public void write(NbtCompound compound, boolean clientPacket) {
+    public void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
     }
 
@@ -80,13 +80,13 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
 
     @Nullable
     @Override
-    public World getAirCurrentWorld() {
-        return world;
+    public Level getAirCurrentWorld() {
+        return level;
     }
 
     @Override
     public BlockPos getAirCurrentPos() {
-        return pos;
+        return worldPosition;
     }
 
     @Override
@@ -101,7 +101,7 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
 
     @Override
     public Direction getAirflowOriginSide() {
-        return this.getCachedState().get(FACING);
+        return this.getBlockState().getValue(FACING);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
         float speed = getSpeed();
         if(speed == 0)
             return null;
-        Direction facing = getCachedState().get(FACING);
+        Direction facing = getBlockState().getValue(FACING);
         speed = convertToDirection(speed, facing);
         return speed > 0 ? facing : facing.getOpposite();
     }
@@ -122,7 +122,7 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
 
     @Override
     public boolean isSourceRemoved() {
-        return removed;
+        return remove;
     }
 
     public void onSpeedChanged() {
@@ -131,10 +131,10 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
     }
 
     public void updateChute() {
-        Direction direction = getCachedState().get(FACING);
+        Direction direction = getBlockState().getValue(FACING);
         if(!direction.getAxis().isVertical())
             return;
-        BlockEntity poweredChute = world.getBlockEntity(pos.offset(direction));
+        BlockEntity poweredChute = level.getBlockEntity(worldPosition.relative(direction));
         if(!(poweredChute instanceof ChuteBlockEntity))
             return;
         ChuteBlockEntity chuteBE = (ChuteBlockEntity) poweredChute;
@@ -152,7 +152,7 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
     public void tick() {
         super.tick();
 
-        boolean server = !world.isClient || isVirtual();
+        boolean server = !level.isClientSide || isVirtual();
         var speed = getSpeed();
         if(speed != prevSpeed) {
             onSpeedChanged();

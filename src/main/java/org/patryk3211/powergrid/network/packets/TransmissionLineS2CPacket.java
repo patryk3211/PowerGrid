@@ -18,7 +18,7 @@ package org.patryk3211.powergrid.network.packets;
 import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
@@ -43,7 +43,7 @@ public class TransmissionLineS2CPacket implements SimplePacket {
         this.node2Voltage = line.getNode2().getVoltage();
     }
 
-    public TransmissionLineS2CPacket(PacketByteBuf buf) {
+    public TransmissionLineS2CPacket(FriendlyByteBuf buf) {
         this.endpoint1 = WireEndpointType.deserialize(buf.readNbt());
         this.endpoint2 = WireEndpointType.deserialize(buf.readNbt());
         this.lineResistance = buf.readFloat();
@@ -52,7 +52,7 @@ public class TransmissionLineS2CPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeNbt(endpoint1.serialize());
         buf.writeNbt(endpoint2.serialize());
         buf.writeFloat(lineResistance);

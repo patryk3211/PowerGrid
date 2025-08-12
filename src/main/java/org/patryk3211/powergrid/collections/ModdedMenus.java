@@ -18,9 +18,9 @@ package org.patryk3211.powergrid.collections;
 import com.tterrag.registrate.builders.MenuBuilder;
 import com.tterrag.registrate.util.entry.MenuEntry;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
-import net.minecraft.screen.ScreenHandler;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.MenuAccess;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditMenu;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen;
@@ -33,7 +33,7 @@ public class ModdedMenus {
     public static final MenuEntry<CircuitDesignTableEditMenu> CIRCUIT_DESIGN_BENCH_EDIT =
             register("circuit_design_table_edit", CircuitDesignTableEditMenu::new, () -> CircuitDesignTableEditScreen::new);
 
-    private static <C extends ScreenHandler, S extends Screen & ScreenHandlerProvider<C>> MenuEntry<C> register(String name, MenuBuilder.ForgeMenuFactory<C> factory, NonNullSupplier<MenuBuilder.ScreenFactory<C, S>> screenFactory) {
+    private static <C extends AbstractContainerMenu, S extends Screen & MenuAccess<C>> MenuEntry<C> register(String name, MenuBuilder.ForgeMenuFactory<C> factory, NonNullSupplier<MenuBuilder.ScreenFactory<C, S>> screenFactory) {
         return PowerGrid.REGISTRATE.menu(name, factory, screenFactory).register();
     }
 

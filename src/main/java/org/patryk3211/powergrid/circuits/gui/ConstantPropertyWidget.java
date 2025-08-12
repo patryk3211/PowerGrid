@@ -15,28 +15,28 @@
  */
 package org.patryk3211.powergrid.circuits.gui;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 
 import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PROPERTIES;
 
 public class ConstantPropertyWidget<T> extends PropertyWidget<T, PropertyEntry<T>> {
-    protected ConstantPropertyWidget(TextRenderer textRenderer, int x, int y, PropertyEntry<T> property) {
+    protected ConstantPropertyWidget(Font textRenderer, int x, int y, PropertyEntry<T> property) {
         super(textRenderer, x, y, property);
     }
 
     @Override
-    protected void doRender(@NotNull DrawContext ctx, int mouseX, int mouseY, float partialTicks) {
+    protected void doRender(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
         int x = getX();
         int y = getY();
 
-        ctx.drawTexture(PROPERTIES, x, y, 0, 99, 60, 20);
+        ctx.blit(PROPERTIES, x, y, 0, 99, 60, 20);
 
         var text = property.stringValue();
-        int len = textRenderer.getWidth(text);
-        ctx.drawText(textRenderer, text, x + 60 - len - 8, y + 6, 0xFF404040, false);
+        int len = textRenderer.width(text);
+        ctx.drawString(textRenderer, text, x + 60 - len - 8, y + 6, 0xFF404040, false);
     }
 
     @Override

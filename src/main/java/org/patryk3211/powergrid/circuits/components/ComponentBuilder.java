@@ -22,10 +22,10 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import com.tterrag.registrate.util.nullness.NonnullType;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
@@ -33,7 +33,7 @@ public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Co
     private final NonNullFunction<ComponentFootprint, T> factory;
     private ComponentFootprint footprint;
 
-    public ComponentBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, RegistryKey<Registry<Component>> registryKey, NonNullFunction<ComponentFootprint, T> factory) {
+    public ComponentBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceKey<Registry<Component>> registryKey, NonNullFunction<ComponentFootprint, T> factory) {
         super(owner, parent, name, callback, registryKey);
         this.factory = factory;
     }
@@ -55,8 +55,8 @@ public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Co
         return this;
     }
 
-    public ComponentBuilder<T, P> item(ItemConvertible item) {
-        onRegisterAfter(RegistryKeys.ITEM, component -> component.setItem(item::asItem));
+    public ComponentBuilder<T, P> item(ItemLike item) {
+        onRegisterAfter(Registries.ITEM, component -> component.setItem(item::asItem));
         return this;
     }
 

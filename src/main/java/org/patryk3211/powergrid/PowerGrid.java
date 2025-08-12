@@ -21,13 +21,12 @@ import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-
 import dev.architectury.registry.registries.DeferredRegister;
-import net.minecraft.block.Blocks;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.block.Blocks;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -43,8 +42,8 @@ public class PowerGrid  {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("PowerGrid");
 
-	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(MOD_ID, RegistryKeys.RECIPE_SERIALIZER);
-	public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(MOD_ID, RegistryKeys.RECIPE_TYPE);
+	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(MOD_ID, Registries.RECIPE_SERIALIZER);
+	public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(MOD_ID, Registries.RECIPE_TYPE);
 	public static final DeferredRegister<FanProcessingType> FAN_PROCESSING_TYPES = DeferredRegister.create(MOD_ID, CreateRegistries.FAN_PROCESSING_TYPE);
 
 	public static AbstractPowerGridRegistrate REGISTRATE;
@@ -93,11 +92,11 @@ public class PowerGrid  {
 		MovementBehaviour.REGISTRY.register(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
 	}
 
-	public static Identifier asResource(String path) {
-		return new Identifier(MOD_ID, path);
+	public static ResourceLocation asResource(String path) {
+		return new ResourceLocation(MOD_ID, path);
 	}
 
-	public static Identifier texture(String path) {
+	public static ResourceLocation texture(String path) {
 		return asResource("textures/" + path + ".png");
 	}
 

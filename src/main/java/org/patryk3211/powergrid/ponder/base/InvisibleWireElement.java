@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.ponder.base;
 
 import net.createmod.ponder.api.level.PonderLevel;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.BlockPos;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -29,7 +29,7 @@ public class InvisibleWireElement extends WireElement {
     }
 
     @Override
-    protected void renderLast(PonderLevel world, VertexConsumerProvider buffer, DrawContext graphics, float fade, float pt) {
+    protected void renderLast(PonderLevel world, MultiBufferSource buffer, GuiGraphics graphics, float fade, float pt) {
         if(wire == null && isVisible()) {
             var hWire = HangingWireEntity.create(world, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
             hWire.updateRenderParams();

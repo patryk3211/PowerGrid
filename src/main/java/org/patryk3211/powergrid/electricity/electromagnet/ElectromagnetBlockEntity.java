@@ -20,14 +20,14 @@ import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.recipe.RecipeApplier;
 import net.createmod.catnip.math.VecHelper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -76,7 +76,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         if(simulate)
             return true;
 
-        var outputs = RecipeApplier.applyRecipeOn(world, input.stack.copyWithCount(1), recipe.get());
+        var outputs = RecipeApplier.applyRecipeOn(level, input.stack.copyWithCount(1), recipe.get());
 //        for(ItemStack created : outputs) {
 //            if(!created.isEmpty()) {
 //                onItemPressed(created);
@@ -90,20 +90,20 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
 
     @Override
     public boolean tryProcessInWorld(ItemEntity itemEntity, boolean simulate) {
-        var item = itemEntity.getStack();
+        var item = itemEntity.getItem();
         var recipe = getRecipe(item);
         if(recipe.isEmpty())
             return false;
         if(simulate)
             return true;
 
-        for(var result : RecipeApplier.applyRecipeOn(world, item.copyWithCount(1), recipe.get())) {
-            var created = new ItemEntity(world, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), result);
-            created.setToDefaultPickupDelay();
-            created.setVelocity(VecHelper.offsetRandomly(Vec3d.ZERO, world.random, .05f));
-            world.spawnEntity(created);
+        for(var result : RecipeApplier.applyRecipeOn(level, item.copyWithCount(1), recipe.get())) {
+            var created = new ItemEntity(level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), result);
+            created.setDefaultPickUpDelay();
+            created.setDeltaMovement(VecHelper.offsetRandomly(Vec3.ZERO, level.random, .05f));
+            level.addFreshEntity(created);
         }
-        item.decrement(1);
+        item.shrink(1);
         return true;
     }
 
@@ -123,14 +123,14 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         return field;
     }
 
-    private static final Inventory magnetizingInv = new SimpleInventory(1);
+    private static final Container magnetizingInv = new SimpleContainer(1);
     public Optional<MagnetizingRecipe> getRecipe(ItemStack item) {
-        Optional<MagnetizingRecipe> assemblyRecipe = SequencedAssemblyRecipe.getRecipe(world, item, MagnetizingRecipe.TYPE_INFO.getType(), MagnetizingRecipe.class);
+        Optional<MagnetizingRecipe> assemblyRecipe = SequencedAssemblyRecipe.getRecipe(level, item, MagnetizingRecipe.TYPE_INFO.getType(), MagnetizingRecipe.class);
         if(assemblyRecipe.isPresent())
             return assemblyRecipe;
 
-        magnetizingInv.setStack(0, item);
-        return world.getRecipeManager().getFirstMatch(MagnetizingRecipe.TYPE_INFO.getType(), magnetizingInv, world);
+        magnetizingInv.setItem(0, item);
+        return level.getRecipeManager().getRecipeFor(MagnetizingRecipe.TYPE_INFO.getType(), magnetizingInv, level);
     }
 
     public MagnetizingBehaviour getMagnetizingBehaviour() {

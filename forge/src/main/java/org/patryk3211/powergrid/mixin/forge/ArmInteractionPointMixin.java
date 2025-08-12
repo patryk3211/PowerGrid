@@ -20,9 +20,9 @@ import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackH
 import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.kinetics.mechanicalArm.AllArmInteractionPointTypes;
 import com.simibubi.create.content.kinetics.mechanicalArm.ArmInteractionPoint;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -42,7 +42,7 @@ import java.util.List;
 public abstract class ArmInteractionPointMixin {
     @Shadow @Nullable protected abstract IItemHandler getHandler();
 
-    @Shadow public abstract World getLevel();
+    @Shadow public abstract Level getLevel();
 
     @Shadow public abstract BlockPos getPos();
 
@@ -56,7 +56,7 @@ public abstract class ArmInteractionPointMixin {
             var circuitStack = handler.getStackInSlot(i);
             if(circuitStack.isEmpty())
                 continue;
-            if(circuitStack.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get())) {
+            if(circuitStack.is(ModdedItems.INCOMPLETE_CIRCUIT.get())) {
                 var newCircuit = IncompleteCircuitItem.insert(circuitStack, componentStack);
                 if(newCircuit != null) {
                     if(!simulate) {
@@ -96,7 +96,7 @@ public abstract class ArmInteractionPointMixin {
                     inserted.setTrue();
                     if(!simulate) {
                         var result = new TransportedItemStack(newCircuit);
-                        result.lockedExternally = newCircuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get());
+                        result.lockedExternally = newCircuit.is(ModdedItems.INCOMPLETE_CIRCUIT.get());
                         transport.handleProcessingOnItem(tis,
                                 TransportedItemStackHandlerBehaviour.TransportedResult.convertToAndLeaveHeld(List.of(), result)
                         );
@@ -114,7 +114,7 @@ public abstract class ArmInteractionPointMixin {
 
     @Inject(
             method = "insert",
-            at = @At(value = "INVOKE", target = "Lnet/minecraftforge/items/ItemHandlerHelper;insertItem(Lnet/minecraftforge/items/IItemHandler;Lnet/minecraft/item/ItemStack;Z)Lnet/minecraft/item/ItemStack;"),
+            at = @At(value = "INVOKE", target = "Lnet/minecraftforge/items/ItemHandlerHelper;insertItem(Lnet/minecraftforge/items/IItemHandler;Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/item/ItemStack;"),
             cancellable = true
     )
     private void insertAssembleCircuit(ItemStack stack, boolean simulate, CallbackInfoReturnable<ItemStack> cir) {

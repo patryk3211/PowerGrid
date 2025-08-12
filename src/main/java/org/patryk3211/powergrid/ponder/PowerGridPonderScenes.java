@@ -19,13 +19,13 @@ import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.ponder.scenes.*;
 
 public class PowerGridPonderScenes {
-    public static void register(PonderSceneRegistrationHelper<Identifier> helper) {
+    public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
         HELPER.addStoryBoard(ModdedBlocks.ANDESITE_VOLTAGE_METER, "gauges", GaugeScenes::voltage);
@@ -77,7 +77,7 @@ public class PowerGridPonderScenes {
 
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet);
-        helper.addStoryBoard(new Identifier("lightning_rod"), "lightning_attractor", MagnetScenes::lightningAttractor);
+        helper.addStoryBoard(new ResourceLocation("lightning_rod"), "lightning_attractor", MagnetScenes::lightningAttractor);
 
         HELPER.addStoryBoard(ModdedBlocks.BASIN_HEATER, "basin_heater", DeviceScenes::basinHeater, PowerGridPonderTags.ELECTRIC_DEVICES);
 

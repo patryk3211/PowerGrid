@@ -17,36 +17,35 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
 public abstract class AbstractRotorBlock extends Block implements IRotorAssemblyPart, IWrenchable {
-    public static final EnumProperty<Direction.Axis> AXIS = Properties.AXIS;
+    public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
 
-    public AbstractRotorBlock(Settings properties) {
+    public AbstractRotorBlock(Properties properties) {
         super(properties);
     }
 
     @Override
-    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
-        var world = context.getWorld();
-        ActionResult result = IWrenchable.super.onWrenched(state, context);
-        if(!result.isAccepted())
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        var world = context.getLevel();
+        InteractionResult result = IWrenchable.super.onWrenched(state, context);
+        if(!result.consumesAction())
             return result;
 
-        var behaviour = BlockEntityBehaviour.get(world, context.getBlockPos(), RotorBehaviour.TYPE);
+        var behaviour = BlockEntityBehaviour.get(world, context.getClickedPos(), RotorBehaviour.TYPE);
         if(behaviour != null)
             behaviour.checkConnectivity(null);
 
@@ -54,33 +53,33 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(AXIS);
     }
 
-    public boolean hasPositive(WorldView world, BlockPos pos, Direction.Axis axis) {
+    public boolean hasPositive(LevelReader world, BlockPos pos, Direction.Axis axis) {
         BlockState state = world.getBlockState(switch(axis) {
             case X -> pos.east();
-            case Y -> pos.up();
+            case Y -> pos.above();
             case Z -> pos.south();
         });
-        return state.getBlock() instanceof IRotorAssemblyPart assembly && assembly.canConnect(state, Direction.from(axis, Direction.AxisDirection.NEGATIVE));
+        return state.getBlock() instanceof IRotorAssemblyPart assembly && assembly.canConnect(state, Direction.fromAxisAndDirection(axis, Direction.AxisDirection.NEGATIVE));
     }
 
-    public boolean hasNegative(WorldView world, BlockPos pos, Direction.Axis axis) {
+    public boolean hasNegative(LevelReader world, BlockPos pos, Direction.Axis axis) {
         BlockState state = world.getBlockState(switch(axis) {
             case X -> pos.west();
-            case Y -> pos.down();
+            case Y -> pos.below();
             case Z -> pos.north();
         });
-        return state.getBlock() instanceof IRotorAssemblyPart assembly && assembly.canConnect(state, Direction.from(axis, Direction.AxisDirection.POSITIVE));
+        return state.getBlock() instanceof IRotorAssemblyPart assembly && assembly.canConnect(state, Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE));
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext context) {
-        World world = context.getWorld();
-        BlockPos pos = context.getBlockPos();
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Level world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
 
         Direction.Axis preferredAxis = null;
         for(Direction.Axis axis : Direction.Axis.VALUES) {
@@ -95,14 +94,14 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
         }
 
         if(preferredAxis == null)
-            preferredAxis = context.getPlayerLookDirection().getAxis();
+            preferredAxis = context.getNearestLookingDirection().getAxis();
 
-        return getDefaultState()
-                .with(AXIS, preferredAxis);
+        return defaultBlockState()
+                .setValue(AXIS, preferredAxis);
     }
 
     @Override
     public boolean canConnect(BlockState state, Direction dir) {
-        return state.get(AXIS) == dir.getAxis();
+        return state.getValue(AXIS) == dir.getAxis();
     }
 }

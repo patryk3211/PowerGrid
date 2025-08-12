@@ -19,20 +19,20 @@ import com.simibubi.create.content.logistics.chute.AbstractChuteBlock;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.levelWrappers.WrappedLevel;
 import net.createmod.catnip.math.VoxelShaper;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
@@ -53,18 +53,18 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
             new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 10, 6, 7, 11, 7, 9).withColor(IDecoratedTerminal.BLUE)
     };
 
-    private static final VoxelShape SHAPE_UP = VoxelShapes.union(
-            createCuboidShape(0, 10, 0, 16, 16, 16),
-            createCuboidShape(5, 7, 5, 11, 10, 11)
+    private static final VoxelShape SHAPE_UP = Shapes.or(
+            box(0, 10, 0, 16, 16, 16),
+            box(5, 7, 5, 11, 10, 11)
     );
 
-    public ElectricFanBlock(Settings settings) {
-        super(settings.nonOpaque());
+    public ElectricFanBlock(Properties settings) {
+        super(settings.noOcclusion());
 
         var shaper = VoxelShaper.forDirectional(SHAPE_UP, Direction.UP);
         setTerminalCollection(BlockStateTerminalCollection
                 .builder(this)
-                .forAllStates(state -> BlockStateTerminalCollection.each(UP_TERMINALS, terminal -> switch(state.get(FACING)) {
+                .forAllStates(state -> BlockStateTerminalCollection.each(UP_TERMINALS, terminal -> switch(state.getValue(FACING)) {
                     case UP -> terminal;
                     case DOWN -> terminal.rotateAroundX(180);
                     case NORTH -> terminal.rotateAroundX(90);
@@ -72,58 +72,58 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
                     case EAST -> terminal.rotateAroundX(90).rotateAroundY(90);
                     case WEST -> terminal.rotateAroundX(90).rotateAroundY(-90);
                 }))
-                .withShapeMapper(state -> shaper.get(state.get(FACING)))
+                .withShapeMapper(state -> shaper.get(state.getValue(FACING)))
                 .build());
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext context) {
-        var world = context.getWorld();
-        var pos = context.getBlockPos();
-        var face = context.getSide();
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
+        var world = context.getLevel();
+        var pos = context.getClickedPos();
+        var face = context.getClickedFace();
 
-        var placedOn = world.getBlockState(pos.offset(face.getOpposite()));
-        var placedOnOpposite = world.getBlockState(pos.offset(face));
+        var placedOn = world.getBlockState(pos.relative(face.getOpposite()));
+        var placedOnOpposite = world.getBlockState(pos.relative(face));
         if(AbstractChuteBlock.isChute(placedOn))
-            return getDefaultState().with(FACING, face.getOpposite());
+            return defaultBlockState().setValue(FACING, face.getOpposite());
         if(AbstractChuteBlock.isChute(placedOnOpposite))
-            return getDefaultState().with(FACING, face);
+            return defaultBlockState().setValue(FACING, face);
 
-        var preferredFacing = context.getPlayerLookDirection();
-        return getDefaultState().with(FACING, context.getPlayer() != null && context.getPlayer()
-                .isSneaking() ? preferredFacing : preferredFacing.getOpposite());
+        var preferredFacing = context.getNearestLookingDirection();
+        return defaultBlockState().setValue(FACING, context.getPlayer() != null && context.getPlayer()
+                .isShiftKeyDown() ? preferredFacing : preferredFacing.getOpposite());
     }
 
     @Override
-    public void onBlockAdded(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
-        super.onBlockAdded(state, worldIn, pos, oldState, isMoving);
+    public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
+        super.onPlace(state, worldIn, pos, oldState, isMoving);
         blockUpdate(state, worldIn, pos);
     }
 
     @Override
-    public void prepare(BlockState stateIn, WorldAccess worldIn, BlockPos pos, int flags, int count) {
-        super.prepare(stateIn, worldIn, pos, flags, count);
+    public void updateIndirectNeighbourShapes(BlockState stateIn, LevelAccessor worldIn, BlockPos pos, int flags, int count) {
+        super.updateIndirectNeighbourShapes(stateIn, worldIn, pos, flags, count);
         blockUpdate(stateIn, worldIn, pos);
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
+    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         blockUpdate(state, worldIn, pos);
     }
 
-    protected void blockUpdate(BlockState state, WorldAccess worldIn, BlockPos pos) {
+    protected void blockUpdate(BlockState state, LevelAccessor worldIn, BlockPos pos) {
         if(worldIn instanceof WrappedLevel)
             return;
         notifyFanBlockEntity(worldIn, pos);
     }
 
-    protected void notifyFanBlockEntity(WorldAccess world, BlockPos pos) {
+    protected void notifyFanBlockEntity(LevelAccessor world, BlockPos pos) {
         withBlockEntityDo(world, pos, ElectricFanBlockEntity::blockInFrontChanged);
     }
 
     @Override
-    public BlockState updateAfterWrenched(BlockState newState, ItemUsageContext context) {
-        blockUpdate(newState, context.getWorld(), context.getBlockPos());
+    public BlockState updateAfterWrenched(BlockState newState, UseOnContext context) {
+        blockUpdate(newState, context.getLevel(), context.getClickedPos());
         return newState;
     }
 
@@ -142,7 +142,7 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
     }
 }

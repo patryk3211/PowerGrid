@@ -16,20 +16,20 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -39,20 +39,20 @@ import org.patryk3211.powergrid.electricity.wire.IWire;
 import java.util.List;
 
 public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity>, IHaveElectricProperties {
-    public static final BooleanProperty OPEN = Properties.OPEN;
+    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 
-    protected float resistance = 0.01f;
+    protected float explosionResistance = 0.01f;
     protected float maxVoltage = 200f;
     protected boolean isButton = false;
 
-    public SwitchBlock(Settings settings) {
+    public SwitchBlock(Properties settings) {
         super(settings);
-        setDefaultState(getDefaultState().with(OPEN, true));
+        registerDefaultState(defaultBlockState().setValue(OPEN, true));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(OPEN);
     }
 
@@ -61,28 +61,28 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if(!player.isSneaking()) {
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(!player.isShiftKeyDown()) {
             if(!IWire.holdsWire(player)) {
-                var isOpen = !state.get(OPEN);
+                var isOpen = !state.getValue(OPEN);
                 if(!isButton) {
-                    world.setBlockState(pos, state.with(OPEN, isOpen));
+                    world.setBlockAndUpdate(pos, state.setValue(OPEN, isOpen));
                     withBlockEntityDo(world, pos, be -> be.setState(!isOpen));
                     useSound(world, pos, isOpen);
                 } else {
                     if(!isOpen) {
-                        world.setBlockState(pos, state.with(OPEN, false));
+                        world.setBlockAndUpdate(pos, state.setValue(OPEN, false));
                         useSound(world, pos, false);
                     }
                     withBlockEntityDo(world, pos, be -> be.setState(true));
                 }
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
-        return super.onUse(state, world, pos, player, hand, hit);
+        return super.use(state, world, pos, player, hand, hit);
     }
 
-    public void useSound(World world, BlockPos pos, boolean open) {
+    public void useSound(Level world, BlockPos pos, boolean open) {
 
     }
 
@@ -97,7 +97,7 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
     }
 
     public float getResistance() {
-        return resistance;
+        return explosionResistance;
     }
 
     public float getMaxVoltage() {
@@ -105,7 +105,7 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(getResistance(), player, tooltip);
     }
 }

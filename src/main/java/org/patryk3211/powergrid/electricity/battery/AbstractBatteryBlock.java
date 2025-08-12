@@ -16,25 +16,25 @@
 package org.patryk3211.powergrid.electricity.battery;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 
 public abstract class AbstractBatteryBlock<T extends BatteryBlockEntity> extends ElectricBlock implements IBE<T> {
-    public AbstractBatteryBlock(Settings settings) {
+    public AbstractBatteryBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        super.onPlaced(world, pos, state, placer, itemStack);
-        if(itemStack.hasNbt()) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        super.setPlacedBy(world, pos, state, placer, itemStack);
+        if(itemStack.hasTag()) {
             withBlockEntityDo(world, pos, be -> {
-                var tag = itemStack.getNbt();
+                var tag = itemStack.getTag();
                 if(tag.contains("Energy")) {
                     be.setEnergy(tag.getDouble("Energy"));
                 }

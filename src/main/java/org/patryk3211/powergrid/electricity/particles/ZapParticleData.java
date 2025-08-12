@@ -20,30 +20,30 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.foundation.particle.ICustomParticleData;
-import net.minecraft.client.particle.ParticleFactory;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.particle.AbstractDustParticleEffect;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleType;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.dynamic.Codecs;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.core.particles.DustParticleOptionsBase;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.ExtraCodecs;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.collections.ModdedParticles;
 
-public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapParticleData> {
-    public static final Factory<ZapParticleData> FACTORY = new Factory<>() {
+public class ZapParticleData implements ParticleOptions, ICustomParticleData<ZapParticleData> {
+    public static final Deserializer<ZapParticleData> FACTORY = new Deserializer<>() {
         @Override
-        public ZapParticleData read(ParticleType<ZapParticleData> type, StringReader reader) throws CommandSyntaxException {
-            return new ZapParticleData(AbstractDustParticleEffect.readColor(reader), true, 1, -1);
+        public ZapParticleData fromCommand(ParticleType<ZapParticleData> type, StringReader reader) throws CommandSyntaxException {
+            return new ZapParticleData(DustParticleOptionsBase.readVector3f(reader), true, 1, -1);
         }
 
         @Override
-        public ZapParticleData read(ParticleType<ZapParticleData> type, PacketByteBuf buf) {
+        public ZapParticleData fromNetwork(ParticleType<ZapParticleData> type, FriendlyByteBuf buf) {
             return new ZapParticleData(buf.readVector3f(), buf.readBoolean(), buf.readInt(), buf.readInt());
         }
     };
     private static final Codec<ZapParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codecs.VECTOR_3F.fieldOf("end").forGetter(ZapParticleData::getEnd),
+            ExtraCodecs.VECTOR3F.fieldOf("end").forGetter(ZapParticleData::getEnd),
             Codec.BOOL.fieldOf("anchor").forGetter(ZapParticleData::isAnchored),
             Codec.INT.fieldOf("life").forGetter(ZapParticleData::getLife),
             Codec.INT.fieldOf("segments").forGetter(ZapParticleData::getSegmentCount)
@@ -104,7 +104,7 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
     }
 
     @Override
-    public Factory<ZapParticleData> getDeserializer() {
+    public Deserializer<ZapParticleData> getDeserializer() {
         return FACTORY;
     }
 
@@ -114,7 +114,7 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
     }
 
     @Override
-    public ParticleFactory<ZapParticleData> getFactory() {
+    public ParticleProvider<ZapParticleData> getFactory() {
         return ZapParticle::new;
     }
 
@@ -124,7 +124,7 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void writeToNetwork(FriendlyByteBuf buf) {
         buf.writeVector3f(end);
         buf.writeBoolean(anchor);
         buf.writeInt(life);
@@ -132,11 +132,11 @@ public class ZapParticleData implements ParticleEffect, ICustomParticleData<ZapP
     }
 
     @Override
-    public String asString() {
+    public String writeToString() {
         if(end == null) {
-            return Registries.PARTICLE_TYPE.getId(getType()).toString();
+            return BuiltInRegistries.PARTICLE_TYPE.getKey(getType()).toString();
         } else {
-            return String.format("%s (%f, %f, %f)", Registries.PARTICLE_TYPE.getId(getType()), end.x, end.y, end.z);
+            return String.format("%s (%f, %f, %f)", BuiltInRegistries.PARTICLE_TYPE.getKey(getType()), end.x, end.y, end.z);
         }
     }
 }

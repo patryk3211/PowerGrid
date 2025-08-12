@@ -16,14 +16,14 @@
 package org.patryk3211.powergrid.circuits.gui;
 
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
-import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Font;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 
 public abstract class PropertyWidget<T, P extends PropertyEntry<T>> extends AbstractSimiWidget {
-    protected final TextRenderer textRenderer;
+    protected final Font textRenderer;
     protected final P property;
 
-    protected PropertyWidget(TextRenderer textRenderer, int x, int y, P property) {
+    protected PropertyWidget(Font textRenderer, int x, int y, P property) {
         super(x, y, 60, 20);
         this.textRenderer = textRenderer;
         this.property = property;

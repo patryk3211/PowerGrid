@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 public class LvButtonBlock extends LvSwitchBlock {
-    public LvButtonBlock(Settings settings) {
+    public LvButtonBlock(Properties settings) {
         super(settings);
         this.isButton = true;
     }

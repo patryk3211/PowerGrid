@@ -15,42 +15,42 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 public class HvSwitchRenderer extends KineticBlockEntityRenderer<HvSwitchBlockEntity> {
-    public HvSwitchRenderer(BlockEntityRendererFactory.Context context) {
+    public HvSwitchRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    protected void renderSafe(HvSwitchBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
-        if(VisualizationManager.supportsVisualization(be.getWorld()))
+    protected void renderSafe(HvSwitchBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
+        if(VisualizationManager.supportsVisualization(be.getLevel()))
             return;
 
-        var state = be.getCachedState();
+        var state = be.getBlockState();
         super.renderSafe(be, partialTicks, ms, buffer, light, overlay);
 
-        var facing = state.get(HvSwitchBlock.HORIZONTAL_FACING);
+        var facing = state.getValue(HvSwitchBlock.HORIZONTAL_FACING);
         var rod = CachedBuffers.partialFacing(ModdedPartialModels.HV_SWITCH_ROD, state, facing);
         float angle = (1.0f - be.rod.getValue(partialTicks)) * (float) Math.PI * 0.5f;
         rod
-                .rotateCentered(angle, facing.rotateYClockwise())
+                .rotateCentered(angle, facing.getClockWise())
                 .light(light)
-                .renderInto(ms, buffer.getBuffer(RenderLayer.getSolid()));
+                .renderInto(ms, buffer.getBuffer(RenderType.solid()));
     }
 
     @Override
     protected SuperByteBuffer getRotatedModel(HvSwitchBlockEntity be, BlockState state) {
-        return CachedBuffers.partialFacingVertical(AllPartialModels.COGWHEEL_SHAFT, state, state.get(HvSwitchBlock.HORIZONTAL_FACING).rotateYClockwise());
+        return CachedBuffers.partialFacingVertical(AllPartialModels.COGWHEEL_SHAFT, state, state.getValue(HvSwitchBlock.HORIZONTAL_FACING).getClockWise());
     }
 }

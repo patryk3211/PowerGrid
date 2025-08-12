@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.compat.rei;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.compat.rei.ItemIcon;
 import me.shedaniel.math.Point;
@@ -26,11 +27,10 @@ import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -41,7 +41,7 @@ import java.util.List;
 
 public class CircuitAssemblyCategory implements DisplayCategory<CircuitAssemblyDisplay> {
     public static final CategoryIdentifier<CircuitAssemblyDisplay> IDENTIFIER = CategoryIdentifier.of(PowerGrid.asResource("circuit_assembly"));
-    public static final Identifier TEXTURE = PowerGrid.texture("gui/circuit_assembly_rei_overlay");
+    public static final ResourceLocation TEXTURE = PowerGrid.texture("gui/circuit_assembly_rei_overlay");
     private final AnimatedMechanicalArm arm = new AnimatedMechanicalArm();
 
     private final Renderer icon;
@@ -56,7 +56,7 @@ public class CircuitAssemblyCategory implements DisplayCategory<CircuitAssemblyD
     }
 
     @Override
-    public Text getTitle() {
+    public Component getTitle() {
         return Lang.translateDirect("recipe.category.circuit_assembly");
     }
 
@@ -75,21 +75,21 @@ public class CircuitAssemblyCategory implements DisplayCategory<CircuitAssemblyD
         return 150;
     }
 
-    private void renderScene(DrawContext graphics, int mouseX, int mouseY, float partialTick, Rectangle bounds) {
-        MatrixStack poseStack = graphics.getMatrices();
-        poseStack.push();
+    private void renderScene(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, Rectangle bounds) {
+        PoseStack poseStack = graphics.pose();
+        poseStack.pushPose();
         poseStack.translate(bounds.getX() + 60, bounds.getY() + 4 + 30, 0);
 
         arm.draw(graphics, -14, -16);
 
-        poseStack.push();
+        poseStack.pushPose();
         var depot = new ItemIcon(AllBlocks.DEPOT::asStack);
         poseStack.translate(35 - 8,  -8, -10);
         poseStack.scale(2, 2, 1);
         depot.render(graphics, new Rectangle(0, 0, 16, 16), mouseX, mouseY, partialTick);
-        poseStack.pop();
+        poseStack.popPose();
 
-        poseStack.pop();
+        poseStack.popPose();
     }
 
     @Override

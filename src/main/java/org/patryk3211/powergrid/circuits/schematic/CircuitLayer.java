@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
-import net.minecraft.nbt.NbtLongArray;
+import net.minecraft.nbt.LongArrayTag;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -36,8 +36,8 @@ public class CircuitLayer {
         map = (BitSet) other.map.clone();
     }
 
-    public NbtLongArray serializeNbt() {
-        return new NbtLongArray(map.toLongArray());
+    public LongArrayTag serializeNbt() {
+        return new LongArrayTag(map.toLongArray());
     }
 
     public void deserialize(long[] tag) {

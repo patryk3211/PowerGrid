@@ -18,19 +18,19 @@ package org.patryk3211.powergrid.electricity.gauge;
 import com.simibubi.create.foundation.block.IBE;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
@@ -47,23 +47,23 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
                     .withOrigin(1.5, 15, 8)
                     .withColor(IDecoratedTerminal.BLUE);
 
-    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_180);
-    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(Rotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox SOUTH_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(Rotation.CLOCKWISE_180);
 
-    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox EAST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(Rotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox EAST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(Rotation.CLOCKWISE_90);
 
-    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
-    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL_1 = NORTH_TERMINAL_1.rotateAroundY(Rotation.COUNTERCLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL_2 = NORTH_TERMINAL_2.rotateAroundY(Rotation.COUNTERCLOCKWISE_90);
 
-    private static final VoxelShape SHAPE_NORTH_SOUTH = VoxelShapes.union(
-            createCuboidShape(1, 0, 2, 15, 14, 14),
+    private static final VoxelShape SHAPE_NORTH_SOUTH = Shapes.or(
+            box(1, 0, 2, 15, 14, 14),
             NORTH_TERMINAL_1.getShape(),
             NORTH_TERMINAL_2.getShape()
     );
 
-    private static final VoxelShape SHAPE_EAST_WEST = VoxelShapes.union(
-            createCuboidShape(2, 0, 1, 14, 14, 15),
+    private static final VoxelShape SHAPE_EAST_WEST = Shapes.or(
+            box(2, 0, 1, 14, 14, 15),
             EAST_TERMINAL_1.getShape(),
             EAST_TERMINAL_2.getShape()
     );
@@ -76,7 +76,7 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
     float maxValue;
     Material material;
 
-    public GaugeBlock(Settings settings) {
+    public GaugeBlock(Properties settings) {
         super(settings);
         maxValue = 0;
         material = null;
@@ -91,8 +91,8 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch (state.get(Properties.HORIZONTAL_FACING)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch (state.getValue(BlockStateProperties.HORIZONTAL_FACING)) {
             case NORTH, SOUTH -> SHAPE_NORTH_SOUTH;
             case EAST, WEST -> SHAPE_EAST_WEST;
             default -> throw new IllegalArgumentException("Invalid horizontal facing");
@@ -100,15 +100,15 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
-        builder.add(Properties.HORIZONTAL_FACING);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(BlockStateProperties.HORIZONTAL_FACING);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return getDefaultState()
-                .with(Properties.HORIZONTAL_FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return defaultBlockState()
+                .setValue(BlockStateProperties.HORIZONTAL_FACING, ctx.getHorizontalDirection().getOpposite());
     }
 
     @Override
@@ -118,7 +118,7 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
 
     @Override
     public ITerminalPlacement terminal(BlockState state, int index) {
-        return switch(state.get(Properties.HORIZONTAL_FACING)) {
+        return switch(state.getValue(BlockStateProperties.HORIZONTAL_FACING)) {
             case NORTH -> switch(index) {
                 case 0 -> NORTH_TERMINAL_1;
                 case 1 -> NORTH_TERMINAL_2;
@@ -149,8 +149,8 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
     }
 
     @Override
-    public boolean shouldRenderHeadOnFace(World world, BlockPos pos, BlockState state, Direction dir) {
-        var facing = state.get(Properties.HORIZONTAL_FACING);
+    public boolean shouldRenderHeadOnFace(Level world, BlockPos pos, BlockState state, Direction dir) {
+        var facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         return dir.getAxis() == facing.getAxis();
     }
 

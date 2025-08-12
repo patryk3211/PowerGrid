@@ -18,15 +18,15 @@ package org.patryk3211.powergrid.electricity.transformer;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
@@ -81,20 +81,20 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             lastCurrent += Math.abs(I3);
         }
         applyLostPower(power);
-        if(world.isClient) {
+        if(level.isClientSide) {
             tickAudio();
         }
     }
 
     @Override
     public float getVolume() {
-        return MathHelper.clamp((lastCurrent / 40) - 0.25f, 0, 1);
+        return Mth.clamp((lastCurrent / 40) - 0.25f, 0, 1);
     }
 
     @Environment(EnvType.CLIENT)
     protected void tickAudio() {
         if(!hasSoundSource && getVolume() > 0) {
-            MinecraftClient.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
+            Minecraft.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
             hasSoundSource = true;
         } else if(hasSoundSource && getVolume() <= 0) {
             hasSoundSource = false;
@@ -102,7 +102,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
 
         boolean rebuild = false;
@@ -126,17 +126,17 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
 
         if(primaryCoil.isDefined()) {
-            var primary = new NbtCompound();
+            var primary = new CompoundTag();
             primaryCoil.writeNbt(primary);
             tag.put("Primary", primary);
         }
 
         if(secondaryCoil.isDefined()) {
-            var secondary = new NbtCompound();
+            var secondary = new CompoundTag();
             secondaryCoil.writeNbt(secondary);
             tag.put("Secondary", secondary);
         }
@@ -205,7 +205,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             secondaryCoil = new TransformerCoilParameters();
         }
 
-        if(world != null && !world.isClient) {
+        if(level != null && !level.isClientSide) {
             updateCoilBlockState();
         }
 
@@ -261,13 +261,13 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     }
 
     @Override
-    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         if(!isPlayerSneaking)
             return false;
 
         Lang.builder().translate("gui.transformer.info_header").forGoggles(tooltip);
         Lang.builder().translate("gui.transformer.ratio")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         var primaryTurns = primaryCoil.getTurns();
@@ -282,8 +282,8 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         }
         var n1 = Lang.number(primaryTurns / largestCommonDenominator);
         var n2 = Lang.number(secondaryTurns / largestCommonDenominator);
-        var ratio = n1.add(Text.of(":")).add(n2);
-        ratio.style(Formatting.AQUA).forGoggles(tooltip, 1);
+        var ratio = n1.add(Component.nullToEmpty(":")).add(n2);
+        ratio.style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         return true;
     }
 }

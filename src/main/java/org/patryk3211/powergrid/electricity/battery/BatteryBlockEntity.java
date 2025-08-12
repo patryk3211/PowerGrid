@@ -15,14 +15,15 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class BatteryBlockEntity extends ElectricBlockEntity {
     protected VoltageSourceNode sourceNode;
@@ -43,7 +44,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        var spec = ((AbstractBatteryBlock<?>) getCachedState().getBlock()).getSpec();
+        var spec = ((AbstractBatteryBlock<?>) getBlockState().getBlock()).getSpec();
         return new ThermalBehaviour(this, spec.getThermalMass(), spec.getDissipationFactor());
     }
 
@@ -87,7 +88,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
             energy = capacity;
             // TODO: Convert excess energy into heat
         }
-        markDirty();
+        setChanged();
 
         // Calculate new parameters
         updateParameters();
@@ -100,13 +101,13 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putDouble("Energy", energy);
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         energy = tag.getDouble("Energy");
         updateParameters();

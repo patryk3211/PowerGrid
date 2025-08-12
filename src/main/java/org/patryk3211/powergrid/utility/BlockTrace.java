@@ -15,11 +15,15 @@
  */
 package org.patryk3211.powergrid.utility;
 
-import net.minecraft.util.Pair;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.*;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -28,33 +32,33 @@ import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import java.util.*;
 
 public class BlockTrace {
-    public static BlockHitResult raycast(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement passThrough) {
-        return BlockView.raycast(start, end, null, (innerContext, pos) -> {
+    public static BlockHitResult raycast(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement passThrough) {
+        return BlockGetter.traverseBlocks(start, end, null, (innerContext, pos) -> {
             var blockState = world.getBlockState(pos);
-            var voxelShape = blockState.getOutlineShape(world, pos);
-            var hit = world.raycastBlock(start, end, pos, voxelShape, blockState);
-            if(hit != null && passThrough != null && passThrough.check(pos, hit.getPos()))
+            var voxelShape = blockState.getShape(world, pos);
+            var hit = world.clipWithInteractionOverride(start, end, pos, voxelShape, blockState);
+            if(hit != null && passThrough != null && passThrough.check(pos, hit.getLocation()))
                 return null;
             return hit;
         }, (innerContext) -> {
             var heading = start.subtract(end);
-            return BlockHitResult.createMissed(end, Direction.getFacing(heading.x, heading.y, heading.z), BlockPos.ofFloored(end));
+            return BlockHitResult.miss(end, Direction.getNearest(heading.x, heading.y, heading.z), BlockPos.containing(end));
         });
     }
 
-    public static BlockHitResult raycast(World world, Vec3d start, Vec3d end) {
-        var ignore1 = BlockPos.ofFloored(start);
-        var ignore2 = BlockPos.ofFloored(end);
-        return BlockView.raycast(start, end, null, (innerContext, pos) -> {
+    public static BlockHitResult raycast(Level world, Vec3 start, Vec3 end) {
+        var ignore1 = BlockPos.containing(start);
+        var ignore2 = BlockPos.containing(end);
+        return BlockGetter.traverseBlocks(start, end, null, (innerContext, pos) -> {
             var blockState = world.getBlockState(pos);
-            var voxelShape = blockState.getOutlineShape(world, pos);
-            var hit = world.raycastBlock(start, end, pos, voxelShape, blockState);
+            var voxelShape = blockState.getShape(world, pos);
+            var hit = world.clipWithInteractionOverride(start, end, pos, voxelShape, blockState);
             if(hit != null && (hit.getBlockPos().equals(ignore1) || hit.getBlockPos().equals(ignore2)))//passThrough != null && passThrough.check(pos, hit.getPos()))
                 return null;
             return hit;
         }, (innerContext) -> {
             var heading = start.subtract(end);
-            return BlockHitResult.createMissed(end, Direction.getFacing(heading.x, heading.y, heading.z), BlockPos.ofFloored(end));
+            return BlockHitResult.miss(end, Direction.getNearest(heading.x, heading.y, heading.z), BlockPos.containing(end));
         });
     }
 
@@ -62,15 +66,15 @@ public class BlockTrace {
         return Math.max(Math.min(val, max), min);
     }
 
-    public static Vec3d closestPoint(Box box, Vec3d point) {
-        return new Vec3d(
+    public static Vec3 closestPoint(AABB box, Vec3 point) {
+        return new Vec3(
                 clamp(point.x, box.minX, box.maxX),
                 clamp(point.y, box.minY, box.maxY),
                 clamp(point.z, box.minZ, box.maxZ)
         );
     }
 
-    private static BlockWireEntity.Point makePoint(Vec3d start, Vec3d end) {
+    private static BlockWireEntity.Point makePoint(Vec3 start, Vec3 end) {
         var distX = end.x - start.x;
         var distY = end.y - start.y;
         var distZ = end.z - start.z;
@@ -88,22 +92,22 @@ public class BlockTrace {
         }
     }
 
-    public static Vec3d alignPosition(Vec3d position) {
-        return new Vec3d(
+    public static Vec3 alignPosition(Vec3 position) {
+        return new Vec3(
                 (int) Math.round(position.x * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE,
                 (int) Math.round(position.y * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE,
                 (int) Math.round(position.z * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE
         );
     }
 
-    public static TraceResult findPath(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
+    public static TraceResult findPath(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement terminal) {
         var result = findPathWithState(world, start, end, terminal);
         if(result == null)
             return null;
-        return result.getRight();
+        return result.getB();
     }
 
-    public static Pair<TraceState, TraceResult> findPathWithState(World world, Vec3d start, Vec3d end, @Nullable ITerminalPlacement terminal) {
+    public static Tuple<TraceState, TraceResult> findPathWithState(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement terminal) {
         var state = new TraceState(world, start, end, terminal);
         if(state.target.equals(state.originCell.position) || !state.getCell(state.target).isSupported)
             return null;
@@ -124,7 +128,7 @@ public class BlockTrace {
                 if(neighborPos == null)
                     continue;
                 var neighbor = state.getCell(neighborPos);
-                var distance = cell.position.getManhattanDistance(neighborPos);
+                var distance = cell.position.distManhattan(neighborPos);
 
                 int newDistance = cell.originDistance + distance;
                 if(newDistance >= neighbor.originDistance)
@@ -141,7 +145,7 @@ public class BlockTrace {
                 neighbor.originDistance = newDistance;
                 neighbor.backtrace = cell;
                 if(neighbor.position.equals(state.target))
-                    return new Pair<>(state, new TraceResult(state.traceResult(neighbor), true));
+                    return new Tuple<>(state, new TraceResult(state.traceResult(neighbor), true));
                 int neighborScore = state.targetDistance(neighbor);
                 if(neighborScore < bestScore) {
                     bestScore = neighborScore;
@@ -152,9 +156,9 @@ public class BlockTrace {
         }
 
         if(bestCell != null)
-            return new Pair<>(state, new TraceResult(state.traceResult(bestCell), false));
+            return new Tuple<>(state, new TraceResult(state.traceResult(bestCell), false));
 
-        return new Pair<>(state, null);
+        return new Tuple<>(state, null);
     }
 
     public record TraceResult(List<BlockWireEntity.Point> points, boolean reachedTarget) { }
@@ -181,16 +185,16 @@ public class BlockTrace {
         public static final float UNIT_SIZE = 1.0f / GRID_SIZE;
 
         public final Map<Vec3i, TraceCell> states = new HashMap<>();
-        public final World world;
-        public final Vec3d origin;
+        public final Level world;
+        public final Vec3 origin;
         public final Vec3i target;
         public final TraceCell originCell;
         @Nullable
         public final ITerminalPlacement terminal;
 
-        public TraceState(World world, Vec3d origin, Vec3d target, @Nullable ITerminalPlacement terminal) {
+        public TraceState(Level world, Vec3 origin, Vec3 target, @Nullable ITerminalPlacement terminal) {
             this.world = world;
-            this.origin = new Vec3d(Math.floor(origin.x), Math.floor(origin.y), Math.floor(origin.z));
+            this.origin = new Vec3(Math.floor(origin.x), Math.floor(origin.y), Math.floor(origin.z));
             var originPos = transform(origin);
             originCell = createCell(originPos, 0);
             states.put(originPos, originCell);
@@ -198,7 +202,7 @@ public class BlockTrace {
             this.terminal = terminal;
         }
 
-        public Vec3i transform(Vec3d pos) {
+        public Vec3i transform(Vec3 pos) {
             return new Vec3i(
                     (int) Math.floor((pos.x - origin.x) * GRID_SIZE),
                     (int) Math.floor((pos.y - origin.y) * GRID_SIZE),
@@ -206,8 +210,8 @@ public class BlockTrace {
             );
         }
 
-        public Vec3d transform(Vec3i pos) {
-            return new Vec3d(
+        public Vec3 transform(Vec3i pos) {
+            return new Vec3(
                     pos.getX() * UNIT_SIZE + origin.x,
                     pos.getY() * UNIT_SIZE + origin.y,
                     pos.getZ() * UNIT_SIZE + origin.z
@@ -216,17 +220,17 @@ public class BlockTrace {
 
         public boolean isSupport(Vec3i position) {
             var worldPos = transform(position);
-            var blockPos = BlockPos.ofFloored(worldPos);
+            var blockPos = BlockPos.containing(worldPos);
             var state = world.getBlockState(blockPos);
             // TODO: Might want to improve this.
-            return state.isSolidBlock(world, blockPos);
+            return state.isRedstoneConductor(world, blockPos);
         }
 
         @NotNull
         public TraceCell createCell(Vec3i position, int length) {
             boolean isSupported = false;
             for(var dir : Direction.values()) {
-                if(position.equals(target) || isSupport(position.add(dir.getVector()))) {
+                if(position.equals(target) || isSupport(position.offset(dir.getNormal()))) {
                     isSupported = true;
                     break;
                 }
@@ -249,7 +253,7 @@ public class BlockTrace {
         }
 
         public int targetDistance(TraceCell cell) {
-            return cell.position.getManhattanDistance(target);
+            return cell.position.distManhattan(target);
         }
 
         public int offsetToFullBlock(int coordinate, Direction.AxisDirection direction) {
@@ -276,25 +280,25 @@ public class BlockTrace {
         @Nullable
         public Vec3i raycastNextPosition(Vec3i currentPos, Direction dir) {
             var axis = dir.getAxis();
-            var axialLength = Math.abs(target.getComponentAlongAxis(axis) - currentPos.getComponentAlongAxis(axis));
+            var axialLength = Math.abs(target.get(axis) - currentPos.get(axis));
 
             var castStart = transform(currentPos);
-            Vec3d castEnd = castStart.offset(dir, axialLength * UNIT_SIZE);
+            Vec3 castEnd = castStart.relative(dir, axialLength * UNIT_SIZE);
 
             var hit = raycast(world, castStart, castEnd, terminal);
-            if(hit.isInsideBlock()) {
-                var axisCoordinate = currentPos.getComponentAlongAxis(axis);
-                int offset = offsetToFullBlock(axisCoordinate, dir.getDirection());
+            if(hit.isInside()) {
+                var axisCoordinate = currentPos.get(axis);
+                int offset = offsetToFullBlock(axisCoordinate, dir.getAxisDirection());
                 if(Math.abs(offset) > GRID_SIZE / 2)
                     return null;
                 // Try to move outside the block.
-                return currentPos.offset(axis, offset);
+                return currentPos.relative(axis, offset);
             }
-            var cellPos = transform(hit.getPos());
+            var cellPos = transform(hit.getLocation());
             return switch(hit.getType()) {
                 case MISS -> cellPos;
                 case ENTITY -> null;
-                case BLOCK -> cellPos.offset(hit.getSide());
+                case BLOCK -> cellPos.relative(hit.getDirection());
             };
         }
 
@@ -305,18 +309,18 @@ public class BlockTrace {
             if(castPos == null || currentPos.equals(castPos))
                 return null;
 
-            var axisCoordinate = currentPos.getComponentAlongAxis(axis);
+            var axisCoordinate = currentPos.get(axis);
 
-            var boundaryOffset = offsetToFullBlock(axisCoordinate, dir.getDirection());
+            var boundaryOffset = offsetToFullBlock(axisCoordinate, dir.getAxisDirection());
             if(boundaryOffset == 0) boundaryOffset = -GRID_SIZE;
 
             var nextBoundary = axisCoordinate + boundaryOffset;
-            var raycastBoundary = castPos.getComponentAlongAxis(axis);
+            var raycastBoundary = castPos.get(axis);
 
             if(Math.abs(nextBoundary - axisCoordinate) > Math.abs(raycastBoundary - axisCoordinate)) {
-                return currentPos.offset(axis, raycastBoundary - axisCoordinate);
+                return currentPos.relative(axis, raycastBoundary - axisCoordinate);
             } else {
-                return currentPos.offset(axis, nextBoundary - axisCoordinate);
+                return currentPos.relative(axis, nextBoundary - axisCoordinate);
             }
         }
 
@@ -349,7 +353,7 @@ public class BlockTrace {
         }
 
         public List<BlockWireEntity.Point> traceResult(TraceCell cell) {
-            List<Vec3d> pathPoints = new ArrayList<>();
+            List<Vec3> pathPoints = new ArrayList<>();
             traceback(cell).forEach(p -> pathPoints.add(transform(p)));
 
             List<BlockWireEntity.Point> result = new ArrayList<>();

@@ -21,11 +21,11 @@ import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollVa
 import net.createmod.catnip.math.VecHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
@@ -42,7 +42,7 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
 
     public FuseHolderBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.state = state.get(FuseHolderBlock.STATE);
+        this.state = state.getValue(FuseHolderBlock.STATE);
     }
 
     @Override
@@ -64,12 +64,12 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
 
     @Environment(EnvType.CLIENT)
     public void playEffect() {
-        if(world == null)
+        if(level == null)
             return;
-        var pos = this.pos.toCenterPos();
-        var facing = getCachedState().get(FuseHolderBlock.FACING);
-        SparkParticleData.explodeParticles(world, (float) pos.x, (float) pos.y, (float) pos.z, facing.getOpposite(), 5);
-        ModdedSoundEvents.FUSE_POPS.playAt(world, pos, 1.0f, 1.0f, false);
+        var pos = this.worldPosition.getCenter();
+        var facing = getBlockState().getValue(FuseHolderBlock.FACING);
+        SparkParticleData.explodeParticles(level, (float) pos.x, (float) pos.y, (float) pos.z, facing.getOpposite(), 5);
+        ModdedSoundEvents.FUSE_POPS.playAt(level, pos, 1.0f, 1.0f, false);
     }
 
     @Override
@@ -78,14 +78,14 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
         if(fuseWire.getState()) {
             if(Math.abs(fuseWire.current()) > setting.value) {
                 setState(FuseState.BLOWN);
-                if(world.isClient)
+                if(level.isClientSide)
                     playEffect();
             }
         }
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         var prevState = state;
         state = FuseState.values()[tag.getInt("State")];
@@ -95,16 +95,16 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putInt("State", state.ordinal());
     }
 
     public boolean resetFuse() {
         if(state == FuseState.OPEN || state == FuseState.BLOWN) {
-            if(!world.isClient) {
+            if(!level.isClientSide) {
                 setState(FuseState.CLOSED);
-                ModdedSoundEvents.FUSE_INSTALL.playOnServer(world, pos);
+                ModdedSoundEvents.FUSE_INSTALL.playOnServer(level, worldPosition);
             }
             return true;
         }
@@ -122,9 +122,9 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     public void setState(FuseState state) {
         if(this.state != state) {
             this.state = state;
-            if(world != null) {
-                world.setBlockState(pos, getCachedState().with(FuseHolderBlock.STATE, state));
-                if(!world.isClient)
+            if(level != null) {
+                level.setBlockAndUpdate(worldPosition, getBlockState().setValue(FuseHolderBlock.STATE, state));
+                if(!level.isClientSide)
                     notifyUpdate();
             }
             fuseWire.setState(state == FuseState.CLOSED);
@@ -133,11 +133,11 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
 
     public static class BoxTransform extends CenteredSideValueBoxTransform {
         public BoxTransform() {
-            super((state, dir) -> dir.getOpposite() == state.get(FuseHolderBlock.FACING));
+            super((state, dir) -> dir.getOpposite() == state.getValue(FuseHolderBlock.FACING));
         }
 
         @Override
-        protected Vec3d getSouthLocation() {
+        protected Vec3 getSouthLocation() {
             return VecHelper.voxelSpace(8.0f, 8.0f, 9.0f);
         }
     }

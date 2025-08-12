@@ -17,10 +17,10 @@ package org.patryk3211.powergrid.electricity.gauge;
 
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -28,19 +28,19 @@ import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import java.util.List;
 
 public class CurrentGaugeBlock extends GaugeBlock<CurrentGaugeBlockEntity> implements IHaveElectricProperties {
-    float resistance;
+    float explosionResistance;
 
-    public CurrentGaugeBlock(Settings settings) {
+    public CurrentGaugeBlock(Properties settings) {
         super(settings);
-        resistance = 1;
+        explosionResistance = 1;
     }
 
     public static <B extends CurrentGaugeBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setResistance(float value) {
-        return b -> b.onRegister(block -> block.resistance = value);
+        return b -> b.onRegister(block -> block.explosionResistance = value);
     }
 
     public float getResistance() {
-        return resistance;
+        return explosionResistance;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class CurrentGaugeBlock extends GaugeBlock<CurrentGaugeBlockEntity> imple
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Current.max(maxValue, player, tooltip);
     }
 }

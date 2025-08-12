@@ -15,17 +15,19 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 import java.util.UUID;
+
+;
 
 public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     private BlockPos entityPos;
@@ -38,8 +40,8 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     }
 
     public DeferredJunctionWireEndpoint(BlockWireEntity entity, int segmentIndex, int segmentPoint) {
-        this.entityPos = entity.getBlockPos();
-        this.entityId = entity.getUuid();
+        this.entityPos = entity.blockPosition();
+        this.entityId = entity.getUUID();
         this.segmentIndex = segmentIndex;
         this.segmentPoint = segmentPoint;
     }
@@ -50,25 +52,25 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void read(NbtCompound nbt) {
+    public void read(CompoundTag nbt) {
         var posArray = nbt.getIntArray("Pos");
         entityPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
-        entityId = nbt.getUuid("Id");
+        entityId = nbt.getUUID("Id");
         segmentIndex = nbt.getInt("Index");
         segmentPoint = nbt.getInt("Point");
     }
 
     @Override
-    public void write(NbtCompound nbt) {
+    public void write(CompoundTag nbt) {
         nbt.putIntArray("Pos", new int[] { entityPos.getX(), entityPos.getY(), entityPos.getZ() });
-        nbt.putUuid("Id", entityId);
+        nbt.putUUID("Id", entityId);
         nbt.putInt("Index", segmentIndex);
         nbt.putInt("Point", segmentPoint);
     }
 
     @Nullable
-    public BlockWireEntity getEntity(World world) {
-        var entities = world.getEntitiesByClass(BlockWireEntity.class, new Box(entityPos), e -> entityId.equals(e.getUuid()));
+    public BlockWireEntity getEntity(Level world) {
+        var entities = world.getEntitiesOfClass(BlockWireEntity.class, new AABB(entityPos), e -> entityId.equals(e.getUUID()));
         if(entities.isEmpty())
             return null;
         return entities.get(0);
@@ -76,18 +78,18 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
 
     @Override
     @NotNull
-    public Vec3d getExactPosition(World world) {
+    public Vec3 getExactPosition(Level world) {
         var wire = getEntity(world);
         if(wire == null)
-            return entityPos.toCenterPos();
+            return entityPos.getCenter();
         if(segmentIndex >= wire.segments.size())
             segmentIndex = wire.segments.size() - 1;
         var segment = wire.segments.get(segmentIndex);
-        return segment.start.offset(segment.direction, segmentPoint / 16f);
+        return segment.start.relative(segment.direction, segmentPoint / 16f);
     }
 
     @Nullable
-    public JunctionWireEndpoint resolve(World world) {
+    public JunctionWireEndpoint resolve(Level world) {
         var entity = getEntity(world);
         if(entity == null)
             return null;
@@ -95,12 +97,12 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public IElectricNode getNode(World world) {
+    public IElectricNode getNode(Level world) {
         throw new IllegalStateException("Cannot fetch node");
     }
 
     @Override
-    public void joinNetwork(World world, ElectricalNetwork network) {
+    public void joinNetwork(Level world, ElectricalNetwork network) {
         throw new IllegalStateException("Cannot join network");
     }
 

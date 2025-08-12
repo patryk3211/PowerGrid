@@ -18,22 +18,22 @@ package org.patryk3211.powergrid.electricity.base;
 import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public abstract class ElectricBlock extends Block implements IElectric {
     private BlockStateTerminalCollection terminals = null;
     private ImmutableMap<BlockState, VoxelShape> outlines = null;
 
-    public ElectricBlock(Settings settings) {
+    public ElectricBlock(Properties settings) {
         super(settings);
     }
 
@@ -41,19 +41,19 @@ public abstract class ElectricBlock extends Block implements IElectric {
         this.terminals = terminals;
         var mapper = terminals.shapeMapper();
         if(mapper != null)
-            outlines = getShapesForStates(mapper);
+            outlines = getShapeForEachState(mapper);
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
         IBE.onRemove(state, world, pos, newState);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         if(outlines != null)
             return outlines.get(state);
-        return super.getOutlineShape(state, world, pos, context);
+        return super.getShape(state, world, pos, context);
     }
 
     @Override
@@ -71,14 +71,14 @@ public abstract class ElectricBlock extends Block implements IElectric {
     }
 
     @Override
-    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         var result = IElectric.super.onWrenched(state, context);
-        if(result == ActionResult.SUCCESS && !context.getWorld().isClient)
-            refreshConnectionEntities(context.getWorld(), context.getBlockPos());
+        if(result == InteractionResult.SUCCESS && !context.getLevel().isClientSide)
+            refreshConnectionEntities(context.getLevel(), context.getClickedPos());
         return result;
     }
 
-    public static void refreshConnectionEntities(World world, BlockPos pos) {
+    public static void refreshConnectionEntities(Level world, BlockPos pos) {
         var behaviour = BlockEntityBehaviour.get(world, pos, ElectricBehaviour.TYPE);
         if(behaviour != null) {
             behaviour.refreshConnectionEntities();

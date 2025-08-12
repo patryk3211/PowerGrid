@@ -21,12 +21,12 @@ import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.createmod.catnip.math.VecHelper;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 import java.util.List;
@@ -56,7 +56,7 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
     public int runningTicks;
     public boolean running;
     private int entityScanCooldown;
-    public Vec3d target;
+    public Vec3 target;
 
     public <T extends SmartBlockEntity & MagnetizingBehaviourSpecifics> MagnetizingBehaviour(T be) {
         super(be);
@@ -66,7 +66,7 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
         mode = Mode.WORLD;
     }
 
-    public void start(Mode mode, Vec3d target) {
+    public void start(Mode mode, Vec3 target) {
         this.mode = mode;
         running = true;
         prevRunningTicks = 0;
@@ -75,12 +75,12 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
         blockEntity.sendData();
     }
 
-    public void updateTarget(Vec3d target) {
+    public void updateTarget(Vec3 target) {
         this.target = target;
     }
 
     @Override
-    public void read(NbtCompound compound, boolean clientPacket) {
+    public void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         running = compound.getBoolean("Running");
         mode = Mode.values()[compound.getInt("Mode")];
@@ -88,21 +88,21 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
 
         if(compound.contains("Target")) {
             var tag = compound.getCompound("Target");
-            target = new Vec3d(tag.getFloat("X"), tag.getFloat("Y"), tag.getFloat("Z"));
+            target = new Vec3(tag.getFloat("X"), tag.getFloat("Y"), tag.getFloat("Z"));
         } else {
             target = null;
         }
     }
 
     @Override
-    public void write(NbtCompound compound, boolean clientPacket) {
+    public void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putBoolean("Running", running);
         compound.putInt("Mode", mode.ordinal());
         compound.putInt("Ticks", runningTicks);
 
         if(target != null) {
-            var tag = new NbtCompound();
+            var tag = new CompoundTag();
             tag.putFloat("X", (float) target.x);
             tag.putFloat("Y", (float) target.y);
             tag.putFloat("Z", (float) target.z);
@@ -118,7 +118,7 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
         var pos = getPos();
 
         if(!running || world == null) {
-            if(world != null && (!world.isClient || blockEntity.isVirtual())) {
+            if(world != null && (!world.isClientSide || blockEntity.isVirtual())) {
                 if(specifics.getFieldStrength() == 0)
                     return;
                 if(entityScanCooldown > 0)
@@ -126,15 +126,15 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
                 if(entityScanCooldown <= 0) {
                     entityScanCooldown = ENTITY_SCAN;
 
-                    if(BlockEntityBehaviour.get(world, pos.down(2), TransportedItemStackHandlerBehaviour.TYPE) != null)
+                    if(BlockEntityBehaviour.get(world, pos.below(2), TransportedItemStackHandlerBehaviour.TYPE) != null)
                         return;
 
-                    for(var itemEntity : world.getNonSpectatingEntities(ItemEntity.class, new Box(pos.down()).contract(.125f))) {
-                        if(!itemEntity.isAlive() || !itemEntity.isOnGround())
+                    for(var itemEntity : world.getEntitiesOfClass(ItemEntity.class, new AABB(pos.below()).deflate(.125f))) {
+                        if(!itemEntity.isAlive() || !itemEntity.onGround())
                             continue;
                         if(!specifics.tryProcessInWorld(itemEntity, true))
                             continue;
-                        start(Mode.WORLD, itemEntity.getPos().add(0, 0.25f, 0));
+                        start(Mode.WORLD, itemEntity.position().add(0, 0.25f, 0));
                         return;
                     }
                 }
@@ -143,19 +143,19 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
             return;
         }
 
-        if(world.isClient && runningTicks == -COLLAPSE_TIME) {
+        if(world.isClientSide && runningTicks == -COLLAPSE_TIME) {
             prevRunningTicks = COLLAPSE_TIME;
             return;
         }
 
-        if(world.isClient) {
+        if(world.isClientSide) {
             var r = world.random;
 
             var particleChance = specifics.getFieldStrength() / 8f;
             if(runningTicks < COLLAPSE_TIME - 10 && r.nextFloat() < particleChance) {
-                var facing = blockEntity.getCachedState().get(ElectromagnetBlock.FACING);
-                var pos0 = pos.toCenterPos().offset(facing, 0.5f);
-                var pos1 = target != null ? target.offset(facing, -0.1f) : pos0.offset(facing, 1.0f);
+                var facing = blockEntity.getBlockState().getValue(ElectromagnetBlock.FACING);
+                var pos0 = pos.getCenter().relative(facing, 0.5f);
+                var pos1 = target != null ? target.relative(facing, -0.1f) : pos0.relative(facing, 1.0f);
                 var particlePos = VecHelper.lerp(r.nextFloat(), pos0, pos1).add(
                         (r.nextFloat() - 0.5f) * 0.2f,
                         (r.nextFloat() - 0.5f) * 0.2f,
@@ -169,11 +169,11 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
             if(mode == Mode.WORLD)
                 applyInWorld();
 
-            if(!world.isClient)
+            if(!world.isClientSide)
                 blockEntity.sendData();
         }
 
-        if((!world.isClient || blockEntity.isVirtual()) && runningTicks > CYCLE) {
+        if((!world.isClientSide || blockEntity.isVirtual()) && runningTicks > CYCLE) {
             running = false;
             specifics.onMagnetizationComplete();
             blockEntity.sendData();
@@ -185,7 +185,7 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
         if(prevRunningTicks < COLLAPSE_TIME && runningTicks >= COLLAPSE_TIME) {
             runningTicks = COLLAPSE_TIME;
             // Pause the ticks until a packet is received
-            if(world.isClient && !blockEntity.isVirtual())
+            if(world.isClientSide && !blockEntity.isVirtual())
                 runningTicks = -COLLAPSE_TIME;
         }
 
@@ -202,19 +202,19 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
     protected void applyInWorld() {
         var world = getWorld();
         var pos = getPos();
-        var bb = new Box(pos.down(1));
-        if(world.isClient)
+        var bb = new AABB(pos.below(1));
+        if(world.isClientSide)
             return;
 
-        for(var entity : world.getOtherEntities(null, bb)) {
+        for(var entity : world.getEntities(null, bb)) {
             if(!(entity instanceof ItemEntity itemEntity))
                 continue;
-            if(!entity.isAlive() || !entity.isOnGround())
+            if(!entity.isAlive() || !entity.onGround())
                 continue;
 
             entityScanCooldown = 0;
             if(specifics.tryProcessInWorld(itemEntity, false)) {
-                target = itemEntity.getPos();
+                target = itemEntity.position();
                 blockEntity.sendData();
             }
             break;
@@ -225,7 +225,7 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
         float speed = specifics.getFieldStrength();
         if(speed == 0)
             return 0;
-        return MathHelper.lerp(MathHelper.clamp(Math.abs(speed) / 32f, 0, 1), 1, 60);
+        return Mth.lerpInt(Mth.clamp(Math.abs(speed) / 32f, 0, 1), 1, 60);
     }
 
     public enum Mode {

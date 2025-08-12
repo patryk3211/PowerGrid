@@ -17,10 +17,10 @@ package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -35,11 +35,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+;
+
 public class SolverStateS2CPacket implements SimplePacket {
     private final Map<BlockPos, double[]> solverValues = new HashMap<>();
     public final Set<ChunkPos> chunks = new HashSet<>();
 
-    public SolverStateS2CPacket(World world, ElectricalNetwork network) {
+    public SolverStateS2CPacket(Level world, ElectricalNetwork network) {
         // Read values straight from the solver guess vector
         var vector = network.getLastGuess();
         if(vector == null)
@@ -76,7 +78,7 @@ public class SolverStateS2CPacket implements SimplePacket {
         }
     }
 
-    public SolverStateS2CPacket(PacketByteBuf buf) {
+    public SolverStateS2CPacket(FriendlyByteBuf buf) {
         int count = buf.readInt();
         for(int i = 0; i < count; ++i) {
             var pos = buf.readBlockPos();
@@ -88,7 +90,7 @@ public class SolverStateS2CPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeInt(solverValues.size());
         for(var entry : solverValues.entrySet()) {
             buf.writeBlockPos(entry.getKey());
@@ -105,7 +107,7 @@ public class SolverStateS2CPacket implements SimplePacket {
             var world = ClientBoundPackets.world();
             for(var entry : solverValues.entrySet()) {
                 var pos = entry.getKey();
-                if(!world.isChunkLoaded(pos))
+                if(!world.hasChunkAt(pos))
                     continue;
                 var behaviour = BlockEntityBehaviour.get(world, pos, ElectricBehaviour.TYPE);
                 if(behaviour == null)

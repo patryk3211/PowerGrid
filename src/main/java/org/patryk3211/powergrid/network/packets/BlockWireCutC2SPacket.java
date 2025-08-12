@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.network.SimplePacket;
@@ -30,7 +30,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
     public final int index2;
     public final int point2;
 
-    public BlockWireCutC2SPacket(PacketByteBuf buf) {
+    public BlockWireCutC2SPacket(FriendlyByteBuf buf) {
         entityId = buf.readInt();
         index1 = buf.readInt();
         point1 = buf.readInt();
@@ -47,7 +47,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeInt(entityId);
         buf.writeInt(index1);
         buf.writeInt(point1);
@@ -59,7 +59,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         var ctx = context.get();
         ctx.queue(() -> {
-            var entity = ctx.getPlayer().getWorld().getEntityById(entityId);
+            var entity = ctx.getPlayer().level().getEntity(entityId);
             if(!(entity instanceof BlockWireEntity wire)) {
                 PowerGrid.LOGGER.error("Received block wire cut packet with invalid entity");
                 return;

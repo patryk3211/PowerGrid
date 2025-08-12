@@ -18,17 +18,17 @@ package org.patryk3211.powergrid.electricity.portablebattery;
 import com.simibubi.create.AllEnchantments;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 
 public class BatteryUtils {
     public static int getMaxCharge(ItemStack stack) {
-        return getMaxCharge(EnchantmentHelper.getLevel(AllEnchantments.CAPACITY.get(), stack));
+        return getMaxCharge(EnchantmentHelper.getItemEnchantmentLevel(AllEnchantments.CAPACITY.get(), stack));
     }
 
     public static int getMaxCharge(int level) {
@@ -37,27 +37,27 @@ public class BatteryUtils {
     }
 
     public static int getCurrentCharge(ItemStack stack) {
-        if(!stack.hasNbt())
+        if(!stack.hasTag())
             return 0;
-        var nbt = stack.getNbt();
+        var nbt = stack.getTag();
         return nbt.getInt("Charge");
     }
 
-    public static boolean drawEnergy(PlayerEntity player, int fe) {
-        if(player.getAbilities().creativeMode)
+    public static boolean drawEnergy(Player player, int fe) {
+        if(player.getAbilities().instabuild)
             return true;
-        var stack = player.getEquippedStack(EquipmentSlot.CHEST);
+        var stack = player.getItemBySlot(EquipmentSlot.CHEST);
         if(stack.isEmpty() || !(stack.getItem() instanceof PortableBatteryItem))
             return false;
         var charge = getCurrentCharge(stack);
         if(charge < fe)
             return false;
-        stack.getNbt().putInt("Charge", charge - fe);
+        stack.getTag().putInt("Charge", charge - fe);
         return true;
     }
 
-    public static ItemStack getBattery(PlayerEntity player) {
-        var stack = player.getEquippedStack(EquipmentSlot.CHEST);
+    public static ItemStack getBattery(Player player) {
+        var stack = player.getItemBySlot(EquipmentSlot.CHEST);
         if(!(stack.getItem() instanceof PortableBatteryItem))
             return null;
         return stack;
@@ -66,7 +66,7 @@ public class BatteryUtils {
     public static boolean isBarVisible(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return false;
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> MinecraftClient.getInstance().player)
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
                 .map(player -> {
                     var battery = getBattery(player);
                     if(battery != null && getCurrentCharge(battery) > fePerUse)
@@ -78,24 +78,24 @@ public class BatteryUtils {
     public static int getBarWidth(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return 13;
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> MinecraftClient.getInstance().player)
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
                 .map(player -> {
                     var battery = getBattery(player);
                     if(battery == null)
-                        return Math.round(13.0F - (float) stack.getDamage() / stack.getMaxDamage() * 13.0F);
-                    return battery.getItemBarStep();
+                        return Math.round(13.0F - (float) stack.getDamageValue() / stack.getMaxDamage() * 13.0F);
+                    return battery.getBarWidth();
                 }).orElse(13);
     }
 
     public static int getBarColor(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return 0;
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> MinecraftClient.getInstance().player)
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
                 .map(player -> {
                     var battery = getBattery(player);
                     if(battery == null)
-                        return MathHelper.hsvToRgb(Math.max(0.0F, 1.0F - (float) stack.getDamage() / stack.getMaxDamage()) / 3.0F, 1.0F, 1.0F);
-                    return battery.getItemBarColor();
+                        return Mth.hsvToRgb(Math.max(0.0F, 1.0F - (float) stack.getDamageValue() / stack.getMaxDamage()) / 3.0F, 1.0F, 1.0F);
+                    return battery.getBarColor();
                 }).orElse(0);
     }
 }

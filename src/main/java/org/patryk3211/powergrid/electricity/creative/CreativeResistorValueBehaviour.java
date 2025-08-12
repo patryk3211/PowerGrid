@@ -21,29 +21,29 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PreciseNumberFormat;
 
 public class CreativeResistorValueBehaviour extends ScrollValueBehaviour {
-    public CreativeResistorValueBehaviour(Text label, SmartBlockEntity be, ValueBoxTransform slot) {
+    public CreativeResistorValueBehaviour(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
         super(label, be, slot);
         between(0, 72);
         withFormatter(i -> PreciseNumberFormat.format(exponentialValue(i)));
     }
 
-    public ValueSettingsBoard createBoard(PlayerEntity player, BlockHitResult hitResult) {
-        ImmutableList<Text> rows = ImmutableList.of(
+    public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
+        ImmutableList<Component> rows = ImmutableList.of(
                 Lang.translateDirect("generic.unit.ohm")
         );
         ValueSettingsFormatter formatter = new ValueSettingsFormatter(this::formatSettings);
         return new ValueSettingsBoard(this.label, 72, 9, rows, formatter);
     }
 
-    public void setValueSettings(PlayerEntity player, ValueSettings valueSetting, boolean ctrlHeld) {
+    public void setValueSettings(Player player, ValueSettings valueSetting, boolean ctrlHeld) {
         int value = Math.max(0, valueSetting.value());
         if (!valueSetting.equals(this.getValueSettings())) {
             this.playFeedbackSound(this);
@@ -62,7 +62,7 @@ public class CreativeResistorValueBehaviour extends ScrollValueBehaviour {
         return (float) (number * mult);
     }
 
-    public MutableText formatSettings(ValueSettings settings) {
+    public MutableComponent formatSettings(ValueSettings settings) {
         return Lang
                 .text(PreciseNumberFormat.format(exponentialValue(settings.value())))
                 .component();

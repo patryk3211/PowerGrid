@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
@@ -29,21 +29,21 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import java.util.*;
 
 public class JunctionWireEndpoint implements IWireEndpoint {
-    private static final Map<World, Map<Integer, NodeEntry>> JUNCTION_NODES = new HashMap<>();
+    private static final Map<Level, Map<Integer, NodeEntry>> JUNCTION_NODES = new HashMap<>();
     private static int NEXT_ID = 0;
 
     private int id;
-    private Vec3d pos;
+    private Vec3 pos;
 
     public JunctionWireEndpoint() {
         this(null, -1);
     }
 
-    public JunctionWireEndpoint(Vec3d pos) {
+    public JunctionWireEndpoint(Vec3 pos) {
         this(pos, NEXT_ID++);
     }
 
-    private JunctionWireEndpoint(Vec3d pos, int id) {
+    private JunctionWireEndpoint(Vec3 pos, int id) {
         this.pos = pos;
         this.id = id;
     }
@@ -54,8 +54,8 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void read(NbtCompound nbt) {
-        pos = new Vec3d(
+    public void read(CompoundTag nbt) {
+        pos = new Vec3(
                 nbt.getFloat("X"),
                 nbt.getFloat("Y"),
                 nbt.getFloat("Z")
@@ -64,7 +64,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void write(NbtCompound nbt) {
+    public void write(CompoundTag nbt) {
         nbt.putFloat("X", (float) pos.x);
         nbt.putFloat("Y", (float) pos.y);
         nbt.putFloat("Z", (float) pos.z);
@@ -73,17 +73,17 @@ public class JunctionWireEndpoint implements IWireEndpoint {
 
     @Override
     @NotNull
-    public Vec3d getExactPosition(World world) {
+    public Vec3 getExactPosition(Level world) {
         return pos;
     }
 
     @Override
-    public IElectricNode getNode(World world) {
+    public IElectricNode getNode(Level world) {
         return getNode(world, id, false, this).node;
     }
 
     @Override
-    public void joinNetwork(World world, ElectricalNetwork network) {
+    public void joinNetwork(Level world, ElectricalNetwork network) {
         var node = getNode(world);
         if(node.getNetwork() == null)
             network.addNode(node);
@@ -93,18 +93,18 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     public void assignWireEntity(WireEntity entity) {
         if(!(entity instanceof BlockWireEntity))
             throw new IllegalArgumentException("Wire junction must receive block wire entities");
-        var entry = getNode(entity.getWorld(), this.id, false, this);
+        var entry = getNode(entity.level(), this.id, false, this);
         entry.holders.add(entity);
     }
 
     @Override
     public void removeWireEntity(WireEntity entity) {
-        var entry = getNode(entity.getWorld(), this.id, true, this);
+        var entry = getNode(entity.level(), this.id, true, this);
         if(entry == null)
             return;
         entry.holders.remove(entity);
         if(entry.holders.size() == 2) {
-            if(entity.getWorld().isClient)
+            if(entity.level().isClientSide)
                 return;
             // Two holders remaining, we can merge them.
             BlockWireEntity wire1 = null, wire2 = null;
@@ -124,7 +124,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             var wire2End = this.equals(wire2.getEndpoint2());
             // Preemptively remove entry since it is going to be discarded anyway.
             entry.holders.clear();
-            removeEntry(entity.getWorld(), this.id);
+            removeEntry(entity.level(), this.id);
 
             boolean flipped = false, targetFlipped = false;
             BlockWireEntity target, source;
@@ -175,12 +175,12 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             // removeEntry is called by setEndpointN in holder entity.
         } else if(entry.holders.isEmpty()) {
             // Last entity dropped this junction.
-            removeEntry(entity.getWorld(), this.id);
+            removeEntry(entity.level(), this.id);
         }
     }
 
     @Contract("_, _, false, _ -> !null")
-    private static NodeEntry getNode(World world, int id, boolean nullable, JunctionWireEndpoint endpoint) {
+    private static NodeEntry getNode(Level world, int id, boolean nullable, JunctionWireEndpoint endpoint) {
         if(id < 0)
             throw new IllegalArgumentException("Invalid id passed to junction node map");
         if(!nullable) {
@@ -194,7 +194,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         }
     }
 
-    private static void removeEntry(World world, int id) {
+    private static void removeEntry(Level world, int id) {
         var worldNodeMap = JUNCTION_NODES.get(world);
         if(worldNodeMap == null)
             return;

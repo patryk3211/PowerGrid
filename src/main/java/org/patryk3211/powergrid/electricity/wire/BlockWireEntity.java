@@ -15,22 +15,22 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -41,44 +41,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlockWireEntity extends WireEntity implements IComplexRaycast {
-    public Box mainBoundingBox;
-    public final List<Box> boundingBoxes = new ArrayList<>();
+    public AABB mainBoundingBox;
+    public final List<AABB> boundingBoxes = new ArrayList<>();
     public final List<Point> segments = new ArrayList<>();
 
     private float totalLength = 0;
 
     private boolean particlesSpawned = false;
 
-    public BlockWireEntity(EntityType<?> type, World world) {
+    public BlockWireEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
 
-    public static BlockWireEntity create(World world, IWireEndpoint endpoint1, ItemStack item, List<Point> segments) {
+    public static BlockWireEntity create(Level world, IWireEndpoint endpoint1, ItemStack item, List<Point> segments) {
         if(!(item.getItem() instanceof WireItem))
             throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
         entity.setItem((WireItem) item.getItem(), item.getCount());
 
         var pos = BlockTrace.alignPosition(endpoint1.getExactPosition(world));
-        entity.setPos(pos.x, pos.y, pos.z);
+        entity.setPosRaw(pos.x, pos.y, pos.z);
         entity.segments.addAll(segments);
         entity.bakeBoundingBoxes();
 
         entity.setEndpoint1(endpoint1);
 
-        entity.setYaw(0);
-        entity.setPitch(0);
-        entity.resetPosition();
-        entity.refreshPosition();
+        entity.setYRot(0);
+        entity.setXRot(0);
+        entity.setOldPosAndRot();
+        entity.reapplyPosition();
         return entity;
     }
 
     @Override
-    protected Box calculateBoundingBox() {
+    protected AABB makeBoundingBox() {
         if(mainBoundingBox != null) {
-            return mainBoundingBox.offset(getPos());
+            return mainBoundingBox.move(position());
         } else {
-            return super.calculateBoundingBox();
+            return super.makeBoundingBox();
         }
     }
 
@@ -88,7 +88,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
         // Starting from zero will make the bounding boxes independent of entity position,
         // but they will need to be offset before using them.
-        var currentPos = Vec3d.ZERO;
+        var currentPos = Vec3.ZERO;
         double minX = 0;
         double minY = 0;
         double minZ = 0;
@@ -96,7 +96,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         double maxY = 0;
         double maxZ = 0;
         for(var segment : segments) {
-            segment.start = currentPos.add(getPos());
+            segment.start = currentPos.add(position());
             var nextPos = currentPos.add(segment.vector());
             if(nextPos.x > maxX)
                 maxX = nextPos.x;
@@ -111,13 +111,13 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
             if(nextPos.z < minZ)
                 minZ = nextPos.z;
 
-            boundingBoxes.add(new Box(currentPos, nextPos).expand(0.0625f));
+            boundingBoxes.add(new AABB(currentPos, nextPos).inflate(0.0625f));
             currentPos = nextPos;
             totalLength += segment.length();
         }
 
-        mainBoundingBox = new Box(minX, minY, minZ, maxX, maxY, maxZ).expand(0.0625f);
-        setBoundingBox(calculateBoundingBox());
+        mainBoundingBox = new AABB(minX, minY, minZ, maxX, maxY, maxZ).inflate(0.0625f);
+        setBoundingBox(makeBoundingBox());
     }
 
     public float getTotalLength() {
@@ -127,12 +127,12 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     public void tick() {
         super.tick();
-        var world = getWorld();
+        var world = level();
         var temperature = getTemperature();
 
-        var pos = getPos();
+        var pos = position();
         if(isOverheated()) {
-            if(world.isClient && !particlesSpawned) {
+            if(world.isClientSide && !particlesSpawned) {
                 for(var segment : segments) {
                     var dir = segment.vector();
                     int pointCount = Math.round(segment.length() / 0.25f);
@@ -146,7 +146,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
                 }
                 particlesSpawned = true;
             }
-        } else if(temperature >= overheatTemperature - 50 && world.isClient) {
+        } else if(temperature >= overheatTemperature - 50 && world.isClientSide) {
             var segment = segments.get(random.nextInt(segments.size()));
             var dir = segment.vector();
             float r = random.nextFloat();
@@ -158,32 +158,32 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
-    public @Nullable ItemEntity dropStack(ItemStack stack, float yOffset) {
+    public @Nullable ItemEntity spawnAtLocation(ItemStack stack, float yOffset) {
         if (stack.isEmpty()) {
             return null;
-        } else if (this.getWorld().isClient) {
+        } else if (this.level().isClientSide) {
             return null;
         } else {
             var center = mainBoundingBox.getCenter();
-            ItemEntity itemEntity = new ItemEntity(this.getWorld(),
+            ItemEntity itemEntity = new ItemEntity(this.level(),
                     this.getX() + center.x,
                     this.getY() + (double)yOffset + center.y,
                     this.getZ() + center.z,
                     stack);
-            itemEntity.setToDefaultPickupDelay();
-            this.getWorld().spawnEntity(itemEntity);
+            itemEntity.setDefaultPickUpDelay();
+            this.level().addFreshEntity(itemEntity);
             return itemEntity;
         }
     }
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
-        super.readCustomDataFromNbt(nbt);
+    protected void readAdditionalSaveData(CompoundTag nbt) {
+        super.readAdditionalSaveData(nbt);
 
         segments.clear();
-        var segmentList = nbt.getList("Segments", NbtElement.COMPOUND_TYPE);
+        var segmentList = nbt.getList("Segments", Tag.TAG_COMPOUND);
         for(var segment : segmentList) {
-            var point = new Point((NbtCompound) segment);
+            var point = new Point((CompoundTag) segment);
             segments.add(point);
         }
 
@@ -191,10 +191,10 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbt) {
-        super.writeCustomDataToNbt(nbt);
+    protected void addAdditionalSaveData(CompoundTag nbt) {
+        super.addAdditionalSaveData(nbt);
 
-        var segmentList = new NbtList();
+        var segmentList = new ListTag();
         for(var segment : segments) {
             segmentList.add(segment.serialize());
         }
@@ -202,47 +202,47 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
-    public ActionResult interact(PlayerEntity player, Hand hand) {
-        if(hand != Hand.MAIN_HAND)
-            return ActionResult.PASS;
-        var stack = player.getStackInHand(hand);
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        if(hand != InteractionHand.MAIN_HAND)
+            return InteractionResult.PASS;
+        var stack = player.getItemInHand(hand);
         if(stack.getItem() instanceof WireItem wire) {
             // Connect wire to wire.
-            if(player instanceof ClientPlayerEntity) {
+            if(player instanceof LocalPlayer) {
                 return ClientWireInteractions.attachWire(this);
             } else {
                 // Server side.
-                return ActionResult.CONSUME;
+                return InteractionResult.CONSUME;
             }
         } else if(stack.getItem() == ModdedItems.WIRE_CUTTER.get()) {
-            if(player.isSneaking()) {
+            if(player.isShiftKeyDown()) {
                 // Cut the whole wire.
                 return super.interact(player, hand);
-            } else if(player instanceof ClientPlayerEntity) {
+            } else if(player instanceof LocalPlayer) {
                 // Cut a segment of the wire.
                 return ClientWireInteractions.segmentCut(this);
             } else {
                 // Server side.
-                return ActionResult.CONSUME;
+                return InteractionResult.CONSUME;
             }
         }
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
-    public @Nullable Vec3d raycast(Vec3d min, Vec3d max) {
-        Vec3d closestHit = null;
-        min = min.subtract(getPos());
-        max = max.subtract(getPos());
-        double distance = max.squaredDistanceTo(min);
+    public @Nullable Vec3 raycast(Vec3 min, Vec3 max) {
+        Vec3 closestHit = null;
+        min = min.subtract(position());
+        max = max.subtract(position());
+        double distance = max.distanceToSqr(min);
         for(var bb : boundingBoxes) {
-            var hit = bb.raycast(min, max);
+            var hit = bb.clip(min, max);
             if(hit.isEmpty())
                 continue;
-            var hitDistance = hit.get().squaredDistanceTo(min);
+            var hitDistance = hit.get().distanceToSqr(min);
             if(hitDistance < distance) {
                 distance = hitDistance;
-                closestHit = hit.get().add(getPos());
+                closestHit = hit.get().add(position());
             }
         }
         return closestHit;
@@ -257,24 +257,24 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
             setEndpoint2(null);
         } else if(endpoint.equals(getEndpoint1())) {
             removedSegment = segments.remove(0);
-            setPosition(getPos().add(removedSegment.vector()));
+            setPos(position().add(removedSegment.vector()));
             setEndpoint1(null);
         } else {
             return;
         }
         int items = (int) removedSegment.length();
-        if(items > 0 && !getWorld().isClient) {
+        if(items > 0 && !level().isClientSide) {
             var start = removedSegment.start;
             var vector = removedSegment.vector();
             if(getWireCount() <= items)
                 items = items - 1;
-            ItemEntity itemEntity = new ItemEntity(this.getWorld(),
+            ItemEntity itemEntity = new ItemEntity(this.level(),
                     start.x + vector.x,
                     start.y + vector.y,
                     start.z + vector.z,
                     new ItemStack(getWireItem(), items));
-            itemEntity.setToDefaultPickupDelay();
-            this.getWorld().spawnEntity(itemEntity);
+            itemEntity.setDefaultPickUpDelay();
+            this.level().addFreshEntity(itemEntity);
             incrementWireCount(-items);
         }
         dropWire();
@@ -282,13 +282,13 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public BlockWireEntity flip() {
-        var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), getWorld());
+        var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), level());
         entity.setItem(getWireItem(), getWireCount());
         entity.setEndpoint1(getEndpoint2());
         entity.setEndpoint2(getEndpoint1());
-        entity.getDataTracker().set(TEMPERATURE, getTemperature());
+        entity.getEntityData().set(TEMPERATURE, getTemperature());
 
-        var pos = getPos();
+        var pos = position();
         for(int i = 0; i < segments.size(); ++i) {
             var segment = segments.get(i);
             pos = pos.add(segment.vector());
@@ -298,22 +298,22 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
                 entity.segments.add(0, new Point(dir, length));
         }
 
-        entity.setPos(pos.x, pos.y, pos.z);
+        entity.setPosRaw(pos.x, pos.y, pos.z);
         entity.bakeBoundingBoxes();
 
-        entity.setYaw(0);
-        entity.setPitch(0);
-        entity.resetPosition();
-        entity.refreshPosition();
+        entity.setYRot(0);
+        entity.setXRot(0);
+        entity.setOldPosAndRot();
+        entity.reapplyPosition();
 
         this.discard();
-        var serverWorld = (ServerWorld) getWorld();
-        serverWorld.spawnNewEntityAndPassengers(entity);
+        var serverWorld = (ServerLevel) level();
+        serverWorld.tryAddFreshEntityWithPassengers(entity);
         return entity;
     }
 
     public void extend(List<Point> points, int newItems, boolean notify) {
-        if(getWorld().isClient)
+        if(level().isClientSide)
             return;
         incrementWireCount(newItems);
         this.segments.addAll(points);
@@ -328,13 +328,13 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public JunctionWireEndpoint split(int segmentIndex, int segmentPoint) {
-        var world = getWorld();
-        if(world.isClient)
+        var world = level();
+        if(world.isClientSide)
             return null;
 
         var segment = segments.get(segmentIndex);
 
-        var junctionPos = segment.start.offset(segment.direction, segmentPoint / 16f);
+        var junctionPos = segment.start.relative(segment.direction, segmentPoint / 16f);
         var junction = new JunctionWireEndpoint(junctionPos);
 
         var wire2 = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
@@ -351,31 +351,31 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
             movedLength += removed.length();
         }
 
-        wire2.setPos(junctionPos.x, junctionPos.y, junctionPos.z);
+        wire2.setPosRaw(junctionPos.x, junctionPos.y, junctionPos.z);
         wire2.bakeBoundingBoxes();
         this.bakeBoundingBoxes();
 
-        wire2.setYaw(0);
-        wire2.setPitch(0);
-        wire2.resetPosition();
-        wire2.refreshPosition();
+        wire2.setYRot(0);
+        wire2.setXRot(0);
+        wire2.setOldPosAndRot();
+        wire2.reapplyPosition();
 
         int items = (int) movedLength;
         wire2.incrementWireCount(items);
 
-        wire2.getDataTracker().set(TEMPERATURE, getTemperature());
+        wire2.getEntityData().set(TEMPERATURE, getTemperature());
         wire2.setEndpoint2(getEndpoint2());
         wire2.setEndpoint1(junction);
         this.setEndpoint2(junction);
-        var serverWorld = (ServerWorld) world;
-        serverWorld.spawnNewEntityAndPassengers(wire2);
+        var serverWorld = (ServerLevel) world;
+        serverWorld.tryAddFreshEntityWithPassengers(wire2);
 
         sendExtraData();
         return junction;
     }
 
     public static class Point {
-        public Vec3d start;
+        public Vec3 start;
         public final Direction direction;
         public final int gridLength;
 
@@ -384,14 +384,14 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
             this.gridLength = gridLength;
         }
 
-        public Point(NbtCompound tag) {
-            this.direction = Direction.byId(tag.getInt("Direction"));
+        public Point(CompoundTag tag) {
+            this.direction = Direction.from3DDataValue(tag.getInt("Direction"));
             this.gridLength = tag.getInt("Length");
         }
 
-        public NbtCompound serialize() {
-            var tag = new NbtCompound();
-            tag.putInt("Direction", direction.getId());
+        public CompoundTag serialize() {
+            var tag = new CompoundTag();
+            tag.putInt("Direction", direction.get3DDataValue());
             tag.putInt("Length", gridLength);
             return tag;
         }
@@ -400,15 +400,15 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
             return gridLength / 16f;
         }
 
-        public Vec3d vector() {
+        public Vec3 vector() {
             var length = length();
             return switch(direction) {
-                case EAST -> new Vec3d(length, 0, 0);
-                case WEST -> new Vec3d(-length, 0, 0);
-                case UP -> new Vec3d(0, length, 0);
-                case DOWN -> new Vec3d(0, -length, 0);
-                case SOUTH -> new Vec3d(0, 0, length);
-                case NORTH -> new Vec3d(0, 0, -length);
+                case EAST -> new Vec3(length, 0, 0);
+                case WEST -> new Vec3(-length, 0, 0);
+                case UP -> new Vec3(0, length, 0);
+                case DOWN -> new Vec3(0, -length, 0);
+                case SOUTH -> new Vec3(0, 0, length);
+                case NORTH -> new Vec3(0, 0, -length);
             };
         }
 

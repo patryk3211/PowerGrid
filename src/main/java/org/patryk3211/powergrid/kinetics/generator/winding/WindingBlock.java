@@ -20,29 +20,29 @@ import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
@@ -60,31 +60,33 @@ import java.util.function.BiConsumer;
 import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.HORIZONTAL_FACING;
 import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.UP;
 
+;
+
 public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntity> {
-    public static final EnumProperty<Direction.Axis> AXIS = Properties.AXIS;
-    public static final IntProperty PART = IntProperty.of("part", 0, 2);
+    public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
+    public static final IntegerProperty PART = IntegerProperty.create("part", 0, 2);
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
-    public static final BooleanProperty CASE_RIGHT = BooleanProperty.of("right");
-    public static final BooleanProperty CASE_LEFT = BooleanProperty.of("left");
+    public static final BooleanProperty CASE_RIGHT = BooleanProperty.create("right");
+    public static final BooleanProperty CASE_LEFT = BooleanProperty.create("left");
 
-    private static final VoxelShaper HORIZONTAL_END_SHAPER = VoxelShaper.forDirectional(VoxelShapes.union(
-            createCuboidShape(2, 3, 3, 14, 13, 16),
-            createCuboidShape(0, 6, 6, 16, 10, 10),
-            createCuboidShape(6, 6, 0, 10, 10, 3)
+    private static final VoxelShaper HORIZONTAL_END_SHAPER = VoxelShaper.forDirectional(Shapes.or(
+            box(2, 3, 3, 14, 13, 16),
+            box(0, 6, 6, 16, 10, 10),
+            box(6, 6, 0, 10, 10, 3)
     ), Direction.SOUTH);
-    private static final VoxelShaper VERTICAL_END_SHAPER = VoxelShaper.forDirectional(VoxelShapes.union(
-            createCuboidShape(3, 2, 3, 13, 14, 16),
-            createCuboidShape(6, 0, 6, 10, 16, 10),
-            createCuboidShape(6, 6, 0, 10, 10, 3)
+    private static final VoxelShaper VERTICAL_END_SHAPER = VoxelShaper.forDirectional(Shapes.or(
+            box(3, 2, 3, 13, 14, 16),
+            box(6, 0, 6, 10, 16, 10),
+            box(6, 6, 0, 10, 10, 3)
     ), Direction.SOUTH);
 
     private static final VoxelShaper HORIZONTAL_MIDDLE_SHAPER = VoxelShaper.forAxis(
-            createCuboidShape(2, 3, 0, 14, 13, 16),
+            box(2, 3, 0, 14, 13, 16),
             Direction.Axis.Z
     );
     private static final VoxelShaper VERTICAL_MIDDLE_SHAPER = VoxelShaper.forAxis(
-            createCuboidShape(3, 2, 0, 13, 14, 16),
+            box(3, 2, 0, 13, 14, 16),
             Direction.Axis.Z
     );
 
@@ -95,16 +97,16 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 6, 6, 14, 10, 10, 16)
                     .withColor(IDecoratedTerminal.BLUE);
 
-    public WindingBlock(Settings settings) {
+    public WindingBlock(Properties settings) {
         super(settings);
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStatesExcept(state -> {
                     var terminals = new TerminalBoundingBox[2];
-                    var part = state.get(PART);
+                    var part = state.getValue(PART);
                     if(part == 1)
                         return terminals;
                     var terminalIn = part == 0 ? TERMINAL_POSITIVE : TERMINAL_NEGATIVE;
-                    switch(state.get(AXIS)) {
+                    switch(state.getValue(AXIS)) {
                         case X -> terminalIn = terminalIn.rotateAroundY(-90);
                         case Y -> terminalIn = terminalIn.rotateAroundX(90);
                     }
@@ -115,55 +117,55 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        var part = state.get(PART);
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        var part = state.getValue(PART);
         if(part == 0 || part == 2) {
-            var dir = Direction.from(state.get(AXIS), part == 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
-            var along = state.get(ALONG_FIRST_AXIS);
+            var dir = Direction.fromAxisAndDirection(state.getValue(AXIS), part == 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
+            var along = state.getValue(ALONG_FIRST_AXIS);
             var shaper = along ? VERTICAL_END_SHAPER : HORIZONTAL_END_SHAPER;
             return shaper.get(dir);
         } else {
-            var along = state.get(ALONG_FIRST_AXIS);
+            var along = state.getValue(ALONG_FIRST_AXIS);
             var shaper = along ? VERTICAL_MIDDLE_SHAPER : HORIZONTAL_MIDDLE_SHAPER;
-            return shaper.get(state.get(AXIS));
+            return shaper.get(state.getValue(AXIS));
         }
     }
 
-    private void walkForward(WorldAccess world, BlockPos pos, Direction.Axis axis, BiConsumer<BlockPos, BlockState> callback) {
+    private void walkForward(LevelAccessor world, BlockPos pos, Direction.Axis axis, BiConsumer<BlockPos, BlockState> callback) {
         BlockState state;
         boolean last = false;
         while(!last) {
-            pos = pos.offset(axis, 1);
+            pos = pos.relative(axis, 1);
             state = world.getBlockState(pos);
-            if(!state.isOf(this))
+            if(!state.is(this))
                 return;
-            if(state.get(PART) == 2)
+            if(state.getValue(PART) == 2)
                 last = true;
             callback.accept(pos, state);
         }
     }
 
-    public void walkBackward(WorldAccess world, BlockPos pos, Direction.Axis axis, BiConsumer<BlockPos, BlockState> callback) {
+    public void walkBackward(LevelAccessor world, BlockPos pos, Direction.Axis axis, BiConsumer<BlockPos, BlockState> callback) {
         BlockState state;
         boolean last = false;
         while(!last) {
-            pos = pos.offset(axis, -1);
+            pos = pos.relative(axis, -1);
             state = world.getBlockState(pos);
-            if(!state.isOf(this))
+            if(!state.is(this))
                 return;
-            if(state.get(PART) == 0)
+            if(state.getValue(PART) == 0)
                 last = true;
             callback.accept(pos, state);
         }
     }
 
-    public void walk(WorldAccess world, BlockPos pos, BiConsumer<BlockPos, BlockState> callback) {
+    public void walk(LevelAccessor world, BlockPos pos, BiConsumer<BlockPos, BlockState> callback) {
         var state = world.getBlockState(pos);
-        if(!state.isOf(this))
+        if(!state.is(this))
             return;
         callback.accept(pos, state);
-        var axis = state.get(AXIS);
-        switch(state.get(PART)) {
+        var axis = state.getValue(AXIS);
+        switch(state.getValue(PART)) {
             case 0 -> walkForward(world, pos, axis, callback);
             case 1 -> {
                 walkForward(world, pos, axis, callback);
@@ -174,26 +176,26 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     }
 
     @Override
-    public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
-        super.afterBreak(world, player, pos, state, blockEntity, tool);
-        if(state.get(PART) != 1) {
-            dropStack(world, pos, AllBlocks.SHAFT.asStack());
+    public void playerDestroy(Level world, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
+        super.playerDestroy(world, player, pos, state, blockEntity, tool);
+        if(state.getValue(PART) != 1) {
+            popResource(world, pos, AllBlocks.SHAFT.asStack());
         }
     }
 
     @Override
-    public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
-        super.onBroken(world, pos, state);
-        if(world.isClient())
+    public void destroy(LevelAccessor world, BlockPos pos, BlockState state) {
+        super.destroy(world, pos, state);
+        if(world.isClientSide())
             return;
-        var axis = state.get(AXIS);
+        var axis = state.getValue(AXIS);
         BiConsumer<BlockPos, BlockState> breakBlock = (pos1, state1) -> {
-            world.breakBlock(pos1, true);
-            if(state1.get(PART) != 1) {
-                world.setBlockState(pos1, AllBlocks.SHAFT.getDefaultState().with(AXIS, getMagneticAxis(state1)), NOTIFY_ALL);
+            world.destroyBlock(pos1, true);
+            if(state1.getValue(PART) != 1) {
+                world.setBlock(pos1, AllBlocks.SHAFT.getDefaultState().setValue(AXIS, getMagneticAxis(state1)), UPDATE_ALL);
             }
         };
-        switch(state.get(PART)) {
+        switch(state.getValue(PART)) {
             case 0 -> walkForward(world, pos, axis, breakBlock);
             case 1 -> {
                 walkForward(world, pos, axis, breakBlock);
@@ -204,15 +206,15 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(AXIS, PART, ALONG_FIRST_AXIS, CASE_RIGHT, CASE_LEFT);
     }
 
     public static boolean canConnect(BlockState thisState, boolean positive, BlockState state) {
         if(state.getBlock() instanceof WindingBlock windingBlock) {
             // Another winding, check for alignment
-            if(state.get(AXIS) == thisState.get(AXIS) && state.get(ALONG_FIRST_AXIS) == thisState.get(ALONG_FIRST_AXIS)) {
+            if(state.getValue(AXIS) == thisState.getValue(AXIS) && state.getValue(ALONG_FIRST_AXIS) == thisState.getValue(ALONG_FIRST_AXIS)) {
                 // Alignment matches and block entity is valid, these can be connected.
                 return true;
             }
@@ -220,66 +222,66 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             var windingBlock = (WindingBlock) thisState.getBlock();
             var parallelAxis = windingBlock.getParallelCheckAxis(thisState);
             if(parallelAxis.isHorizontal()) {
-                var expectedFacing = Direction.from(parallelAxis, positive ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
-                return state.get(HORIZONTAL_FACING) == expectedFacing;
+                var expectedFacing = Direction.fromAxisAndDirection(parallelAxis, positive ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
+                return state.getValue(HORIZONTAL_FACING) == expectedFacing;
             } else {
                 var expectUp = !positive;
-                return state.get(UP) == expectUp;
+                return state.getValue(UP) == expectUp;
             }
         }
         return false;
     }
 
-    public void updateCase(BlockState state, WorldAccess world, BlockPos pos) {
+    public void updateCase(BlockState state, LevelAccessor world, BlockPos pos) {
         var axis = getParallelCheckAxis(state);
-        var stateN = world.getBlockState(pos.offset(axis, -1));
+        var stateN = world.getBlockState(pos.relative(axis, -1));
         var left = canConnect(state, false, stateN);
 
-        var stateP = world.getBlockState(pos.offset(axis, 1));
+        var stateP = world.getBlockState(pos.relative(axis, 1));
         var right = canConnect(state, true, stateP);
 
-        var newState = state.with(CASE_LEFT, left)
-                .with(CASE_RIGHT, right);
+        var newState = state.setValue(CASE_LEFT, left)
+                .setValue(CASE_RIGHT, right);
         if(newState != state) {
-            world.setBlockState(pos, newState, 0);
+            world.setBlock(pos, newState, 0);
         }
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
-        super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+        super.neighborChanged(state, world, pos, sourceBlock, sourcePos, notify);
         updateCase(state, world, pos);
 
         var dir = sourcePos.subtract(pos);
-        if(Direction.fromVector(dir.getX(), dir.getY(), dir.getZ()).getAxis() == state.get(AXIS))
+        if(Direction.fromDelta(dir.getX(), dir.getY(), dir.getZ()).getAxis() == state.getValue(AXIS))
             return;
 
         withBlockEntityDo(world, pos, be -> be.onNeighborChanged(sourcePos));
     }
 
     @Override
-    public void prepare(BlockState state, WorldAccess world, BlockPos pos, int flags, int maxUpdateDepth) {
-        super.prepare(state, world, pos, flags, maxUpdateDepth);
+    public void updateIndirectNeighbourShapes(BlockState state, LevelAccessor world, BlockPos pos, int flags, int maxUpdateDepth) {
+        super.updateIndirectNeighbourShapes(state, world, pos, flags, maxUpdateDepth);
         updateCase(state, world, pos);
     }
 
     @Nullable
-    public BlockPos getMainBlockPos(World world, BlockPos pos) {
+    public BlockPos getMainBlockPos(Level world, BlockPos pos) {
         var state = world.getBlockState(pos);
-        if(!state.isOf(this))
+        if(!state.is(this))
             return null;
-        var axis = state.get(AXIS);
-        switch(state.get(PART)) {
+        var axis = state.getValue(AXIS);
+        switch(state.getValue(PART)) {
             case 0 -> {
                 return pos;
             }
             case 1, 2 -> {
                 while(true) {
-                    pos = pos.offset(axis, -1);
+                    pos = pos.relative(axis, -1);
                     state = world.getBlockState(pos);
-                    if(!state.isOf(this))
+                    if(!state.is(this))
                         return null;
-                    if(state.get(PART) == 0)
+                    if(state.getValue(PART) == 0)
                         return pos;
                 }
             }
@@ -289,7 +291,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         }
     }
 
-    public Optional<WindingBlockEntity> getMainBlockEntity(World world, BlockPos pos) {
+    public Optional<WindingBlockEntity> getMainBlockEntity(Level world, BlockPos pos) {
         var mainPos = getMainBlockPos(world, pos);
         if(mainPos != null)
             return world.getBlockEntity(mainPos, ModdedBlockEntities.WINDING.get());
@@ -297,15 +299,15 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     }
 
     @Override
-    public ElectricBehaviour getBehaviour(World world, BlockPos pos, BlockState state) {
+    public ElectricBehaviour getBehaviour(Level world, BlockPos pos, BlockState state) {
         return getMainBlockEntity(world, pos)
                 .map(winding -> winding.getBehaviourProvider().getBehaviour(ElectricBehaviour.TYPE))
                 .orElse(null);
     }
 
     public Direction.Axis getParallelCheckAxis(BlockState state) {
-        var along = state.get(ALONG_FIRST_AXIS);
-        return switch(state.get(AXIS)) {
+        var along = state.getValue(ALONG_FIRST_AXIS);
+        return switch(state.getValue(AXIS)) {
             case X -> along ? Direction.Axis.Z : Direction.Axis.Y;
             case Y -> along ? Direction.Axis.X : Direction.Axis.Z;
             case Z -> along ? Direction.Axis.X : Direction.Axis.Y;
@@ -313,8 +315,8 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     }
 
     public Direction.Axis getMagneticAxis(BlockState state) {
-        var along = state.get(ALONG_FIRST_AXIS);
-        return switch(state.get(AXIS)) {
+        var along = state.getValue(ALONG_FIRST_AXIS);
+        return switch(state.getValue(AXIS)) {
             case X -> along ? Direction.Axis.Y : Direction.Axis.Z;
             case Y -> along ? Direction.Axis.Z : Direction.Axis.X;
             case Z -> along ? Direction.Axis.Y : Direction.Axis.X;
@@ -332,83 +334,83 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     }
 
     @Override
-    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
-        var world = context.getWorld();
-        var pos = context.getBlockPos();
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        var world = context.getLevel();
+        var pos = context.getClickedPos();
         var player = context.getPlayer();
 
-        var part = state.get(PART);
-        var axis = state.get(AXIS);
+        var part = state.getValue(PART);
+        var axis = state.getValue(AXIS);
         switch(part) {
             case 0 -> {
-                if(world.getBlockState(pos.offset(axis, 1)).get(PART) != 1)
-                    return ActionResult.FAIL;
+                if(world.getBlockState(pos.relative(axis, 1)).getValue(PART) != 1)
+                    return InteractionResult.FAIL;
             }
             case 1 -> {
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
             case 2 -> {
-                if(world.getBlockState(pos.offset(axis, -1)).get(PART) != 1)
-                    return ActionResult.FAIL;
+                if(world.getBlockState(pos.relative(axis, -1)).getValue(PART) != 1)
+                    return InteractionResult.FAIL;
             }
         }
 
         boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
         if(!shouldBreak)
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
 
-        if(!(world instanceof ServerWorld serverWorld))
-            return ActionResult.SUCCESS;
+        if(!(world instanceof ServerLevel serverWorld))
+            return InteractionResult.SUCCESS;
 
         if(player != null && !player.isCreative()) {
-            Block.getDroppedStacks(state.with(PART, 1), serverWorld, pos, world.getBlockEntity(pos), player, context.getStack())
-                    .forEach(stack -> player.getInventory().offerOrDrop(stack));
+            Block.getDrops(state.setValue(PART, 1), serverWorld, pos, world.getBlockEntity(pos), player, context.getItemInHand())
+                    .forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
         }
-        state.with(PART, 1).onStacksDropped(serverWorld, pos, ItemStack.EMPTY, true);
-        world.setBlockState(pos, Blocks.AIR.getDefaultState());
-        var newPos = pos.offset(axis, 1 - part);
-        world.setBlockState(newPos, state);
-        if(state.get(PART) == 0)
+        state.setValue(PART, 1).spawnAfterBreak(serverWorld, pos, ItemStack.EMPTY, true);
+        world.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        var newPos = pos.relative(axis, 1 - part);
+        world.setBlockAndUpdate(newPos, state);
+        if(state.getValue(PART) == 0)
             withBlockEntityDo(world, newPos, WindingBlockEntity::makeMain);
 
         IWrenchable.playRemoveSound(world, pos);
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    public ActionResult onSneakWrenched(BlockState state, ItemUsageContext context) {
-        var world = context.getWorld();
-        var pos = context.getBlockPos();
+    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
+        var world = context.getLevel();
+        var pos = context.getClickedPos();
         var player = context.getPlayer();
 
-        if(!(world instanceof ServerWorld serverLevel))
-            return ActionResult.SUCCESS;
+        if(!(world instanceof ServerLevel serverLevel))
+            return InteractionResult.SUCCESS;
 
         boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
         if(!shouldBreak)
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
 
         walk(world, pos, (pos1, state1) -> {
             if (player != null && !player.isCreative()) {
-                Block.getDroppedStacks(state1, serverLevel, pos1, world.getBlockEntity(pos1), player, context.getStack())
-                        .forEach(stack -> player.getInventory().offerOrDrop(stack));
-                if(pos.equals(pos1) && state1.get(PART) != 1) {
-                    player.getInventory().offerOrDrop(AllBlocks.SHAFT.asStack());
+                Block.getDrops(state1, serverLevel, pos1, world.getBlockEntity(pos1), player, context.getItemInHand())
+                        .forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
+                if(pos.equals(pos1) && state1.getValue(PART) != 1) {
+                    player.getInventory().placeItemBackInInventory(AllBlocks.SHAFT.asStack());
                 }
             }
-            state1.onStacksDropped(serverLevel, pos1, ItemStack.EMPTY, true);
-            world.breakBlock(pos1, false);
-            if(!pos.equals(pos1) && state1.get(PART) != 1) {
-                world.setBlockState(pos1, AllBlocks.SHAFT.getDefaultState().with(AXIS, getMagneticAxis(state1)));
+            state1.spawnAfterBreak(serverLevel, pos1, ItemStack.EMPTY, true);
+            world.destroyBlock(pos1, false);
+            if(!pos.equals(pos1) && state1.getValue(PART) != 1) {
+                world.setBlockAndUpdate(pos1, AllBlocks.SHAFT.getDefaultState().setValue(AXIS, getMagneticAxis(state1)));
             }
         });
 
         IWrenchable.playRemoveSound(world, pos);
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
         return ModdedItems.COPPER_COIL.asStack();
     }
 

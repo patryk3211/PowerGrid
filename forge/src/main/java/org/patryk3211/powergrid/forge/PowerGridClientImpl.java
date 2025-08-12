@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.forge;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -24,7 +24,6 @@ import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.patryk3211.powergrid.PowerGridClient;
-import org.patryk3211.powergrid.collections.ModdedParticles;
 import org.patryk3211.powergrid.collections.forge.ModdedKeysImpl;
 import org.patryk3211.powergrid.collections.forge.ModdedParticlesImpl;
 import org.patryk3211.powergrid.electricity.portablebattery.forge.BatteryArmorLayerImpl;
@@ -51,7 +50,7 @@ public class PowerGridClientImpl {
 
     @SubscribeEvent
     public static void addEntityLayers(EntityRenderersEvent.AddLayers event) {
-        var dispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
+        var dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
         BatteryArmorLayerImpl.registerOnAll(dispatcher);
     }
 

@@ -18,8 +18,8 @@ package org.patryk3211.powergrid.electricity.deviceconnector;
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.state.property.Properties;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
@@ -55,7 +55,7 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
 
     @Override
     protected void onFinalCommit() {
-        be.markDirty();
+        be.setChanged();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
         float ampToFe = FEBridgeEnergyStorage.ampToFE();
         if(wire.getState()) {
             amount += Math.round(wire.current() * ampToFe);
-            be.markDirty();
+            be.setChanged();
         }
     }
 
@@ -110,8 +110,8 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
     public long moveEnergy() {
         if(amount > 0) {
             // Try to move energy
-            var facing = be.getCachedState().get(Properties.FACING);
-            var sideStorage = EnergyStorage.SIDED.find(be.getWorld(), be.getPos().offset(facing), facing.getOpposite());
+            var facing = be.getBlockState().getValue(BlockStateProperties.FACING);
+            var sideStorage = EnergyStorage.SIDED.find(be.getLevel(), be.getBlockPos().relative(facing), facing.getOpposite());
             return EnergyStorageUtil.move(this, sideStorage, Long.MAX_VALUE, null);
         }
         return 0;

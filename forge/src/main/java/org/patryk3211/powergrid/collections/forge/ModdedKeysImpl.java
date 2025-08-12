@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.collections.forge;
 
-import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import org.patryk3211.powergrid.collections.ModdedKeys;
 
@@ -26,7 +26,7 @@ public class ModdedKeysImpl {
             if(key.description == null) {
                 currentCategory = key.category;
             } else {
-                key.keybind = new KeyBinding(key.description, key.key, currentCategory);
+                key.keybind = new KeyMapping(key.description, key.key, currentCategory);
                 event.register(key.keybind);
             }
         }

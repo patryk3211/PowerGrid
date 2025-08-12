@@ -17,9 +17,9 @@ package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.network.SimplePacket;
 
@@ -30,17 +30,17 @@ public class ChangeScreenC2SPacket implements SimplePacket {
     private final int screenIndex;
 
     public <T extends SmartBlockEntity & IMultiScreenHandlerFactory> ChangeScreenC2SPacket(T be, int screenIndex) {
-        this.blockPos = be.getPos();
+        this.blockPos = be.getBlockPos();
         this.screenIndex = screenIndex;
     }
 
-    public ChangeScreenC2SPacket(PacketByteBuf buf) {
+    public ChangeScreenC2SPacket(FriendlyByteBuf buf) {
         blockPos = buf.readBlockPos();
         screenIndex = buf.readInt();
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(blockPos);
         buf.writeInt(screenIndex);
     }
@@ -52,11 +52,11 @@ public class ChangeScreenC2SPacket implements SimplePacket {
             var player = ctx.getPlayer();
             if(player == null)
                 return;
-            var genericBe = player.getWorld().getBlockEntity(blockPos);
+            var genericBe = player.level().getBlockEntity(blockPos);
             if(!(genericBe instanceof SmartBlockEntity) || !(genericBe instanceof IMultiScreenHandlerFactory))
                 return;
             var be = (SmartBlockEntity & IMultiScreenHandlerFactory) genericBe;
-            IMultiScreenHandlerFactory.openScreen((ServerPlayerEntity) player, be, be::sendToMenu, screenIndex);
+            IMultiScreenHandlerFactory.openScreen((ServerPlayer) player, be, be::sendToMenu, screenIndex);
         });
     }
 }

@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.utility;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public interface IComplexRaycast {
     @Nullable
-    Vec3d raycast(Vec3d min, Vec3d max);
+    Vec3 raycast(Vec3 min, Vec3 max);
 }

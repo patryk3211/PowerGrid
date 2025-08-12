@@ -15,15 +15,15 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 public interface ITerminalPlacement {
-    boolean check(Vec3d position);
+    boolean check(Vec3 position);
 
-    default boolean check(BlockPos blockPos, Vec3d position) {
+    default boolean check(BlockPos blockPos, Vec3 position) {
         return check(position.subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
     }
 
-    Vec3d getOrigin();
+    Vec3 getOrigin();
 }

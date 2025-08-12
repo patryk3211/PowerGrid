@@ -16,21 +16,21 @@
 package org.patryk3211.powergrid.electricity.heater;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -47,53 +47,53 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
     private static final TerminalBoundingBox NORTH_TERMINAL1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 12, 12, 7, 15, 15, 10);
     private static final TerminalBoundingBox NORTH_TERMINAL2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 1, 12, 7, 4, 15, 10);
 
-    private static final TerminalBoundingBox SOUTH_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(BlockRotation.CLOCKWISE_180);
-    private static final TerminalBoundingBox SOUTH_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(BlockRotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox SOUTH_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(Rotation.CLOCKWISE_180);
+    private static final TerminalBoundingBox SOUTH_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(Rotation.CLOCKWISE_180);
 
-    private static final TerminalBoundingBox EAST_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(BlockRotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox EAST_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(BlockRotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox EAST_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(Rotation.CLOCKWISE_90);
+    private static final TerminalBoundingBox EAST_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(Rotation.CLOCKWISE_90);
 
-    private static final TerminalBoundingBox WEST_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
-    private static final TerminalBoundingBox WEST_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL1 = NORTH_TERMINAL1.rotateAroundY(Rotation.COUNTERCLOCKWISE_90);
+    private static final TerminalBoundingBox WEST_TERMINAL2 = NORTH_TERMINAL2.rotateAroundY(Rotation.COUNTERCLOCKWISE_90);
 
-    private static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
-            createCuboidShape(0, 0, 5, 16, 12, 11),
+    private static final VoxelShape SHAPE_NORTH = Shapes.or(
+            box(0, 0, 5, 16, 12, 11),
             NORTH_TERMINAL1.getShape(),
             NORTH_TERMINAL2.getShape()
     );
 
-    private static final VoxelShape SHAPE_SOUTH = VoxelShapes.union(
-            createCuboidShape(0, 0, 5, 16, 12, 11),
+    private static final VoxelShape SHAPE_SOUTH = Shapes.or(
+            box(0, 0, 5, 16, 12, 11),
             SOUTH_TERMINAL1.getShape(),
             SOUTH_TERMINAL2.getShape()
     );
 
-    private static final VoxelShape SHAPE_EAST = VoxelShapes.union(
-            createCuboidShape(5, 0, 0, 11, 12, 16),
+    private static final VoxelShape SHAPE_EAST = Shapes.or(
+            box(5, 0, 0, 11, 12, 16),
             EAST_TERMINAL1.getShape(),
             EAST_TERMINAL2.getShape()
     );
 
-    private static final VoxelShape SHAPE_WEST = VoxelShapes.union(
-            createCuboidShape(5, 0, 0, 11, 12, 16),
+    private static final VoxelShape SHAPE_WEST = Shapes.or(
+            box(5, 0, 0, 11, 12, 16),
             WEST_TERMINAL1.getShape(),
             WEST_TERMINAL2.getShape()
     );
 
-    public HeaterBlock(Settings settings) {
+    public HeaterBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
-        builder.add(Properties.HORIZONTAL_FACING);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(BlockStateProperties.HORIZONTAL_FACING);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        return getDefaultState()
-                .with(Properties.HORIZONTAL_FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return defaultBlockState()
+                .setValue(BlockStateProperties.HORIZONTAL_FACING, ctx.getHorizontalDirection().getOpposite());
     }
 
     @Override
@@ -103,7 +103,7 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
 
     @Override
     public ITerminalPlacement terminal(BlockState state, int index) {
-        return switch(state.get(Properties.HORIZONTAL_FACING)) {
+        return switch(state.getValue(BlockStateProperties.HORIZONTAL_FACING)) {
             case NORTH -> switch(index) {
                 case 0 -> NORTH_TERMINAL1;
                 case 1 -> NORTH_TERMINAL2;
@@ -129,8 +129,8 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch(state.get(Properties.HORIZONTAL_FACING)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch(state.getValue(BlockStateProperties.HORIZONTAL_FACING)) {
             case NORTH -> SHAPE_NORTH;
             case SOUTH -> SHAPE_SOUTH;
             case EAST -> SHAPE_EAST;
@@ -150,7 +150,7 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
     }
 

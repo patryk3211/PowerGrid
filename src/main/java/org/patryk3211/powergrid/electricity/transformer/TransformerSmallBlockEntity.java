@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
@@ -34,8 +34,8 @@ public class TransformerSmallBlockEntity extends TransformerBlockEntity implemen
 
     @Override
     public void updateCoilBlockState() {
-        assert world != null;
+        assert level != null;
         int coilCount = secondaryCoil.isDefined() ? 2 : primaryCoil.isDefined() ? 1 : 0;
-        world.setBlockState(pos, getCachedState().with(TransformerBlock.COILS, coilCount));
+        level.setBlockAndUpdate(worldPosition, getBlockState().setValue(TransformerBlock.COILS, coilCount));
     }
 }

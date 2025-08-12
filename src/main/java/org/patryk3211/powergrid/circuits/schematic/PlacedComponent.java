@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
@@ -44,14 +44,14 @@ public class PlacedComponent {
     public final UUID uuid;
     private final List<PropertyEntry<?>> properties = new ArrayList<>();
 
-    private Supplier<World> worldSupplier;
+    private Supplier<Level> worldSupplier;
     private BlockPos pos;
 
     public final List<INode> nodes = new ArrayList<>();
     public final List<AbstractElectricWire> wires = new ArrayList<>();
 
-    public PlacedComponent(NbtCompound tag) {
-        this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUuid("UUID"));
+    public PlacedComponent(CompoundTag tag) {
+        this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUUID("UUID"));
         var propertyMap = tag.getCompound("Properties");
         for(var entry : properties) {
             entry.read(propertyMap);
@@ -76,7 +76,7 @@ public class PlacedComponent {
     }
 
     private static Component get(String id) {
-        return ComponentRegistry.get(new Identifier(id));
+        return ComponentRegistry.get(new ResourceLocation(id));
     }
 
     public PlacedComponent(Component component, int x, int y, UUID uuid) {
@@ -89,38 +89,38 @@ public class PlacedComponent {
         }
     }
 
-    public void withWorld(Supplier<World> worldSupplier, BlockPos pos) {
+    public void withWorld(Supplier<Level> worldSupplier, BlockPos pos) {
         this.worldSupplier = worldSupplier;
         this.pos = pos;
     }
 
-    public World getWorld() {
+    public Level getWorld() {
         return worldSupplier.get();
     }
 
-    public void onClientWorld(Supplier<Consumer<World>> callback) {
+    public void onClientWorld(Supplier<Consumer<Level>> callback) {
         var world = getWorld();
-        if(world.isClient)
+        if(world.isClientSide)
             callback.get().accept(world);
     }
 
-    public void onServerWorld(Supplier<Consumer<World>> callback) {
+    public void onServerWorld(Supplier<Consumer<Level>> callback) {
         var world = getWorld();
-        if(!world.isClient)
+        if(!world.isClientSide)
             callback.get().accept(world);
     }
 
-    public NbtCompound serializeNbt() {
-        var tag = new NbtCompound();
+    public CompoundTag serializeNbt() {
+        var tag = new CompoundTag();
 
         var id = ComponentRegistry.getId(component);
         tag.putString("Id", id.toString());
         tag.putInt("X", x);
         tag.putInt("Y", y);
-        tag.putUuid("UUID", uuid);
+        tag.putUUID("UUID", uuid);
 
         if(!properties.isEmpty()) {
-            var propertyMap = new NbtCompound();
+            var propertyMap = new CompoundTag();
             for(var entry : properties) {
                 entry.write(propertyMap);
             }
@@ -155,7 +155,7 @@ public class PlacedComponent {
         });
     }
 
-    public void notifyClients(Identifier propertyId) {
+    public void notifyClients(ResourceLocation propertyId) {
         onServerWorld(() -> world -> {
             var circuit = (CircuitBoardBlockEntity) world.getBlockEntity(pos);
             if(circuit == null)
@@ -180,7 +180,7 @@ public class PlacedComponent {
         return false;
     }
 
-    public PropertyEntry<?> getEntry(Identifier id) {
+    public PropertyEntry<?> getEntry(ResourceLocation id) {
         for(var entry : properties) {
             if(entry.property.id().equals(id)) {
                 return entry;

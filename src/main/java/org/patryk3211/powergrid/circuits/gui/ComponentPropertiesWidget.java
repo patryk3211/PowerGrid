@@ -16,10 +16,10 @@
 package org.patryk3211.powergrid.circuits.gui;
 
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -32,9 +32,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ComponentPropertiesWidget extends AbstractSimiWidget {
-    public static final Identifier PROPERTIES = PowerGrid.texture("gui/circuit_design_table_properties");
+    public static final ResourceLocation PROPERTIES = PowerGrid.texture("gui/circuit_design_table_properties");
 
-    private final TextRenderer textRenderer;
+    private final Font textRenderer;
     private final int right;
     @Nullable
     private PlacedComponent component;
@@ -42,7 +42,7 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
 
     private int propertyCount = 0;
 
-    public ComponentPropertiesWidget(TextRenderer textRenderer, int right, int y) {
+    public ComponentPropertiesWidget(Font textRenderer, int right, int y) {
         super(right - 150, y, 150, 150);
         this.right = right;
         this.textRenderer = textRenderer;
@@ -54,14 +54,14 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         propertyWidgets.clear();
         if(component != null) {
             var properties = component.component.getProperties();
-            var title = Text.translatable(component.component.getRequiredItem().getTranslationKey());
-            int titleWidth = textRenderer.getWidth(title);
+            var title = Component.translatable(component.component.getRequiredItem().getDescriptionId());
+            int titleWidth = textRenderer.width(title);
             int maxTextLength = 0;
             for(var property : properties) {
                 if(property.isHidden())
                     continue;
                 var propertyKey = property.translationKey();
-                var length = textRenderer.getWidth(Text.translatable(propertyKey));
+                var length = textRenderer.width(Component.translatable(propertyKey));
                 if (length > maxTextLength)
                     maxTextLength = length;
             }
@@ -93,69 +93,69 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
     }
 
     @Override
-    protected void doRender(@NotNull DrawContext ctx, int mouseX, int mouseY, float partialTicks) {
+    protected void doRender(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
         if(component == null)
             return;
 
-        var ms = ctx.getMatrices();
+        var ms = ctx.pose();
         ms.translate(getX(), getY(), 0);
 
         // Three sliced texture
         int centerSliceSize = Math.max(width - 120, 0);
-        ctx.drawTexture(PROPERTIES, 0, 0, 0, 0, 60, 16);
+        ctx.blit(PROPERTIES, 0, 0, 0, 0, 60, 16);
         if(width > 120) {
-            ctx.drawRepeatingTexture(PROPERTIES, 60, 0, centerSliceSize, 16, 61, 0, 30, 16);
+            ctx.blitRepeating(PROPERTIES, 60, 0, centerSliceSize, 16, 61, 0, 30, 16);
         }
-        ctx.drawTexture(PROPERTIES, 60 + centerSliceSize, 0, 92, 0, 60, 16);
+        ctx.blit(PROPERTIES, 60 + centerSliceSize, 0, 92, 0, 60, 16);
 
-        var key = component.component.getRequiredItem().getTranslationKey();
-        ctx.drawCenteredTextWithShadow(textRenderer, Text.translatable(key), getWidth() / 2, 5, 0xFFFFFFFF);
+        var key = component.component.getRequiredItem().getDescriptionId();
+        ctx.drawCenteredString(textRenderer, Component.translatable(key), getWidth() / 2, 5, 0xFFFFFFFF);
 
         // Draw common background for each property
-        ctx.drawRepeatingTexture(PROPERTIES, 0, 16, 60, propertyCount * 20, 0, 29, 60, 20);
+        ctx.blitRepeating(PROPERTIES, 0, 16, 60, propertyCount * 20, 0, 29, 60, 20);
         if(width > 120) {
-            ctx.drawRepeatingTexture(PROPERTIES, 60, 16, centerSliceSize, propertyCount * 20, 61, 29, 30, 20);
+            ctx.blitRepeating(PROPERTIES, 60, 16, centerSliceSize, propertyCount * 20, 61, 29, 30, 20);
         }
 
-        ms.push();
+        ms.pushPose();
         ms.translate(-getX(), -getY(), 0);
         int yOffset = 16;
         for(var widget : propertyWidgets) {
             yOffset = widget.getY() + widget.getHeight() - getY();
             var propertyKey = widget.property.property.translationKey();
-            int end = ctx.drawText(textRenderer, Text.translatable(propertyKey), getX() + 6, widget.getY() + 6, 0xFF606060, false);
+            int end = ctx.drawString(textRenderer, Component.translatable(propertyKey), getX() + 6, widget.getY() + 6, 0xFF606060, false);
 
             widget.render(ctx, mouseX, mouseY, partialTicks);
 
-            var summary = Text.translatableWithFallback(propertyKey + ".summary", "");
+            var summary = Component.translatableWithFallback(propertyKey + ".summary", "");
             if(!summary.getString().isEmpty()) {
                 // Hover description.
                 int x1 = getX() + 6;
                 int y1 = widget.getY() + 6;
-                var lines = textRenderer.wrapLines(summary, getWidth());
+                var lines = textRenderer.split(summary, getWidth());
                 if(mouseX >= x1 && mouseY >= y1 && mouseX < end && mouseY < y1 + 16)
-                    ctx.drawOrderedTooltip(textRenderer, lines, mouseX, mouseY);
+                    ctx.renderTooltip(textRenderer, lines, mouseX, mouseY);
             }
         }
-        ms.pop();
+        ms.popPose();
 
         ms.translate(0, yOffset, 0);
-        ctx.drawTexture(PROPERTIES, 0, 0, 0, 50, 60, 6);
+        ctx.blit(PROPERTIES, 0, 0, 0, 50, 60, 6);
         if(width > 120) {
-            ctx.drawRepeatingTexture(PROPERTIES, 60, 0, centerSliceSize, 6, 61, 50, 30, 6);
+            ctx.blitRepeating(PROPERTIES, 60, 0, centerSliceSize, 6, 61, 50, 30, 6);
         }
-        ctx.drawTexture(PROPERTIES, 60 + centerSliceSize, 0, 92, 50, 60, 6);
+        ctx.blit(PROPERTIES, 60 + centerSliceSize, 0, 92, 50, 60, 6);
 
         var stack = component.footprint().getRenderedStack();
         if(stack != null) {
-            ctx.drawTexture(PROPERTIES, getWidth() / 2 - 8, 4, 240, 0, 16, 10);
+            ctx.blit(PROPERTIES, getWidth() / 2 - 8, 4, 240, 0, 16, 10);
 
-            ms.push();
+            ms.pushPose();
             ms.translate(getWidth() / 2, 14, 0);
             ms.scale(3, 3, 1);
             ms.translate(-8, 0, 0);
-            ctx.drawItem(stack, 0, 0);
-            ms.pop();
+            ctx.renderItem(stack, 0, 0);
+            ms.popPose();
         }
     }
 

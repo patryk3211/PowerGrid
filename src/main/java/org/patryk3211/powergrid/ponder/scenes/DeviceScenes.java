@@ -18,24 +18,20 @@ package org.patryk3211.powergrid.ponder.scenes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import net.createmod.catnip.math.Pointing;
-import net.createmod.ponder.api.ParticleEmitter;
-import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.foundation.PonderScene;
-import net.createmod.ponder.foundation.element.InputWindowElement;
-import net.createmod.ponder.foundation.instruction.EmitParticlesInstruction;
 import net.createmod.ponder.foundation.instruction.TickingInstruction;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
@@ -46,12 +42,13 @@ import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
-import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.UnaryOperator;
+
+;
 
 public class DeviceScenes {
     public static void heatingCoilBasic(SceneBuilder builder, SceneBuildingUtil util) {
@@ -127,7 +124,7 @@ public class DeviceScenes {
         scene.electric().tickFor(10);
         scene.idle(10);
 
-        scene.world().setBlock(util.grid().at(3, 1, 3), Blocks.FIRE.getDefaultState(), false);
+        scene.world().setBlock(util.grid().at(3, 1, 3), Blocks.FIRE.defaultBlockState(), false);
         scene.world().showSection(util.select().position(3, 1, 3), Direction.WEST);
 
         scene.overlay().showText(60)
@@ -143,20 +140,20 @@ public class DeviceScenes {
         var heaterEntity = scene.world().createItemEntity(util.vector().centerOf(1, 2, 1), util.vector().of(0, 0.1, 0), stack);
         var fireEntity = scene.world().createItemEntity(util.vector().centerOf(3, 2, 1), util.vector().of(0, 0.1, 0), stack);
         scene.idle(10);
-        scene.world().modifyEntity(heaterEntity, e -> e.setVelocity(0, 0, -0.2f));
-        scene.world().modifyEntity(fireEntity, e -> e.setVelocity(0, 0, -0.2f));
+        scene.world().modifyEntity(heaterEntity, e -> e.setDeltaMovement(0, 0, -0.2f));
+        scene.world().modifyEntity(fireEntity, e -> e.setDeltaMovement(0, 0, -0.2f));
 
         var item1Vec = util.vector().blockSurface(util.grid().at(1, 1, 0), Direction.SOUTH).add(0, 0, 0.1);
         var item2Vec = util.vector().blockSurface(util.grid().at(3, 1, 0), Direction.SOUTH).add(0, 0, 0.1);
 
-        scene.effects().emitParticles(item1Vec.add(0, 0.2f, 0), scene.effects().simpleParticleEmitter(ParticleTypes.LARGE_SMOKE, Vec3d.ZERO), 1, 60);
-        scene.effects().emitParticles(item2Vec.add(0, 0.2f, 0), scene.effects().simpleParticleEmitter(ParticleTypes.LARGE_SMOKE, Vec3d.ZERO), 1, 100);
+        scene.effects().emitParticles(item1Vec.add(0, 0.2f, 0), scene.effects().simpleParticleEmitter(ParticleTypes.LARGE_SMOKE, Vec3.ZERO), 1, 60);
+        scene.effects().emitParticles(item2Vec.add(0, 0.2f, 0), scene.effects().simpleParticleEmitter(ParticleTypes.LARGE_SMOKE, Vec3.ZERO), 1, 100);
 
         scene.idle(60);
-        scene.world().modifyEntity(heaterEntity, e -> ((ItemEntity) e).setStack(cooked));
+        scene.world().modifyEntity(heaterEntity, e -> ((ItemEntity) e).setItem(cooked));
         scene.overlay().showControls(item1Vec, Pointing.DOWN, 20).withItem(cooked);
         scene.idle(40);
-        scene.world().modifyEntity(fireEntity, e -> ((ItemEntity) e).setStack(cooked));
+        scene.world().modifyEntity(fireEntity, e -> ((ItemEntity) e).setItem(cooked));
         scene.overlay().showControls(item2Vec, Pointing.DOWN, 20).withItem(cooked);
 
         scene.idle(20);
@@ -177,28 +174,28 @@ public class DeviceScenes {
         scene.overlay().showControls(util.vector().blockSurface(smallTr, Direction.NORTH), Pointing.RIGHT, 30)
                 .withItem(AllItems.WRENCH.asStack());
         scene.idle(20);
-        scene.world().setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
+        scene.world().setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
         scene.idle(20);
 
         var mediumTr = util.grid().at(2, 1, 3);
-        scene.world().showSection(util.select().fromTo(mediumTr, mediumTr.west().up()), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(mediumTr, mediumTr.west().above()), Direction.DOWN);
         scene.idle(20);
 
-        scene.overlay().showControls(util.vector().blockSurface(mediumTr.up(), Direction.NORTH), Pointing.RIGHT, 30)
+        scene.overlay().showControls(util.vector().blockSurface(mediumTr.above(), Direction.NORTH), Pointing.RIGHT, 30)
                 .withItem(AllItems.WRENCH.asStack());
         scene.idle(20);
         scene.world().setBlock(mediumTr, ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .with(TransformerMediumBlock.PART, 1), false);
+                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerMediumBlock.PART, 1), false);
         scene.world().setBlock(mediumTr.west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .with(TransformerMediumBlock.PART, 0), false);
-        scene.world().setBlock(mediumTr.up(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .with(TransformerMediumBlock.PART, 3), false);
-        scene.world().setBlock(mediumTr.up().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .with(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .with(TransformerMediumBlock.PART, 2), false);
+                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerMediumBlock.PART, 0), false);
+        scene.world().setBlock(mediumTr.above(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerMediumBlock.PART, 3), false);
+        scene.world().setBlock(mediumTr.above().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerMediumBlock.PART, 2), false);
         scene.idle(20);
 
         scene.overlay().showText(80)
@@ -250,8 +247,8 @@ public class DeviceScenes {
         scene.overlay().showControls(util.vector().of(2.2, 1.9, 2.0), Pointing.LEFT, 30).withItem(stack);
         scene.idle(20);
         scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                .with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .with(TransformerSmallBlock.COILS, 1), false);
+                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerSmallBlock.COILS, 1), false);
         scene.idle(10);
 
         scene.effects().indicateSuccess(tr);
@@ -263,8 +260,8 @@ public class DeviceScenes {
         scene.idle(50);
 
         scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                .with(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .with(TransformerSmallBlock.COILS, 2), false);
+                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerSmallBlock.COILS, 2), false);
         scene.effects().indicateSuccess(tr);
         scene.idle(30);
 
@@ -306,7 +303,7 @@ public class DeviceScenes {
                 .pointAt(util.vector().topOf(light).subtract(0, 0.5, 0))
                 .placeNearTarget();
         scene.idle(40);
-        scene.world().modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 2), false);
+        scene.world().modifyBlock(light, state -> state.setValue(LightFixtureBlock.POWER, 2), false);
         scene.idle(70);
 
         scene.overlay().showText(80)
@@ -315,7 +312,7 @@ public class DeviceScenes {
                 .pointAt(util.vector().topOf(light).subtract(0, 0.5, 0))
                 .placeNearTarget();
         scene.idle(40);
-        scene.world().modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 1), false);
+        scene.world().modifyBlock(light, state -> state.setValue(LightFixtureBlock.POWER, 1), false);
         scene.idle(50);
 
         scene.markAsFinished();
@@ -339,7 +336,7 @@ public class DeviceScenes {
                 .pointAt(util.vector().blockSurface(light, Direction.WEST))
                 .placeNearTarget();
         scene.idle(40);
-        scene.world().modifyBlock(light, state -> state.with(LightFixtureBlock.POWER, 2), false);
+        scene.world().modifyBlock(light, state -> state.setValue(LightFixtureBlock.POWER, 2), false);
 //        scene.idle(70);
 
         var crops = new BlockPos[] {
@@ -350,7 +347,7 @@ public class DeviceScenes {
         };
 
         var random = new Random();
-        UnaryOperator<BlockState> growCrop = state -> state.with(Properties.AGE_7, Math.min(state.get(Properties.AGE_7) + 1, 7));
+        UnaryOperator<BlockState> growCrop = state -> state.setValue(BlockStateProperties.AGE_7, Math.min(state.getValue(BlockStateProperties.AGE_7) + 1, 7));
         for(int i = 0; i < 15; ++i) {
             scene.world().modifyBlock(crops[random.nextInt(crops.length)], growCrop, false);
             scene.idle(10);
@@ -371,7 +368,7 @@ public class DeviceScenes {
         scene.electric().connectInvisible(source, 1, util.grid().at(5, 1, 3), 0);
 
         scene.showBasePlate();
-        scene.world().showSection(util.select().position(gauge.down()), Direction.UP);
+        scene.world().showSection(util.select().position(gauge.below()), Direction.UP);
         scene.idle(5);
 
         scene.world().showSection(util.select().position(gauge), Direction.DOWN);
@@ -434,7 +431,7 @@ public class DeviceScenes {
         scene.world().showSection(util.select().position(target), Direction.DOWN);
         scene.idle(10);
 
-        scene.world().showSection(util.select().position(target.up()), Direction.DOWN);
+        scene.world().showSection(util.select().position(target.above()), Direction.DOWN);
         scene.idle(10);
 
         scene.overlay().showText(80)
@@ -444,10 +441,10 @@ public class DeviceScenes {
                 .attachKeyFrame();
         scene.idle(90);
 
-        scene.world().hideSection(util.select().position(target.up()), Direction.UP);
+        scene.world().hideSection(util.select().position(target.above()), Direction.UP);
         scene.idle(20);
 
-        scene.world().modifyBlock(target, state -> state.with(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.KINDLED), false);
+        scene.world().modifyBlock(target, state -> state.setValue(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.KINDLED), false);
         scene.idle(40);
 
         scene.overlay().showText(80)
@@ -457,7 +454,7 @@ public class DeviceScenes {
                 .attachKeyFrame();
         scene.idle(40);
 
-        scene.world().modifyBlock(target, state -> state.with(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.SEETHING), false);
+        scene.world().modifyBlock(target, state -> state.setValue(BasinHeaterBlock.HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.SEETHING), false);
         scene.idle(50);
 
         scene.markAsFinished();
@@ -627,8 +624,8 @@ public class DeviceScenes {
                 .text("The Electromagnet will hold and process them automatically");
 
         scene.idle(processingTime);
-        scene.world().removeItemsFromBelt(magnetPos.down(2));
-        ingot = scene.world().createItemOnBelt(magnetPos.down(2), Direction.UP, magnetStack);
+        scene.world().removeItemsFromBelt(magnetPos.below(2));
+        ingot = scene.world().createItemOnBelt(magnetPos.below(2), Direction.UP, magnetStack);
         scene.world().stallBeltItem(ingot, true);
         scene.idle(15);
         scene.world().stallBeltItem(ingot, false);
@@ -637,8 +634,8 @@ public class DeviceScenes {
         scene.world().modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
                 .start(MagnetizingBehaviour.Mode.BELT, util.vector().of(2.5f, 1.8125f, 2.5f)));
         scene.idle(processingTime);
-        scene.world().removeItemsFromBelt(magnetPos.down(2));
-        ingot2 = scene.world().createItemOnBelt(magnetPos.down(2), Direction.UP, magnetStack);
+        scene.world().removeItemsFromBelt(magnetPos.below(2));
+        ingot2 = scene.world().createItemOnBelt(magnetPos.below(2), Direction.UP, magnetStack);
         scene.world().stallBeltItem(ingot2, true);
         scene.idle(15);
         scene.world().stallBeltItem(ingot2, false);
@@ -701,7 +698,7 @@ public class DeviceScenes {
         scene.idle(10);
 
         scene.world().showSection(util.select().position(battery), Direction.DOWN);
-        scene.world().showSection(util.select().position(battery.up()), Direction.DOWN);
+        scene.world().showSection(util.select().position(battery.above()), Direction.DOWN);
         scene.idle(10);
         scene.world().showSection(util.select().position(meter), Direction.DOWN);
         scene.idle(10);
@@ -714,7 +711,7 @@ public class DeviceScenes {
 
         scene.overlay().showText(80)
                 .text("The Battery allows you to store scene.electric()ity for later use")
-                .pointAt(util.vector().topOf(battery.up()))
+                .pointAt(util.vector().topOf(battery.above()))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);

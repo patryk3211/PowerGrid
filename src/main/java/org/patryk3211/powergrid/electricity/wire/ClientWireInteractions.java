@@ -17,13 +17,13 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
@@ -35,13 +35,13 @@ public class ClientWireInteractions {
     private static int firstSegmentIndex;
     private static int firstSegmentPoint;
 
-    private static Pair<Integer, Integer> getSegment(BlockWireEntity entity, Vec3d hitPos) {
-        var localPos = hitPos.subtract(entity.getPos());
+    private static Tuple<Integer, Integer> getSegment(BlockWireEntity entity, Vec3 hitPos) {
+        var localPos = hitPos.subtract(entity.position());
         var thickness = entity.getWireItem().getWireThickness();
         for(int i = 0; i < entity.boundingBoxes.size(); ++i) {
             var bb = entity.boundingBoxes.get(i);
             // Test with slightly larger bounding boxes.
-            if(bb.expand(thickness * 0.2f).contains(localPos)) {
+            if(bb.inflate(thickness * 0.2f).contains(localPos)) {
                 // Found segment containing hit pos.
                 var segment = entity.segments.get(i);
                 int segmentPoint = switch(segment.direction.getAxis()) {
@@ -53,57 +53,57 @@ public class ClientWireInteractions {
                     segmentPoint = 0;
                 else if(segmentPoint > segment.gridLength)
                     segmentPoint = segment.gridLength;
-                return new Pair<>(i, segmentPoint);
+                return new Tuple<>(i, segmentPoint);
             }
         }
         return null;
     }
 
-    public static ActionResult segmentCut(BlockWireEntity entity) {
-        var mc = MinecraftClient.getInstance();
-        var target = mc.crosshairTarget;
+    public static InteractionResult segmentCut(BlockWireEntity entity) {
+        var mc = Minecraft.getInstance();
+        var target = mc.hitResult;
         if(target.getType() != HitResult.Type.ENTITY)
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
 
         if(currentEntity != entity) {
             // First cut.
-            var hitPos = target.getPos();
+            var hitPos = target.getLocation();
             var segment = getSegment(entity, hitPos);
             if(segment != null) {
-                firstSegmentIndex = segment.getLeft();
-                firstSegmentPoint = segment.getRight();
+                firstSegmentIndex = segment.getA();
+                firstSegmentPoint = segment.getB();
                 currentEntity = entity;
             }
-            return ActionResult.CONSUME;
+            return InteractionResult.CONSUME;
         } else {
-            var secondSegment = getSegment(entity, target.getPos());
+            var secondSegment = getSegment(entity, target.getLocation());
             if(secondSegment != null) {
-                ModdedPackets.sendToServer(new BlockWireCutC2SPacket(entity, firstSegmentIndex, firstSegmentPoint, secondSegment.getLeft(), secondSegment.getRight()));
+                ModdedPackets.sendToServer(new BlockWireCutC2SPacket(entity, firstSegmentIndex, firstSegmentPoint, secondSegment.getA(), secondSegment.getB()));
                 currentEntity = null;
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
 
-        return ActionResult.FAIL;
+        return InteractionResult.FAIL;
     }
 
-    public static ActionResult attachWire(BlockWireEntity entity) {
-        var mc = MinecraftClient.getInstance();
-        var target = mc.crosshairTarget;
+    public static InteractionResult attachWire(BlockWireEntity entity) {
+        var mc = Minecraft.getInstance();
+        var target = mc.hitResult;
         if(target.getType() != HitResult.Type.ENTITY)
-            return ActionResult.FAIL;
-        var stack = mc.player.getStackInHand(Hand.MAIN_HAND);
+            return InteractionResult.FAIL;
+        var stack = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
         if(entity.getWireItem() != stack.getItem()) {
-            mc.player.sendMessage(Lang.translate("message.connection_incorrect_wire_type").style(Formatting.RED).component(), true);
-            return ActionResult.FAIL;
+            mc.player.displayClientMessage(Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component(), true);
+            return InteractionResult.FAIL;
         }
 
-        var hitPos = target.getPos();
+        var hitPos = target.getLocation();
         var segment = getSegment(entity, hitPos);
         if(segment == null)
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
 
-        ModdedPackets.sendToServer(new BlockWireAttachC2SPacket(entity, segment.getLeft(), segment.getRight()));
-        return ActionResult.SUCCESS;
+        ModdedPackets.sendToServer(new BlockWireAttachC2SPacket(entity, segment.getA(), segment.getB()));
+        return InteractionResult.SUCCESS;
     }
 }

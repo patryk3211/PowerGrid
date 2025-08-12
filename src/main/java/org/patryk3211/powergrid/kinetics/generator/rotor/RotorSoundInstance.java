@@ -17,55 +17,55 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.sound.MovingSoundInstance;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 @Environment(EnvType.CLIENT)
-public class RotorSoundInstance extends MovingSoundInstance {
+public class RotorSoundInstance extends AbstractTickableSoundInstance {
     private final RotorBehaviour behaviour;
 
     protected RotorSoundInstance(RotorBehaviour behaviour) {
-        super(ModdedSoundEvents.GENERATOR.getMainEvent(), SoundCategory.AMBIENT, behaviour.getWorld().random);
+        super(ModdedSoundEvents.GENERATOR.getMainEvent(), SoundSource.AMBIENT, behaviour.getWorld().random);
         this.behaviour = behaviour;
-        var pos = behaviour.getPos().toCenterPos();
+        var pos = behaviour.getPos().getCenter();
         this.x = pos.x;
         this.y = pos.y;
         this.z = pos.z;
-        this.attenuationType = AttenuationType.LINEAR;
-        this.repeat = true;
-        this.repeatDelay = 0;
+        this.attenuation = Attenuation.LINEAR;
+        this.looping = true;
+        this.delay = 0;
         this.volume = 0.0F;
     }
 
-    public boolean shouldAlwaysPlay() {
+    public boolean canStartSilent() {
         return true;
     }
 
     @Override
     public void tick() {
         if(behaviour.blockEntity.isRemoved() || !behaviour.isController()) {
-            setDone();
+            stop();
         } else {
             var closest = new MutableObject<BlockPos>();
-            var playerPos = MinecraftClient.getInstance().player.getBlockPos();
+            var playerPos = Minecraft.getInstance().player.blockPosition();
             behaviour.forEachSegment(segment -> {
                 if(closest.getValue() == null) {
                     closest.setValue(segment.getPos());
                 } else {
-                    var dCurrent = closest.getValue().getSquaredDistance(playerPos);
-                    var dNew = segment.getPos().getSquaredDistance(playerPos);
+                    var dCurrent = closest.getValue().distSqr(playerPos);
+                    var dNew = segment.getPos().distSqr(playerPos);
                     if(dNew < dCurrent) {
                         closest.setValue(segment.getPos());
                     }
                 }
             });
             if(closest.getValue() != null) {
-                var pos = closest.getValue().toCenterPos();
+                var pos = closest.getValue().getCenter();
                 this.x = pos.x;
                 this.y = pos.y;
                 this.z = pos.z;
@@ -75,12 +75,12 @@ public class RotorSoundInstance extends MovingSoundInstance {
             var pitch = velocity / 128f;
             if(velocity < 32) {
                 this.volume = 0.0f;
-                setDone();
+                stop();
             } else {
                 var volume = (velocity / 128);
-                this.volume = MathHelper.clamp(volume, 0, 1) * 0.3f;
+                this.volume = Mth.clamp(volume, 0, 1) * 0.3f;
             }
-            this.pitch = MathHelper.clamp(pitch, 0.5f, 2.0f);
+            this.pitch = Mth.clamp(pitch, 0.5f, 2.0f);
         }
     }
 }

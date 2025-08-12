@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.mixin;
 
 import com.simibubi.create.foundation.recipe.RecipeApplier;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.world.World;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,18 +30,18 @@ import java.util.List;
 @Mixin(RecipeApplier.class)
 public class RecipeApplierMixin {
     @Inject(
-            method = "applyRecipeOn(Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/recipe/Recipe;)Ljava/util/List;",
+            method = "applyRecipeOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/Recipe;)Ljava/util/List;",
             at = @At("RETURN")
     )
-    private static void recipeTransferNbt(World level, ItemStack stackIn, Recipe<?> recipe, CallbackInfoReturnable<List<ItemStack>> cir) {
+    private static void recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, CallbackInfoReturnable<List<ItemStack>> cir) {
         var outputs = cir.getReturnValue();
-        if(outputs.isEmpty() || !stackIn.isIn(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) || !stackIn.hasNbt() || !stackIn.getNbt().contains("Schematic"))
+        if(outputs.isEmpty() || !stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) || !stackIn.hasTag() || !stackIn.getTag().contains("Schematic"))
             return;
         // Modify output with NBT
         for(var output : outputs) {
-            if(output.isIn(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)) {
-                var schematic = stackIn.getNbt().getCompound("Schematic").copy();
-                output.getOrCreateNbt().put("Schematic", schematic);
+            if(output.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)) {
+                var schematic = stackIn.getTag().getCompound("Schematic").copy();
+                output.getOrCreateTag().put("Schematic", schematic);
             }
         }
     }

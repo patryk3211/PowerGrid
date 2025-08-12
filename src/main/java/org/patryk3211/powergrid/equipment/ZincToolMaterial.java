@@ -16,39 +16,39 @@
 package org.patryk3211.powergrid.equipment;
 
 import com.simibubi.create.AllItems;
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.crafting.Ingredient;
 
-public class ZincToolMaterial implements ToolMaterial {
+public class ZincToolMaterial implements Tier {
     public static final ZincToolMaterial INSTANCE = new ZincToolMaterial();
 
     @Override
-    public int getDurability() {
+    public int getUses() {
         return 150;
     }
 
     @Override
-    public float getMiningSpeedMultiplier() {
+    public float getSpeed() {
         return 6.0f;
     }
 
     @Override
-    public float getAttackDamage() {
+    public float getAttackDamageBonus() {
         return 1.5f;
     }
 
     @Override
-    public int getMiningLevel() {
+    public int getLevel() {
         return 1;
     }
 
     @Override
-    public int getEnchantability() {
+    public int getEnchantmentValue() {
         return 12;
     }
 
     @Override
     public Ingredient getRepairIngredient() {
-        return Ingredient.ofItems(AllItems.ZINC_INGOT);
+        return Ingredient.of(AllItems.ZINC_INGOT);
     }
 }

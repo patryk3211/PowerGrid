@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.forge;
 
 import com.simibubi.create.foundation.item.TooltipModifier;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 

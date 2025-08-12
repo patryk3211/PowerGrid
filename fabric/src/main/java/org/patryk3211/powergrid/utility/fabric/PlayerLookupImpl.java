@@ -16,13 +16,13 @@
 package org.patryk3211.powergrid.utility.fabric;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 
 import java.util.Collection;
 
 public class PlayerLookupImpl {
-    public static Collection<ServerPlayerEntity> tracking(Entity entity) {
+    public static Collection<ServerPlayer> tracking(Entity entity) {
         return PlayerLookup.tracking(entity);
     }
 }

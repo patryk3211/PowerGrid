@@ -20,20 +20,21 @@ import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
-import net.minecraft.block.*;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.condition.BlockStatePropertyLootCondition;
-import net.minecraft.loot.condition.SurvivesExplosionLootCondition;
-import net.minecraft.loot.entry.ItemEntry;
-import net.minecraft.loot.function.CopyNbtLootFunction;
-import net.minecraft.loot.function.SetCountLootFunction;
-import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
-import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
-import net.minecraft.predicate.StatePredicate;
-import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
+import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.config.CStress;
@@ -44,10 +45,13 @@ import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
 import org.patryk3211.powergrid.electricity.contactor.ContactorBlock;
-import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.*;
+import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.LvButtonBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
@@ -74,7 +78,7 @@ import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
 import static com.simibubi.create.foundation.data.TagGen.*;
-import static net.minecraft.state.property.Properties.*;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 import static org.patryk3211.powergrid.utility.BlockStateProviders.*;
 
@@ -89,22 +93,22 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<PotatoBatteryBlock> POTATO_BATTERY = REGISTRATE.block("potato_battery", PotatoBatteryBlock::new)
-            .blockstate(horizontalBlock(state -> state.get(PotatoBatteryBlock.BAKED) ? "block/baked_potato_battery" : "block/potato_battery"))
+            .blockstate(horizontalBlock(state -> state.getValue(PotatoBatteryBlock.BAKED) ? "block/baked_potato_battery" : "block/potato_battery"))
             .initialProperties(() -> Blocks.NETHER_WART)
             .loot((tables, block) ->
-                    tables.addDrop(block, b -> LootTable.builder()
-                            .pool(LootPool.builder()
-                                    .conditionally(SurvivesExplosionLootCondition.builder())
-                                    .conditionally(BlockStatePropertyLootCondition.builder(b)
-                                            .properties(StatePredicate.Builder.create().exactMatch(PotatoBatteryBlock.BAKED, false)))
-                                    .with(ItemEntry.builder(b))
-                                    .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
-                                            .withOperation("Energy", "Energy", CopyNbtLootFunction.Operator.REPLACE)))
-                            .pool(LootPool.builder()
-                                    .conditionally(SurvivesExplosionLootCondition.builder())
-                                    .conditionally(BlockStatePropertyLootCondition.builder(b)
-                                            .properties(StatePredicate.Builder.create().exactMatch(PotatoBatteryBlock.BAKED, true)))
-                                    .with(ItemEntry.builder(Items.BAKED_POTATO)))
+                    tables.add(block, b -> LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
+                                            .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PotatoBatteryBlock.BAKED, false)))
+                                    .add(LootItem.lootTableItem(b))
+                                    .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                            .copy("Energy", "Energy", CopyNbtFunction.MergeStrategy.REPLACE)))
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
+                                            .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PotatoBatteryBlock.BAKED, true)))
+                                    .add(LootItem.lootTableItem(Items.BAKED_POTATO)))
                     ))
             .item()
                 .model((ctx, prov) -> prov.generated(ctx::getEntry))
@@ -145,7 +149,7 @@ public class ModdedBlocks {
     public static final BlockEntry<BasinHeaterBlock> BASIN_HEATER = REGISTRATE.block("basin_heater", BasinHeaterBlock::new)
             .blockstate(basinHeater("block/basin_heater"))
             .initialProperties(SharedProperties::softMetal)
-            .addLayer(() -> RenderLayer::getCutoutMipped)
+            .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
             .simpleItem()
             .register();
@@ -209,7 +213,7 @@ public class ModdedBlocks {
     public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
             .blockstate(rotorModel("block/generator/rotor"))
             .initialProperties(SharedProperties::stone)
-            .properties(AbstractBlock.Settings::nonOpaque)
+            .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
             .transform(CStress.setImpact(4))
             .defaultLoot()
@@ -223,7 +227,7 @@ public class ModdedBlocks {
     public static final BlockEntry<InductionRotorBlock> GENERATOR_INDUCTION_ROTOR = REGISTRATE.block("generator_induction_rotor", InductionRotorBlock::new)
             .blockstate(rotorModel("block/generator/induction_rotor"))
             .initialProperties(SharedProperties::softMetal)
-            .properties(AbstractBlock.Settings::nonOpaque)
+            .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
             .transform(CStress.setImpact(4))
             .defaultLoot()
@@ -246,7 +250,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<GeneratorClutchBlock> GENERATOR_CLUTCH = REGISTRATE.block("generator_clutch", GeneratorClutchBlock::new)
-            .blockstate(alternateDirectionalBlock(state -> state.get(POWERED) ? "block/generator/clutch_on" : "block/generator/clutch"))
+            .blockstate(alternateDirectionalBlock(state -> state.getValue(POWERED) ? "block/generator/clutch_on" : "block/generator/clutch"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(4))
@@ -261,7 +265,7 @@ public class ModdedBlocks {
             .blockstate(housing("block/generator/housing"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
-            .addLayer(() -> RenderLayer::getCutoutMipped)
+            .addLayer(() -> RenderType::cutoutMipped)
             .defaultLoot()
             .item()
                 .model((ctx, prov) ->
@@ -308,12 +312,12 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(2))
             .loot((tables, block) ->
-                    tables.addDrop(block, b -> LootTable.builder()
-                            .pool(LootPool.builder()
-                                    .conditionally(SurvivesExplosionLootCondition.builder())
-                                    .conditionally(BlockStatePropertyLootCondition.builder(b)
-                                            .properties(StatePredicate.Builder.create().exactMatch(HvSwitchBlock.PART, 0)))
-                                    .with(ItemEntry.builder(block)))
+                    tables.add(block, b -> LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
+                                            .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(HvSwitchBlock.PART, 0)))
+                                    .add(LootItem.lootTableItem(block)))
                     ))
             .lang("HV Switch")
             .item()
@@ -371,7 +375,7 @@ public class ModdedBlocks {
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
             .blockstate(cubeAllWithItem("block/transformer/core"))
             .initialProperties(SharedProperties::softMetal)
-            .properties(properties -> properties.sounds(BlockSoundGroup.NETHERITE))
+            .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
             .transform(pickaxeOnly())
             .defaultLoot()
             .simpleItem()
@@ -379,18 +383,18 @@ public class ModdedBlocks {
     public static final BlockEntry<TransformerSmallBlock> TRANSFORMER_SMALL = REGISTRATE.block("transformer_small", TransformerSmallBlock::new)
             .initialProperties(TRANSFORMER_CORE)
             .blockstate(transformerSmall())
-            .loot((tables, block) -> tables.addDrop(block, TRANSFORMER_CORE.get()))
-            .properties(properties -> properties.sounds(BlockSoundGroup.NETHERITE))
+            .loot((tables, block) -> tables.dropOther(block, TRANSFORMER_CORE.get()))
+            .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
             .transform(pickaxeOnly())
             .register();
     public static final BlockEntry<TransformerMediumBlock> TRANSFORMER_MEDIUM = REGISTRATE.block("transformer_medium", TransformerMediumBlock::new)
             .initialProperties(TRANSFORMER_CORE)
             .blockstate(transformerMedium())
             .loot((tables, block) ->
-                    tables.addDrop(block, tables.drops(TRANSFORMER_CORE.get())
-                            .apply(SetCountLootFunction.builder(ConstantLootNumberProvider.create(4)))
+                    tables.add(block, tables.createSingleItemTable(TRANSFORMER_CORE.get())
+                            .apply(SetItemCountFunction.setCount(ConstantValue.exactly(4)))
                     ))
-            .properties(properties -> properties.sounds(BlockSoundGroup.NETHERITE))
+            .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
             .transform(pickaxeOnly())
             .register();
 
@@ -404,7 +408,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<ElectricMotorBlock> ELECTRIC_MOTOR = REGISTRATE.block("electric_motor", ElectricMotorBlock::new)
-            .blockstate(alternateDirectionalBlock(state -> switch(state.get(ElectricMotorBlock.FACING).getAxis()) {
+            .blockstate(alternateDirectionalBlock(state -> switch(state.getValue(ElectricMotorBlock.FACING).getAxis()) {
                         case X, Z -> "block/electric_motor/block";
                         case Y -> "block/electric_motor/block_vertical";
                     }))
@@ -418,7 +422,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<ServoBlock> SERVO = REGISTRATE.block("servo", ServoBlock::new)
-            .blockstate(alternateDirectionalBlock(state -> switch(state.get(ElectricMotorBlock.FACING).getAxis()) {
+            .blockstate(alternateDirectionalBlock(state -> switch(state.getValue(ElectricMotorBlock.FACING).getAxis()) {
                 case X, Z -> "block/servo/block";
                 case Y -> "block/servo/block_vertical";
             }))
@@ -444,7 +448,7 @@ public class ModdedBlocks {
             .blockstate(upFacing("block/electric_fan/block"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .addLayer(() -> RenderLayer::getCutoutMipped)
+            .addLayer(() -> RenderType::cutoutMipped)
             .defaultLoot()
             .item()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_fan/item")))
@@ -455,12 +459,12 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/portable_battery/block"))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(pickaxeOnly())
-            .loot((tables, block) -> tables.addDrop(block, LootTable.builder()
-                    .pool(LootPool.builder()
-                            .conditionally(SurvivesExplosionLootCondition.builder())
-                            .with(ItemEntry.builder(ModdedItems.PORTABLE_BATTERY)))
-                    .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
-                            .withOperation("Charge", "Charge", CopyNbtLootFunction.Operator.REPLACE))
+            .loot((tables, block) -> tables.add(block, LootTable.lootTable()
+                    .withPool(LootPool.lootPool()
+                            .when(ExplosionCondition.survivesExplosion())
+                            .add(LootItem.lootTableItem(ModdedItems.PORTABLE_BATTERY)))
+                    .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                            .copy("Charge", "Charge", CopyNbtFunction.MergeStrategy.REPLACE))
             ))
             .register();
 
@@ -477,13 +481,13 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .loot((tables, block) ->
-                    tables.addDrop(block, LootTable.builder()
-                        .pool(LootPool.builder()
-                                .conditionally(SurvivesExplosionLootCondition.builder())
-                                .with(ItemEntry.builder(ModdedBlocks.CIRCUIT_BOARD)))
-                        .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
-                                .withOperation("Schematic", "Schematic", CopyNbtLootFunction.Operator.REPLACE)
-                                .withOperation("Thermal", "Thermal", CopyNbtLootFunction.Operator.REPLACE))
+                    tables.add(block, LootTable.lootTable()
+                        .withPool(LootPool.lootPool()
+                                .when(ExplosionCondition.survivesExplosion())
+                                .add(LootItem.lootTableItem(ModdedBlocks.CIRCUIT_BOARD)))
+                        .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                .copy("Schematic", "Schematic", CopyNbtFunction.MergeStrategy.REPLACE)
+                                .copy("Thermal", "Thermal", CopyNbtFunction.MergeStrategy.REPLACE))
             ))
             .item()
                 .defaultModel()
@@ -495,8 +499,8 @@ public class ModdedBlocks {
             .blockstate(windingModel())
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
-            .addLayer(() -> RenderLayer::getCutoutMipped)
-            .loot((tables, block) -> tables.addDrop(block, ModdedItems.COPPER_COIL))
+            .addLayer(() -> RenderType::cutoutMipped)
+            .loot((tables, block) -> tables.dropOther(block, ModdedItems.COPPER_COIL))
             .register();
 
     public static final BlockEntry<DeviceConnectorBlock> DEVICE_CONNECTOR = REGISTRATE.block("device_connector", DeviceConnectorBlock::new)

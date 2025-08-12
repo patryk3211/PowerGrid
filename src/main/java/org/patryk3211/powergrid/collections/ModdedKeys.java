@@ -15,8 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.KeyMapping;
 import org.lwjgl.glfw.GLFW;
 import org.patryk3211.powergrid.PowerGrid;
 
@@ -36,7 +35,7 @@ public enum ModdedKeys {
 
     public static final String CATEGORY = "Power Grid";
 
-    public KeyBinding keybind;
+    public KeyMapping keybind;
     public String description;
     public int key;
 
@@ -51,19 +50,19 @@ public enum ModdedKeys {
         this.category = category;
     }
 
-    public KeyBinding getKeybind() {
+    public KeyMapping getKeybind() {
         return keybind;
     }
 
     public boolean isPressed() {
-        return keybind.isPressed();
+        return keybind.isDown();
     }
 
     public String getBoundKey() {
-        return keybind.getBoundKeyLocalizedText().getString().toUpperCase();
+        return keybind.getTranslatedKeyMessage().getString().toUpperCase();
     }
 
     public boolean matchesKey(int keyCode, int scanCode) {
-        return keybind.matchesKey(keyCode, scanCode);
+        return keybind.matches(keyCode, scanCode);
     }
 }

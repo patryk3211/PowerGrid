@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.Entity;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.network.SimplePacket;
 
@@ -26,20 +26,20 @@ import java.util.function.Supplier;
 
 public class EntityDataS2CPacket implements SimplePacket {
     public final int entityId;
-    public final NbtCompound data;
+    public final CompoundTag data;
 
-    public EntityDataS2CPacket(Entity entity, NbtCompound data) {
+    public EntityDataS2CPacket(Entity entity, CompoundTag data) {
         entityId = entity.getId();
         this.data = data;
     }
 
-    public EntityDataS2CPacket(PacketByteBuf buffer) {
+    public EntityDataS2CPacket(FriendlyByteBuf buffer) {
         entityId = buffer.readInt();
         data = buffer.readNbt();
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeInt(entityId);
         buf.writeNbt(data);
     }
@@ -48,7 +48,7 @@ public class EntityDataS2CPacket implements SimplePacket {
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         context.get().queue(() -> {
             var world = ClientBoundPackets.world();
-            var entity = world.getEntityById(entityId);
+            var entity = world.getEntity(entityId);
             if(entity instanceof IConsumer consumer)
                 consumer.onEntityDataPacket(data);
         });
@@ -67,6 +67,6 @@ public class EntityDataS2CPacket implements SimplePacket {
 //    }
 
     public interface IConsumer {
-        void onEntityDataPacket(NbtCompound packet);
+        void onEntityDataPacket(CompoundTag packet);
     }
 }

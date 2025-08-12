@@ -16,15 +16,15 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.createmod.catnip.theme.Color;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
@@ -35,11 +35,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class IncompleteCircuitItem extends Item {
-    public IncompleteCircuitItem(Settings settings) {
-        super(settings.maxCount(1));
+    public IncompleteCircuitItem(Properties settings) {
+        super(settings.stacksTo(1));
     }
 
-    private static NbtCompound makeAssemblyTag(NbtCompound schematicTag) {
+    private static CompoundTag makeAssemblyTag(CompoundTag schematicTag) {
         var schematic = CircuitSchematic.fromNbt(schematicTag);
         var componentAmounts = new HashMap<Item, Integer>();
         int componentCount = 0;
@@ -48,22 +48,22 @@ public class IncompleteCircuitItem extends Item {
             componentAmounts.compute(item, (key, current) -> current == null ? 1 : current + 1);
             ++componentCount;
         }
-        var componentTag = new NbtCompound();
+        var componentTag = new CompoundTag();
         componentAmounts.forEach((item, count) -> {
-            var id = Registries.ITEM.getId(item);
+            var id = BuiltInRegistries.ITEM.getKey(item);
             componentTag.putInt(id.toString(), count);
         });
 
-        var assemblyTag = new NbtCompound();
+        var assemblyTag = new CompoundTag();
         assemblyTag.put("Missing", componentTag);
         assemblyTag.putInt("Inserted", 0);
         assemblyTag.putInt("Total", componentCount);
         return assemblyTag;
     }
 
-    private static boolean insertComponent(NbtCompound assemblyTag, ItemStack component) {
+    private static boolean insertComponent(CompoundTag assemblyTag, ItemStack component) {
         var missingComponents = assemblyTag.getCompound("Missing");
-        var id = Registries.ITEM.getId(component.getItem()).toString();
+        var id = BuiltInRegistries.ITEM.getKey(component.getItem()).toString();
         if(!missingComponents.contains(id))
             return false;
         int missingAmount = missingComponents.getInt(id);
@@ -96,9 +96,9 @@ public class IncompleteCircuitItem extends Item {
 
     @Nullable
     public static ItemStack insert(ItemStack circuit, ItemStack component) {
-        if(!circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get()) || !circuit.hasNbt())
+        if(!circuit.is(ModdedItems.INCOMPLETE_CIRCUIT.get()) || !circuit.hasTag())
             return null;
-        var tag = circuit.getNbt().copy();
+        var tag = circuit.getTag().copy();
         if(!tag.contains("Assembly")) {
             tag.put("Assembly", makeAssemblyTag(tag.getCompound("Schematic")));
         }
@@ -112,71 +112,71 @@ public class IncompleteCircuitItem extends Item {
         } else {
             newStack = new ItemStack(ModdedItems.INCOMPLETE_CIRCUIT);
         }
-        newStack.setNbt(tag);
+        newStack.setTag(tag);
         return newStack;
     }
 
     public static float getProgress(ItemStack stack) {
-        if(!stack.hasNbt() || !stack.getNbt().contains("Assembly"))
+        if(!stack.hasTag() || !stack.getTag().contains("Assembly"))
             return 0;
-        var assemblyTag = stack.getSubNbt("Assembly");
+        var assemblyTag = stack.getTagElement("Assembly");
         return (float) assemblyTag.getInt("Inserted") / assemblyTag.getInt("Total");
     }
 
     @Override
-    public boolean isItemBarVisible(ItemStack stack) {
+    public boolean isBarVisible(ItemStack stack) {
         return true;
     }
 
     @Override
-    public int getItemBarStep(ItemStack stack) {
+    public int getBarWidth(ItemStack stack) {
         return Math.round(13 * getProgress(stack));
     }
 
     @Override
-    public int getItemBarColor(ItemStack stack) {
+    public int getBarColor(ItemStack stack) {
         return Color.mixColors(0xFFFFC074, 0xFF46FFE0, getProgress(stack));
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        if(!stack.hasNbt())
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+        if(!stack.hasTag())
             return;
-        NbtCompound assemblyTag;
-        if(!stack.getNbt().contains("Assembly")) {
-            if(!stack.getNbt().contains("Schematic"))
+        CompoundTag assemblyTag;
+        if(!stack.getTag().contains("Assembly")) {
+            if(!stack.getTag().contains("Schematic"))
                 return;
-            assemblyTag = makeAssemblyTag(stack.getSubNbt("Schematic"));
+            assemblyTag = makeAssemblyTag(stack.getTagElement("Schematic"));
         } else {
-            assemblyTag = stack.getSubNbt("Assembly");
+            assemblyTag = stack.getTagElement("Assembly");
         }
-        tooltip.add(Text.empty());
+        tooltip.add(Component.empty());
         tooltip.add(Lang.translate("tooltip.circuit_assembly")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .component());
 
         var inserted = assemblyTag.getInt("Inserted");
         var total = assemblyTag.getInt("Total");
         tooltip.add(Lang.translate("tooltip.circuit_assembly.progress")
-                .add(Text.literal(String.format(": %d/%d", inserted, total)))
-                .style(Formatting.DARK_GRAY)
+                .add(Component.literal(String.format(": %d/%d", inserted, total)))
+                .style(ChatFormatting.DARK_GRAY)
                 .component());
         var missing = assemblyTag.getCompound("Missing");
         int index = 0;
-        for(var itemId : missing.getKeys()) {
-            var item = Registries.ITEM.get(new Identifier(itemId));
-            var key = item.getTranslationKey();
+        for(var itemId : missing.getAllKeys()) {
+            var item = BuiltInRegistries.ITEM.get(new ResourceLocation(itemId));
+            var key = item.getDescriptionId();
             var line = switch(index) {
                 case 0 -> Lang.translate("tooltip.circuit_assembly.insert")
-                        .add(Text.literal(" "))
-                        .add(Text.translatable(key))
-                        .style(Formatting.AQUA)
+                        .add(Component.literal(" "))
+                        .add(Component.translatable(key))
+                        .style(ChatFormatting.AQUA)
                         .component();
                 case 1 -> Lang.text("-> ")
                         .add(Lang.translate("tooltip.circuit_assembly.insert"))
-                        .add(Text.literal(" "))
-                        .add(Text.translatable(key))
-                        .style(Formatting.DARK_AQUA)
+                        .add(Component.literal(" "))
+                        .add(Component.translatable(key))
+                        .style(ChatFormatting.DARK_AQUA)
                         .component();
                 default -> throw new IllegalStateException();
             };

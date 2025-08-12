@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtInt;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 
 public class IntProperty extends ComponentProperty<Integer> {
@@ -51,18 +51,18 @@ public class IntProperty extends ComponentProperty<Integer> {
     }
 
     @Override
-    public Integer read(@Nullable NbtElement element) {
+    public Integer read(@Nullable Tag element) {
         if(element == null)
             return defaultValue;
-        if(element.getType() != NbtElement.INT_TYPE)
+        if(element.getId() != Tag.TAG_INT)
             return defaultValue;
-        var value = ((NbtInt) element).intValue();
+        var value = ((IntTag) element).getAsInt();
         return limit(value);
     }
 
     @Override
-    public NbtElement write(Integer value) {
-        return NbtInt.of(value);
+    public Tag write(Integer value) {
+        return IntTag.valueOf(value);
     }
 
     @Override

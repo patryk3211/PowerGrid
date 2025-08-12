@@ -8,8 +8,8 @@
     "ArmBlockEntityMixin",
     "EntityMixin",
     "FanProcessingMixin",
-    "LightningAccessor",
     "KineticBlockEntityAccessor",
+    "LightningAccessor",
     "RecipeApplierMixin"
   ],
   "injectors": {

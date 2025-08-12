@@ -20,26 +20,26 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.foundation.particle.ICustomParticleDataWithSprite;
-import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleType;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.FriendlyByteBuf;
 import org.patryk3211.powergrid.collections.ModdedParticles;
 
-public class MagnetizationParticleData implements ICustomParticleDataWithSprite<MagnetizationParticleData>, ParticleEffect {
+public class MagnetizationParticleData implements ICustomParticleDataWithSprite<MagnetizationParticleData>, ParticleOptions {
     public static final Codec<MagnetizationParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BlockPos.CODEC.fieldOf("pos").forGetter(MagnetizationParticleData::getControllerPos)
     ).apply(instance, MagnetizationParticleData::new));
-    public static final Factory<MagnetizationParticleData> FACTORY = new Factory<>() {
+    public static final Deserializer<MagnetizationParticleData> FACTORY = new Deserializer<>() {
         @Override
-        public MagnetizationParticleData read(ParticleType<MagnetizationParticleData> type, StringReader reader) throws CommandSyntaxException {
+        public MagnetizationParticleData fromCommand(ParticleType<MagnetizationParticleData> type, StringReader reader) throws CommandSyntaxException {
             return new MagnetizationParticleData();
         }
 
         @Override
-        public MagnetizationParticleData read(ParticleType<MagnetizationParticleData> type, PacketByteBuf buf) {
+        public MagnetizationParticleData fromNetwork(ParticleType<MagnetizationParticleData> type, FriendlyByteBuf buf) {
             if(buf.readBoolean())
                 return new MagnetizationParticleData(buf.readBlockPos());
             else return new MagnetizationParticleData();
@@ -57,7 +57,7 @@ public class MagnetizationParticleData implements ICustomParticleDataWithSprite<
     }
 
     @Override
-    public ParticleEffect.Factory<MagnetizationParticleData> getDeserializer() {
+    public ParticleOptions.Deserializer<MagnetizationParticleData> getDeserializer() {
         return FACTORY;
     }
 
@@ -67,7 +67,7 @@ public class MagnetizationParticleData implements ICustomParticleDataWithSprite<
     }
 
     @Override
-    public ParticleManager.SpriteAwareFactory<MagnetizationParticleData> getMetaFactory() {
+    public ParticleEngine.SpriteParticleRegistration<MagnetizationParticleData> getMetaFactory() {
         return MagnetizationParticle.Factory::new;
     }
 
@@ -77,7 +77,7 @@ public class MagnetizationParticleData implements ICustomParticleDataWithSprite<
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void writeToNetwork(FriendlyByteBuf buf) {
         if(controller != null) {
             buf.writeBoolean(true);
             buf.writeBlockPos(controller);
@@ -87,11 +87,11 @@ public class MagnetizationParticleData implements ICustomParticleDataWithSprite<
     }
 
     @Override
-    public String asString() {
+    public String writeToString() {
         if(controller != null)
-            return String.format("%s (%d, %d, %d)", Registries.PARTICLE_TYPE.getId(getType()), controller.getX(), controller.getY(), controller.getZ());
+            return String.format("%s (%d, %d, %d)", BuiltInRegistries.PARTICLE_TYPE.getKey(getType()), controller.getX(), controller.getY(), controller.getZ());
         else
-            return String.format("%s", Registries.PARTICLE_TYPE.getId(getType()));
+            return String.format("%s", BuiltInRegistries.PARTICLE_TYPE.getKey(getType()));
     }
 
     public BlockPos getControllerPos() {

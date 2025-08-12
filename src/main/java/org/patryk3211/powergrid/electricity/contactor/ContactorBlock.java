@@ -16,17 +16,17 @@
 package org.patryk3211.powergrid.electricity.contactor;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.WorldView;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
@@ -38,20 +38,20 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<ContactorBlockEntity>, IHaveElectricProperties, IAcceptConnector {
-    public static final VoxelShape SHAPE_NORTH = VoxelShapes.union(
-            createCuboidShape(0, 0, 0, 16, 12, 16),
-            createCuboidShape(0, 12, 4, 16, 14, 12),
-            createCuboidShape(6, 12, 0, 10, 13, 4),
-            createCuboidShape(6, 12, 12, 10, 13, 16)
+    public static final VoxelShape SHAPE_NORTH = Shapes.or(
+            box(0, 0, 0, 16, 12, 16),
+            box(0, 12, 4, 16, 14, 12),
+            box(6, 12, 0, 10, 13, 4),
+            box(6, 12, 12, 10, 13, 16)
     );
 
-    public static final Text SWITCH1 = Lang.builder()
+    public static final Component SWITCH1 = Lang.builder()
             .translate("contactor.switch1")
-            .style(Formatting.GRAY)
+            .style(ChatFormatting.GRAY)
             .component();
-    public static final Text SWITCH2 = Lang.builder()
+    public static final Component SWITCH2 = Lang.builder()
             .translate("contactor.switch2")
-            .style(Formatting.GRAY)
+            .style(ChatFormatting.GRAY)
             .component();
 
     public static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
@@ -62,7 +62,7 @@ public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<C
             new TerminalBoundingBox(SWITCH2, 10, 10, 12, 14, 12, 16)
     };
 
-    public ContactorBlock(Settings settings) {
+    public ContactorBlock(Properties settings) {
         super(settings);
         setTerminalCollection(horizontalZTerminals(this, TERMINALS_NORTH, SHAPE_NORTH));
     }
@@ -91,13 +91,13 @@ public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<C
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.coil(coilResistance(), player, tooltip);
         Resistance.switchResistance(switchResistance(), player, tooltip);
     }
 
     @Override
-    public boolean canConnect(WorldView world, BlockPos pos, BlockState state, Direction side) {
-        return side.getAxis() != Direction.Axis.Y && state.get(HORIZONTAL_AXIS) != side.getAxis();
+    public boolean canConnect(LevelReader world, BlockPos pos, BlockState state, Direction side) {
+        return side.getAxis() != Direction.Axis.Y && state.getValue(HORIZONTAL_AXIS) != side.getAxis();
     }
 }

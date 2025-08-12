@@ -20,7 +20,7 @@ import com.simibubi.create.content.kinetics.belt.BeltHelper;
 import com.simibubi.create.content.kinetics.belt.behaviour.BeltProcessingBehaviour;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
 import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +73,7 @@ public class BeltMagnetizingCallbacks {
 //
 //        } else {
         TransportedItemStack left = transported.copy();
-        left.stack.decrement(1);
+        left.stack.shrink(1);
 
         if(collect.isEmpty())
             handler.handleProcessingOnItem(transported, TransportedItemStackHandlerBehaviour.TransportedResult.convertTo(left));

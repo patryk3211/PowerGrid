@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.contactor;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
@@ -51,8 +51,8 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     }
 
     private void checkPos(BlockPos pos, boolean newState, List<BlockPos> checkQueue) {
-        assert world != null;
-        world.getBlockEntity(pos, ModdedBlockEntities.CONTACTOR.get())
+        assert level != null;
+        level.getBlockEntity(pos, ModdedBlockEntities.CONTACTOR.get())
                 .ifPresent(be -> {
                     if(newState) {
                         be.addExternal(this);
@@ -68,18 +68,18 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
             switch1.setState(newState);
             switch2.setState(newState);
         }
-        if(state != newState && !world.isClient) {
+        if(state != newState && !level.isClientSide) {
             // Play sound
             if(newState) {
-                ModdedSoundEvents.CONTACTOR_ON.playOnServer(world, pos);
+                ModdedSoundEvents.CONTACTOR_ON.playOnServer(level, worldPosition);
             } else {
-                ModdedSoundEvents.CONTACTOR_OFF.playOnServer(world, pos);
+                ModdedSoundEvents.CONTACTOR_OFF.playOnServer(level, worldPosition);
             }
 
             var checkQueue = new ArrayList<BlockPos>();
-            checkQueue.add(pos);
+            checkQueue.add(worldPosition);
             var checkedSet = new HashSet<BlockPos>();
-            var axis = getCachedState().get(ContactorBlock.HORIZONTAL_AXIS);
+            var axis = getBlockState().getValue(ContactorBlock.HORIZONTAL_AXIS);
             if(axis == Direction.Axis.X) {
                 axis = Direction.Axis.Z;
             } else if(axis == Direction.Axis.Z) {
@@ -90,9 +90,9 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
                 var checkPos = checkQueue.remove(0);
                 if(!checkedSet.add(checkPos))
                     continue;
-                var pos1 = checkPos.offset(axis, 1);
+                var pos1 = checkPos.relative(axis, 1);
                 checkPos(pos1, newState, checkQueue);
-                var pos2 = checkPos.offset(axis, -1);
+                var pos2 = checkPos.relative(axis, -1);
                 checkPos(pos2, newState, checkQueue);
             }
         }

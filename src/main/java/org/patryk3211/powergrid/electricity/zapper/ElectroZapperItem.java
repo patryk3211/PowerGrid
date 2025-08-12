@@ -17,23 +17,23 @@ package org.patryk3211.powergrid.electricity.zapper;
 
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetItemMethods;
 import com.simibubi.create.foundation.item.CustomArmPoseItem;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -45,15 +45,15 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPoseItem {
+public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArmPoseItem {
     public static final int MAX_DAMAGE = 50;
 
-    public ElectroZapperItem(Settings settings) {
-        super(settings.maxDamage(MAX_DAMAGE));
+    public ElectroZapperItem(Properties settings) {
+        super(settings.durability(MAX_DAMAGE));
     }
 
     @Override
-    public Predicate<ItemStack> getProjectiles() {
+    public Predicate<ItemStack> getAllSupportedProjectiles() {
         return $ -> false;
     }
 
@@ -62,27 +62,27 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
     }
 
     @Override
-    public int getRange() {
+    public int getDefaultProjectileRange() {
         return 15;
     }
 
     @Override
-    public boolean canMine(BlockState state, World world, BlockPos pos, PlayerEntity miner) {
+    public boolean canAttackBlock(BlockState state, Level world, BlockPos pos, Player miner) {
         return false;
     }
 
     @Override
-    public boolean isItemBarVisible(ItemStack stack) {
+    public boolean isBarVisible(ItemStack stack) {
         return BatteryUtils.isBarVisible(stack, fePerUse());
     }
 
     @Override
-    public int getItemBarStep(ItemStack stack) {
+    public int getBarWidth(ItemStack stack) {
         return BatteryUtils.getBarWidth(stack, fePerUse());
     }
 
     @Override
-    public int getItemBarColor(ItemStack stack) {
+    public int getBarColor(ItemStack stack) {
         return BatteryUtils.getBarColor(stack, fePerUse());
     }
 
@@ -91,58 +91,58 @@ public class ElectroZapperItem extends RangedWeaponItem implements CustomArmPose
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        var stack = user.getStackInHand(hand);
-        if(world.isClient) {
+    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+        var stack = user.getItemInHand(hand);
+        if(world.isClientSide) {
             PowerGridClient.ELECTRO_ZAPPER_RENDER_HANDLER.dontAnimateItem(hand);
-            return TypedActionResult.success(stack);
+            return InteractionResultHolder.success(stack);
         }
 
-        var barrelPos = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == Hand.MAIN_HAND,
-                new Vec3d(.25f, -0.15f, 1.0f));
-        var correction = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == Hand.MAIN_HAND,
-                new Vec3d(0, 0, 0)).subtract(user.getPos().add(0, user.getStandingEyeHeight(), 0));
+        var barrelPos = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == InteractionHand.MAIN_HAND,
+                new Vec3(.25f, -0.15f, 1.0f));
+        var correction = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == InteractionHand.MAIN_HAND,
+                new Vec3(0, 0, 0)).subtract(user.position().add(0, user.getEyeHeight(), 0));
 
-        var lookVec = user.getRotationVector();
+        var lookVec = user.getLookAngle();
         var motion = lookVec.add(correction)
                 .normalize()
-                .multiply(4);
+                .scale(4);
 
         var projectile = ZapProjectileEntity.create(world, barrelPos, motion, (float) lookVec.y, (float) lookVec.x);
         projectile.setOwner(user);
-        world.spawnEntity(projectile);
+        world.addFreshEntity(projectile);
 
         ShootableGadgetItemMethods.applyCooldown(user, stack, hand, this::isZapper, 10);
         Function<Boolean, ElectroZapperS2CPacket> factory = b -> new ElectroZapperS2CPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
         ModdedPackets.sendToClientsTracking(factory.apply(false), user);
-        ModdedPackets.sendToClient(factory.apply(true), (ServerPlayerEntity) user);
+        ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
         if(!BatteryUtils.drawEnergy(user, fePerUse()))
-            stack.damage(1, user, $ -> {});
-        return TypedActionResult.success(user.getStackInHand(hand));
+            stack.hurtAndBreak(1, user, $ -> {});
+        return InteractionResultHolder.success(user.getItemInHand(hand));
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        tooltip.add(Text.empty());
-        tooltip.add(Text.translatable("powergrid.electrozapper.bolt").append(Text.literal(":"))
-                .formatted(Formatting.GRAY));
-        var spacing = Text.literal(" ");
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+        tooltip.add(Component.empty());
+        tooltip.add(Component.translatable("powergrid.electrozapper.bolt").append(Component.literal(":"))
+                .withStyle(ChatFormatting.GRAY));
+        var spacing = Component.literal(" ");
 
         float damageF = 4;//type.getDamage() * additionalDamageMult;
-        var damage = Text.literal(damageF == MathHelper.floor(damageF) ? "" + MathHelper.floor(damageF) : "" + damageF);
-        var reloadTicks = Text.literal("10");
+        var damage = Component.literal(damageF == Mth.floor(damageF) ? "" + Mth.floor(damageF) : "" + damageF);
+        var reloadTicks = Component.literal("10");
 
 //        damage = damage.formatted(Formatting.DARK_GREEN);
 
-        tooltip.add(spacing.copyContentOnly().append(Lang.translateDirect("electrozapper.bolt.damage", damage).formatted(Formatting.DARK_GREEN)));
-        tooltip.add(spacing.copyContentOnly().append(Lang.translateDirect("electrozapper.bolt.reload", reloadTicks).formatted(Formatting.DARK_GREEN)));
-        super.appendTooltip(stack, world, tooltip, context);
+        tooltip.add(spacing.plainCopy().append(Lang.translateDirect("electrozapper.bolt.damage", damage).withStyle(ChatFormatting.DARK_GREEN)));
+        tooltip.add(spacing.plainCopy().append(Lang.translateDirect("electrozapper.bolt.reload", reloadTicks).withStyle(ChatFormatting.DARK_GREEN)));
+        super.appendHoverText(stack, world, tooltip, context);
     }
 
     @Override
-    public BipedEntityModel.@Nullable ArmPose getArmPose(ItemStack stack, AbstractClientPlayerEntity player, Hand hand) {
-        if(!player.handSwinging) {
-            return BipedEntityModel.ArmPose.CROSSBOW_HOLD;
+    public HumanoidModel.@Nullable ArmPose getArmPose(ItemStack stack, AbstractClientPlayer player, InteractionHand hand) {
+        if(!player.swinging) {
+            return HumanoidModel.ArmPose.CROSSBOW_HOLD;
         }
         return null;
     }

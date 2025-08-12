@@ -77,11 +77,11 @@ allprojects {
 
 		include implementation("org.ejml:ejml-all:0.44.0")
 
-//		mappings(loom.layered {
-//			it.officialMojangMappings { nameSyntheticMembers = false }
-//			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
-//		})
-		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+		mappings(loom.layered {
+			it.officialMojangMappings { nameSyntheticMembers = false }
+			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
+		})
+//		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	}
 
 	java {

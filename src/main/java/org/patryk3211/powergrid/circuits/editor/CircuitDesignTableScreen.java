@@ -18,11 +18,11 @@ package org.patryk3211.powergrid.circuits.editor;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditButton;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -37,15 +37,16 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
-import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.COLOR_TRACE_BACK;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.COLOR_TRACE_FRONT;
 
 public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<CircuitDesignTableMenu> {
-    private static final Identifier BACKGROUND = PowerGrid.texture("gui/circuit_design_table");
+    private static final ResourceLocation BACKGROUND = PowerGrid.texture("gui/circuit_design_table");
     private static final int WIDTH = 180;
     private static final int HEIGHT = 92;
     public static final int SCALE = 4;
 
-    private static final Text TOOLTIP_EDIT = Lang.translateDirect("gui.circuit_designer.edit");
+    private static final Component TOOLTIP_EDIT = Lang.translateDirect("gui.circuit_designer.edit");
 
     private IconButton confirmButton;
     private IconButton loadButton;
@@ -55,7 +56,7 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
     private List<Line> linesFg;
     private List<Line> linesBg;
 
-    public CircuitDesignTableScreen(CircuitDesignTableMenu container, PlayerInventory inv, Text title) {
+    public CircuitDesignTableScreen(CircuitDesignTableMenu container, Inventory inv, Component title) {
         super(container, inv, title);
 
         schematic = container.contentHolder.getSchematic();
@@ -70,46 +71,46 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
 
         super.init();
 
-        confirmButton = new IconButton(x + 116 - 11, y + 66, AllIcons.I_CONFIRM);
-        loadButton = new IconButton(x + 15 - 11, y + 65, ModIcons.I_RIGHT);
-        editButton = new CircuitEditButton(x + 42 - 11, y + 18, 68, 68);
+        confirmButton = new IconButton(leftPos + 116 - 11, topPos + 66, AllIcons.I_CONFIRM);
+        loadButton = new IconButton(leftPos + 15 - 11, topPos + 65, ModIcons.I_RIGHT);
+        editButton = new CircuitEditButton(leftPos + 42 - 11, topPos + 18, 68, 68);
 
         confirmButton.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, false));
+            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, false));
         });
 
         loadButton.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, true));
+            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, true));
         });
 
-        editButton.setTooltip(Tooltip.of(TOOLTIP_EDIT));
+        editButton.setTooltip(Tooltip.create(TOOLTIP_EDIT));
         editButton.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(handler.contentHolder, 1));
+            ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 1));
         });
 
-        addDrawableChild(confirmButton);
-        addDrawableChild(loadButton);
-        addDrawableChild(editButton);
+        addRenderableWidget(confirmButton);
+        addRenderableWidget(loadButton);
+        addRenderableWidget(editButton);
     }
 
     @Override
-    protected void drawBackground(DrawContext ctx, float delta, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics ctx, float delta, int mouseX, int mouseY) {
         int bgX = getLeftOfCentered(WIDTH);
-        int invY = y + HEIGHT + 4;
+        int invY = topPos + HEIGHT + 4;
         renderPlayerInventory(ctx, bgX + 2, invY);
 
-        ctx.drawTexture(BACKGROUND, bgX, y, 0, 0, WIDTH, HEIGHT);
+        ctx.blit(BACKGROUND, bgX, topPos, 0, 0, WIDTH, HEIGHT);
 
-        if(handler.contentHolder.schematicChanged) {
+        if(menu.contentHolder.schematicChanged) {
             linesFg = schematic.front().calculateLines();
             linesBg = schematic.back().calculateLines();
-            handler.contentHolder.schematicChanged = false;
+            menu.contentHolder.schematicChanged = false;
         }
 
-        CircuitSchematicRender.renderLayer(linesFg, ctx, x + 44 - 11, y + 20, SCALE, COLOR_TRACE_FRONT);
-        CircuitSchematicRender.renderLayer(linesBg, ctx, x + 44 - 11, y + 20, SCALE, COLOR_TRACE_BACK);
-        CircuitSchematicRender.renderComponents(schematic, ctx, x + 44 - 11, y + 20, SCALE);
+        CircuitSchematicRender.renderLayer(linesFg, ctx, leftPos + 44 - 11, topPos + 20, SCALE, COLOR_TRACE_FRONT);
+        CircuitSchematicRender.renderLayer(linesBg, ctx, leftPos + 44 - 11, topPos + 20, SCALE, COLOR_TRACE_BACK);
+        CircuitSchematicRender.renderComponents(schematic, ctx, leftPos + 44 - 11, topPos + 20, SCALE);
 
-        ctx.drawCenteredTextWithShadow(textRenderer, title, x + (WIDTH - 8) / 2, y + 3, 0xFFFFFF);
+        ctx.drawCenteredString(font, title, leftPos + (WIDTH - 8) / 2, topPos + 3, 0xFFFFFF);
     }
 }

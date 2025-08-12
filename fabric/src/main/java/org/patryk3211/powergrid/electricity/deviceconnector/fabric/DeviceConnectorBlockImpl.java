@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.deviceconnector.fabric;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 import team.reborn.energy.api.EnergyStorage;
 
 public class DeviceConnectorBlockImpl {
-    public static boolean hasEnergyStorage(World world, BlockPos pos, Direction side) {
+    public static boolean hasEnergyStorage(Level world, BlockPos pos, Direction side) {
         var storage = EnergyStorage.SIDED.find(world, pos, side);
         return storage != null && storage.supportsInsertion();
     }

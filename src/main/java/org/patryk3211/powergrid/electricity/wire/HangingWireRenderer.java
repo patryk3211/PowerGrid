@@ -15,16 +15,20 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.LightType;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 @Environment(EnvType.CLIENT)
@@ -33,17 +37,17 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
 
     public static final double SEGMENT_SIZE = 0.5;
 
-    public HangingWireRenderer(EntityRendererFactory.Context ctx) {
+    public HangingWireRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
     }
 
     @Override
-    public Identifier getTexture(HangingWireEntity entity) {
+    public ResourceLocation getTextureLocation(HangingWireEntity entity) {
         return entity.getWireItem().getWireTexture();
     }
 
     @Override
-    public void render(HangingWireEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    public void render(HangingWireEntity entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
         if(entity.renderParams == null)
             return;
 
@@ -51,7 +55,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             // Don't render since it's dead and only there to spawn particles.
             return;
 
-        var buffer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(getTexture(entity)));
+        var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
         assert entity.renderParams instanceof CurveParameters;
         CurveParameters rp = (CurveParameters) entity.renderParams;
 
@@ -70,21 +74,21 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             color = -1;
         }
 
-        var pos = entity.getPos();
-        var world = entity.getWorld();
+        var pos = entity.position();
+        var world = entity.level();
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
-            var blockPos = BlockPos.ofFloored((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
-            var sky = world.getLightLevel(LightType.SKY, blockPos);
-            var block = world.getLightLevel(LightType.BLOCK, blockPos);
+            var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
+            var sky = world.getBrightness(LightLayer.SKY, blockPos);
+            var block = world.getBrightness(LightLayer.BLOCK, blockPos);
             renderSegment(matrices, buffer,
                     x1, y1, z1,
                     x2, y2, z2,
-                    rp.cross1, rp.cross2, LightmapTextureManager.pack(block, sky), color,
+                    rp.cross1, rp.cross2, LightTexture.pack(block, sky), color,
                     rp.thickness, thicknessOffset, length, offset);
         });
     }
 
-    public static void renderFromPositions(MatrixStack matrices, VertexConsumer buffer, Vec3d t1, Vec3d t2, double horizontalCoefficient, double verticalCoefficient, double thickness, int light, int color) {
+    public static void renderFromPositions(PoseStack matrices, VertexConsumer buffer, Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness, int light, int color) {
         float x = (float) (t1.x + t2.x) * 0.5f;
         float y = (float) t1.y;
         float z = (float) (t1.z + t2.z) * 0.5f;
@@ -97,17 +101,17 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                         curve.thickness, 0, length, offset));
     }
 
-    public static void renderSegment(MatrixStack ms, VertexConsumer buffer,
+    public static void renderSegment(PoseStack ms, VertexConsumer buffer,
                                      float x1, float y1, float z1, float x2, float y2, float z2,
-                                     Vec3d cross1, Vec3d cross2, int light, int color,
+                                     Vec3 cross1, Vec3 cross2, int light, int color,
                                      float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
-        quad(ms.peek(), buffer, light, color,
+        quad(ms.last(), buffer, light, color,
                 x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
                 x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
                 x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
                 x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
                 thickness, thicknessOffset, uvLength, lengthOffset);
-        quad(ms.peek(), buffer, light, color,
+        quad(ms.last(), buffer, light, color,
                 x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
                 x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
                 x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
@@ -115,37 +119,37 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                 thickness, thicknessOffset, uvLength, lengthOffset);
     }
 
-    public static void quad(MatrixStack.Entry matrix, VertexConsumer buffer, int light, int color,
+    public static void quad(PoseStack.Pose matrix, VertexConsumer buffer, int light, int color,
                             double x1, double y1, double z1, double x2, double y2, double z2,
                             double x3, double y3, double z3, double x4, double y4, double z4,
                             float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
-        buffer.vertex(matrix.getPositionMatrix(), (float) x1, (float) y1, (float) z1)
+        buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
                 .color(color)
-                .texture(lengthOffset, thicknessOffset)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(light)
-                .normal(matrix.getNormalMatrix(), 0, 1, 0)
-                .next();
-        buffer.vertex(matrix.getPositionMatrix(), (float) x2, (float) y2, (float) z2)
+                .uv(lengthOffset, thicknessOffset)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), 0, 1, 0)
+                .endVertex();
+        buffer.vertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
                 .color(color)
-                .texture(lengthOffset, thicknessOffset + thickness)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(light)
-                .normal(matrix.getNormalMatrix(), 0, 1, 0)
-                .next();
-        buffer.vertex(matrix.getPositionMatrix(), (float) x4, (float) y4, (float) z4)
+                .uv(lengthOffset, thicknessOffset + thickness)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), 0, 1, 0)
+                .endVertex();
+        buffer.vertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
                 .color(color)
-                .texture(lengthOffset + uvLength, thicknessOffset + thickness)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(light)
-                .normal(matrix.getNormalMatrix(), 0, 1, 0)
-                .next();
-        buffer.vertex(matrix.getPositionMatrix(), (float) x3, (float) y3, (float) z3)
+                .uv(lengthOffset + uvLength, thicknessOffset + thickness)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), 0, 1, 0)
+                .endVertex();
+        buffer.vertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
                 .color(color)
-                .texture(lengthOffset + uvLength, thicknessOffset)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(light)
-                .normal(matrix.getNormalMatrix(), 0, 1, 0)
-                .next();
+                .uv(lengthOffset + uvLength, thicknessOffset)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), 0, 1, 0)
+                .endVertex();
     }
 }

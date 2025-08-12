@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.collections.fabric;
 
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.KeyMapping;
 import org.patryk3211.powergrid.collections.ModdedKeys;
 
 public class ModdedKeysImpl {
@@ -26,7 +26,7 @@ public class ModdedKeysImpl {
             if(key.description == null) {
                 currentCategory = key.category;
             } else {
-                key.keybind = new KeyBinding(key.description, key.key, currentCategory);
+                key.keybind = new KeyMapping(key.description, key.key, currentCategory);
                 KeyBindingHelper.registerKeyBinding(key.keybind);
             }
         }

@@ -62,15 +62,15 @@ public class TransmissionLine extends ElectricWire {
     @Nullable
     public TransmissionLinePart grabUnloaded(@NotNull WireEntity owner) {
         for(var part : unloadedParts) {
-            if(part.persistentOwnerId.equals(owner.getUuid())) {
+            if(part.persistentOwnerId.equals(owner.getUUID())) {
                 // If the owner id matches then the endpoints should match too
                 var endpointArrangement = validateEndpoints(part, owner);
                 if(endpointArrangement == 1) {
-                    part.setNode1(part.endpoint1.getNode(owner.getWorld()));
-                    part.setNode2(part.endpoint2.getNode(owner.getWorld()));
+                    part.setNode1(part.endpoint1.getNode(owner.level()));
+                    part.setNode2(part.endpoint2.getNode(owner.level()));
                 } else if(endpointArrangement == 2) {
-                    part.setNode1(part.endpoint2.getNode(owner.getWorld()));
-                    part.setNode2(part.endpoint1.getNode(owner.getWorld()));
+                    part.setNode1(part.endpoint2.getNode(owner.level()));
+                    part.setNode2(part.endpoint1.getNode(owner.level()));
                 } else {
                     PowerGrid.LOGGER.error("Endpoint of wire and unloaded line segment do not match");
                     return null;

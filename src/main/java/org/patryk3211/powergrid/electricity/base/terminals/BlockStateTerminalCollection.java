@@ -17,17 +17,19 @@ package org.patryk3211.powergrid.electricity.base.terminals;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+
+;
 
 public class BlockStateTerminalCollection {
     private final Map<PartialState, TerminalBoundingBox[]> terminals;
@@ -63,7 +65,7 @@ public class BlockStateTerminalCollection {
             for(var terminal : terminals) {
                 if(terminal == null)
                     continue;
-                baseShape = VoxelShapes.union(baseShape, terminal.getShape());
+                baseShape = Shapes.or(baseShape, terminal.getShape());
             }
             return baseShape;
         };
@@ -98,9 +100,9 @@ public class BlockStateTerminalCollection {
         public Builder forAllStatesExcept(Function<BlockState, TerminalBoundingBox[]> mapper, Property<?>... ignored) {
             var seen = new HashSet<PartialState>();
 
-            var states = block.getStateManager().getStates();
+            var states = block.getStateDefinition().getPossibleStates();
             for(var state : states) {
-                var properties = Maps.newLinkedHashMap(state.getEntries());
+                var properties = Maps.newLinkedHashMap(state.getValues());
                 for(var prop : ignored)
                     properties.remove(prop);
 
@@ -157,11 +159,11 @@ public class BlockStateTerminalCollection {
 
         @Override
         public boolean test(BlockState state) {
-            if(!state.isOf(block))
+            if(!state.is(block))
                 return false;
 
             for(var property : states.entrySet()) {
-                if(state.get(property.getKey()) != property.getValue())
+                if(state.getValue(property.getKey()) != property.getValue())
                     return false;
             }
             return true;
@@ -182,7 +184,7 @@ public class BlockStateTerminalCollection {
         public static PartialState of(BlockState state, Collection<Property<?>> properties) {
             var map = new HashMap<Property<?>, Comparable<?>>();
             for(var property : properties) {
-                map.put(property, state.get(property));
+                map.put(property, state.getValue(property));
             }
             return new PartialState(state.getBlock(), map);
         }

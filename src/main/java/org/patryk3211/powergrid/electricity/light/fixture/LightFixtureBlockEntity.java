@@ -15,14 +15,14 @@
  */
 package org.patryk3211.powergrid.electricity.light.fixture;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
@@ -44,7 +44,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
 
         if(bulbState != null) {
             bulbState.tick();
-            markDirty();
+            setChanged();
         }
     }
 
@@ -64,7 +64,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if(bulbState != null) {
             bulbState.write(tag);
@@ -72,7 +72,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         var currentItem = bulbState != null ? bulbState.getItem() : null;
         var nbtItem = LightBulbState.getBulbItem(tag);
@@ -96,7 +96,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         filament = builder.connectSwitch(1, node1, node2, false);
     }
 
-    public boolean replaceBulb(PlayerEntity player, Hand hand, ItemStack usedStack) {
+    public boolean replaceBulb(Player player, InteractionHand hand, ItemStack usedStack) {
         boolean result = replaceBulbInternal(player, hand, usedStack);
         if(result) {
             lightBulbChanged();
@@ -104,36 +104,36 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         return result;
     }
 
-    private boolean replaceBulbInternal(PlayerEntity player, Hand hand, ItemStack usedStack) {
-        assert world != null;
+    private boolean replaceBulbInternal(Player player, InteractionHand hand, ItemStack usedStack) {
+        assert level != null;
         if(usedStack == null || usedStack.isEmpty()) {
             if(bulbState == null)
                 return false;
-            if(!world.isClient) {
+            if(!level.isClientSide) {
                 if(!bulbState.isBurned())
-                    player.setStackInHand(hand, bulbState.toStack());
+                    player.setItemInHand(hand, bulbState.toStack());
                 bulbState = null;
             }
             return true;
         } else {
             if(bulbState == null) {
-                if(!world.isClient) {
+                if(!level.isClientSide) {
                     var item = usedStack.getItem();
                     if(item instanceof ILightBulb bulb) {
                         bulbState = bulb.createState(this);
                         if (!player.isCreative())
-                            usedStack.decrement(1);
+                            usedStack.shrink(1);
                     }
                 }
                 return true;
             } else if(bulbState.isBurned()) {
-                if(!world.isClient) {
+                if(!level.isClientSide) {
                     bulbState = null;
                 }
                 return true;
-            } else if(bulbState.isOf(usedStack.getItem()) && usedStack.getCount() < usedStack.getMaxCount()) {
-                if(!world.isClient) {
-                    usedStack.increment(1);
+            } else if(bulbState.isOf(usedStack.getItem()) && usedStack.getCount() < usedStack.getMaxStackSize()) {
+                if(!level.isClientSide) {
+                    usedStack.grow(1);
                     bulbState = null;
                 }
                 return true;
@@ -146,7 +146,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         return filament;
     }
 
-    public Box getRenderBoundingBox() {
-        return new Box(pos);
+    public AABB getRenderBoundingBox() {
+        return new AABB(worldPosition);
     }
 }

@@ -16,13 +16,13 @@
 package org.patryk3211.powergrid.electricity.battery;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
@@ -60,13 +60,13 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     }
 
     private void overheated() {
-        assert world != null;
+        assert level != null;
         if(isController()) {
-            var r = world.random;
-            var x = pos.getX() + r.nextBetween(0, getWidth());
-            var y = pos.getY() + r.nextBetween(0, getHeight());
-            var z = pos.getZ() + r.nextBetween(0, getWidth());
-            ThermalBehaviour.explode(world, new BlockPos(x, y, z), getCachedState(), getSize() * 0.5f);
+            var r = level.random;
+            var x = worldPosition.getX() + r.nextIntBetweenInclusive(0, getWidth());
+            var y = worldPosition.getY() + r.nextIntBetweenInclusive(0, getHeight());
+            var z = worldPosition.getZ() + r.nextIntBetweenInclusive(0, getWidth());
+            ThermalBehaviour.explode(level, new BlockPos(x, y, z), getBlockState(), getSize() * 0.5f);
         }
     }
 
@@ -88,7 +88,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     protected void updateConnectivity() {
         updateConnectivity = false;
-        if (world.isClient)
+        if (level.isClientSide)
             return;
         if (!isController())
             return;
@@ -99,8 +99,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     public void updateBehaviour() {
         // This also finds wires connected through device connectors/proxy behaviours
         List<WireEntity> wires = null;
-        if(world != null)
-            wires = GlobalElectricNetworks.getWorldNetworks(world).findConnectedWires(electricBehaviour);
+        if(level != null)
+            wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
         if(isController()) {
             if(electricBehaviour instanceof ProxyElectricBehaviour proxy) {
                 electricBehaviour = new ElectricBehaviour(this);
@@ -141,8 +141,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     public void tick() {
         super.tick();
         if (lastKnownPos == null)
-            lastKnownPos = getPos();
-        else if (!lastKnownPos.equals(pos) && pos != null) {
+            lastKnownPos = getBlockPos();
+        else if (!lastKnownPos.equals(worldPosition) && worldPosition != null) {
             onPositionChanged();
             return;
         }
@@ -156,7 +156,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         if (updateConnectivity)
             updateConnectivity();
 
-        if(world.isClient && rewire) {
+        if(level.isClientSide && rewire) {
             updateBehaviour();
             rewire = false;
         }
@@ -164,20 +164,20 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     private void onPositionChanged() {
         removeController(true);
-        lastKnownPos = pos;
+        lastKnownPos = worldPosition;
     }
 
     @Override
     public BlockPos getController() {
-        return isController() ? pos : controller;
+        return isController() ? worldPosition : controller;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public MultiBlockBatteryEntity getControllerBE() {
-        if (isController() || !hasWorld())
+        if (isController() || !hasLevel())
             return this;
-        var blockEntity = world.getBlockEntity(controller);
+        var blockEntity = level.getBlockEntity(controller);
         if (blockEntity instanceof MultiBlockBatteryEntity battery)
             return battery;
         return null;
@@ -185,13 +185,13 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     @Override
     public boolean isController() {
-        return controller == null || pos.getX() == controller.getX()
-                && pos.getY() == controller.getY() && pos.getZ() == controller.getZ();
+        return controller == null || worldPosition.getX() == controller.getX()
+                && worldPosition.getY() == controller.getY() && worldPosition.getZ() == controller.getZ();
     }
 
     @Override
     public void setController(BlockPos controller) {
-        if (world.isClient && !isVirtual())
+        if (level.isClientSide && !isVirtual())
             return;
         if (controller.equals(this.controller))
             return;
@@ -202,7 +202,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     @Override
     public void removeController(boolean keepContents) {
-        if (world.isClient)
+        if (level.isClientSide)
             return;
         updateConnectivity = true;
         if (!keepContents) {
@@ -219,7 +219,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     }
 
     @Override
-    protected void read(NbtCompound compound, boolean clientPacket) {
+    protected void read(CompoundTag compound, boolean clientPacket) {
         BlockPos controllerBefore = controller;
         int prevSize = width;
         int prevHeight = height;
@@ -229,9 +229,9 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         lastKnownPos = null;
 
         if (compound.contains("LastKnownPos"))
-            lastKnownPos = NbtHelper.toBlockPos(compound.getCompound("LastKnownPos"));
+            lastKnownPos = NbtUtils.readBlockPos(compound.getCompound("LastKnownPos"));
         if (compound.contains("Controller"))
-            controller = NbtHelper.toBlockPos(compound.getCompound("Controller"));
+            controller = NbtUtils.readBlockPos(compound.getCompound("Controller"));
 
         if (isController()) {
             width = compound.getInt("Size");
@@ -243,8 +243,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         super.read(compound, clientPacket);
 
         boolean changeOfController = controllerBefore == null ? controller != null : !controllerBefore.equals(controller);
-        if(world != null && (changeOfController || prevSize != width || prevHeight != height)) {
-            world.scheduleBlockRerenderIfNeeded(getPos(), Blocks.AIR.getDefaultState(), getCachedState());
+        if(level != null && (changeOfController || prevSize != width || prevHeight != height)) {
+            level.setBlocksDirty(getBlockPos(), Blocks.AIR.defaultBlockState(), getBlockState());
             updateBehaviour();
         }
 
@@ -255,13 +255,13 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     }
 
     @Override
-    public void write(NbtCompound compound, boolean clientPacket) {
+    public void write(CompoundTag compound, boolean clientPacket) {
         if (updateConnectivity)
             compound.putBoolean("Uninitialized", true);
         if (lastKnownPos != null)
-            compound.put("LastKnownPos", NbtHelper.fromBlockPos(lastKnownPos));
+            compound.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
         if (!isController())
-            compound.put("Controller", NbtHelper.fromBlockPos(controller));
+            compound.put("Controller", NbtUtils.writeBlockPos(controller));
         if (isController()) {
             compound.putInt("Size", width);
             compound.putInt("Height", height);
@@ -285,10 +285,10 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     @Override
     public void invalidate() {
-        if(world.isClient) {
+        if(level.isClientSide) {
             // We defer the rewire because all block entities need to update their behaviours,
             // but after this invalidate we lose reference to nodes provided by the controller.
-            var global = GlobalElectricNetworks.getWorldNetworks(world);
+            var global = GlobalElectricNetworks.getWorldNetworks(level);
             var wires = global.findConnectedWires(electricBehaviour);
             global.deferredRewire(wires);
         }

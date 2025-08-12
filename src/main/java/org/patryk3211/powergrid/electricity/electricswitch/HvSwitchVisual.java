@@ -33,7 +33,7 @@ public class HvSwitchVisual extends ShaftVisual<HvSwitchBlockEntity> implements 
 
     public HvSwitchVisual(VisualizationContext context, HvSwitchBlockEntity blockEntity, float partialTick) {
         super(context, blockEntity, partialTick);
-        var facing = blockState.get(HvSwitchBlock.HORIZONTAL_FACING);
+        var facing = blockState.getValue(HvSwitchBlock.HORIZONTAL_FACING);
 
         yRot = AngleHelper.horizontalAngle(facing);
         settled = false;

@@ -18,8 +18,8 @@ package org.patryk3211.powergrid.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessing;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.item.ItemEntity;
 import org.patryk3211.powergrid.electricity.heater.IProcessingTypeModifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,15 +29,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(FanProcessing.class)
 public class FanProcessingMixin {
     @Inject(
-            method = "decrementProcessingTime(Lnet/minecraft/entity/ItemEntity;Lcom/simibubi/create/content/kinetics/fan/processing/FanProcessingType;)I",
+            method = "decrementProcessingTime",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/nbt/NbtCompound;putInt(Ljava/lang/String;I)V",
+                    target = "Lnet/minecraft/nbt/CompoundTag;putInt(Ljava/lang/String;I)V",
                     ordinal = 0,
                     shift = At.Shift.AFTER
             )
     )
-    private static void modifyProcessingTime(ItemEntity entity, FanProcessingType type, CallbackInfoReturnable<Integer> cir, @Local(ordinal = 2) NbtCompound processing) {
+    private static void modifyProcessingTime(ItemEntity entity, FanProcessingType type, CallbackInfoReturnable<Integer> cir, @Local(ordinal = 2) CompoundTag processing) {
         if(type instanceof IProcessingTypeModifier modifier) {
             int time = processing.getInt("Time");
             time = modifier.modifyTime(time);

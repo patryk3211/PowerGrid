@@ -16,14 +16,14 @@
 package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 
 public class InductionRotorBlock extends AbstractRotorBlock implements IBE<InductionRotorBlockEntity> {
-    public InductionRotorBlock(Settings properties) {
+    public InductionRotorBlock(Properties properties) {
         super(properties);
     }
 
@@ -38,8 +38,8 @@ public class InductionRotorBlock extends AbstractRotorBlock implements IBE<Induc
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.ENTITYBLOCK_ANIMATED;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     public static float resistance() {

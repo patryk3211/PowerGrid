@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.base;
 
-import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public class CustomProperties {
-    public static final BooleanProperty ALONG_FIRST_AXIS = BooleanProperty.of("axis_along_first");
+    public static final BooleanProperty ALONG_FIRST_AXIS = BooleanProperty.create("axis_along_first");
 }

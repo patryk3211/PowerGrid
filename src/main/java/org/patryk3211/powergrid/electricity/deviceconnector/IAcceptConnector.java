@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.deviceconnector;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.state.BlockState;
 
 public interface IAcceptConnector {
-    default boolean canConnect(WorldView world, BlockPos pos, BlockState state, Direction side) {
+    default boolean canConnect(LevelReader world, BlockPos pos, BlockState state, Direction side) {
         return DeviceConnectorBlock.canSupport(world, pos, state, side);
     }
 

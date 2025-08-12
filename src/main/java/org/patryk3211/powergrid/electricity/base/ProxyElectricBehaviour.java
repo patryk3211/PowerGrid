@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;

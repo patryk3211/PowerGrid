@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.mixin.client;
 
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,17 +36,17 @@ import java.util.function.Predicate;
 public abstract class ComplexEntityRaycastMixin {
     @Unique
     @Nullable
-    private static Vec3d complexRaycast(Entity entity, Vec3d min, Vec3d max, double distance) {
+    private static Vec3 complexRaycast(Entity entity, Vec3 min, Vec3 max, double distance) {
         assert entity instanceof IComplexRaycast;
         IComplexRaycast checker = (IComplexRaycast) entity;
 
-        Box entityBB = entity.getBoundingBox().expand(entity.getTargetingMargin());
-        Optional<Vec3d> potentialHit = entityBB.raycast(min, max);
+        AABB entityBB = entity.getBoundingBox().inflate(entity.getPickRadius());
+        Optional<Vec3> potentialHit = entityBB.clip(min, max);
         if(entityBB.contains(min)) {
             // Casting entity inside of potential hit entity
             return checker.raycast(min, max);
         } else if(potentialHit.isPresent()) {
-            if(min.squaredDistanceTo(potentialHit.get()) < distance) {
+            if(min.distanceToSqr(potentialHit.get()) < distance) {
                 // Ray hits bounding box of potential hit entity
                 return checker.raycast(min, max);
             }
@@ -55,30 +55,30 @@ public abstract class ComplexEntityRaycastMixin {
     }
 
     @Redirect(
-            method="updateTargetedEntity(F)V",
+            method="pick(F)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/projectile/ProjectileUtil;raycast(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Box;Ljava/util/function/Predicate;D)Lnet/minecraft/util/hit/EntityHitResult;"
+                    target = "Lnet/minecraft/world/entity/projectile/ProjectileUtil;getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;"
             )
     )
-    private EntityHitResult complexRaycast(Entity entity, Vec3d min, Vec3d max, Box box, Predicate<Entity> predicate, double d) {
-        EntityHitResult baseResult = ProjectileUtil.raycast(entity, min, max, box, predicate, d);
+    private EntityHitResult complexRaycast(Entity entity, Vec3 min, Vec3 max, AABB box, Predicate<Entity> predicate, double d) {
+        EntityHitResult baseResult = ProjectileUtil.getEntityHitResult(entity, min, max, box, predicate, d);
 
-        World world = entity.getWorld();
+        Level world = entity.level();
         double currentHitDistance = d;
         Entity currentHitEntity = null;
-        Vec3d currentHitPoint = null;
+        Vec3 currentHitPoint = null;
 
         if(baseResult != null) {
             currentHitEntity = baseResult.getEntity();
-            currentHitPoint = baseResult.getPos();
-            currentHitDistance = min.squaredDistanceTo(currentHitPoint);
+            currentHitPoint = baseResult.getLocation();
+            currentHitDistance = min.distanceToSqr(currentHitPoint);
         }
 
-        for(Entity potentialHitEntity : world.getOtherEntities(entity, box, testEntity -> !testEntity.isSpectator() && testEntity instanceof IComplexRaycast)) {
-            Vec3d hit = complexRaycast(potentialHitEntity, min, max, currentHitDistance);
+        for(Entity potentialHitEntity : world.getEntities(entity, box, testEntity -> !testEntity.isSpectator() && testEntity instanceof IComplexRaycast)) {
+            Vec3 hit = complexRaycast(potentialHitEntity, min, max, currentHitDistance);
             if(hit != null) {
-                double hitSquaredDistance = min.squaredDistanceTo(hit);
+                double hitSquaredDistance = min.distanceToSqr(hit);
                 if(hitSquaredDistance < currentHitDistance) {
                     currentHitEntity = potentialHitEntity;
                     currentHitPoint = hit;

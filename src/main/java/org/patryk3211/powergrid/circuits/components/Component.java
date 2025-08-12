@@ -19,10 +19,10 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -32,7 +32,10 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class Component {
@@ -53,8 +56,8 @@ public abstract class Component {
 
     @Environment(EnvType.CLIENT)
     public static void modelChanged(BlockPos pos) {
-        var renderer = MinecraftClient.getInstance().worldRenderer;
-        renderer.scheduleBlockRenders(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
+        var renderer = Minecraft.getInstance().levelRenderer;
+        renderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
 
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
@@ -114,13 +117,13 @@ public abstract class Component {
 
     @NotNull
     @Environment(EnvType.CLIENT)
-    public Identifier getModelId(@NotNull PlacedComponent component) {
+    public ResourceLocation getModelId(@NotNull PlacedComponent component) {
         return ComponentRegistry.getId(this);
     }
 
     @NotNull
     @Environment(EnvType.CLIENT)
-    public Collection<Identifier> requestedModels() {
+    public Collection<ResourceLocation> requestedModels() {
         return List.of(ComponentRegistry.getId(this));
     }
 

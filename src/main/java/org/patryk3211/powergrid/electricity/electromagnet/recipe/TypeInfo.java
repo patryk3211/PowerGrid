@@ -17,13 +17,13 @@ package org.patryk3211.powergrid.electricity.electromagnet.recipe;
 
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeSerializer;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class TypeInfo implements IRecipeTypeInfo {
-    public static final Identifier ID = new Identifier(PowerGrid.MOD_ID, "magnetization");
+    public static final ResourceLocation ID = new ResourceLocation(PowerGrid.MOD_ID, "magnetization");
     public static final RecipeType<MagnetizingRecipe> TYPE = new RecipeType<>() {
         @Override
         public String toString() {
@@ -36,7 +36,7 @@ public class TypeInfo implements IRecipeTypeInfo {
     TypeInfo() { }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return ID;
     }
 

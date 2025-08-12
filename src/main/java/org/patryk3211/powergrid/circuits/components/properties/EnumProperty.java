@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtInt;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 
 public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
@@ -60,18 +60,18 @@ public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
     }
 
     @Override
-    public T read(@Nullable NbtElement element) {
+    public T read(@Nullable Tag element) {
         if(element == null)
             return defaultValue;
-        if(element.getType() != NbtElement.INT_TYPE)
+        if(element.getId() != Tag.TAG_INT)
             return defaultValue;
-        var value = ((NbtInt) element).intValue();
+        var value = ((IntTag) element).getAsInt();
         return values[value];
     }
 
     @Override
-    public NbtElement write(T value) {
-        return NbtInt.of(value.ordinal());
+    public Tag write(T value) {
+        return IntTag.valueOf(value.ordinal());
     }
 
     @Override

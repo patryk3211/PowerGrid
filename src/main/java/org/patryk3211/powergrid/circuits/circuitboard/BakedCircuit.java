@@ -15,12 +15,12 @@
  */
 package org.patryk3211.powergrid.circuits.circuitboard;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -49,9 +49,9 @@ public class BakedCircuit {
     private final Map<PlacedComponent, Function<Integer, FloatingNode>> padNodeProviderMap = new HashMap<>();
 
     private boolean isDamaged = false;
-    private final Supplier<World> world;
+    private final Supplier<Level> world;
 
-    protected BakedCircuit(Supplier<World> world) {
+    protected BakedCircuit(Supplier<Level> world) {
         this.world = world;
     }
 
@@ -59,7 +59,7 @@ public class BakedCircuit {
         return padNodeProviderMap.get(node.placed()).apply(node.pad());
     }
 
-    public static BakedCircuit from(CircuitSchematic schematic, Supplier<World> world, BlockPos pos) {
+    public static BakedCircuit from(CircuitSchematic schematic, Supplier<Level> world, BlockPos pos) {
         var result = new BakedCircuit(world);
 
         // Create component pad nodes.
@@ -98,7 +98,7 @@ public class BakedCircuit {
             };
             placed.component.bake(placed, builder, thermalEmitter);
             var footprint = placed.footprint();
-            var localPos = Vec3d.of(pos).add((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f);
+            var localPos = Vec3.atLowerCornerOf(pos).add((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f);
             thermalBuilders.stream()
                     .map(b -> b.build().withPosition(localPos))
                     .forEach(result.thermalUnits::add);
@@ -139,15 +139,15 @@ public class BakedCircuit {
         return result;
     }
 
-    public void write(NbtCompound tag) {
-        var thermalTag = new NbtCompound();
+    public void write(CompoundTag tag) {
+        var thermalTag = new CompoundTag();
         for(var unit : thermalUnits) {
             unit.write(thermalTag);
         }
         tag.put("Thermal", thermalTag);
     }
 
-    public void read(NbtCompound tag) {
+    public void read(CompoundTag tag) {
         if(tag.contains("Thermal")) {
             var thermalTag = tag.getCompound("Thermal");
             for(var unit : thermalUnits) {
@@ -170,7 +170,7 @@ public class BakedCircuit {
     }
 
     public void tick() {
-        var client = world.get().isClient;
+        var client = world.get().isClientSide;
         for(var unit : thermalUnits) {
             var overheated = unit.hasOverheated();
             unit.tick();
@@ -178,9 +178,9 @@ public class BakedCircuit {
                 var world = this.world.get();
                 var random = world.random;
                 var pos = unit.getPosition();
-                var x = (float) pos.getX() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                var y = (float) pos.getY() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                var z = (float) pos.getZ() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                var y = (float) pos.y() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                var z = (float) pos.z() + (random.nextFloat() - 0.5f) * 1 / 16f;
                 if(!unit.hasOverheated() && unit.getTemperature() >= unit.getOverheatTemperature() - 50f) {
                     // Spawn particles
                     float chance = (unit.getTemperature() - unit.getOverheatTemperature() + 100) / 100;

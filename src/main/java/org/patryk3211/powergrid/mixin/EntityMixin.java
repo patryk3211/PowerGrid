@@ -15,11 +15,11 @@
  */
 package org.patryk3211.powergrid.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LightningEntity;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,32 +30,32 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
     @Inject(
-            method = "onStruckByLightning(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LightningEntity;)V",
+            method = "thunderHit(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LightningBolt;)V",
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onLightningStrike(ServerWorld world, LightningEntity lightning, CallbackInfo ci) {
+    private void onLightningStrike(ServerLevel world, LightningBolt lightning, CallbackInfo ci) {
         if((Object) this instanceof ItemEntity item) {
-            var stack = item.getStack();
-            if(stack.isOf(Items.IRON_INGOT)) {
+            var stack = item.getItem();
+            if(stack.is(Items.IRON_INGOT)) {
                 var r = world.random;
                 if(r.nextFloat() < ModdedConfigs.server().recipes.lightningMagnetizationChance.getF()) {
                     // Success
                     var magnetItemEntity = new ItemEntity(world, item.getX(), item.getY(), item.getZ(), ModdedItems.MAGNET.asStack());
-                    magnetItemEntity.setVelocity(
+                    magnetItemEntity.setDeltaMovement(
                             (r.nextFloat() - 0.5f) * 0.1f,
                             r.nextFloat() * 0.1f + 0.1f,
                             (r.nextFloat() - 0.5f) * 0.1f
                     );
-                    magnetItemEntity.setToDefaultPickupDelay();
-                    world.spawnEntity(magnetItemEntity);
+                    magnetItemEntity.setDefaultPickUpDelay();
+                    world.addFreshEntity(magnetItemEntity);
 
-                    stack.decrement(1);
+                    stack.shrink(1);
                     if(stack.isEmpty())
                         item.discard();
                 }
                 ci.cancel();
-            } else if(stack.isOf(ModdedItems.MAGNET.get())) {
+            } else if(stack.is(ModdedItems.MAGNET.get())) {
                 // Don't damage magnet item
                 ci.cancel();
             }

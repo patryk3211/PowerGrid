@@ -17,44 +17,44 @@ package org.patryk3211.powergrid.electricity.transformer;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.sound.MovingSoundInstance;
-import net.minecraft.sound.SoundCategory;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 @Environment(EnvType.CLIENT)
-public class TransformerSoundInstance extends MovingSoundInstance {
+public class TransformerSoundInstance extends AbstractTickableSoundInstance {
     protected final BlockEntity be;
     protected final TransformerVolumeProvider provider;
 
     public  <T extends BlockEntity& TransformerVolumeProvider> TransformerSoundInstance(T be) {
-        super(ModdedSoundEvents.TRANSFORMER_HUM.getMainEvent(), SoundCategory.AMBIENT, be.getWorld().random);
+        super(ModdedSoundEvents.TRANSFORMER_HUM.getMainEvent(), SoundSource.AMBIENT, be.getLevel().random);
 
         this.be = be;
         this.provider = be;
 
-        var pos = be.getPos().toCenterPos();
+        var pos = be.getBlockPos().getCenter();
         this.x = pos.x;
         this.y = pos.y;
         this.z = pos.z;
-        this.attenuationType = AttenuationType.LINEAR;
-        this.repeat = true;
-        this.repeatDelay = 0;
+        this.attenuation = Attenuation.LINEAR;
+        this.looping = true;
+        this.delay = 0;
         this.volume = 0.0F;
     }
 
-    public boolean shouldAlwaysPlay() {
+    public boolean canStartSilent() {
         return true;
     }
 
     @Override
     public void tick() {
         if(be.isRemoved()) {
-            setDone();
+            stop();
         } else {
             this.volume = provider.getVolume();
             if(this.volume == 0)
-                setDone();
+                stop();
         }
     }
 }

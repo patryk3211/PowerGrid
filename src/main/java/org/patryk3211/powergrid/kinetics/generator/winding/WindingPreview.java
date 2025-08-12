@@ -18,15 +18,14 @@ package org.patryk3211.powergrid.kinetics.generator.winding;
 import com.simibubi.create.content.kinetics.simpleRelays.ShaftBlock;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
@@ -34,21 +33,23 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.Random;
 
-import static net.minecraft.state.property.Properties.AXIS;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementAxis;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementDelta;
+
+;
 
 @Environment(EnvType.CLIENT)
 public class WindingPreview {
     private static final Random r = new Random();
 
     @Nullable
-    public static ItemStack getUsedWireStack(PlayerEntity player) {
-        var stack1 = player.getMainHandStack();
-        var stack2 = player.getOffHandStack();
-        if(stack1 != null && stack1.getItem() instanceof WindingItem && stack1.hasNbt()) {
+    public static ItemStack getUsedWireStack(Player player) {
+        var stack1 = player.getMainHandItem();
+        var stack2 = player.getOffhandItem();
+        if(stack1 != null && stack1.getItem() instanceof WindingItem && stack1.hasTag()) {
             return stack1;
-        } else if(stack2 != null && stack2.getItem() instanceof WindingItem && stack2.hasNbt()) {
+        } else if(stack2 != null && stack2.getItem() instanceof WindingItem && stack2.hasTag()) {
             return stack2;
         } else {
             return null;
@@ -56,15 +57,15 @@ public class WindingPreview {
     }
 
     public static void tick() {
-        var player = MinecraftClient.getInstance().player;
-        var world = MinecraftClient.getInstance().world;
+        var player = Minecraft.getInstance().player;
+        var world = Minecraft.getInstance().level;
         if(player == null || world == null)
             return;
         var stack = getUsedWireStack(player);
         if(stack == null)
             return;
 
-        var tag = stack.getNbt();
+        var tag = stack.getTag();
         var posArray = tag.getIntArray("Position");
         if(posArray.length < 3)
             return;
@@ -73,10 +74,10 @@ public class WindingPreview {
         if(!ShaftBlock.isShaft(firstState))
             return;
 
-        var rayTrace = MinecraftClient.getInstance().crosshairTarget;
+        var rayTrace = Minecraft.getInstance().hitResult;
         if(!(rayTrace instanceof BlockHitResult hit)) {
             if(r.nextInt(50) == 0) {
-                world.addParticle(new DustParticleEffect(new Vector3f(.3f, .9f, .5f), 1),
+                world.addParticle(new DustParticleOptions(new Vector3f(.3f, .9f, .5f), 1),
                         firstPos.getX() + .5f + randomOffset(.25f), firstPos.getY() + .5f + randomOffset(.25f),
                         firstPos.getZ() + .5f + randomOffset(.25f), 0, 0, 0);
             }
@@ -87,11 +88,11 @@ public class WindingPreview {
         var selectedState = world.getBlockState(selected);
 
        if (!ShaftBlock.isShaft(selectedState))
-            selected = selected.offset(hit.getSide());
+            selected = selected.relative(hit.getDirection());
 
-        boolean canConnect = ShaftBlock.isShaft(selectedState) && firstState.get(AXIS) == selectedState.get(AXIS);
+        boolean canConnect = ShaftBlock.isShaft(selectedState) && firstState.getValue(AXIS) == selectedState.getValue(AXIS);
         var placementAxis = getPlacementAxis(selected, firstPos);
-        if(placementAxis == firstState.get(AXIS))
+        if(placementAxis == firstState.getValue(AXIS))
             canConnect = false;
 
         var length = getPlacementDelta(selected, firstPos);
@@ -99,14 +100,14 @@ public class WindingPreview {
             // Verify the winding can be placed
             if(length > 0) {
                 for(int i = 1; i < length; ++i) {
-                    if(!world.getBlockState(firstPos.offset(placementAxis, i)).isReplaceable()) {
+                    if(!world.getBlockState(firstPos.relative(placementAxis, i)).canBeReplaced()) {
                         canConnect = false;
                         break;
                     }
                 }
             } else {
                 for(int i = -1; i > length; --i) {
-                    if(!world.getBlockState(firstPos.offset(placementAxis, i)).isReplaceable()) {
+                    if(!world.getBlockState(firstPos.relative(placementAxis, i)).canBeReplaced()) {
                         canConnect = false;
                         break;
                     }
@@ -121,13 +122,13 @@ public class WindingPreview {
             PlacementOverlay.setItemRequirement(item, count, hasItems);
         }
 
-        var start = Vec3d.of(firstPos);
-        var heading = Direction.from(placementAxis, length > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
+        var start = Vec3.atLowerCornerOf(firstPos);
+        var heading = Direction.fromAxisAndDirection(placementAxis, length > 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
         for (float f = 0; f < Math.abs(length); f += .0625f) {
-            Vec3d position = start.offset(heading, f);
+            Vec3 position = start.relative(heading, f);
             if (r.nextInt(10) == 0) {
                 world.addParticle(
-                        new DustParticleEffect(new Vector3f(canConnect ? .3f : .9f, canConnect ? .9f : .3f, .5f), 1),
+                        new DustParticleOptions(new Vector3f(canConnect ? .3f : .9f, canConnect ? .9f : .3f, .5f), 1),
                         position.x + .5f, position.y + .5f, position.z + .5f, 0, 0, 0);
             }
         }

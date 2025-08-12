@@ -16,26 +16,26 @@
 package org.patryk3211.powergrid.circuits.editor;
 
 import com.simibubi.create.AllItems;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 
 public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
-    public CircuitDesignTableMenu(ScreenHandlerType<?> type, int id, PlayerInventory inv, PacketByteBuf extraData) {
+    public CircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
-    public CircuitDesignTableMenu(ScreenHandlerType<?> type, int id, PlayerInventory inv, CircuitDesignTableBlockEntity contentHolder) {
+    public CircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, CircuitDesignTableBlockEntity contentHolder) {
         super(type, id, inv, contentHolder);
     }
 
-    public static CircuitDesignTableMenu create(int id, PlayerInventory inv, CircuitDesignTableBlockEntity be) {
+    public static CircuitDesignTableMenu create(int id, Inventory inv, CircuitDesignTableBlockEntity be) {
         return new CircuitDesignTableMenu(ModdedMenus.CIRCUIT_DESIGN_BENCH.get(), id, inv, be);
     }
 
@@ -47,19 +47,19 @@ public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
         var beInv = contentHolder.getInventory();
         addSlot(new Slot(beInv, 0, X_OFFSET + 16, Y_OFFSET + 44) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return ModdedItems.CIRCUIT_SCHEMATIC.isIn(stack) || ModdedBlocks.CIRCUIT_BOARD.isIn(stack);
             }
         });
         addSlot(new Slot(beInv, 1, X_OFFSET + 117, Y_OFFSET + 21) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return AllItems.EMPTY_SCHEMATIC.isIn(stack) || ModdedItems.CIRCUIT_SCHEMATIC.isIn(stack);
             }
         });
         addSlot(new Slot(beInv, 2, X_OFFSET + 145, Y_OFFSET + 44) {
             @Override
-            public boolean canInsert(ItemStack stack) {
+            public boolean mayPlace(ItemStack stack) {
                 return false;
             }
         });
@@ -68,23 +68,23 @@ public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int slot) {
+    public ItemStack quickMoveStack(Player player, int slot) {
         var clicked = slots.get(slot);
-        if(!clicked.hasStack())
+        if(!clicked.hasItem())
             return ItemStack.EMPTY;
-        var stack = clicked.getStack();
+        var stack = clicked.getItem();
         if(slot < 3) {
-            insertItem(stack, 3, this.slots.size(), false);
+            moveItemStackTo(stack, 3, this.slots.size(), false);
         } else {
-            insertItem(stack, 0, 2, false);
+            moveItemStackTo(stack, 0, 2, false);
         }
         return ItemStack.EMPTY;
     }
 
     @Override
-    public void onClosed(PlayerEntity playerIn) {
-        super.onClosed(playerIn);
-        dropInventory(playerIn, contentHolder.getInventory());
+    public void removed(Player playerIn) {
+        super.removed(playerIn);
+        clearContainer(playerIn, contentHolder.getInventory());
 //        this.context.run((world, pos) -> this.dropInventory(player, this.input));
     }
 }

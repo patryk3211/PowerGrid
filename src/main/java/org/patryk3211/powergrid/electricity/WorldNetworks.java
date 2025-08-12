@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
@@ -41,8 +41,8 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.*;
 
-public class WorldNetworks extends PersistentState implements NetworkGraph.IGraphModifyHooks {
-    public final World world;
+public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
+    public final Level world;
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
     public final Set<TransmissionLine> transmissionLines = new HashSet<>();
@@ -51,12 +51,12 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
     private final Set<WireEntity> deferredRewireEntities = new HashSet<>();
     private int syncTicks = 0;
 
-    public WorldNetworks(World world) {
+    public WorldNetworks(Level world) {
         this.world = world;
         this.globalGraph.hooks = this;
     }
 
-    public WorldNetworks(World world, NbtCompound nbt) {
+    public WorldNetworks(Level world, CompoundTag nbt) {
         this(world);
         readNbt(nbt);
     }
@@ -88,7 +88,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
             }
             network.calculate();
         }
-        if(world instanceof ServerWorld serverWorld) {
+        if(world instanceof ServerLevel serverWorld) {
             var iter2 = transmissionLines.iterator();
             while(iter2.hasNext()) {
                 var line = iter2.next();
@@ -111,7 +111,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
                 for(var network : subnetworks) {
                     if(network.getLastGuess() == null)
                         continue;
-                    var tracking = new HashSet<ServerPlayerEntity>();
+                    var tracking = new HashSet<ServerPlayer>();
                     var packet = new SolverStateS2CPacket(world, network);
                     for(var chunk : packet.chunks) {
                         tracking.addAll(PlayerLookup.tracking(serverWorld, chunk));
@@ -331,7 +331,7 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
             PowerGrid.LOGGER.trace("{}: New transmission line between {} and {}", line, node1, node2);
         }
 
-        markDirty();
+        setDirty();
         return linePart;
     }
 
@@ -373,8 +373,8 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        var lineList = new NbtList();
+    public CompoundTag save(CompoundTag nbt) {
+        var lineList = new ListTag();
         for(var line : transmissionLines) {
             lineList.add(new UnresolvedTransmissionLine(line).writeNbt());
         }
@@ -386,10 +386,10 @@ public class WorldNetworks extends PersistentState implements NetworkGraph.IGrap
         return nbt;
     }
 
-    protected void readNbt(NbtCompound nbt) {
-        var lineList = nbt.getList("TransmissionLines", NbtElement.COMPOUND_TYPE);
+    protected void readNbt(CompoundTag nbt) {
+        var lineList = nbt.getList("TransmissionLines", Tag.TAG_COMPOUND);
         for(var lineEntryGeneric : lineList) {
-            var lineEntry = (NbtCompound) lineEntryGeneric;
+            var lineEntry = (CompoundTag) lineEntryGeneric;
             unresolvedLines.add(new UnresolvedTransmissionLine(lineEntry));
         }
     }

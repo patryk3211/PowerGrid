@@ -18,12 +18,12 @@ package org.patryk3211.powergrid.network.packets;
 import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -36,50 +36,50 @@ import java.util.function.Supplier;
 public class UpdateComponentBiPacket implements SimplePacket {
     private final BlockPos pos;
     private final int componentId;
-    private final Identifier propertyId;
-    private final NbtCompound propertyValue;
+    private final ResourceLocation propertyId;
+    private final CompoundTag propertyValue;
 
     public UpdateComponentBiPacket(CircuitBoardBlockEntity be, PlacedComponent component, ComponentProperty<?> property) {
-        pos = be.getPos();
+        pos = be.getBlockPos();
         componentId = be.getSchematic().getId(component);
         assert componentId >= 0;
         propertyId = property.id();
-        propertyValue = new NbtCompound();
+        propertyValue = new CompoundTag();
         component.getEntry(property).write(propertyValue);
     }
 
-    public UpdateComponentBiPacket(CircuitBoardBlockEntity be, PlacedComponent component, Identifier propertyId) {
-        pos = be.getPos();
+    public UpdateComponentBiPacket(CircuitBoardBlockEntity be, PlacedComponent component, ResourceLocation propertyId) {
+        pos = be.getBlockPos();
         componentId = be.getSchematic().getId(component);
         assert componentId >= 0;
         this.propertyId = propertyId;
-        propertyValue = new NbtCompound();
+        propertyValue = new CompoundTag();
         component.getEntry(propertyId).write(propertyValue);
     }
 
-    public UpdateComponentBiPacket(PacketByteBuf buf) {
+    public UpdateComponentBiPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
         componentId = buf.readInt();
-        propertyId = buf.readIdentifier();
+        propertyId = buf.readResourceLocation();
         propertyValue = buf.readNbt();
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeInt(componentId);
-        buf.writeIdentifier(propertyId);
+        buf.writeResourceLocation(propertyId);
         buf.writeNbt(propertyValue);
     }
 
-    public void handle(World world) {
+    public void handle(Level world) {
         var be = world.getBlockEntity(pos, ModdedBlockEntities.CIRCUIT_BOARD.get());
         be.ifPresent(circuit -> {
             var placed = circuit.getSchematic().components().get(componentId);
             var entry = placed.getEntry(propertyId);
             entry.read(propertyValue);
             placed.stateUpdated();
-            if(!world.isClient) {
+            if(!world.isClientSide) {
                 // Server must broadcast this update to all clients
                 placed.notifyClients(propertyId);
             }
@@ -92,9 +92,9 @@ public class UpdateComponentBiPacket implements SimplePacket {
         handle(world);
     }
 
-    public void handleServer(PlayerEntity player) {
-        var world = player.getWorld();
-        if(!player.canModifyAt(world, pos))
+    public void handleServer(Player player) {
+        var world = player.level();
+        if(!player.mayInteract(world, pos))
             return;
         handle(world);
     }

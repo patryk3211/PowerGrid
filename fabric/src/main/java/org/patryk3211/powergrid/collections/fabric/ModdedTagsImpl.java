@@ -15,18 +15,18 @@
  */
 package org.patryk3211.powergrid.collections.fabric;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
 public class ModdedTagsImpl {
-    public static TagKey<Block> blockTag(Identifier id) {
-        return TagKey.of(RegistryKeys.BLOCK, id);
+    public static TagKey<Block> blockTag(ResourceLocation id) {
+        return TagKey.create(Registries.BLOCK, id);
     }
 
-    public static TagKey<Item> itemTag(Identifier id) {
-        return TagKey.of(RegistryKeys.ITEM, id);
+    public static TagKey<Item> itemTag(ResourceLocation id) {
+        return TagKey.create(Registries.ITEM, id);
     }
 }

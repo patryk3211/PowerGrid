@@ -15,34 +15,34 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 
 public class TerminalPlacement implements ITerminalPlacement {
-    private final Vec3d position;
+    private final Vec3 position;
     private final double size;
 
-    public TerminalPlacement(Vec3d position, double size) {
-        this.position = position.multiply(1.0 / 16.0);
+    public TerminalPlacement(Vec3 position, double size) {
+        this.position = position.scale(1.0 / 16.0);
         this.size = size / 16.0;
     }
 
     public TerminalPlacement(double x, double y, double z, double size) {
-        this.position = new Vec3d(x / 16.0, y / 16.0, z / 16.0);
+        this.position = new Vec3(x / 16.0, y / 16.0, z / 16.0);
         this.size = size / 16.0;
     }
 
-    public boolean check(Vec3d position) {
+    public boolean check(Vec3 position) {
         return Math.abs(position.x - this.position.x) < size &&
                 Math.abs(position.y - this.position.y) < size &&
                 Math.abs(position.z - this.position.z) < size;
     }
 
     @Override
-    public Vec3d getOrigin() {
+    public Vec3 getOrigin() {
         return position;
     }
 
-    public Vec3d getPosition() {
+    public Vec3 getPosition() {
         return position;
     }
 

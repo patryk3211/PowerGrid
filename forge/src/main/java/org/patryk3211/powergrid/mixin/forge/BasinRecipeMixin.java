@@ -18,8 +18,8 @@ package org.patryk3211.powergrid.mixin.forge;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.processing.basin.BasinBlockEntity;
 import com.simibubi.create.content.processing.basin.BasinRecipe;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraftforge.items.IItemHandler;
 import org.patryk3211.powergrid.utility.RecipeNbtTransfer;
 import org.patryk3211.powergrid.utility.forge.IterateItemHandler;
@@ -30,10 +30,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-@Mixin(BasinRecipe.class)
+@Mixin(value = BasinRecipe.class, remap = false)
 public class BasinRecipeMixin {
     @Inject(
-            method = "apply(Lcom/simibubi/create/content/processing/basin/BasinBlockEntity;Lnet/minecraft/recipe/Recipe;Z)Z",
+            method = "apply(Lcom/simibubi/create/content/processing/basin/BasinBlockEntity;Lnet/minecraft/world/item/crafting/Recipe;Z)Z",
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/processing/basin/BasinBlockEntity;acceptOutputs(Ljava/util/List;Ljava/util/List;Z)Z"

@@ -16,25 +16,25 @@
 package org.patryk3211.powergrid.electricity.portablebattery.forge;
 
 import com.simibubi.create.content.equipment.armor.BacktankArmorLayer;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.LivingEntityRenderer;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.world.entity.player.Player;
 
 public class BatteryArmorLayerImpl {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void registerOn(EntityRenderer<?> entityRenderer) {
         if (!(entityRenderer instanceof LivingEntityRenderer<?, ?> livingRenderer))
             return;
-        if (!(livingRenderer.getModel() instanceof BipedEntityModel))
+        if (!(livingRenderer.getModel() instanceof HumanoidModel))
             return;
         BacktankArmorLayer<?, ?> layer = new BacktankArmorLayer<>(livingRenderer);
-        livingRenderer.addFeature((BacktankArmorLayer) layer);
+        livingRenderer.addLayer((BacktankArmorLayer) layer);
     }
 
     public static void registerOnAll(EntityRenderDispatcher dispatcher) {
-        for (EntityRenderer<? extends PlayerEntity> renderer : dispatcher.getSkinMap().values())
+        for (EntityRenderer<? extends Player> renderer : dispatcher.getSkinMap().values())
             registerOn(renderer);
         for (EntityRenderer<?> renderer : dispatcher.renderers.values())
             registerOn(renderer);

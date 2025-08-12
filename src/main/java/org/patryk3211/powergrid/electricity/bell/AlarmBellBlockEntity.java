@@ -17,10 +17,10 @@ package org.patryk3211.powergrid.electricity.bell;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
@@ -36,7 +36,7 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
     @Environment(EnvType.CLIENT)
     public void tickAudio() {
         if(getVolume() > 0 && !hasSoundInstance) {
-            MinecraftClient.getInstance().getSoundManager().play(new AlarmBellSoundInstance(this));
+            Minecraft.getInstance().getSoundManager().play(new AlarmBellSoundInstance(this));
             hasSoundInstance = true;
         } else if(getVolume() == 0 && hasSoundInstance) {
             hasSoundInstance = false;
@@ -46,7 +46,7 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if(world.isClient) {
+        if(level.isClientSide) {
             tickAudio();
         }
     }

@@ -17,15 +17,15 @@ package org.patryk3211.powergrid.electricity.battery;
 
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.context.LootContextParameterSet;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
@@ -38,7 +38,7 @@ import java.util.List;
 public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> implements IAcceptConnector, IHaveElectricProperties {
     protected BatterySpec spec;
 
-    public BatteryBlock(Settings settings) {
+    public BatteryBlock(Properties settings) {
         super(settings);
     }
 
@@ -51,7 +51,7 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     }
 
     @Override
-    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean moved) {
+    public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean moved) {
         if(oldState.getBlock() == state.getBlock())
             return;
         if(moved)
@@ -64,13 +64,13 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
         if (state.hasBlockEntity() && (state.getBlock() != newState.getBlock() || !newState.hasBlockEntity())) {
             var be = world.getBlockEntity(pos);
             if (!(be instanceof MultiBlockBatteryEntity battery))
                 return;
             var wires = GlobalElectricNetworks.getWorldNetworks(world).findConnectedWires(battery.getElectricBehaviour());
-            super.onStateReplaced(state, world, pos, newState, moved);
+            super.onRemove(state, world, pos, newState, moved);
             CustomConnectivityHandler.splitMulti(battery);
 
             // Rewire all wires that still target the stale behaviour
@@ -80,13 +80,13 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     }
 
     @Override
-    public List<ItemStack> getDroppedStacks(BlockState state, LootContextParameterSet.Builder builder) {
-        var stacks = super.getDroppedStacks(state, builder);
-        var be = builder.getOptional(LootContextParameters.BLOCK_ENTITY);
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        var stacks = super.getDrops(state, builder);
+        var be = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if(be instanceof MultiBlockBatteryEntity battery) {
             for(var stack : stacks) {
-                if(stack.isOf(this.asItem())) {
-                    var tag = stack.getOrCreateNbt();
+                if(stack.is(this.asItem())) {
+                    var tag = stack.getOrCreateTag();
                     tag.putDouble("Energy", Math.floor(battery.getIndividualEnergy()));
                     break;
                 }
@@ -111,7 +111,7 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Voltage.max(spec.calculateVoltage(1), player, tooltip);
     }
 }

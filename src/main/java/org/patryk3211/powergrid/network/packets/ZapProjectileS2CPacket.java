@@ -18,10 +18,10 @@ package org.patryk3211.powergrid.network.packets;
 import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.BlockHitResult;
 import org.joml.Math;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
@@ -50,8 +50,8 @@ public class ZapProjectileS2CPacket implements SimplePacket {
 
     public ZapProjectileS2CPacket(BlockHitResult hit) {
         type = Type.BLOCK_HIT;
-        pos = hit.getPos().toVector3f();
-        dir = hit.getSide();
+        pos = hit.getLocation().toVector3f();
+        dir = hit.getDirection();
     }
 
     public ZapProjectileS2CPacket(Entity target, Collection<Entity> affected) {
@@ -60,12 +60,12 @@ public class ZapProjectileS2CPacket implements SimplePacket {
         affectedEntities = affected.stream().map(Entity::getId).collect(Collectors.toList());
     }
 
-    public ZapProjectileS2CPacket(PacketByteBuf buf) {
-        type = buf.readEnumConstant(Type.class);
+    public ZapProjectileS2CPacket(FriendlyByteBuf buf) {
+        type = buf.readEnum(Type.class);
         switch(type) {
             case BLOCK_HIT -> {
                 pos = buf.readVector3f();
-                dir = buf.readEnumConstant(Direction.class);
+                dir = buf.readEnum(Direction.class);
             }
             case ENTITY_HIT -> {
                 targetEntity = buf.readInt();
@@ -80,12 +80,12 @@ public class ZapProjectileS2CPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(PacketByteBuf buf) {
-        buf.writeEnumConstant(type);
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeEnum(type);
         switch(type) {
             case BLOCK_HIT -> {
                 buf.writeVector3f(pos);
-                buf.writeEnumConstant(dir);
+                buf.writeEnum(dir);
             }
             case ENTITY_HIT -> {
                 buf.writeInt(targetEntity);
@@ -106,16 +106,16 @@ public class ZapProjectileS2CPacket implements SimplePacket {
             switch(type) {
                 case BLOCK_HIT -> SparkParticleData.explodeParticles(world, pos.x, pos.y, pos.z, dir, 20);
                 case ENTITY_HIT -> {
-                    var target = world.getEntityById(targetEntity);
+                    var target = world.getEntity(targetEntity);
                     if(target == null)
                         return;
                     var origin = target.getBoundingBox().getCenter();
                     for(var id : affectedEntities) {
-                        var entity = world.getEntityById(id);
+                        var entity = world.getEntity(id);
                         if(entity == null)
                             continue;
                         var end = entity.getBoundingBox().getCenter();
-                        world.addImportantParticle(new ZapParticleData((float) end.x, (float) end.y, (float) end.z, true), true, origin.x, origin.y, origin.z, 0, 0, 0);
+                        world.addAlwaysVisibleParticle(new ZapParticleData((float) end.x, (float) end.y, (float) end.z, true), true, origin.x, origin.y, origin.z, 0, 0, 0);
                         var r = world.random;
                         for(int i = 0; i < 10; ++i) {
                             float pos = r.nextFloat();

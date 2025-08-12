@@ -19,23 +19,23 @@ import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonPacket;
 import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.function.Supplier;
 
 public class ElectroZapperS2CPacket extends PotatoCannonPacket implements SimplePacket {
-    public ElectroZapperS2CPacket(Vec3d location, Vec3d motion, ItemStack item, Hand hand, float pitch, boolean self) {
+    public ElectroZapperS2CPacket(Vec3 location, Vec3 motion, ItemStack item, InteractionHand hand, float pitch, boolean self) {
         super(location, motion, item, hand, pitch, self);
     }
 
-    public ElectroZapperS2CPacket(PacketByteBuf buffer) {
+    public ElectroZapperS2CPacket(FriendlyByteBuf buffer) {
         super(buffer);
     }
 
@@ -53,11 +53,11 @@ public class ElectroZapperS2CPacket extends PotatoCannonPacket implements Simple
     @Override
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         context.get().queue(() -> {
-            Entity renderViewEntity = MinecraftClient.getInstance()
+            Entity renderViewEntity = Minecraft.getInstance()
                     .getCameraEntity();
             if (renderViewEntity == null)
                 return;
-            if (renderViewEntity.getPos()
+            if (renderViewEntity.position()
                     .distanceTo(location) > 100)
                 return;
 

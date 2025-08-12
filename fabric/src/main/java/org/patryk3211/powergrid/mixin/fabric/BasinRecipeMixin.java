@@ -18,9 +18,9 @@ package org.patryk3211.powergrid.mixin.fabric;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.processing.basin.BasinBlockEntity;
 import com.simibubi.create.content.processing.basin.BasinRecipe;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import org.patryk3211.powergrid.utility.RecipeNbtTransfer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,13 +32,13 @@ import java.util.List;
 @Mixin(BasinRecipe.class)
 public class BasinRecipeMixin {
     @Inject(
-            method = "apply(Lcom/simibubi/create/content/processing/basin/BasinBlockEntity;Lnet/minecraft/recipe/Recipe;Z)Z",
+            method = "apply(Lcom/simibubi/create/content/processing/basin/BasinBlockEntity;Lnet/minecraft/world/item/crafting/Recipe;Z)Z",
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/simibubi/create/content/processing/basin/BasinBlockEntity;acceptOutputs(Ljava/util/List;Ljava/util/List;Lnet/fabricmc/fabric/api/transfer/v1/transaction/TransactionContext;)Z"
             )
     )
-    private static void applyTransferNbtFabric(BasinBlockEntity basin, Recipe<?> recipe, boolean test, CallbackInfoReturnable<Boolean> cir, @Local DefaultedList<ItemStack> consumedItems, @Local(ordinal = 0) List<ItemStack> outputs) {
+    private static void applyTransferNbtFabric(BasinBlockEntity basin, Recipe<?> recipe, boolean test, CallbackInfoReturnable<Boolean> cir, @Local NonNullList<ItemStack> consumedItems, @Local(ordinal = 0) List<ItemStack> outputs) {
         RecipeNbtTransfer.transfer(consumedItems, outputs);
     }
 

@@ -17,13 +17,17 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -37,56 +41,56 @@ public class WireItem extends Item implements IWire {
     protected float resistance;
     protected float maxLength;
 
-    protected Identifier wireTexture;
+    protected ResourceLocation wireTexture;
     protected float horizontalCoefficient = 1.01f;
     protected float verticalCoefficient = 1.2f;
     protected float wireThickness = 1 / 16f;
 
-    public WireItem(Settings settings) {
+    public WireItem(Properties settings) {
         super(settings);
         resistance = 0.1f;
         maxLength = 16f;
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        if(context.getPlayer() != null && context.getPlayer().isSneaking())
-            return super.useOnBlock(context);
-        if(context.getHand() != Hand.MAIN_HAND)
-            return super.useOnBlock(context);
+    public InteractionResult useOn(UseOnContext context) {
+        if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown())
+            return super.useOn(context);
+        if(context.getHand() != InteractionHand.MAIN_HAND)
+            return super.useOn(context);
 
-        var electric = IElectric.getAt(context.getWorld(), context.getBlockPos());
-        var blockState = context.getWorld().getBlockState(context.getBlockPos());
+        var electric = IElectric.getAt(context.getLevel(), context.getClickedPos());
+        var blockState = context.getLevel().getBlockState(context.getClickedPos());
         if(electric != null) {
             var result = electric.onWire(blockState, context);
-            if(result != ActionResult.PASS)
+            if(result != InteractionResult.PASS)
                 return result;
         }
-        var tag = context.getStack().getNbt();
+        var tag = context.getItemInHand().getTag();
         if(tag != null) {
             // This will result in the connection being a block wire (instead of a hanging wire)
-            var world = context.getWorld();
-            var stack = context.getStack();
+            var world = context.getLevel();
+            var stack = context.getItemInHand();
             var endpoint = WireEndpointType.deserialize(tag);
             if(endpoint == null)
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
 
-            var result = connect(world, stack, context.getPlayer(), endpoint, new ImaginaryWireEndpoint(context.getHitPos()));
-            if(result.getResult().isAccepted()) {
-                var entity = result.getValue();
+            var result = connect(world, stack, context.getPlayer(), endpoint, new ImaginaryWireEndpoint(context.getClickLocation()));
+            if(result.getResult().consumesAction()) {
+                var entity = result.getObject();
                 if(entity != null) {
-                    stack.setNbt(new BlockWireEntityEndpoint(entity, true).serialize());
+                    stack.setTag(new BlockWireEntityEndpoint(entity, true).serialize());
                     var player = context.getPlayer();
                     if(player != null)
-                        player.setStackInHand(context.getHand(), stack);
+                        player.setItemInHand(context.getHand(), stack);
                 }
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
-        return super.useOnBlock(context);
+        return super.useOn(context);
     }
 
-    public static TypedActionResult<BlockWireEntity> connect(World world, ItemStack stack, PlayerEntity player, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+    public static InteractionResultHolder<BlockWireEntity> connect(Level world, ItemStack stack, Player player, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
         if(endpoint1.type() == WireEndpointType.BLOCK_WIRE && endpoint2.type() == WireEndpointType.BLOCK_WIRE)
             return mergeWires(world, stack, player, (BlockWireEntityEndpoint) endpoint1, (BlockWireEntityEndpoint) endpoint2);
 
@@ -109,59 +113,59 @@ public class WireItem extends Item implements IWire {
                 var newItems = (int) Math.ceil(addedLength);
                 if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
                     if(player != null)
-                        player.sendMessage(Lang.translate("message.connection_missing_items").style(Formatting.RED).component(), true);
-                    return TypedActionResult.fail(null);
+                        player.displayClientMessage(Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component(), true);
+                    return InteractionResultHolder.fail(null);
                 }
-                if(!world.isClient) {
+                if(!world.isClientSide) {
                     var entity = BlockWireEntity.create(world, endpoint1, stack.copyWithCount(newItems), result.points());
                     if(endpoint2.type().isConnectable())
                         entity.setEndpoint2(endpoint2);
-                    if(!((ServerWorld) world).spawnNewEntityAndPassengers(entity)) {
+                    if(!((ServerLevel) world).tryAddFreshEntityWithPassengers(entity)) {
                         PowerGrid.LOGGER.error("Failed to spawn new block wire entity.");
                         if(player != null)
-                            player.sendMessage(Lang.translate("message.connection_failed").style(Formatting.RED).component(), true);
-                        return TypedActionResult.fail(null);
+                            player.displayClientMessage(Lang.translate("message.connection_failed").style(ChatFormatting.RED).component(), true);
+                        return InteractionResultHolder.fail(null);
                     }
                     PlayerUtilities.removeItems(player, stack, newItems);
-                    return TypedActionResult.success(entity);
+                    return InteractionResultHolder.success(entity);
                 }
             } else {
                 // Entity exists, we just need to extend it.
                 var bwEndpoint = (BlockWireEntityEndpoint) endpoint1;
                 var wire = bwEndpoint.getEntity(world);
                 if(wire.getWireItem() != stack.getItem()) {
-                    player.sendMessage(Lang.translate("message.connection_incorrect_wire_type").style(Formatting.RED).component(), true);
-                    return TypedActionResult.fail(null);
+                    player.displayClientMessage(Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component(), true);
+                    return InteractionResultHolder.fail(null);
                 }
 
                 var newItems = (int) Math.ceil(wire.getTotalLength() + addedLength - wire.getWireCount());
                 if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
                     if(player != null)
-                        player.sendMessage(Lang.translate("message.connection_missing_items").style(Formatting.RED).component(), true);
-                    return TypedActionResult.fail(null);
+                        player.displayClientMessage(Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component(), true);
+                    return InteractionResultHolder.fail(null);
                 }
 
-                if(!world.isClient) {
+                if(!world.isClientSide) {
                     if(!bwEndpoint.getEnd()) {
                         PowerGrid.LOGGER.error("Cannot extend wire at start (must be flipped beforehand)");
-                        return TypedActionResult.fail(null);
+                        return InteractionResultHolder.fail(null);
                     }
                     if(endpoint2.type().isConnectable())
                         wire.setEndpoint2(endpoint2);
                     wire.extend(result.points(), newItems);
                     PlayerUtilities.removeItems(player, stack, newItems);
-                    return TypedActionResult.success(wire);
+                    return InteractionResultHolder.success(wire);
                 }
             }
 
-            return TypedActionResult.success(null);
+            return InteractionResultHolder.success(null);
         }
 
-        return TypedActionResult.fail(null);
+        return InteractionResultHolder.fail(null);
     }
 
-    public static TypedActionResult<BlockWireEntity> mergeWires(World world, ItemStack stack, PlayerEntity player, BlockWireEntityEndpoint endpoint1, BlockWireEntityEndpoint endpoint2) {
-        if(world.isClient)
+    public static InteractionResultHolder<BlockWireEntity> mergeWires(Level world, ItemStack stack, Player player, BlockWireEntityEndpoint endpoint1, BlockWireEntityEndpoint endpoint2) {
+        if(world.isClientSide)
             throw new IllegalStateException("Wire merging must occur on server");
 
         var lastPoint = endpoint1.getExactPosition(world);
@@ -171,18 +175,18 @@ public class WireItem extends Item implements IWire {
         var entity2 = endpoint2.getEntity(world);
         if(entity1.getWireItem() != entity2.getWireItem()) {
             if(player != null)
-                player.sendMessage(Lang.translate("message.connection_two_wire_types").style(Formatting.RED).component(), true);
-            return TypedActionResult.fail(null);
+                player.displayClientMessage(Lang.translate("message.connection_two_wire_types").style(ChatFormatting.RED).component(), true);
+            return InteractionResultHolder.fail(null);
         }
         if(entity1.getWireItem() != stack.getItem()) {
             if(player != null)
-                player.sendMessage(Lang.translate("message.connection_incorrect_wire_type").style(Formatting.RED).component(), true);
-            return TypedActionResult.fail(null);
+                player.displayClientMessage(Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component(), true);
+            return InteractionResultHolder.fail(null);
         }
 
         var result = BlockTrace.findPath(world, lastPoint, targetPoint, null);
         if(result == null || !result.reachedTarget())
-            return TypedActionResult.fail(null);
+            return InteractionResultHolder.fail(null);
 
         float addedLength = 0;
         for(var point : result.points())
@@ -191,8 +195,8 @@ public class WireItem extends Item implements IWire {
         var newItems = (int) Math.ceil(entity1.getTotalLength() + entity2.getTotalLength() + addedLength - entity1.getWireCount() - entity2.getWireCount());
         if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
             if(player != null)
-                player.sendMessage(Lang.translate("message.connection_missing_items").style(Formatting.RED).component(), true);
-            return TypedActionResult.fail(null);
+                player.displayClientMessage(Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component(), true);
+            return InteractionResultHolder.fail(null);
         }
 
         BlockWireEntity targetEntity, sourceEntity;
@@ -228,22 +232,22 @@ public class WireItem extends Item implements IWire {
         }
 
         sourceEntity.discard();
-        return TypedActionResult.success(targetEntity);
+        return InteractionResultHolder.success(targetEntity);
     }
 
     @Override
-    public boolean hasGlint(ItemStack stack) {
-        return super.hasGlint(stack) || stack.hasNbt();
+    public boolean isFoil(ItemStack stack) {
+        return super.isFoil(stack) || stack.hasTag();
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        var stack = user.getStackInHand(hand);
-        if(stack.hasNbt() && user.isSneaking()) {
-            stack.setNbt(null);
-            if(!world.isClient)
-                user.sendMessage(Lang.translate("message.connection_reset").style(Formatting.GRAY).component(), true);
-            return TypedActionResult.success(stack, true);
+    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+        var stack = user.getItemInHand(hand);
+        if(stack.hasTag() && user.isShiftKeyDown()) {
+            stack.setTag(null);
+            if(!world.isClientSide)
+                user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
+            return InteractionResultHolder.sidedSuccess(stack, true);
         }
         return super.use(world, user, hand);
     }
@@ -259,7 +263,7 @@ public class WireItem extends Item implements IWire {
     }
 
     @Environment(EnvType.CLIENT)
-    public Identifier getWireTexture() {
+    public ResourceLocation getWireTexture() {
         return wireTexture;
     }
 

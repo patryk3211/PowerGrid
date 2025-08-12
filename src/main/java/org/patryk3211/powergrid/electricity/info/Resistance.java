@@ -17,16 +17,16 @@ package org.patryk3211.powergrid.electricity.info;
 
 import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.createmod.catnip.lang.LangBuilder;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
 public class Resistance {
-    private static void resistance(LangBuilder tooltipText, float value, PlayerEntity player, List<Text> tooltip) {
+    private static void resistance(LangBuilder tooltipText, float value, Player player, List<Component> tooltip) {
         if(value == 0)
             return;
         boolean hasGoggles = GogglesItem.isWearingGoggles(player);
@@ -34,37 +34,37 @@ public class Resistance {
             return;
 
         tooltipText.addTo(tooltip);
-        LangBuilder valueText = Lang.builder().add(Text.of(" "));
+        LangBuilder valueText = Lang.builder().add(Component.nullToEmpty(" "));
         if(value < 1) {
             // Millis
             valueText.add(Lang.number(value * 1000))
-                    .add(Text.of(" m"))
+                    .add(Component.nullToEmpty(" m"))
                     .add(Unit.RESISTANCE.get());
         } else if(value < 1000) {
             valueText.add(Lang.number(value))
-                    .add(Text.of(" "))
+                    .add(Component.nullToEmpty(" "))
                     .add(Unit.RESISTANCE.get());
         } else if(value < 1000000) {
             valueText.add(Lang.number(value / 1000))
-                    .add(Text.of(" k"))
+                    .add(Component.nullToEmpty(" k"))
                     .add(Unit.RESISTANCE.get());
         } else {
             valueText.add(Lang.number(value / 1000000))
-                    .add(Text.of(" M"))
+                    .add(Component.nullToEmpty(" M"))
                     .add(Unit.RESISTANCE.get());
         }
-        valueText.style(Formatting.DARK_AQUA).addTo(tooltip);
+        valueText.style(ChatFormatting.DARK_AQUA).addTo(tooltip);
     }
 
-    public static void series(float value, PlayerEntity player, List<Text> tooltip) {
-        resistance(Lang.translate("tooltip.resistance.series").style(Formatting.GRAY), value, player, tooltip);
+    public static void series(float value, Player player, List<Component> tooltip) {
+        resistance(Lang.translate("tooltip.resistance.series").style(ChatFormatting.GRAY), value, player, tooltip);
     }
 
-    public static void switchResistance(float value, PlayerEntity player, List<Text> tooltip) {
-        resistance(Lang.translate("tooltip.resistance.switch").style(Formatting.GRAY), value, player, tooltip);
+    public static void switchResistance(float value, Player player, List<Component> tooltip) {
+        resistance(Lang.translate("tooltip.resistance.switch").style(ChatFormatting.GRAY), value, player, tooltip);
     }
 
-    public static void coil(float value, PlayerEntity player, List<Text> tooltip) {
-        resistance(Lang.translate("tooltip.resistance.coil").style(Formatting.GRAY), value, player, tooltip);
+    public static void coil(float value, Player player, List<Component> tooltip) {
+        resistance(Lang.translate("tooltip.resistance.coil").style(ChatFormatting.GRAY), value, player, tooltip);
     }
 }

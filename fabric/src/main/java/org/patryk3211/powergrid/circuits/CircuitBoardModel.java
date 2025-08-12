@@ -19,19 +19,18 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.model.*;
-import net.minecraft.client.render.model.json.ModelOverrideList;
-import net.minecraft.client.render.model.json.ModelTransformation;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.util.ModelIdentifier;
-import net.minecraft.client.util.SpriteIdentifier;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.BlockRenderView;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -51,19 +50,19 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE
 
 @Environment(EnvType.CLIENT)
 public class CircuitBoardModel implements UnbakedModel, BakedModel {
-    public static final ModelIdentifier MODEL_ID = new ModelIdentifier(new Identifier(PowerGrid.MOD_ID, "circuit_board"), "");
-    public static final Identifier BASE_MODEL = PowerGrid.asResource("block/circuit_board");
+    public static final ModelResourceLocation MODEL_ID = new ModelResourceLocation(new ResourceLocation(PowerGrid.MOD_ID, "circuit_board"), "");
+    public static final ResourceLocation BASE_MODEL = PowerGrid.asResource("block/circuit_board");
 
-    private static final SpriteIdentifier COPPER_SPRITE_ID = new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, PowerGrid.asResource("block/circuit_board_trace"));
-    private static final SpriteIdentifier PAD_SPRITE_ID = new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, PowerGrid.asResource("block/circuit_board_pad"));
+    private static final Material COPPER_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_trace"));
+    private static final Material PAD_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_pad"));
 
-    private Sprite particleSprite;
-    private Sprite padSprite;
-    private Sprite copperSprite;
+    private TextureAtlasSprite particleSprite;
+    private TextureAtlasSprite padSprite;
+    private TextureAtlasSprite copperSprite;
     private BakedModel baseModel;
 
     @Override
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, Random random) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, RandomSource random) {
         return baseModel.getQuads(state, face, random);
     }
 
@@ -73,51 +72,51 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
     }
 
     @Override
-    public boolean hasDepth() {
+    public boolean isGui3d() {
         return false;
     }
 
     @Override
-    public boolean isSideLit() {
+    public boolean usesBlockLight() {
         return false;
     }
 
     @Override
-    public boolean isBuiltin() {
+    public boolean isCustomRenderer() {
         return false;
     }
 
     @Override
-    public Sprite getParticleSprite() {
+    public TextureAtlasSprite getParticleIcon() {
         return particleSprite;
     }
 
     @Override
-    public ModelTransformation getTransformation() {
-        return ModelTransformation.NONE;
+    public ItemTransforms getTransforms() {
+        return ItemTransforms.NO_TRANSFORMS;
     }
 
     @Override
-    public ModelOverrideList getOverrides() {
-        return ModelOverrideList.EMPTY;
+    public ItemOverrides getOverrides() {
+        return ItemOverrides.EMPTY;
     }
 
     @Override
-    public Collection<Identifier> getModelDependencies() {
+    public Collection<ResourceLocation> getDependencies() {
         return List.of(BASE_MODEL);
     }
 
     @Override
-    public void setParents(Function<Identifier, UnbakedModel> modelLoader) {
+    public void resolveParents(Function<ResourceLocation, UnbakedModel> modelLoader) {
 
     }
 
     @Override
-    public @Nullable BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
+    public @Nullable BakedModel bake(ModelBaker baker, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
         copperSprite = textureGetter.apply(COPPER_SPRITE_ID);
         padSprite = textureGetter.apply(PAD_SPRITE_ID);
         baseModel = baker.bake(BASE_MODEL, rotationContainer);
-        particleSprite = baseModel.getParticleSprite();
+        particleSprite = baseModel.getParticleIcon();
         return this;
     }
 
@@ -159,7 +158,7 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
     }
 
     @Override
-    public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
+    public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
         baseModel.emitBlockQuads(blockView, state, pos, randomSupplier, context);
         var be = blockView.getBlockEntity(pos);
         if(be instanceof CircuitBoardBlockEntity circuit) {

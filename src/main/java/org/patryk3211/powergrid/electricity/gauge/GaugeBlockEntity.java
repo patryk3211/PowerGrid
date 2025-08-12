@@ -17,10 +17,10 @@ package org.patryk3211.powergrid.electricity.gauge;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -51,15 +51,15 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
         if(!Float.isNaN(dialTarget)) {
             prevDialState = dialState;
             dialState += (dialTarget - dialState) * .125f;
-            if (dialState > 1 && world.random.nextFloat() < 1 / 2f)
-                dialState -= (dialState - 1) * world.random.nextFloat();
+            if (dialState > 1 && level.random.nextFloat() < 1 / 2f)
+                dialState -= (dialState - 1) * level.random.nextFloat();
         }
     }
 
     public abstract float getValue();
 
     @Override
-    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         // Use default Create header here.
         Lang.builder(Create.ID).translate("gui.gauge.info_header").forGoggles(tooltip);
         return true;

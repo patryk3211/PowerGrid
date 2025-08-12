@@ -15,21 +15,21 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
 
 public class CurveParameters {
     private final double a, b, c;
-    private final Vec3d normal;
+    private final Vec3 normal;
     private final float dx;
     private final float L;
-    public final Vec3d cross1, cross2;
+    public final Vec3 cross1, cross2;
     public final float thickness;
 
     // Catenary parameter calculation implemented according to:
     // https://math.stackexchange.com/questions/3557767/how-to-construct-a-catenary-of-a-specified-length-through-two-specified-points
-    public CurveParameters(Vec3d t1, Vec3d t2, double horizontalCoefficient, double verticalCoefficient, double thickness) {
-        var direction = new Vec3d(t2.x - t1.x, 0, t2.z - t1.z);
+    public CurveParameters(Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness) {
+        var direction = new Vec3(t2.x - t1.x, 0, t2.z - t1.z);
         double dy = t2.y - t1.y;
         dx = (float) direction.length();
         normal = direction.normalize();
@@ -56,10 +56,10 @@ public class CurveParameters {
         c = 0.5 * (dy - L / Math.tanh(A));
 
         // Calculate cross parameters
-        direction = new Vec3d(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
-        Vec3d v1 = new Vec3d(1 - direction.x, 1 - direction.y, 1 - direction.z);
-        cross1 = v1.crossProduct(direction).normalize().multiply(thickness * 0.5);
-        cross2 = cross1.crossProduct(direction).normalize().multiply(thickness * 0.5);
+        direction = new Vec3(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
+        Vec3 v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
+        cross1 = v1.cross(direction).normalize().scale(thickness * 0.5);
+        cross2 = cross1.cross(direction).normalize().scale(thickness * 0.5);
     }
 
     public float apply(float x) {
@@ -91,10 +91,10 @@ public class CurveParameters {
         }
     }
 
-    public Vec3d getRandomPoint(Random random) {
+    public Vec3 getRandomPoint(RandomSource random) {
         float x = random.nextFloat() * dx - dx / 2;
         float y = apply(x);
-        return new Vec3d(normal.x * x, y, normal.z * x);
+        return new Vec3(normal.x * x, y, normal.z * x);
     }
 
     /**
@@ -106,7 +106,7 @@ public class CurveParameters {
         return dx;
     }
 
-    public Vec3d getNormal() {
+    public Vec3 getNormal() {
         return normal;
     }
 

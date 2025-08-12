@@ -18,11 +18,11 @@ package org.patryk3211.powergrid.equipment.thunder;
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.bearing.BearingContraption;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
-import net.minecraft.entity.EntityType;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
@@ -33,7 +33,7 @@ import org.patryk3211.powergrid.network.packets.LightningSyncS2CPacket;
 
 import java.util.ArrayList;
 
-import static net.minecraft.state.property.Properties.FACING;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 
 public class LightningRodMovementBehaviour implements MovementBehaviour {
     @Override
@@ -42,12 +42,12 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
     }
 
     protected void fire(MovementContext context) {
-        spawnLightning((ServerWorld) context.world, context.position);
+        spawnLightning((ServerLevel) context.world, context.position);
         var lightningEntity = EntityType.LIGHTNING_BOLT.create(context.world);
         if(lightningEntity != null) {
-            lightningEntity.refreshPositionAfterTeleport(Vec3d.ofBottomCenter(BlockPos.ofFloored(context.position)));
-            lightningEntity.setCosmetic(false);
-            ((ServerWorld) context.world).spawnNewEntityAndPassengers(lightningEntity);
+            lightningEntity.moveTo(Vec3.atBottomCenterOf(BlockPos.containing(context.position)));
+            lightningEntity.setVisualOnly(false);
+            ((ServerLevel) context.world).tryAddFreshEntityWithPassengers(lightningEntity);
         }
         ModdedPackets.sendToClientsTracking(new LightningSyncS2CPacket(context), context.contraption.entity);
     }
@@ -75,15 +75,15 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
         }
     }
 
-    private static void spawnLightning(ServerWorld world, Vec3d pos) {
-        var blockPos = ((LightningAccessor) world).invokeGetLightningPos(BlockPos.ofFloored(pos));
+    private static void spawnLightning(ServerLevel world, Vec3 pos) {
+        var blockPos = ((LightningAccessor) world).invokeGetLightningPos(BlockPos.containing(pos));
         // This is equivalent to the natural lightning spawning code in ServerWorld
-        if(world.hasRain(blockPos)) {
+        if(world.isRainingAt(blockPos)) {
             var lightningEntity = EntityType.LIGHTNING_BOLT.create(world);
             if(lightningEntity != null) {
-                lightningEntity.refreshPositionAfterTeleport(Vec3d.ofBottomCenter(blockPos));
-                lightningEntity.setCosmetic(false);
-                world.spawnNewEntityAndPassengers(lightningEntity);
+                lightningEntity.moveTo(Vec3.atBottomCenterOf(blockPos));
+                lightningEntity.setVisualOnly(false);
+                world.tryAddFreshEntityWithPassengers(lightningEntity);
             }
         }
     }
@@ -91,7 +91,7 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
     public void fireClient(MovementContext context) {
         context.contraption.forEachActor(context.world, (behaviour, innerContext) -> {
             var pos = innerContext.position;
-            var facing = innerContext.state.get(FACING);
+            var facing = innerContext.state.getValue(FACING);
             SparkParticleData.explodeParticles(innerContext.world, (float) pos.x, (float) pos.y, (float) pos.z, facing, 20);
         });
     }
@@ -111,15 +111,15 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
         var speedFactor = (float) Math.min(speed * configs.lightningAttractorSpeedFactor.getF(), 1.0f);
         var sailFactor = Math.min(sails * configs.lightningAttractorSailFactor.getF(), 1.0f);
 
-        var facing = context.state.get(FACING);
-        var facingVec = Vec3d.of(facing.getVector());
+        var facing = context.state.getValue(FACING);
+        var facingVec = Vec3.atLowerCornerOf(facing.getNormal());
 
         if(isController) {
             if (context.world.isThundering() && speed > 1.5f) {
                 charge += speedFactor * sailFactor * configs.lightningAttractorMaxFrequency.getF();
                 if (charge >= 1.0f) {
                     charge = 0;
-                    if (!context.world.isClient) {
+                    if (!context.world.isClientSide) {
                         fire(context);
                     } else {
                         charge = 1.0f;
@@ -134,23 +134,23 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
             }
         }
 
-        if(context.world.isClient) {
+        if(context.world.isClientSide) {
             var r = context.world.random;
             var pos1 = context.position;
-            var vel1 = facingVec.crossProduct(context.motion);
+            var vel1 = facingVec.cross(context.motion);
             // Electric sparks
             var chance = r.nextFloat() * charge * 8f;
             while(r.nextFloat() < chance) {
-                var vel = vel1.multiply((r.nextFloat() - 0.5f) * 3.0f)
-                        .addRandom(r, 2.0f);
-                var pos = pos1.addRandom(r, 2.0f);
+                var vel = vel1.scale((r.nextFloat() - 0.5f) * 3.0f)
+                        .offsetRandom(r, 2.0f);
+                var pos = pos1.offsetRandom(r, 2.0f);
                 context.world.addParticle(ParticleTypes.ELECTRIC_SPARK, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
                 chance -= 1.0f;
             }
             // Zaps
             chance = r.nextFloat() * charge * 0.1f;
             while(r.nextFloat() < chance) {
-                var dir = pos1.addRandom(r, 8.0f);
+                var dir = pos1.offsetRandom(r, 8.0f);
                 context.world.addParticle(new ZapParticleData(dir.x, dir.y, dir.z, false).withLife(0), pos1.x, pos1.y, pos1.z, 0, 0, 0);
                 chance -= 1.0f;
             }

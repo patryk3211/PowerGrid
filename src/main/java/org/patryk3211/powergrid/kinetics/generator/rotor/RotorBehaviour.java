@@ -19,9 +19,9 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -66,7 +66,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         var world = getWorld();
         assert world != null;
 
-        var state = blockEntity.getCachedState();
+        var state = blockEntity.getBlockState();
         if(!(state.getBlock() instanceof IRotorAssemblyPart assembly))
             return List.of();
         var pos = getPos();
@@ -78,10 +78,10 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         }
         List<RotorBehaviour> entities = new LinkedList<>();
         for(var dir : checkDirs) {
-            var rotor = get(world, pos.offset(dir), getType());
+            var rotor = get(world, pos.relative(dir), getType());
             if(rotor == null)
                 continue;
-            var otherState = rotor.blockEntity.getCachedState();
+            var otherState = rotor.blockEntity.getBlockState();
             if(otherState.getBlock() instanceof IRotorAssemblyPart assemblyPart) {
                 if(!assemblyPart.canConnect(otherState, dir.getOpposite()))
                     continue;
@@ -98,9 +98,9 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     @Nullable
     public Direction.Axis getAxis() {
-        var state = blockEntity.getCachedState();
-        if(state.contains(AbstractRotorBlock.AXIS))
-            return state.get(AbstractRotorBlock.AXIS);
+        var state = blockEntity.getBlockState();
+        if(state.hasProperty(AbstractRotorBlock.AXIS))
+            return state.getValue(AbstractRotorBlock.AXIS);
         return null;
     }
 
@@ -116,7 +116,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         if(!isController())
             return;
         if(!hasSoundSource && Math.abs(angularVelocity) > 32) {
-            MinecraftClient.getInstance().getSoundManager().play(new RotorSoundInstance(this));
+            Minecraft.getInstance().getSoundManager().play(new RotorSoundInstance(this));
             hasSoundSource = true;
         } else if(hasSoundSource && Math.abs(angularVelocity) < 32) {
             hasSoundSource = false;
@@ -124,7 +124,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     }
 
     @Override
-    public void read(NbtCompound compound, boolean clientPacket) {
+    public void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         if(compound.contains("AngularVelocity")) {
             angularVelocity = compound.getFloat("AngularVelocity");
@@ -137,18 +137,18 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     }
 
     @Override
-    public void write(NbtCompound compound, boolean clientPacket) {
+    public void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putFloat("AngularVelocity", angularVelocity);
         compound.putFloat("FieldStrength", fieldStrength);
     }
 
     @Override
-    public void readController(NbtCompound compound, boolean clientPacket) {
+    public void readController(CompoundTag compound, boolean clientPacket) {
     }
 
     @Override
-    public void writeController(NbtCompound compound, boolean clientPacket) {
+    public void writeController(CompoundTag compound, boolean clientPacket) {
     }
 
     @Override
@@ -222,7 +222,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     public void setFieldStrength(float value) {
         fieldStrength = value;
-        blockEntity.markDirty();
+        blockEntity.setChanged();
     }
 
     @Override
@@ -238,22 +238,22 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity))
                 angularVelocity = 0;
 
-            if(Math.abs(angularVelocity) > 320 && !getWorld().isClient) {
+            if(Math.abs(angularVelocity) > 320 && !getWorld().isClientSide) {
                 // TODO: Maybe make this a bit more destructive.
-                getWorld().breakBlock(getPos(), false);
+                getWorld().destroyBlock(getPos(), false);
             }
 
             angle = (angle + velocity * 0.3f) % 360;
             if(Float.isNaN(angle))
                 angle = 0;
 
-            if(getWorld() != null && getWorld().isClient)
+            if(getWorld() != null && getWorld().isClientSide)
                 tickAudio();
         } else {
             // Fetch values from controller
             angularVelocity = getAngularVelocity();
             angle = getAngle();
         }
-        blockEntity.markDirty();
+        blockEntity.setChanged();
     }
 }

@@ -19,7 +19,7 @@ import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRendere
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import org.patryk3211.powergrid.mixin.forge.ItemAccessor;
 
 import java.util.function.Supplier;

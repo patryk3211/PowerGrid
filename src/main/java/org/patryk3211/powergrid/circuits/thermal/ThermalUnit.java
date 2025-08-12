@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.thermal;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
@@ -40,7 +40,7 @@ public class ThermalUnit {
     private final Runnable overheatCallback;
 
     private float temperature = 22f;
-    private Vec3d position;
+    private Vec3 position;
 
     public ThermalUnit(UUID componentUUID, int index, float thermalMass, float dissipationFactor, float overheatTemperature, Collection<AbstractElectricWire> heatSources, @Nullable Consumer<Float> temperatureCallback, @Nullable Runnable overheatCallback) {
         this.componentUUID = componentUUID;
@@ -81,12 +81,12 @@ public class ThermalUnit {
         temperatureChanged();
     }
 
-    public ThermalUnit withPosition(Vec3d position) {
+    public ThermalUnit withPosition(Vec3 position) {
         this.position = position;
         return this;
     }
 
-    public Vec3d getPosition() {
+    public Vec3 getPosition() {
         return position;
     }
 
@@ -102,12 +102,12 @@ public class ThermalUnit {
         return componentUUID.toString() + "-" + index;
     }
 
-    public void read(NbtCompound nbt) {
+    public void read(CompoundTag nbt) {
         temperature = nbt.getFloat(getKey());
         temperatureChanged();
     }
 
-    public void write(NbtCompound nbt) {
+    public void write(CompoundTag nbt) {
         nbt.putFloat(getKey(), temperature);
     }
 }

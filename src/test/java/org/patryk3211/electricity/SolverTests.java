@@ -17,7 +17,8 @@ package org.patryk3211.electricity;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class SolverTests extends TestHelper {
     @Test

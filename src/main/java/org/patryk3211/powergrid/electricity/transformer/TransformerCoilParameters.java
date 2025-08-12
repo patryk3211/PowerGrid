@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.transformer;
 
-import net.minecraft.item.Item;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 
 public class TransformerCoilParameters {
     private int turns;
@@ -26,16 +26,16 @@ public class TransformerCoilParameters {
     private int terminal2;
     private Item item;
 
-    public void writeNbt(NbtCompound tag) {
+    public void writeNbt(CompoundTag tag) {
         tag.putInt("Turns", turns);
         tag.putInt("Terminal1", terminal1);
         tag.putInt("Terminal2", terminal2);
 
-        var identifier = Registries.ITEM.getId(item);
+        var identifier = BuiltInRegistries.ITEM.getKey(item);
         tag.putString("Item", identifier.toString());
     }
 
-    public boolean readNbt(NbtCompound tag) {
+    public boolean readNbt(CompoundTag tag) {
         var oldTurns = turns;
         var oldT1 = terminal1;
         var oldT2 = terminal2;
@@ -44,8 +44,8 @@ public class TransformerCoilParameters {
         terminal1 = tag.getInt("Terminal1");
         terminal2 = tag.getInt("Terminal2");
 
-        var identifier = new Identifier(tag.getString("Item"));
-        item = Registries.ITEM.get(identifier);
+        var identifier = new ResourceLocation(tag.getString("Item"));
+        item = BuiltInRegistries.ITEM.get(identifier);
 
         return turns != oldTurns || terminal1 != oldT1 || terminal2 != oldT2;
     }

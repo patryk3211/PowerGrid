@@ -16,26 +16,26 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.IInteractableComponent;
@@ -50,33 +50,33 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoardBlockEntity> {
-    private static final VoxelShape SHAPE_PLATE = createCuboidShape(0, 0, 0, 16, 2, 16);
+    private static final VoxelShape SHAPE_PLATE = box(0, 0, 0, 16, 2, 16);
 
-    public CircuitBoardBlock(Settings settings) {
+    public CircuitBoardBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         withBlockEntityDo(world, pos, be -> {
             be.withSchematic(CircuitSchematic.fromStack(stack));
-            be.setAdditionalData(stack.getNbt());
+            be.setAdditionalData(stack.getTag());
         });
-        super.onPlaced(world, pos, state, placer, stack);
+        super.setPlacedBy(world, pos, state, placer, stack);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         final var shape = new VoxelShape[] { SHAPE_PLATE };
         withBlockEntityDo(world, pos, be -> {
             var shapeCopy = shape[0];
             for(int i = 0; i < be.terminalCount(); i++) {
                 var terminal = be.terminal(state, i);
-                shapeCopy = VoxelShapes.union(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
+                shapeCopy = Shapes.or(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
             }
             for(var placed : be.getComponents(IInteractableComponent.class)) {
                 var dynamic = (IInteractableComponent) placed.component;
-                shapeCopy = VoxelShapes.union(dynamic.getShape(placed), shapeCopy);
+                shapeCopy = Shapes.or(dynamic.getShape(placed), shapeCopy);
             }
             shape[0] = shapeCopy;
         });
@@ -84,24 +84,24 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     }
 
     @Override
-    public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
-        var stack = super.getPickStack(world, pos, state);
+    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
+        var stack = super.getCloneItemStack(world, pos, state);
         withBlockEntityDo(world, pos, be -> {
-            var tag = new NbtCompound();
+            var tag = new CompoundTag();
             tag.put("Schematic", be.getSchematic().serializeNbt());
-            stack.setNbt(tag);
+            stack.setTag(tag);
         });
         return stack;
     }
 
     @Override
-    public boolean emitsRedstonePower(BlockState state) {
+    public boolean isSignalSource(BlockState state) {
         // This is to make redstone wire connect
         return true;
     }
 
     @Override
-    public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+    public int getSignal(BlockState state, BlockGetter world, BlockPos pos, Direction direction) {
         var output = new MutableInt();
         withBlockEntityDo(world, pos, be -> {
             for(var placed : be.getComponents(IRedstoneComponent.class)) {
@@ -140,14 +140,14 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
-        super.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify);
+    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+        super.neighborChanged(state, world, pos, sourceBlock, sourcePos, notify);
         withBlockEntityDo(world, pos, be -> {
             var dirVec = sourcePos.subtract(pos);
-            var dir = Direction.fromVector(dirVec.getX(), dirVec.getY(), dirVec.getZ());
+            var dir = Direction.fromDelta(dirVec.getX(), dirVec.getY(), dirVec.getZ());
             if(dir == null)
                 return;
-            var power = world.getEmittedRedstonePower(sourcePos, dir.getOpposite());
+            var power = world.getSignal(sourcePos, dir.getOpposite());
             for(var placed : be.getComponents(IRedstoneComponent.class)) {
                 var redstone = (IRedstoneComponent) placed.component;
                 if(!redstone.isReceiver())
@@ -164,34 +164,34 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         var beResult = onBlockEntityUse(world, pos, be -> {
-            var hitLocalPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
+            var hitLocalPos = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
             for(var placed : be.getComponents(IInteractableComponent.class)) {
                 var dynamic = (IInteractableComponent) placed.component;
-                var outline = dynamic.getShape(placed).getBoundingBox().expand(1 / 32f);
+                var outline = dynamic.getShape(placed).bounds().inflate(1 / 32f);
                 if(!outline.contains(hitLocalPos))
                     continue;
                 return dynamic.use(be, placed, player);
             }
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         });
-        if(beResult != ActionResult.PASS)
+        if(beResult != InteractionResult.PASS)
             return beResult;
-        return super.onUse(state, world, pos, player, hand, hit);
+        return super.use(state, world, pos, player, hand, hit);
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter world, List<Component> tooltip, TooltipFlag options) {
         var schematic = CircuitSchematic.fromStack(stack);
         if(schematic != null && schematic.getName() != null) {
             tooltip.add(Lang
                     .translate("circuit_board.tooltip.schematic")
-                    .add(Text.literal(schematic.getName()))
-                    .style(Formatting.GRAY)
+                    .add(Component.literal(schematic.getName()))
+                    .style(ChatFormatting.GRAY)
                     .component());
         }
-        super.appendTooltip(stack, world, tooltip, options);
+        super.appendHoverText(stack, world, tooltip, options);
     }
 
     @Override

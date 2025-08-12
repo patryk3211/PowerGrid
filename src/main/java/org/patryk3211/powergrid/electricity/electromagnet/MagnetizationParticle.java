@@ -17,56 +17,56 @@ package org.patryk3211.powergrid.electricity.electromagnet;
 
 import com.simibubi.create.content.kinetics.belt.behaviour.BeltProcessingBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
-public class MagnetizationParticle extends SpriteBillboardParticle {
-    private final SpriteProvider sprites;
+public class MagnetizationParticle extends TextureSheetParticle {
+    private final SpriteSet sprites;
     private final BlockPos controller;
     private boolean triggered;
 
-    protected MagnetizationParticle(MagnetizationParticleData data, ClientWorld world, double x, double y, double z, SpriteProvider sprites) {
+    protected MagnetizationParticle(MagnetizationParticleData data, ClientLevel world, double x, double y, double z, SpriteSet sprites) {
         super(world, x, y, z);
         this.sprites = sprites;
         this.controller = data.getControllerPos();
-        this.collidesWithWorld = false;
+        this.hasPhysics = false;
 
-        scale = MathHelper.lerp(world.random.nextFloat(), 0.125f, 0.25f);// 0.25f;
-        maxAge = 20;
+        quadSize = Mth.lerp(world.random.nextFloat(), 0.125f, 0.25f);// 0.25f;
+        lifetime = 20;
         triggered = false;
-        setSprite(sprites.getSprite(world.random));
+        setSprite(sprites.get(world.random));
     }
 
     @Override
     public void tick() {
-        this.prevPosX = this.x;
-        this.prevPosY = this.y;
-        this.prevPosZ = this.z;
+        this.xo = this.x;
+        this.yo = this.y;
+        this.zo = this.z;
 
         MagnetizingBehaviour behaviour = null;
-        var behaviourGeneric = controller == null ? null : BlockEntityBehaviour.get(world, controller, BeltProcessingBehaviour.TYPE);
+        var behaviourGeneric = controller == null ? null : BlockEntityBehaviour.get(level, controller, BeltProcessingBehaviour.TYPE);
         if(behaviourGeneric instanceof MagnetizingBehaviour magnetizingBehaviour)
             behaviour = magnetizingBehaviour;
 
         if(behaviour == null) {
-            if(age++ >= maxAge) {
-                markDead();
+            if(age++ >= lifetime) {
+                remove();
                 return;
             }
             jiggle();
         } else {
             if(!behaviour.running && !triggered) {
                 triggered = true;
-                maxAge = 10;
+                lifetime = 10;
                 age = 0;
                 return;
             }
 
-            if(triggered && age++ >= maxAge) {
-                markDead();
+            if(triggered && age++ >= lifetime) {
+                remove();
                 return;
             }
 
@@ -75,43 +75,43 @@ public class MagnetizationParticle extends SpriteBillboardParticle {
 
             if(behaviour.runningTicks >= MagnetizingBehaviour.COLLAPSE_TIME - 5 && !triggered) {
                 age = 0;
-                maxAge = 5;
+                lifetime = 5;
                 final float SPEED_CONST = 0.3f;
                 var dX = behaviour.target.x - x;
                 var dY = behaviour.target.y - y;
                 var dZ = behaviour.target.z - z;
-                velocityX = dX * SPEED_CONST;
-                velocityY = dY * SPEED_CONST;
-                velocityZ = dZ * SPEED_CONST;
-                collidesWithWorld = true;
+                xd = dX * SPEED_CONST;
+                yd = dY * SPEED_CONST;
+                zd = dZ * SPEED_CONST;
+                hasPhysics = true;
                 triggered = true;
             }
         }
 
-        move(this.velocityX, this.velocityY, this.velocityZ);
-        scale = 0.25f * (1.0f - (float) age / maxAge);
+        move(this.xd, this.yd, this.zd);
+        quadSize = 0.25f * (1.0f - (float) age / lifetime);
     }
 
     private void jiggle() {
-        velocityX = (random.nextFloat() - 0.5f) * 0.05f;
-        velocityY = (random.nextFloat() - 0.5f) * 0.05f;
-        velocityZ = (random.nextFloat() - 0.5f) * 0.05f;
+        xd = (random.nextFloat() - 0.5f) * 0.05f;
+        yd = (random.nextFloat() - 0.5f) * 0.05f;
+        zd = (random.nextFloat() - 0.5f) * 0.05f;
     }
 
     @Override
-    public ParticleTextureSheet getType() {
-        return ParticleTextureSheet.PARTICLE_SHEET_OPAQUE;
+    public ParticleRenderType getRenderType() {
+        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
     }
 
-    public static class Factory implements ParticleFactory<MagnetizationParticleData> {
-        private final SpriteProvider sprites;
+    public static class Factory implements ParticleProvider<MagnetizationParticleData> {
+        private final SpriteSet sprites;
 
-        public Factory(SpriteProvider sprites) {
+        public Factory(SpriteSet sprites) {
             this.sprites = sprites;
         }
 
         @Override
-        public @Nullable Particle createParticle(MagnetizationParticleData data, ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
+        public @Nullable Particle createParticle(MagnetizationParticleData data, ClientLevel world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
             return new MagnetizationParticle(data, world, x, y, z, this.sprites);
         }
     }

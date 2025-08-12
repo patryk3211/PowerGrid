@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -67,7 +67,7 @@ public class RedstoneEmitterComponent extends EdgeComponent implements IRedstone
         if(placed.get(DIGITAL)) {
             redstoneLevel = Math.abs(wire.potentialDifference()) > 3.3f ? 15 : 0;
         } else {
-            redstoneLevel = MathHelper.clamp((int) Math.floor(Math.abs(wire.potentialDifference() * 15 / 5)), 0, 15);
+            redstoneLevel = Mth.clamp((int) Math.floor(Math.abs(wire.potentialDifference() * 15 / 5)), 0, 15);
         }
 
         if(redstoneLevel != placed.get(LEVEL)) {

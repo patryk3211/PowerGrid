@@ -18,20 +18,20 @@ package org.patryk3211.powergrid.kinetics.servo;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.data.Iterate;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
@@ -43,7 +43,7 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 import java.util.List;
 
 public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEntity>, IHaveElectricProperties {
-    public static final DirectionProperty FACING = Properties.FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 4, 12, 14, 6, 14, 16)
@@ -54,38 +54,38 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
                     .withColor(IDecoratedTerminal.GREEN)
     };
 
-    private static final VoxelShape NORTH_SHAPE = createCuboidShape(2, 3, 1, 14, 13, 15);
+    private static final VoxelShape NORTH_SHAPE = box(2, 3, 1, 14, 13, 15);
 
-    public ServoBlock(Settings properties) {
+    public ServoBlock(Properties properties) {
         super(properties);
         setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, TERMINALS_NORTH, NORTH_SHAPE));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }
 
     @Override
     public Direction.Axis getRotationAxis(BlockState state) {
-        return state.get(FACING).getAxis();
+        return state.getValue(FACING).getAxis();
     }
 
     @Override
-    public boolean hasShaftTowards(WorldView world, BlockPos pos, BlockState state, Direction face) {
-        return face == state.get(FACING);
+    public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
+        return face == state.getValue(FACING);
     }
 
-    public Direction getPreferredFacing(ItemPlacementContext context) {
+    public Direction getPreferredFacing(BlockPlaceContext context) {
         Direction prefferedSide = null;
         for (Direction side : Iterate.directions) {
-            BlockState blockState = context.getWorld()
-                    .getBlockState(context.getBlockPos()
-                            .offset(side));
+            BlockState blockState = context.getLevel()
+                    .getBlockState(context.getClickedPos()
+                            .relative(side));
             if (blockState.getBlock() instanceof IRotate) {
-                if (((IRotate) blockState.getBlock()).hasShaftTowards(context.getWorld(), context.getBlockPos()
-                        .offset(side), blockState, side.getOpposite()))
+                if (((IRotate) blockState.getBlock()).hasShaftTowards(context.getLevel(), context.getClickedPos()
+                        .relative(side), blockState, side.getOpposite()))
                     if (prefferedSide != null && prefferedSide.getAxis() != side.getAxis()) {
                         prefferedSide = null;
                         break;
@@ -98,15 +98,15 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext context) {
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction preferred = getPreferredFacing(context);
         if (preferred == null || (context.getPlayer() != null && context.getPlayer()
-                .isSneaking())) {
-            Direction nearestLookingDirection = context.getPlayerLookDirection();
-            return getDefaultState().with(FACING, context.getPlayer() != null && context.getPlayer()
-                    .isSneaking() ? nearestLookingDirection : nearestLookingDirection.getOpposite());
+                .isShiftKeyDown())) {
+            Direction nearestLookingDirection = context.getNearestLookingDirection();
+            return defaultBlockState().setValue(FACING, context.getPlayer() != null && context.getPlayer()
+                    .isShiftKeyDown() ? nearestLookingDirection : nearestLookingDirection.getOpposite());
         }
-        return getDefaultState().with(FACING, preferred.getOpposite());
+        return defaultBlockState().setValue(FACING, preferred.getOpposite());
     }
 
     @Override
@@ -128,7 +128,7 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistanceOn(), player, tooltip);
     }
 }

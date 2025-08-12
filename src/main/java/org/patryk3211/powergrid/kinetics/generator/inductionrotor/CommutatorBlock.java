@@ -18,22 +18,22 @@ package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
@@ -41,7 +41,7 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.utility.Directions;
 
 public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, IElectric {
-    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = Properties.HORIZONTAL_AXIS;
+    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
 
     private final BlockStateTerminalCollection terminals;
     private final ImmutableMap<BlockState, VoxelShape> outlines;
@@ -53,36 +53,36 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    public CommutatorBlock(Settings properties) {
+    public CommutatorBlock(Properties properties) {
         super(properties);
-        var baseShaper = VoxelShaper.forHorizontalAxis(VoxelShapes.union(
-                createCuboidShape(0, 0, 3, 16, 12, 13),
-                createCuboidShape(0, 12, 6, 3, 16, 9),
-                createCuboidShape(13, 12, 7, 16, 16, 10)
+        var baseShaper = VoxelShaper.forHorizontalAxis(Shapes.or(
+                box(0, 0, 3, 16, 12, 13),
+                box(0, 12, 6, 3, 16, 9),
+                box(13, 12, 7, 16, 16, 10)
         ), Direction.Axis.Z);
         terminals = BlockStateTerminalCollection.builder(this)
                 .forAllStatesExcept(state -> {
-                    var axis = state.get(HORIZONTAL_AXIS);
+                    var axis = state.getValue(HORIZONTAL_AXIS);
                     if(axis == Direction.Axis.X)
                         return BlockStateTerminalCollection.each(TERMINALS_HORIZONTAL, terminal ->
                                 terminal.rotateAroundY(90));
                     return TERMINALS_HORIZONTAL;
                 })
                 .withShapeMapper(state -> {
-                    var axis = state.get(HORIZONTAL_AXIS);
+                    var axis = state.getValue(HORIZONTAL_AXIS);
                     return baseShaper.get(axis);
                 })
                 .build();
-        outlines = getShapesForStates(terminals.shapeMapper());
+        outlines = getShapeForEachState(terminals.shapeMapper());
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(HORIZONTAL_AXIS);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return outlines.get(state);
     }
 
@@ -107,17 +107,17 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
     }
 
     @Override
-    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         var result = super.onWrenched(state, context);
-        if(result == ActionResult.SUCCESS && !context.getWorld().isClient)
-            ElectricBlock.refreshConnectionEntities(context.getWorld(), context.getBlockPos());
+        if(result == InteractionResult.SUCCESS && !context.getLevel().isClientSide)
+            ElectricBlock.refreshConnectionEntities(context.getLevel(), context.getClickedPos());
         return result;
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext context) {
-        World world = context.getWorld();
-        BlockPos pos = context.getBlockPos();
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Level world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
 
         Direction.Axis preferredAxis = null;
         for(Direction.Axis axis : Directions.HORIZONTAL_AXIS) {
@@ -132,14 +132,14 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
         }
 
         if(preferredAxis == null)
-            preferredAxis = context.getHorizontalPlayerFacing().getAxis();
+            preferredAxis = context.getHorizontalDirection().getAxis();
 
-        return getDefaultState()
-                .with(HORIZONTAL_AXIS, preferredAxis);
+        return defaultBlockState()
+                .setValue(HORIZONTAL_AXIS, preferredAxis);
     }
 
     @Override
     public boolean canConnect(BlockState state, Direction dir) {
-        return state.get(HORIZONTAL_AXIS) == dir.getAxis();
+        return state.getValue(HORIZONTAL_AXIS) == dir.getAxis();
     }
 }

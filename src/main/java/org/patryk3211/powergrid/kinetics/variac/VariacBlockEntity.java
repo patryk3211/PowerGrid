@@ -18,12 +18,12 @@ package org.patryk3211.powergrid.kinetics.variac;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -62,7 +62,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     }
 
     private float getChaseSpeed() {
-        return MathHelper.clamp(Math.abs(getSpeed()) / 60.0f * 0.05f, 0, 1);
+        return Mth.clamp(Math.abs(getSpeed()) / 60.0f * 0.05f, 0, 1);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
 
     @Override
     public float getVolume() {
-        return MathHelper.clamp((lastCurrent / 40) - 0.25f, 0, 1);
+        return Mth.clamp((lastCurrent / 40) - 0.25f, 0, 1);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
                 arm.updateChaseTarget(arm.getValue());
             }
             refreshParameters();
-            markDirty();
+            setChanged();
         }
     }
 
@@ -170,7 +170,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     public void tickAudio() {
         super.tickAudio();
         if(!hasSoundSource && getVolume() > 0) {
-            MinecraftClient.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
+            Minecraft.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
             hasSoundSource = true;
         } else if(hasSoundSource && getVolume() <= 0) {
             hasSoundSource = false;
@@ -178,7 +178,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     }
 
     @Override
-    protected void write(NbtCompound compound, boolean clientPacket) {
+    protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         if(clientPacket)
             arm.forceNextSync();
@@ -186,7 +186,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     }
 
     @Override
-    protected void read(NbtCompound compound, boolean clientPacket) {
+    protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         arm.readNBT(compound.getCompound("Arm"), clientPacket);
         refreshParameters();

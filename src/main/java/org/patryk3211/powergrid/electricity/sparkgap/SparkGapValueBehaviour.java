@@ -21,15 +21,15 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 public class SparkGapValueBehaviour extends ScrollValueBehaviour {
-    public SparkGapValueBehaviour(Text label, SmartBlockEntity be, ValueBoxTransform slot) {
+    public SparkGapValueBehaviour(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
         super(label, be, slot);
         between(0, 18);
         withFormatter(this::getStringValue);
@@ -39,15 +39,15 @@ public class SparkGapValueBehaviour extends ScrollValueBehaviour {
         return Integer.toString(i * 500 + 1000);
     }
 
-    public ValueSettingsBoard createBoard(PlayerEntity player, BlockHitResult hitResult) {
-        ImmutableList<Text> rows = ImmutableList.of(
+    public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
+        ImmutableList<Component> rows = ImmutableList.of(
                 Unit.VOLTAGE.get().component()
         );
         ValueSettingsFormatter formatter = new ValueSettingsFormatter(this::formatSettings);
         return new ValueSettingsBoard(this.label, 18, 9, rows, formatter);
     }
 
-    public MutableText formatSettings(ValueSettings settings) {
+    public MutableComponent formatSettings(ValueSettings settings) {
         return Lang
                 .text(getStringValue(settings.value()))
                 .component();

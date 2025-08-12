@@ -22,10 +22,10 @@ import dev.architectury.utils.EnvExecutor;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
@@ -45,12 +45,12 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     protected float T_mid = 1200;
     protected float R_max = 100;
     protected float R_min = 15;
-    protected Properties thermalProperties;
+    protected org.patryk3211.powergrid.electricity.light.bulb.ILightBulb.Properties thermalProperties;
 
     protected float power = 0;
     protected float voltage = 0;
 
-    public LightBulb(Settings settings) {
+    public LightBulb(net.minecraft.world.item.Item.Properties settings) {
         super(settings);
     }
 
@@ -68,7 +68,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
                 item.T_mid = midpointTemperature;
                 item.R_max = maxResistance;
                 item.R_min = minResistance;
-                item.thermalProperties = new Properties(dissipationFactor, thermalMass, overheatTemperature);
+                item.thermalProperties = new org.patryk3211.powergrid.electricity.light.bulb.ILightBulb.Properties(dissipationFactor, thermalMass, overheatTemperature);
             });
             return b;
         };
@@ -95,7 +95,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     }
 
     @Override
-    public Properties thermalProperties() {
+    public org.patryk3211.powergrid.electricity.light.bulb.ILightBulb.Properties thermalProperties() {
         return thermalProperties;
     }
 
@@ -105,7 +105,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         if(voltage > 0 && power > 0) {
             Voltage.rated(voltage, player, tooltip);
             Power.rated(power, player, tooltip);
@@ -134,8 +134,8 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
             if(burned) {
                 state = State.BROKEN;
             } else {
-                var blockState = fixture.getCachedState();
-                var powerLevel = blockState.get(LightFixtureBlock.POWER);
+                var blockState = fixture.getBlockState();
+                var powerLevel = blockState.getValue(LightFixtureBlock.POWER);
                 if(powerLevel == 1) {
                     state = State.LOW_POWER;
                 } else if(powerLevel == 2) {

@@ -17,14 +17,14 @@ package org.patryk3211.powergrid.collections;
 
 import dev.architectury.networking.NetworkChannel;
 import dev.architectury.networking.NetworkManager;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperS2CPacket;
 import org.patryk3211.powergrid.network.SimplePacket;
@@ -52,12 +52,12 @@ public enum ModdedPackets {
     UPDATE_COMPONENT(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new),
     ;
 
-    public static final Identifier CHANNEL_NAME = PowerGrid.asResource("main");
+    public static final ResourceLocation CHANNEL_NAME = PowerGrid.asResource("main");
     private static NetworkChannel channel;
 
     private final PacketType<?> type;
 
-    <T extends SimplePacket> ModdedPackets(Class<T> type, Function<PacketByteBuf, T> factory) {
+    <T extends SimplePacket> ModdedPackets(Class<T> type, Function<FriendlyByteBuf, T> factory) {
         this.type = new PacketType<>(type, SimplePacket::encode, factory, SimplePacket::handle);
     }
 
@@ -72,12 +72,12 @@ public enum ModdedPackets {
     }
 
     public static class PacketType<T> {
-        private final BiConsumer<T, PacketByteBuf> encoder;
-        private final Function<PacketByteBuf, T> decoder;
+        private final BiConsumer<T, FriendlyByteBuf> encoder;
+        private final Function<FriendlyByteBuf, T> decoder;
         private final BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler;
         private final Class<T> type;
 
-        private PacketType(Class<T> type, BiConsumer<T, PacketByteBuf> encoder, Function<PacketByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler) {
+        private PacketType(Class<T> type, BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler) {
             this.encoder = encoder;
             this.decoder = decoder;
             this.handler = handler;
@@ -93,11 +93,11 @@ public enum ModdedPackets {
         channel.sendToServer(packet);
     }
 
-    public static <T> void sendToClient(T packet, ServerPlayerEntity player) {
+    public static <T> void sendToClient(T packet, ServerPlayer player) {
         channel.sendToPlayer(player, packet);
     }
 
-    public static <T> void sendToClients(T packet, Iterable<ServerPlayerEntity> players) {
+    public static <T> void sendToClients(T packet, Iterable<ServerPlayer> players) {
         channel.sendToPlayers(players, packet);
     }
 
@@ -109,11 +109,11 @@ public enum ModdedPackets {
         channel.sendToPlayers(PlayerLookup.tracking(e), packet);
     }
 
-    public static <T> void sendToClientsAround(T packet, ServerWorld world, Vec3d position, double radius) {
+    public static <T> void sendToClientsAround(T packet, ServerLevel world, Vec3 position, double radius) {
         channel.sendToPlayers(PlayerLookup.around(world, position, radius), packet);
     }
 
-    public static <T> void sendToClientsAround(T packet, ServerWorld world, Vec3i position, double radius) {
+    public static <T> void sendToClientsAround(T packet, ServerLevel world, Vec3i position, double radius) {
         channel.sendToPlayers(PlayerLookup.around(world, position, radius), packet);
     }
 }

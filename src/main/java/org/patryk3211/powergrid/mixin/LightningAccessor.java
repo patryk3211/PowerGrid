@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.mixin;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(ServerWorld.class)
+@Mixin(ServerLevel.class)
 public interface LightningAccessor {
-    @Invoker("getLightningPos")
+    @Invoker("findLightningTargetAround")
     BlockPos invokeGetLightningPos(BlockPos pos);
 }

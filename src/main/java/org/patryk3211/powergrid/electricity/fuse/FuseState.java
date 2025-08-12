@@ -15,13 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.fuse;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
-public enum FuseState implements StringIdentifiable {
+public enum FuseState implements StringRepresentable {
     OPEN, CLOSED, BLOWN;
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return name().toLowerCase();
     }
 }

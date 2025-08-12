@@ -15,11 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.gauge;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -55,7 +55,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        float resistance = ((CurrentGaugeBlock) getCachedState().getBlock()).getResistance();
+        float resistance = ((CurrentGaugeBlock) getBlockState().getBlock()).getResistance();
         var node1 = builder.addExternalNode();
         var node2 = builder.addExternalNode();
         wire = builder.connect(resistance, node1, node2);
@@ -66,23 +66,23 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
         return wire.current();
     }
 
-    protected Formatting measurementColor(float value) {
+    protected ChatFormatting measurementColor(float value) {
         if(value < maxValue * 0.01)
-            return Formatting.DARK_GRAY;
+            return ChatFormatting.DARK_GRAY;
         else if(value < maxValue * 0.5)
-            return Formatting.GREEN;
+            return ChatFormatting.GREEN;
         else if(value < maxValue * 0.75)
-            return Formatting.YELLOW;
+            return ChatFormatting.YELLOW;
         else
-            return Formatting.RED;
+            return ChatFormatting.RED;
     }
 
     @Override
-    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
 
         Lang.builder().translate("gui.current_meter.title")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         var current = getValue();
@@ -97,7 +97,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
 
         Lang.builder()
                 .text(currentText)
-                .add(Text.of(" "))
+                .add(Component.nullToEmpty(" "))
                 .add(Unit.CURRENT.get())
                 .style(measurementColor(Math.abs(current)))
                 .forGoggles(tooltip, 1);

@@ -16,19 +16,19 @@
 package org.patryk3211.powergrid.electricity.fuse;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
@@ -36,49 +36,49 @@ import org.patryk3211.powergrid.electricity.base.SurfaceElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class FuseHolderBlock extends SurfaceElectricBlock implements IBE<FuseHolderBlockEntity> {
-    public static final EnumProperty<FuseState> STATE = EnumProperty.of("state", FuseState.class);
+    public static final EnumProperty<FuseState> STATE = EnumProperty.create("state", FuseState.class);
 
     private static final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 0, 9.5, 3, 1),
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 15, 9.5, 3, 16)
     };
 
-    private static final VoxelShape SHAPE_DOWN_1 = VoxelShapes.union(
-            createCuboidShape(4, 0, 1, 12, 6, 15),
-            createCuboidShape(4, 6, 4, 12, 8, 12)
+    private static final VoxelShape SHAPE_DOWN_1 = Shapes.or(
+            box(4, 0, 1, 12, 6, 15),
+            box(4, 6, 4, 12, 8, 12)
     );
-    private static final VoxelShape SHAPE_DOWN_2 = VoxelShapes.union(
-            createCuboidShape(1, 0, 4, 15, 6, 12),
-            createCuboidShape(4, 6, 4, 12, 8, 12)
+    private static final VoxelShape SHAPE_DOWN_2 = Shapes.or(
+            box(1, 0, 4, 15, 6, 12),
+            box(4, 6, 4, 12, 8, 12)
     );
 
-    public FuseHolderBlock(Settings settings) {
+    public FuseHolderBlock(Properties settings) {
         super(settings);
-        setDefaultState(getDefaultState().with(STATE, FuseState.OPEN));
+        registerDefaultState(defaultBlockState().setValue(STATE, FuseState.OPEN));
         setTerminalCollection(surfaceTerminals(this, TERMINALS_DOWN, SHAPE_DOWN_1, SHAPE_DOWN_2, STATE));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(STATE);
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return onBlockEntityUse(world, pos, be -> {
-            var stack = player.getStackInHand(hand);
-            if(stack.isIn(ModdedTags.Item.FUSE_RESETTING.tag)) {
+            var stack = player.getItemInHand(hand);
+            if(stack.is(ModdedTags.Item.FUSE_RESETTING.tag)) {
                 if(be.resetFuse()) {
                     if(!player.isCreative())
-                        stack.decrement(1);
-                    return ActionResult.SUCCESS;
+                        stack.shrink(1);
+                    return InteractionResult.SUCCESS;
                 }
             } else if(stack.isEmpty()) {
                 if(be.removeBlown())
-                    return ActionResult.SUCCESS;
+                    return InteractionResult.SUCCESS;
             }
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
         });
     }
 

@@ -18,7 +18,7 @@ package org.patryk3211.powergrid.electricity;
 import com.google.common.base.Objects;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -37,7 +37,7 @@ import java.util.Map;
 public class ClientWorldNetworks extends WorldNetworks {
     private final Map<PhantomLine, PhantomLineData> phantomLines = new HashMap<>();
 
-    public ClientWorldNetworks(World world) {
+    public ClientWorldNetworks(Level world) {
         super(world);
     }
 

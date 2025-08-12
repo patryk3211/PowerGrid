@@ -28,8 +28,8 @@ import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchVisual;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
+import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchVisual;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
@@ -52,12 +52,12 @@ import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEn
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchInstance;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchRenderer;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorVisual;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorRenderer;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorVisual;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.rotor.RotorVisual;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
+import org.patryk3211.powergrid.kinetics.generator.rotor.RotorVisual;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;

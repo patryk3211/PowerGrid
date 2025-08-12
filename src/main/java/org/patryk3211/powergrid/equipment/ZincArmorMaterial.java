@@ -16,11 +16,11 @@
 package org.patryk3211.powergrid.equipment;
 
 import com.simibubi.create.AllItems;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ArmorMaterial;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ZincArmorMaterial implements ArmorMaterial {
@@ -35,28 +35,28 @@ public class ZincArmorMaterial implements ArmorMaterial {
     };
 
     @Override
-    public int getDurability(ArmorItem.Type type) {
+    public int getDurabilityForType(ArmorItem.Type type) {
         return durabilities[type.ordinal()];
     }
 
     @Override
-    public int getProtection(ArmorItem.Type type) {
+    public int getDefenseForType(ArmorItem.Type type) {
         return protections[type.ordinal()];
     }
 
     @Override
-    public int getEnchantability() {
+    public int getEnchantmentValue() {
         return 12;
     }
 
     @Override
     public SoundEvent getEquipSound() {
-        return SoundEvents.ITEM_ARMOR_EQUIP_GENERIC;
+        return SoundEvents.ARMOR_EQUIP_GENERIC;
     }
 
     @Override
     public Ingredient getRepairIngredient() {
-        return Ingredient.ofItems(AllItems.ZINC_INGOT);
+        return Ingredient.of(AllItems.ZINC_INGOT);
     }
 
     @Override

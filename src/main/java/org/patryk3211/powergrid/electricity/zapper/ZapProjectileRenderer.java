@@ -15,38 +15,42 @@
  */
 package org.patryk3211.powergrid.electricity.zapper;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.patryk3211.powergrid.PowerGrid;
 
 @Environment(EnvType.CLIENT)
 public class ZapProjectileRenderer extends EntityRenderer<ZapProjectileEntity> {
-    public static final Identifier TEXTURE = PowerGrid.texture("entity/zap_projectile");
+    public static final ResourceLocation TEXTURE = PowerGrid.texture("entity/zap_projectile");
 
-    public ZapProjectileRenderer(EntityRendererFactory.Context ctx) {
+    public ZapProjectileRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
     }
 
     @Override
-    public void render(ZapProjectileEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider consumers, int light) {
-        var buffer = consumers.getBuffer(RenderLayer.getEntitySolid(getTexture(entity)));
+    public void render(ZapProjectileEntity entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource consumers, int light) {
+        var buffer = consumers.getBuffer(RenderType.entitySolid(getTextureLocation(entity)));
 
-        var normalMatrix = matrices.peek().getNormalMatrix();
+        var normalMatrix = matrices.last().normal();
 
         var stack = TransformStack.of(matrices);
         stack.pushPose();
         stack.translate(0, 0.125f, 0);
 
         stack.rotateY(-yaw);
-        stack.rotateX(-entity.getPitch(tickDelta));
+        stack.rotateX(-entity.getViewXRot(tickDelta));
 
         final float UNIT = 1 / 16f;
         final float HALF_UNIT = UNIT / 2f;
@@ -54,8 +58,8 @@ public class ZapProjectileRenderer extends EntityRenderer<ZapProjectileEntity> {
         for(int i = 0; i < 4; ++i) {
             stack.rotateZ(90);
 
-            var positionMatrix = matrices.peek().getPositionMatrix();
-            light = LightmapTextureManager.MAX_LIGHT_COORDINATE;
+            var positionMatrix = matrices.last().pose();
+            light = LightTexture.FULL_BRIGHT;
             vertex(positionMatrix, normalMatrix, buffer, -HALF_UNIT, -HALF_UNIT, -HALF_UNIT * 5, 0, 0, 0, 0, 1, light);
             vertex(positionMatrix, normalMatrix, buffer, -HALF_UNIT, -HALF_UNIT, HALF_UNIT * 5, UNIT * 5, 0, 0, 0, 1, light);
             vertex(positionMatrix, normalMatrix, buffer, HALF_UNIT, HALF_UNIT, HALF_UNIT * 5, UNIT * 5, UNIT, 0, 0, 1, light);
@@ -66,7 +70,7 @@ public class ZapProjectileRenderer extends EntityRenderer<ZapProjectileEntity> {
     }
 
     @Override
-    public Identifier getTexture(ZapProjectileEntity entity) {
+    public ResourceLocation getTextureLocation(ZapProjectileEntity entity) {
         return TEXTURE;
     }
 
@@ -74,10 +78,10 @@ public class ZapProjectileRenderer extends EntityRenderer<ZapProjectileEntity> {
         vertexConsumer
                 .vertex(positionMatrix, x, y, z)
                 .color(255, 255, 255, 255)
-                .texture(u, v)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(light)
+                .uv(u, v)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
                 .normal(normalMatrix, normalX, normalY, normalZ)
-                .next();
+                .endVertex();
     }
 }

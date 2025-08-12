@@ -19,7 +19,7 @@ import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 
 import java.util.function.Supplier;
 

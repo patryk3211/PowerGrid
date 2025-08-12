@@ -15,18 +15,19 @@
  */
 package org.patryk3211.powergrid.base;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public interface IConnectableBlock {
     boolean connects(BlockState state, Direction side, BlockState checkState);
     boolean canPropagate(BlockState state, Direction direction);
 
-    static List<BlockPos> gatherBlocks(World world, BlockPos firstPos) {
+    static List<BlockPos> gatherBlocks(Level world, BlockPos firstPos) {
         List<BlockPos> allBlocks = new ArrayList<>();
         List<BlockPos> visitQueue = new ArrayList<>();
 
@@ -42,7 +43,7 @@ public interface IConnectableBlock {
             for(var dir : Direction.values()) {
                 if(!connectable.canPropagate(state, dir))
                     continue;
-                var neighborPos = pos.offset(dir);
+                var neighborPos = pos.relative(dir);
                 if(allBlocks.contains(neighborPos))
                     continue;
                 var neighbor = world.getBlockState(neighborPos);

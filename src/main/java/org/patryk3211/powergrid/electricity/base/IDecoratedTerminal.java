@@ -15,28 +15,28 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Box;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.utility.Lang;
 
 public interface IDecoratedTerminal {
-    Text POSITIVE = Lang.builder()
+    Component POSITIVE = Lang.builder()
             .translate("generic.positive_terminal")
-            .style(Formatting.RED)
+            .style(ChatFormatting.RED)
             .component();
-    Text NEGATIVE = Lang.builder()
+    Component NEGATIVE = Lang.builder()
             .translate("generic.negative_terminal")
-            .style(Formatting.BLUE)
+            .style(ChatFormatting.BLUE)
             .component();
-    Text CONNECTOR = Lang.builder()
+    Component CONNECTOR = Lang.builder()
             .translate("generic.terminal")
-            .style(Formatting.GRAY)
+            .style(ChatFormatting.GRAY)
             .component();
-    Text CONTROL = Lang.builder()
+    Component CONTROL = Lang.builder()
             .translate("generic.control_terminal")
-            .style(Formatting.DARK_GREEN)
+            .style(ChatFormatting.DARK_GREEN)
             .component();
 
     int RED = 0xFF3B3B;
@@ -45,8 +45,8 @@ public interface IDecoratedTerminal {
     int GREEN = 0x00AA00;
 
     @Nullable
-    Text getName();
-    Box getOutline();
+    Component getName();
+    AABB getOutline();
 
     default int getColor() {
         return GRAY;

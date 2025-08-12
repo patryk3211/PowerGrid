@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.forge;
 
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -23,7 +23,7 @@ import org.patryk3211.powergrid.electricity.wire.WireEntity;
 public class ForgeEvents {
     @SubscribeEvent
     public static void entityUnloadEvent(EntityLeaveLevelEvent event) {
-        if(event.getLevel() instanceof ServerWorld world) {
+        if(event.getLevel() instanceof ServerLevel world) {
             WireEntity.entityUnload(event.getEntity(), world);
         }
     }

@@ -22,8 +22,8 @@ import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.item.Item;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
@@ -140,7 +140,7 @@ public class ModdedItems {
     public static final ItemEntry<PortableBatteryItem> PORTABLE_BATTERY = REGISTRATE.item("portable_battery", p -> new PortableBatteryItem(ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
             .model((ctx, prov) ->
                     prov.withExistingParent(ctx.getName(), prov.modLoc("block/portable_battery/block")))
-            .properties(p -> p.maxDamage(-1))
+            .properties(p -> p.durability(-1))
 			.tag(forgeItemTag("chestplates"))
             .register();
 

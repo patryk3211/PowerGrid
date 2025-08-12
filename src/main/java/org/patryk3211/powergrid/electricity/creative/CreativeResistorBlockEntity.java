@@ -20,14 +20,14 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
 import net.createmod.catnip.math.VecHelper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
@@ -62,56 +62,56 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         wire.setResistance(tag.getFloat("Resistance"));
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putFloat("Resistance", (float) wire.getResistance());
     }
 
     @Override
-    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.translate("gui.creative_resistor.info_header").forGoggles(tooltip);
         Lang.builder().translate("gui.creative_resistor.resistance")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         var resistance = wire.getResistance();
         var resistanceText = PreciseNumberFormat.format(resistance);
         Lang.builder()
                 .text(resistanceText)
-                .add(Text.of(" "))
+                .add(Component.nullToEmpty(" "))
                 .add(Unit.RESISTANCE.get())
-                .style(Formatting.BLUE)
+                .style(ChatFormatting.BLUE)
                 .forGoggles(tooltip, 1);
 
         Lang.builder().translate("gui.creative_resistor.current")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         float current = wire.current();
         var currentText = PreciseNumberFormat.format(current);
         Lang.builder()
                 .text(currentText)
-                .add(Text.of(" "))
+                .add(Component.nullToEmpty(" "))
                 .add(Unit.CURRENT.get())
-                .style(Formatting.GREEN)
+                .style(ChatFormatting.GREEN)
                 .forGoggles(tooltip, 1);
 
         Lang.builder().translate("gui.creative_resistor.power")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         var power = PreciseNumberFormat.format(current * current * resistance);
         Lang.builder()
                 .text(power)
-                .add(Text.of(" "))
+                .add(Component.nullToEmpty(" "))
                 .add(Unit.POWER.get())
-                .style(Formatting.YELLOW)
+                .style(ChatFormatting.YELLOW)
                 .forGoggles(tooltip, 1);
         return true;
     }
@@ -119,14 +119,14 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
     public static class BoxTransform extends CenteredSideValueBoxTransform {
         public BoxTransform() {
             super((state, dir) -> {
-                if(dir.getAxis() == state.get(CreativeResistorBlock.HORIZONTAL_AXIS))
+                if(dir.getAxis() == state.getValue(CreativeResistorBlock.HORIZONTAL_AXIS))
                     return false;
                 return dir != Direction.DOWN;
             });
         }
 
         @Override
-        protected Vec3d getSouthLocation() {
+        protected Vec3 getSouthLocation() {
             if(direction != Direction.UP)
                 return VecHelper.voxelSpace(8.0f, 6.0f, 10.5f);
             else

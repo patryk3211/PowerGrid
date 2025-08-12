@@ -16,10 +16,10 @@
 package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -99,30 +99,30 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     @Override
     public void tick() {
         super.tick();
-        if(world.isClient) {
+        if(level.isClientSide) {
             var angular = rotorBehaviour.getAngularVelocityRadians();
             var current = getCurrent();
             float chance = Math.abs(angular / 32f * current / 4f);
 
-            var r = world.random;
+            var r = level.random;
             while(chance > 0) {
                 if(r.nextFloat() < chance) {
                     boolean secondBrush = r.nextBoolean();
-                    var pos = getPos().toCenterPos();
-                    var brushOffset = switch (getCachedState().get(HORIZONTAL_AXIS)) {
-                        case Z -> new Vec3d(3.5 / 16f, 0, 2 / 16f).addRandom(r, 1 / 16f);
-                        case X -> new Vec3d(2 / 16f, 0, 3.5 / 16).addRandom(r, 1 / 16f);
+                    var pos = getBlockPos().getCenter();
+                    var brushOffset = switch (getBlockState().getValue(HORIZONTAL_AXIS)) {
+                        case Z -> new Vec3(3.5 / 16f, 0, 2 / 16f).offsetRandom(r, 1 / 16f);
+                        case X -> new Vec3(2 / 16f, 0, 3.5 / 16).offsetRandom(r, 1 / 16f);
                         default -> throw new IllegalStateException();
                     };
 
                     pos = secondBrush ? pos.add(brushOffset) : pos.subtract(brushOffset);
                     int velocityDir = (angular < 0 ^ secondBrush) ? 1 : -1;
-                    var velocity = switch (getCachedState().get(HORIZONTAL_AXIS)) {
-                        case X, Z -> new Vec3d(0, 1 / 4f + Math.abs(angular) / 100f, 0).addRandom(r, 1 / 16f);
+                    var velocity = switch (getBlockState().getValue(HORIZONTAL_AXIS)) {
+                        case X, Z -> new Vec3(0, 1 / 4f + Math.abs(angular) / 100f, 0).offsetRandom(r, 1 / 16f);
                         default -> throw new IllegalStateException();
                     };
 
-                    world.addParticle(new SparkParticleData(r.nextBetween(1, 3), false, true), pos.x, pos.y, pos.z,
+                    level.addParticle(new SparkParticleData(r.nextIntBetweenInclusive(1, 3), false, true), pos.x, pos.y, pos.z,
                             velocity.x * velocityDir, velocity.y * velocityDir, velocity.z * velocityDir);
                 }
                 chance -= 1;

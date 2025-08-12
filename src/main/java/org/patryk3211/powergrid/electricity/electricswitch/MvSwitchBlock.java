@@ -16,11 +16,11 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 import net.createmod.catnip.math.VoxelShaper;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
@@ -32,20 +32,20 @@ public class MvSwitchBlock extends SurfaceSwitchBlock {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 14, 10, 3, 16)
     };
 
-    private static final VoxelShape SHAPE_DOWN = createCuboidShape(3, 0, 2, 13, 4, 14);
-    private static final VoxelShape SHAPE_DOWN_2 = createCuboidShape(2, 0, 3, 14, 4, 13);
+    private static final VoxelShape SHAPE_DOWN = box(3, 0, 2, 13, 4, 14);
+    private static final VoxelShape SHAPE_DOWN_2 = box(2, 0, 3, 14, 4, 13);
 
-    public MvSwitchBlock(Settings settings) {
+    public MvSwitchBlock(Properties settings) {
         super(settings);
         this.maxVoltage = 320;
-        this.resistance = 0.05f;
+        this.explosionResistance = 0.05f;
 
         var shaper = VoxelShaper.forDirectional(SHAPE_DOWN, Direction.DOWN);
         var shaper2 = VoxelShaper.forDirectional(SHAPE_DOWN_2, Direction.DOWN);
         setTerminalCollection(BlockStateTerminalCollection
                 .builder(this)
                 .forAllStatesExcept(state -> BlockStateTerminalCollection.each(DOWN_TERMINALS, terminal -> {
-                    var facing = state.get(FACING);
+                    var facing = state.getValue(FACING);
                     terminal = switch(facing) {
                         case DOWN -> terminal;
                         case UP -> terminal.rotateAroundX(180);
@@ -54,14 +54,14 @@ public class MvSwitchBlock extends SurfaceSwitchBlock {
                         case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
                         case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
                     };
-                    if(!state.get(ALONG_FIRST_AXIS)) {
+                    if(!state.getValue(ALONG_FIRST_AXIS)) {
                         terminal = terminal.rotate(facing.getAxis(), 90);
                     }
                     return terminal;
                 }), OPEN)
                 .withShapeMapper(state -> {
-                    var facing = state.get(FACING);
-                    var axis_along = state.get(ALONG_FIRST_AXIS);
+                    var facing = state.getValue(FACING);
+                    var axis_along = state.getValue(ALONG_FIRST_AXIS);
                     var prov = (axis_along ^ facing.getAxis() == Direction.Axis.Y) ? shaper2 : shaper;
                     return prov.get(facing);
                 })
@@ -69,7 +69,7 @@ public class MvSwitchBlock extends SurfaceSwitchBlock {
     }
 
     @Override
-    public void useSound(World world, BlockPos pos, boolean open) {
-        world.playSound(null, pos, ModdedSoundEvents.MV_SWITCH_CLICK.getMainEvent(), SoundCategory.BLOCKS, 0.3F, open ? 1.25f : 1.5f);
+    public void useSound(Level world, BlockPos pos, boolean open) {
+        world.playSound(null, pos, ModdedSoundEvents.MV_SWITCH_CLICK.getMainEvent(), SoundSource.BLOCKS, 0.3F, open ? 1.25f : 1.5f);
     }
 }

@@ -16,11 +16,11 @@
 package org.patryk3211.powergrid.utility;
 
 import net.createmod.catnip.lang.LangBuilder;
-import net.minecraft.text.MutableText;
+import net.minecraft.network.chat.MutableComponent;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class Lang extends net.createmod.catnip.lang.Lang {
-    public static MutableText translateDirect(String key, Object... args) {
+    public static MutableComponent translateDirect(String key, Object... args) {
         return builder().translate(key, args).component();
     }
 

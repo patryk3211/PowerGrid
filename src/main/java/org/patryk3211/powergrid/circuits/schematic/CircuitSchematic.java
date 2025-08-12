@@ -15,11 +15,11 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.text.Text;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -62,7 +62,7 @@ public class CircuitSchematic {
         this.name = name;
     }
 
-    public static CircuitSchematic fromNbt(NbtCompound nbt) {
+    public static CircuitSchematic fromNbt(CompoundTag nbt) {
         if(nbt == null)
             return null;
         var schematic = new CircuitSchematic();
@@ -71,17 +71,17 @@ public class CircuitSchematic {
     }
 
     public static CircuitSchematic fromStack(ItemStack stack) {
-        if(stack.isEmpty() || !stack.hasNbt())
+        if(stack.isEmpty() || !stack.hasTag())
             return null;
-        return fromNbt(stack.getNbt().getCompound("Schematic"));
+        return fromNbt(stack.getTag().getCompound("Schematic"));
     }
 
-    public NbtCompound serializeNbt() {
-        var tag = new NbtCompound();
+    public CompoundTag serializeNbt() {
+        var tag = new CompoundTag();
         tag.put("Front", front.serializeNbt());
         tag.put("Back", back.serializeNbt());
 
-        var list = new NbtList();
+        var list = new ListTag();
         for(var component : components) {
             list.add(component.serializeNbt());
         }
@@ -92,7 +92,7 @@ public class CircuitSchematic {
         return tag;
     }
 
-    public void deserializeNbt(NbtCompound tag) {
+    public void deserializeNbt(CompoundTag tag) {
         try {
             front.deserialize(tag.getLongArray("Front"));
             back.deserialize(tag.getLongArray("Back"));
@@ -104,9 +104,9 @@ public class CircuitSchematic {
             }
 
             components.clear();
-            var list = tag.getList("Components", NbtElement.COMPOUND_TYPE);
+            var list = tag.getList("Components", Tag.TAG_COMPOUND);
             for (var element : list) {
-                components.add(new PlacedComponent((NbtCompound) element));
+                components.add(new PlacedComponent((CompoundTag) element));
             }
             rebuildPads();
         } catch(RuntimeException e) {
@@ -183,11 +183,11 @@ public class CircuitSchematic {
 
     public ItemStack toItemStack() {
         var stack = ModdedItems.CIRCUIT_SCHEMATIC.asStack();
-        var tag = new NbtCompound();
+        var tag = new CompoundTag();
         tag.put("Schematic", serializeNbt());
-        stack.setNbt(tag);
+        stack.setTag(tag);
         if(name != null)
-            stack.setCustomName(Text.literal(name));
+            stack.setHoverName(Component.literal(name));
         return stack;
     }
 

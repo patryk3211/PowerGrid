@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtFloat;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 
 public class FloatProperty extends ComponentProperty<Float> {
@@ -51,18 +51,18 @@ public class FloatProperty extends ComponentProperty<Float> {
     }
 
     @Override
-    public Float read(@Nullable NbtElement element) {
+    public Float read(@Nullable Tag element) {
         if(element == null)
             return defaultValue;
-        if(element.getType() != NbtElement.FLOAT_TYPE)
+        if(element.getId() != Tag.TAG_FLOAT)
             return defaultValue;
-        var value = ((NbtFloat) element).floatValue();
+        var value = ((FloatTag) element).getAsFloat();
         return limit(value);
     }
 
     @Override
-    public NbtElement write(Float value) {
-        return NbtFloat.of(value);
+    public Tag write(Float value) {
+        return FloatTag.valueOf(value);
     }
 
     @Override

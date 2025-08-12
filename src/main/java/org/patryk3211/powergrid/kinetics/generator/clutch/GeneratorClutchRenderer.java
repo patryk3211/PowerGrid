@@ -15,35 +15,35 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.clutch;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.getRotorAngle;
 
 public class GeneratorClutchRenderer extends KineticBlockEntityRenderer<GeneratorClutchBlockEntity> {
-    public GeneratorClutchRenderer(BlockEntityRendererFactory.Context context) {
+    public GeneratorClutchRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    protected void renderSafe(GeneratorClutchBlockEntity be, float partialTicks, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
-        if(VisualizationManager.supportsVisualization(be.getWorld()))
+    protected void renderSafe(GeneratorClutchBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
+        if(VisualizationManager.supportsVisualization(be.getLevel()))
             return;
 
         super.renderSafe(be, partialTicks, ms, buffer, light, overlay);
 
-        var state = be.getCachedState();
-        var facing = state.get(Properties.FACING);
+        var state = be.getBlockState();
+        var facing = state.getValue(BlockStateProperties.FACING);
         var axis = facing.getAxis();
 
         var rotorModel = CachedBuffers.partialFacing(ModdedPartialModels.CLUTCH_SHAFT, state, facing.getOpposite());
@@ -51,12 +51,12 @@ public class GeneratorClutchRenderer extends KineticBlockEntityRenderer<Generato
 
         rotorModel.light(light);
         rotorModel.rotateCentered(rotorAngle, Direction.get(Direction.AxisDirection.POSITIVE, axis));
-        rotorModel.renderInto(ms, buffer.getBuffer(RenderLayer.getSolid()));
+        rotorModel.renderInto(ms, buffer.getBuffer(RenderType.solid()));
     }
 
     @Override
     protected SuperByteBuffer getRotatedModel(GeneratorClutchBlockEntity be, BlockState state) {
-        var facing = state.get(GeneratorClutchBlock.FACING);
+        var facing = state.getValue(GeneratorClutchBlock.FACING);
         return CachedBuffers.partialFacing(ModdedPartialModels.SHAFT_BIT, state, facing);
     }
 }

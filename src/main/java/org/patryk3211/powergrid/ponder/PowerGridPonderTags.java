@@ -17,22 +17,22 @@ package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 public class PowerGridPonderTags {
-    public static final Identifier
+    public static final ResourceLocation
             GENERATOR_ASSEMBLY = id("generator_assembly"),
             ELECTRIC_RELAYS = id("electric_relays"),
             ELECTRIC_DEVICES = id("electric_devices");
 
-    private static Identifier id(String name) {
+    private static ResourceLocation id(String name) {
         return PowerGrid.asResource(name);
     }
 
-    public static void register(PonderTagRegistrationHelper<Identifier> helper) {
+    public static void register(PonderTagRegistrationHelper<ResourceLocation> helper) {
         helper.registerTag(GENERATOR_ASSEMBLY)
                 .title("Generator Parts")
                 .description("Components which can be used to build a generator")

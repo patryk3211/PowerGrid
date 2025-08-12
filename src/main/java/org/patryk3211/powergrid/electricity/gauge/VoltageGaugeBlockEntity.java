@@ -15,11 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.gauge;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
@@ -58,23 +58,23 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
         return node1.getVoltage() - node2.getVoltage();
     }
 
-    protected Formatting measurementColor(float value) {
+    protected ChatFormatting measurementColor(float value) {
         if(value < maxValue * 0.01)
-            return Formatting.DARK_GRAY;
+            return ChatFormatting.DARK_GRAY;
         else if(value < maxValue * 0.5)
-            return Formatting.GREEN;
+            return ChatFormatting.GREEN;
         else if(value < maxValue * 0.75)
-            return Formatting.BLUE;
+            return ChatFormatting.BLUE;
         else
-            return Formatting.LIGHT_PURPLE;
+            return ChatFormatting.LIGHT_PURPLE;
     }
 
     @Override
-    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
 
         Lang.builder().translate("gui.voltage_meter.title")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         var potential = getValue();
@@ -89,7 +89,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
 
         Lang.builder()
                 .text(voltageText)
-                .add(Text.of(" "))
+                .add(Component.nullToEmpty(" "))
                 .add(Unit.VOLTAGE.get())
                 .style(measurementColor(Math.abs(potential)))
                 .forGoggles(tooltip, 1);

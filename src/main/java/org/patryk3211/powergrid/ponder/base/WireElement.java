@@ -18,12 +18,12 @@ package org.patryk3211.powergrid.ponder.base;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.foundation.PonderScene;
 import net.createmod.ponder.foundation.element.AnimatedSceneElementBase;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -54,24 +54,24 @@ public class WireElement extends AnimatedSceneElementBase {
     }
 
     @Override
-    protected void renderLast(PonderLevel world, VertexConsumerProvider buffer, DrawContext graphics, float fade, float pt) {
-        EntityRenderDispatcher dispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
+    protected void renderLast(PonderLevel world, MultiBufferSource buffer, GuiGraphics graphics, float fade, float pt) {
+        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
         if(wire == null && isVisible()) {
             var hWire = HangingWireEntity.create(world, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
             hWire.updateRenderParams();
             wire = hWire;
         }
 
-        var ms = graphics.getMatrices();
-        ms.push();
+        var ms = graphics.pose();
+        ms.pushPose();
         ms.translate(
-                MathHelper.lerp(pt, wire.prevX, wire.getX()),
-                MathHelper.lerp(pt, wire.prevY, wire.getY()),
-                MathHelper.lerp(pt, wire.prevZ, wire.getZ())
+                Mth.lerp(pt, wire.xo, wire.getX()),
+                Mth.lerp(pt, wire.yo, wire.getY()),
+                Mth.lerp(pt, wire.zo, wire.getZ())
         );
 
         dispatcher.render(wire, 0, 0, 0, 0, pt, ms, buffer, lightCoordsFromFade(fade));
-        ms.pop();
+        ms.popPose();
     }
 
     @Override

@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.collections;
 
 import com.tterrag.registrate.util.entry.EntityEntry;
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.world.entity.MobCategory;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -29,17 +29,17 @@ import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedEntities {
     public static final EntityEntry<HangingWireEntity> HANGING_WIRE =
-            REGISTRATE.entity("hanging_wire", HangingWireEntity::new, SpawnGroup.MISC)
+            REGISTRATE.entity("hanging_wire", HangingWireEntity::new, MobCategory.MISC)
                     .renderer(() -> HangingWireRenderer::new)
                     .register();
 
     public static final EntityEntry<BlockWireEntity> BLOCK_WIRE =
-            REGISTRATE.entity("block_wire", BlockWireEntity::new, SpawnGroup.MISC)
+            REGISTRATE.entity("block_wire", BlockWireEntity::new, MobCategory.MISC)
                     .renderer(() -> BlockWireRenderer::new)
                     .register();
 
     public static final EntityEntry<ZapProjectileEntity> ZAP_PROJECTILE =
-            REGISTRATE.entity("zap_projectile", ZapProjectileEntity::new, SpawnGroup.MISC)
+            REGISTRATE.entity("zap_projectile", ZapProjectileEntity::new, MobCategory.MISC)
                     .transform(EntityProperties.apply(b -> b
                             .dimensions(0.25f, 0.25f)
                             .trackRangeChunks(4)

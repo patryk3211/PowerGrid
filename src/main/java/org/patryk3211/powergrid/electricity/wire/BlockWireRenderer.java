@@ -15,92 +15,96 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.LightType;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.phys.Vec3;
 
 @Environment(EnvType.CLIENT)
 public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
-    public BlockWireRenderer(EntityRendererFactory.Context ctx) {
+    public BlockWireRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
     }
 
     @Override
-    public void render(BlockWireEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    public void render(BlockWireEntity entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
         if(entity.isOverheated())
             return;
 
-        var currentPos = Vec3d.ZERO;
-        var buffer = vertexConsumers.getBuffer(RenderLayer.getEntitySolid(getTexture(entity)));
-        var pos = entity.getPos();
+        var currentPos = Vec3.ZERO;
+        var buffer = vertexConsumers.getBuffer(RenderType.entitySolid(getTextureLocation(entity)));
+        var pos = entity.position();
 
         boolean first = true;
         for(var segment : entity.segments) {
             var length = segment.length();
             if(first) {
-                currentPos = Vec3d.ZERO.offset(segment.direction, -1 / 16f);
+                currentPos = Vec3.ZERO.relative(segment.direction, -1 / 16f);
                 length += 1 / 16f;
                 first = false;
             }
-            var normal = segment.direction.getVector();
+            var normal = segment.direction.getNormal();
             var newPos = currentPos.add(normal.getX() * length, normal.getY() * length, normal.getZ() * length);
 
-            var blockPos = BlockPos.ofFloored(
+            var blockPos = BlockPos.containing(
                     newPos.x + pos.x,
                     newPos.y + pos.y,
                     newPos.z + pos.z
             );
-            var blockLight = entity.getWorld().getLightLevel(LightType.BLOCK, blockPos);
-            var skyLight = entity.getWorld().getLightLevel(LightType.SKY, blockPos);
+            var blockLight = entity.level().getBrightness(LightLayer.BLOCK, blockPos);
+            var skyLight = entity.level().getBrightness(LightLayer.SKY, blockPos);
 
-            renderSegment(matrices, buffer, LightmapTextureManager.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
+            renderSegment(matrices, buffer, LightTexture.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
             currentPos = newPos;
         }
     }
 
     @Override
-    public Identifier getTexture(BlockWireEntity entity) {
+    public ResourceLocation getTextureLocation(BlockWireEntity entity) {
         return entity.getWireItem().getWireTexture();
     }
 
-    public static void debugLine(MatrixStack ms, VertexConsumer buffer, int light, int color,
-                                 Vec3d v1, Vec3d v2) {
-        var matrix = ms.peek().getPositionMatrix();
+    public static void debugLine(PoseStack ms, VertexConsumer buffer, int light, int color,
+                                 Vec3 v1, Vec3 v2) {
+        var matrix = ms.last().pose();
         buffer.vertex(matrix, (float) v1.x, (float) v1.y, (float) v1.z)
                 .color(color)
-                .light(light)
-                .next();
+                .uv2(light)
+                .endVertex();
         buffer.vertex(matrix, (float) v2.x, (float) v2.y, (float) v2.z)
                 .color(color)
-                .light(light)
-                .next();
+                .uv2(light)
+                .endVertex();
     }
 
-    private static void vertex(MatrixStack.Entry matrix, VertexConsumer buffer,
+    private static void vertex(PoseStack.Pose matrix, VertexConsumer buffer,
                                float x1, float y1, float z1,
                                float u, float v,
                                float xn, float yn, float zn,
                                int color, int light) {
-        buffer.vertex(matrix.getPositionMatrix(), x1, y1, z1)
+        buffer.vertex(matrix.pose(), x1, y1, z1)
                 .color(color)
-                .texture(u, v)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(light)
-                .normal(matrix.getNormalMatrix(), xn, yn, zn)
-                .next();
+                .uv(u, v)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), xn, yn, zn)
+                .endVertex();
     }
 
-    public static void renderSegment(MatrixStack ms, VertexConsumer buffer, int light, int color,
-                                     Vec3d start, Direction dir, float thickness, float length, int uvOffset) {
-        if(dir.getDirection() == Direction.AxisDirection.NEGATIVE) {
+    public static void renderSegment(PoseStack ms, VertexConsumer buffer, int light, int color,
+                                     Vec3 start, Direction dir, float thickness, float length, int uvOffset) {
+        if(dir.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
             length *= -1;
             thickness *= -1;
         }
@@ -141,13 +145,13 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
         y2 += y1 + thickness;
         z2 += z1 + thickness;
 
-        if(dir.getDirection() == Direction.AxisDirection.NEGATIVE) {
+        if(dir.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
             float xb = x1, yb = y1, zb = z1;
             x1 = x2; y1 = y2; z1 = z2;
             x2 = xb; y2 = yb; z2 = zb;
         }
 
-        var matrix = ms.peek();
+        var matrix = ms.last();
 
         // Bottom face
         vertex(matrix, buffer,

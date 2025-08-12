@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
@@ -40,14 +40,14 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
 
     @Override
     public void tick() {
-        if(getCachedState().get(PotatoBatteryBlock.BAKED)) {
+        if(getBlockState().getValue(PotatoBatteryBlock.BAKED)) {
             sourceNode.setVoltage(0);
             energy = 0;
             return;
         }
         super.tick();
-        if(thermalBehaviour.isOverheated() && !world.isClient) {
-            world.setBlockState(pos, getCachedState().with(PotatoBatteryBlock.BAKED, true));
+        if(thermalBehaviour.isOverheated() && !level.isClientSide) {
+            level.setBlockAndUpdate(worldPosition, getBlockState().setValue(PotatoBatteryBlock.BAKED, true));
             notifyUpdate();
         }
     }

@@ -16,40 +16,40 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.createmod.catnip.math.VoxelShaper;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public abstract class DirectionalElectricBlock extends ElectricBlock {
-    public static final DirectionProperty FACING = Properties.FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
-    public DirectionalElectricBlock(Settings settings) {
+    public DirectionalElectricBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        var player = ctx.getPlayer() == null || !ctx.getPlayer().isSneaking() ? ctx.getPlayerLookDirection() : ctx.getPlayerLookDirection().getOpposite();
-        return getDefaultState().with(FACING, player);
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var player = ctx.getPlayer() == null || !ctx.getPlayer().isShiftKeyDown() ? ctx.getNearestLookingDirection() : ctx.getNearestLookingDirection().getOpposite();
+        return defaultBlockState().setValue(FACING, player);
     }
 
     public static BlockStateTerminalCollection directionalNorthTerminals(Block block, TerminalBoundingBox[] terminals, VoxelShape northShape) {
         var shaper = VoxelShaper.forDirectional(northShape, Direction.NORTH);
         return BlockStateTerminalCollection.builder(block)
-                .forAllStates(state -> BlockStateTerminalCollection.each(terminals, terminal -> switch(state.get(FACING)) {
+                .forAllStates(state -> BlockStateTerminalCollection.each(terminals, terminal -> switch(state.getValue(FACING)) {
                     case NORTH -> terminal;
                     case SOUTH -> terminal.rotateAroundY(180);
                     case EAST -> terminal.rotateAroundY(90);
@@ -57,7 +57,7 @@ public abstract class DirectionalElectricBlock extends ElectricBlock {
                     case UP -> terminal.rotateAroundX(-90);
                     case DOWN -> terminal.rotateAroundX(90);
                 }))
-                .withShapeMapper(state -> shaper.get(state.get(FACING)))
+                .withShapeMapper(state -> shaper.get(state.getValue(FACING)))
                 .build();
     }
 }

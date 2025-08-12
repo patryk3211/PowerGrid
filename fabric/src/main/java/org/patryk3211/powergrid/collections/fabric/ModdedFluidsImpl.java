@@ -24,32 +24,32 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributeHandler;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.material.Fluid;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedFluidsImpl {
     public static final FluidEntry<SimpleFlowableFluid.Flowing> ACID =
-            REGISTRATE.fluid("acid", new Identifier("block/water_still"), new Identifier("block/water_flowing"))
-                    .renderType(() -> RenderLayer::getTranslucent)
+            REGISTRATE.fluid("acid", new ResourceLocation("block/water_still"), new ResourceLocation("block/water_flowing"))
+                    .renderType(() -> RenderType::translucent)
                     .tag(FluidTags.WATER)
                     .source(SimpleFlowableFluid.Source::new)
                     .fluidAttributes(() -> new FluidVariantAttributeHandler() { })
-                    .onRegisterAfter(RegistryKeys.FLUID, flowing -> EnvExecutor.runInEnv(Env.CLIENT, () -> () -> registerSimpleFluidRenderer(flowing, 0xFFFFEE80)))
+                    .onRegisterAfter(Registries.FLUID, flowing -> EnvExecutor.runInEnv(Env.CLIENT, () -> () -> registerSimpleFluidRenderer(flowing, 0xFFFFEE80)))
                     .register();
 
     @Environment(EnvType.CLIENT)
     private static void registerSimpleFluidRenderer(SimpleFlowableFluid.Flowing fluid, int tint) {
         var handler = SimpleFluidRenderHandler.coloredWater(tint);
-        FluidRenderHandlerRegistry.INSTANCE.register(fluid.getStill(), fluid.getFlowing(), handler);
+        FluidRenderHandlerRegistry.INSTANCE.register(fluid.getSource(), fluid.getFlowing(), handler);
     }
 
     public static Fluid acid() {
-        return ACID.getSource().getStill();
+        return ACID.getSource().getSource();
     }
 
     public static Fluid acidFlowing() {

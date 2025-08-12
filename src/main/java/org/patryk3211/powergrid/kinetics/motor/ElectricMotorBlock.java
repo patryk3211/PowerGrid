@@ -18,22 +18,22 @@ package org.patryk3211.powergrid.kinetics.motor;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.data.Iterate;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
@@ -47,9 +47,9 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 import java.util.List;
 
 public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
-    public static final DirectionProperty FACING = Properties.FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
-    private static final VoxelShape NORTH_SHAPE = createCuboidShape(3, 3, 0, 13, 13, 16);
+    private static final VoxelShape NORTH_SHAPE = box(3, 3, 0, 13, 13, 16);
 
     private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 2.5, 11.5, 6.5, 4.5, 13.5, 9.5)
@@ -58,26 +58,26 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    public ElectricMotorBlock(Settings properties) {
+    public ElectricMotorBlock(Properties properties) {
         super(properties);
         setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE));
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(FACING);
     }
 
-    public Direction getPreferredFacing(ItemPlacementContext context) {
+    public Direction getPreferredFacing(BlockPlaceContext context) {
         Direction prefferedSide = null;
         for (Direction side : Iterate.directions) {
-            BlockState blockState = context.getWorld()
-                    .getBlockState(context.getBlockPos()
-                            .offset(side));
+            BlockState blockState = context.getLevel()
+                    .getBlockState(context.getClickedPos()
+                            .relative(side));
             if (blockState.getBlock() instanceof IRotate) {
-                if (((IRotate) blockState.getBlock()).hasShaftTowards(context.getWorld(), context.getBlockPos()
-                        .offset(side), blockState, side.getOpposite()))
+                if (((IRotate) blockState.getBlock()).hasShaftTowards(context.getLevel(), context.getClickedPos()
+                        .relative(side), blockState, side.getOpposite()))
                     if (prefferedSide != null && prefferedSide.getAxis() != side.getAxis()) {
                         prefferedSide = null;
                         break;
@@ -90,25 +90,25 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext context) {
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction preferred = getPreferredFacing(context);
         if (preferred == null || (context.getPlayer() != null && context.getPlayer()
-                .isSneaking())) {
-            Direction nearestLookingDirection = context.getPlayerLookDirection();
-            return getDefaultState().with(FACING, context.getPlayer() != null && context.getPlayer()
-                    .isSneaking() ? nearestLookingDirection : nearestLookingDirection.getOpposite());
+                .isShiftKeyDown())) {
+            Direction nearestLookingDirection = context.getNearestLookingDirection();
+            return defaultBlockState().setValue(FACING, context.getPlayer() != null && context.getPlayer()
+                    .isShiftKeyDown() ? nearestLookingDirection : nearestLookingDirection.getOpposite());
         }
-        return getDefaultState().with(FACING, preferred.getOpposite());
+        return defaultBlockState().setValue(FACING, preferred.getOpposite());
     }
 
     @Override
     public Direction.Axis getRotationAxis(BlockState state) {
-        return state.get(FACING).getAxis();
+        return state.getValue(FACING).getAxis();
     }
 
     @Override
-    public boolean hasShaftTowards(WorldView world, BlockPos pos, BlockState state, Direction face) {
-        return face == state.get(FACING);
+    public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
+        return face == state.getValue(FACING);
     }
 
     @Override
@@ -130,19 +130,19 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
         Voltage.rpm(rpmPerVolt(), player, tooltip);
     }
 
     @Override
-    public BlockState rotate(BlockState state, BlockRotation rot) {
-        return state.with(FACING, rot.rotate(state.get(FACING)));
+    public BlockState rotate(BlockState state, Rotation rot) {
+        return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public BlockState mirror(BlockState state, BlockMirror mirrorIn) {
-        return state.rotate(mirrorIn.getRotation(state.get(FACING)));
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
     }
 }

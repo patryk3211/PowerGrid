@@ -16,12 +16,11 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -42,10 +41,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     public void withSchematic(CircuitSchematic schematic) {
-        if(world.isClient)
+        if(level.isClientSide)
             return;
         if(schematic == null) {
-            world.breakBlock(pos, false);
+            level.destroyBlock(worldPosition, false);
             return;
         }
         this.schematic = new CircuitSchematic(schematic);
@@ -53,7 +52,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         notifyUpdate();
     }
 
-    public void setAdditionalData(NbtCompound tag) {
+    public void setAdditionalData(CompoundTag tag) {
         if(baked == null)
             return;
         baked.read(tag);
@@ -62,13 +61,13 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     private void bakeCircuit() {
         componentCache.clear();
-        baked = BakedCircuit.from(schematic, () -> world, pos);
+        baked = BakedCircuit.from(schematic, () -> level, worldPosition);
         for(var placed : schematic.components()) {
-            placed.withWorld(this::getWorld, pos);
+            placed.withWorld(this::getLevel, worldPosition);
         }
         electricBehaviour.rebuildCircuit();
-        if(world != null && world.isClient)
-            Component.modelChanged(pos);
+        if(level != null && level.isClientSide)
+            Component.modelChanged(worldPosition);
     }
 
     @Override
@@ -76,22 +75,22 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         super.tick();
         if(baked != null) {
             baked.tick();
-            if(!world.isClient)
-                markDirty();
+            if(!level.isClientSide)
+                setChanged();
         }
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         tag.put("Schematic", schematic.serializeNbt());
         baked.write(tag);
         super.write(tag, clientPacket);
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         if(!tag.contains("Schematic")) {
-            world.breakBlock(pos, false);
+            level.destroyBlock(worldPosition, false);
             return;
         }
         super.read(tag, clientPacket);
@@ -136,14 +135,14 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     @Override
-    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+    public boolean addToGoggleTooltip(List<net.minecraft.network.chat.Component> tooltip, boolean isPlayerSneaking) {
         if(baked == null || !baked.isDamaged())
             return false;
 
         Lang.translate("gui.circuit_board.damage_header")
                 .forGoggles(tooltip);
         Lang.translate("gui.circuit_board.damage_body")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
         return true;
     }

@@ -16,11 +16,11 @@
 package org.patryk3211.powergrid.electricity.heater;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -68,10 +68,10 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     }
 
     private void updateState(State state) {
-        assert world != null;
+        assert level != null;
         if(this.state != state) {
             this.state = state;
-            world.updateNeighbors(pos, getCachedState().getBlock());
+            level.blockUpdated(worldPosition, getBlockState().getBlock());
         }
     }
 
@@ -86,22 +86,22 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         wire = builder.connect(HeaterBlock.resistance(), node1, node2);
     }
 
-    protected Formatting temperatureColor(float value) {
+    protected ChatFormatting temperatureColor(float value) {
         if(value < 200f)
-            return Formatting.DARK_GRAY;
+            return ChatFormatting.DARK_GRAY;
         else if(value < 400f)
-            return Formatting.GREEN;
+            return ChatFormatting.GREEN;
         else if(value < 550f)
-            return Formatting.YELLOW;
+            return ChatFormatting.YELLOW;
         else
-            return Formatting.RED;
+            return ChatFormatting.RED;
     }
 
     @Override
-    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.translate("gui.heater.info_header").forGoggles(tooltip);
         Lang.builder().translate("gui.heater.title")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         var temperature = thermalBehaviour.getTemperature();
@@ -109,7 +109,7 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         var temperatureText = String.format("%.2f", temperature);
         Lang.builder()
                 .text(temperatureText)
-                .add(Text.of(" "))
+                .add(Component.nullToEmpty(" "))
                 .add(Unit.TEMPERATURE.get())
                 .style(temperatureColor(temperature))
                 .forGoggles(tooltip, 1);

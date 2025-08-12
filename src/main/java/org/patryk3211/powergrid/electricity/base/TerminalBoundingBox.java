@@ -15,23 +15,23 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTerminal {
-    private Vec3d min;
-    private Vec3d max;
-    private Vec3d origin;
+    private Vec3 min;
+    private Vec3 max;
+    private Vec3 origin;
     private double expand;
-    private final Text name;
+    private final Component name;
     private int color;
 
-    private TerminalBoundingBox(Text name) {
+    private TerminalBoundingBox(Component name) {
         this.name = name;
         this.color = GRAY;
     }
@@ -45,24 +45,24 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
         this.origin = other.origin;
     }
 
-    public TerminalBoundingBox(Text name, double x1, double y1, double z1, double x2, double y2, double z2) {
+    public TerminalBoundingBox(Component name, double x1, double y1, double z1, double x2, double y2, double z2) {
         this(name, x1, y1, z1, x2, y2, z2, 0.1);
     }
 
-    public TerminalBoundingBox(Text name, double x1, double y1, double z1, double x2, double y2, double z2, double expand) {
+    public TerminalBoundingBox(Component name, double x1, double y1, double z1, double x2, double y2, double z2, double expand) {
         this(name);
-        min = new Vec3d((x1 - expand) / 16.0, (y1 - expand) / 16.0, (z1 - expand) / 16.0);
-        max = new Vec3d((x2 + expand) / 16.0, (y2 + expand) / 16.0, (z2 + expand) / 16.0);
-        origin = new Vec3d((x1 + x2) * 0.03125, (y1 + y2) * 0.03125, (z1 + z2) * 0.03125);
+        min = new Vec3((x1 - expand) / 16.0, (y1 - expand) / 16.0, (z1 - expand) / 16.0);
+        max = new Vec3((x2 + expand) / 16.0, (y2 + expand) / 16.0, (z2 + expand) / 16.0);
+        origin = new Vec3((x1 + x2) * 0.03125, (y1 + y2) * 0.03125, (z1 + z2) * 0.03125);
         this.expand = expand / 16.0;
     }
 
     public VoxelShape getShape() {
-        return VoxelShapes.cuboid(min.x + expand, min.y + expand, min.z + expand,
+        return Shapes.box(min.x + expand, min.y + expand, min.z + expand,
                 max.x - expand, max.y - expand, max.z - expand);
     }
 
-    public TerminalBoundingBox offset(Vec3d offset) {
+    public TerminalBoundingBox offset(Vec3 offset) {
         return this.offset(offset.x, offset.y, offset.z);
     }
 
@@ -74,7 +74,7 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
         return terminal;
     }
 
-    public TerminalBoundingBox rotateAroundX(BlockRotation rotation) {
+    public TerminalBoundingBox rotateAroundX(Rotation rotation) {
         TerminalBoundingBox terminal = new TerminalBoundingBox(this);
         switch(rotation) {
             case NONE -> {
@@ -83,25 +83,25 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
                 terminal.origin = origin;
             }
             case CLOCKWISE_90 -> {
-                terminal.min = new Vec3d(min.x, min.z, 1 - max.y);
-                terminal.max = new Vec3d(max.x, max.z, 1 - min.y);
-                terminal.origin = new Vec3d(origin.x, origin.z, 1 - origin.y);
+                terminal.min = new Vec3(min.x, min.z, 1 - max.y);
+                terminal.max = new Vec3(max.x, max.z, 1 - min.y);
+                terminal.origin = new Vec3(origin.x, origin.z, 1 - origin.y);
             }
             case CLOCKWISE_180 -> {
-                terminal.min = new Vec3d(min.x, 1 - max.y, 1 - max.z);
-                terminal.max = new Vec3d(max.x, 1 - min.y, 1 - min.z);
-                terminal.origin = new Vec3d(origin.x, 1 - origin.y, 1 - origin.z);
+                terminal.min = new Vec3(min.x, 1 - max.y, 1 - max.z);
+                terminal.max = new Vec3(max.x, 1 - min.y, 1 - min.z);
+                terminal.origin = new Vec3(origin.x, 1 - origin.y, 1 - origin.z);
             }
             case COUNTERCLOCKWISE_90 -> {
-                terminal.min = new Vec3d(min.x, 1 - max.z, min.y);
-                terminal.max = new Vec3d(max.x, 1 - min.z, max.y);
-                terminal.origin = new Vec3d(origin.x, 1 - origin.z, origin.y);
+                terminal.min = new Vec3(min.x, 1 - max.z, min.y);
+                terminal.max = new Vec3(max.x, 1 - min.z, max.y);
+                terminal.origin = new Vec3(origin.x, 1 - origin.z, origin.y);
             }
         }
         return terminal;
     }
 
-    public TerminalBoundingBox rotateAroundY(BlockRotation rotation) {
+    public TerminalBoundingBox rotateAroundY(Rotation rotation) {
         TerminalBoundingBox terminal = new TerminalBoundingBox(this);
         switch(rotation) {
             case NONE -> {
@@ -110,25 +110,25 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
                 terminal.origin = origin;
             }
             case CLOCKWISE_90 -> {
-                terminal.min = new Vec3d(1 - max.z, min.y, min.x);
-                terminal.max = new Vec3d(1 - min.z, max.y, max.x);
-                terminal.origin = new Vec3d(1 - origin.z, origin.y, origin.x);
+                terminal.min = new Vec3(1 - max.z, min.y, min.x);
+                terminal.max = new Vec3(1 - min.z, max.y, max.x);
+                terminal.origin = new Vec3(1 - origin.z, origin.y, origin.x);
             }
             case CLOCKWISE_180 -> {
-                terminal.min = new Vec3d(1 - max.x, min.y, 1 - max.z);
-                terminal.max = new Vec3d(1 - min.x, max.y, 1 - min.z);
-                terminal.origin = new Vec3d(1 - origin.x, origin.y, 1 - origin.z);
+                terminal.min = new Vec3(1 - max.x, min.y, 1 - max.z);
+                terminal.max = new Vec3(1 - min.x, max.y, 1 - min.z);
+                terminal.origin = new Vec3(1 - origin.x, origin.y, 1 - origin.z);
             }
             case COUNTERCLOCKWISE_90 -> {
-                terminal.min = new Vec3d(min.z, min.y, 1 - max.x);
-                terminal.max = new Vec3d(max.z, max.y, 1 - min.x);
-                terminal.origin = new Vec3d(origin.z, origin.y, 1 - origin.x);
+                terminal.min = new Vec3(min.z, min.y, 1 - max.x);
+                terminal.max = new Vec3(max.z, max.y, 1 - min.x);
+                terminal.origin = new Vec3(origin.z, origin.y, 1 - origin.x);
             }
         }
         return terminal;
     }
 
-    public TerminalBoundingBox rotateAroundZ(BlockRotation rotation) {
+    public TerminalBoundingBox rotateAroundZ(Rotation rotation) {
         TerminalBoundingBox terminal = new TerminalBoundingBox(this);
         switch(rotation) {
             case NONE -> {
@@ -137,25 +137,25 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
                 terminal.origin = origin;
             }
             case CLOCKWISE_90 -> {
-                terminal.min = new Vec3d(min.y, 1 - max.x, min.z);
-                terminal.max = new Vec3d(max.y, 1 - min.x, max.z);
-                terminal.origin = new Vec3d(origin.y, 1 - origin.x, origin.z);
+                terminal.min = new Vec3(min.y, 1 - max.x, min.z);
+                terminal.max = new Vec3(max.y, 1 - min.x, max.z);
+                terminal.origin = new Vec3(origin.y, 1 - origin.x, origin.z);
             }
             case CLOCKWISE_180 -> {
-                terminal.min = new Vec3d(1 - max.x, 1 - max.y, min.z);
-                terminal.max = new Vec3d(1 - min.x, 1 - min.y, max.z);
-                terminal.origin = new Vec3d(1 - origin.x, 1 - origin.y, origin.z);
+                terminal.min = new Vec3(1 - max.x, 1 - max.y, min.z);
+                terminal.max = new Vec3(1 - min.x, 1 - min.y, max.z);
+                terminal.origin = new Vec3(1 - origin.x, 1 - origin.y, origin.z);
             }
             case COUNTERCLOCKWISE_90 -> {
-                terminal.min = new Vec3d(1 - max.y, min.x, min.z);
-                terminal.max = new Vec3d(1 - min.y, max.x, max.z);
-                terminal.origin = new Vec3d(1 - origin.y, origin.x, origin.z);
+                terminal.min = new Vec3(1 - max.y, min.x, min.z);
+                terminal.max = new Vec3(1 - min.y, max.x, max.z);
+                terminal.origin = new Vec3(1 - origin.y, origin.x, origin.z);
             }
         }
         return terminal;
     }
 
-    public TerminalBoundingBox rotate(Direction.Axis axis, BlockRotation rotation) {
+    public TerminalBoundingBox rotate(Direction.Axis axis, Rotation rotation) {
         return switch(axis) {
             case X -> rotateAroundX(rotation);
             case Y -> rotateAroundY(rotation);
@@ -179,26 +179,26 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
         return rotateAroundZ(angleToRotation(angle));
     }
 
-    private static BlockRotation angleToRotation(int angle) {
+    private static Rotation angleToRotation(int angle) {
         angle = angle % 360;
         if(angle < 0)
             angle += 360;
         return switch(angle) {
-            case 0 -> BlockRotation.NONE;
-            case 90 -> BlockRotation.CLOCKWISE_90;
-            case 180 -> BlockRotation.CLOCKWISE_180;
-            case 270 -> BlockRotation.COUNTERCLOCKWISE_90;
+            case 0 -> Rotation.NONE;
+            case 90 -> Rotation.CLOCKWISE_90;
+            case 180 -> Rotation.CLOCKWISE_180;
+            case 270 -> Rotation.COUNTERCLOCKWISE_90;
             default -> throw new IllegalArgumentException("Angle must be a multiple of 90 degrees");
         };
     }
 
-    public TerminalBoundingBox withOrigin(Vec3d origin) {
-        this.origin = origin.multiply(1.0 / 16.0);
+    public TerminalBoundingBox withOrigin(Vec3 origin) {
+        this.origin = origin.scale(1.0 / 16.0);
         return this;
     }
 
     public TerminalBoundingBox withOrigin(double x, double y, double z) {
-        return withOrigin(new Vec3d(x, y, z));
+        return withOrigin(new Vec3(x, y, z));
     }
 
     public TerminalBoundingBox withColor(int rgb) {
@@ -207,24 +207,24 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
     }
 
     @Override
-    public boolean check(Vec3d position) {
+    public boolean check(Vec3 position) {
         return position.x >= min.x && position.y >= min.y && position.z >= min.z &&
                 position.x < max.x && position.y < max.y && position.z < max.z;
     }
 
     @Override
-    public Vec3d getOrigin() {
+    public Vec3 getOrigin() {
         return origin;
     }
 
     @Override
-    public Text getName() {
+    public Component getName() {
         return name;
     }
 
     @Override
-    public Box getOutline() {
-        return new Box(min, max);
+    public AABB getOutline() {
+        return new AABB(min, max);
     }
 
     @Override

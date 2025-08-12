@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.kinetics.base;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class GeneratorBlockEntity extends ElectricKineticBlockEntity {
     private static final float TIME_STEP = 1f / 20;

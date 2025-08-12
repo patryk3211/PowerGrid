@@ -17,21 +17,21 @@ package org.patryk3211.powergrid.electricity.basinheater;
 
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
@@ -41,32 +41,32 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import java.util.List;
 
 public class BasinHeaterBlock extends ElectricBlock implements IBE<BasinHeaterBlockEntity>, IAcceptConnector, IHaveElectricProperties {
-    public static final VoxelShape SHAPE = VoxelShapes.union(
-            createCuboidShape(0, 0, 0, 16, 9, 16),
-            createCuboidShape(1, 9, 1, 15, 14, 15)
+    public static final VoxelShape SHAPE = Shapes.or(
+            box(0, 0, 0, 16, 9, 16),
+            box(1, 9, 1, 15, 14, 15)
     );
 
     public static final EnumProperty<BlazeBurnerBlock.HeatLevel> HEAT_LEVEL = BlazeBurnerBlock.HEAT_LEVEL;
 
-    public BasinHeaterBlock(Settings settings) {
+    public BasinHeaterBlock(Properties settings) {
         super(settings);
-        setDefaultState(getDefaultState()
-                .with(HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.NONE));
+        registerDefaultState(defaultBlockState()
+                .setValue(HEAT_LEVEL, BlazeBurnerBlock.HeatLevel.NONE));
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(HEAT_LEVEL);
     }
 
     @Override
-    public boolean canConnect(WorldView world, BlockPos pos, BlockState state, Direction side) {
+    public boolean canConnect(LevelReader world, BlockPos pos, BlockState state, Direction side) {
         return side != Direction.UP;
     }
 
@@ -90,7 +90,7 @@ public class BasinHeaterBlock extends ElectricBlock implements IBE<BasinHeaterBl
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
     }
 }

@@ -15,41 +15,44 @@
  */
 package org.patryk3211.powergrid.collections;
 
-import net.minecraft.client.render.*;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
 
 import java.util.OptionalDouble;
 
 public class ModdedRenderLayers {
-    private static final RenderLayer DEBUG_LINES = RenderLayer.of(
+    private static final RenderType DEBUG_LINES = RenderType.create(
             "powergrid_debug_lines",
-            VertexFormats.POSITION_COLOR,
-            VertexFormat.DrawMode.DEBUG_LINES,
+            DefaultVertexFormat.POSITION_COLOR,
+            VertexFormat.Mode.DEBUG_LINES,
             256,
-            RenderLayer.MultiPhaseParameters.builder()
-                    .program(RenderPhase.COLOR_PROGRAM)
-                    .cull(RenderPhase.DISABLE_CULLING)
-                    .transparency(RenderPhase.NO_TRANSPARENCY)
-                    .lineWidth(new RenderPhase.LineWidth(OptionalDouble.of(1.0f)))
-                    .build(false)
+            RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
+                    .setCullState(RenderStateShard.NO_CULL)
+                    .setTransparencyState(RenderStateShard.NO_TRANSPARENCY)
+                    .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(1.0f)))
+                    .createCompositeState(false)
     );
 
-    private static final RenderLayer COLOR = RenderLayer.of(
+    private static final RenderType COLOR = RenderType.create(
             "powergrid_color",
-            VertexFormats.POSITION_COLOR,
-            VertexFormat.DrawMode.QUADS,
+            DefaultVertexFormat.POSITION_COLOR,
+            VertexFormat.Mode.QUADS,
             256,
-            RenderLayer.MultiPhaseParameters.builder()
-                    .program(RenderPhase.COLOR_PROGRAM)
-                    .cull(RenderPhase.DISABLE_CULLING)
-                    .transparency(RenderPhase.NO_TRANSPARENCY)
-                    .build(false)
+            RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
+                    .setCullState(RenderStateShard.NO_CULL)
+                    .setTransparencyState(RenderStateShard.NO_TRANSPARENCY)
+                    .createCompositeState(false)
     );
 
-    public static RenderLayer getDebugLines() {
+    public static RenderType getDebugLines() {
         return DEBUG_LINES;
     }
 
-    public static RenderLayer getColor() {
+    public static RenderType getColor() {
         return COLOR;
     }
 

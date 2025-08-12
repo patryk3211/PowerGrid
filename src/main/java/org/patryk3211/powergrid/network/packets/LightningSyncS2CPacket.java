@@ -20,7 +20,7 @@ import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.network.SimplePacket;
@@ -34,12 +34,12 @@ public class LightningSyncS2CPacket implements SimplePacket {
         entityId = context.contraption.entity.getId();
     }
 
-    public LightningSyncS2CPacket(PacketByteBuf buffer) {
+    public LightningSyncS2CPacket(FriendlyByteBuf buffer) {
         entityId = buffer.readInt();
     }
 
     @Override
-    public void encode(PacketByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         buffer.writeInt(entityId);
     }
 
@@ -48,7 +48,7 @@ public class LightningSyncS2CPacket implements SimplePacket {
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         context.get().queue(() -> {
             var world = ClientBoundPackets.world();
-            if(world.getEntityById(entityId) instanceof AbstractContraptionEntity entity) {
+            if(world.getEntity(entityId) instanceof AbstractContraptionEntity entity) {
                 entity.getContraption().forEachActor(world, (behaviour, movementContext) -> {
                     if(!(behaviour instanceof LightningRodMovementBehaviour lightningBehaviour))
                         return;

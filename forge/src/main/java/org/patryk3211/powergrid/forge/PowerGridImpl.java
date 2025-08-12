@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.forge;
 
-import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
@@ -23,9 +22,8 @@ import dev.architectury.platform.forge.EventBuses;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.lang.FontHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.text.Text;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -66,7 +64,7 @@ public class PowerGridImpl {
     @SubscribeEvent
     public static void newRegistryEvent(NewRegistryEvent event) {
         event.<Component>create(
-                RegistryBuilder.of(ComponentRegistry.REGISTRY_KEY.getValue()),
+                RegistryBuilder.of(ComponentRegistry.REGISTRY_KEY.location()),
                 registry -> ComponentRegistryImpl.REGISTRY = registry
         );
     }
@@ -83,7 +81,7 @@ public class PowerGridImpl {
 
     @SubscribeEvent
     public static void soundEventRegister(RegisterEvent event) {
-        event.register(RegistryKeys.SOUND_EVENT, ModdedSoundEventsImpl::register);
+        event.register(Registries.SOUND_EVENT, ModdedSoundEventsImpl::register);
     }
 
     public static AbstractPowerGridRegistrate createRegistrate() {
@@ -94,7 +92,7 @@ public class PowerGridImpl {
                                 .andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
                 )
                 .defaultCreativeTab("main", builder -> builder
-                        .displayName(Text.translatable("itemGroup.powergrid.main"))
+                        .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
                         .icon(() -> new ItemStack(ModdedItems.WIRE)))
                 .build();
     }

@@ -15,27 +15,27 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.block.piston.PistonBehavior;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BundleS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundBundlePacket;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -55,7 +55,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     public static final float DISSIPATION_FACTOR = 0.2f;
     public static final float THERMAL_MASS = 1f;
 
-    protected static final TrackedData<Float> TEMPERATURE = DataTracker.registerData(WireEntity.class, TrackedDataHandlerRegistry.FLOAT);
+    protected static final EntityDataAccessor<Float> TEMPERATURE = SynchedEntityData.defineId(WireEntity.class, EntityDataSerializers.FLOAT);
 
     // TODO: Transmission line flipping might mess with this. Make sure it is safe.
     private IWireEndpoint endpoint1;
@@ -75,7 +75,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     private float dissipationFactor;
     private float thermalMass;
 
-    public WireEntity(EntityType<?> type, World world) {
+    public WireEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
 
@@ -88,13 +88,13 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     @Override
-    protected void initDataTracker() {
-        dataTracker.startTracking(TEMPERATURE, BASE_TEMPERATURE);
+    protected void defineSynchedData() {
+        entityData.define(TEMPERATURE, BASE_TEMPERATURE);
     }
 
     private void temperatureUpdate() {
-        var temperature = dataTracker.get(TEMPERATURE);
-        if(getWorld().isClient)
+        var temperature = entityData.get(TEMPERATURE);
+        if(level().isClientSide)
             return;
 
         float energy = 0;
@@ -114,21 +114,21 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(temperature >= overheatTemperature && isSafe)
             temperature = overheatTemperature - 25f;
 
-        dataTracker.set(TEMPERATURE, temperature);
+        entityData.set(TEMPERATURE, temperature);
     }
 
     public boolean isOverheated() {
-        return dataTracker.get(TEMPERATURE) >= overheatTemperature;
+        return entityData.get(TEMPERATURE) >= overheatTemperature;
     }
 
     public float getTemperature() {
-        return dataTracker.get(TEMPERATURE);
+        return entityData.get(TEMPERATURE);
     }
 
     @Override
     public void tick() {
         // We don't need Entity#baseTick() in wires
-        var world = getWorld();
+        var world = level();
         temperatureUpdate();
 
         if((deferEndpointResolution & 1) != 0) {
@@ -160,7 +160,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(isOverheated()) {
             // Remove to prevent power transfer in the 5 particle ticks.
             dropWire();
-            if(!world.isClient) {
+            if(!world.isClientSide) {
                 if(++despawnTime >= 5) {
                     // Break without dropping items.
                     discard();
@@ -168,14 +168,14 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             }
         }
 
-        this.firstUpdate = false;
+        this.firstTick = false;
     }
 
     public void setEndpoint1(IWireEndpoint endpoint) {
         if(endpoint1 != endpoint) {
             if(endpoint1 != null)
                 endpoint1.removeWireEntity(this);
-            var world = getWorld();
+            var world = level();
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
                     endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(world);
@@ -197,7 +197,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(endpoint2 != endpoint) {
             if(endpoint2 != null)
                 endpoint2.removeWireEntity(this);
-            var world = getWorld();
+            var world = level();
             if(endpoint != null) {
                 if(endpoint.type() == WireEndpointType.DEFERRED_JUNCTION)
                     endpoint = ((DeferredJunctionWireEndpoint) endpoint).resolve(world);
@@ -228,8 +228,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     private EntityDataS2CPacket createExtraDataPacket() {
-        var tag = new NbtCompound();
-        writeCustomDataToNbt(tag);
+        var tag = new CompoundTag();
+        addAdditionalSaveData(tag);
         tag.putInt("Version", dataVersion++);
         return new EntityDataS2CPacket(this, tag);
     }
@@ -239,33 +239,33 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     @Override
-    public Packet<ClientPlayPacketListener> createSpawnPacket() {
-        var base = super.createSpawnPacket();
+    public Packet<ClientGamePacketListener> getAddEntityPacket() {
+        var base = super.getAddEntityPacket();
         var extra = createExtraDataPacket();
-        return new BundleS2CPacket(List.of(base, extra.clientBoundPacket()));
+        return new ClientboundBundlePacket(List.of(base, extra.clientBoundPacket()));
     }
 
     @Override
-    public void onSpawnPacket(EntitySpawnS2CPacket packet) {
-        super.onSpawnPacket(packet);
+    public void recreateFromPacket(ClientboundAddEntityPacket packet) {
+        super.recreateFromPacket(packet);
     }
 
     @Override
-    public void onEntityDataPacket(NbtCompound data) {
+    public void onEntityDataPacket(CompoundTag data) {
         int version = data.getInt("Version");
         if(version < dataVersion) {
             // Discard outdated packet.
             return;
         }
-        readCustomDataFromNbt(data);
+        readAdditionalSaveData(data);
         dataVersion = version + 1;
     }
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
+    protected void readAdditionalSaveData(CompoundTag nbt) {
         if(nbt.contains("Item")) {
             var itemTag = nbt.getCompound("Item");
-            var readItem = Registries.ITEM.get(new Identifier(itemTag.getString("Id")));
+            var readItem = BuiltInRegistries.ITEM.get(new ResourceLocation(itemTag.getString("Id")));
             if(!(readItem instanceof WireItem))
                 throw new IllegalStateException("WireEntity item must be a WireItem");
             setItem((WireItem) readItem, itemTag.getInt("Count"));
@@ -285,7 +285,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             setEndpoint2(null);
         }
 
-        dataTracker.set(TEMPERATURE, nbt.getFloat("Temperature"));
+        entityData.set(TEMPERATURE, nbt.getFloat("Temperature"));
     }
 
     public void setItem(WireItem item, int count) {
@@ -308,7 +308,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(endpoint1 == null || endpoint2 == null)
             return;
 
-        var world = getWorld();
+        var world = level();
         if(!endpoint1.isValid(world) || !endpoint2.isValid(world))
             return;
 
@@ -333,19 +333,19 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbt) {
+    protected void addAdditionalSaveData(CompoundTag nbt) {
         if(endpoint1 != null)
             nbt.put("Endpoint1", endpoint1.serialize());
 
         if(endpoint2 != null)
             nbt.put("Endpoint2", endpoint2.serialize());
 
-        var itemTag = new NbtCompound();
-        itemTag.putString("Id", Registries.ITEM.getId(item).toString());
+        var itemTag = new CompoundTag();
+        itemTag.putString("Id", BuiltInRegistries.ITEM.getKey(item).toString());
         itemTag.putInt("Count", itemCount);
         nbt.put("Item", itemTag);
 
-        nbt.putFloat("Temperature", dataTracker.get(TEMPERATURE));
+        nbt.putFloat("Temperature", entityData.get(TEMPERATURE));
     }
 
     @Override
@@ -361,8 +361,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     @Override
-    public void onRemoved() {
-        super.onRemoved();
+    public void onClientRemoval() {
+        super.onClientRemoval();
         var reason = getRemovalReason();
         if(reason.shouldDestroy()) {
             dropWire();
@@ -376,18 +376,18 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     public void kill() {
         for(int i = itemCount; i > 0; i -= 64) {
-            dropStack(new ItemStack(item, Math.min(i, 64)));
+            spawnAtLocation(new ItemStack(item, Math.min(i, 64)));
         }
         itemCount = 0;
         super.kill();
     }
 
     @Override
-    public ActionResult interact(PlayerEntity player, Hand hand) {
-        if(player.getStackInHand(hand).getItem() == ModdedItems.WIRE_CUTTER.get()) {
-            ModdedSoundEvents.WIRE_CUT.playAt(getWorld(), getPos(), 0.75f, 1.25f, false);
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        if(player.getItemInHand(hand).getItem() == ModdedItems.WIRE_CUTTER.get()) {
+            ModdedSoundEvents.WIRE_CUT.playAt(level(), position(), 0.75f, 1.25f, false);
             kill();
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
         return super.interact(player, hand);
     }
@@ -411,20 +411,20 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     @Override
-    public void setOnFire(boolean onFire) {
+    public void setSharedFlagOnFire(boolean onFire) {
     }
 
     @Override
-    public boolean damage(DamageSource source, float amount) {
-        return super.damage(source, amount);
+    public boolean hurt(DamageSource source, float amount) {
+        return super.hurt(source, amount);
     }
 
     @Override
-    public PistonBehavior getPistonBehavior() {
-        return PistonBehavior.IGNORE;
+    public PushReaction getPistonPushReaction() {
+        return PushReaction.IGNORE;
     }
 
-    public static void entityUnload(Entity entity, ServerWorld world) {
+    public static void entityUnload(Entity entity, ServerLevel world) {
         if(!(entity instanceof WireEntity wire))
             return;
         if(wire.wire instanceof TransmissionLinePart part) {

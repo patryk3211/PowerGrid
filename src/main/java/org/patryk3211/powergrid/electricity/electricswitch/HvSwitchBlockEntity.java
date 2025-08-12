@@ -16,13 +16,13 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 import net.createmod.catnip.animation.LerpedFloat;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -49,7 +49,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
         float speed = getSpeed();
-        var facing = getCachedState().get(HvSwitchBlock.HORIZONTAL_FACING);
+        var facing = getBlockState().getValue(HvSwitchBlock.HORIZONTAL_FACING);
         if(facing == Direction.NORTH || facing == Direction.EAST)
             speed = -speed;
         rod.chase(speed > 0 ? 1 : 0, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
@@ -57,7 +57,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     }
 
     private float getChaseSpeed() {
-        return MathHelper.clamp(Math.abs(getSpeed()) / 21 / 20, 0, 1);
+        return Mth.clamp(Math.abs(getSpeed()) / 21 / 20, 0, 1);
     }
 
     @Override
@@ -91,12 +91,12 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         var open = rod.getValue() == 0;
         if(wasClosed && open) {
             wasClosed = false;
-            world.playSoundAtBlockCenter(getPos(), ModdedSoundEvents.HV_SWITCH_DISCONNECT.getMainEvent(),
-                    SoundCategory.BLOCKS, 1, 1, true);
+            level.playLocalSound(getBlockPos(), ModdedSoundEvents.HV_SWITCH_DISCONNECT.getMainEvent(),
+                    SoundSource.BLOCKS, 1, 1, true);
         } else if(!wasClosed && closed) {
             wasClosed = true;
-            world.playSoundAtBlockCenter(getPos(), ModdedSoundEvents.HV_SWITCH_CONNECT.getMainEvent(),
-                    SoundCategory.BLOCKS, 1, 1, true);
+            level.playLocalSound(getBlockPos(), ModdedSoundEvents.HV_SWITCH_CONNECT.getMainEvent(),
+                    SoundSource.BLOCKS, 1, 1, true);
         }
     }
 
@@ -114,13 +114,13 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
-    protected void write(NbtCompound compound, boolean clientPacket) {
+    protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.put("Rod", rod.writeNBT());
     }
 
     @Override
-    protected void read(NbtCompound compound, boolean clientPacket) {
+    protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         rod.readNBT(compound.getCompound("Rod"), clientPacket);
     }

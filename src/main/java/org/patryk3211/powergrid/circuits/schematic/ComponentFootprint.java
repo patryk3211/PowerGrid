@@ -17,12 +17,12 @@ package org.patryk3211.powergrid.circuits.schematic;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -32,10 +32,11 @@ import java.util.*;
 import java.util.function.Supplier;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
-import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.COLOR_COMPONENT_OUTLINE;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.COLOR_TERMINAL;
 
 public class ComponentFootprint {
-    private static final Identifier ARROWS = PowerGrid.texture("gui/circuit_arrows");
+    private static final ResourceLocation ARROWS = PowerGrid.texture("gui/circuit_arrows");
 
     private static final PadData NONE = new PadData(-1, null);
 
@@ -61,7 +62,7 @@ public class ComponentFootprint {
     }
 
     @Environment(EnvType.CLIENT)
-    protected void renderPads(@NotNull DrawContext ctx, int x, int y) {
+    protected void renderPads(@NotNull GuiGraphics ctx, int x, int y) {
         for(var point : pads.keySet()) {
             int x1 = point.x() + x;
             int y1 = point.y() + y;
@@ -70,15 +71,15 @@ public class ComponentFootprint {
     }
 
     @Environment(EnvType.CLIENT)
-    public void render(@NotNull DrawContext ctx, int x, int y) {
+    public void render(@NotNull GuiGraphics ctx, int x, int y) {
         if(outline) {
-            ctx.drawBorder(x, y, width * GRID_TO_GRID_SCALE, height * GRID_TO_GRID_SCALE, COLOR_COMPONENT_OUTLINE);
+            ctx.renderOutline(x, y, width * GRID_TO_GRID_SCALE, height * GRID_TO_GRID_SCALE, COLOR_COMPONENT_OUTLINE);
         }
         renderPads(ctx, x, y);
 
-        var ms = ctx.getMatrices();
+        var ms = ctx.pose();
         if(renderedItem != null) {
-            ms.push();
+            ms.pushPose();
             var scale = Math.min(width, height) / 16f * GRID_TO_GRID_SCALE;
             if(width > height) {
                 float offset = (width - height) * 0.5f;
@@ -88,11 +89,11 @@ public class ComponentFootprint {
                 ms.translate(0, offset, 0);
             }
             ms.scale(scale, scale, scale);
-            ctx.drawItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
-            ms.pop();
+            ctx.renderItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
+            ms.popPose();
         }
         if(arrow != null) {
-            ms.push();
+            ms.pushPose();
             int u = (arrow.ordinal() % 2) * 8;
             int v = (arrow.ordinal() / 2) * 8;
             ms.translate(x + (width * GRID_TO_GRID_SCALE * 0.5f), y + (height * GRID_TO_GRID_SCALE * 0.5f), 0);
@@ -106,16 +107,16 @@ public class ComponentFootprint {
 
             ms.scale(0.25f, 0.25f, 1);
             ms.translate(-4, -4, 0);
-            ctx.drawTexture(ARROWS, 0, 0, u, v, 8, 8, 16, 16);
+            ctx.blit(ARROWS, 0, 0, u, v, 8, 8, 16, 16);
 
-            ms.pop();
+            ms.popPose();
         }
     }
 
     @Environment(EnvType.CLIENT)
-    public void renderPadIndices(@NotNull DrawContext ctx, @NotNull TextRenderer textRenderer, int x, int y) {
-        var ms = ctx.getMatrices();
-        ms.push();
+    public void renderPadIndices(@NotNull GuiGraphics ctx, @NotNull Font textRenderer, int x, int y) {
+        var ms = ctx.pose();
+        ms.pushPose();
         int scale = 12;
         ms.translate(0.5f, 0.5f, 100);
         ms.scale(1.0f / scale, 1.0f / scale, 1.0f);
@@ -125,14 +126,14 @@ public class ComponentFootprint {
             int y1 = (point.y() + y) * scale;
 
             var text = Integer.toString(entry.getValue().nodeIndex);
-            int width = textRenderer.getWidth(text);
-            ctx.drawText(textRenderer, text, x1 - width / 2, y1 - 4, -1, false);
+            int width = textRenderer.width(text);
+            ctx.drawString(textRenderer, text, x1 - width / 2, y1 - 4, -1, false);
         }
-        ms.pop();
+        ms.popPose();
     }
 
     @Nullable
-    public Text getTooltip(int mouseX, int mouseY) {
+    public Component getTooltip(int mouseX, int mouseY) {
         var pad = pads.get(new Point(mouseX, mouseY));
         if(pad == null)
             return null;
@@ -144,7 +145,7 @@ public class ComponentFootprint {
         if(renderedItem == null)
             return null;
         if(renderedStack == null)
-            renderedStack = renderedItem.get().getDefaultStack();
+            renderedStack = renderedItem.get().getDefaultInstance();
         return renderedStack;
     }
 
@@ -237,10 +238,10 @@ public class ComponentFootprint {
         }
 
         public Builder addPad(int x, int y, int nodeIndex) {
-            return addPad(x, y, nodeIndex, (Text) null);
+            return addPad(x, y, nodeIndex, (Component) null);
         }
 
-        public Builder addPad(int x, int y, int nodeIndex, @Nullable Text tooltip) {
+        public Builder addPad(int x, int y, int nodeIndex, @Nullable Component tooltip) {
             validatePad(x, y);
             pads.put(new Point(x, y), new PadData(nodeIndex, tooltip));
             return this;
@@ -251,7 +252,7 @@ public class ComponentFootprint {
                 throw new IllegalCallerException("This method may only be used when the translation key base is set");
             var key = translationKey + "." + nodeIndex;
             translatedPads.put(key, defaultLang);
-            return addPad(x, y, nodeIndex, Text.translatable(key));
+            return addPad(x, y, nodeIndex, Component.translatable(key));
         }
 
         public Builder withOutline() {
@@ -290,5 +291,5 @@ public class ComponentFootprint {
         }
     }
 
-    public record PadData(int nodeIndex, @Nullable Text tooltip) { }
+    public record PadData(int nodeIndex, @Nullable Component tooltip) { }
 }

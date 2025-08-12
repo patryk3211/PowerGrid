@@ -16,41 +16,41 @@
 package org.patryk3211.powergrid.electricity.info;
 
 import com.simibubi.create.content.equipment.goggles.GogglesItem;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
 public class Voltage {
-    public static void max(float value, PlayerEntity player, List<Text> tooltip) {
+    public static void max(float value, Player player, List<Component> tooltip) {
         boolean hasGoggles = GogglesItem.isWearingGoggles(player);
 
         Lang.translate("tooltip.voltage.max")
-                .style(Formatting.GRAY).addTo(tooltip);
+                .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
-                .add(Text.of(" ")).add(Lang.number(value))
-                .add(Text.of(" ")).add(Unit.VOLTAGE.get())
-                .style(Formatting.RED).addTo(tooltip);
+                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
+                .add(Component.nullToEmpty(" ")).add(Unit.VOLTAGE.get())
+                .style(ChatFormatting.RED).addTo(tooltip);
     }
 
-    public static void rated(float value, PlayerEntity player, List<Text> tooltip) {
+    public static void rated(float value, Player player, List<Component> tooltip) {
         Lang.translate("tooltip.voltage.rated")
-                .style(Formatting.GRAY).addTo(tooltip);
+                .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
-                .add(Text.of(" ")).add(Lang.number(value))
-                .add(Text.of(" ")).add(Unit.VOLTAGE.get())
-                .style(Formatting.DARK_AQUA).addTo(tooltip);
+                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
+                .add(Component.nullToEmpty(" ")).add(Unit.VOLTAGE.get())
+                .style(ChatFormatting.DARK_AQUA).addTo(tooltip);
     }
 
-    public static void rpm(float value, PlayerEntity player, List<Text> tooltip) {
+    public static void rpm(float value, Player player, List<Component> tooltip) {
         Lang.translate("tooltip.voltage.rpm")
-                .style(Formatting.GRAY).addTo(tooltip);
+                .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
-                .add(Text.of(" ")).add(Lang.number(value))
+                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
 //                .add(Text.of(" RPM/V"))
-                .style(Formatting.DARK_AQUA).addTo(tooltip);
+                .style(ChatFormatting.DARK_AQUA).addTo(tooltip);
     }
 }

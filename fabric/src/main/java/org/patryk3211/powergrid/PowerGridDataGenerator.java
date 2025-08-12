@@ -48,7 +48,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider((FabricDataGenerator.Pack.Factory<DataProvider>) output ->
 				ModdedSoundEvents.provider(new FabricDataOutput(
 						output.getModContainer(),
-						output.getPath(),
+						output.getOutputFolder(),
 						output.isStrictValidationEnabled()
 				)));
 		pack.addProvider(MagnetizingRecipes::new);

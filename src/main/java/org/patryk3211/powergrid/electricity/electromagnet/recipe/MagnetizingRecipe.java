@@ -21,18 +21,18 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.simibubi.create.content.processing.sequenced.IAssemblyRecipe;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.text.Text;
-import net.minecraft.world.World;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 import java.util.Set;
 
-public class MagnetizingRecipe extends ProcessingRecipe<Inventory> implements IAssemblyRecipe {
+public class MagnetizingRecipe extends ProcessingRecipe<Container> implements IAssemblyRecipe {
     public static final TypeInfo TYPE_INFO = new TypeInfo();
 
     public MagnetizingRecipe(ProcessingRecipeBuilder.ProcessingRecipeParams params) {
@@ -51,12 +51,12 @@ public class MagnetizingRecipe extends ProcessingRecipe<Inventory> implements IA
 
     @Override
     @Environment(EnvType.CLIENT)
-    public Text getDescriptionForAssembly() {
+    public Component getDescriptionForAssembly() {
         return Lang.translateDirect("recipe.assembly.magnetizing");
     }
 
     @Override
-    public void addRequiredMachines(Set<ItemConvertible> list) {
+    public void addRequiredMachines(Set<ItemLike> list) {
         list.add(ModdedBlocks.ELECTROMAGNET.get());
     }
 
@@ -71,9 +71,9 @@ public class MagnetizingRecipe extends ProcessingRecipe<Inventory> implements IA
     }
 
     @Override
-    public boolean matches(Inventory inventory, World world) {
+    public boolean matches(Container inventory, Level world) {
         if(inventory.isEmpty())
             return false;
-        return ingredients.get(0).test(inventory.getStack(0));
+        return ingredients.get(0).test(inventory.getItem(0));
     }
 }

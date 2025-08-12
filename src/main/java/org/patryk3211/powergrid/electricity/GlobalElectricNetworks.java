@@ -17,43 +17,44 @@ package org.patryk3211.powergrid.electricity;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.world.World;
-import org.patryk3211.powergrid.electricity.sim.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GlobalElectricNetworks {
-    protected static final Map<World, WorldNetworks> worldNetworks = new HashMap<>();
+    protected static final Map<Level, WorldNetworks> worldNetworks = new HashMap<>();
 
-    public static void tick(World world) {
+    public static void tick(Level world) {
         var networks = worldNetworks.get(world);
         if(networks == null)
             return;
         networks.tick();
     }
 
-    public static void unloadWorld(ServerWorld world) {
+    public static void unloadWorld(ServerLevel world) {
         worldNetworks.remove(world);
     }
 
     @Environment(EnvType.CLIENT)
-    public static WorldNetworks makeClientWorldNetworks(World world) {
+    public static WorldNetworks makeClientWorldNetworks(Level world) {
         return new ClientWorldNetworks(world);
     }
 
-    public static WorldNetworks getWorldNetworks(World world) {
+    public static WorldNetworks getWorldNetworks(Level world) {
         return worldNetworks.computeIfAbsent(world, key -> {
-            if(key.isClient) return makeClientWorldNetworks(key);
-            var server = (ServerWorld) world;
-            return server.getPersistentStateManager().getOrCreate(
+            if(key.isClientSide) return makeClientWorldNetworks(key);
+            var server = (ServerLevel) world;
+            return server.getDataStorage().computeIfAbsent(
                     nbt -> new WorldNetworks(world, nbt),
                     () -> new WorldNetworks(world),
                     "powergrid_electric_network_data"
@@ -65,7 +66,7 @@ public class GlobalElectricNetworks {
         var wire = entity.getWire();
         if(wire == null)
             return null;
-        var worldNetworks = getWorldNetworks(entity.getWorld());
+        var worldNetworks = getWorldNetworks(entity.level());
         var line = worldNetworks.transmissionLineNodes.get(wire.getNode1());
         if(line != null && line.isPart(wire)) {
             return line;
@@ -82,18 +83,18 @@ public class GlobalElectricNetworks {
         return null;
     }
 
-    public static ElectricWire makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public static ElectricWire makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
         return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity);
     }
 
-    public static void inspect(IElectricNode node, PlayerEntity user) {
-        var worldNetworks = getWorldNetworks(user.getWorld());
-        user.sendMessage(Text.of(user instanceof ServerPlayerEntity ? "Server:" : "Client:"));
-        user.sendMessage(Text.literal(node.toString()));
+    public static void inspect(IElectricNode node, Player user) {
+        var worldNetworks = getWorldNetworks(user.level());
+        user.sendSystemMessage(Component.nullToEmpty(user instanceof ServerPlayer ? "Server:" : "Client:"));
+        user.sendSystemMessage(Component.literal(node.toString()));
         for(var connected : worldNetworks.globalGraph.getConnectedNodes(node)) {
-            user.sendMessage(Text.literal(" - " + connected));
+            user.sendSystemMessage(Component.literal(" - " + connected));
             for(var wire : worldNetworks.globalGraph.getWires(node, connected)) {
-                user.sendMessage(Text.literal("  via " + wire));
+                user.sendSystemMessage(Component.literal("  via " + wire));
             }
         }
     }

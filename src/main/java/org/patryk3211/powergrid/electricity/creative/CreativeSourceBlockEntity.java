@@ -20,17 +20,19 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
 import net.createmod.catnip.math.VecHelper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceNode;
+import org.patryk3211.powergrid.electricity.sim.node.ElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -52,12 +54,12 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
 
-        Text label = null;
+        Component label = null;
         final float multiplier;
-        if(getCachedState().isOf(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
+        if(getBlockState().is(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
             label = Lang.translateDirect("devices.creative.voltage");
             multiplier = 1.0f;
-        } else if(getCachedState().isOf(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
+        } else if(getBlockState().is(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
             label = Lang.translateDirect("devices.creative.current");
             multiplier = 0.1f;
         } else {
@@ -77,11 +79,11 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         var positive = builder.addExternalNode();
         var negative = builder.addExternalNode();
 
-        if(getCachedState().isOf(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
+        if(getBlockState().is(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
             voltageSource = true;
             sourceNode = builder.addInternalNode(VoltageSourceNode.class);
             builder.couple(1, sourceNode, positive, negative);
-        } else if(getCachedState().isOf(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
+        } else if(getBlockState().is(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
             voltageSource = false;
             sourceNode = builder.addInternalNode(CurrentSourceNode.class);
             // Transformer needs some resistance for solver to work correctly with the current source.
@@ -92,7 +94,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if(tag.contains("Overwrite"))
             overwrite = tag.getBoolean("Overwrite");
@@ -100,7 +102,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if(overwrite)
             tag.putBoolean("Overwrite", true);
@@ -145,32 +147,32 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 //    }
 
     @Override
-    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         Lang.translate("gui.creative_source.info_header").forGoggles(tooltip);
         Lang.builder().translate("gui.creative_source.voltage")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         var voltage = sourceNode.getVoltage();
         var voltageText = String.format("%.2f", voltage);
         Lang.builder()
                 .text(voltageText)
-                .add(Text.of(" "))
+                .add(Component.nullToEmpty(" "))
                 .add(Unit.VOLTAGE.get())
-                .style(Formatting.BLUE)
+                .style(ChatFormatting.BLUE)
                 .forGoggles(tooltip, 1);
 
         Lang.builder().translate("gui.creative_source.current")
-                .style(Formatting.GRAY)
+                .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
         var current = sourceNode.getCurrent();
         var currentText = String.format("%.2f", current);
         Lang.builder()
                 .text(currentText)
-                .add(Text.of(" "))
+                .add(Component.nullToEmpty(" "))
                 .add(Unit.CURRENT.get())
-                .style(Formatting.GREEN)
+                .style(ChatFormatting.GREEN)
                 .forGoggles(tooltip, 1);
 
         return true;
@@ -182,7 +184,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         }
 
         @Override
-        protected Vec3d getSouthLocation() {
+        protected Vec3 getSouthLocation() {
             return VecHelper.voxelSpace(8.0f, 8.0f, 14.5f);
         }
     }

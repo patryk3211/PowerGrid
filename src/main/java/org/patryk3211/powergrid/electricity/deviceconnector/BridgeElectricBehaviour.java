@@ -17,9 +17,9 @@ package org.patryk3211.powergrid.electricity.deviceconnector;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
@@ -53,7 +53,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
             return;
         bridgeBehaviour = makeFEHandler(blockEntity);
         if(bridgeBehaviour == null) {
-            world.breakBlock(getPos(), true);
+            world.destroyBlock(getPos(), true);
             return;
         }
         bridgeBehaviour.setAmount(readEnergy);
@@ -95,7 +95,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     }
 
     @Override
-    public void read(NbtCompound nbt, boolean clientPacket) {
+    public void read(CompoundTag nbt, boolean clientPacket) {
         super.read(nbt, clientPacket);
         if(bridgeBehaviour != null) {
             bridgeBehaviour.setAmount(nbt.getLong("Energy"));
@@ -107,7 +107,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     }
 
     @Override
-    public void write(NbtCompound nbt, boolean clientPacket) {
+    public void write(CompoundTag nbt, boolean clientPacket) {
         super.write(nbt, clientPacket);
         if(bridgeBehaviour != null) {
             nbt.putLong("Energy", bridgeBehaviour.getAmount());
@@ -128,7 +128,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
 
         energyStorage.charge(wire);
         var moved = energyStorage.moveEnergy();
-        if(!world.isClient) {
+        if(!world.isClientSide) {
             if(moved != currentRate) {
                 currentRate = moved;
                 blockEntity.sendData();

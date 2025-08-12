@@ -20,27 +20,28 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.sound.SoundManager;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
-import org.patryk3211.powergrid.circuits.gui.TextFieldPropertyWidget;
-import org.patryk3211.powergrid.circuits.schematic.*;
+import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
+import org.patryk3211.powergrid.circuits.schematic.Line;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedKeys;
 import org.patryk3211.powergrid.collections.ModdedPackets;
@@ -53,28 +54,29 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
-import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.*;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
+import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
 public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<CircuitDesignTableEditMenu> {
-    private static final Identifier BACKGROUND = PowerGrid.texture("gui/circuit_design_table_edit");
+    private static final ResourceLocation BACKGROUND = PowerGrid.texture("gui/circuit_design_table_edit");
     private static final int WIDTH = 182;
     private static final int HEIGHT = 160;
 
     public static final int CIRCUIT_SCALE = 8;
 
-    private static final Text TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
-    private static final Text TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");
-    private static final Text TOOLTIP_CONNECT = Lang.translateDirect("gui.circuit_designer.connect");
-    private static final Text TOOLTIP_DELETE = Lang.translateDirect("gui.circuit_designer.delete");
-    private static final Text TOOLTIP_SELECT = Lang.translateDirect("gui.circuit_designer.select");
-    private static final Text TOOLTIP_LAYER = Lang.translateDirect("gui.circuit_designer.layer");
-    private static final Text TOOLTIP_PLACEABLE = Lang.translate("gui.circuit_designer.placeable")
-            .style(Formatting.DARK_GREEN)
-            .style(Formatting.ITALIC)
+    private static final net.minecraft.network.chat.Component TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
+    private static final net.minecraft.network.chat.Component TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");
+    private static final net.minecraft.network.chat.Component TOOLTIP_CONNECT = Lang.translateDirect("gui.circuit_designer.connect");
+    private static final net.minecraft.network.chat.Component TOOLTIP_DELETE = Lang.translateDirect("gui.circuit_designer.delete");
+    private static final net.minecraft.network.chat.Component TOOLTIP_SELECT = Lang.translateDirect("gui.circuit_designer.select");
+    private static final net.minecraft.network.chat.Component TOOLTIP_LAYER = Lang.translateDirect("gui.circuit_designer.layer");
+    private static final net.minecraft.network.chat.Component TOOLTIP_PLACEABLE = Lang.translate("gui.circuit_designer.placeable")
+            .style(ChatFormatting.DARK_GREEN)
+            .style(ChatFormatting.ITALIC)
             .component();
-    private static final Text TEXT_SAVING = Lang.translateDirect("gui.circuit_designer.saving");
-    private static final Text TEXT_NOT_SAVED = Lang.translateDirect("gui.circuit_designer.not_saved");
+    private static final net.minecraft.network.chat.Component TEXT_SAVING = Lang.translateDirect("gui.circuit_designer.saving");
+    private static final net.minecraft.network.chat.Component TEXT_NOT_SAVED = Lang.translateDirect("gui.circuit_designer.not_saved");
 
     private final CircuitSchematic schematic;
     private List<Line> fgLines;
@@ -88,7 +90,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private CircuitEditWidget editWidget;
     private boolean backLayer = false;
 
-    private TextFieldWidget nameField;
+    private EditBox nameField;
     private IconButton acceptBtn;
     private IconButton cancelBtn;
 
@@ -104,7 +106,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private boolean saving = false;
     private int unsavedPopupTimeout = 0;
 
-    public CircuitDesignTableEditScreen(CircuitDesignTableEditMenu container, PlayerInventory inv, Text title) {
+    public CircuitDesignTableEditScreen(CircuitDesignTableEditMenu container, Inventory inv, net.minecraft.network.chat.Component title) {
         super(container, inv, title);
 
         // For the editor we take a copy since the underlying circuit can change
@@ -116,21 +118,21 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     }
 
     private static SoundManager soundManager() {
-        return MinecraftClient.getInstance().getSoundManager();
+        return Minecraft.getInstance().getSoundManager();
     }
 
     private static void playSound(AllSoundEvents.SoundEntry sound) {
-        soundManager().play(PositionedSoundInstance.master(sound.getMainEvent(), 1.0f));
+        soundManager().play(SimpleSoundInstance.forUI(sound.getMainEvent(), 1.0f));
     }
 
     public void save() {
-        ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(handler.contentHolder, nameField.getText(), schematic));
-        handler.contentHolder.schematic = schematic;
+        ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, nameField.getValue(), schematic));
+        menu.contentHolder.schematic = schematic;
         saving = true;
     }
 
     public void discard() {
-        ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(handler.contentHolder, 0));
+        ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 0));
     }
 
     @Override
@@ -140,15 +142,15 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         super.init();
 
-        editWidget = new CircuitEditWidget(textRenderer, schematic, x + 13 - 11, y + 22, GRID_SIZE * CIRCUIT_SCALE, GRID_SIZE * CIRCUIT_SCALE);
-        propertiesWidget = new ComponentPropertiesWidget(textRenderer, x - 15, y + 12);
+        editWidget = new CircuitEditWidget(font, schematic, leftPos + 13 - 11, topPos + 22, GRID_SIZE * CIRCUIT_SCALE, GRID_SIZE * CIRCUIT_SCALE);
+        propertiesWidget = new ComponentPropertiesWidget(font, leftPos - 15, topPos + 12);
 
-        var name = handler.contentHolder.getSchematicName();
-        nameField = new TextFieldWidget(textRenderer, x + 4 - 11, y + 3, 148, 9, Text.empty());
-        nameField.setText(name);
-        nameField.setEditableColor(-1);
-        nameField.setUneditableColor(-1);
-        nameField.setDrawsBackground(false);
+        var name = menu.contentHolder.getSchematicName();
+        nameField = new EditBox(font, leftPos + 4 - 11, topPos + 3, 148, 9, net.minecraft.network.chat.Component.empty());
+        nameField.setValue(name);
+        nameField.setTextColor(-1);
+        nameField.setTextColorUneditable(-1);
+        nameField.setBordered(false);
         nameField.setMaxLength(35);
         nameField.setEditable(true);
 
@@ -157,13 +159,13 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         currentComponent = null;
         selectedSlot = null;
 
-        final var BUTTONS_X = x + 154 - 11;
-        acceptBtn = new IconButton(BUTTONS_X, y + 43, AllIcons.I_CONFIRM);
-        cancelBtn = new IconButton(BUTTONS_X, y + 63, ModIcons.I_CANCEL);
-        connectBtn = new IconButton(BUTTONS_X, y + 83, ModIcons.I_CONNECT);
-        deleteBtn = new IconButton(BUTTONS_X, y + 101, AllIcons.I_TRASH);
-        selectBtn = new IconButton(BUTTONS_X, y + 119, AllIcons.I_TARGET);
-        layerBtn = new IconButton(BUTTONS_X, y + 139, ModIcons.I_LAYER_FRONT);
+        final var BUTTONS_X = leftPos + 154 - 11;
+        acceptBtn = new IconButton(BUTTONS_X, topPos + 43, AllIcons.I_CONFIRM);
+        cancelBtn = new IconButton(BUTTONS_X, topPos + 63, ModIcons.I_CANCEL);
+        connectBtn = new IconButton(BUTTONS_X, topPos + 83, ModIcons.I_CONNECT);
+        deleteBtn = new IconButton(BUTTONS_X, topPos + 101, AllIcons.I_TRASH);
+        selectBtn = new IconButton(BUTTONS_X, topPos + 119, AllIcons.I_TARGET);
+        layerBtn = new IconButton(BUTTONS_X, topPos + 139, ModIcons.I_LAYER_FRONT);
 
         acceptBtn.setToolTip(TOOLTIP_SAVE);
         cancelBtn.setToolTip(TOOLTIP_DISCARD);
@@ -187,20 +189,20 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         editWidget.setSelectionCancelledCallback(() -> currentTool = Tool.NONE);
 
-        addDrawableChild(nameField);
-        addDrawableChild(editWidget);
-        addDrawableChild(propertiesWidget);
-        addDrawableChild(acceptBtn);
-        addDrawableChild(cancelBtn);
-        addDrawableChild(connectBtn);
-        addDrawableChild(deleteBtn);
-        addDrawableChild(selectBtn);
-        addDrawableChild(layerBtn);
+        addRenderableWidget(nameField);
+        addRenderableWidget(editWidget);
+        addRenderableWidget(propertiesWidget);
+        addRenderableWidget(acceptBtn);
+        addRenderableWidget(cancelBtn);
+        addRenderableWidget(connectBtn);
+        addRenderableWidget(deleteBtn);
+        addRenderableWidget(selectBtn);
+        addRenderableWidget(layerBtn);
     }
 
     @Override
-    protected List<Text> getTooltipFromItem(ItemStack stack) {
-        var lines = super.getTooltipFromItem(stack);
+    protected List<net.minecraft.network.chat.Component> getTooltipFromContainerItem(ItemStack stack) {
+        var lines = super.getTooltipFromContainerItem(stack);
         if(Component.forItem(stack.getItem()) != null) {
             lines.add(TOOLTIP_PLACEABLE);
         }
@@ -226,7 +228,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     }
 
     private void toolSelect(Slot slot) {
-        var component = Component.forItem(slot.getStack().getItem());
+        var component = Component.forItem(slot.getItem().getItem());
         if(component == null)
             return;
         editWidget.cancelSelection();
@@ -306,27 +308,27 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     }
 
     @Override
-    protected void drawBackground(DrawContext ctx, float delta, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics ctx, float delta, int mouseX, int mouseY) {
         int bgX = getLeftOfCentered(WIDTH);
-        int invY = y + HEIGHT + 4;
+        int invY = topPos + HEIGHT + 4;
         renderPlayerInventory(ctx, bgX + WIDTH - PLAYER_INVENTORY.getWidth(), invY);
 
-        for(int k = 0; k < this.handler.slots.size(); ++k) {
-            var slot = this.handler.slots.get(k);
-            if(!slot.isEnabled() || !slot.hasStack())
+        for(int k = 0; k < this.menu.slots.size(); ++k) {
+            var slot = this.menu.slots.get(k);
+            if(!slot.isActive() || !slot.hasItem())
                 continue;
             if(slot == selectedSlot) {
-                ctx.drawTexture(BACKGROUND, x + slot.x - 1, y + slot.y - 1 , 232, 18, 18, 18);
+                ctx.blit(BACKGROUND, leftPos + slot.x - 1, topPos + slot.y - 1 , 232, 18, 18, 18);
                 continue;
             }
-            if(Component.forItem(slot.getStack().getItem()) == null)
+            if(Component.forItem(slot.getItem().getItem()) == null)
                 continue;
-            ctx.drawTexture(BACKGROUND, x + slot.x - 1, y + slot.y - 1 , 232, 0, 18, 18);
+            ctx.blit(BACKGROUND, leftPos + slot.x - 1, topPos + slot.y - 1 , 232, 0, 18, 18);
         }
 
-        ctx.drawTexture(BACKGROUND, bgX, y, 0, 0, WIDTH, HEIGHT);
+        ctx.blit(BACKGROUND, bgX, topPos, 0, 0, WIDTH, HEIGHT);
 
-        int bpX = bgX + 13, bpY = y + 22;
+        int bpX = bgX + 13, bpY = topPos + 22;
         if(!backLayer) {
             CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_BACK);
             CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_FRONT);
@@ -338,12 +340,12 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE);
 
         if(currentTool.y > 0) {
-            ctx.drawTexture(BACKGROUND, x + 173 - 11, y + currentTool.y, 250, 0, 6, 18);
+            ctx.blit(BACKGROUND, leftPos + 173 - 11, topPos + currentTool.y, 250, 0, 6, 18);
         }
 
         if(selectedComponent != null) {
             var footprint = selectedComponent.footprint();
-            ctx.drawBorder(
+            ctx.renderOutline(
                     bpX + selectedComponent.x * CIRCUIT_SCALE * GRID_TO_GRID_SCALE - 1, bpY + selectedComponent.y * CIRCUIT_SCALE * GRID_TO_GRID_SCALE - 1,
                     footprint.getWidth() * CIRCUIT_SCALE * GRID_TO_GRID_SCALE + 2, footprint.getHeight() * CIRCUIT_SCALE * GRID_TO_GRID_SCALE + 2,
                     COLOR_SELECT_OUTLINE
@@ -354,20 +356,20 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             int color = 0xFF6060;
             int alpha = Math.min(unsavedPopupTimeout, 20) * 255 / 20;
             color |= alpha << 24;
-            ctx.drawCenteredTextWithShadow(textRenderer, TEXT_NOT_SAVED, width / 2, y - 12, color);
+            ctx.drawCenteredString(font, TEXT_NOT_SAVED, width / 2, topPos - 12, color);
         }
     }
 
     @Override
-    protected void handledScreenTick() {
-        super.handledScreenTick();
+    protected void containerTick() {
+        super.containerTick();
         if(unsavedPopupTimeout > 0)
             --unsavedPopupTimeout;
     }
 
     @Override
-    protected void drawMouseoverTooltip(DrawContext context, int mouseX, int mouseY) {
-        super.drawMouseoverTooltip(context, mouseX, mouseY);
+    protected void renderTooltip(GuiGraphics context, int mouseX, int mouseY) {
+        super.renderTooltip(context, mouseX, mouseY);
 
         int x = editWidget.getX(), y = editWidget.getY();
         int gridX = (mouseX - x) / CIRCUIT_SCALE;
@@ -384,7 +386,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             var tooltip = footprint.getTooltip(localX, localY);
             if(tooltip == null)
                 continue;
-            context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
+            context.renderTooltip(this.font, tooltip, mouseX, mouseY);
         }
     }
 
@@ -392,7 +394,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if(keyCode == 256) {
             if(!changed || saving) {
-                this.close();
+                this.onClose();
             } else {
                 playSound(ModdedSoundEvents.UI_FAIL);
                 unsavedPopupTimeout = 60;
@@ -406,14 +408,14 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         if(handled)
             return true;
 
-        if(selectedComponent != null || focused instanceof TextFieldWidget)
+        if(selectedComponent != null || focused instanceof EditBox)
             return false;
 
         // Hotbar as component quick select
-        var hotbar = client.options.hotbarKeys;
+        var hotbar = minecraft.options.keyHotbarSlots;
         for(int i = 0; i < hotbar.length; ++i) {
-            if(hotbar[i].matchesKey(keyCode, scanCode)) {
-                toolSelect(handler.getSlot(i + 27));
+            if(hotbar[i].matches(keyCode, scanCode)) {
+                toolSelect(menu.getSlot(i + 27));
                 return true;
             }
         }
@@ -454,26 +456,26 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     }
 
     @Override
-    public void render(@NotNull DrawContext ctx, int mouseX, int mouseY, float partialTicks) {
+    public void render(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
         super.render(ctx, mouseX, mouseY, partialTicks);
 
         if(saving) {
             RenderSystem.disableDepthTest();
-            var ms = ctx.getMatrices();
-            ms.push();
+            var ms = ctx.pose();
+            ms.pushPose();
             ms.translate(0, 0, 10);
             // Apply another layer of gradient
             ctx.fillGradient(0, 0, width, height, -1072689136, -804253680);
 
             AllIcons.I_CONFIG_SAVE.render(ctx, width / 2 - 8, height / 2 - 8);
-            ctx.drawCenteredTextWithShadow(textRenderer, TEXT_SAVING, width / 2, height / 2 + 12, -1);
-            ms.pop();
+            ctx.drawCenteredString(font, TEXT_SAVING, width / 2, height / 2 + 12, -1);
+            ms.popPose();
         }
     }
 
     @Override
-    protected void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType) {
-        if(slot == null || !slot.hasStack() || actionType != SlotActionType.PICKUP)
+    protected void slotClicked(Slot slot, int slotId, int button, ClickType actionType) {
+        if(slot == null || !slot.hasItem() || actionType != ClickType.PICKUP)
             return;
         toolSelect(slot);
     }

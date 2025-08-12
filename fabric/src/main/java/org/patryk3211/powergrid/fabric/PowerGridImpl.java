@@ -22,8 +22,8 @@ import net.createmod.catnip.lang.FontHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.FabricPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
@@ -56,7 +56,7 @@ public class PowerGridImpl implements ModInitializer {
                                 .andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
                 )
                 .defaultCreativeTab("main", builder -> builder
-                        .displayName(Text.translatable("itemGroup.powergrid.main"))
+                        .title(Component.translatable("itemGroup.powergrid.main"))
                         .icon(() -> new ItemStack(ModdedItems.WIRE)))
                 .build();
     }

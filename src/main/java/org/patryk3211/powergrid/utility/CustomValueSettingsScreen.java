@@ -22,10 +22,10 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsScreen;
 import net.createmod.catnip.gui.ScreenOpener;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -33,11 +33,11 @@ import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class CustomValueSettingsScreen extends ValueSettingsScreen {
-    public static ValueSettingsBoard makeBoard(Text title, int maxValue, int milestoneInterval, List<Text> rows) {
+    public static ValueSettingsBoard makeBoard(Component title, int maxValue, int milestoneInterval, List<Component> rows) {
         return new ValueSettingsBoard(title, maxValue, milestoneInterval, rows, new ValueSettingsFormatter(CustomValueSettingsScreen::simpleFormat));
     }
 
-    public static MutableText simpleFormat(ValueSettingsBehaviour.ValueSettings settings) {
+    public static MutableComponent simpleFormat(ValueSettingsBehaviour.ValueSettings settings) {
         return Lang.number(settings.value()).component();
     }
 
@@ -65,7 +65,7 @@ public class CustomValueSettingsScreen extends ValueSettingsScreen {
     protected void saveAndClose(double pMouseX, double pMouseY) {
         ValueSettingsBehaviour.ValueSettings closest = getClosestCoordinate((int) pMouseX, (int) pMouseY);
         saveCallback.accept(closest);
-        close();
+        onClose();
     }
 
     public static void clientTick() {
@@ -73,8 +73,8 @@ public class CustomValueSettingsScreen extends ValueSettingsScreen {
             return;
 
         if(++interactionTicks <= 3) {
-            var mc = MinecraftClient.getInstance();
-            if (!mc.options.useKey.isPressed()) {
+            var mc = Minecraft.getInstance();
+            if (!mc.options.keyUse.isDown()) {
                 interactionTicks = -1;
                 return;
             }

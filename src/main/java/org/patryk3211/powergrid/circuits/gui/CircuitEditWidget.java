@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.circuits.gui;
 
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -32,7 +32,7 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_G
 public class CircuitEditWidget extends AbstractSimiWidget {
     private int scale = CIRCUIT_SCALE;
 
-    private final TextRenderer textRenderer;
+    private final Font textRenderer;
     private boolean selectStarted = false;
     private int startX, startY;
 
@@ -46,15 +46,15 @@ public class CircuitEditWidget extends AbstractSimiWidget {
 
     private final CircuitSchematic schematic;
 
-    public CircuitEditWidget(TextRenderer textRenderer, CircuitSchematic schematic, int x, int y, int width, int height) {
+    public CircuitEditWidget(Font textRenderer, CircuitSchematic schematic, int x, int y, int width, int height) {
         super(x, y, width, height);
         this.textRenderer = textRenderer;
         this.schematic = schematic;
     }
 
     @Override
-    protected void doRender(@NotNull DrawContext ctx, int mouseX, int mouseY, float partialTicks) {
-        if (!hovered)
+    protected void doRender(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
+        if (!isHovered)
             return;
         int x = getX();
         int y = getY();
@@ -64,7 +64,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
         if(gridX >= GRID_SIZE || gridY >= GRID_SIZE)
             return;
 
-        var ms = ctx.getMatrices();
+        var ms = ctx.pose();
         ms.translate(x, y, 5);
         ms.scale(scale, scale, scale);
 
@@ -77,22 +77,22 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             footprint.render(ctx, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
             footprint.renderPadIndices(ctx, textRenderer, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
 
-            ms.push();
+            ms.pushPose();
             ms.scale(1f / scale, 1f / scale, 1f / scale);
             int color = schematic.canPlace(placedComponent, gridX - offsetX, gridY - offsetY) ? 0x8080FF80 : 0x80FF8080;
-            ctx.drawBorder((gridX - offsetX) * scale * GRID_TO_GRID_SCALE, (gridY - offsetY) * scale * GRID_TO_GRID_SCALE, footprint.getWidth() * scale * GRID_TO_GRID_SCALE, footprint.getHeight() * scale * GRID_TO_GRID_SCALE, color);
-            ms.pop();
+            ctx.renderOutline((gridX - offsetX) * scale * GRID_TO_GRID_SCALE, (gridY - offsetY) * scale * GRID_TO_GRID_SCALE, footprint.getWidth() * scale * GRID_TO_GRID_SCALE, footprint.getHeight() * scale * GRID_TO_GRID_SCALE, color);
+            ms.popPose();
             return;
         }
 
         if(selectMode == SelectMode.NONE) {
             // Draw cursor
-            ms.push();
+            ms.pushPose();
             ms.scale(1f / scale, 1f / scale, 1f / scale);
-            ctx.drawBorder(gridX * scale, gridY * scale, scale, scale, 0xFFAAAAFF);
-            ms.pop();
+            ctx.renderOutline(gridX * scale, gridY * scale, scale, scale, 0xFFAAAAFF);
+            ms.popPose();
         } else if(selectMode == SelectMode.POINT) {
-            ms.push();
+            ms.pushPose();
             ms.translate(gridX, gridY, 0);
             ms.scale(0.25f, 0.25f, 0.25f);
             ctx.fill(1, 1, 3, 3, selectionColor);
@@ -100,7 +100,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             ctx.fill(1, -6, 3, -1, selectionColor);
             ctx.fill(5, 1, 10, 3, selectionColor);
             ctx.fill(1, 5, 3, 10, selectionColor);
-            ms.pop();
+            ms.popPose();
         } else if(!selectStarted) {
             ctx.fill(gridX, gridY, gridX + 1, gridY + 1, selectionColor);
         } else if(selectMode == SelectMode.LINE) {
@@ -209,7 +209,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
                     startX = gridX;
                     startY = gridY;
                     selectStarted = true;
-                    playDownSound(MinecraftClient.getInstance().getSoundManager());
+                    playDownSound(Minecraft.getInstance().getSoundManager());
                 } else {
                     handleCallback(gridX, gridY);
                 }

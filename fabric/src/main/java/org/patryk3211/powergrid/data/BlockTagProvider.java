@@ -17,21 +17,21 @@ package org.patryk3211.powergrid.data;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.block.Blocks;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Blocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.concurrent.CompletableFuture;
 
 public class BlockTagProvider extends FabricTagProvider.BlockTagProvider {
-    public BlockTagProvider(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+    public BlockTagProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);
     }
 
     @Override
-    protected void configure(RegistryWrapper.WrapperLookup provider) {
-        getOrCreateTagBuilder(ModdedTags.Block.AFFECTED_BY_LAMP.tag)
+    protected void addTags(HolderLookup.Provider provider) {
+        tag(ModdedTags.Block.AFFECTED_BY_LAMP.tag)
                 .addOptionalTag(BlockTags.BEE_GROWABLES)
                 .add(Blocks.CACTUS)
                 .add(Blocks.SUGAR_CANE);

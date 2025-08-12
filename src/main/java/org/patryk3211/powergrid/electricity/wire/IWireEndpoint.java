@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -25,24 +25,24 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 public interface IWireEndpoint {
     WireEndpointType type();
 
-    void read(NbtCompound nbt);
-    void write(NbtCompound nbt);
+    void read(CompoundTag nbt);
+    void write(CompoundTag nbt);
 
     @NotNull
-    Vec3d getExactPosition(World world);
+    Vec3 getExactPosition(Level world);
 
-    IElectricNode getNode(World world);
-    void joinNetwork(World world, ElectricalNetwork network);
+    IElectricNode getNode(Level world);
+    void joinNetwork(Level world, ElectricalNetwork network);
 
     // TODO: Implement for other endpoints
-    default boolean isValid(World world) {
+    default boolean isValid(Level world) {
         return true;
     }
 
     void assignWireEntity(WireEntity entity);
     void removeWireEntity(WireEntity entity);
 
-    default NbtCompound serialize() {
+    default CompoundTag serialize() {
         return type().serialize(this);
     }
 }

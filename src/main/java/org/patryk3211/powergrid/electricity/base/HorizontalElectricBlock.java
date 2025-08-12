@@ -16,47 +16,47 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.createmod.catnip.math.VoxelShaper;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public abstract class HorizontalElectricBlock extends ElectricBlock {
-    public static final DirectionProperty HORIZONTAL_FACING = Properties.HORIZONTAL_FACING;
+    public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    public HorizontalElectricBlock(Settings settings) {
+    public HorizontalElectricBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(HORIZONTAL_FACING);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        var player = ctx.getPlayer() == null || !ctx.getPlayer().isSneaking() ? ctx.getHorizontalPlayerFacing() : ctx.getHorizontalPlayerFacing().getOpposite();
-        return getDefaultState().with(HORIZONTAL_FACING, player);
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var player = ctx.getPlayer() == null || !ctx.getPlayer().isShiftKeyDown() ? ctx.getHorizontalDirection() : ctx.getHorizontalDirection().getOpposite();
+        return defaultBlockState().setValue(HORIZONTAL_FACING, player);
     }
 
     public static BlockStateTerminalCollection horizontalNorthTerminals(Block block, TerminalBoundingBox[] terminals, VoxelShape northShape) {
         var shaper = VoxelShaper.forHorizontal(northShape, Direction.NORTH);
         return BlockStateTerminalCollection.builder(block)
-                .forAllStates(state -> BlockStateTerminalCollection.each(terminals, terminal -> switch(state.get(HORIZONTAL_FACING)) {
+                .forAllStates(state -> BlockStateTerminalCollection.each(terminals, terminal -> switch(state.getValue(HORIZONTAL_FACING)) {
                     case NORTH -> terminal;
                     case SOUTH -> terminal.rotateAroundY(180);
                     case EAST -> terminal.rotateAroundY(90);
                     case WEST -> terminal.rotateAroundY(-90);
                     default -> throw new IllegalStateException();
                 }))
-                .withShapeMapper(state -> shaper.get(state.get(HORIZONTAL_FACING)))
+                .withShapeMapper(state -> shaper.get(state.getValue(HORIZONTAL_FACING)))
                 .build();
     }
 }

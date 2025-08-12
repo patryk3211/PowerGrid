@@ -18,30 +18,30 @@ package org.patryk3211.powergrid.electricity.info;
 import com.simibubi.create.AllSpecialTextures;
 import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.createmod.catnip.outliner.Outliner;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
+import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 
 public class TerminalHandler {
     private static final Object outlineSlot = new Object();
     private static IDecoratedTerminal targetTerminal = null;
 
-    public static void tick(ClientWorld world) {
+    public static void tick(ClientLevel world) {
         targetTerminal = null;
-        var client = MinecraftClient.getInstance();
-        var target = client.crosshairTarget;
+        var client = Minecraft.getInstance();
+        var target = client.hitResult;
         if(target == null || target.getType() == HitResult.Type.MISS || client.player == null)
             return;
 
-        var mainItem = client.player.getMainHandStack();
-        var offItem = client.player.getOffHandStack();
+        var mainItem = client.player.getMainHandItem();
+        var offItem = client.player.getOffhandItem();
         if(!(mainItem != null && !mainItem.isEmpty() && mainItem.getItem() instanceof IWire) &&
                 !(offItem != null && !offItem.isEmpty() && offItem.getItem() instanceof IWire) &&
                 !GogglesItem.isWearingGoggles(client.player))
@@ -53,7 +53,7 @@ public class TerminalHandler {
                 return;
             var blockPos = blockHit.getBlockPos();
             var state = world.getBlockState(blockPos);
-            var terminal = electric.terminalAt(state, blockHit.getPos().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+            var terminal = electric.terminalAt(state, blockHit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
             if(terminal == null)
                 return;
 
@@ -61,7 +61,7 @@ public class TerminalHandler {
                 return;
             targetTerminal = decorated;
 
-            Outliner.getInstance().showAABB(outlineSlot, decorated.getOutline().offset(blockPos))
+            Outliner.getInstance().showAABB(outlineSlot, decorated.getOutline().move(blockPos))
                     .colored(decorated.getColor())
                     .withFaceTexture(AllSpecialTextures.CUTOUT_CHECKERED)
                     .lineWidth(0.020f);
@@ -69,7 +69,7 @@ public class TerminalHandler {
     }
 
     @Nullable
-    public static Text overlayText(PlayerEntity player) {
+    public static Component overlayText(Player player) {
         if(targetTerminal == null)
             return null;
         return targetTerminal.getName();

@@ -18,10 +18,10 @@ package org.patryk3211.powergrid.utility.forge;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.client.model.generators.MultiPartBlockStateBuilder;
@@ -42,7 +42,7 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 
 import java.util.function.Function;
 
-import static net.minecraft.state.property.Properties.*;
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.*;
 import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
 
 @SuppressWarnings("unused")
@@ -69,7 +69,7 @@ public class BlockStateProvidersImpl {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
                 .forAllStates(state -> {
                     var builder = ConfiguredModel.builder().modelFile(modModel(prov, modelProvider.apply(state)));
-                    switch(state.get(FACING)) {
+                    switch(state.getValue(FACING)) {
                         case SOUTH -> builder.rotationY(180);
                         case EAST -> builder.rotationY(90);
                         case WEST -> builder.rotationY(-90);
@@ -84,7 +84,7 @@ public class BlockStateProvidersImpl {
         return (ctx, prov) ->
                 prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                     var builder = ConfiguredModel.builder().modelFile(modModel(prov, model));
-                    if(state.get(Properties.HORIZONTAL_AXIS) == Direction.Axis.X)
+                    if(state.getValue(BlockStateProperties.HORIZONTAL_AXIS) == Direction.Axis.X)
                         builder.rotationY(90);
                     return builder.build();
                 });
@@ -94,7 +94,7 @@ public class BlockStateProvidersImpl {
         return (ctx, prov) ->
                 prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                     var builder = ConfiguredModel.builder();
-                    var suffix = state.get(SwitchBlock.OPEN) ? "_off" : "_on";
+                    var suffix = state.getValue(SwitchBlock.OPEN) ? "_off" : "_on";
                     surfaceFacingTransforms(state, (x, y, vertical) -> {
                         var suffix2 = vertical ? "_v" : "_h";
                         builder.modelFile(modModel(prov, baseName + suffix + suffix2));
@@ -119,8 +119,8 @@ public class BlockStateProvidersImpl {
 
     // This function needs two models. One for Y axis and one for other axis.
     public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
-        var facing = state.get(FACING);
-        var axis_along_first = state.get(ALONG_FIRST_AXIS);
+        var facing = state.getValue(FACING);
+        var axis_along_first = state.getValue(ALONG_FIRST_AXIS);
 
         int x = 0, y = 0;
         boolean verticalModel = false;
@@ -149,12 +149,12 @@ public class BlockStateProvidersImpl {
                     var builder = ConfiguredModel.builder().modelFile(modModel(prov, name));
                     int x = 0;
                     int y = 0;
-                    var facing = state.get(GeneratorHousing.HORIZONTAL_FACING);
+                    var facing = state.getValue(GeneratorHousing.HORIZONTAL_FACING);
                     if(facing.getAxis() == Direction.Axis.X)
                         y = -90;
-                    if(facing.getDirection() == Direction.AxisDirection.NEGATIVE)
+                    if(facing.getAxisDirection() == Direction.AxisDirection.NEGATIVE)
                         x = -90;
-                    if(state.get(GeneratorHousing.UP)) {
+                    if(state.getValue(GeneratorHousing.UP)) {
                         x = 90 - x;
                     }
                     return builder.rotationX(x).rotationY(y).build();
@@ -165,7 +165,7 @@ public class BlockStateProvidersImpl {
         return (ctx, prov) ->
                 prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                     var builder = ConfiguredModel.builder();
-                    var model = switch(state.get(BasinHeaterBlock.HEAT_LEVEL)) {
+                    var model = switch(state.getValue(BasinHeaterBlock.HEAT_LEVEL)) {
                         case NONE, SMOULDERING -> baseName;
                         case FADING, KINDLED -> baseName + "_on";
                         case SEETHING -> baseName + "_seething";
@@ -182,10 +182,10 @@ public class BlockStateProvidersImpl {
             var model = modModel(prov, name);
             var builder = ConfiguredModel.builder().modelFile(model);
             Direction.Axis axis;
-            if(state.contains(AXIS)) {
-                axis = state.get(AXIS);
-            } else if(state.contains(HORIZONTAL_AXIS)) {
-                axis = state.get(HORIZONTAL_AXIS);
+            if(state.hasProperty(AXIS)) {
+                axis = state.getValue(AXIS);
+            } else if(state.hasProperty(HORIZONTAL_AXIS)) {
+                axis = state.getValue(HORIZONTAL_AXIS);
             } else {
                 axis = Direction.Axis.Z;
             }
@@ -203,14 +203,14 @@ public class BlockStateProvidersImpl {
         return (ctx, prov) ->
                 prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                     var builder = ConfiguredModel.builder();
-                    var part = state.get(HvSwitchBlock.PART);
+                    var part = state.getValue(HvSwitchBlock.PART);
                     if (part == 0) {
                         builder.modelFile(modModel(prov, baseName + "_body"));
                     } else {
                         builder.modelFile(modModel(prov, baseName + "_receptacle"));
                     }
-                    var facing = state.get(HORIZONTAL_FACING);
-                    builder.rotationY((int) facing.asRotation());
+                    var facing = state.getValue(HORIZONTAL_FACING);
+                    builder.rotationY((int) facing.toYRot());
                     return builder.build();
                 });
     }
@@ -379,7 +379,7 @@ public class BlockStateProvidersImpl {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
                 .forAllStates(state -> {
                     var builder = ConfiguredModel.builder().modelFile(modModel(prov, name));
-                    rotateDownFacingModel(builder, state.get(FACING));
+                    rotateDownFacingModel(builder, state.getValue(FACING));
                     return builder.build();
                 });
     }
@@ -388,7 +388,7 @@ public class BlockStateProvidersImpl {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
             var builder = ConfiguredModel.builder();
             builder.modelFile(modModel(prov, name));
-            switch(state.get(FACING)) {
+            switch(state.getValue(FACING)) {
                 case DOWN -> builder.rotationX(180);
                 case NORTH -> builder.rotationX(90);
                 case SOUTH -> builder.rotationX(-90);
@@ -417,11 +417,11 @@ public class BlockStateProvidersImpl {
     public static NonNullBiConsumer<DataGenContext<Block, FuseHolderBlock>, RegistrateBlockstateProvider> fuseHolder() {
         return (ctx, prov) -> {
             var builder = prov.getMultipartBuilder(ctx.getEntry());
-            for(var facing : FACING.getValues()) {
-                for(var axis : ALONG_FIRST_AXIS.getValues()) {
-                    var state = ctx.getEntry().getDefaultState()
-                            .with(FACING, facing)
-                            .with(ALONG_FIRST_AXIS, axis);
+            for(var facing : FACING.getPossibleValues()) {
+                for(var axis : ALONG_FIRST_AXIS.getPossibleValues()) {
+                    var state = ctx.getEntry().defaultBlockState()
+                            .setValue(FACING, facing)
+                            .setValue(ALONG_FIRST_AXIS, axis);
                     surfaceFacingTransforms(state, (x, y, vertical) -> {
                         var part = builder.part();
                         if (vertical) {

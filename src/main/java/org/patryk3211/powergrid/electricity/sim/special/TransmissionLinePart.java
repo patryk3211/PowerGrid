@@ -38,7 +38,7 @@ public class TransmissionLinePart extends ElectricWire {
         super(resistance, node1, node2);
         this.line = line;
         this.owner = owner;
-        this.persistentOwnerId = owner.getUuid();
+        this.persistentOwnerId = owner.getUUID();
     }
 
     public TransmissionLinePart(double resistance, IWireEndpoint endpoint1, IWireEndpoint endpoint2, UUID ownerId, TransmissionLine line) {

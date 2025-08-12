@@ -15,16 +15,18 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 import java.util.UUID;
+
+;
 
 public class BlockWireEntityEndpoint implements IWireEndpoint {
     private BlockPos entityPos;
@@ -38,8 +40,8 @@ public class BlockWireEntityEndpoint implements IWireEndpoint {
     }
 
     public BlockWireEntityEndpoint(BlockWireEntity entity, boolean end) {
-        this.entityPos = entity.getBlockPos();
-        this.entityId = entity.getUuid();
+        this.entityPos = entity.blockPosition();
+        this.entityId = entity.getUUID();
         this.end = end;
     }
 
@@ -49,22 +51,22 @@ public class BlockWireEntityEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void read(NbtCompound nbt) {
-        entityId = nbt.getUuid("Id");
+    public void read(CompoundTag nbt) {
+        entityId = nbt.getUUID("Id");
         var posArray = nbt.getIntArray("Pos");
         entityPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
         end = nbt.getBoolean("End");
     }
 
     @Override
-    public void write(NbtCompound nbt) {
-        nbt.putUuid("Id", entityId);
+    public void write(CompoundTag nbt) {
+        nbt.putUUID("Id", entityId);
         nbt.putIntArray("Pos", new int[] { entityPos.getX(), entityPos.getY(), entityPos.getZ() });
         nbt.putBoolean("End", end);
     }
 
-    public BlockWireEntity getEntity(World world) {
-        var entityList = world.getEntitiesByClass(BlockWireEntity.class, new Box(entityPos), e -> e.getUuid().equals(entityId));
+    public BlockWireEntity getEntity(Level world) {
+        var entityList = world.getEntitiesOfClass(BlockWireEntity.class, new AABB(entityPos), e -> e.getUUID().equals(entityId));
         if(entityList.isEmpty())
             return null;
         return entityList.get(0);
@@ -72,13 +74,13 @@ public class BlockWireEntityEndpoint implements IWireEndpoint {
 
     @Override
     @NotNull
-    public Vec3d getExactPosition(World world) {
+    public Vec3 getExactPosition(Level world) {
         var entity = getEntity(world);
         if(entity == null)
-            return entityPos.toCenterPos();
+            return entityPos.getCenter();
         if(!end)
-            return entity.getPos();
-        var pos = entity.getPos();
+            return entity.position();
+        var pos = entity.position();
         for(var segment : entity.segments) {
             pos = pos.add(segment.vector());
         }
@@ -90,12 +92,12 @@ public class BlockWireEntityEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public IElectricNode getNode(World world) {
+    public IElectricNode getNode(Level world) {
         return null;
     }
 
     @Override
-    public void joinNetwork(World world, ElectricalNetwork network) {
+    public void joinNetwork(Level world, ElectricalNetwork network) {
         throw new IllegalStateException("Cannot join network");
     }
 

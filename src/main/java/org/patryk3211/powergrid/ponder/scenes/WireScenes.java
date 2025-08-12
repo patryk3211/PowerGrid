@@ -17,12 +17,14 @@ package org.patryk3211.powergrid.ponder.scenes;
 
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
+
+;
 
 public class WireScenes {
     public static void simple(SceneBuilder scene, SceneBuildingUtil util) {
@@ -55,7 +57,7 @@ public class WireScenes {
         electric.connect(util.grid().at(0, 1, 2), 0, util.grid().at(5, 1, 2), 0);
         scene.idle(10);
 
-        scene.world().modifyBlock(lightPos, state -> state.with(LightFixtureBlock.POWER, 2), false);
+        scene.world().modifyBlock(lightPos, state -> state.setValue(LightFixtureBlock.POWER, 2), false);
 
         scene.overlay().showText(80)
                 .text("Wires are used to transfer electricity between terminals of electric devices")
@@ -122,8 +124,8 @@ public class WireScenes {
         scene.idle(20);
 
         for(int i = 0; i < 10; ++i) {
-            scene.effects().emitParticles(util.vector().of(0.75f + i * 0.5f, 1.3, 2.5), scene.effects().simpleParticleEmitter(ParticleTypes.SMOKE, Vec3d.ZERO), 0.2f, 60);
-            scene.effects().emitParticles(util.vector().of(0.75f + i * 0.5f, 1.3, 4.5), scene.effects().simpleParticleEmitter(ParticleTypes.SMOKE, Vec3d.ZERO), 0.2f, 60);
+            scene.effects().emitParticles(util.vector().of(0.75f + i * 0.5f, 1.3, 2.5), scene.effects().simpleParticleEmitter(ParticleTypes.SMOKE, Vec3.ZERO), 0.2f, 60);
+            scene.effects().emitParticles(util.vector().of(0.75f + i * 0.5f, 1.3, 4.5), scene.effects().simpleParticleEmitter(ParticleTypes.SMOKE, Vec3.ZERO), 0.2f, 60);
         }
         scene.idle(70);
 

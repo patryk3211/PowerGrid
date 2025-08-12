@@ -16,17 +16,17 @@
 package org.patryk3211.powergrid.collections;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.foundation.gui.AllIcons;
 import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.patryk3211.powergrid.PowerGrid;
 
@@ -35,7 +35,7 @@ import org.patryk3211.powergrid.PowerGrid;
  * @see AllIcons
  */
 public class ModIcons extends AllIcons {
-    public static final Identifier ICON_ATLAS = new Identifier(PowerGrid.MOD_ID, "textures/gui/icons.png");
+    public static final ResourceLocation ICON_ATLAS = new ResourceLocation(PowerGrid.MOD_ID, "textures/gui/icons.png");
     public static final int ATLAS_SIZE = 64;
 
     private static int x = 0, y = -1;
@@ -77,21 +77,21 @@ public class ModIcons extends AllIcons {
 
     @Override
     @Environment(EnvType.CLIENT)
-    public void render(DrawContext graphics, int x, int y) {
-        graphics.drawTexture(ICON_ATLAS, x, y, 0, (float)this.iconX, (float)this.iconY, 16, 16, ATLAS_SIZE, ATLAS_SIZE);
+    public void render(GuiGraphics graphics, int x, int y) {
+        graphics.blit(ICON_ATLAS, x, y, 0, (float)this.iconX, (float)this.iconY, 16, 16, ATLAS_SIZE, ATLAS_SIZE);
     }
 
     @Override
     @Environment(EnvType.CLIENT)
-    public void render(MatrixStack ms, VertexConsumerProvider buffer, int color) {
-        var builder = buffer.getBuffer(RenderLayer.getText(ICON_ATLAS));
-        var matrix = ms.peek().getPositionMatrix();
+    public void render(PoseStack ms, MultiBufferSource buffer, int color) {
+        var builder = buffer.getBuffer(RenderType.text(ICON_ATLAS));
+        var matrix = ms.last().pose();
         var rgb = new Color(color);
         int light = 15728880;
-        var vec1 = new Vec3d(0, 0, 0);
-        var vec2 = new Vec3d(0, 1, 0);
-        var vec3 = new Vec3d(1, 1, 0);
-        var vec4 = new Vec3d(1, 0, 0);
+        var vec1 = new Vec3(0, 0, 0);
+        var vec2 = new Vec3(0, 1, 0);
+        var vec3 = new Vec3(1, 1, 0);
+        var vec4 = new Vec3(1, 0, 0);
         float u1 = (float) this.iconX / ATLAS_SIZE;
         float u2 = (float) (this.iconX + 16) / ATLAS_SIZE;
         float v1 = (float) this.iconY / ATLAS_SIZE;
@@ -103,11 +103,11 @@ public class ModIcons extends AllIcons {
     }
 
     @Environment(EnvType.CLIENT)
-    private void vertex(VertexConsumer builder, Matrix4f matrix, Vec3d vec, Color rgb, float u, float v, int light) {
+    private void vertex(VertexConsumer builder, Matrix4f matrix, Vec3 vec, Color rgb, float u, float v, int light) {
         builder.vertex(matrix, (float)vec.x, (float)vec.y, (float)vec.z)
                 .color(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 255)
-                .texture(u, v)
-                .light(light)
-                .next();
+                .uv(u, v)
+                .uv2(light)
+                .endVertex();
     }
 }

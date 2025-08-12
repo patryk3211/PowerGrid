@@ -15,66 +15,66 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SideShapeType;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SupportType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 
 public class SurfaceSwitchBlock extends SwitchBlock {
-    public static final DirectionProperty FACING = Properties.FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
-    public SurfaceSwitchBlock(Settings settings) {
+    public SurfaceSwitchBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(FACING, ALONG_FIRST_AXIS);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        var facing = ctx.getSide().getOpposite();
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var facing = ctx.getClickedFace().getOpposite();
         boolean along = true;
         if(facing.getAxis() == Direction.Axis.Y) {
-            var player = ctx.getHorizontalPlayerFacing();
+            var player = ctx.getHorizontalDirection();
             if(player.getAxis() == Direction.Axis.X)
                 along = false;
         } else {
             along = false;
-            if(ctx.getPlayerLookDirection().getAxis() == facing.rotateYClockwise().getAxis())
+            if(ctx.getNearestLookingDirection().getAxis() == facing.getClockWise().getAxis())
                 along = true;
         }
 
-        return getDefaultState()
-                .with(FACING, facing)
-                .with(ALONG_FIRST_AXIS, along);
+        return defaultBlockState()
+                .setValue(FACING, facing)
+                .setValue(ALONG_FIRST_AXIS, along);
     }
 
     @Override
-    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        var facing = state.get(FACING);
-        var blockState = world.getBlockState(pos.offset(facing));
-        return blockState.isSideSolid(world, pos, facing.getOpposite(), SideShapeType.RIGID);
+    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+        var facing = state.getValue(FACING);
+        var blockState = world.getBlockState(pos.relative(facing));
+        return blockState.isFaceSturdy(world, pos, facing.getOpposite(), SupportType.RIGID);
     }
 
     @Override
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        return direction == state.get(FACING) && !canPlaceAt(state, world, pos)
-                ? Blocks.AIR.getDefaultState()
-                : super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+        return direction == state.getValue(FACING) && !canSurvive(state, world, pos)
+                ? Blocks.AIR.defaultBlockState()
+                : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
 }

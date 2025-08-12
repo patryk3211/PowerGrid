@@ -17,7 +17,7 @@ package org.patryk3211.powergrid.circuits.schematic;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.List;
 
@@ -31,12 +31,12 @@ public class CircuitSchematicRender {
     public static final int COLOR_COMPONENT_OUTLINE = 0x80F078EE;
     public static final int COLOR_SELECT_OUTLINE = 0x80EBBA34;
 
-    public static void render(CircuitSchematic schematic, DrawContext context, int x, int y, int scale) {
+    public static void render(CircuitSchematic schematic, GuiGraphics context, int x, int y, int scale) {
 
     }
 
     // It's not the most efficient, but it gets the job done. The only way to make this better is to dynamically create textures.
-    public static void renderLayer(List<Line> lines, DrawContext ctx, int x, int y, int scale, int color) {
+    public static void renderLayer(List<Line> lines, GuiGraphics ctx, int x, int y, int scale, int color) {
         for(var line : lines) {
             int x1, x2, y1, y2;
             if(line.vertical()) {
@@ -54,7 +54,7 @@ public class CircuitSchematicRender {
         }
     }
 
-    public static void renderPoints(List<Point> points, DrawContext ctx, int x, int y, int scale, int color) {
+    public static void renderPoints(List<Point> points, GuiGraphics ctx, int x, int y, int scale, int color) {
         for(var point : points) {
             int x1 = x + point.x() * scale;
             int y1 = y + point.y() * scale;
@@ -62,14 +62,14 @@ public class CircuitSchematicRender {
         }
     }
 
-    public static void renderComponents(CircuitSchematic schematic, DrawContext ctx, int x, int y, int scale) {
-        var ms = ctx.getMatrices();
-        ms.push();
+    public static void renderComponents(CircuitSchematic schematic, GuiGraphics ctx, int x, int y, int scale) {
+        var ms = ctx.pose();
+        ms.pushPose();
         ms.translate(x, y, 0);
         ms.scale(scale, scale, scale);
         for(var placed : schematic.components()) {
             placed.footprint().render(ctx, placed.x * GRID_TO_GRID_SCALE, placed.y * GRID_TO_GRID_SCALE);
         }
-        ms.pop();
+        ms.popPose();
     }
 }

@@ -15,23 +15,23 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 
 public class CircuitDesignTableEditMenu extends AbstractCircuitDesignTableMenu {
-    public CircuitDesignTableEditMenu(ScreenHandlerType<?> type, int id, PlayerInventory inv, CircuitDesignTableBlockEntity contentHolder) {
+    public CircuitDesignTableEditMenu(MenuType<?> type, int id, Inventory inv, CircuitDesignTableBlockEntity contentHolder) {
         super(type, id, inv, contentHolder);
     }
 
-    public CircuitDesignTableEditMenu(ScreenHandlerType<?> type, int id, PlayerInventory inv, PacketByteBuf extraData) {
+    public CircuitDesignTableEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
-    public static CircuitDesignTableEditMenu create(int id, PlayerInventory inv, CircuitDesignTableBlockEntity be) {
+    public static CircuitDesignTableEditMenu create(int id, Inventory inv, CircuitDesignTableBlockEntity be) {
         return new CircuitDesignTableEditMenu(ModdedMenus.CIRCUIT_DESIGN_BENCH_EDIT.get(), id, inv, be);
     }
 
@@ -41,7 +41,7 @@ public class CircuitDesignTableEditMenu extends AbstractCircuitDesignTableMenu {
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int slot) {
+    public ItemStack quickMoveStack(Player player, int slot) {
         return ItemStack.EMPTY;
     }
 }

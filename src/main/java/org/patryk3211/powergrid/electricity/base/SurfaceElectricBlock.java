@@ -16,14 +16,14 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.createmod.catnip.math.VoxelShaper;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
@@ -31,7 +31,7 @@ import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCol
 public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
-    public SurfaceElectricBlock(Settings settings) {
+    public SurfaceElectricBlock(Properties settings) {
         super(settings);
     }
 
@@ -40,7 +40,7 @@ public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
         var shaper2 = VoxelShaper.forDirectional(shapeDown2, Direction.DOWN);
         return BlockStateTerminalCollection.builder(block)
                 .forAllStatesExcept(state -> BlockStateTerminalCollection.each(terminalsDown, terminal -> {
-                    var facing = state.get(FACING);
+                    var facing = state.getValue(FACING);
                     terminal = switch(facing) {
                         case DOWN -> terminal;
                         case UP -> terminal.rotateAroundX(180);
@@ -49,14 +49,14 @@ public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
                         case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
                         case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
                     };
-                    if(!state.get(ALONG_FIRST_AXIS)) {
+                    if(!state.getValue(ALONG_FIRST_AXIS)) {
                         terminal = terminal.rotate(facing.getAxis(), 90);
                     }
                     return terminal;
                 }), ignored)
                 .withShapeMapper(state -> {
-                    var facing = state.get(FACING);
-                    var axis_along = state.get(ALONG_FIRST_AXIS);
+                    var facing = state.getValue(FACING);
+                    var axis_along = state.getValue(ALONG_FIRST_AXIS);
                     var prov = (axis_along ^ facing.getAxis() == Direction.Axis.Y) ? shaper2 : shaper;
                     return prov.get(facing);
                 })
@@ -64,25 +64,25 @@ public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(ALONG_FIRST_AXIS);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        var facing = ctx.getSide().getOpposite();
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var facing = ctx.getClickedFace().getOpposite();
         boolean along = true;
         if(facing.getAxis() == Direction.Axis.Y) {
-            var player = ctx.getHorizontalPlayerFacing();
+            var player = ctx.getHorizontalDirection();
             if(player.getAxis() == Direction.Axis.X)
                 along = false;
         } else {
-            along = ctx.getPlayerLookDirection().getAxis() == facing.rotateYClockwise().getAxis();
+            along = ctx.getNearestLookingDirection().getAxis() == facing.getClockWise().getAxis();
         }
 
-        return getDefaultState()
-                .with(FACING, facing)
-                .with(ALONG_FIRST_AXIS, along);
+        return defaultBlockState()
+                .setValue(FACING, facing)
+                .setValue(ALONG_FIRST_AXIS, along);
     }
 }

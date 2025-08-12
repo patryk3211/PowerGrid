@@ -18,12 +18,12 @@ package org.patryk3211.powergrid.electricity.sparkgap;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
 import net.createmod.catnip.math.VecHelper;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
@@ -51,14 +51,14 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if(world.isClient && plasmaChannel.getState()) {
-            var center = pos.toCenterPos().subtract(0, 0.125f, 0);
+        if(level.isClientSide && plasmaChannel.getState()) {
+            var center = worldPosition.getCenter().subtract(0, 0.125f, 0);
             float offset = (1 + setting.getValue() * 3 / 18f) / 16f;
 
-            var axis = getCachedState().get(SparkGapBlock.HORIZONTAL_AXIS);
-            var end = center.offset(Direction.from(axis, Direction.AxisDirection.POSITIVE), offset);
-            var start = center.offset(Direction.from(axis, Direction.AxisDirection.NEGATIVE), offset);
-            world.addParticle(new ZapParticleData(end.x, end.y, end.z, true)
+            var axis = getBlockState().getValue(SparkGapBlock.HORIZONTAL_AXIS);
+            var end = center.relative(Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE), offset);
+            var start = center.relative(Direction.fromAxisAndDirection(axis, Direction.AxisDirection.NEGATIVE), offset);
+            level.addParticle(new ZapParticleData(end.x, end.y, end.z, true)
                             .withLife(1)
                             .withSegments(5),
                     start.x, start.y, start.z, 0, 0, 0);
@@ -74,13 +74,13 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void read(NbtCompound tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         plasmaChannel.setState(tag.getBoolean("State"));
     }
 
     @Override
-    protected void write(NbtCompound tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putBoolean("State", plasmaChannel.getState());
     }
@@ -97,7 +97,7 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
         }
 
         @Override
-        protected Vec3d getSouthLocation() {
+        protected Vec3 getSouthLocation() {
             return VecHelper.voxelSpace(8.0f, 8.0f, 8.5f);
         }
     }

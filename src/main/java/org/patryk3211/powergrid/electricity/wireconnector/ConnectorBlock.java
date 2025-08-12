@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wireconnector;
 
-import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.phys.shapes.Shapes;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
@@ -24,12 +24,12 @@ public class ConnectorBlock extends AbstractConnectorBlock {
     private static final TerminalBoundingBox TERMINAL_DOWN = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5, 0, 5, 11, 9, 11)
             .withOrigin(8, 8, 8);
 
-    public ConnectorBlock(Settings settings) {
+    public ConnectorBlock(Properties settings) {
         super(settings);
         setTerminalCollection(BlockStateTerminalCollection
                 .builder(this)
                 .forAllStates(state -> {
-                    var terminal = switch(state.get(FACING)) {
+                    var terminal = switch(state.getValue(FACING)) {
                         case UP -> TERMINAL_DOWN.rotateAroundX(180);
                         case DOWN -> TERMINAL_DOWN;
                         case NORTH -> TERMINAL_DOWN.rotateAroundX(-90);
@@ -39,7 +39,7 @@ public class ConnectorBlock extends AbstractConnectorBlock {
                     };
                     return new TerminalBoundingBox[] { terminal };
                 })
-                .withShapeMapper(state -> VoxelShapes.empty())
+                .withShapeMapper(state -> Shapes.empty())
                 .build()
         );
     }

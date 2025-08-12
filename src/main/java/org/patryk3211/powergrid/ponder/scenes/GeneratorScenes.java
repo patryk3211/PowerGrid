@@ -18,7 +18,7 @@ package org.patryk3211.powergrid.ponder.scenes;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
@@ -92,15 +92,15 @@ public class GeneratorScenes {
         scene.idle(20);
 
         var state = ModdedBlocks.WINDING.getDefaultState()
-                .with(WindingBlock.AXIS, Direction.Axis.X)
-                .with(WindingBlock.ALONG_FIRST_AXIS, false)
-                .with(WindingBlock.CASE_RIGHT, false)
-                .with(WindingBlock.CASE_LEFT, false);
-        scene.world().setBlock(util.grid().at(4, 1, 2), state.with(WindingBlock.PART, 2), true);
-        scene.world().setBlock(util.grid().at(3, 1, 2), state.with(WindingBlock.PART, 1), true);
-        scene.world().setBlock(util.grid().at(2, 1, 2), state.with(WindingBlock.PART, 1), true);
-        scene.world().setBlock(util.grid().at(1, 1, 2), state.with(WindingBlock.PART, 1), true);
-        scene.world().setBlock(util.grid().at(0, 1, 2), state.with(WindingBlock.PART, 0), true);
+                .setValue(WindingBlock.AXIS, Direction.Axis.X)
+                .setValue(WindingBlock.ALONG_FIRST_AXIS, false)
+                .setValue(WindingBlock.CASE_RIGHT, false)
+                .setValue(WindingBlock.CASE_LEFT, false);
+        scene.world().setBlock(util.grid().at(4, 1, 2), state.setValue(WindingBlock.PART, 2), true);
+        scene.world().setBlock(util.grid().at(3, 1, 2), state.setValue(WindingBlock.PART, 1), true);
+        scene.world().setBlock(util.grid().at(2, 1, 2), state.setValue(WindingBlock.PART, 1), true);
+        scene.world().setBlock(util.grid().at(1, 1, 2), state.setValue(WindingBlock.PART, 1), true);
+        scene.world().setBlock(util.grid().at(0, 1, 2), state.setValue(WindingBlock.PART, 0), true);
         scene.idle(20);
 
         scene.overlay().showText(80)
@@ -123,14 +123,14 @@ public class GeneratorScenes {
 
         scene.world().showSection(util.select().fromTo(1, 1, 1, 3, 1, 1), Direction.SOUTH);
         scene.idle(10);
-        scene.world().modifyBlocks(util.select().fromTo(1, 1, 1, 3, 1, 1), state -> state.with(WindingBlock.CASE_RIGHT, true), false);
-        scene.world().modifyBlocks(util.select().fromTo(1, 1, 2, 3, 1, 2), state -> state.with(WindingBlock.CASE_LEFT, true), false);
+        scene.world().modifyBlocks(util.select().fromTo(1, 1, 1, 3, 1, 1), state -> state.setValue(WindingBlock.CASE_RIGHT, true), false);
+        scene.world().modifyBlocks(util.select().fromTo(1, 1, 2, 3, 1, 2), state -> state.setValue(WindingBlock.CASE_LEFT, true), false);
         scene.idle(10);
 
         scene.world().showSection(util.select().fromTo(1, 1, 3, 3, 1, 3), Direction.SOUTH);
         scene.idle(10);
-        scene.world().modifyBlocks(util.select().fromTo(1, 1, 3, 3, 1, 3), state -> state.with(WindingBlock.CASE_LEFT, true), false);
-        scene.world().modifyBlocks(util.select().fromTo(1, 1, 2, 3, 1, 2), state -> state.with(WindingBlock.CASE_RIGHT, true), false);
+        scene.world().modifyBlocks(util.select().fromTo(1, 1, 3, 3, 1, 3), state -> state.setValue(WindingBlock.CASE_LEFT, true), false);
+        scene.world().modifyBlocks(util.select().fromTo(1, 1, 2, 3, 1, 2), state -> state.setValue(WindingBlock.CASE_RIGHT, true), false);
         scene.idle(10);
 
         scene.overlay().showText(80)
@@ -279,10 +279,10 @@ public class GeneratorScenes {
         scene.idle(20);
 
         scene.world().setBlock(target, ModdedBlocks.GENERATOR_HOUSING.getDefaultState()
-                .with(GeneratorHousing.HORIZONTAL_FACING, Direction.EAST)
-                .with(GeneratorHousing.UP, false), true);
-        scene.world().modifyBlock(util.grid().at(1, 1, 2), state -> state.with(WindingBlock.CASE_RIGHT, true), false);
-        scene.world().modifyBlock(util.grid().at(2, 2, 2), state -> state.with(WindingBlock.CASE_LEFT, true), false);
+                .setValue(GeneratorHousing.HORIZONTAL_FACING, Direction.EAST)
+                .setValue(GeneratorHousing.UP, false), true);
+        scene.world().modifyBlock(util.grid().at(1, 1, 2), state -> state.setValue(WindingBlock.CASE_RIGHT, true), false);
+        scene.world().modifyBlock(util.grid().at(2, 2, 2), state -> state.setValue(WindingBlock.CASE_LEFT, true), false);
 
         scene.overlay().showText(80)
                 .text("The generator housing can be used to connect windings around a rotor")

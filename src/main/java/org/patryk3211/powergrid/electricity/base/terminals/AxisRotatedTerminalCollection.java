@@ -15,13 +15,15 @@
  */
 package org.patryk3211.powergrid.electricity.base.terminals;
 
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Rotation;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+;
 
 public class AxisRotatedTerminalCollection {
     private final TerminalBoundingBox[][] terminals;
@@ -30,24 +32,24 @@ public class AxisRotatedTerminalCollection {
         this.terminals = terminals;
     }
 
-    public TerminalBoundingBox get(BlockRotation rotation, int index) {
+    public TerminalBoundingBox get(Rotation rotation, int index) {
         return terminals[rotation.ordinal()][index];
     }
 
     public static class Builder extends SimpleTerminalCollectionBuilder<Builder, AxisRotatedTerminalCollection> {
-        private final List<BlockRotation> rotations = new ArrayList<>();
+        private final List<Rotation> rotations = new ArrayList<>();
         private final Direction.Axis axis;
 
         private Builder(Direction.Axis axis) {
             this.axis = axis;
         }
 
-        public Builder with(BlockRotation rotation) {
+        public Builder with(Rotation rotation) {
             rotations.add(rotation);
             return this;
         }
 
-        public Builder with(BlockRotation... rotations) {
+        public Builder with(Rotation... rotations) {
             Collections.addAll(this.rotations, rotations);
             return this;
         }

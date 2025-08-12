@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.forge;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
@@ -24,8 +24,8 @@ import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 public class ForgeClientEvents {
     @SubscribeEvent
     public static void clientWorldUnload(LevelEvent.Unload unload) {
-        if(unload.getLevel().isClient() && unload.getLevel() instanceof ClientWorld world) {
-            ClientElectricNetwork.unloadWorld(MinecraftClient.getInstance(), world);
+        if(unload.getLevel().isClientSide() && unload.getLevel() instanceof ClientLevel world) {
+            ClientElectricNetwork.unloadWorld(Minecraft.getInstance(), world);
         }
     }
 }

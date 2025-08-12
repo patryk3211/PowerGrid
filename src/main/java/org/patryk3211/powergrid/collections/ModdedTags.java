@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.collections;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedTags {
@@ -38,14 +38,14 @@ public class ModdedTags {
         FUSE_RESETTING("fuse_resetting")
         ;
 
-        public final TagKey<net.minecraft.item.Item> tag;
+        public final TagKey<net.minecraft.world.item.Item> tag;
 
         Item(String name) {
             this(PowerGrid.MOD_ID, name);
         }
 
         Item(String namespace, String name) {
-            tag = itemTag(new Identifier(namespace, name));
+            tag = itemTag(new ResourceLocation(namespace, name));
         }
     }
 
@@ -54,24 +54,24 @@ public class ModdedTags {
         AFFECTED_BY_LAMP("affected_by_lamp")
         ;
 
-        public final TagKey<net.minecraft.block.Block> tag;
+        public final TagKey<net.minecraft.world.level.block.Block> tag;
 
         Block(String name) {
             this(PowerGrid.MOD_ID, name);
         }
 
         Block(String namespace, String name) {
-            tag = blockTag(new Identifier(namespace, name));
+            tag = blockTag(new ResourceLocation(namespace, name));
         }
     }
 
     @ExpectPlatform
-    public static TagKey<net.minecraft.block.Block> blockTag(Identifier id) {
+    public static TagKey<net.minecraft.world.level.block.Block> blockTag(ResourceLocation id) {
         throw new AssertionError();
     }
 
     @ExpectPlatform
-    public static TagKey<net.minecraft.item.Item> itemTag(Identifier id) {
+    public static TagKey<net.minecraft.world.item.Item> itemTag(ResourceLocation id) {
         throw new AssertionError();
     }
 }

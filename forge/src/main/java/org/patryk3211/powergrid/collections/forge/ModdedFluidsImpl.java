@@ -17,14 +17,13 @@ package org.patryk3211.powergrid.collections.forge;
 
 import com.simibubi.create.AllFluids;
 import com.tterrag.registrate.util.entry.FluidEntry;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockRenderView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -32,8 +31,8 @@ import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 public class ModdedFluidsImpl {
     public static final FluidEntry<ForgeFlowingFluid.Flowing> ACID =
             REGISTRATE.fluid("acid",
-                            Identifier.of("minecraft", "block/water_still"),
-                            Identifier.of("minecraft", "block/water_flowing"),
+                            ResourceLocation.tryBuild("minecraft", "block/water_still"),
+                            ResourceLocation.tryBuild("minecraft", "block/water_flowing"),
                             AcidFluidType::new)
 //                    .renderType(() -> RenderLayer::getTranslucent)
                     .tag(FluidTags.WATER)
@@ -48,7 +47,7 @@ public class ModdedFluidsImpl {
 //    }
 
     public static Fluid acid() {
-        return ACID.getSource().getStill();
+        return ACID.getSource().getSource();
     }
 
     public static Fluid acidFlowing() {
@@ -60,7 +59,7 @@ public class ModdedFluidsImpl {
     }
 
     public static class AcidFluidType extends AllFluids.TintedFluidType {
-        public AcidFluidType(Properties properties, Identifier still, Identifier flowing) {
+        public AcidFluidType(Properties properties, ResourceLocation still, ResourceLocation flowing) {
             super(properties, still, flowing);
         }
 
@@ -70,7 +69,7 @@ public class ModdedFluidsImpl {
         }
 
         @Override
-        protected int getTintColor(FluidState state, BlockRenderView getter, BlockPos pos) {
+        protected int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
             return 0xFFFFEE80;
         }
     }

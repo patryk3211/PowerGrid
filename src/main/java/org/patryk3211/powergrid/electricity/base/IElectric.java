@@ -17,16 +17,16 @@ package org.patryk3211.powergrid.electricity.base;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -41,7 +41,7 @@ public interface IElectric extends IWrenchable {
      * @param pos Position inside the block.
      * @return Terminal index as defined in the block entity, -1 if there is no terminal at this position.
      */
-    default int terminalIndexAt(BlockState state, Vec3d pos) {
+    default int terminalIndexAt(BlockState state, Vec3 pos) {
         for(int i = 0; i < terminalCount(); ++i) {
             var terminal = terminal(state, i);
             if(terminal == null)
@@ -52,7 +52,7 @@ public interface IElectric extends IWrenchable {
         return -1;
     }
 
-    default ITerminalPlacement terminalAt(BlockState state, Vec3d pos) {
+    default ITerminalPlacement terminalAt(BlockState state, Vec3 pos) {
         for(int i = 0; i < terminalCount(); ++i) {
             var terminal = terminal(state, i);
             if(terminal == null)
@@ -67,7 +67,7 @@ public interface IElectric extends IWrenchable {
 
     default boolean accepts(ItemStack wireStack) {
         // By default, only light wires can go directly to devices.
-        return wireStack.isIn(ModdedTags.Item.LIGHT_WIRES.tag);
+        return wireStack.is(ModdedTags.Item.LIGHT_WIRES.tag);
     }
 
     /**
@@ -78,36 +78,36 @@ public interface IElectric extends IWrenchable {
      */
     ITerminalPlacement terminal(BlockState state, int index);
 
-    default ActionResult onWire(BlockState state, ItemUsageContext context) {
-        var stack = context.getStack();
-        var pos = context.getBlockPos();
-        var terminal = terminalIndexAt(state, context.getHitPos().subtract(pos.getX(), pos.getY(), pos.getZ()));
+    default InteractionResult onWire(BlockState state, UseOnContext context) {
+        var stack = context.getItemInHand();
+        var pos = context.getClickedPos();
+        var terminal = terminalIndexAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         if(terminal >= 0) {
-            if(!accepts(context.getStack())) {
-                sendMessage(context, Lang.translate("message.connection_incorrect_wire_type").style(Formatting.RED).component());
-                return ActionResult.FAIL;
+            if(!accepts(context.getItemInHand())) {
+                sendMessage(context, Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component());
+                return InteractionResult.FAIL;
             }
-            if(stack.hasNbt()) {
+            if(stack.hasTag()) {
                 // Continuing a connection.
-                var endpoint = WireEndpointType.deserialize(stack.getNbt());
-                var result = makeConnection(context.getWorld(), endpoint, new BlockWireEndpoint(pos, terminal), context);
-                if(result.isAccepted())
-                    stack.setNbt(null);
+                var endpoint = WireEndpointType.deserialize(stack.getTag());
+                var result = makeConnection(context.getLevel(), endpoint, new BlockWireEndpoint(pos, terminal), context);
+                if(result.consumesAction())
+                    stack.setTag(null);
                 return result;
             } else {
                 // Must be first connection.
                 var endpoint = new BlockWireEndpoint(pos, terminal);
                 var tag = endpoint.serialize();
-                stack.setNbt(tag);
-                sendMessage(context, Lang.translate("message.connection_next").style(Formatting.GRAY).component());
-                return ActionResult.SUCCESS;
+                stack.setTag(tag);
+                sendMessage(context, Lang.translate("message.connection_next").style(ChatFormatting.GRAY).component());
+                return InteractionResult.SUCCESS;
             }
         }
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     @Nullable
-    default ElectricBehaviour getBehaviour(World world, BlockPos pos, BlockState state) {
+    default ElectricBehaviour getBehaviour(Level world, BlockPos pos, BlockState state) {
         var blockEntity = world.getBlockEntity(pos);
         if(blockEntity instanceof SmartBlockEntity smartEntity)
             return smartEntity.getBehaviour(ElectricBehaviour.TYPE);
@@ -115,7 +115,7 @@ public interface IElectric extends IWrenchable {
     }
 
     @Nullable
-    static IElectric getAt(World world, BlockPos pos) {
+    static IElectric getAt(Level world, BlockPos pos) {
         var be = world.getBlockEntity(pos);
         if(be instanceof IElectric electric)
             return electric;
@@ -126,101 +126,101 @@ public interface IElectric extends IWrenchable {
     }
 
     @NotNull
-    static Vec3d getTerminalPos(World world, BlockPos position, int terminalIndex) {
+    static Vec3 getTerminalPos(Level world, BlockPos position, int terminalIndex) {
         var electric = getAt(world, position);
         if(electric == null)
-            return position.toCenterPos();
+            return position.getCenter();
         var state = world.getBlockState(position);
         var terminal = electric.terminal(state, terminalIndex);
         if(terminal == null)
-            return position.toCenterPos();
+            return position.getCenter();
         var origin = terminal.getOrigin();
-        return new Vec3d(position.getX() + origin.x, position.getY() + origin.y, position.getZ() + origin.z);
+        return new Vec3(position.getX() + origin.x, position.getY() + origin.y, position.getZ() + origin.z);
     }
 
-    static void sendMessage(ItemUsageContext context, Text text) {
+    static void sendMessage(UseOnContext context, Component text) {
         if(context.getPlayer() != null) {
-            context.getPlayer().sendMessage(text, true);
+            context.getPlayer().displayClientMessage(text, true);
         }
     }
 
-    static ActionResult makeConnection(World world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, ItemUsageContext context) {
+    static InteractionResult makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, UseOnContext context) {
         if(endpoint1.type() == WireEndpointType.BLOCK && endpoint2.type() == WireEndpointType.BLOCK) {
             // Hanging wire connection.
             return makeHangingWireConnection(world, (BlockWireEndpoint) endpoint1, (BlockWireEndpoint) endpoint2, context);
         }
 
-        var result = WireItem.connect(world, context.getStack(), context.getPlayer(), endpoint1, endpoint2);
+        var result = WireItem.connect(world, context.getItemInHand(), context.getPlayer(), endpoint1, endpoint2);
         return result.getResult();
     }
 
-    static ActionResult makeHangingWireConnection(World world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemUsageContext context) {
+    static InteractionResult makeHangingWireConnection(Level world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, UseOnContext context) {
         var behaviour1 = endpoint1.getElectricBehaviour(world);
         var behaviour2 = endpoint2.getElectricBehaviour(world);
         if(behaviour1 == null || behaviour2 == null) {
-            sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
+            sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
             PowerGrid.LOGGER.error("Connection failed, at least one behaviour is null");
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
 
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
         if(node1 == null || node2 == null || node1 == node2) {
-            sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
+            sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
             PowerGrid.LOGGER.error("Connection failed, nodes: ({}, {})", node1, node2);
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
 
         // Check if there is an existing connection between these nodes.
         if(behaviour1.hasConnection(endpoint1, endpoint2) || behaviour2.hasConnection(endpoint2, endpoint1)) {
-            sendMessage(context, Lang.translate("message.connection_exists").style(Formatting.RED).component());
-            return ActionResult.FAIL;
+            sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
         }
 
         var terminal1Pos = endpoint1.getExactPosition(world);
         var terminal2Pos = endpoint2.getExactPosition(world);
 
-        var stack = context.getStack();
+        var stack = context.getItemInHand();
         assert stack.getItem() instanceof IWire;
         var item = (IWire) stack.getItem();
-        var tag = stack.getNbt();
+        var tag = stack.getTag();
         assert tag != null;
 
         float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
         if(distance > item.getMaximumLength()) {
-            sendMessage(context, Lang.translate("message.connection_too_long").style(Formatting.RED).component());
-            return ActionResult.FAIL;
+            sendMessage(context, Lang.translate("message.connection_too_long").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
         }
 
         // We round the exact distance between terminals for a more favourable item usage.
         int requiredItemCount = Math.max(Math.round(distance), 1);
         if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, requiredItemCount)) {
-            sendMessage(context, Lang.translate("message.connection_missing_items").style(Formatting.RED).component());
-            return ActionResult.FAIL;
+            sendMessage(context, Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
         }
 
         if(!HangingWireEntity.checkClearance(world, endpoint1.getExactPosition(world), endpoint2.getExactPosition(world))) {
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
 
-        if(world.isClient)
-            return ActionResult.SUCCESS;
-        ServerWorld serverWorld = (ServerWorld) world;
+        if(world.isClientSide)
+            return InteractionResult.SUCCESS;
+        ServerLevel serverWorld = (ServerLevel) world;
 
         // The amount of used items dictates the resistance of a connection,
         // to make sure everything is fair.
         var R = item.getResistance() * requiredItemCount;
-        var entity = HangingWireEntity.create(serverWorld, endpoint1, endpoint2, new ItemStack(stack.getRegistryEntry(), requiredItemCount), R);
+        var entity = HangingWireEntity.create(serverWorld, endpoint1, endpoint2, new ItemStack(stack.getItemHolder(), requiredItemCount), R);
 
-        if(!serverWorld.spawnNewEntityAndPassengers(entity)) {
+        if(!serverWorld.tryAddFreshEntityWithPassengers(entity)) {
             PowerGrid.LOGGER.error("Failed to spawn new connection wire entity.");
-            sendMessage(context, Lang.translate("message.connection_failed").style(Formatting.RED).component());
-            return ActionResult.FAIL;
+            sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
         }
 
         if(context.getPlayer() == null || !context.getPlayer().isCreative())
-            stack.decrement(requiredItemCount);
+            stack.shrink(requiredItemCount);
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 }

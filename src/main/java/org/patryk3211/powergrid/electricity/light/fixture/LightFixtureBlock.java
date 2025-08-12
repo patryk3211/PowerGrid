@@ -20,25 +20,28 @@ import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.*;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
@@ -49,8 +52,8 @@ import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCol
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
 public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixtureBlockEntity> {
-    public static final DirectionProperty FACING = Properties.FACING;
-    public static final IntProperty POWER = IntProperty.of("power", 0, 2);
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
+    public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 2);
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
     private static final TerminalBoundingBox[] UP_TERMINALS = new TerminalBoundingBox[] {
@@ -58,41 +61,41 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 0, 7, 13, 3, 9)
     };
 
-    private static final VoxelShape SHAPE_UP = createCuboidShape(3.5, 0, 3.5, 12.5, 4, 12.5);
-    private static final VoxelShape SHAPE_DOWN = createCuboidShape(3.5, 12, 3.5, 12.5, 16, 12.5);
-    private static final VoxelShape SHAPE_SOUTH = createCuboidShape(3.5, 3.5, 0, 12.5, 12.5, 4);
-    private static final VoxelShape SHAPE_NORTH = createCuboidShape(3.5, 3.5, 12, 12.5, 12.5, 16);
-    private static final VoxelShape SHAPE_EAST = createCuboidShape(0, 3.5, 3.5, 4, 12.5, 12.5);
-    private static final VoxelShape SHAPE_WEST = createCuboidShape(12, 3.5, 3.5, 16, 12.5, 12.5);
+    private static final VoxelShape SHAPE_UP = box(3.5, 0, 3.5, 12.5, 4, 12.5);
+    private static final VoxelShape SHAPE_DOWN = box(3.5, 12, 3.5, 12.5, 16, 12.5);
+    private static final VoxelShape SHAPE_SOUTH = box(3.5, 3.5, 0, 12.5, 12.5, 4);
+    private static final VoxelShape SHAPE_NORTH = box(3.5, 3.5, 12, 12.5, 12.5, 16);
+    private static final VoxelShape SHAPE_EAST = box(0, 3.5, 3.5, 4, 12.5, 12.5);
+    private static final VoxelShape SHAPE_WEST = box(12, 3.5, 3.5, 16, 12.5, 12.5);
 
-    Vec3d modelOffset;
+    Vec3 modelOffset;
 
-    public LightFixtureBlock(Settings settings) {
-        super(settings.luminance(state -> switch(state.get(POWER)) {
+    public LightFixtureBlock(Properties settings) {
+        super(settings.lightLevel(state -> switch(state.getValue(POWER)) {
             case 1 -> 10;
             case 2 -> 15;
             default -> 0;
         }));
-        modelOffset = Vec3d.ZERO;
-        setDefaultState(getDefaultState().with(POWER, 0));
+        modelOffset = Vec3.ZERO;
+        registerDefaultState(defaultBlockState().setValue(POWER, 0));
 
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStatesExcept(state -> BlockStateTerminalCollection.each(UP_TERMINALS, terminal -> {
-                    var facing = state.get(FACING);
+                    var facing = state.getValue(FACING);
                     terminal = switch(facing) {
                         case UP -> terminal;
-                        case DOWN -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_180);
-                        case NORTH -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_90);
-                        case SOUTH -> terminal.rotateAroundX(BlockRotation.COUNTERCLOCKWISE_90);
-                        case EAST -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_90).rotateAroundY(BlockRotation.CLOCKWISE_90);
-                        case WEST -> terminal.rotateAroundX(BlockRotation.CLOCKWISE_90).rotateAroundY(BlockRotation.COUNTERCLOCKWISE_90);
+                        case DOWN -> terminal.rotateAroundX(Rotation.CLOCKWISE_180);
+                        case NORTH -> terminal.rotateAroundX(Rotation.CLOCKWISE_90);
+                        case SOUTH -> terminal.rotateAroundX(Rotation.COUNTERCLOCKWISE_90);
+                        case EAST -> terminal.rotateAroundX(Rotation.CLOCKWISE_90).rotateAroundY(Rotation.CLOCKWISE_90);
+                        case WEST -> terminal.rotateAroundX(Rotation.CLOCKWISE_90).rotateAroundY(Rotation.COUNTERCLOCKWISE_90);
                     };
-                    if(!state.get(ALONG_FIRST_AXIS)) {
-                        terminal = terminal.rotate(facing.getAxis(), BlockRotation.CLOCKWISE_90);
+                    if(!state.getValue(ALONG_FIRST_AXIS)) {
+                        terminal = terminal.rotate(facing.getAxis(), Rotation.CLOCKWISE_90);
                     }
                     return terminal;
                 }), POWER)
-                .withShapeMapper(state -> switch(state.get(FACING)) {
+                .withShapeMapper(state -> switch(state.getValue(FACING)) {
                     case UP -> SHAPE_UP;
                     case DOWN -> SHAPE_DOWN;
                     case EAST -> SHAPE_EAST;
@@ -102,7 +105,7 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
                 }).build());
     }
 
-    public static <B extends LightFixtureBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setBulbModelOffset(Vec3d modelOffset) {
+    public static <B extends LightFixtureBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setBulbModelOffset(Vec3 modelOffset) {
         return b -> {
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> b.onRegister(block -> block.modelOffset = modelOffset));
             return b;
@@ -111,44 +114,44 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
 
     public static <B extends LightFixtureBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setBulbModelOffset(float x, float y, float z) {
         return b -> {
-            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> b.onRegister(block -> block.modelOffset = new Vec3d(x, y, z)));
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> b.onRegister(block -> block.modelOffset = new Vec3(x, y, z)));
             return b;
         };
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(FACING, POWER, ALONG_FIRST_AXIS);
     }
 
     @Override
-    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        var facing = state.get(FACING);
-        return sideCoversSmallSquare(world, pos.offset(facing, -1), facing);
+    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+        var facing = state.getValue(FACING);
+        return canSupportCenter(world, pos.relative(facing, -1), facing);
     }
 
     @Override
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        var facing = state.get(FACING);
-        return direction == facing.getOpposite() && !canPlaceAt(state, world, pos)
-                ? Blocks.AIR.getDefaultState()
-                : super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+        var facing = state.getValue(FACING);
+        return direction == facing.getOpposite() && !canSurvive(state, world, pos)
+                ? Blocks.AIR.defaultBlockState()
+                : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        var facing = ctx.getSide();
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var facing = ctx.getClickedFace();
         boolean along = true;
         if(facing.getAxis() == Direction.Axis.Y) {
-            var player = ctx.getHorizontalPlayerFacing();
+            var player = ctx.getHorizontalDirection();
             if(player.getAxis() == Direction.Axis.X)
                 along = false;
         }
 
-        return getDefaultState()
-                .with(FACING, facing)
-                .with(ALONG_FIRST_AXIS, along);
+        return defaultBlockState()
+                .setValue(FACING, facing)
+                .setValue(ALONG_FIRST_AXIS, along);
     }
 
     @Override
@@ -157,23 +160,23 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        var stack = player.getStackInHand(hand);
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        var stack = player.getItemInHand(hand);
         var be = world.getBlockEntity(pos, ModdedBlockEntities.LIGHT_FIXTURE.get());
         if(be.isEmpty())
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
 
         if(stack == null || stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
-            return be.get().replaceBulb(player, hand, stack) ? ActionResult.SUCCESS : ActionResult.FAIL;
+            return be.get().replaceBulb(player, hand, stack) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
         } else {
             // Holding something else.
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
     }
 
     @Override
-    public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
-        super.onBroken(world, pos, state);
+    public void destroy(LevelAccessor world, BlockPos pos, BlockState state) {
+        super.destroy(world, pos, state);
     }
 
     @Override

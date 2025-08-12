@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.electricity.light.bulb;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
-import net.minecraft.item.Item;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.Item;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
@@ -28,13 +28,13 @@ import java.util.function.Supplier;
 import static org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock.FACING;
 
 public class GrowthLamp extends LightBulb {
-    public GrowthLamp(Settings settings) {
+    public GrowthLamp(net.minecraft.world.item.Item.Properties settings) {
         super(settings);
     }
 
     @Override
     public LightBulbState createState(LightFixtureBlockEntity fixture) {
-        return new State(this, fixture, modelSupplier);
+        return new org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp.State(this, fixture, modelSupplier);
     }
 
     public static class State extends SimpleState {
@@ -48,13 +48,13 @@ public class GrowthLamp extends LightBulb {
             if(burned)
                 return;
 
-            var world = fixture.getWorld();
+            var world = fixture.getLevel();
             var power = getPowerLevel();
-            if(world.isClient || power == 0)
+            if(world.isClientSide || power == 0)
                 return;
 
-            var origin = fixture.getPos();
-            var facing = fixture.getCachedState().get(FACING).getOpposite();
+            var origin = fixture.getBlockPos();
+            var facing = fixture.getBlockState().getValue(FACING).getOpposite();
             final var radius = ModdedConfigs.server().electricity.growthLampRadius.get();
             int xMin = -radius, xMax = radius;
             int yMin = -radius, yMax = radius;
@@ -69,15 +69,15 @@ public class GrowthLamp extends LightBulb {
                 case NORTH -> zMax = 0;
             }
 
-            var serverWorld = (ServerWorld) world;
+            var serverWorld = (ServerLevel) world;
             var random = serverWorld.random;
             if(random.nextInt(ModdedConfigs.server().electricity.growthLampChance.get() / power) == 0) {
-                var x = random.nextBetween(xMin, xMax);
-                var y = random.nextBetween(yMin, yMax);
-                var z = random.nextBetween(zMin, zMax);
-                var pos = origin.add(x, y, z);
+                var x = random.nextIntBetweenInclusive(xMin, xMax);
+                var y = random.nextIntBetweenInclusive(yMin, yMax);
+                var z = random.nextIntBetweenInclusive(zMin, zMax);
+                var pos = origin.offset(x, y, z);
                 var state = serverWorld.getBlockState(pos);
-                if(state.isIn(ModdedTags.Block.AFFECTED_BY_LAMP.tag))
+                if(state.is(ModdedTags.Block.AFFECTED_BY_LAMP.tag))
                     state.randomTick(serverWorld, pos, random);
             }
         }

@@ -15,12 +15,12 @@
  */
 package org.patryk3211.powergrid.circuits.gui;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.navigation.GuiNavigation;
-import net.minecraft.client.gui.navigation.GuiNavigationPath;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
@@ -28,32 +28,32 @@ import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PROPERTIES;
 
 public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends PropertyWidget<T, P> {
-    private final TextFieldWidget widget;
+    private final EditBox widget;
 
-    public TextFieldPropertyWidget(TextRenderer textRenderer, int x, int y, P property) {
+    public TextFieldPropertyWidget(Font textRenderer, int x, int y, P property) {
         super(textRenderer, x, y, property);
-        widget = new TextFieldWidget(textRenderer, x + 8, y + 6, 46, 18, Text.empty());
-        widget.setText(property.stringValue());
-        widget.setEditableColor(-1);
-        widget.setUneditableColor(-1);
-        widget.setDrawsBackground(false);
+        widget = new EditBox(textRenderer, x + 8, y + 6, 46, 18, Component.empty());
+        widget.setValue(property.stringValue());
+        widget.setTextColor(-1);
+        widget.setTextColorUneditable(-1);
+        widget.setBordered(false);
         widget.setMaxLength(20);
         widget.setEditable(true);
     }
 
     @Override
-    protected void doRender(@NotNull DrawContext ctx, int mouseX, int mouseY, float partialTicks) {
+    protected void doRender(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
         int x = getX();
         int y = getY();
 
-        ctx.drawTexture(PROPERTIES, x, y, 0, 57, 60, 20);
+        ctx.blit(PROPERTIES, x, y, 0, 57, 60, 20);
         widget.render(ctx, mouseX, mouseY, partialTicks);
     }
 
     public void acceptInput() {
-        property.setValue(widget.getText());
+        property.setValue(widget.getValue());
         widget.setFocused(false);
-        widget.setText(property.stringValue());
+        widget.setValue(property.stringValue());
     }
 
     @Override
@@ -96,7 +96,7 @@ public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends Prop
     }
 
     @Override
-    public @Nullable GuiNavigationPath getNavigationPath(GuiNavigation navigation) {
-        return widget.getNavigationPath(navigation);
+    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
+        return widget.nextFocusPath(navigation);
     }
 }

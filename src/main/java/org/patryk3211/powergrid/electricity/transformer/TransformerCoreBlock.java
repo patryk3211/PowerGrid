@@ -16,31 +16,31 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 
 import static org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock.PART;
 
 public class TransformerCoreBlock extends Block implements IWrenchable {
-    public TransformerCoreBlock(Settings settings) {
+    public TransformerCoreBlock(Properties settings) {
         super(settings);
     }
 
-    private boolean locate2x2(World world, BlockPos pos, Direction dir) {
+    private boolean locate2x2(Level world, BlockPos pos, Direction dir) {
         boolean[] isCore = new boolean[3 * 3];
 
         for(int x = -1; x <= 1; ++x) {
             for(int y = -1; y <= 1; ++y) {
                 var i = x + 1;
                 var j = y + 1;
-                var oPos = pos.offset(dir, x).offset(Direction.UP, y);
-                isCore[i + j * 3] = world.getBlockState(oPos).isOf(this);
+                var oPos = pos.relative(dir, x).relative(Direction.UP, y);
+                isCore[i + j * 3] = world.getBlockState(oPos).is(this);
             }
         }
 
@@ -50,13 +50,13 @@ public class TransformerCoreBlock extends Block implements IWrenchable {
                 var j = y + 1;
                 if(isCore[i + j * 3] && isCore[i + 1 + j * 3] && isCore[i + (j + 1) * 3] && isCore[i + 1 + (j + 1) * 3]) {
                     // 2x2 section of transformer core found.
-                    if(!world.isClient) {
+                    if(!world.isClientSide) {
                         var state = ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                                .with(TransformerMediumBlock.HORIZONTAL_AXIS, dir.getAxis());
-                        world.setBlockState(pos.offset(dir, x).offset(Direction.UP, y), state.with(PART, 0));
-                        world.setBlockState(pos.offset(dir, x + 1).offset(Direction.UP, y), state.with(PART, 1));
-                        world.setBlockState(pos.offset(dir, x).offset(Direction.UP, y + 1), state.with(PART, 2));
-                        world.setBlockState(pos.offset(dir, x + 1).offset(Direction.UP, y + 1), state.with(PART, 3));
+                                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, dir.getAxis());
+                        world.setBlockAndUpdate(pos.relative(dir, x).relative(Direction.UP, y), state.setValue(PART, 0));
+                        world.setBlockAndUpdate(pos.relative(dir, x + 1).relative(Direction.UP, y), state.setValue(PART, 1));
+                        world.setBlockAndUpdate(pos.relative(dir, x).relative(Direction.UP, y + 1), state.setValue(PART, 2));
+                        world.setBlockAndUpdate(pos.relative(dir, x + 1).relative(Direction.UP, y + 1), state.setValue(PART, 3));
                     }
                     return true;
                 }
@@ -67,17 +67,17 @@ public class TransformerCoreBlock extends Block implements IWrenchable {
     }
 
     @Override
-    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
-        var pos = context.getBlockPos();
-        var world = context.getWorld();
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        var pos = context.getClickedPos();
+        var world = context.getLevel();
         if (!locate2x2(world, pos, Direction.SOUTH) && !locate2x2(world, pos, Direction.EAST)) {
             // 1x1 transformer
-            if(!world.isClient) {
-                world.setBlockState(pos, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                        .with(TransformerSmallBlock.HORIZONTAL_AXIS, context.getHorizontalPlayerFacing().rotateYClockwise().getAxis()));
+            if(!world.isClientSide) {
+                world.setBlockAndUpdate(pos, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
+                        .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, context.getHorizontalDirection().getClockWise().getAxis()));
             }
         }
         IWrenchable.playRotateSound(world, pos);
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 }

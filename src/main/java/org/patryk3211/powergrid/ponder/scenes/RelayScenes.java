@@ -20,8 +20,8 @@ import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.scene.PonderStoryBoard;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
@@ -47,10 +47,10 @@ public class RelayScenes {
         var source = util.grid().at(2, 1, 3);
         var target = util.grid().at(1, 2, 2);
         var bulb = util.grid().at(3, 2, 2);
-        scene.world().setBlock(target, block.getDefaultState()
-                .with(Properties.FACING, Direction.DOWN)
-                .with(CustomProperties.ALONG_FIRST_AXIS, false)
-                .with(Properties.OPEN, true), false);
+        scene.world().setBlock(target, block.defaultBlockState()
+                .setValue(BlockStateProperties.FACING, Direction.DOWN)
+                .setValue(CustomProperties.ALONG_FIRST_AXIS, false)
+                .setValue(BlockStateProperties.OPEN, true), false);
 
         scene.showBasePlate();
         scene.idle(10);
@@ -78,13 +78,13 @@ public class RelayScenes {
                 .attachKeyFrame();
         scene.idle(50);
 
-        scene.world().modifyBlock(target, state -> state.with(Properties.OPEN, false), false);
-        scene.world().modifyBlock(bulb, state -> state.with(LightFixtureBlock.POWER, 2), false);
+        scene.world().modifyBlock(target, state -> state.setValue(BlockStateProperties.OPEN, false), false);
+        scene.world().modifyBlock(bulb, state -> state.setValue(LightFixtureBlock.POWER, 2), false);
         scene.effects().indicateSuccess(target);
         if(block.isButton()) {
             scene.idle(10);
-            scene.world().modifyBlock(target, state -> state.with(Properties.OPEN, true), false);
-            scene.world().modifyBlock(bulb, state -> state.with(LightFixtureBlock.POWER, 0), false);
+            scene.world().modifyBlock(target, state -> state.setValue(BlockStateProperties.OPEN, true), false);
+            scene.world().modifyBlock(bulb, state -> state.setValue(LightFixtureBlock.POWER, 0), false);
             scene.idle(30);
         } else {
             scene.idle(40);
@@ -231,7 +231,7 @@ public class RelayScenes {
 
         scene.world().showSection(util.select().position(meter1), Direction.DOWN);
         scene.world().showSection(util.select().position(meter2), Direction.DOWN);
-        scene.world().showSection(util.select().fromTo(target, target.up()), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(target, target.above()), Direction.DOWN);
         scene.idle(10);
 
         scene.electric().connectInvisible(source, 0, meter1, 0);
@@ -251,12 +251,12 @@ public class RelayScenes {
                 .attachKeyFrame();
         scene.idle(90);
 
-        scene.world().setKineticSpeed(util.select().fromTo(target, target.up()), 16);
+        scene.world().setKineticSpeed(util.select().fromTo(target, target.above()), 16);
         scene.world().modifyBlockEntity(target, VariacBlockEntity.class, be -> be.onSpeedChanged(0));
-        scene.effects().rotationSpeedIndicator(target.up());
+        scene.effects().rotationSpeedIndicator(target.above());
         scene.electric().tickFor(40);
         scene.idle(40);
-        scene.world().setKineticSpeed(util.select().fromTo(target, target.up()), 0);
+        scene.world().setKineticSpeed(util.select().fromTo(target, target.above()), 0);
         scene.world().modifyBlockEntity(target, VariacBlockEntity.class, be -> be.onSpeedChanged(16));
 
         scene.markAsFinished();
@@ -283,7 +283,7 @@ public class RelayScenes {
 
         scene.world().showSection(util.select().position(target), Direction.DOWN);
         scene.idle(5);
-        scene.effects().indicateSuccess(target.down());
+        scene.effects().indicateSuccess(target.below());
         scene.idle(10);
 
         scene.overlay().showText(80)
@@ -326,7 +326,7 @@ public class RelayScenes {
                 .rightClick()
                 .withItem(ModdedItems.IRON_WIRE.asStack());
         scene.idle(30);
-        scene.world().modifyBlock(target, state -> state.with(FuseHolderBlock.STATE, FuseState.CLOSED), false);
+        scene.world().modifyBlock(target, state -> state.setValue(FuseHolderBlock.STATE, FuseState.CLOSED), false);
         scene.idle(20);
 
         scene.overlay().showText(80)
@@ -342,7 +342,7 @@ public class RelayScenes {
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(40);
-        scene.world().modifyBlock(target, state -> state.with(FuseHolderBlock.STATE, FuseState.BLOWN), false);
+        scene.world().modifyBlock(target, state -> state.setValue(FuseHolderBlock.STATE, FuseState.BLOWN), false);
         scene.addInstruction(pScene -> {
             var pos = util.vector().centerOf(target);
             SparkParticleData.explodeParticles(pScene.getWorld(), (float) pos.x, (float) pos.y, (float) pos.z, Direction.UP, 5);

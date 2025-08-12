@@ -15,20 +15,20 @@
  */
 package org.patryk3211.powergrid.electricity.zapper;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.simibubi.create.foundation.item.render.PartialItemModelRenderer;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.animation.AnimationTickHolder;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Arm;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.PowerGridClient;
 
@@ -39,13 +39,13 @@ public class ElectroZapperItemRenderer extends CustomRenderedItemModelRenderer {
     protected static final PartialModel COG = PartialModel.of(PowerGrid.asResource("item/electrozapper/cog"));
 
     @Override
-    protected void render(ItemStack stack, CustomRenderedItemModel model, PartialItemModelRenderer renderer, ModelTransformationMode transformType, MatrixStack ms, VertexConsumerProvider buffer, int light, int overlay) {
-        MinecraftClient mc = MinecraftClient.getInstance();
+    protected void render(ItemStack stack, CustomRenderedItemModel model, PartialItemModelRenderer renderer, ItemDisplayContext transformType, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
+        Minecraft mc = Minecraft.getInstance();
         renderer.render(model.getOriginalModel(), light);
-        ClientPlayerEntity player = mc.player;
-        boolean mainHand = player.getMainHandStack() == stack;
-        boolean offHand = player.getOffHandStack() == stack;
-        boolean leftHanded = player.getMainArm() == Arm.LEFT;
+        LocalPlayer player = mc.player;
+        boolean mainHand = player.getMainHandItem() == stack;
+        boolean offHand = player.getOffhandItem() == stack;
+        boolean leftHanded = player.getMainArm() == HumanoidArm.LEFT;
 
         float offset = -2.5f / 16;
         float worldTime = AnimationTickHolder.getRenderTime() / 10;
@@ -54,14 +54,14 @@ public class ElectroZapperItemRenderer extends CustomRenderedItemModelRenderer {
                 AnimationTickHolder.getPartialTicks());
 
         if (mainHand || offHand)
-            angle += 360 * MathHelper.clamp(speed * 5, 0, 1);
+            angle += 360 * Mth.clamp(speed * 5, 0, 1);
         angle %= 360;
 
-        ms.push();
+        ms.pushPose();
         ms.translate(0, offset, 0);
-        ms.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(angle));
+        ms.mulPose(Axis.ZP.rotationDegrees(angle));
         ms.translate(0, -offset, 0);
         renderer.render(COG.get(), light);
-        ms.pop();
+        ms.popPose();
     }
 }

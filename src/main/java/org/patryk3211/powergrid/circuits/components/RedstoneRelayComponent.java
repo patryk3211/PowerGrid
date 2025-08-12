@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -67,16 +67,16 @@ public class RedstoneRelayComponent extends EdgeComponent implements IRedstoneCo
     }
 
     @Override
-    public @NotNull Identifier getModelId(@NotNull PlacedComponent component) {
+    public @NotNull ResourceLocation getModelId(@NotNull PlacedComponent component) {
         var base = super.getModelId(component);
         if(component.get(POWERED)) {
-            return new Identifier(base.getNamespace(), base.getPath() + "_on");
+            return new ResourceLocation(base.getNamespace(), base.getPath() + "_on");
         }
         return base;
     }
 
     @Override
-    public @NotNull Collection<Identifier> requestedModels() {
+    public @NotNull Collection<ResourceLocation> requestedModels() {
         return List.of(
                 PowerGrid.asResource("redstone_relay"),
                 PowerGrid.asResource("redstone_relay_on")

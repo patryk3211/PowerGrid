@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.compat;
 
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.Set;
@@ -42,7 +42,7 @@ public class HiddenItems {
 
         }
 
-        public Builder add(ItemConvertible itemConvertible) {
+        public Builder add(ItemLike itemConvertible) {
             items.add(itemConvertible.asItem());
             return this;
         }

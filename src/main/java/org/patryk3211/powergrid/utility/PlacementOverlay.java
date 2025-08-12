@@ -20,17 +20,17 @@ import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.GameMode;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerBlock;
@@ -40,10 +40,12 @@ import org.patryk3211.powergrid.mixin.client.BlueprintOverlayRendererAccessor;
 import java.util.ArrayList;
 import java.util.List;
 
+;
+
 @Environment(EnvType.CLIENT)
 public class PlacementOverlay {
     private static final List<IOverlayTextProvider> overlayProviders = new ArrayList<>();
-    private static Text prevText = null;
+    private static Component prevText = null;
     private static int overlayTicks = -1;
 
     public static void init() {
@@ -67,10 +69,10 @@ public class PlacementOverlay {
     }
 
     @Environment(EnvType.CLIENT)
-    public static void renderOverlay(InGameHud gui, DrawContext graphics) {
-        var mc = MinecraftClient.getInstance();
-        if(!mc.options.hudHidden && mc.interactionManager.getCurrentGameMode() != GameMode.SPECTATOR) {
-            Text text = null;
+    public static void renderOverlay(Gui gui, GuiGraphics graphics) {
+        var mc = Minecraft.getInstance();
+        if(!mc.options.hideGui && mc.gameMode.getPlayerMode() != GameType.SPECTATOR) {
+            Component text = null;
 
             var player = mc.player;
             for(var provider : overlayProviders) {
@@ -94,30 +96,30 @@ public class PlacementOverlay {
 
             if(text != null) {
                 var window = mc.getWindow();
-                int x = (window.getScaledWidth() - gui.getTextRenderer().getWidth(text)) / 2;
-                int y = window.getScaledHeight() - 61;
+                int x = (window.getGuiScaledWidth() - gui.getFont().width(text)) / 2;
+                int y = window.getGuiScaledHeight() - 61;
                 var color = new Color(0x4adb4a);
-                float alpha = MathHelper.clamp(overlayTicks, 0, 10) / 10.0f;
+                float alpha = Mth.clamp(overlayTicks, 0, 10) / 10.0f;
 
                 var state = RenderSystem.getShaderColor();
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-                graphics.drawText(gui.getTextRenderer(), text, x, y, color.getRGB(), true);
+                graphics.drawString(gui.getFont(), text, x, y, color.getRGB(), true);
                 RenderSystem.setShaderColor(state[0], state[1], state[2], state[3]);
             }
         }
     }
 
-    public static Text getTransformerText(PlayerEntity player) {
+    public static Component getTransformerText(Player player) {
         var wireStack = WirePreview.getUsedWireStack(player);
         if(wireStack == null)
             return null;
 
-        var tag = wireStack.getNbt();
+        var tag = wireStack.getTag();
         assert tag != null;
         if(!tag.contains("Turns") || !tag.contains("Initiator"))
             return null;
 
-        var world = player.getWorld();
+        var world = player.level();
         var posArray = tag.getIntArray("Initiator");
         var initiatorPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
 
@@ -132,7 +134,7 @@ public class PlacementOverlay {
 
         var turns = tag.getInt("Turns");
         if(!transformer.hasPrimary()) {
-            return Lang.translateDirect("message.coil_winding_primary", Lang.number(turns).style(Formatting.WHITE).component());
+            return Lang.translateDirect("message.coil_winding_primary", Lang.number(turns).style(ChatFormatting.WHITE).component());
         } else {
             var primaryTurns = transformer.getPrimary().getTurns();
             int largestCommonDenominator = 1;
@@ -142,13 +144,13 @@ public class PlacementOverlay {
             }
             var n1 = Lang.number(primaryTurns / largestCommonDenominator);
             var n2 = Lang.number(turns / largestCommonDenominator);
-            var ratio = n1.add(Text.of(":")).add(n2);
-            return Lang.translateDirect("message.coil_winding_secondary", Lang.number(turns).style(Formatting.WHITE).component(), ratio.style(Formatting.WHITE).component());
+            var ratio = n1.add(Component.nullToEmpty(":")).add(n2);
+            return Lang.translateDirect("message.coil_winding_secondary", Lang.number(turns).style(ChatFormatting.WHITE).component(), ratio.style(ChatFormatting.WHITE).component());
         }
     }
 
     public interface IOverlayTextProvider {
         @Nullable
-        Text get(PlayerEntity player);
+        Component get(Player player);
     }
 }

@@ -19,28 +19,28 @@ import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
@@ -49,18 +49,20 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 
 import java.util.List;
 
-public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, IBE<HvSwitchBlockEntity>, IHaveElectricProperties {
-    public static final IntProperty PART = IntProperty.of("part", 0, 1);
+;
 
-    private static final VoxelShape SHAPE_0 = VoxelShapes.union(
-            createCuboidShape(0, 0, 0, 4, 16, 16),
-            createCuboidShape(4, 0, 0, 12, 12, 12),
-            createCuboidShape(12, 0, 0, 16, 16, 16)
+public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, IBE<HvSwitchBlockEntity>, IHaveElectricProperties {
+    public static final IntegerProperty PART = IntegerProperty.create("part", 0, 1);
+
+    private static final VoxelShape SHAPE_0 = Shapes.or(
+            box(0, 0, 0, 4, 16, 16),
+            box(4, 0, 0, 12, 12, 12),
+            box(12, 0, 0, 16, 16, 16)
     );
 
-    private static final VoxelShape SHAPE_1 = VoxelShapes.union(
-            createCuboidShape(4, 0, 9, 12, 5, 15),
-            createCuboidShape(4, 5, 10, 12, 12, 14)
+    private static final VoxelShape SHAPE_1 = Shapes.or(
+            box(4, 0, 9, 12, 5, 15),
+            box(4, 5, 10, 12, 12, 14)
     );
 
     private static final TerminalBoundingBox TERMINAL_0 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 12, 0, 10, 16, 4);
@@ -69,7 +71,7 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
     private BlockStateTerminalCollection terminals = null;
     private ImmutableMap<BlockState, VoxelShape> outlines = null;
 
-    public HvSwitchBlock(Settings properties) {
+    public HvSwitchBlock(Properties properties) {
         super(properties);
         var shapers = new VoxelShaper[] {
                 VoxelShaper.forHorizontal(SHAPE_0, Direction.SOUTH),
@@ -78,19 +80,19 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
         setTerminalCollection(BlockStateTerminalCollection
                 .builder(this)
                 .forAllStatesExcept(state -> {
-                    var part = state.get(PART);
+                    var part = state.getValue(PART);
                     var terminal = part == 0 ? TERMINAL_0 : TERMINAL_1;
 
-                    var facing = state.get(HORIZONTAL_FACING);
-                    terminal = terminal.rotateAroundY((int) facing.asRotation());
+                    var facing = state.getValue(HORIZONTAL_FACING);
+                    terminal = terminal.rotateAroundY((int) facing.toYRot());
 
                     return part == 0 ?
                             new TerminalBoundingBox[] { terminal, null } :
                             new TerminalBoundingBox[] { null, terminal };
                 })
                 .withShapeMapper(state -> {
-                    var part = state.get(PART);
-                    var facing = state.get(HORIZONTAL_FACING);
+                    var part = state.getValue(PART);
+                    var facing = state.getValue(HORIZONTAL_FACING);
                     return shapers[part].get(facing);
                 })
                 .build());
@@ -100,14 +102,14 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
         this.terminals = terminals;
         var mapper = terminals.shapeMapper();
         if(mapper != null)
-            outlines = getShapesForStates(mapper);
+            outlines = getShapeForEachState(mapper);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         if(outlines != null)
             return outlines.get(state);
-        return super.getOutlineShape(state, world, pos, context);
+        return super.getShape(state, world, pos, context);
     }
 
     @Override
@@ -125,67 +127,67 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(PART);
     }
 
     @Override
-    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        var facing = state.get(HORIZONTAL_FACING);
-        var neighbor = world.getBlockState(pos.offset(facing));
-        return neighbor.isReplaceable();
+    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
+        var facing = state.getValue(HORIZONTAL_FACING);
+        var neighbor = world.getBlockState(pos.relative(facing));
+        return neighbor.canBeReplaced();
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext context) {
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
         var preferred = getPreferredHorizontalFacing(context);
-        if(context.getPlayer() != null && context.getPlayer().isSneaking())
+        if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown())
             preferred = null;
-        var facing = context.getHorizontalPlayerFacing();
-        return getDefaultState()
-                .with(PART, 0)
-                .with(HORIZONTAL_FACING, preferred != null ? preferred.rotateYClockwise() : facing);
+        var facing = context.getHorizontalDirection();
+        return defaultBlockState()
+                .setValue(PART, 0)
+                .setValue(HORIZONTAL_FACING, preferred != null ? preferred.getClockWise() : facing);
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-        super.onPlaced(world, pos, state, placer, stack);
-        if(world.isClient || state.get(PART) != 0)
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(world, pos, state, placer, stack);
+        if(world.isClientSide || state.getValue(PART) != 0)
             return;
-        var facing = state.get(HORIZONTAL_FACING);
-        world.setBlockState(pos.offset(facing), state.with(PART, 1));
+        var facing = state.getValue(HORIZONTAL_FACING);
+        world.setBlockAndUpdate(pos.relative(facing), state.setValue(PART, 1));
     }
 
     @Override
-    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-        super.onBreak(world, pos, state, player);
-        var facing = state.get(HORIZONTAL_FACING);
+    public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
+        super.playerWillDestroy(world, pos, state, player);
+        var facing = state.getValue(HORIZONTAL_FACING);
         var drop = player == null || !player.isCreative();
-        if (state.get(PART) == 0) {
-            world.breakBlock(pos.offset(facing), drop);
+        if (state.getValue(PART) == 0) {
+            world.destroyBlock(pos.relative(facing), drop);
         } else {
-            world.breakBlock(pos.offset(facing.getOpposite()), drop);
+            world.destroyBlock(pos.relative(facing.getOpposite()), drop);
         }
     }
 
     @Override
-    public ElectricBehaviour getBehaviour(World world, BlockPos pos, BlockState state) {
-        if(state.get(PART) == 0) {
+    public ElectricBehaviour getBehaviour(Level world, BlockPos pos, BlockState state) {
+        if(state.getValue(PART) == 0) {
             return IElectric.super.getBehaviour(world, pos, state);
         } else {
-            return IElectric.super.getBehaviour(world, pos.offset(state.get(HORIZONTAL_FACING).getOpposite()), state);
+            return IElectric.super.getBehaviour(world, pos.relative(state.getValue(HORIZONTAL_FACING).getOpposite()), state);
         }
     }
 
     @Override
     public Direction.Axis getRotationAxis(BlockState state) {
-        return state.get(HORIZONTAL_FACING).rotateYClockwise().getAxis();
+        return state.getValue(HORIZONTAL_FACING).getClockWise().getAxis();
     }
 
     @Override
-    public boolean hasShaftTowards(WorldView world, BlockPos pos, BlockState state, Direction face) {
-        if(state.get(PART) == 1)
+    public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
+        if(state.getValue(PART) == 1)
             return false;
         return getRotationAxis(state) == face.getAxis();
     }
@@ -201,9 +203,9 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
     }
 
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        if(state.get(PART) == 0)
-            return IBE.super.createBlockEntity(pos, state);
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        if(state.getValue(PART) == 0)
+            return IBE.super.newBlockEntity(pos, state);
         return null;
     }
 
@@ -217,35 +219,35 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
     }
 
     @Override
-    public ActionResult onWrenched(BlockState state, ItemUsageContext context) {
-        return ActionResult.FAIL;
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        return InteractionResult.FAIL;
     }
 
     @Override
-    public ActionResult onSneakWrenched(BlockState state, ItemUsageContext context) {
+    public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
         var result = super.onSneakWrenched(state, context);
-        if(result == ActionResult.SUCCESS && context.getWorld() instanceof ServerWorld serverWorld) {
-            var pos = context.getBlockPos();
-            var facing = state.get(HORIZONTAL_FACING);
-            var world = context.getWorld();
-            if(state.get(PART) == 0) {
-                world.breakBlock(pos.offset(facing), false);
+        if(result == InteractionResult.SUCCESS && context.getLevel() instanceof ServerLevel serverWorld) {
+            var pos = context.getClickedPos();
+            var facing = state.getValue(HORIZONTAL_FACING);
+            var world = context.getLevel();
+            if(state.getValue(PART) == 0) {
+                world.destroyBlock(pos.relative(facing), false);
             } else {
-                var pos2 = pos.offset(facing.getOpposite());
+                var pos2 = pos.relative(facing.getOpposite());
                 var player = context.getPlayer();
                 if(player != null && !player.isCreative()) {
-                    Block.getDroppedStacks(state, serverWorld, pos2, world.getBlockEntity(pos2), player, context.getStack())
-                            .forEach(stack -> player.getInventory().offerOrDrop(stack));
+                    Block.getDrops(state, serverWorld, pos2, world.getBlockEntity(pos2), player, context.getItemInHand())
+                            .forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
                 }
-                state.onStacksDropped(serverWorld, pos2, ItemStack.EMPTY, true);
-                world.breakBlock(pos2, false);
+                state.spawnAfterBreak(serverWorld, pos2, ItemStack.EMPTY, true);
+                world.destroyBlock(pos2, false);
             }
         }
         return result;
     }
 
     @Override
-    public void appendProperties(ItemStack stack, PlayerEntity player, List<Text> tooltip) {
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
     }
 }
