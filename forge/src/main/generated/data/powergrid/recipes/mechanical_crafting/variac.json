@@ -1,0 +1,29 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "C": {
+      "tag": "minecraft:coals"
+    },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
+    "S": {
+      "item": "create:shaft"
+    },
+    "T": {
+      "item": "powergrid:transformer_core"
+    },
+    "W": {
+      "tag": "forge:copper_coils"
+    }
+  },
+  "pattern": [
+    "CS ",
+    "WTW",
+    "WEW"
+  ],
+  "result": {
+    "item": "powergrid:variac"
+  }
+}

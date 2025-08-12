@@ -18,11 +18,12 @@ package org.patryk3211.powergrid.collections;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedTags {
-    // TODO: Different on forge
-    public static final String FORGE_NAMESPACE = "c";
+    public static final String FORGE_NAMESPACE = PowerGrid.forPlatform("c", "forge");
 
     public enum Item {
         COIL_WIRE("coil_wire"),
@@ -73,5 +74,13 @@ public class ModdedTags {
     @ExpectPlatform
     public static TagKey<net.minecraft.world.item.Item> itemTag(ResourceLocation id) {
         throw new AssertionError();
+    }
+
+    public static TagKey<net.minecraft.world.item.Item> forgeItemTag(String path) {
+        return itemTag(new ResourceLocation(FORGE_NAMESPACE, path));
+    }
+
+    public static TagKey<net.minecraft.world.level.block.Block> forgeBlockTag(String path) {
+        return blockTag(new ResourceLocation(FORGE_NAMESPACE, path));
     }
 }

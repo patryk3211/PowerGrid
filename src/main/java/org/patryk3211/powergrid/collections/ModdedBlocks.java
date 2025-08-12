@@ -80,7 +80,7 @@ import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 import static com.simibubi.create.foundation.data.TagGen.*;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
-import static org.patryk3211.powergrid.utility.BlockStateProviders.*;
+import static org.patryk3211.powergrid.utility.DataProviderUtility.*;
 
 public class ModdedBlocks {
     public static final BlockEntry<BatteryBlock> BATTERY = REGISTRATE.block("battery", BatteryBlock::new)
@@ -111,7 +111,7 @@ public class ModdedBlocks {
                                     .add(LootItem.lootTableItem(Items.BAKED_POTATO)))
                     ))
             .item()
-                .model((ctx, prov) -> prov.generated(ctx::getEntry))
+                .model(generated())
                 .build()
             .register();
 
@@ -162,9 +162,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/gauge/item_voltage"))
-                                .texture("2", prov.modLoc("block/andesite_gauge")))
+                .model(gauge("block/gauge/item_voltage", "block/andesite_gauge"))
                 .build()
             .register();
     public static final BlockEntry<VoltageGaugeBlock> BRASS_VOLTAGE_METER = REGISTRATE.block("brass_voltage_gauge", VoltageGaugeBlock::new)
@@ -175,9 +173,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/gauge/item_voltage"))
-                                .texture("2", prov.modLoc("block/brass_gauge")))
+                .model(gauge("block/gauge/item_voltage", "block/brass_gauge"))
                 .build()
             .register();
 
@@ -190,9 +186,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/gauge/item_current"))
-                                .texture("2", prov.modLoc("block/andesite_gauge")))
+                .model(gauge("block/gauge/item_current", "block/andesite_gauge"))
                 .build()
             .register();
     public static final BlockEntry<CurrentGaugeBlock> BRASS_CURRENT_METER = REGISTRATE.block("brass_current_gauge", CurrentGaugeBlock::new)
@@ -204,9 +198,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/gauge/item_current"))
-                                .texture("2", prov.modLoc("block/brass_gauge")))
+                .model(gauge("block/gauge/item_current", "block/brass_gauge"))
                 .build()
             .register();
 
@@ -218,8 +210,7 @@ public class ModdedBlocks {
             .transform(CStress.setImpact(4))
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/rotor")))
+                .model(itemWithParent("block/generator/rotor"))
                 .build()
             .lang("Generator Rotor")
             .register();
@@ -232,8 +223,7 @@ public class ModdedBlocks {
             .transform(CStress.setImpact(4))
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/induction_rotor")))
+                .model(itemWithParent("block/generator/induction_rotor"))
                 .build()
             .register();
 
@@ -244,8 +234,7 @@ public class ModdedBlocks {
             .transform(CStress.setImpact(4))
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/commutator")))
+                .model(itemWithParent("block/generator/commutator"))
                 .build()
             .register();
 
@@ -256,8 +245,7 @@ public class ModdedBlocks {
             .transform(CStress.setImpact(4))
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/clutch_item")))
+                .model(itemWithParent("block/generator/clutch_item"))
                 .build()
             .register();
 
@@ -268,8 +256,7 @@ public class ModdedBlocks {
             .addLayer(() -> RenderType::cutoutMipped)
             .defaultLoot()
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/generator/housing")))
+                .model(itemWithParent("block/generator/housing"))
                 .build()
             .register();
 
@@ -279,8 +266,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .lang("LV Switch")
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/lv_switch_off_v")))
+                .model(itemWithParent("block/switches/lv_switch_off_v"))
                 .build()
             .register();
 
@@ -290,8 +276,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .lang("LV Button")
             .item()
-                .model((ctx, prov) ->
-                        prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/lv_button_off_v")))
+                .model(itemWithParent("block/switches/lv_button_off_v"))
                 .build()
             .register();
 
@@ -301,9 +286,8 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .item()
-            .model((ctx, prov) ->
-                    prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/mv_switch_off_v")))
-            .build()
+                .model(itemWithParent("block/switches/mv_switch_off_v"))
+                .build()
             .register();
 
     public static final BlockEntry<HvSwitchBlock> HV_SWITCH = REGISTRATE.block("hv_switch", HvSwitchBlock::new)
@@ -321,7 +305,7 @@ public class ModdedBlocks {
                     ))
             .lang("HV Switch")
             .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/switches/hv_switch")))
+                .model(itemWithParent("block/switches/hv_switch"))
                 .build()
             .register();
 
@@ -330,7 +314,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/spark_gap/item")))
+                .model(itemWithParent("block/spark_gap/item"))
                 .build()
             .register();
 
@@ -369,7 +353,9 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .transform(LightFixtureBlock.setBulbModelOffset(0, 0.125f, 0))
             .defaultLoot()
-            .simpleItem()
+            .item()
+                .model(itemWithParent("block/fixtures/light_fixture_v"))
+                .build()
             .register();
 
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
@@ -403,7 +389,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/variac/block"))
             .transform(pickaxeOnly())
             .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), "powergrid:block/variac/item"))
+                .model(itemWithParent("block/variac/item"))
                 .build()
             .register();
 
@@ -417,7 +403,7 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_motor/item")))
+                .model(itemWithParent("block/electric_motor/item"))
                 .build()
             .register();
 
@@ -431,7 +417,7 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/servo/item")))
+                .model(itemWithParent("block/servo/item"))
                 .build()
             .register();
 
@@ -451,7 +437,7 @@ public class ModdedBlocks {
             .addLayer(() -> RenderType::cutoutMipped)
             .defaultLoot()
             .item()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/electric_fan/item")))
+                .model(itemWithParent("block/electric_fan/item"))
                 .build()
             .register();
 
@@ -506,7 +492,9 @@ public class ModdedBlocks {
     public static final BlockEntry<DeviceConnectorBlock> DEVICE_CONNECTOR = REGISTRATE.block("device_connector", DeviceConnectorBlock::new)
             .blockstate(surfaceBlock("block/device_connector"))
             .transform(pickaxeOnly())
-            .simpleItem()
+            .item()
+                .model(itemWithParent("block/device_connector_v"))
+                .build()
             .register();
 
     public static final BlockEntry<FuseHolderBlock> FUSE_HOLDER = REGISTRATE.block("fuse_holder", FuseHolderBlock::new)

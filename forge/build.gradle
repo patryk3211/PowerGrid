@@ -55,11 +55,26 @@ loom {
             vmArg("-enableassertions")
         }
 
+        create("data") {
+            data()
+            programArgs "--all", "--mod", "powergrid"
+            programArgs "--output", file("src/main/generated").absolutePath
+            programArgs "--existing", file("../src/main/resources").absolutePath
+        }
+
         configureEach {
             programArg("-mixin.config=create.mixins.json")
             property "-Dmixin.debug.export=true"
             property "-Dmixin.env.remapRefMap=true"
             property "-Dmixin.env.refMapRemappingFile=${projectDir}/build/createSrgToMcp/output.srg"
         }
+    }
+}
+
+sourceSets.main {
+    resources {
+        srcDir("src/main/generated")
+//        exclude(".cache")
+//        exclude("assets/create/**")
     }
 }

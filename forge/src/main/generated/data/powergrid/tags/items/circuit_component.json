@@ -1,0 +1,17 @@
+{
+  "values": [
+    "create:copper_nugget",
+    "create:electron_tube",
+    "powergrid:wire_connector",
+    "powergrid:lv_switch",
+    "powergrid:relay",
+    "powergrid:resistor",
+    "powergrid:redstone_relay",
+    "powergrid:andesite_voltage_gauge",
+    "powergrid:diode",
+    "powergrid:capacitor",
+    "powergrid:led",
+    "powergrid:lv_button",
+    "powergrid:potentiometer"
+  ]
+}

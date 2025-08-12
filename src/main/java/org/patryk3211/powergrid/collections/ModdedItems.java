@@ -41,8 +41,10 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
 
 import java.util.function.Supplier;
 
-import static com.simibubi.create.AllTags.forgeItemTag;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
+import static org.patryk3211.powergrid.collections.ModdedTags.forgeItemTag;
+import static org.patryk3211.powergrid.utility.DataProviderUtility.barrier;
+import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParent;
 
 public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
@@ -76,7 +78,7 @@ public class ModdedItems {
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
             }))
             .transform(LightBulb.setProperties(30, 60, 30, 1450, 0.005f))
-            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/lamps/light_bulb")))
+            .model(itemWithParent("block/lamps/light_bulb"))
             .register();
 
     public static final ItemEntry<GrowthLamp> GROWTH_LAMP = REGISTRATE.item("growth_lamp", GrowthLamp::new)
@@ -86,7 +88,7 @@ public class ModdedItems {
                 case BROKEN -> ModdedPartialModels.GROWTH_LAMP_BROKEN;
             }))
             .transform(LightBulb.setProperties(120, 90, 40, 1600, 0.01f))
-            .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/lamps/growth_lamp")))
+            .model(itemWithParent("block/lamps/growth_lamp"))
             .register();
 
     public static final ItemEntry<Item> RESISTIVE_COIL = ingredient("resistive_coil", forgeItemTag("iron_coils"), ModdedTags.Item.COILS.tag);
@@ -121,25 +123,22 @@ public class ModdedItems {
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
             .transform(customRenderer(() -> ElectroZapperItemRenderer::new))
-            .model((ctx, prov) -> prov
-                    .withExistingParent(ctx.getName(), PowerGrid.asResource("item/electrozapper/item")))
+            .model(itemWithParent("item/electrozapper/item"))
             .lang("Electro-Zapper")
             .register();
 
     public static final ItemEntry<ElectroBatonItem> ELECTROBATON = REGISTRATE.item("electrobaton", ElectroBatonItem::new)
-            .model((ctx, prov) -> prov
-                    .withExistingParent(ctx.getName(), PowerGrid.asResource("item/electrobaton/item")))
+            .model(itemWithParent("item/electrobaton/item"))
             .lang("Electro-Baton")
             .register();
 
     public static final ItemEntry<BacktankItem.BacktankBlockItem> PORTABLE_BATTERY_PLACEABLE = REGISTRATE.item("portable_battery_placeable",
                     p -> new BacktankItem.BacktankBlockItem(ModdedBlocks.PORTABLE_BATTERY.get(), ModdedItems.PORTABLE_BATTERY::get, p))
-            .model((c, p) -> p.withExistingParent(c.getName(), p.mcLoc("item/barrier")))
+            .model(barrier())
             .register();
 
     public static final ItemEntry<PortableBatteryItem> PORTABLE_BATTERY = REGISTRATE.item("portable_battery", p -> new PortableBatteryItem(ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
-            .model((ctx, prov) ->
-                    prov.withExistingParent(ctx.getName(), prov.modLoc("block/portable_battery/block")))
+            .model(itemWithParent("block/portable_battery/block"))
             .properties(p -> p.durability(-1))
 			.tag(forgeItemTag("chestplates"))
             .register();

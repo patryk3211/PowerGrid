@@ -25,6 +25,7 @@ import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -40,7 +41,12 @@ import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
+import org.patryk3211.powergrid.data.BlockTagProvider;
+import org.patryk3211.powergrid.data.ItemTagProvider;
+import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
+import org.patryk3211.powergrid.data.recipes.*;
 
 @Mod(PowerGrid.MOD_ID)
 public class PowerGridImpl {
@@ -82,6 +88,27 @@ public class PowerGridImpl {
     @SubscribeEvent
     public static void soundEventRegister(RegisterEvent event) {
         event.register(Registries.SOUND_EVENT, ModdedSoundEventsImpl::register);
+    }
+
+    @SubscribeEvent
+    public static void gatherData(GatherDataEvent event) {
+        var generator = event.getGenerator();
+        var output = generator.getPackOutput();
+
+        generator.addProvider(true, new CookingRecipes(output));
+        generator.addProvider(true, new CraftingRecipes(output));
+        generator.addProvider(true, new CuttingRecipes(output));
+        generator.addProvider(true, new ItemApplicationRecipes(output));
+        generator.addProvider(true, new MagnetizingRecipes(output));
+        generator.addProvider(true, new MechanicalCraftingRecipes(output));
+        generator.addProvider(true, new MixingRecipes(output));
+        generator.addProvider(true, new PressingRecipes(output));
+        generator.addProvider(true, new SequencedAssemblyRecipes(output));
+        generator.addProvider(true, new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(output));
+
+        generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
+        generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));
+        generator.addProvider(true, ModdedSoundEvents.provider(output));
     }
 
     public static AbstractPowerGridRegistrate createRegistrate() {

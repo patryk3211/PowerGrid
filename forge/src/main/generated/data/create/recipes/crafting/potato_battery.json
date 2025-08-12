@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:potato"
+    },
+    {
+      "tag": "forge:zinc_plates"
+    },
+    {
+      "tag": "forge:copper_plates"
+    }
+  ],
+  "result": {
+    "item": "powergrid:potato_battery"
+  }
+}

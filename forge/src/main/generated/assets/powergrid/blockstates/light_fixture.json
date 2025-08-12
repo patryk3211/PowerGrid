@@ -1,0 +1,154 @@
+{
+  "variants": {
+    "axis_along_first=false,facing=down,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "y": 90
+    },
+    "axis_along_first=false,facing=down,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "y": 90
+    },
+    "axis_along_first=false,facing=down,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "y": 90
+    },
+    "axis_along_first=false,facing=east,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90
+    },
+    "axis_along_first=false,facing=east,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90
+    },
+    "axis_along_first=false,facing=east,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90
+    },
+    "axis_along_first=false,facing=north,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": -90
+    },
+    "axis_along_first=false,facing=north,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": -90
+    },
+    "axis_along_first=false,facing=north,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": -90
+    },
+    "axis_along_first=false,facing=south,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": 90
+    },
+    "axis_along_first=false,facing=south,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": 90
+    },
+    "axis_along_first=false,facing=south,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": 90
+    },
+    "axis_along_first=false,facing=up,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "x": 180,
+      "y": 90
+    },
+    "axis_along_first=false,facing=up,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "x": 180,
+      "y": 90
+    },
+    "axis_along_first=false,facing=up,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "x": 180,
+      "y": 90
+    },
+    "axis_along_first=false,facing=west,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": 180
+    },
+    "axis_along_first=false,facing=west,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": 180
+    },
+    "axis_along_first=false,facing=west,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "x": -90,
+      "y": 180
+    },
+    "axis_along_first=true,facing=down,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_v"
+    },
+    "axis_along_first=true,facing=down,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_v"
+    },
+    "axis_along_first=true,facing=down,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_v"
+    },
+    "axis_along_first=true,facing=east,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_h"
+    },
+    "axis_along_first=true,facing=east,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_h"
+    },
+    "axis_along_first=true,facing=east,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_h"
+    },
+    "axis_along_first=true,facing=north,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": -90
+    },
+    "axis_along_first=true,facing=north,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": -90
+    },
+    "axis_along_first=true,facing=north,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": -90
+    },
+    "axis_along_first=true,facing=south,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": 90
+    },
+    "axis_along_first=true,facing=south,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": 90
+    },
+    "axis_along_first=true,facing=south,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": 90
+    },
+    "axis_along_first=true,facing=up,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "x": 180
+    },
+    "axis_along_first=true,facing=up,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "x": 180
+    },
+    "axis_along_first=true,facing=up,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_v",
+      "x": 180
+    },
+    "axis_along_first=true,facing=west,power=0": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": 180
+    },
+    "axis_along_first=true,facing=west,power=1": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": 180
+    },
+    "axis_along_first=true,facing=west,power=2": {
+      "model": "powergrid:block/fixtures/light_fixture_h",
+      "y": 180
+    }
+  }
+}

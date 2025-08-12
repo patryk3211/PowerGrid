@@ -21,11 +21,11 @@ import io.github.fabricators_of_create.porting_lib.data.ExistingFileHelper;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.data.DataProvider;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
+import org.patryk3211.powergrid.data.recipe.fabric.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 
@@ -38,23 +38,19 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		var helper = ExistingFileHelper.withResourcesFromArg();
 		PowerGrid.REGISTRATE.setupDatagen(pack, helper);
 
-		pack.addProvider(SequencedAssemblyRecipes::new);
-		pack.addProvider(CuttingRecipes::new);
-		pack.addProvider(CraftingRecipes::new);
-		pack.addProvider(CookingRecipes::new);
-		pack.addProvider(MechanicalCraftingRecipes::new);
-		pack.addProvider(MixingRecipes::new);
-		pack.addProvider(PressingRecipes::new);
-		pack.addProvider((FabricDataGenerator.Pack.Factory<DataProvider>) output ->
-				ModdedSoundEvents.provider(new FabricDataOutput(
-						output.getModContainer(),
-						output.getOutputFolder(),
-						output.isStrictValidationEnabled()
-				)));
-		pack.addProvider(MagnetizingRecipes::new);
+		addProvider(pack, SequencedAssemblyRecipes::new);
+		addProvider(pack, org.patryk3211.powergrid.data.recipe.fabric.SequencedAssemblyRecipes::new);
+		addProvider(pack, CuttingRecipes::new);
+		addProvider(pack, CraftingRecipes::new);
+		addProvider(pack, CookingRecipes::new);
+		addProvider(pack, MechanicalCraftingRecipes::new);
+		addProvider(pack, MixingRecipes::new);
+		addProvider(pack, PressingRecipes::new);
+		addProvider(pack, ModdedSoundEvents::provider);
+		addProvider(pack, MagnetizingRecipes::new);
 		pack.addProvider(BlockTagProvider::new);
 		pack.addProvider(ItemTagProvider::new);
-		pack.addProvider(ItemApplicationRecipes::new);
+		addProvider(pack, ItemApplicationRecipes::new);
 
 		PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;
@@ -65,6 +61,10 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 			providePonderLang(langConsumer);
 			ModdedSoundEvents.provideLang(langConsumer);
 		});
+	}
+
+	private static void addProvider(FabricDataGenerator.Pack pack, FabricDataGenerator.Pack.Factory<DataProvider> factory) {
+		pack.addProvider(factory);
 	}
 
 	/**

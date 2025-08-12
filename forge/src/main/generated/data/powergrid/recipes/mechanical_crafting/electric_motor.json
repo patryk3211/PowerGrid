@@ -1,0 +1,30 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "C": {
+      "item": "powergrid:copper_coil"
+    },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
+    "I": {
+      "tag": "forge:iron_plates"
+    },
+    "M": {
+      "item": "powergrid:magnet"
+    },
+    "S": {
+      "item": "create:shaft"
+    }
+  },
+  "pattern": [
+    " ICI ",
+    "CMSMC",
+    " ICI ",
+    "  E  "
+  ],
+  "result": {
+    "item": "powergrid:electric_motor"
+  }
+}

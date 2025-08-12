@@ -1,0 +1,104 @@
+{
+  "variants": {
+    "axis_along_first=false,facing=down,polarized=false": {
+      "model": "powergrid:block/device_connector_v",
+      "y": 90
+    },
+    "axis_along_first=false,facing=down,polarized=true": {
+      "model": "powergrid:block/device_connector_v",
+      "y": 90
+    },
+    "axis_along_first=false,facing=east,polarized=false": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90
+    },
+    "axis_along_first=false,facing=east,polarized=true": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90
+    },
+    "axis_along_first=false,facing=north,polarized=false": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": -90
+    },
+    "axis_along_first=false,facing=north,polarized=true": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": -90
+    },
+    "axis_along_first=false,facing=south,polarized=false": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": 90
+    },
+    "axis_along_first=false,facing=south,polarized=true": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": 90
+    },
+    "axis_along_first=false,facing=up,polarized=false": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180,
+      "y": 90
+    },
+    "axis_along_first=false,facing=up,polarized=true": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180,
+      "y": 90
+    },
+    "axis_along_first=false,facing=west,polarized=false": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": 180
+    },
+    "axis_along_first=false,facing=west,polarized=true": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": 180
+    },
+    "axis_along_first=true,facing=down,polarized=false": {
+      "model": "powergrid:block/device_connector_v"
+    },
+    "axis_along_first=true,facing=down,polarized=true": {
+      "model": "powergrid:block/device_connector_v"
+    },
+    "axis_along_first=true,facing=east,polarized=false": {
+      "model": "powergrid:block/device_connector_h"
+    },
+    "axis_along_first=true,facing=east,polarized=true": {
+      "model": "powergrid:block/device_connector_h"
+    },
+    "axis_along_first=true,facing=north,polarized=false": {
+      "model": "powergrid:block/device_connector_h",
+      "y": -90
+    },
+    "axis_along_first=true,facing=north,polarized=true": {
+      "model": "powergrid:block/device_connector_h",
+      "y": -90
+    },
+    "axis_along_first=true,facing=south,polarized=false": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 90
+    },
+    "axis_along_first=true,facing=south,polarized=true": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 90
+    },
+    "axis_along_first=true,facing=up,polarized=false": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180
+    },
+    "axis_along_first=true,facing=up,polarized=true": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180
+    },
+    "axis_along_first=true,facing=west,polarized=false": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 180
+    },
+    "axis_along_first=true,facing=west,polarized=true": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 180
+    }
+  }
+}

@@ -115,4 +115,36 @@ public class PowerGrid  {
 	public static void finalizeRegistrate() {
 		throw new AssertionError();
 	}
+
+	private static Platform platform = null;
+
+	public enum Platform {
+		FABRIC, FORGE
+	}
+
+	public static Platform getPlatform() {
+		if(platform == null) {
+			var str = System.getProperty("powergrid.platform", "auto");
+			platform = switch(str.toLowerCase()) {
+				case "fabric" -> Platform.FABRIC;
+				case "forge" -> Platform.FORGE;
+				case "auto" -> {
+					if(dev.architectury.platform.Platform.isForge())
+						yield Platform.FORGE;
+					if(dev.architectury.platform.Platform.isFabric())
+						yield Platform.FABRIC;
+					throw new IllegalStateException("Cannot detect current platform");
+				}
+				default -> throw new IllegalArgumentException("Unknown output platform specified, allowed values: [fabric, forge]");
+			};
+		}
+		return platform;
+	}
+
+	public static <T> T forPlatform(T fabric, T forge) {
+		return switch(getPlatform()) {
+			case FABRIC -> fabric;
+			case FORGE -> forge;
+		};
+	}
 }
