@@ -9,7 +9,7 @@
       "item": "minecraft:stone_button"
     },
     "C": {
-      "tag": "forge:copper_nuggets"
+      "tag": "forge:nuggets/copper"
     }
   },
   "pattern": [

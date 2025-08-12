@@ -12,7 +12,7 @@
       "item": "powergrid:electrical_gizmo"
     },
     "Z": {
-      "tag": "forge:zinc_ingots"
+      "tag": "forge:ingots/zinc"
     }
   },
   "pattern": [

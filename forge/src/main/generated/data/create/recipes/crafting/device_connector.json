@@ -6,10 +6,10 @@
       "item": "create:andesite_alloy"
     },
     "C": {
-      "tag": "forge:copper_plates"
+      "tag": "forge:plates/copper"
     },
     "Z": {
-      "tag": "forge:zinc_plates"
+      "tag": "forge:plates/zinc"
     }
   },
   "pattern": [

@@ -6,7 +6,7 @@
       "item": "powergrid:copper_coil"
     },
     "I": {
-      "tag": "forge:iron_plates"
+      "tag": "forge:plates/iron"
     }
   },
   "pattern": [

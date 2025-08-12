@@ -30,7 +30,7 @@
           "item": "powergrid:incomplete_battery"
         },
         {
-          "tag": "forge:copper_plates"
+          "tag": "forge:plates/copper"
         }
       ],
       "results": [
@@ -46,7 +46,7 @@
           "item": "powergrid:incomplete_battery"
         },
         {
-          "tag": "forge:zinc_plates"
+          "tag": "forge:plates/zinc"
         }
       ],
       "results": [

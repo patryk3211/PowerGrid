@@ -12,13 +12,13 @@
       "item": "powergrid:electrical_gizmo"
     },
     "N": {
-      "tag": "forge:copper_nuggets"
+      "tag": "forge:nuggets/copper"
     },
     "S": {
-      "tag": "forge:copper_plates"
+      "tag": "forge:plates/copper"
     },
     "Z": {
-      "tag": "forge:zinc_ingots"
+      "tag": "forge:ingots/zinc"
     }
   },
   "pattern": [

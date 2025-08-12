@@ -9,7 +9,7 @@
       "item": "create:cogwheel"
     },
     "I": {
-      "tag": "forge:iron_plates"
+      "tag": "forge:plates/iron"
     }
   },
   "pattern": [

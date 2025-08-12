@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "C": {
-      "tag": "forge:copper_plates"
+      "tag": "forge:plates/copper"
     },
     "R": {
       "item": "create:polished_rose_quartz"

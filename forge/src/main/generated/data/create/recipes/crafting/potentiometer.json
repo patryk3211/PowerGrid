@@ -9,7 +9,7 @@
       "tag": "minecraft:coals"
     },
     "N": {
-      "tag": "forge:copper_nuggets"
+      "tag": "forge:nuggets/copper"
     }
   },
   "pattern": [

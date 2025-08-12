@@ -6,13 +6,13 @@
       "item": "create:andesite_alloy"
     },
     "B": {
-      "tag": "forge:brass_plates"
+      "tag": "forge:plates/brass"
     },
     "C": {
       "tag": "forge:copper_coils"
     },
     "I": {
-      "tag": "forge:iron_ingots"
+      "tag": "forge:ingots/iron"
     }
   },
   "pattern": [

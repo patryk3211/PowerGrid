@@ -3,10 +3,10 @@
   "category": "misc",
   "key": {
     "C": {
-      "tag": "forge:copper_nuggets"
+      "tag": "forge:nuggets/copper"
     },
     "I": {
-      "tag": "forge:iron_plates"
+      "tag": "forge:plates/iron"
     },
     "R": {
       "item": "powergrid:resistive_coil"

@@ -9,10 +9,10 @@
       "item": "powergrid:conductive_casing"
     },
     "I": {
-      "tag": "forge:iron_ingots"
+      "tag": "forge:ingots/iron"
     },
     "P": {
-      "tag": "forge:copper_plates"
+      "tag": "forge:plates/copper"
     }
   },
   "pattern": [

@@ -1,7 +1,7 @@
 {
   "type": "create:sequenced_assembly",
   "ingredient": {
-    "tag": "forge:iron_plates"
+    "tag": "forge:plates/iron"
   },
   "loops": 3,
   "results": [
@@ -32,7 +32,7 @@
           "item": "powergrid:incomplete_transformer_core"
         },
         {
-          "tag": "forge:iron_plates"
+          "tag": "forge:plates/iron"
         }
       ],
       "results": [

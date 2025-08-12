@@ -27,8 +27,6 @@ public class ModdedTags {
 
     public enum Item {
         COIL_WIRE("coil_wire"),
-        SILVER_INGOTS(FORGE_NAMESPACE, "silver_ingots"),
-        SILVER_ORES(FORGE_NAMESPACE, "silver_ores"),
         RAW_ORES(FORGE_NAMESPACE, "raw_ores"),
         PLATES(FORGE_NAMESPACE, "plates"),
         WIRES("wires"),
@@ -82,5 +80,17 @@ public class ModdedTags {
 
     public static TagKey<net.minecraft.world.level.block.Block> forgeBlockTag(String path) {
         return blockTag(new ResourceLocation(FORGE_NAMESPACE, path));
+    }
+
+    public static TagKey<net.minecraft.world.item.Item> plates(String ingot) {
+        return forgeItemTag(PowerGrid.forPlatform(ingot + "_plates", "plates/" + ingot));
+    }
+
+    public static TagKey<net.minecraft.world.item.Item> nuggets(String ingot) {
+        return forgeItemTag(PowerGrid.forPlatform(ingot + "_nuggets", "nuggets/" + ingot));
+    }
+
+    public static TagKey<net.minecraft.world.item.Item> ingots(String ingot) {
+        return forgeItemTag(PowerGrid.forPlatform(ingot + "_ingots", "ingots/" + ingot));
     }
 }

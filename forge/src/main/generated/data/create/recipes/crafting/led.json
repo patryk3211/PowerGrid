@@ -6,7 +6,7 @@
       "item": "minecraft:amethyst_shard"
     },
     "I": {
-      "tag": "forge:iron_plates"
+      "tag": "forge:plates/iron"
     }
   },
   "pattern": [

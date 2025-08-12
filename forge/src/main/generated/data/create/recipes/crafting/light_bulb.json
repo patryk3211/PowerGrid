@@ -6,7 +6,7 @@
       "item": "minecraft:glass_pane"
     },
     "I": {
-      "tag": "forge:iron_plates"
+      "tag": "forge:plates/iron"
     },
     "W": {
       "item": "powergrid:iron_wire"

@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "I": {
-      "tag": "forge:iron_nuggets"
+      "tag": "forge:nuggets/iron"
     },
     "T": {
       "item": "minecraft:terracotta"

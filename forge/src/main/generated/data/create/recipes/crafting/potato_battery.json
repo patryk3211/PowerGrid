@@ -6,10 +6,10 @@
       "item": "minecraft:potato"
     },
     {
-      "tag": "forge:zinc_plates"
+      "tag": "forge:plates/zinc"
     },
     {
-      "tag": "forge:copper_plates"
+      "tag": "forge:plates/copper"
     }
   ],
   "result": {

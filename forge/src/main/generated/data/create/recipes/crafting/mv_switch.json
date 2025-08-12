@@ -9,7 +9,7 @@
       "item": "minecraft:lever"
     },
     "S": {
-      "tag": "forge:copper_plates"
+      "tag": "forge:plates/copper"
     }
   },
   "pattern": [

@@ -50,7 +50,7 @@
           "item": "powergrid:incomplete_unetched_circuit"
         },
         {
-          "tag": "forge:copper_plates"
+          "tag": "forge:plates/copper"
         }
       ],
       "results": [

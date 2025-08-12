@@ -12,10 +12,10 @@
       "tag": "minecraft:coals"
     },
     "M": {
-      "tag": "forge:copper_plates"
+      "tag": "forge:plates/copper"
     },
     "N": {
-      "tag": "forge:copper_nuggets"
+      "tag": "forge:nuggets/copper"
     },
     "S": {
       "item": "create:shaft"

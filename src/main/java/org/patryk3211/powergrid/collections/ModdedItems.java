@@ -43,6 +43,7 @@ import java.util.function.Supplier;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 import static org.patryk3211.powergrid.collections.ModdedTags.forgeItemTag;
+import static org.patryk3211.powergrid.collections.ModdedTags.plates;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.barrier;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParent;
 
@@ -99,7 +100,7 @@ public class ModdedItems {
 
     public static final ItemEntry<Item> INTEGRATED_CIRCUIT = ingredient("integrated_circuit");
     public static final ItemEntry<Item> ELECTRICAL_GIZMO = ingredient("electrical_gizmo");
-    public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag, forgeItemTag("zinc_plates"));
+    public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag, plates("zinc"));
 
     public static final ItemEntry<Item> RELAY = ingredient("relay");
     public static final ItemEntry<Item> RESISTOR = ingredient("resistor");

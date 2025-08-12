@@ -1,7 +1,7 @@
 {
   "type": "create:sequenced_assembly",
   "ingredient": {
-    "tag": "forge:zinc_plates"
+    "tag": "forge:plates/zinc"
   },
   "loops": 1,
   "results": [

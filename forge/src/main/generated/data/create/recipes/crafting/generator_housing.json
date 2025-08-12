@@ -3,13 +3,13 @@
   "category": "misc",
   "key": {
     "C": {
-      "tag": "forge:copper_plates"
+      "tag": "forge:plates/copper"
     },
     "E": {
       "item": "powergrid:conductive_casing"
     },
     "I": {
-      "tag": "forge:iron_plates"
+      "tag": "forge:plates/iron"
     }
   },
   "pattern": [

@@ -6,10 +6,10 @@
       "item": "create:andesite_casing"
     },
     "C": {
-      "tag": "forge:copper_nuggets"
+      "tag": "forge:nuggets/copper"
     },
     "I": {
-      "tag": "forge:iron_plates"
+      "tag": "forge:plates/iron"
     }
   },
   "pattern": [

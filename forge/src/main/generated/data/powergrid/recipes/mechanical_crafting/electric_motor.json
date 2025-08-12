@@ -9,7 +9,7 @@
       "item": "powergrid:conductive_casing"
     },
     "I": {
-      "tag": "forge:iron_plates"
+      "tag": "forge:plates/iron"
     },
     "M": {
       "item": "powergrid:magnet"

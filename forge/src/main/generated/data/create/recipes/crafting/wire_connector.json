@@ -6,7 +6,7 @@
       "item": "create:andesite_alloy"
     },
     "C": {
-      "tag": "forge:copper_nuggets"
+      "tag": "forge:nuggets/copper"
     }
   },
   "pattern": [

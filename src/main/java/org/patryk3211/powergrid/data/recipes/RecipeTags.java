@@ -22,39 +22,40 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.collections.ModdedTags;
+
+import static org.patryk3211.powergrid.collections.ModdedTags.*;
 
 public class RecipeTags {
     public static TagKey<Item> ironSheet() {
-        return ModdedTags.forgeItemTag("iron_plates");
+        return plates("iron");
     }
 
     public static TagKey<Item> copperSheet() {
-        return ModdedTags.forgeItemTag("copper_plates");
+        return plates("copper");
     }
 
     public static TagKey<Item> copperNugget() {
-        return ModdedTags.forgeItemTag("copper_nuggets");
+        return nuggets("copper");
     }
 
     public static TagKey<Item> ironNugget() {
-        return ModdedTags.forgeItemTag("iron_nuggets");
+        return nuggets("iron");
     }
 
     public static TagKey<Item> ironIngot() {
-        return ModdedTags.forgeItemTag("iron_ingots");
+        return ingots("iron");
     }
 
     public static TagKey<Item> zincSheet() {
-        return ModdedTags.forgeItemTag("zinc_plates");
+        return plates("zinc");
     }
 
     public static TagKey<Item> zincIngot() {
-        return ModdedTags.forgeItemTag("zinc_ingots");
+        return ingots("zinc");
     }
 
     public static TagKey<Item> copperCoil() {
-        return ModdedTags.forgeItemTag("copper_coils");
+        return forgeItemTag("copper_coils");
     }
 
     public static TagKey<Item> coal() {
@@ -66,7 +67,7 @@ public class RecipeTags {
     }
 
     public static TagKey<Item> brassSheet() {
-        return ModdedTags.forgeItemTag("brass_plates");
+        return plates("brass");
     }
 
     public static ItemLike conductiveCasing() {
