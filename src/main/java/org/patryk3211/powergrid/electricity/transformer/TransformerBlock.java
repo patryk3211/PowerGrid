@@ -26,6 +26,8 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -38,9 +40,9 @@ import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-
-;
 
 public abstract class TransformerBlock extends ElectricBlock {
     public static final IntegerProperty COILS = IntegerProperty.create("coils", 0, 2);
@@ -63,6 +65,26 @@ public abstract class TransformerBlock extends ElectricBlock {
     public ElectricBehaviour getBehaviour(Level world, BlockPos pos, BlockState state) {
         var be = getBlockEntity(world, pos, state);
         return be.map(ElectricBlockEntity::getElectricBehaviour).orElse(null);
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        var be = params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if(!(be instanceof TransformerBlockEntity tbe))
+            return super.getDrops(state, params);
+        var drops = new ArrayList<>(super.getDrops(state, params));
+        int turns = 0;
+        if(tbe.getSecondary() != null) {
+            turns += tbe.getSecondary().getTurns();
+        }
+        if(tbe.getPrimary() != null) {
+            turns += tbe.getPrimary().getTurns();
+        }
+        for(; turns > 0; turns -= 64) {
+            var stack = ModdedItems.WIRE.asStack(Math.min(turns, 64));
+            drops.add(stack);
+        }
+        return drops;
     }
 
     public InteractionResult onWinding(BlockState state, UseOnContext context) {
@@ -139,6 +161,10 @@ public abstract class TransformerBlock extends ElectricBlock {
         if(result == InteractionResult.PASS) {
             // Not hit a terminal.
             if(stack.hasTag()) {
+                if(!stack.is(ModdedItems.WIRE.get())) {
+                    // Only copper wire can be used to wind transformers
+                    return InteractionResult.FAIL;
+                }
                 // Has first terminal data.
                 return getBlockEntity(context.getLevel(), context.getClickedPos(), state).map(be -> {
                     var nbt = stack.getTag();

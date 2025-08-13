@@ -278,11 +278,4 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     public BlockEntityType<? extends TransformerMediumBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.TRANSFORMER_MEDIUM.get();
     }
-
-    @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        if(state.getValue(PART) == 0)
-            return IBE.super.newBlockEntity(pos, state);
-        return null;
-    }
 }

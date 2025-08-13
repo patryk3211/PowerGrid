@@ -15,16 +15,30 @@
  */
 package org.patryk3211.powergrid.electricity.transformer;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
+import java.util.List;
+import java.util.Optional;
+
 public class TransformerMediumBlockEntity extends TransformerBlockEntity {
     public TransformerMediumBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    public boolean isMain() {
+        return getBlockState().getValue(TransformerMediumBlock.PART) == 0;
+    }
+
+    public Optional<TransformerMediumBlockEntity> getMain() {
+        return ((TransformerMediumBlock) getBlockState().getBlock()).getBlockEntity(level, worldPosition, getBlockState())
+                .map(be -> (TransformerMediumBlockEntity) be);
     }
 
     @Override
@@ -46,5 +60,22 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
         updateState(worldPosition.relative(axis, 1), coilCount);
         updateState(worldPosition.relative(Direction.Axis.Y, 1), coilCount);
         updateState(worldPosition.relative(axis, 1).relative(Direction.Axis.Y, 1), coilCount);
+    }
+
+    @Override
+    public void tick() {
+        if(isMain())
+            super.tick();
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        if(isMain())
+            super.addBehaviours(behaviours);
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        return getMain().map(be -> be.addToGoggleTooltip(tooltip, isPlayerSneaking)).orElse(false);
     }
 }

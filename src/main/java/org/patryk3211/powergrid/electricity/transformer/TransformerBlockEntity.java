@@ -52,11 +52,6 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     }
 
     @Override
-    public void initialize() {
-        super.initialize();
-    }
-
-    @Override
     public void tick() {
         super.tick();
 
