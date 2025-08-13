@@ -80,7 +80,9 @@ allprojects {
 			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
 		})
 
-		implementation(include("org.ejml:ejml-all:0.44.0"))
+		implementation(include("org.ejml:ejml-core:0.44.0"))
+		implementation(include("org.ejml:ejml-simple:0.44.0"))
+		implementation(include("org.ejml:ejml-ddense:0.44.0"))
 //		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	}
 
@@ -90,6 +92,15 @@ allprojects {
 		sourceCompatibility = JavaVersion.VERSION_17
 		targetCompatibility = JavaVersion.VERSION_17
 	}
+}
+
+def getGitHash = { ->
+	def stdout = new ByteArrayOutputStream()
+	exec {
+		commandLine 'git', 'rev-parse', '--short', 'HEAD'
+		standardOutput = stdout
+	}
+	return stdout.toString().trim()
 }
 
 subprojects {
@@ -109,7 +120,8 @@ subprojects {
 	tasks.processResources {
 		var properties = [
 				version              : project.version,
-				create_forge_version : project.create_forge_version,
+				architectury_version : project.architectury_api_version,
+				create_forge_version : project.create_forge_range,
 				create_fabric_version: project.create_fabric_version,
 				forge_version        : project.forge_version,
 				fabric_version       : project.fabric_version,
@@ -181,15 +193,6 @@ subprojects {
 //		client = true
 //	}
 //}
-
-def getGitHash = { ->
-	def stdout = new ByteArrayOutputStream()
-	exec {
-		commandLine 'git', 'rev-parse', '--short', 'HEAD'
-		standardOutput = stdout
-	}
-	return stdout.toString().trim()
-}
 
 // configure the maven publication
 //publishing {

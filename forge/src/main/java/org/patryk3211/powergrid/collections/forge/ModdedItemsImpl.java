@@ -19,6 +19,8 @@ import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRendere
 import com.simibubi.create.foundation.item.render.SimpleCustomRenderer;
 import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.world.item.Item;
 import org.patryk3211.powergrid.mixin.forge.ItemAccessor;
 
@@ -26,8 +28,10 @@ import java.util.function.Supplier;
 
 public class ModdedItemsImpl {
     public static <T extends Item, P> NonNullUnaryOperator<ItemBuilder<T, P>> customRenderer(Supplier<Supplier<CustomRenderedItemModelRenderer>> renderer) {
-        return b -> b.onRegister(item -> {
-            ((ItemAccessor) item).setRenderProperties(SimpleCustomRenderer.create(item, renderer.get().get()));
-        });
+        return b -> b.onRegister(item ->
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
+                ((ItemAccessor) item).setRenderProperties(SimpleCustomRenderer.create(item, renderer.get().get()))
+            )
+        );
     }
 }
