@@ -15,18 +15,27 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.simibubi.create.AllSoundEvents;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -194,11 +203,13 @@ public class ModdedSoundEvents {
             this.output = output;
         }
 
+        @NotNull
         @Override
-        public CompletableFuture<?> run(CachedOutput cache) {
+        public CompletableFuture<?> run(@NotNull CachedOutput cache) {
             return generate(output.getOutputFolder(), cache);
         }
 
+        @NotNull
         @Override
         public String getName() {
             return "Power Grid's Custom Sounds";
@@ -210,10 +221,7 @@ public class ModdedSoundEvents {
             ALL.entrySet()
                     .stream()
                     .sorted(Map.Entry.comparingByKey())
-                    .forEach(entry -> {
-                        entry.getValue()
-                                .write(json);
-                    });
+                    .forEach(entry -> entry.getValue().write(json));
             return DataProvider.saveStable(cache, json, path.resolve("sounds.json"));
         }
     }
@@ -231,8 +239,6 @@ public class ModdedSoundEvents {
         @Override
         public AllSoundEvents.SoundEntry build() {
             var entry = super.build();
-            // Put entry into our map.
-            AllSoundEvents.ALL.remove(entry.getId());
             ALL.put(entry.getId(), entry);
             return entry;
         }

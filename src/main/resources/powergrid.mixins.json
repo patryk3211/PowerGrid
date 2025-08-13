@@ -10,7 +10,8 @@
     "FanProcessingMixin",
     "KineticBlockEntityAccessor",
     "LightningAccessor",
-    "RecipeApplierMixin"
+    "RecipeApplierMixin",
+    "SoundEntryBuilderMixin"
   ],
   "injectors": {
     "defaultRequire": 1
