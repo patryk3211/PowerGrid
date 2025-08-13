@@ -128,7 +128,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
                 .withStyle(ChatFormatting.GRAY));
         var spacing = Component.literal(" ");
 
-        float damageF = 4;//type.getDamage() * additionalDamageMult;
+        float damageF = 8;//type.getDamage() * additionalDamageMult;
         var damage = Component.literal(damageF == Mth.floor(damageF) ? "" + Mth.floor(damageF) : "" + damageF);
         var reloadTicks = Component.literal("10");
 
