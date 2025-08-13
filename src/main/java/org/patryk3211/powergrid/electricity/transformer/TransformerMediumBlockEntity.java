@@ -37,13 +37,29 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
     }
 
     public Optional<TransformerMediumBlockEntity> getMain() {
+        if(isMain())
+            return Optional.of(this);
         return ((TransformerMediumBlock) getBlockState().getBlock()).getBlockEntity(level, worldPosition, getBlockState())
                 .map(be -> (TransformerMediumBlockEntity) be);
     }
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 8.0f, 2.5f);
+        var b = new ThermalBehaviour(this, 8.0f, 2.5f);
+        if(isMain()) {
+            b.overheatCallback(() -> {
+                // Destroy all 4 blocks of the transformer
+                var axis = getBlockState().getValue(TransformerMediumBlock.HORIZONTAL_AXIS);
+                assert level != null;
+                level.destroyBlock(worldPosition, false);
+                level.destroyBlock(worldPosition.relative(axis, 1), false);
+                level.destroyBlock(worldPosition.above(), false);
+                level.destroyBlock(worldPosition.relative(axis, 1).above(), false);
+            });
+        } else {
+            b.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);
+        }
+        return b;
     }
 
     private void updateState(BlockPos pos, int coils) {
@@ -64,18 +80,28 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
 
     @Override
     public void tick() {
-        if(isMain())
+        if(isMain()) {
             super.tick();
+        } else if(thermalBehaviour != null) {
+            getMain().ifPresent(be -> thermalBehaviour.track(be.thermalBehaviour));
+            thermalBehaviour.tick();
+        }
     }
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        if(isMain())
+        if(isMain()) {
             super.addBehaviours(behaviours);
+        } else {
+            thermalBehaviour = specifyThermalBehaviour();
+            behaviours.add(thermalBehaviour);
+        }
     }
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        if(isMain())
+            return super.addToGoggleTooltip(tooltip, isPlayerSneaking);
         return getMain().map(be -> be.addToGoggleTooltip(tooltip, isPlayerSneaking)).orElse(false);
     }
 }

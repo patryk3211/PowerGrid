@@ -166,11 +166,11 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         }
 
         if(isOverheated() && !world.isClientSide) {
+            if(overheatCallback != null)
+                overheatCallback.run();
             if((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
                 explode(world, pos, blockEntity.getBlockState(), 1.0f);
             }
-            if(overheatCallback != null)
-                overheatCallback.run();
         }
     }
 

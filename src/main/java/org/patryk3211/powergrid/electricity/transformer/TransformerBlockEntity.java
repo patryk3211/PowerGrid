@@ -104,14 +104,14 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         if(tag.contains("Primary")) {
             var primary = tag.getCompound("Primary");
             rebuild |= primaryCoil.readNbt(primary);
-        } else {
+        } else if(primaryCoil != null) {
             rebuild |= primaryCoil.clear();
         }
 
         if(tag.contains("Secondary")) {
             var secondary = tag.getCompound("Secondary");
             rebuild |= secondaryCoil.readNbt(secondary);
-        } else {
+        } else if(primaryCoil != null) {
             rebuild |= secondaryCoil.clear();
         }
 
@@ -124,13 +124,13 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
 
-        if(primaryCoil.isDefined()) {
+        if(primaryCoil != null && primaryCoil.isDefined()) {
             var primary = new CompoundTag();
             primaryCoil.writeNbt(primary);
             tag.put("Primary", primary);
         }
 
-        if(secondaryCoil.isDefined()) {
+        if(secondaryCoil != null && secondaryCoil.isDefined()) {
             var secondary = new CompoundTag();
             secondaryCoil.writeNbt(secondary);
             tag.put("Secondary", secondary);
