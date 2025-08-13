@@ -32,6 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 
 public class ThermalBehaviour extends BlockEntityBehaviour {
@@ -81,6 +82,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         var targetTemperature = overheatTemperature - 25;
         var dissipation = power / (targetTemperature - BASE_TEMPERATURE);
         return new ThermalBehaviour(be, thermalMass, dissipation, overheatTemperature);
+    }
+
+    public static boolean shouldExplode() {
+        return ModdedConfigs.server().electricity.explosiveDeconstruction.get();
     }
 
     public ThermalBehaviour behaviourFlags(int flags) {
@@ -175,11 +180,16 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     }
 
     public static void explode(Level world, BlockPos pos, BlockState state, float power) {
-        var registry = world.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-        var source = new MachineOverloadDamageSource(registry.getHolder(ModdedDamageTypes.OVERLOADED_MACHINE).get(), state.getBlock());
-        // This block must be broken first to allow for damage to propagate.
-        world.destroyBlock(pos, false);
-        world.explode(null, source, null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, power, false, Level.ExplosionInteraction.BLOCK);
+        if(shouldExplode()) {
+            var registry = world.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
+            var source = new MachineOverloadDamageSource(registry.getHolder(ModdedDamageTypes.OVERLOADED_MACHINE).get(), state.getBlock());
+            // This block must be broken first to allow for damage to propagate.
+            world.destroyBlock(pos, false);
+            world.explode(null, source, null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, power, false, Level.ExplosionInteraction.BLOCK);
+        } else {
+            // Break block without exploding.
+            world.destroyBlock(pos, false);
+        }
     }
 
     public boolean isOverheated() {
