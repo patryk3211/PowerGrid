@@ -17,15 +17,26 @@ package org.patryk3211.powergrid.forge;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
+import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 public class ForgeClientEvents {
     @SubscribeEvent
     public static void clientWorldUnload(LevelEvent.Unload unload) {
         if(unload.getLevel().isClientSide() && unload.getLevel() instanceof ClientLevel world) {
             ClientElectricNetwork.unloadWorld(Minecraft.getInstance(), world);
+//            EntityJoinLevelEvent
+//                    levelEvent
+        }
+    }
+
+    @SubscribeEvent
+    public static void entityJoin(EntityJoinLevelEvent event) {
+        if(event.getLevel().isClientSide) {
+            EntityDataS2CPacket.clientEntityAdded(event.getEntity());
         }
     }
 }

@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.electricity.zapper;
 
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetItemMethods;
 import com.simibubi.create.foundation.item.CustomArmPoseItem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -90,11 +92,16 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         return ModdedConfigs.server().electricity.electroZapperFePerShot.get();
     }
 
+    @Environment(EnvType.CLIENT)
+    private static void clientUse(InteractionHand hand) {
+        PowerGridClient.ELECTRO_ZAPPER_RENDER_HANDLER.dontAnimateItem(hand);
+    }
+
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
         if(world.isClientSide) {
-            PowerGridClient.ELECTRO_ZAPPER_RENDER_HANDLER.dontAnimateItem(hand);
+            clientUse(hand);
             return InteractionResultHolder.success(stack);
         }
 

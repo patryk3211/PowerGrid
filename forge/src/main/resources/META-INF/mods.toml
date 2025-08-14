@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[47,)"
+loaderVersion = "${forge_version_range}"
 issueTrackerURL = "https://github.com/patryk3211/PowerGrid/issues"
 license = "Apache-2.0"
 
@@ -16,7 +16,7 @@ logoFile = "assets/powergrid/icon.png"
 [[dependencies.powergrid]]
 modId = "forge"
 mandatory = true
-versionRange = "[${forge_version},)"
+versionRange = "${forge_version_range}"
 ordering = "NONE"
 side = "BOTH"
 

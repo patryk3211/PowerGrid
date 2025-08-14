@@ -83,7 +83,8 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     @Override
     public float getVolume() {
-        return Mth.clamp((lastCurrent / 40) - 0.25f, 0, 1);
+        var volume = lastCurrent / 80;
+        return Mth.clamp(volume * volume, 0, 0.5f);
     }
 
     @Environment(EnvType.CLIENT)

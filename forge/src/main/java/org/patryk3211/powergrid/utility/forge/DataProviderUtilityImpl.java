@@ -36,6 +36,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
@@ -115,6 +116,35 @@ public class DataProviderUtilityImpl {
                         builder.modelFile(modModel(prov, baseName + suffix));
                         builder.rotationX(x).rotationY(y);
                     });
+                    return builder.build();
+                });
+    }
+
+    public static NonNullBiConsumer<DataGenContext<Block, LightFixtureBlock>, RegistrateBlockstateProvider> lightFixture(String baseName) {
+        return (ctx, prov) ->
+                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                    var builder = ConfiguredModel.builder();
+                    var facing = state.getValue(FACING);
+                    var axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+
+                    int x = 0, y = 0;
+                    boolean vertical= false;
+                    switch(facing) {
+                        case UP -> vertical = true;
+                        case DOWN -> { x = 180; vertical = true; }
+                        case EAST -> y = 180;
+                        case NORTH -> y = 90;
+                        case SOUTH -> y = -90;
+                    }
+
+                    if(!axis_along_first && vertical)
+                        y = 90;
+                    else if(axis_along_first && !vertical)
+                        x = -90;
+
+                    var suffix = vertical ? "_v" : "_h";
+                    builder.modelFile(modModel(prov, baseName + suffix));
+                    builder.rotationX(x).rotationY(y);
                     return builder.build();
                 });
     }

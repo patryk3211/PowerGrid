@@ -21,7 +21,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -45,8 +44,6 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
-
-import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
@@ -161,6 +158,9 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             // Remove to prevent power transfer in the 5 particle ticks.
             dropWire();
             if(!world.isClientSide) {
+                if(despawnTime == 0) {
+                    ModdedSoundEvents.WIRE_BURNED.playFrom(this);
+                }
                 if(++despawnTime >= 5) {
                     // Break without dropping items.
                     discard();
@@ -240,9 +240,9 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
-        var base = super.getAddEntityPacket();
         var extra = createExtraDataPacket();
-        return new ClientboundBundlePacket(List.of(base, extra.clientBoundPacket()));
+        ModdedPackets.sendToClientsTracking(extra, this);
+        return super.getAddEntityPacket();
     }
 
     @Override

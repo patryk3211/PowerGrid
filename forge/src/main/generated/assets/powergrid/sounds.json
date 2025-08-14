@@ -238,6 +238,15 @@
     ],
     "subtitle": "powergrid.subtitle.uswitch_on"
   },
+  "wire_burned": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.fire.extinguish"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.wire_burned"
+  },
   "wire_cut": {
     "sounds": [
       {

@@ -35,14 +35,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraftforge.registries.*;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
+import org.patryk3211.powergrid.collections.ItemDisplay;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
@@ -60,6 +59,8 @@ public class PowerGridImpl {
     public static FMLJavaModLoadingContext context;
     public static IEventBus bus;
 
+    public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, PowerGrid.MOD_ID);
+
     public PowerGridImpl() {
         context = FMLJavaModLoadingContext.get();
         bus = context.getModEventBus();
@@ -67,6 +68,14 @@ public class PowerGridImpl {
         EventBuses.registerModEventBus(PowerGrid.MOD_ID, bus);
 
         PowerGrid.init();
+
+        TABS.register("main", () -> CreativeModeTab.builder()
+                .icon(() -> new ItemStack(ModdedItems.WIRE))
+                .displayItems(new ItemDisplay.BaseItemDisplay(true))
+                .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
+                .build());
+        PowerGrid.REGISTRATE.addLang("itemGroup", PowerGrid.asResource("main"), "Power Grid");
+        TABS.register(bus);
 
         MinecraftForge.EVENT_BUS.register(ForgeEvents.class);
 
@@ -153,12 +162,13 @@ public class PowerGridImpl {
                         new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                                 .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
                                 .andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
-                )
-                .defaultCreativeTab("power_grid" , builder -> builder
-                        .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
-                        .icon(() -> new ItemStack(ModdedItems.WIRE)))
+                );
+//                .defaultCreativeTab("power_grid" , builder -> builder
+//                        .icon(() -> new ItemStack(ModdedItems.WIRE))
+//                        .displayItems(new ItemDisplay.BaseItemDisplay(false))
+//                )
 //                .lang(tab -> "itemGroup.powergrid.main", "Create: Power Grid")
-                .build();
+//                .build();
     }
 
     public static void finalizeRegistrate() {

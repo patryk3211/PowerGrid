@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.foundation.networking.SimplePacketBase;
 import dev.architectury.networking.NetworkChannel;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.Vec3i;
@@ -36,7 +37,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public enum ModdedPackets {
-    ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket::new),
+    ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket::new, true),
     ZAP_PROJECTILE(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new),
     SOLVER_SYNC(SolverStateS2CPacket.class, SolverStateS2CPacket::new),
     TRANSMISSION_LINE(TransmissionLineS2CPacket.class, TransmissionLineS2CPacket::new),
@@ -59,6 +60,10 @@ public enum ModdedPackets {
 
     <T extends SimplePacket> ModdedPackets(Class<T> type, Function<FriendlyByteBuf, T> factory) {
         this.type = new PacketType<>(type, SimplePacket::encode, factory, SimplePacket::handle);
+    }
+
+    ModdedPackets(Class<ElectroZapperS2CPacket> type, Function<FriendlyByteBuf, ElectroZapperS2CPacket> factory, boolean dummy) {
+        this.type = new PacketType<>(type, SimplePacketBase::write, factory, ElectroZapperS2CPacket::handle);
     }
 
     public static void registerPackets() {

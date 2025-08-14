@@ -49,7 +49,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEnt
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchInstance;
+import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchVisual;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchRenderer;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorRenderer;
@@ -64,6 +64,7 @@ import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
+import org.patryk3211.powergrid.kinetics.variac.VariacVisual;
 import org.patryk3211.powergrid.kinetics.variac.VariacRenderer;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -108,14 +109,14 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<RotorBlockEntity> GENERATOR_ROTOR =
             REGISTRATE.blockEntity("generator_rotor", RotorBlockEntity::new)
-                    .visual(() -> RotorVisual::new)
+                    .visual(() -> RotorVisual.of(ModdedPartialModels.ROTOR))
                     .validBlock(ModdedBlocks.GENERATOR_ROTOR)
                     .renderer(() -> RotorRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<InductionRotorBlockEntity> GENERATOR_INDUCTION_ROTOR =
             REGISTRATE.blockEntity("generator_induction_rotor", InductionRotorBlockEntity::new)
-                    .visual(() -> RotorVisual::new)
+                    .visual(() -> RotorVisual.of(ModdedPartialModels.INDUCTION_ROTOR))
                     .validBlock(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
                     .renderer(() -> RotorRenderer::new)
                     .register();
@@ -129,7 +130,7 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<GeneratorClutchBlockEntity> GENERATOR_CLUTCH =
             REGISTRATE.blockEntity("generator_clutch", GeneratorClutchBlockEntity::new)
-                    .visual(() -> GeneratorClutchInstance::new)
+                    .visual(() -> GeneratorClutchVisual::new)
                     .validBlock(ModdedBlocks.GENERATOR_CLUTCH)
                     .renderer(() -> GeneratorClutchRenderer::new)
                     .register();
@@ -184,7 +185,7 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<VariacBlockEntity> VARIAC =
             REGISTRATE.blockEntity("variac", VariacBlockEntity::new)
-                    .visual(() -> HalfShaftVisual::new)
+                    .visual(() -> VariacVisual::new)
                     .validBlock(ModdedBlocks.VARIAC)
                     .renderer(() -> VariacRenderer::new)
                     .register();

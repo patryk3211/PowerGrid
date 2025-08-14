@@ -22,9 +22,12 @@ import net.minecraft.world.entity.Entity;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
 import org.patryk3211.powergrid.network.SimplePacket;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class EntityDataS2CPacket implements SimplePacket {
+    private static final Map<Integer, CompoundTag> DEFERRED_DATA = new HashMap<>();
     public final int entityId;
     public final CompoundTag data;
 
@@ -49,22 +52,22 @@ public class EntityDataS2CPacket implements SimplePacket {
         context.get().queue(() -> {
             var world = ClientBoundPackets.world();
             var entity = world.getEntity(entityId);
+            if(entity == null) {
+                DEFERRED_DATA.put(entityId, data);
+                return;
+            }
             if(entity instanceof IConsumer consumer)
                 consumer.onEntityDataPacket(data);
         });
     }
 
-    //    public Packet<ClientPlayPacketListener> packet() {
-//        return ServerPlayNetworking.createS2CPacket(ModdedPackets.ENTITY_DATA_PACKET, this.buffer);
-//    }
-
-//    public void send() {
-//        if(entity == null)
-//            throw new IllegalStateException();
-//        for(var player : PlayerLookup.tracking(entity)) {
-//            ServerPlayNetworking.send(player, ModdedPackets.ENTITY_DATA_PACKET, buffer);
-//        }
-//    }
+    public static void clientEntityAdded(Entity entity) {
+        var tag = DEFERRED_DATA.remove(entity.getId());
+        if(tag == null)
+            return;
+        if(entity instanceof IConsumer consumer)
+            consumer.onEntityDataPacket(tag);
+    }
 
     public interface IConsumer {
         void onEntityDataPacket(CompoundTag packet);

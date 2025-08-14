@@ -19,9 +19,10 @@ import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.model.Models;
+import net.minecraft.core.Direction;
 
-public class VariacInstance extends SingleAxisRotatingVisual<VariacBlockEntity> {
-    public VariacInstance(VisualizationContext context, VariacBlockEntity blockEntity, float partialTick) {
-        super(context, blockEntity, partialTick, Models.partial(AllPartialModels.SHAFT_HALF));
+public class VariacVisual extends SingleAxisRotatingVisual<VariacBlockEntity> {
+    public VariacVisual(VisualizationContext context, VariacBlockEntity blockEntity, float partialTick) {
+        super(context, blockEntity, partialTick, Models.partial(AllPartialModels.SHAFT_HALF, Direction.UP));
     }
 }

@@ -222,6 +222,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Environment(EnvType.CLIENT)
     public @Nullable Vec3 raycast(Vec3 min, Vec3 max) {
         // TODO: Sometimes this raycast is really finicky
+        if(getWireItem() == null)
+            return null;
         var thickness = getWireItem().getWireThickness();
         if(renderParams instanceof CurveParameters params) {
             Vec3 ray = max.subtract(min);

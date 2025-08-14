@@ -56,6 +56,7 @@ public class HvSwitchVisual extends ShaftVisual<HvSwitchBlockEntity> implements 
                 .rotateYDegrees(yRot)
                 .rotateXDegrees(rotation)
                 .uncenter();
+        pointer.setChanged();
     }
 
     @Override

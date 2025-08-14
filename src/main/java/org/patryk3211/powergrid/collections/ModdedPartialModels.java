@@ -47,6 +47,9 @@ public class ModdedPartialModels {
     public static final PartialModel LED_BULB = model("component/led_bulb");
     public static final PartialModel POTENTIOMETER_KNOB = model("component/potentiometer_knob");
 
+    public static final PartialModel ROTOR = block("generator/rotor");
+    public static final PartialModel INDUCTION_ROTOR = block("generator/induction_rotor");
+
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));
     }

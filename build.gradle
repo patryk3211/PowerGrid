@@ -124,6 +124,7 @@ subprojects {
 				create_forge_version : project.create_forge_range,
 				create_fabric_version: project.create_fabric_version,
 				forge_version        : project.forge_version,
+				forge_version_range	 : project.forge_version_range,
 				fabric_version       : project.fabric_version,
 				loader_version       : project.loader_version,
 				minecraft_version    : project.minecraft_version

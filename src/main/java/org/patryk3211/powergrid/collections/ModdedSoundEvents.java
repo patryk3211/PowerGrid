@@ -161,6 +161,11 @@ public class ModdedSoundEvents {
     FUSE_INSTALL = create("fuse_install").subtitle("Fuse installed")
             .playExisting(SoundEvents.ITEM_FRAME_ADD_ITEM, 0.8f, 0.7f)
             .category(SoundSource.BLOCKS)
+            .build(),
+
+    WIRE_BURNED = create("wire_burned").subtitle("Wire burned")
+            .playExisting(SoundEvents.FIRE_EXTINGUISH, 0.2f, 2.0f)
+            .category(SoundSource.NEUTRAL)
             .build()
 
             ;

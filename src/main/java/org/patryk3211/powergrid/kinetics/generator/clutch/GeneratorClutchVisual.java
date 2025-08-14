@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.clutch;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.InstanceTypes;
@@ -28,15 +29,14 @@ import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.getRotorAngle;
 
-public class GeneratorClutchInstance extends SingleAxisRotatingVisual<GeneratorClutchBlockEntity> implements SimpleDynamicVisual {
+public class GeneratorClutchVisual extends SingleAxisRotatingVisual<GeneratorClutchBlockEntity> implements SimpleDynamicVisual {
     protected TransformedInstance assembly;
 
-    public GeneratorClutchInstance(VisualizationContext context, GeneratorClutchBlockEntity blockEntity, float partialTick) {
-        super(context, blockEntity, partialTick, Models.partial(ModdedPartialModels.SHAFT_BIT));
+    public GeneratorClutchVisual(VisualizationContext context, GeneratorClutchBlockEntity blockEntity, float partialTick) {
+        super(context, blockEntity, partialTick, Direction.SOUTH, Models.partial(ModdedPartialModels.SHAFT_BIT));
         assembly = instancerProvider()
-                .instancer(InstanceTypes.TRANSFORMED, Models.partial(ModdedPartialModels.CLUTCH_SHAFT))
-                .createInstance()
-                .rotateToFace(blockState.getValue(FACING).getOpposite());
+                .instancer(InstanceTypes.TRANSFORMED, Models.partial(ModdedPartialModels.CLUTCH_SHAFT, blockState.getValue(FACING).getOpposite()))
+                .createInstance();
         transformAssembly();
     }
 
@@ -50,6 +50,7 @@ public class GeneratorClutchInstance extends SingleAxisRotatingVisual<GeneratorC
                 .center()
                 .rotate(rotorAngle, dir)
                 .uncenter();
+        assembly.setChanged();
     }
 
     @Override

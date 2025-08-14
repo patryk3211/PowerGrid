@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.fabric;
 import io.github.fabricators_of_create.porting_lib.event.client.ClientWorldEvents;
 import io.github.fabricators_of_create.porting_lib.event.client.ParticleManagerRegistrationCallback;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -31,6 +32,7 @@ import org.patryk3211.powergrid.collections.fabric.ModdedKeysImpl;
 import org.patryk3211.powergrid.collections.fabric.ModdedParticlesImpl;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.portablebattery.fabric.BatteryArmorLayerImpl;
+import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPlugin {
     @Override
@@ -44,6 +46,7 @@ public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPl
 
         PowerGridClient.ELECTRO_ZAPPER_RENDER_HANDLER.registerListeners();
         ParticleManagerRegistrationCallback.EVENT.register(ModdedParticlesImpl::registerFactories);
+        ClientEntityEvents.ENTITY_LOAD.register((entity, level) -> EntityDataS2CPacket.clientEntityAdded(entity));
 
         // Register platform events
         ClientWorldEvents.UNLOAD.register(ClientElectricNetwork::unloadWorld);

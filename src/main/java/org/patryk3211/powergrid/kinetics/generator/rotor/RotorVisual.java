@@ -21,8 +21,10 @@ import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.model.Models;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import dev.engine_room.flywheel.lib.visual.AbstractBlockEntityVisual;
 import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
+import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
@@ -36,16 +38,24 @@ import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.ge
 public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntityVisual<T> implements SimpleDynamicVisual {
     protected TransformedInstance assembly;
 
-    public RotorVisual(VisualizationContext ctx, T blockEntity, float partialTick) {
-        this(ctx, blockEntity, partialTick, Models.block(blockEntity.getBlockState()));
+    public static <T extends RotorBlockEntity> SimpleBlockEntityVisualizer.Factory<T> of(PartialModel model) {
+        return (ctx, be, partialTick) -> {
+            var state = be.getBlockState();
+            Direction facing = null;
+            if(state.hasProperty(AXIS))
+                facing = Direction.get(Direction.AxisDirection.POSITIVE, state.getValue(AXIS));
+            else if(state.hasProperty(HORIZONTAL_AXIS))
+                facing = Direction.get(Direction.AxisDirection.POSITIVE, state.getValue(HORIZONTAL_AXIS));
+            var model1 = facing == null ? Models.partial(model) : Models.partial(model, facing);
+            return new RotorVisual<>(ctx, be, partialTick, model1);
+        };
     }
 
     public RotorVisual(VisualizationContext ctx, T blockEntity, float partialTick, Model model) {
         super(ctx, blockEntity, partialTick);
         assembly = instancerProvider()
                 .instancer(InstanceTypes.TRANSFORMED, model)
-                .createInstance()
-                .rotateToFace(Direction.fromAxisAndDirection(getRotationAxis(), Direction.AxisDirection.POSITIVE));
+                .createInstance();
 
         transformAssembly();
     }
@@ -88,9 +98,6 @@ public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntity
                 .center()
                 .rotate(rotorAngle, dir)
                 .uncenter();
+        assembly.setChanged();
     }
-
-//    protected Instancer<ModelData> getModel(BlockState state) {
-//        return getAssemblyMaterial().getModel(state);
-//    }
 }
