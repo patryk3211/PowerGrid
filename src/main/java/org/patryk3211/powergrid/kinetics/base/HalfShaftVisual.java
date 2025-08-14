@@ -34,6 +34,6 @@ public class HalfShaftVisual<T extends KineticBlockEntity> extends SingleAxisRot
 
     public HalfShaftVisual(VisualizationContext context, T blockEntity, float partialTick) {
         // This is a hacky way to flip the model to the correct facing.
-        super(context, blockEntity, partialTick, pickDir(blockEntity.getBlockState()), Models.partial(AllPartialModels.SHAFT_HALF));
+        super(context, blockEntity, partialTick, Models.partial(AllPartialModels.SHAFT_HALF, pickDir(blockEntity.getBlockState())));
     }
 }
