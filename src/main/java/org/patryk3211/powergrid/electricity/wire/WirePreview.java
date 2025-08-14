@@ -103,7 +103,7 @@ public class WirePreview {
             if(output != null) {
                 if(DEBUG_BLOCK_TRACING) {
                     var lineBuffer = buffer.getBuffer(ModdedRenderLayers.getDebugLines());
-                    var state = output.getA();
+                    var state = output.getFirst();
                     for (var cell : state.states.values()) {
                         if (cell.backtrace == null)
                             continue;
@@ -115,7 +115,7 @@ public class WirePreview {
                         BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightTexture.FULL_BRIGHT, color, state.transform(cell.position), state.transform(cell.backtrace.position));
                     }
                 }
-                var points = output.getB();
+                var points = output.getSecond();
                 if(points != null) {
                     for(var p : points.points()) {
                         var nextPos = currentPos.add(p.vector());

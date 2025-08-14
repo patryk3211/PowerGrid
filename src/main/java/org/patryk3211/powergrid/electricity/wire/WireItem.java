@@ -173,6 +173,8 @@ public class WireItem extends Item implements IWire {
 
         var entity1 = endpoint1.getEntity(world);
         var entity2 = endpoint2.getEntity(world);
+        if(entity1 == entity2)
+            return InteractionResultHolder.fail(null);
         if(entity1.getWireItem() != entity2.getWireItem()) {
             if(player != null)
                 player.displayClientMessage(Lang.translate("message.connection_two_wire_types").style(ChatFormatting.RED).component(), true);

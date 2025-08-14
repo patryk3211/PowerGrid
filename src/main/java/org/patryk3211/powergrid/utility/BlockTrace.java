@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.utility;
 
+import net.createmod.catnip.data.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class BlockTrace {
     public static BlockHitResult raycast(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement passThrough) {
@@ -104,10 +105,35 @@ public class BlockTrace {
         var result = findPathWithState(world, start, end, terminal);
         if(result == null)
             return null;
-        return result.getB();
+        return result.getSecond();
     }
 
-    public static Tuple<TraceState, TraceResult> findPathWithState(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement terminal) {
+    private static TraceCell testDirection(Direction direction, TraceCell cell, TraceState state, PriorityQueue<TraceCell> visitQueue) {
+        var neighborPos = state.findNextPosition(cell.position, direction);
+        if(neighborPos == null)
+            return null;
+        var neighbor = state.getCell(neighborPos);
+        var distance = cell.position.distManhattan(neighborPos);
+
+        int newDistance = cell.originDistance + distance;
+        if(newDistance >= neighbor.originDistance)
+            return null;
+        if(!neighbor.isSupported) {
+            var newUnsupportedDistance = cell.unsupportedDistance + distance;
+            if(neighbor.unsupportedDistance != 0 && newUnsupportedDistance >= neighbor.unsupportedDistance)
+                return null;
+            neighbor.unsupportedDistance = newUnsupportedDistance;
+        }
+        if(neighbor.unsupportedDistance > TraceState.GRID_SIZE)
+            return null;
+
+        neighbor.originDistance = newDistance;
+        neighbor.backtrace = cell;
+        visitQueue.add(neighbor);
+        return neighbor;
+    }
+
+    public static Pair<TraceState, TraceResult> findPathWithState(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement terminal) {
         var state = new TraceState(world, start, end, terminal);
         if(state.target.equals(state.originCell.position) || !state.getCell(state.target).isSupported)
             return null;
@@ -123,42 +149,45 @@ public class BlockTrace {
             if(cell.originDistance > 10 * 16)
                 continue;
 
-            for(var direction : Direction.values()) {
-                var neighborPos = state.findNextPosition(cell.position, direction);
-                if(neighborPos == null)
-                    continue;
-                var neighbor = state.getCell(neighborPos);
-                var distance = cell.position.distManhattan(neighborPos);
+            Direction prevDirection = null;
 
-                int newDistance = cell.originDistance + distance;
-                if(newDistance >= neighbor.originDistance)
-                    continue;
-                if(!neighbor.isSupported) {
-                    var newUnsupportedDistance = cell.unsupportedDistance + distance;
-                    if(neighbor.unsupportedDistance != 0 && newUnsupportedDistance >= neighbor.unsupportedDistance)
-                        continue;
-                    neighbor.unsupportedDistance = newUnsupportedDistance;
+            if(cell.backtrace != null) {
+                var p1 = cell.backtrace.position;
+                var p2 = cell.position;
+                prevDirection = Direction.fromDelta(p2.getX() - p1.getX(), p2.getY() - p1.getY(), p2.getZ() - p1.getZ());
+
+                // Try to go the same direction first.
+                var continuedNeighbor = testDirection(prevDirection, cell, state, visitQueue);
+                if (continuedNeighbor != null) {
+                    if (continuedNeighbor.position.equals(state.target))
+                        return Pair.of(state, new TraceResult(state.traceResult(continuedNeighbor), true));
+                    int neighborScore = state.targetDistance(continuedNeighbor);
+                    if (neighborScore < bestScore) {
+                        bestScore = neighborScore;
+                        bestCell = continuedNeighbor;
+                    }
                 }
-                if(neighbor.unsupportedDistance > TraceState.GRID_SIZE)
+            }
+            for(var direction : Direction.values()) {
+                if(direction == prevDirection)
                     continue;
-
-                neighbor.originDistance = newDistance;
-                neighbor.backtrace = cell;
+                var neighbor = testDirection(direction, cell, state, visitQueue);
+                if(neighbor == null)
+                    continue;
                 if(neighbor.position.equals(state.target))
-                    return new Tuple<>(state, new TraceResult(state.traceResult(neighbor), true));
+                    return Pair.of(state, new TraceResult(state.traceResult(neighbor), true));
                 int neighborScore = state.targetDistance(neighbor);
                 if(neighborScore < bestScore) {
                     bestScore = neighborScore;
                     bestCell = neighbor;
                 }
-                visitQueue.add(neighbor);
             }
         }
 
         if(bestCell != null)
-            return new Tuple<>(state, new TraceResult(state.traceResult(bestCell), false));
+            return Pair.of(state, new TraceResult(state.traceResult(bestCell), false));
 
-        return new Tuple<>(state, null);
+        return Pair.of(state, null);
     }
 
     public record TraceResult(List<BlockWireEntity.Point> points, boolean reachedTarget) { }
