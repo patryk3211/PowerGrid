@@ -35,7 +35,7 @@ public class ModdedFluidsImpl {
                             ResourceLocation.tryBuild("minecraft", "block/water_flowing"),
                             AcidFluidType::new)
 //                    .renderType(() -> RenderLayer::getTranslucent)
-                    .tag(FluidTags.WATER)
+//                    .tag(FluidTags.WATER)
 //                    .fluidAttributes(() -> new FluidVariantAttributeHandler() { })
 //                    .onRegisterAfter(RegistryKeys.FLUID, flowing -> EnvExecutor.runInEnv(Env.CLIENT, () -> () -> registerSimpleFluidRenderer(flowing, 0xFFFFEE80)))
                     .register();

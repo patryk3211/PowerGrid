@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MagnetizingCategory extends CreateRecipeCategory<MagnetizingRecipe> {
+    private final AnimatedMagnet magnet = new AnimatedMagnet();
+
     public MagnetizingCategory(Info<MagnetizingRecipe> info) {
         super(info);
     }
@@ -64,7 +66,6 @@ public class MagnetizingCategory extends CreateRecipeCategory<MagnetizingRecipe>
                     .entry(EntryStack.of(VanillaEntryTypes.ITEM, results.get(outputIndex).getStack()).tooltip(tooltip)));
             widgets.add(WidgetUtil.textured(getRenderedSlot(display.getRecipe(), outputIndex), origin.x + 131 + 19 * outputIndex, origin.y + 50));
         }
-        var magnet = new AnimatedMagnet();
         magnet.setPos(new Point(origin.getX() + (getDisplayWidth(display) / 2 - 17), origin.getY() + 22));
         widgets.add(magnet);
         return widgets;

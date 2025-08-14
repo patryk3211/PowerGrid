@@ -29,6 +29,9 @@ dependencies {
 
     modImplementation "dev.architectury:architectury-forge:${architectury_api_version}"
 
+    // Just Enough Items
+    modCompileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
+
     // Roughly Enough Items - Forge
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
 
@@ -42,7 +45,8 @@ dependencies {
     forgeRuntimeLibrary "org.ejml:ejml-ddense:0.44.0"
 
     modLocalRuntime("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}")
-    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
+    modLocalRuntime("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+//    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
 }
 
 loom {

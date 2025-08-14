@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.clutch;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.InstanceTypes;
@@ -33,7 +32,9 @@ public class GeneratorClutchVisual extends SingleAxisRotatingVisual<GeneratorClu
     protected TransformedInstance assembly;
 
     public GeneratorClutchVisual(VisualizationContext context, GeneratorClutchBlockEntity blockEntity, float partialTick) {
-        super(context, blockEntity, partialTick, Direction.SOUTH, Models.partial(ModdedPartialModels.SHAFT_BIT));
+        super(context, blockEntity, partialTick,
+                Direction.get(blockEntity.getBlockState().getValue(GeneratorClutchBlock.FACING).getAxisDirection(), Direction.Axis.Z),
+                        Models.partial(ModdedPartialModels.SHAFT_BIT));
         assembly = instancerProvider()
                 .instancer(InstanceTypes.TRANSFORMED, Models.partial(ModdedPartialModels.CLUTCH_SHAFT, blockState.getValue(FACING).getOpposite()))
                 .createInstance();

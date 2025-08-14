@@ -27,6 +27,9 @@ dependencies {
 
     modApi "dev.architectury:architectury-fabric:${project.architectury_api_version}"
 
+    // Just Enough Items
+    modCompileOnly "mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}"
+
     // Roughly Enough Items - Fabric
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
 
@@ -35,7 +38,8 @@ dependencies {
 
     // Development QOL
     modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
-    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+    modLocalRuntime "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}"
+//    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 
     shadowCommon(project(path: rootProject.path, configuration: "transformProductionFabric")) { transitive false }
 }
