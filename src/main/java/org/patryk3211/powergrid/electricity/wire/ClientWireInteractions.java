@@ -15,15 +15,21 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.simibubi.create.AllParticleTypes;
+import net.createmod.catnip.math.VecHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
@@ -34,6 +40,52 @@ public class ClientWireInteractions {
     private static BlockWireEntity currentEntity = null;
     private static int firstSegmentIndex;
     private static int firstSegmentPoint;
+
+    private static final RandomSource r = RandomSource.create();
+
+    public static void clientTick() {
+        var mc = Minecraft.getInstance();
+        var target = mc.hitResult;
+        if(target.getType() != HitResult.Type.ENTITY)
+            return;
+        var entityHit = (EntityHitResult) target;
+        if(currentEntity != entityHit.getEntity())
+            return;
+
+        var segment = getSegment(currentEntity, target.getLocation());
+        if(segment != null) {
+            int index1, index2, point1, point2;
+            if(segment.getA() < firstSegmentIndex) {
+                index1 = segment.getA();
+                point1 = segment.getB();
+                index2 = firstSegmentIndex;
+                point2 = firstSegmentPoint;
+            } else {
+                index1 = firstSegmentIndex;
+                index2 = segment.getA();
+                if(index1 == index2 && segment.getB() < firstSegmentPoint) {
+                    point1 = segment.getB();
+                    point2 = firstSegmentPoint;
+                } else {
+                    point1 = firstSegmentPoint;
+                    point2 = segment.getB();
+                }
+            }
+            for(int i = index1; i <= index2; ++i) {
+                var wireSegment = currentEntity.segments.get(i);
+                Vec3 start = wireSegment.start, end = wireSegment.start.add(wireSegment.vector());
+                if(i == index1) {
+                    start = wireSegment.start.relative(wireSegment.direction, point1 / 16f);
+                }
+                if(i == index2) {
+                    end = wireSegment.start.relative(wireSegment.direction, point2 / 16f);
+                }
+                var pos = VecHelper.lerp(r.nextFloat(), start, end).offsetRandom(r, 0.5f / 16f);
+                mc.level.addAlwaysVisibleParticle(new DustParticleOptions(new Vector3f(0.5f, 1, 0.5f), 0.25f),
+                        pos.x, pos.y, pos.z, 0, 0, 0);
+            }
+        }
+    }
 
     private static Tuple<Integer, Integer> getSegment(BlockWireEntity entity, Vec3 hitPos) {
         var localPos = hitPos.subtract(entity.position());
@@ -64,6 +116,11 @@ public class ClientWireInteractions {
         var target = mc.hitResult;
         if(target.getType() != HitResult.Type.ENTITY)
             return InteractionResult.FAIL;
+        if(mc.player.isShiftKeyDown()) {
+            // Reset cutting sequence
+            currentEntity = null;
+            return InteractionResult.SUCCESS;
+        }
 
         if(currentEntity != entity) {
             // First cut.

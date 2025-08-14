@@ -30,6 +30,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -46,8 +47,6 @@ import org.patryk3211.powergrid.utility.PlacementOverlay;
 public class WirePreview {
     private static final boolean DEBUG_BLOCK_TRACING = false;
     public static final Object outlineSlot = new Object();
-
-    public static int wireItemCount;
 
     @Nullable
     public static ItemStack getUsedWireStack(Player player) {
@@ -78,6 +77,20 @@ public class WirePreview {
             return;
 
         var currentPos = endpoint.getExactPosition(world);
+        Direction continueDir = null;
+        if(endpoint instanceof BlockWireEntityEndpoint bwe) {
+            var entity = bwe.getEntity(world);
+            if(entity != null) {
+                var segments = entity.segments;
+                if (bwe.getEnd()) {
+                    var last = segments.get(segments.size() - 1);
+                    continueDir = last.direction;
+                } else {
+                    var first = segments.get(0);
+                    continueDir = first.direction.getOpposite();
+                }
+            }
+        }
 
         var hitPoint = target.getLocation();
         ITerminalPlacement hitTerminal = null;
@@ -99,7 +112,7 @@ public class WirePreview {
         boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
         if(isBlockWire || hitTerminal == null) {
             currentPos = BlockTrace.alignPosition(currentPos);
-            var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal);
+            var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
             if(output != null) {
                 if(DEBUG_BLOCK_TRACING) {
                     var lineBuffer = buffer.getBuffer(ModdedRenderLayers.getDebugLines());
@@ -108,9 +121,9 @@ public class WirePreview {
                         if (cell.backtrace == null)
                             continue;
                         int color = 0xFFFF0000;
-                        if(!cell.isSupported)
+                        if(!cell.isSupported())
                             color |= 0xFF00;
-                        if(!cell.backtrace.isSupported)
+                        if(!cell.backtrace.isSupported())
                             color |= 0xFF;
                         BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightTexture.FULL_BRIGHT, color, state.transform(cell.position), state.transform(cell.backtrace.position));
                     }

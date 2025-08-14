@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
+import org.patryk3211.powergrid.electricity.wire.ClientWireInteractions;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
@@ -60,6 +61,7 @@ public class PowerGridClient {
 		CustomValueSettingsScreen.clientTick();
 		WindingPreview.tick();
 		TransformerWindingScreen.clientTick();
+		ClientWireInteractions.clientTick();
 	}
 
 	public static void registerOverlays() {

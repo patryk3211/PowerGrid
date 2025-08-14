@@ -17,10 +17,12 @@ package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.network.SimplePacket;
 
+import java.util.ArrayList;
 import java.util.function.Supplier;
 
 public class BlockWireCutC2SPacket implements SimplePacket {
@@ -40,10 +42,17 @@ public class BlockWireCutC2SPacket implements SimplePacket {
 
     public BlockWireCutC2SPacket(BlockWireEntity entity, int index1, int point1, int index2, int point2) {
         this.entityId = entity.getId();
-        this.index1 = index1;
-        this.point1 = point1;
-        this.index2 = index2;
-        this.point2 = point2;
+        if(index2 < index1) {
+            this.index1 = index2;
+            this.point1 = point2;
+            this.index2 = index1;
+            this.point2 = point1;
+        } else {
+            this.index1 = index1;
+            this.point1 = point1;
+            this.index2 = index2;
+            this.point2 = point2;
+        }
     }
 
     @Override
@@ -64,6 +73,40 @@ public class BlockWireCutC2SPacket implements SimplePacket {
                 PowerGrid.LOGGER.error("Received block wire cut packet with invalid entity");
                 return;
             }
+            int wireCount = wire.getWireCount();
+            int gridLength = 0;
+            var secondSegments = new ArrayList<BlockWireEntity.Point>();
+            Vec3 secondStart = null;
+            for(int i = index2; i < wire.segments.size(); ++i) {
+                var segment = wire.segments.get(i);
+                if(i == index2) {
+                    secondStart = segment.start.relative(segment.direction, point2 / 16f);
+                    var len = segment.gridLength - point2;
+                    if(len > 0) {
+                        secondSegments.add(new BlockWireEntity.Point(segment.direction, gridLength));
+                        gridLength += len;
+                    }
+                } else {
+                    secondSegments.add(new BlockWireEntity.Point(segment.direction, segment.gridLength));
+                    gridLength += segment.gridLength;
+                }
+            }
+            int wire2Count = (int) Math.ceil(gridLength / 16f);
+            wireCount -= wire2Count;
+            gridLength = 0;
+            while(wire.segments.size() > index1 + 1) {
+                // Remove all segments above index1
+                wire.segments.remove(wire.segments.size() - 1);
+            }
+            var last = wire.segments.remove(wire.segments.size() - 1);
+            wire.segments.add(new BlockWireEntity.Point(last.direction, Math.min(last.gridLength, point1)));
+            for(var segment : wire.segments) {
+                gridLength += segment.gridLength;
+            }
+            int wire1Count = (int) Math.ceil(gridLength / 16f);
+            wireCount -= wire1Count;
+
+            wire.sendExtraData();
         });
     }
 }

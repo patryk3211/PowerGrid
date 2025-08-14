@@ -30,7 +30,6 @@ import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class BlockTrace {
     public static BlockHitResult raycast(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement passThrough) {
@@ -101,24 +100,24 @@ public class BlockTrace {
         );
     }
 
-    public static TraceResult findPath(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement terminal) {
-        var result = findPathWithState(world, start, end, terminal);
+    public static TraceResult findPath(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement terminal, @Nullable Direction continueDirection) {
+        var result = findPathWithState(world, start, end, terminal, continueDirection);
         if(result == null)
             return null;
         return result.getSecond();
     }
 
-    private static TraceCell testDirection(Direction direction, TraceCell cell, TraceState state, PriorityQueue<TraceCell> visitQueue) {
-        var neighborPos = state.findNextPosition(cell.position, direction);
+    private static TraceCell testDirection(@NotNull Direction direction, TraceCell cell, TraceState state, PriorityQueue<TraceCell> visitQueue, int scoreAdjust) {
+        var neighborPos = state.findNextPosition(cell, direction);
         if(neighborPos == null)
             return null;
         var neighbor = state.getCell(neighborPos);
         var distance = cell.position.distManhattan(neighborPos);
 
-        int newDistance = cell.originDistance + distance;
+        int newDistance = cell.originDistance + Math.max(distance + (neighbor.isSupported() ? scoreAdjust : 0), 1);
         if(newDistance >= neighbor.originDistance)
             return null;
-        if(!neighbor.isSupported) {
+        if(!neighbor.isSupported()) {
             var newUnsupportedDistance = cell.unsupportedDistance + distance;
             if(neighbor.unsupportedDistance != 0 && newUnsupportedDistance >= neighbor.unsupportedDistance)
                 return null;
@@ -133,9 +132,9 @@ public class BlockTrace {
         return neighbor;
     }
 
-    public static Pair<TraceState, TraceResult> findPathWithState(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement terminal) {
+    public static Pair<TraceState, TraceResult> findPathWithState(Level world, Vec3 start, Vec3 end, @Nullable ITerminalPlacement terminal, @Nullable Direction continueDirection) {
         var state = new TraceState(world, start, end, terminal);
-        if(state.target.equals(state.originCell.position) || !state.getCell(state.target).isSupported)
+        if(state.target.equals(state.originCell.position) || !state.getCell(state.target).isSupported())
             return null;
 
         PriorityQueue<TraceCell> visitQueue = new PriorityQueue<>(Comparator.comparingInt(state::score));
@@ -148,19 +147,19 @@ public class BlockTrace {
             var cell = visitQueue.poll();
             if(cell.originDistance > 10 * 16)
                 continue;
+            if(cell.position.equals(state.target))
+                return Pair.of(state, new TraceResult(state.traceResult(cell), true));
 
-            Direction prevDirection = null;
+            Direction prevDirection = cell.cellDirection();
+            if(prevDirection == null)
+                prevDirection = continueDirection;
 
-            if(cell.backtrace != null) {
-                var p1 = cell.backtrace.position;
-                var p2 = cell.position;
-                prevDirection = Direction.fromDelta(p2.getX() - p1.getX(), p2.getY() - p1.getY(), p2.getZ() - p1.getZ());
-
+            if(prevDirection != null) {
                 // Try to go the same direction first.
-                var continuedNeighbor = testDirection(prevDirection, cell, state, visitQueue);
+                var continuedNeighbor = testDirection(prevDirection, cell, state, visitQueue, -1);
                 if (continuedNeighbor != null) {
-                    if (continuedNeighbor.position.equals(state.target))
-                        return Pair.of(state, new TraceResult(state.traceResult(continuedNeighbor), true));
+//                if (continuedNeighbor.position.equals(state.target))
+//                    return Pair.of(state, new TraceResult(state.traceResult(continuedNeighbor), true));
                     int neighborScore = state.targetDistance(continuedNeighbor);
                     if (neighborScore < bestScore) {
                         bestScore = neighborScore;
@@ -168,14 +167,15 @@ public class BlockTrace {
                     }
                 }
             }
+
             for(var direction : Direction.values()) {
-                if(direction == prevDirection)
+                if(direction == prevDirection || (prevDirection != null && direction == prevDirection.getOpposite()))
                     continue;
-                var neighbor = testDirection(direction, cell, state, visitQueue);
+                var neighbor = testDirection(direction, cell, state, visitQueue, 0);
                 if(neighbor == null)
                     continue;
-                if(neighbor.position.equals(state.target))
-                    return Pair.of(state, new TraceResult(state.traceResult(neighbor), true));
+//                if(neighbor.position.equals(state.target))
+//                    return Pair.of(state, new TraceResult(state.traceResult(neighbor), true));
                 int neighborScore = state.targetDistance(neighbor);
                 if(neighborScore < bestScore) {
                     bestScore = neighborScore;
@@ -199,6 +199,7 @@ public class BlockTrace {
         public boolean isSupported;
         public int unsupportedDistance;
         public boolean isInside;
+        public Vec3 nudge = Vec3.ZERO;
 
         public TraceCell(Vec3i position, int originDistance, boolean isSupported) {
             this.position = position;
@@ -206,12 +207,26 @@ public class BlockTrace {
             this.isSupported = isSupported;
             this.unsupportedDistance = 0;
         }
+
+        public boolean isSupported() {
+            return isSupported;
+        }
+
+        @Nullable
+        public Direction cellDirection() {
+            if(backtrace == null)
+                return null;
+            var p1 = backtrace.position;
+            var p2 = position;
+            return Direction.fromDelta(p2.getX() - p1.getX(), p2.getY() - p1.getY(), p2.getZ() - p1.getZ());
+        }
     }
 
     public static class TraceState {
         // Specifies how much a single block is subdivided.
         public static final int GRID_SIZE = 16;
         public static final float UNIT_SIZE = 1.0f / GRID_SIZE;
+        public static final float HALF_UNIT = UNIT_SIZE * 0.5f;
 
         public final Map<Vec3i, TraceCell> states = new HashMap<>();
         public final Level world;
@@ -247,6 +262,11 @@ public class BlockTrace {
             );
         }
 
+        public Vec3 transform(TraceCell cell) {
+            return transform(cell.position);
+//            return base.add(cell.nudge);
+        }
+
         public boolean isSupport(Vec3i position) {
             var worldPos = transform(position);
             var blockPos = BlockPos.containing(worldPos);
@@ -267,6 +287,14 @@ public class BlockTrace {
             var cell = new TraceCell(position, length, isSupported);
             states.put(position, cell);
             return cell;
+        }
+
+        public void writeCell(Vec3i position, Vec3 nudge) {
+            if(!states.containsKey(position)) {
+                // Nudge is written for fresh cells only
+                var cell = createCell(position, Integer.MAX_VALUE);
+                cell.nudge = nudge;
+            }
         }
 
         @NotNull
@@ -307,34 +335,57 @@ public class BlockTrace {
         }
 
         @Nullable
-        public Vec3i raycastNextPosition(Vec3i currentPos, Direction dir) {
+        public Vec3i raycastNextPosition(TraceCell currentCell, Direction dir) {
             var axis = dir.getAxis();
+            var currentPos = currentCell.position;
             var axialLength = Math.abs(target.get(axis) - currentPos.get(axis));
 
-            var castStart = transform(currentPos);
-            Vec3 castEnd = castStart.relative(dir, axialLength * UNIT_SIZE);
+            BlockHitResult hit = null;
+            for(var castOffsetDir : Direction.values()) {
+                if(castOffsetDir.getAxis() == dir.getAxis())
+                    continue;
+                var castStart = transform(currentCell).relative(castOffsetDir, HALF_UNIT);
+                Vec3 castEnd = castStart.relative(dir, axialLength * UNIT_SIZE);
 
-            var hit = raycast(world, castStart, castEnd, terminal);
-            if(hit.isInside()) {
+                hit = raycast(world, castStart, castEnd, terminal);
+                if(!hit.isInside())
+                    break;
+            }
+            if(hit == null) {
+                // Something has gone wrong. Hit should have been written.
+                return null;
+            }
+            if (hit.isInside()) {
                 var axisCoordinate = currentPos.get(axis);
                 int offset = offsetToFullBlock(axisCoordinate, dir.getAxisDirection());
-                if(Math.abs(offset) > GRID_SIZE / 2)
+                if (Math.abs(offset) > GRID_SIZE / 2)
                     return null;
                 // Try to move outside the block.
                 return currentPos.relative(axis, offset);
             }
             var cellPos = transform(hit.getLocation());
-            return switch(hit.getType()) {
+            var retPos = switch(hit.getType()) {
                 case MISS -> cellPos;
                 case ENTITY -> null;
                 case BLOCK -> cellPos.relative(hit.getDirection());
             };
+            if(retPos != null) {
+                var side = hit.getDirection();
+                if(side.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
+                    // This is to prevent later raycasts from being stuck
+                    // on the boundary and landing inside the supporting block.
+//                    retPos = retPos.relative(hit.getDirection());
+                    writeCell(cellPos, Vec3.ZERO.with(side.getAxis(), -UNIT_SIZE * 0.5f));
+                }
+            }
+            return retPos;
         }
 
         @Nullable
-        public Vec3i findNextPosition(Vec3i currentPos, Direction dir) {
+        public Vec3i findNextPosition(TraceCell currentCell, Direction dir) {
             var axis = dir.getAxis();
-            Vec3i castPos = raycastNextPosition(currentPos, dir);
+            var currentPos = currentCell.position;
+            Vec3i castPos = raycastNextPosition(currentCell, dir);
             if(castPos == null || currentPos.equals(castPos))
                 return null;
 

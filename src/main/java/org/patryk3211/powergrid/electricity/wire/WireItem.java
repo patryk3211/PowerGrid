@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.wire;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -97,12 +98,24 @@ public class WireItem extends Item implements IWire {
         var lastPoint = endpoint1.getExactPosition(world);
         var targetPoint = endpoint2.getExactPosition(world);
 
+        Direction continueDir = null;
+        if(endpoint1 instanceof BlockWireEntityEndpoint bwe) {
+            var segments = bwe.getEntity(world).segments;
+            if(bwe.getEnd()) {
+                var last = segments.get(segments.size() - 1);
+                continueDir = last.direction;
+            } else {
+                var first = segments.get(0);
+                continueDir = first.direction.getOpposite();
+            }
+        }
+
         ITerminalPlacement terminal = null;
         if(endpoint2 instanceof BlockWireEndpoint wireEndpoint) {
             terminal = wireEndpoint.getTerminalPlacement(world);
         }
 
-        var result = BlockTrace.findPath(world, lastPoint, targetPoint, terminal);
+        var result = BlockTrace.findPath(world, lastPoint, targetPoint, terminal, continueDir);
         if(result != null && result.reachedTarget()) {
             float addedLength = 0;
             for(var point : result.points())
@@ -186,7 +199,17 @@ public class WireItem extends Item implements IWire {
             return InteractionResultHolder.fail(null);
         }
 
-        var result = BlockTrace.findPath(world, lastPoint, targetPoint, null);
+        Direction continueDir;
+        var currentSegments = endpoint1.getEntity(world).segments;
+        if(endpoint1.getEnd()) {
+            var last = currentSegments.get(currentSegments.size() - 1);
+            continueDir = last.direction;
+        } else {
+            var first = currentSegments.get(0);
+            continueDir = first.direction.getOpposite();
+        }
+
+        var result = BlockTrace.findPath(world, lastPoint, targetPoint, null, continueDir);
         if(result == null || !result.reachedTarget())
             return InteractionResultHolder.fail(null);
 
