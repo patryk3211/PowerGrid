@@ -80,8 +80,15 @@ public class ComponentFootprint {
         var ms = ctx.pose();
         if(renderedItem != null) {
             ms.pushPose();
-            var scale = Math.min(width, height) / 16f * GRID_TO_GRID_SCALE;
-            if(width > height) {
+            final int maxSize = 2;
+            var scale = Math.min(Math.min(width, height), maxSize) / 16f * GRID_TO_GRID_SCALE;
+            if(width > maxSize && height > maxSize) {
+                ms.translate(
+                        (width - maxSize) * 0.5f,
+                        (height - maxSize) * 0.5f,
+                        0
+                );
+            } else if(width > height) {
                 float offset = (width - height) * 0.5f;
                 ms.translate(offset, 0, 0);
             } else if(height > width) {
