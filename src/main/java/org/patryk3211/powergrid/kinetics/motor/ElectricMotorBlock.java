@@ -121,10 +121,6 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
         return ModdedBlockEntities.ELECTRIC_MOTOR.get();
     }
 
-    public static float resistance() {
-        return ModdedConfigs.resistance().motorResistance.getF();
-    }
-
     public static float rpmPerVolt() {
         return ModdedConfigs.server().kinetics.motorRPMPerVolt.getF();
     }

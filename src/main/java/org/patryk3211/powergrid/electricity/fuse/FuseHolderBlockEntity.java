@@ -59,7 +59,7 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        fuseWire = builder.connectSwitch(0.2f, builder.terminalNode(0), builder.terminalNode(1), state == FuseState.CLOSED);
+        fuseWire = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), state == FuseState.CLOSED);
     }
 
     @Environment(EnvType.CLIENT)

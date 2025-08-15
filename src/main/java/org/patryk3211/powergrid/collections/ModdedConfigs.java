@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.config.CResistance;
 import org.patryk3211.powergrid.config.CServer;
 import org.patryk3211.powergrid.config.CStress;
+import org.patryk3211.powergrid.config.ResistanceValues;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -76,6 +77,8 @@ public class ModdedConfigs {
         CStress stress = server().kinetics.stressValues;
         BlockStressValues.IMPACTS.registerProvider(stress::getImpact);
         BlockStressValues.CAPACITIES.registerProvider(stress::getCapacity);
+
+        ResistanceValues.register(resistance());
     }
 
     public static void onLoad(ModConfig modConfig) {

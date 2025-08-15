@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public abstract class ElectricBlock extends Block implements IElectric {
@@ -83,5 +84,13 @@ public abstract class ElectricBlock extends Block implements IElectric {
         if(behaviour != null) {
             behaviour.refreshConnectionEntities();
         }
+    }
+
+    public float resistance() {
+        return ResistanceValues.get(this);
+    }
+
+    public float resistance(String suffix) {
+        return ResistanceValues.get(this, suffix);
     }
 }

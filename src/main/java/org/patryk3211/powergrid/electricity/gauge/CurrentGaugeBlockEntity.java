@@ -55,7 +55,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        float resistance = ((CurrentGaugeBlock) getBlockState().getBlock()).getResistance();
+        float resistance = resistance();
         var node1 = builder.addExternalNode();
         var node2 = builder.addExternalNode();
         wire = builder.connect(resistance, node1, node2);

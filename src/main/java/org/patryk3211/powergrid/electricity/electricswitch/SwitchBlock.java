@@ -41,7 +41,6 @@ import java.util.List;
 public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity>, IHaveElectricProperties {
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 
-    protected float explosionResistance = 0.01f;
     protected float maxVoltage = 200f;
     protected boolean isButton = false;
 
@@ -96,16 +95,12 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
         return ModdedBlockEntities.SWITCH.get();
     }
 
-    public float getResistance() {
-        return explosionResistance;
-    }
-
     public float getMaxVoltage() {
         return maxVoltage;
     }
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Resistance.series(getResistance(), player, tooltip);
+        Resistance.series(resistance(), player, tooltip);
     }
 }

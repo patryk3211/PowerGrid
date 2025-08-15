@@ -110,7 +110,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
             throw new IllegalArgumentException("Blocks with SwitchBlockEntity must inherit from SwitchBlock");
         maxVoltage = block.getMaxVoltage();
         switchState = !getBlockState().getValue(SwitchBlock.OPEN);
-        wire = builder.connectSwitch(block.getResistance(), node1, node2, switchState);
+        wire = builder.connectSwitch(resistance(), node1, node2, switchState);
         if(overvoltResistance != null) {
             wire.setResistance(overvoltResistance);
             wire.setState(true);

@@ -53,9 +53,7 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
             PowerGrid.LOGGER.warn("Heating coil should always have a thermal behaviour");
             return;
         }
-        float voltage = wire.potentialDifference();
-        float power = voltage * voltage / HeaterBlock.resistance();
-        applyLostPower(power);
+        applyLostPower(wire.power());
 
         var temperature = thermalBehaviour.getTemperature();
         if(temperature < 200f) {
@@ -88,7 +86,7 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     public void buildCircuit(CircuitBuilder builder) {
         var node1 = builder.addExternalNode();
         var node2 = builder.addExternalNode();
-        wire = builder.connect(HeaterBlock.resistance(), node1, node2);
+        wire = builder.connect(resistance(), node1, node2);
     }
 
     protected ChatFormatting temperatureColor(float value) {

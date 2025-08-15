@@ -141,9 +141,9 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(6);
-        coil = builder.connect(ContactorBlock.coilResistance(), builder.terminalNode(0), builder.terminalNode(1));
+        coil = builder.connect(resistance("coil"), builder.terminalNode(0), builder.terminalNode(1));
 
-        switch1 = builder.connectSwitch(ContactorBlock.switchResistance(), builder.terminalNode(2), builder.terminalNode(3), state);
-        switch2 = builder.connectSwitch(ContactorBlock.switchResistance(), builder.terminalNode(4), builder.terminalNode(5), state);
+        switch1 = builder.connectSwitch(resistance("switch"), builder.terminalNode(2), builder.terminalNode(3), state);
+        switch2 = builder.connectSwitch(resistance("switch"), builder.terminalNode(4), builder.terminalNode(5), state);
     }
 }

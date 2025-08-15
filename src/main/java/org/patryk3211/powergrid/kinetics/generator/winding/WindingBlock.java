@@ -413,8 +413,4 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
         return ModdedItems.COPPER_COIL.asStack();
     }
-
-    public static float resistance() {
-        return 0.1f;
-    }
 }

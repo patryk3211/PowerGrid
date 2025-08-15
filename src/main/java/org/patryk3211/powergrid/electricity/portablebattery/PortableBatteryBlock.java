@@ -139,10 +139,6 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
         });
     }
 
-    public static float resistance() {
-        return ModdedConfigs.server().electricity.portableBatteryResistance.getF();
-    }
-
     @Override
     public boolean hasAnalogOutputSignal(BlockState state) {
         return true;

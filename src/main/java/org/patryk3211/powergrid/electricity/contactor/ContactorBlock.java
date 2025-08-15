@@ -82,18 +82,10 @@ public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<C
         return ModdedBlockEntities.CONTACTOR.get();
     }
 
-    public static float coilResistance() {
-        return 12f;
-    }
-
-    public static float switchResistance() {
-        return 0.05f;
-    }
-
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Resistance.coil(coilResistance(), player, tooltip);
-        Resistance.switchResistance(switchResistance(), player, tooltip);
+        Resistance.coil(resistance("coil"), player, tooltip);
+        Resistance.switchResistance(resistance("switch"), player, tooltip);
     }
 
     @Override

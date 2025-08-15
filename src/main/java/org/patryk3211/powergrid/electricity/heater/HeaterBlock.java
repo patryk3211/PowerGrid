@@ -33,7 +33,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -152,9 +151,5 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
-    }
-
-    public static float resistance() {
-        return ModdedConfigs.resistance().heaterResistance.getF();
     }
 }

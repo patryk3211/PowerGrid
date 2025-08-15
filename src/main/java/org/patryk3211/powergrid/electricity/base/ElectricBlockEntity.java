@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.config.ResistanceValues;
 
 import java.util.List;
 
@@ -31,6 +32,14 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
 
     public ElectricBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    public float resistance() {
+        return ResistanceValues.get(getBlockState().getBlock());
+    }
+
+    public float resistance(String suffix) {
+        return ResistanceValues.get(getBlockState().getBlock(), suffix);
     }
 
     @Override

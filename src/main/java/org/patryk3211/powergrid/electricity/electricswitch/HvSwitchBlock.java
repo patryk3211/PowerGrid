@@ -42,6 +42,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -214,10 +215,6 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
         return true;
     }
 
-    public static float resistance() {
-        return 0.1f;
-    }
-
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         return InteractionResult.FAIL;
@@ -248,6 +245,6 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Resistance.series(resistance(), player, tooltip);
+        Resistance.series(ResistanceValues.get(this), player, tooltip);
     }
 }

@@ -47,7 +47,7 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         var I = ModdedConfigs.server().electricity.basinHeaterCurrent.get();
-        var power = I * I * BasinHeaterBlock.resistance();
+        var power = I * I * resistance("idle");
         float factor = (float) (power / (600 - 22));
         return ThermalBehaviour.always(this, 2.0f, factor, 1400);
     }
@@ -67,12 +67,12 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
             return;
         }
         applyLostPower(coil.power());
-        coil.setResistance(mixerRunning() ? BasinHeaterBlock.resistanceWorking() : BasinHeaterBlock.resistance());
+        coil.setResistance(mixerRunning() ? resistance("mixing") : resistance("idle"));
         var T = thermalBehaviour.getTemperature();
         var dissipation = 0.005625f * T - 1.625f;
         if(mixerRunning()) {
             var I = ModdedConfigs.server().electricity.basinHeaterCurrent.get() * 2;
-            var power = I * I * (BasinHeaterBlock.resistance() - BasinHeaterBlock.resistanceWorking());
+            var power = I * I * (resistance("idle") - resistance("mixing"));
             dissipation += (float) (power / (1000 - 22));
         }
         thermalBehaviour.setDissipationFactor(dissipation);
@@ -88,6 +88,6 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        coil = builder.connect(BasinHeaterBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1));
+        coil = builder.connect(resistance("idle"), builder.terminalNode(0), builder.terminalNode(1));
     }
 }

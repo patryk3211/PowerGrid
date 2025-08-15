@@ -23,13 +23,16 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     public static final float MAX_SPEED = 32.0f;
@@ -46,6 +49,10 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
 
     public ServoBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    public float resistance(String suffix) {
+        return ResistanceValues.get(getBlockState().getBlock(), suffix);
     }
 
     @Override
@@ -90,9 +97,9 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         }
 
         if(generatedSpeed != 0) {
-            coil.setResistance(ServoBlock.resistanceOn());
+            coil.setResistance(resistance("on"));
         } else {
-            coil.setResistance(ServoBlock.resistanceIdle());
+            coil.setResistance(resistance("idle"));
         }
 
         currentAngle += generatedSpeed / 60.0f * 0.05f * 360f;
@@ -114,7 +121,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(3);
-        coil = builder.connect(ServoBlock.resistanceIdle(), builder.terminalNode(0), builder.terminalNode(1));
+        coil = builder.connect(resistance("idle"), builder.terminalNode(0), builder.terminalNode(1));
         control = builder.connect(1000f, builder.terminalNode(2), builder.terminalNode(1));
     }
 

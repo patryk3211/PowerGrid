@@ -68,6 +68,6 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        wire = builder.connect(AlarmBellBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1));
+        wire = builder.connect(resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 }

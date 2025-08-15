@@ -32,7 +32,6 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigInt electroZapperFePerShot = i(100, 1, "electroZapperFePerShot", Comments.electroZapperFePerShot);
 
-    public final ConfigFloat portableBatteryResistance = f(25, 0.1f, "portableBatteryResistance", Comments.portableBatteryResistance);
     public final ConfigInt portableBatteryBaseCapacity = i(10000, 1, "portableBatteryBaseCapacity", Comments.portableBatteryBaseCapacity);
     public final ConfigInt portableBatteryEnchantCapacity = i(10000, 1, "portableBatteryEnchantCapacity", Comments.portableBatteryEnchantCapacity);
 

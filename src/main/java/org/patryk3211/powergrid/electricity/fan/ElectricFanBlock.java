@@ -137,10 +137,6 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
         return ModdedBlockEntities.ELECTRIC_FAN.get();
     }
 
-    public static float resistance() {
-        return 20f;
-    }
-
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);

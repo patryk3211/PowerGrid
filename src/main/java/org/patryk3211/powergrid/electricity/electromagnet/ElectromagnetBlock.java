@@ -96,10 +96,6 @@ public class ElectromagnetBlock extends ElectricBlock implements IBE<Electromagn
         return ModdedBlockEntities.ELECTROMAGNET.get();
     }
 
-    public static float resistance() {
-        return 15f;
-    }
-
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);

@@ -24,6 +24,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -71,5 +72,13 @@ public abstract class ElectricKineticBlock extends KineticBlock implements IElec
         if(result == InteractionResult.SUCCESS && !context.getLevel().isClientSide)
             ElectricBlock.refreshConnectionEntities(context.getLevel(), context.getClickedPos());
         return result;
+    }
+
+    public float resistance() {
+        return ResistanceValues.get(this);
+    }
+
+    public float resistance(String suffix) {
+        return ResistanceValues.get(this, suffix);
     }
 }

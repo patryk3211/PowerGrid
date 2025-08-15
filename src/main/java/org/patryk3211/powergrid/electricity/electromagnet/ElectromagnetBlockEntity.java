@@ -56,16 +56,16 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         super.tick();
         applyLostPower(wire.power());
         if(magnetizingBehaviour.running) {
-            wire.setResistance(ElectromagnetBlock.resistance() * 0.5f);
+            wire.setResistance(resistance() * 0.5f);
         } else {
-            wire.setResistance(ElectromagnetBlock.resistance());
+            wire.setResistance(resistance());
         }
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        wire = builder.connect(ElectromagnetBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1));
+        wire = builder.connect(resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 
     @Override

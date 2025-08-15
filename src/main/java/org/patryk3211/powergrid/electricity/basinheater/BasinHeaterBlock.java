@@ -80,17 +80,8 @@ public class BasinHeaterBlock extends ElectricBlock implements IBE<BasinHeaterBl
         return ModdedBlockEntities.BASIN_HEATER.get();
     }
 
-    public static float resistance() {
-        return 10f;
-    }
-
-    public static float resistanceWorking() {
-        // Slightly lower resistance when mixer is running.
-        return 9.0f;
-    }
-
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Resistance.series(resistance(), player, tooltip);
+        Resistance.series(resistance("idle"), player, tooltip);
     }
 }

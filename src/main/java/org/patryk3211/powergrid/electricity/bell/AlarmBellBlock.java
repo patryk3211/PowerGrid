@@ -50,10 +50,6 @@ public class AlarmBellBlock extends HorizontalElectricBlock implements IBE<Alarm
         setTerminalCollection(horizontalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE));
     }
 
-    public static float resistance() {
-        return 10f;
-    }
-
     @Override
     public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
         var facing = state.getValue(HORIZONTAL_FACING);

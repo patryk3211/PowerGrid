@@ -41,8 +41,4 @@ public class InductionRotorBlock extends AbstractRotorBlock implements IBE<Induc
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.ENTITYBLOCK_ANIMATED;
     }
-
-    public static float resistance() {
-        return 5f;
-    }
 }

@@ -75,7 +75,7 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        wire = builder.connectSwitch(PortableBatteryBlock.resistance(), builder.terminalNode(0), builder.terminalNode(1), charge < maxCharge);
+        wire = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), charge < maxCharge);
     }
 
     private void playFilledEffect() {

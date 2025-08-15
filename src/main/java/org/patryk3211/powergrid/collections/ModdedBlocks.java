@@ -37,6 +37,7 @@ import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
+import org.patryk3211.powergrid.config.CResistance;
 import org.patryk3211.powergrid.config.CStress;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
@@ -142,6 +143,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/heating_coil"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(10))
             .defaultLoot()
             .simpleItem()
             .register();
@@ -151,6 +153,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
+            .transform(CResistance.setResistances("idle", 10, "mixing", 9))
             .simpleItem()
             .register();
 
@@ -182,7 +185,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(GaugeBlock.setMaxValue(5))
             .transform(GaugeBlock.setMaterial(GaugeBlock.Material.ANDESITE))
-            .transform(CurrentGaugeBlock.setResistance(0.25f))
+            .transform(CResistance.setResistance(0.25f))
             .transform(axeOrPickaxe())
             .defaultLoot()
             .item()
@@ -194,7 +197,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(GaugeBlock.setMaxValue(25))
             .transform(GaugeBlock.setMaterial(GaugeBlock.Material.BRASS))
-            .transform(CurrentGaugeBlock.setResistance(0.05f))
+            .transform(CResistance.setResistance(0.05f))
             .transform(axeOrPickaxe())
             .defaultLoot()
             .item()
@@ -219,6 +222,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(5))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/generator/induction_rotor"))
@@ -261,6 +265,7 @@ public class ModdedBlocks {
             .blockstate(surfaceSwitch("block/switches/lv_switch"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
+            .transform(CResistance.setResistance(0.15))
             .lang("LV Switch")
             .item()
                 .model(itemWithParent("block/switches/lv_switch_off_v"))
@@ -271,6 +276,7 @@ public class ModdedBlocks {
             .blockstate(surfaceSwitch("block/switches/lv_button"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
+            .transform(CResistance.setResistance(0.15))
             .lang("LV Button")
             .item()
                 .model(itemWithParent("block/switches/lv_button_off_v"))
@@ -282,6 +288,7 @@ public class ModdedBlocks {
             .lang("MV Switch")
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
+            .transform(CResistance.setResistance(0.05))
             .item()
                 .model(itemWithParent("block/switches/mv_switch_off_v"))
                 .build()
@@ -292,6 +299,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(2))
+            .transform(CResistance.setResistance(0.1))
             .loot((tables, block) ->
                     tables.add(block, b -> LootTable.lootTable()
                             .withPool(LootPool.lootPool()
@@ -319,6 +327,7 @@ public class ModdedBlocks {
             .blockstate(horizontalAxisBlock("block/contactor"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .transform(CResistance.setResistances("coil", 12, "switch", 0.05))
             .simpleItem()
             .register();
 
@@ -398,6 +407,7 @@ public class ModdedBlocks {
                     }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(CStress.setCapacity(64))
+            .transform(CResistance.setResistance(2))
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()
@@ -412,6 +422,7 @@ public class ModdedBlocks {
             }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(CStress.setCapacity(32))
+            .transform(CResistance.setResistances("on", 2, "idle", 20))
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()
@@ -423,6 +434,7 @@ public class ModdedBlocks {
             .blockstate(downFacing("block/electromagnet"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(15))
             .defaultLoot()
             .item(AssemblyOperatorBlockItem::new)
             .build()
@@ -432,6 +444,7 @@ public class ModdedBlocks {
             .blockstate(upFacing("block/electric_fan/block"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
+            .transform(CResistance.setResistance(20))
             .addLayer(() -> RenderType::cutoutMipped)
             .defaultLoot()
             .item()
@@ -443,6 +456,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/portable_battery/block"))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(25))
             .loot((tables, block) -> tables.add(block, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .when(ExplosionCondition.survivesExplosion())
@@ -483,6 +497,7 @@ public class ModdedBlocks {
             .blockstate(windingModel())
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(0.1))
             .addLayer(() -> RenderType::cutoutMipped)
             .loot((tables, block) -> tables.dropOther(block, ModdedItems.COPPER_COIL))
             .register();
@@ -499,6 +514,7 @@ public class ModdedBlocks {
             .blockstate(fuseHolder())
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
+            .transform(CResistance.setResistance(0.2))
             .simpleItem()
             .register();
 
@@ -506,6 +522,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("alarm_bell"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(10))
             .simpleItem()
             .register();
 

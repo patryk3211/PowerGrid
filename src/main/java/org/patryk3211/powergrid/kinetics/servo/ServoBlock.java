@@ -119,16 +119,8 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
         return ModdedBlockEntities.SERVO.get();
     }
 
-    public static float resistanceOn() {
-        return 2f;
-    }
-
-    public static float resistanceIdle() {
-        return 20f;
-    }
-
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Resistance.series(resistanceOn(), player, tooltip);
+        Resistance.series(resistance("on"), player, tooltip);
     }
 }

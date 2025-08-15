@@ -663,7 +663,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         }
         super.tick();
         float current = windingCurrent();
-        applyLostPower(current * current * WindingBlock.resistance());
+        applyLostPower(current * current * resistance());
 
         if(rotorP != null) {
             float torque = coilConstant * rotorP.getFieldStrength() * current;

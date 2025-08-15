@@ -20,6 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -53,7 +54,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         inductionRotorCount = 0;
         rotorBehaviour.forEachSegment(segment -> {
             if(segment.blockEntity instanceof InductionRotorBlockEntity rotor) {
-                resistance += rotor.getResistance();
+                resistance += ResistanceValues.get(rotor.getBlockState().getBlock());
                 ++inductionRotorCount;
             }
         });

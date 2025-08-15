@@ -33,10 +33,6 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         super(typeIn, pos, state);
     }
 
-    public float getResistance() {
-        return InductionRotorBlock.resistance();
-    }
-
     private void assemblyChanged() {
         commutators = null;
     }

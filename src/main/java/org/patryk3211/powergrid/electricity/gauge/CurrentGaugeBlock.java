@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.gauge;
 
-import com.tterrag.registrate.builders.BlockBuilder;
-import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -28,19 +26,9 @@ import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import java.util.List;
 
 public class CurrentGaugeBlock extends GaugeBlock<CurrentGaugeBlockEntity> implements IHaveElectricProperties {
-    float explosionResistance;
 
     public CurrentGaugeBlock(Properties settings) {
         super(settings);
-        explosionResistance = 1;
-    }
-
-    public static <B extends CurrentGaugeBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setResistance(float value) {
-        return b -> b.onRegister(block -> block.explosionResistance = value);
-    }
-
-    public float getResistance() {
-        return explosionResistance;
     }
 
     @Override

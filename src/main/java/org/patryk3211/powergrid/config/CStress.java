@@ -86,7 +86,7 @@ public class CStress extends ConfigBase {
 
     public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> setImpact(double value) {
         return builder -> {
-            assertFromCreate(builder);
+            assertFromPowerGrid(builder);
             ResourceLocation id = PowerGrid.asResource(builder.getName());
             DEFAULT_IMPACTS.put(id, value);
             return builder;
@@ -95,14 +95,14 @@ public class CStress extends ConfigBase {
 
     public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> setCapacity(double value) {
         return builder -> {
-            assertFromCreate(builder);
+            assertFromPowerGrid(builder);
             ResourceLocation id = PowerGrid.asResource(builder.getName());
             DEFAULT_CAPACITIES.put(id, value);
             return builder;
         };
     }
 
-    private static void assertFromCreate(BlockBuilder<?, ?> builder) {
+    private static void assertFromPowerGrid(BlockBuilder<?, ?> builder) {
         if (!builder.getOwner().getModid().equals(PowerGrid.MOD_ID)) {
             throw new IllegalStateException("Non-Power Grid blocks cannot be added to Power Grid's config.");
         }
