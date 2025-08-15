@@ -433,8 +433,7 @@ public class DataProviderUtilityImpl {
 
     public static NonNullBiConsumer<DataGenContext<Block, CircuitBoardBlock>, RegistrateBlockstateProvider> circuitBoard() {
         return (ctx, prov) ->
-                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
-                        ConfiguredModel.builder().modelFile(unchecked("circuit_board")).build());
+                prov.simpleBlock(ctx.getEntry(), unchecked("circuit_board"));
     }
 
     public static NonNullBiConsumer<DataGenContext<Block, CircuitDesignTableBlock>, RegistrateBlockstateProvider> circuitDesignTable() {
