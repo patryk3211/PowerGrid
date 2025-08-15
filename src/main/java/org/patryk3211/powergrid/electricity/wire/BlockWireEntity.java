@@ -73,6 +73,23 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         return entity;
     }
 
+    public static BlockWireEntity create(Level world, Vec3 pos, ItemStack item, List<Point> segments) {
+        if(!(item.getItem() instanceof WireItem))
+            throw new IllegalArgumentException("ItemStack must be of a WireItem");
+        var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
+        entity.setItem((WireItem) item.getItem(), item.getCount());
+
+        entity.setPosRaw(pos.x, pos.y, pos.z);
+        entity.segments.addAll(segments);
+        entity.bakeBoundingBoxes();
+
+        entity.setYRot(0);
+        entity.setXRot(0);
+        entity.setOldPosAndRot();
+        entity.reapplyPosition();
+        return entity;
+    }
+
     @Override
     protected AABB makeBoundingBox() {
         if(mainBoundingBox != null) {

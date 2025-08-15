@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import com.simibubi.create.AllParticleTypes;
 import net.createmod.catnip.math.VecHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -80,8 +79,8 @@ public class ClientWireInteractions {
                 if(i == index2) {
                     end = wireSegment.start.relative(wireSegment.direction, point2 / 16f);
                 }
-                var pos = VecHelper.lerp(r.nextFloat(), start, end).offsetRandom(r, 0.5f / 16f);
-                mc.level.addAlwaysVisibleParticle(new DustParticleOptions(new Vector3f(0.5f, 1, 0.5f), 0.25f),
+                var pos = VecHelper.lerp(r.nextFloat(), start, end).offsetRandom(r, 1 / 16f);
+                mc.level.addAlwaysVisibleParticle(new DustParticleOptions(new Vector3f(1.0f, 0.5f, 0.5f), 0.5f),
                         pos.x, pos.y, pos.z, 0, 0, 0);
             }
         }
