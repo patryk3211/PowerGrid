@@ -57,15 +57,25 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
             var normal = segment.direction.getNormal();
             var newPos = currentPos.add(normal.getX() * length, normal.getY() * length, normal.getZ() * length);
 
-            var blockPos = BlockPos.containing(
-                    newPos.x + pos.x,
-                    newPos.y + pos.y,
-                    newPos.z + pos.z
-            );
-            var blockLight = entity.level().getBrightness(LightLayer.BLOCK, blockPos);
-            var skyLight = entity.level().getBrightness(LightLayer.SKY, blockPos);
+            // TODO: Find a better way to calculate this
+            int calcLight = 0;
+            for(var dir : Direction.values()) {
+                if(dir.getAxis() == segment.direction.getAxis())
+                    continue;
+                var n = dir.getNormal();
+                var blockPos = BlockPos.containing(
+                        newPos.x + pos.x + n.getX() / 16f,
+                        newPos.y + pos.y + n.getY() / 16f,
+                        newPos.z + pos.z + n.getZ() / 16f
+                );
+                var blockLight = entity.level().getBrightness(LightLayer.BLOCK, blockPos);
+                var skyLight = entity.level().getBrightness(LightLayer.SKY, blockPos);
+                var newLight = LightTexture.pack(blockLight, skyLight);
+                if(newLight > calcLight)
+                    calcLight = newLight;
+            }
 
-            renderSegment(matrices, buffer, LightTexture.pack(blockLight, skyLight), 0xFFFFFFFF, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
+            renderSegment(matrices, buffer, calcLight, 0xFFFFFFFF, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
             currentPos = newPos;
         }
     }

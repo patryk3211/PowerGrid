@@ -96,11 +96,16 @@ public class WireItem extends Item implements IWire {
             return mergeWires(world, stack, player, (BlockWireEntityEndpoint) endpoint1, (BlockWireEntityEndpoint) endpoint2);
 
         var lastPoint = endpoint1.getExactPosition(world);
+        if(endpoint1.type() != WireEndpointType.BLOCK_WIRE)
+            lastPoint = BlockTrace.alignPosition(lastPoint);
         var targetPoint = endpoint2.getExactPosition(world);
 
         Direction continueDir = null;
         if(endpoint1 instanceof BlockWireEntityEndpoint bwe) {
-            var segments = bwe.getEntity(world).segments;
+            var entity = bwe.getEntity(world);
+            if(entity == null)
+                return InteractionResultHolder.fail(null);
+            var segments = entity.segments;
             if(bwe.getEnd()) {
                 var last = segments.get(segments.size() - 1);
                 continueDir = last.direction;

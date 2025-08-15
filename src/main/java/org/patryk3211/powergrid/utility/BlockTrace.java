@@ -367,7 +367,7 @@ public class BlockTrace {
             var retPos = switch(hit.getType()) {
                 case MISS -> cellPos;
                 case ENTITY -> null;
-                case BLOCK -> cellPos.relative(hit.getDirection());
+                case BLOCK -> cellPos;//.relative(hit.getDirection());
             };
             if(retPos != null) {
                 var side = hit.getDirection();
