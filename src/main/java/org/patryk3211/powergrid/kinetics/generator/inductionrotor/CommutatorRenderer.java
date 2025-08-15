@@ -55,7 +55,7 @@ public class CommutatorRenderer extends RotorRenderer {
                 .uncenter()
                 .translate(-brushOffset, 0, 0)
                 .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
-        brush
+        brush.light(light)
                 .center()
                 .rotateToFace(facing.getOpposite())
                 .uncenter()
