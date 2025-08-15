@@ -182,6 +182,7 @@
   "powergrid.gui.current_meter.title": "ʇuǝɹɹnɔ pǝɹnsɐǝW",
   "powergrid.gui.heater.info_header": "uoıʇɐɯɹoɟuı ןıoɔ buıʇɐǝH",
   "powergrid.gui.heater.title": "ǝɹnʇɐɹǝdɯǝʇ ןıoƆ",
+  "powergrid.gui.potentiometer.setting": "buıʇʇǝS",
   "powergrid.gui.transformer.info_header": "uoıʇɐɯɹoɟuı ɹǝɯɹoɟsuɐɹ⟘",
   "powergrid.gui.transformer.ratio": "oıʇɐɹ suɹn⟘",
   "powergrid.gui.transformer.turns": "suɹn⟘",
@@ -350,6 +351,7 @@
   "powergrid.tooltip.resistance.series": ":ǝɔuɐʇsısǝɹ sǝıɹǝS",
   "powergrid.tooltip.resistance.switch": ":ǝɔuɐʇsısǝɹ ɥɔʇıʍS",
   "powergrid.tooltip.voltage.max": ":ǝbɐʇןoʌ ɯnɯıxɐW",
+  "powergrid.tooltip.voltage.min": ":ǝbɐʇןoʌ ɯnɯıuıW",
   "powergrid.tooltip.voltage.rated": ":ǝbɐʇןoʌ pǝʇɐᴚ",
   "powergrid.tooltip.voltage.rpm": ":ʇןoΛ ɹǝd WԀᴚ",
   "powergrid.variac.tap": "dɐ⟘"

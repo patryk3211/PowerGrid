@@ -112,14 +112,15 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                     var pos = getBlockPos().getCenter();
                     var brushOffset = switch (getBlockState().getValue(HORIZONTAL_AXIS)) {
                         case Z -> new Vec3(3.5 / 16f, 0, 2 / 16f).offsetRandom(r, 1 / 16f);
-                        case X -> new Vec3(2 / 16f, 0, 3.5 / 16).offsetRandom(r, 1 / 16f);
+                        case X -> new Vec3(-2 / 16f, 0, 3.5 / 16).offsetRandom(r, 1 / 16f);
                         default -> throw new IllegalStateException();
                     };
 
                     pos = secondBrush ? pos.add(brushOffset) : pos.subtract(brushOffset);
                     int velocityDir = (angular < 0 ^ secondBrush) ? 1 : -1;
                     var velocity = switch (getBlockState().getValue(HORIZONTAL_AXIS)) {
-                        case X, Z -> new Vec3(0, 1 / 4f + Math.abs(angular) / 100f, 0).offsetRandom(r, 1 / 16f);
+                        case Z -> new Vec3(0, 1 / 4f + Math.abs(angular) / 100f, 0).offsetRandom(r, 1 / 16f);
+                        case X -> new Vec3(0, -1 / 4f - Math.abs(angular) / 100f, 0).offsetRandom(r, 1 / 16f);
                         default -> throw new IllegalStateException();
                     };
 

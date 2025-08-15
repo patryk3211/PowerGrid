@@ -33,6 +33,7 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
@@ -86,6 +87,7 @@ public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<C
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.coil(resistance("coil"), player, tooltip);
         Resistance.switchResistance(resistance("switch"), player, tooltip);
+        Voltage.rated(24, player, tooltip);
     }
 
     @Override

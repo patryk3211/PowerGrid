@@ -115,11 +115,6 @@ public class ClientWireInteractions {
         var target = mc.hitResult;
         if(target.getType() != HitResult.Type.ENTITY)
             return InteractionResult.FAIL;
-        if(mc.player.isShiftKeyDown()) {
-            // Reset cutting sequence
-            currentEntity = null;
-            return InteractionResult.SUCCESS;
-        }
 
         if(currentEntity != entity) {
             // First cut.

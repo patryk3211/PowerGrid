@@ -49,14 +49,14 @@ public class ZapProjectileRenderer extends EntityRenderer<ZapProjectileEntity> {
         stack.pushPose();
         stack.translate(0, 0.125f, 0);
 
-        stack.rotateY(-yaw);
-        stack.rotateX(-entity.getViewXRot(tickDelta));
+        stack.rotateYDegrees(-yaw);
+        stack.rotateXDegrees(-entity.getViewXRot(tickDelta));
 
         final float UNIT = 1 / 16f;
         final float HALF_UNIT = UNIT / 2f;
 
         for(int i = 0; i < 4; ++i) {
-            stack.rotateZ(90);
+            stack.rotateZDegrees(90);
 
             var positionMatrix = matrices.last().pose();
             light = LightTexture.FULL_BRIGHT;

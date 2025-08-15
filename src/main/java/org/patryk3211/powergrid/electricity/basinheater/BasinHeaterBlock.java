@@ -41,10 +41,7 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import java.util.List;
 
 public class BasinHeaterBlock extends ElectricBlock implements IBE<BasinHeaterBlockEntity>, IAcceptConnector, IHaveElectricProperties {
-    public static final VoxelShape SHAPE = Shapes.or(
-            box(0, 0, 0, 16, 9, 16),
-            box(1, 9, 1, 15, 14, 15)
-    );
+    public static final VoxelShape SHAPE = box(0, 0, 0, 16, 14, 16);
 
     public static final EnumProperty<BlazeBurnerBlock.HeatLevel> HEAT_LEVEL = BlazeBurnerBlock.HEAT_LEVEL;
 

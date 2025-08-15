@@ -18,6 +18,8 @@
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
 
+  "powergrid.gui.potentiometer.setting": "Setting",
+
   "powergrid.gui.circuit_board.damage_header": "Damaged",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
 
@@ -36,6 +38,7 @@
   "powergrid.tooltip.range.max": "Maximum range:",
 
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
+  "powergrid.tooltip.voltage.min": "Minimum voltage:",
   "powergrid.tooltip.power.rated": "Rated power:",
 
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",

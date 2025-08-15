@@ -131,7 +131,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
         var angle = 135 - 135 * 2 * (placed.get(VALUE) / 100.0f);
         buffer
                 .translate(2.5 / 16, 0, 2.5 / 16)
-                .rotateY(angle)
+                .rotateYDegrees(angle)
                 .translate(-2.5 / 16, 0, -2.5 / 16)
                 .light(light)
                 .renderInto(ms, bufferSource.getBuffer(RenderType.solid()));

@@ -96,7 +96,11 @@ public class CResistance extends ConfigBase implements ResistanceValues.Provider
         return builder -> {
             assertFromPowerGrid(builder);
             for(int i = 0; i < suffixValuePairs.length; i += 2) {
-                setResistance((String) suffixValuePairs[i], ((Number) suffixValuePairs[i + 1]).doubleValue());
+                var suffix = (String) suffixValuePairs[i];
+                var value = (Number) suffixValuePairs[i + 1];
+                var id = PowerGrid.asResource(builder.getName())
+                        .withSuffix("." + suffix);
+                DEFAULT_RESISTANCES.put(id, value.doubleValue());
             }
             return builder;
         };

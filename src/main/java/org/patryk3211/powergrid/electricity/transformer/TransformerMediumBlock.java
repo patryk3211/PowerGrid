@@ -278,4 +278,9 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     public BlockEntityType<? extends TransformerMediumBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.TRANSFORMER_MEDIUM.get();
     }
+
+    @Override
+    public boolean accepts(ItemStack wireStack) {
+        return true;
+    }
 }

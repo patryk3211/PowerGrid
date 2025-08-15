@@ -99,7 +99,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         }
     }
 
-    private void bakeBoundingBoxes() {
+    public void bakeBoundingBoxes() {
         boundingBoxes.clear();
         totalLength = 0;
 

@@ -68,27 +68,29 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
             switch1.setState(newState);
             switch2.setState(newState);
         }
-        if(state != newState && !level.isClientSide) {
-            // Play sound
-            if(newState) {
-                ModdedSoundEvents.CONTACTOR_ON.playOnServer(level, worldPosition);
-            } else {
-                ModdedSoundEvents.CONTACTOR_OFF.playOnServer(level, worldPosition);
+        if(state != newState) {
+            if(!level.isClientSide) {
+                // Play sound
+                if (newState) {
+                    ModdedSoundEvents.CONTACTOR_ON.playOnServer(level, worldPosition);
+                } else {
+                    ModdedSoundEvents.CONTACTOR_OFF.playOnServer(level, worldPosition);
+                }
             }
 
             var checkQueue = new ArrayList<BlockPos>();
             checkQueue.add(worldPosition);
             var checkedSet = new HashSet<BlockPos>();
             var axis = getBlockState().getValue(ContactorBlock.HORIZONTAL_AXIS);
-            if(axis == Direction.Axis.X) {
+            if (axis == Direction.Axis.X) {
                 axis = Direction.Axis.Z;
-            } else if(axis == Direction.Axis.Z) {
+            } else if (axis == Direction.Axis.Z) {
                 axis = Direction.Axis.X;
             }
 
-            while(!checkQueue.isEmpty()) {
+            while (!checkQueue.isEmpty()) {
                 var checkPos = checkQueue.remove(0);
-                if(!checkedSet.add(checkPos))
+                if (!checkedSet.add(checkPos))
                     continue;
                 var pos1 = checkPos.relative(axis, 1);
                 checkPos(pos1, newState, checkQueue);

@@ -182,6 +182,7 @@
   "powergrid.gui.current_meter.title": "Measured current",
   "powergrid.gui.heater.info_header": "Heating coil information",
   "powergrid.gui.heater.title": "Coil temperature",
+  "powergrid.gui.potentiometer.setting": "Setting",
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
   "powergrid.gui.transformer.turns": "Turns",
@@ -350,6 +351,7 @@
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
+  "powergrid.tooltip.voltage.min": "Minimum voltage:",
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
   "powergrid.variac.tap": "Tap"

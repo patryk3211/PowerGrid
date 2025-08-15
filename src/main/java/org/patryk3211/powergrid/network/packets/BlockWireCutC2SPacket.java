@@ -73,7 +73,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
     }
 
     private static BlockWireEntity spawnWire2(BlockWireEntity wire1, Vec3 start, int wireCount, List<BlockWireEntity.Point> segments) {
-        if(start == null)
+        if(start == null || segments.isEmpty())
             return null;
         var entity = BlockWireEntity.create(wire1.level(), start, new ItemStack(wire1.getWireItem(), wireCount), segments);
         ((ServerLevel) wire1.level()).addFreshEntityWithPassengers(entity);
@@ -155,6 +155,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
             }
 
             if(!wire.isRemoved()) {
+                wire.bakeBoundingBoxes();
                 wire.sendExtraData();
             }
         });

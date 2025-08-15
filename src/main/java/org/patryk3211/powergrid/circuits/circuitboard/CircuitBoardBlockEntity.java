@@ -83,7 +83,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         tag.put("Schematic", schematic.serializeNbt());
-        baked.write(tag);
+        if(baked != null)
+            baked.write(tag);
         super.write(tag, clientPacket);
     }
 
@@ -98,7 +99,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             schematic.deserializeNbt(tag.getCompound("Schematic"));
             bakeCircuit();
         }
-        baked.read(tag);
+        if(baked != null)
+            baked.read(tag);
     }
 
     @Override

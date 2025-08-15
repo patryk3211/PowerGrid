@@ -25,24 +25,27 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class Voltage {
-    public static void max(float value, Player player, List<Component> tooltip) {
+    private static void voltage(String key, ChatFormatting color, float value, Player player, List<Component> tooltip) {
         boolean hasGoggles = GogglesItem.isWearingGoggles(player);
 
-        Lang.translate("tooltip.voltage.max")
+        Lang.translate(key)
                 .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
                 .add(Component.nullToEmpty(" ")).add(Lang.number(value))
                 .add(Component.nullToEmpty(" ")).add(Unit.VOLTAGE.get())
-                .style(ChatFormatting.RED).addTo(tooltip);
+                .style(color).addTo(tooltip);
+    }
+
+    public static void max(float value, Player player, List<Component> tooltip) {
+        voltage("tooltip.voltage.max", ChatFormatting.RED, value, player, tooltip);
+    }
+
+    public static void min(float value, Player player, List<Component> tooltip) {
+        voltage("tooltip.voltage.min", ChatFormatting.DARK_AQUA, value, player, tooltip);
     }
 
     public static void rated(float value, Player player, List<Component> tooltip) {
-        Lang.translate("tooltip.voltage.rated")
-                .style(ChatFormatting.GRAY).addTo(tooltip);
-        Lang.builder()
-                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
-                .add(Component.nullToEmpty(" ")).add(Unit.VOLTAGE.get())
-                .style(ChatFormatting.DARK_AQUA).addTo(tooltip);
+        voltage("tooltip.voltage.rated", ChatFormatting.DARK_AQUA, value, player, tooltip);
     }
 
     public static void rpm(float value, Player player, List<Component> tooltip) {

@@ -46,7 +46,7 @@ public class SparkGapRenderer extends SafeBlockEntityRenderer<SparkGapBlockEntit
                 .light(light)
                 .center()
                 .rotateToFace(facing)
-                .rotateY(180)
+                .rotateYDegrees(180)
                 .uncenter()
                 .translate(0, 0, -offset)
                 .renderInto(ms, consumer);
