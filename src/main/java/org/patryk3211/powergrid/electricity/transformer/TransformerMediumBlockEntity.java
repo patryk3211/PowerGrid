@@ -45,19 +45,21 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        var b = new ThermalBehaviour(this, 8.0f, 2.5f);
-        if(isMain()) {
-            b.overheatCallback(() -> {
-                // Destroy all 4 blocks of the transformer
-                var axis = getBlockState().getValue(TransformerMediumBlock.HORIZONTAL_AXIS);
-                assert level != null;
-                level.destroyBlock(worldPosition, false);
-                level.destroyBlock(worldPosition.relative(axis, 1), false);
-                level.destroyBlock(worldPosition.above(), false);
-                level.destroyBlock(worldPosition.relative(axis, 1).above(), false);
-            });
-        } else {
-            b.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);
+        var b = ThermalBehaviour.simple(this, 8.0f, 2.5f);
+        if(b != null) {
+            if (isMain()) {
+                b.overheatCallback(() -> {
+                    // Destroy all 4 blocks of the transformer
+                    var axis = getBlockState().getValue(TransformerMediumBlock.HORIZONTAL_AXIS);
+                    assert level != null;
+                    level.destroyBlock(worldPosition, false);
+                    level.destroyBlock(worldPosition.relative(axis, 1), false);
+                    level.destroyBlock(worldPosition.above(), false);
+                    level.destroyBlock(worldPosition.relative(axis, 1).above(), false);
+                });
+            } else {
+                b.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);
+            }
         }
         return b;
     }
@@ -94,7 +96,9 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
             super.addBehaviours(behaviours);
         } else {
             thermalBehaviour = specifyThermalBehaviour();
-            behaviours.add(thermalBehaviour);
+            if(thermalBehaviour != null) {
+                behaviours.add(thermalBehaviour);
+            }
         }
     }
 

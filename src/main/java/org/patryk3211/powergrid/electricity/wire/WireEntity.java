@@ -37,6 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
@@ -90,6 +91,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     private void temperatureUpdate() {
+        if(!ModdedConfigs.server().electricity.wireOverheating.get()) {
+            // No temperature updates when overheating is disabled.
+            return;
+        }
+
         var temperature = entityData.get(TEMPERATURE);
         if(level().isClientSide)
             return;

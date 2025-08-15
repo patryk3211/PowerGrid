@@ -26,6 +26,7 @@ import java.util.List;
 
 public abstract class ElectricBlockEntity extends SmartBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
+    @Nullable
     protected ThermalBehaviour thermalBehaviour;
 
     public ElectricBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {

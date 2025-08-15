@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -48,6 +49,10 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     @Override
     public void tick() {
         super.tick();
+        if(thermalBehaviour == null) {
+            PowerGrid.LOGGER.warn("Heating coil should always have a thermal behaviour");
+            return;
+        }
         float voltage = wire.potentialDifference();
         float power = voltage * voltage / HeaterBlock.resistance();
         applyLostPower(power);
@@ -64,7 +69,7 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 1.5f, 0.1f, 600f);
+        return ThermalBehaviour.always(this, 1.5f, 0.1f, 600f);
     }
 
     private void updateState(State state) {

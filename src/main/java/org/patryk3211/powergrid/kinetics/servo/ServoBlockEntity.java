@@ -22,6 +22,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -34,6 +35,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     public static final float MAX_SPEED = 32.0f;
 
     protected ElectricBehaviour electricBehaviour;
+    @Nullable
     protected ThermalBehaviour thermalBehaviour;
     private float generatedSpeed;
     private float currentAngle;
@@ -53,7 +55,8 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         behaviours.add(electricBehaviour);
 
         thermalBehaviour = ThermalBehaviour.forMaxPower(this, 3.5f, 200);
-        behaviours.add(thermalBehaviour);
+        if(thermalBehaviour != null)
+            behaviours.add(thermalBehaviour);
     }
 
     @Override

@@ -28,8 +28,10 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 0.2f, 0.01f, 100f)
-                .behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);
+        var b = ThermalBehaviour.simple(this, 0.2f, 0.01f, 100f);
+        if(b != null)
+            b.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);
+        return b;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
             return;
         }
         super.tick();
-        if(thermalBehaviour.isOverheated() && !level.isClientSide) {
+        if(thermalBehaviour != null && thermalBehaviour.isOverheated() && !level.isClientSide) {
             level.setBlockAndUpdate(worldPosition, getBlockState().setValue(PotatoBatteryBlock.BAKED, true));
             notifyUpdate();
         }

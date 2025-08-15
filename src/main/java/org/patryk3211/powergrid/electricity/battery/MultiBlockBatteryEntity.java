@@ -79,11 +79,12 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         }
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = specifyThermalBehaviour()
-                .behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES)
-                .overheatCallback(this::overheated);
-        if(thermalBehaviour != null)
+        thermalBehaviour = specifyThermalBehaviour();
+        if(thermalBehaviour != null) {
+            thermalBehaviour.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES)
+                    .overheatCallback(this::overheated);
             behaviours.add(thermalBehaviour);
+        }
     }
 
     protected void updateConnectivity() {
@@ -109,7 +110,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 attachBehaviourLate(electricBehaviour);
             }
             updateThermals();
-            thermalBehaviour.track(null);
+            if(thermalBehaviour != null)
+                thermalBehaviour.track(null);
         } else {
             if(!(electricBehaviour instanceof ProxyElectricBehaviour)) {
                 var old = electricBehaviour;
@@ -121,7 +123,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 coupling = null;
             }
             var controller = getControllerBE();
-            if(controller != null)
+            if(controller != null && thermalBehaviour != null)
                 thermalBehaviour.track(getControllerBE().thermalBehaviour);
         }
         if(wires != null) {
@@ -149,7 +151,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
         if(!isController()) {
             var controller = getControllerBE();
-            if (controller != null)
+            if (controller != null && thermalBehaviour != null)
                 thermalBehaviour.track(getControllerBE().thermalBehaviour);
         }
 
@@ -319,8 +321,10 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     }
 
     private void updateThermals() {
-        thermalBehaviour.setDissipationFactor(spec.getDissipationFactor() * getSize());
-        thermalBehaviour.setThermalMass(spec.getThermalMass() * getSize());
+        if(thermalBehaviour != null) {
+            thermalBehaviour.setDissipationFactor(spec.getDissipationFactor() * getSize());
+            thermalBehaviour.setThermalMass(spec.getThermalMass() * getSize());
+        }
     }
 
     @Override

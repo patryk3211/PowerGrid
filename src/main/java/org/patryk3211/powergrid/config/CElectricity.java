@@ -19,6 +19,8 @@ import net.createmod.catnip.config.ConfigBase;
 
 public class CElectricity extends ConfigBase {
     public final ConfigBool explosiveDeconstruction = b(true, "explosiveDeconstruction", Comments.explosiveDeconstruction);
+    public final ConfigBool overheating = b(true, "overheating", Comments.overheating);
+    public final ConfigBool wireOverheating = b(true, "wireOverheating", Comments.wireOverheating);
 
     public final ConfigFloat heaterFanProcessingSpeedMultiplier = f(0.75f, 0, "heaterFanProcessingSpeedMultiplier", Comments.heaterFanProcessingSpeedMultiplier);
 
@@ -43,6 +45,8 @@ public class CElectricity extends ConfigBase {
 
     private static class Comments {
         public static final String explosiveDeconstruction = "Controls the behaviour of overheated devices. If false, instead of exploding, they break without dropping items.";
+        public static final String overheating = "Controls the overheat mechanic. Devices which are overheated, break.";
+        public static final String wireOverheating = "Controls the overheat mechanic for wires. Wires will burn if they overheat.";
 
         public static final String heaterFanProcessingSpeedMultiplier = "Multiplier of the base fan bulk processing time applied to items processed with the heating coil (lower value means faster processing)";
 

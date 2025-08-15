@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -31,6 +32,7 @@ import java.util.List;
 
 public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
+    @Nullable
     protected ThermalBehaviour thermalBehaviour;
 
     private ElectricWire coil;
@@ -47,8 +49,9 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = new ThermalBehaviour(this, 3.5f, 1.75f);
-        behaviours.add(thermalBehaviour);
+        thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, 1.75f);
+        if(thermalBehaviour != null)
+            behaviours.add(thermalBehaviour);
     }
 
     protected void applyLostPower(float power) {
@@ -123,7 +126,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     public void updateDissipation() {
         // Simulate a fan moving more air and providing more cooling
-        thermalBehaviour.setDissipationFactor(Math.max(Math.abs(getSpeed()) * 0.2f, 0.3f));
+        if(thermalBehaviour != null)
+            thermalBehaviour.setDissipationFactor(Math.max(Math.abs(getSpeed()) * 0.2f, 0.3f));
     }
 
     @Override

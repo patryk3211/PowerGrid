@@ -31,6 +31,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
@@ -60,7 +61,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     private Runnable overheatCallback;
     private boolean firstTick = true;
 
-    public ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor, float overheatTemperature) {
+    protected ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor, float overheatTemperature) {
         super(be);
         this.thermalMass = thermalMass;
         this.dissipationFactor = dissipationFactor;
@@ -68,24 +69,48 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
 
         this.temperature = BASE_TEMPERATURE;
         this.coolingFactorMultiplier = 1.0f;
+
+        if(!shouldOverheat()) {
+            // Overheating disabled but some devices still need the temperature in their behaviour.
+            behaviourFlags = 0;
+        }
     }
 
-    public ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor) {
-        this(be, thermalMass, dissipationFactor, 175.0f);
+    @Nullable
+    public static ThermalBehaviour simple(SmartBlockEntity be, float thermalMass, float dissipationFactor, float overheatTemperature) {
+        if(!shouldOverheat())
+            return null;
+        return new ThermalBehaviour(be, thermalMass, dissipationFactor, overheatTemperature);
     }
 
+    @NotNull
+    public static ThermalBehaviour always(SmartBlockEntity be, float thermalMass, float dissipationFactor, float overheatTemperature) {
+        return new ThermalBehaviour(be, thermalMass, dissipationFactor, overheatTemperature);
+    }
+
+    @Nullable
+    public static ThermalBehaviour simple(SmartBlockEntity be, float thermalMass, float dissipationFactor) {
+        return simple(be, thermalMass, dissipationFactor, 175.0f);
+    }
+
+    @Nullable
     public static ThermalBehaviour forMaxPower(SmartBlockEntity be, float thermalMass, float power) {
         return forMaxPower(be, thermalMass, power, 175.0f);
     }
 
+    @Nullable
     public static ThermalBehaviour forMaxPower(SmartBlockEntity be, float thermalMass, float power, float overheatTemperature) {
         var targetTemperature = overheatTemperature - 25;
         var dissipation = power / (targetTemperature - BASE_TEMPERATURE);
-        return new ThermalBehaviour(be, thermalMass, dissipation, overheatTemperature);
+        return simple(be, thermalMass, dissipation, overheatTemperature);
     }
 
     public static boolean shouldExplode() {
         return ModdedConfigs.server().electricity.explosiveDeconstruction.get();
+    }
+
+    public static boolean shouldOverheat() {
+        return ModdedConfigs.server().electricity.overheating.get();
     }
 
     public ThermalBehaviour behaviourFlags(int flags) {

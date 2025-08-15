@@ -42,7 +42,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 0.7f, 0.2f);
+        return ThermalBehaviour.simple(this, 0.7f, 0.2f);
     }
 
     @Override

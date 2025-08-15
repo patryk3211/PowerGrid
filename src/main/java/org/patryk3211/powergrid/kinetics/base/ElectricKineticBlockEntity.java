@@ -29,6 +29,7 @@ import java.util.List;
 
 public abstract class ElectricKineticBlockEntity extends KineticBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
+    @Nullable
     protected ThermalBehaviour thermalBehaviour;
 
     public ElectricKineticBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {

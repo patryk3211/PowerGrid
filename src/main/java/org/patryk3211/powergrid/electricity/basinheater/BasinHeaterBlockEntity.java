@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -48,7 +49,7 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
         var I = ModdedConfigs.server().electricity.basinHeaterCurrent.get();
         var power = I * I * BasinHeaterBlock.resistance();
         float factor = (float) (power / (600 - 22));
-        return new ThermalBehaviour(this, 2.0f, factor, 1400);
+        return ThermalBehaviour.always(this, 2.0f, factor, 1400);
     }
 
     public boolean mixerRunning() {
@@ -61,6 +62,10 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
     @Override
     public void tick() {
         super.tick();
+        if(thermalBehaviour == null) {
+            PowerGrid.LOGGER.warn("Basin heater should always have a thermal behaviour");
+            return;
+        }
         applyLostPower(coil.power());
         coil.setResistance(mixerRunning() ? BasinHeaterBlock.resistanceWorking() : BasinHeaterBlock.resistance());
         var T = thermalBehaviour.getTemperature();

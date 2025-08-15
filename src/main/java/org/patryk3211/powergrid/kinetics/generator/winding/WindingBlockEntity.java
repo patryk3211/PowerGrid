@@ -42,8 +42,6 @@ import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousi
 import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.UP;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.*;
 
-;
-
 public class WindingBlockEntity extends ElectricBlockEntity {
     /**
      * This is the main block entity of multiple windings connected by housings.
@@ -155,7 +153,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 2.0f, 0.1f);
+        return ThermalBehaviour.simple(this, 2.0f, 0.1f);
     }
 
     private void checkParallelPosition(BlockPos pos, boolean positive, boolean thisIsOwner) {

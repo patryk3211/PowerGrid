@@ -67,7 +67,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 2.0f, 0.5f);
+        return ThermalBehaviour.simple(this, 2.0f, 0.5f);
     }
 
     @Override

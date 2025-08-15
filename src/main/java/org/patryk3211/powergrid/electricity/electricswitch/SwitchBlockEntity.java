@@ -39,7 +39,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return new ThermalBehaviour(this, 0.5f, 0.1f);
+        return ThermalBehaviour.simple(this, 0.5f, 0.1f);
     }
 
     @Override

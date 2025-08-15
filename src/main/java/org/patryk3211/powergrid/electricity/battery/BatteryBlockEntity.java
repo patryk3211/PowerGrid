@@ -45,7 +45,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         var spec = ((AbstractBatteryBlock<?>) getBlockState().getBlock()).getSpec();
-        return new ThermalBehaviour(this, spec.getThermalMass(), spec.getDissipationFactor());
+        return ThermalBehaviour.simple(this, spec.getThermalMass(), spec.getDissipationFactor());
     }
 
     public void updateParameters() {
