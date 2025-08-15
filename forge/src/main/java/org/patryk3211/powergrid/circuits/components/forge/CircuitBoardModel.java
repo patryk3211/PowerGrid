@@ -222,8 +222,8 @@ public class CircuitBoardModel implements BakedModel {
         float y2 = (float) area.y2() / GRID_TO_GRID_SCALE;
 
         return bakery.bakeQuad(
-                new Vector3f(x1, 2.0025f, y1),
-                new Vector3f(x2, 2.0025f, y2),
+                new Vector3f(x1, 2.05f, y1),
+                new Vector3f(x2, 2.05f, y2),
                 new BlockElementFace(
                         null, BlockElementFace.NO_TINT, "circuit_board_trace",
                         new BlockFaceUV(new float[] { x1, y1, x2, y2 }, 0)
@@ -244,8 +244,8 @@ public class CircuitBoardModel implements BakedModel {
         y1 /= GRID_TO_GRID_SCALE;
         y2 /= GRID_TO_GRID_SCALE;
         return bakery.bakeQuad(
-                new Vector3f(x1, 2.0025f, y1),
-                new Vector3f(x2, 2.0025f, y2),
+                new Vector3f(x1, 2.05f, y1),
+                new Vector3f(x2, 2.05f, y2),
                 new BlockElementFace(
                         null, BlockElementFace.NO_TINT, "circuit_board_trace",
                         new BlockFaceUV(new float[] { x1, y1, x2, y2 }, 0)
