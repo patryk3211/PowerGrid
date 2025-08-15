@@ -38,6 +38,7 @@ import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.mixin.client.BlueprintOverlayRendererAccessor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 ;
@@ -101,7 +102,7 @@ public class PlacementOverlay {
                 var color = new Color(0x4adb4a);
                 float alpha = Mth.clamp(overlayTicks, 0, 10) / 10.0f;
 
-                var state = RenderSystem.getShaderColor();
+                var state = Arrays.copyOf(RenderSystem.getShaderColor(), 4);
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
                 graphics.drawString(gui.getFont(), text, x, y, color.getRGB(), true);
                 RenderSystem.setShaderColor(state[0], state[1], state[2], state[3]);
