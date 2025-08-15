@@ -116,8 +116,11 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     @Override
     public ITerminalPlacement terminal(BlockState state, int index) {
-        // TODO: Apply block state
-        return baked == null ? null : baked.terminals.get(index);
+//        return baked == null ? null : baked.terminals.get(index);
+        if(baked == null)
+            return null;
+        var terminal = baked.terminals.get(index);
+        return terminal.rotateAroundY((int) (state.getValue(CircuitBoardBlock.HORIZONTAL_FACING).toYRot() - 180));
     }
 
     public CircuitSchematic getSchematic() {

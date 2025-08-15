@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.circuits.components.forge;
 
 import com.mojang.math.Transformation;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -40,6 +39,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.circuits.components.IRenderedComponent;
@@ -52,7 +52,6 @@ import org.patryk3211.powergrid.circuits.schematic.Point;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
 @OnlyIn(Dist.CLIENT)
@@ -60,8 +59,8 @@ public class CircuitBoardModel implements BakedModel {
     public static final ModelResourceLocation MODEL_ID = new ModelResourceLocation(PowerGrid.asResource("circuit_board"), "");
     public static final ResourceLocation BASE_MODEL = PowerGrid.asResource("block/circuit_board");
 
-    private static final ResourceLocation COPPER_SPRITE_ID = PowerGrid.asResource("block/circuit_board_trace");
-    private static final ResourceLocation PAD_SPRITE_ID = PowerGrid.asResource("block/circuit_board_pad");
+    public static final Material COPPER_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_trace"));
+    public static final Material PAD_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_pad"));
 
     public static final ModelProperty<List<Area>> FRONT_LAYER = new ModelProperty<>();
     public static final ModelProperty<List<Point>> PADS = new ModelProperty<>();
@@ -74,14 +73,11 @@ public class CircuitBoardModel implements BakedModel {
     private TextureAtlasSprite copperSprite;
     private final BakedModel baseModel;
 
-    public CircuitBoardModel(BakedModel plateModel) {
-        baseModel = plateModel;
-        particleSprite = baseModel.getParticleIcon();
-    }
-
-    public void fetchSprites(TextureAtlas atlas) {
-        copperSprite = atlas.getSprite(COPPER_SPRITE_ID);
-        padSprite = atlas.getSprite(PAD_SPRITE_ID);
+    public CircuitBoardModel(BakedModel plateModel, TextureAtlasSprite padSprite, TextureAtlasSprite copperSprite) {
+        this.baseModel = plateModel;
+        this.padSprite = padSprite;
+        this.copperSprite = copperSprite;
+        this.particleSprite = baseModel.getParticleIcon();
     }
 
     @Override
@@ -123,16 +119,6 @@ public class CircuitBoardModel implements BakedModel {
     public ItemOverrides getOverrides() {
         return ItemOverrides.EMPTY;
     }
-
-//    @Override
-//    public Collection<ResourceLocation> getDependencies() {
-//        return List.of(BASE_MODEL);
-//    }
-
-//    @Override
-//    public void resolveParents(Function<ResourceLocation, UnbakedModel> modelLoader) {
-//
-//    }
 
     @Override
     public @NotNull ModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ModelData modelData) {
@@ -205,6 +191,27 @@ public class CircuitBoardModel implements BakedModel {
             }
         }
 
+        if(state != null) {
+            var facing = state.getValue(CircuitBoardBlock.HORIZONTAL_FACING);
+            var transformer = QuadTransformers.applying(new Transformation(
+                    switch(facing) {
+                        case NORTH -> new Vector3f();
+                        case SOUTH -> new Vector3f(1, 0, 1);
+                        case EAST -> new Vector3f(1, 0, 0);
+                        case WEST -> new Vector3f(0, 0, 1);
+                        default -> throw new IllegalStateException();
+                    },
+                    null, null,
+                    new Quaternionf().rotateY(switch(facing) {
+                        case NORTH -> 0;
+                        case SOUTH -> (float) Math.PI;
+                        case EAST -> (float) Math.PI * -0.5f;
+                        case WEST -> (float) Math.PI * 0.5f;
+                        default -> throw new IllegalStateException();
+                    })
+            ));
+            return transformer.process(quads);
+        }
         return quads;
     }
 

@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
+import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -34,12 +35,14 @@ public class CircuitBoardRenderer extends SafeBlockEntityRenderer<CircuitBoardBl
         if(components.isEmpty())
             return;
 
+        var stack = TransformStack.of(ms);
         for(var placed : components) {
             var rendered = (IRenderedComponent) placed.component;
-            ms.pushPose();
-            ms.translate(placed.x / 16f, 2 / 16f, placed.y / 16f);
+            stack.pushPose();
+            stack.translate(placed.x / 16f, 2 / 16f, placed.y / 16f);
+            stack.rotateToFace(be.getBlockState().getValue(CircuitBoardBlock.HORIZONTAL_FACING));
             rendered.render(be, placed, partialTicks, ms, bufferSource, light, overlay);
-            ms.popPose();
+            stack.popPose();
         }
     }
 }

@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,23 +34,25 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.IInteractableComponent;
 import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.base.ElectricBlock;
+import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoardBlockEntity> {
+public class CircuitBoardBlock extends HorizontalElectricBlock implements IBE<CircuitBoardBlockEntity> {
     private static final VoxelShape SHAPE_PLATE = box(0, 0, 0, 16, 2, 16);
 
     public CircuitBoardBlock(Properties settings) {
@@ -65,9 +68,46 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         super.setPlacedBy(world, pos, state, placer, stack);
     }
 
+    private static VoxelShape rotate(VoxelShape shapeIn, float angle) {
+        if(angle == 0)
+            return shapeIn;
+
+        var result = new MutableObject<>(Shapes.empty());
+        var center = new Vec3(8, 8, 8);
+        shapeIn.forAllBoxes((x1, y1, z1, x2, y2, z2) -> {
+            var v1 = new Vec3(x1, y1, z1).scale(16)
+                    .subtract(center);
+            var v2 = new Vec3(x2, y2, z2).scale(16)
+                    .subtract(center);
+
+            v1 = VecHelper.rotate(v1, angle, Direction.Axis.Y)
+                    .add(center);
+            v2 = VecHelper.rotate(v2, angle, Direction.Axis.Y)
+                    .add(center);
+
+            var rotated = box(
+                    Math.min(v1.x, v2.x),
+                    Math.min(v1.y, v2.y),
+                    Math.min(v1.z, v2.z),
+                    Math.max(v1.x, v2.x),
+                    Math.max(v1.y, v2.y),
+                    Math.max(v1.z, v2.z)
+            );
+            result.setValue(Shapes.or(result.getValue(), rotated));
+        });
+        return result.getValue();
+    }
+
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         final var shape = new VoxelShape[] { SHAPE_PLATE };
+        float angle = switch(state.getValue(HORIZONTAL_FACING)) {
+            case NORTH -> 0;
+            case EAST -> -90;
+            case SOUTH -> 180;
+            case WEST -> 90;
+            default -> throw new IllegalStateException();
+        };
         withBlockEntityDo(world, pos, be -> {
             var shapeCopy = shape[0];
             for(int i = 0; i < be.terminalCount(); i++) {
@@ -76,7 +116,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
             }
             for(var placed : be.getComponents(IInteractableComponent.class)) {
                 var dynamic = (IInteractableComponent) placed.component;
-                shapeCopy = Shapes.or(dynamic.getShape(placed), shapeCopy);
+                shapeCopy = Shapes.or(rotate(dynamic.getShape(placed), angle), shapeCopy);
             }
             shape[0] = shapeCopy;
         });
@@ -121,21 +161,37 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     @Nullable
     public Orientation getOrientation(BlockState state, Direction side) {
         // TODO: When circuit facing is implemented this needs to be updated.
-        return switch(side) {
+        var orientation = switch(side) {
             case NORTH -> Orientation.UP;
             case EAST -> Orientation.RIGHT;
             case SOUTH -> Orientation.DOWN;
             case WEST -> Orientation.LEFT;
             default -> null;
         };
+        if(orientation == null)
+            return null;
+        return switch (state.getValue(HORIZONTAL_FACING)) {
+            case NORTH -> orientation;
+            case SOUTH -> orientation.getOpposite();
+            case EAST -> orientation.getCounterClockwise();
+            case WEST -> orientation.getClockwise();
+            default -> throw new IllegalStateException();
+        };
     }
 
     public Direction getDirection(BlockState state, Orientation orientation) {
-        return switch(orientation) {
+        var dir = switch(orientation) {
             case UP -> Direction.NORTH;
             case RIGHT -> Direction.EAST;
             case DOWN -> Direction.SOUTH;
             case LEFT -> Direction.WEST;
+        };
+        return switch(state.getValue(HORIZONTAL_FACING)) {
+            case NORTH -> dir;
+            case SOUTH -> dir.getOpposite();
+            case EAST -> dir.getClockWise();
+            case WEST -> dir.getCounterClockWise();
+            default -> throw new IllegalStateException();
         };
     }
 
@@ -167,6 +223,13 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         var beResult = onBlockEntityUse(world, pos, be -> {
             var hitLocalPos = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+            hitLocalPos = VecHelper.rotateCentered(hitLocalPos, switch(state.getValue(HORIZONTAL_FACING)) {
+                case NORTH -> 0;
+                case EAST -> 90;
+                case SOUTH -> 180;
+                case WEST -> -90;
+                default -> throw new IllegalStateException();
+            }, Direction.Axis.Y);
             for(var placed : be.getComponents(IInteractableComponent.class)) {
                 var dynamic = (IInteractableComponent) placed.component;
                 var outline = dynamic.getShape(placed).bounds().inflate(1 / 32f);

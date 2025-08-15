@@ -16,17 +16,15 @@
 package org.patryk3211.powergrid.forge;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.checkerframework.checker.units.qual.C;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.circuits.components.forge.CircuitBoardModel;
+import org.patryk3211.powergrid.circuits.components.forge.CircuitBoardModelLoader;
 import org.patryk3211.powergrid.collections.forge.ModdedKeysImpl;
 import org.patryk3211.powergrid.collections.forge.ModdedParticlesImpl;
 import org.patryk3211.powergrid.electricity.portablebattery.forge.BatteryArmorLayerImpl;
@@ -34,8 +32,6 @@ import org.patryk3211.powergrid.electricity.wire.forge.WirePreviewImpl;
 
 @OnlyIn(Dist.CLIENT)
 public class PowerGridClientImpl {
-    public static CircuitBoardModel CIRCUIT_BOARD_MODEL;
-
     public static void init() {
         PowerGridClient.initClient();
 
@@ -60,19 +56,9 @@ public class PowerGridClientImpl {
         event.register(CircuitBoardModel.BASE_MODEL);
     }
 
-
-
     @SubscribeEvent
-    public static void modelAlterBaked(ModelEvent.ModifyBakingResult event) {
-        CIRCUIT_BOARD_MODEL = new CircuitBoardModel(event.getModels().get(CircuitBoardModel.BASE_MODEL));
-        event.getModels().put(CircuitBoardModel.MODEL_ID, CIRCUIT_BOARD_MODEL);
-    }
-
-    @SubscribeEvent
-    public static void stitchAtlas(TextureStitchEvent.Post event) {
-        if(event.getAtlas().location().equals(InventoryMenu.BLOCK_ATLAS)) {
-            CIRCUIT_BOARD_MODEL.fetchSprites(event.getAtlas());
-        }
+    public static void modelLoaders(ModelEvent.RegisterGeometryLoaders event) {
+        event.register("circuit_board", new CircuitBoardModelLoader());
     }
 
     @SubscribeEvent
