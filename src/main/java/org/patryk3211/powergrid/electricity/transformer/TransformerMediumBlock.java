@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -29,7 +28,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -44,6 +42,7 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -167,48 +166,45 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
         var pos = context.getClickedPos();
         var player = context.getPlayer();
         if(world instanceof ServerLevel serverLevel) {
-            boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
-            if(!shouldBreak) {
+            if(PlayerUtilities.cancelBreak(world, pos, player))
                 return InteractionResult.SUCCESS;
-            } else {
-                var axis = state.getValue(HORIZONTAL_AXIS);
-                int x = 0;
-                int y = 0;
-                switch(state.getValue(PART)) {
-                    case 0:
-                        x = 1;
-                        y = 1;
-                        break;
-                    case 1:
-                        x = -1;
-                        y = 1;
-                        break;
-                    case 2:
-                        x = 1;
-                        y = -1;
-                        break;
-                    case 3:
-                        x = -1;
-                        y = -1;
-                        break;
-                }
-                if (player != null && !player.isCreative()) {
-                    Block.getDrops(state, serverLevel, pos, world.getBlockEntity(pos), player, context.getItemInHand()).forEach((itemStack) -> player.getInventory().placeItemBackInInventory(itemStack));
-                }
-                state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
-
-                BiConsumer<Integer, Integer> processOffset = (offsetX, offsetY) -> {
-                    var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
-                    world.destroyBlock(offsetPos, false);
-                };
-                processOffset.accept(0, 0);
-                processOffset.accept(x, 0);
-                processOffset.accept(0, y);
-                processOffset.accept(x, y);
-
-                IWrenchable.playRemoveSound(world, pos);
-                return InteractionResult.SUCCESS;
+            var axis = state.getValue(HORIZONTAL_AXIS);
+            int x = 0;
+            int y = 0;
+            switch(state.getValue(PART)) {
+                case 0:
+                    x = 1;
+                    y = 1;
+                    break;
+                case 1:
+                    x = -1;
+                    y = 1;
+                    break;
+                case 2:
+                    x = 1;
+                    y = -1;
+                    break;
+                case 3:
+                    x = -1;
+                    y = -1;
+                    break;
             }
+            if (player != null && !player.isCreative()) {
+                Block.getDrops(state, serverLevel, pos, world.getBlockEntity(pos), player, context.getItemInHand()).forEach((itemStack) -> player.getInventory().placeItemBackInInventory(itemStack));
+            }
+            state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
+
+            BiConsumer<Integer, Integer> processOffset = (offsetX, offsetY) -> {
+                var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
+                world.destroyBlock(offsetPos, false);
+            };
+            processOffset.accept(0, 0);
+            processOffset.accept(x, 0);
+            processOffset.accept(0, y);
+            processOffset.accept(x, y);
+
+            IWrenchable.playRemoveSound(world, pos);
+            return InteractionResult.SUCCESS;
         } else {
             return InteractionResult.SUCCESS;
         }

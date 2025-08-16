@@ -16,12 +16,15 @@
 package org.patryk3211.powergrid.utility;
 
 import com.google.common.collect.Sets;
+import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
@@ -72,5 +75,15 @@ public class PlayerUtilities {
         players1 = Set.copyOf(PlayerLookup.tracking(firstSegment.owner));
         players2 = Set.copyOf(PlayerLookup.tracking(lastSegment.owner));
         return Sets.symmetricDifference(players1, players2);
+    }
+
+    @ExpectPlatform
+    public static boolean isFake(Player player) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static boolean cancelBreak(Level world, BlockPos pos, Player player) {
+        throw new AssertionError();
     }
 }

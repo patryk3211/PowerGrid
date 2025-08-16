@@ -19,7 +19,6 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -53,6 +52,7 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -355,9 +355,9 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             }
         }
 
-        boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
-        if(!shouldBreak)
-            return InteractionResult.SUCCESS;
+//        boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
+//        if(!shouldBreak)
+//            return InteractionResult.SUCCESS;
 
         if(!(world instanceof ServerLevel serverWorld))
             return InteractionResult.SUCCESS;
@@ -386,8 +386,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         if(!(world instanceof ServerLevel serverLevel))
             return InteractionResult.SUCCESS;
 
-        boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
-        if(!shouldBreak)
+        if(PlayerUtilities.cancelBreak(world, pos, player))
             return InteractionResult.SUCCESS;
 
         walk(world, pos, (pos1, state1) -> {

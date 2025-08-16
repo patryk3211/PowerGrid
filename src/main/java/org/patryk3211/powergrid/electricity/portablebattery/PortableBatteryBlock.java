@@ -20,7 +20,6 @@ import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
-import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
@@ -50,6 +49,7 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.List;
 
@@ -101,7 +101,7 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(player == null)
             return InteractionResult.PASS;
-        if(player instanceof FakePlayer)
+        if(PlayerUtilities.isFake(player))
             return InteractionResult.PASS;
         if(player.isShiftKeyDown())
             return InteractionResult.PASS;
