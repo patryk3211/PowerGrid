@@ -1,6 +1,3 @@
-bundles:
-  - 1
-
 base_path: "."
 preserve_hierarchy: true
 
