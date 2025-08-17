@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.mixin.client;
 
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
@@ -27,16 +26,17 @@ import org.patryk3211.powergrid.utility.IComplexRaycast;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 import java.util.function.Predicate;
 
-@Mixin(GameRenderer.class)
+@Mixin(ProjectileUtil.class)
 public abstract class ComplexEntityRaycastMixin {
     @Unique
     @Nullable
-    private static Vec3 complexRaycast(Entity entity, Vec3 min, Vec3 max, double distance) {
+    private static Vec3 powerGrid$complexRaycast(Entity entity, Vec3 min, Vec3 max, double distance) {
         assert entity instanceof IComplexRaycast;
         IComplexRaycast checker = (IComplexRaycast) entity;
 
@@ -54,31 +54,28 @@ public abstract class ComplexEntityRaycastMixin {
         return null;
     }
 
-    @Redirect(
-            method="pick(F)V",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/world/entity/projectile/ProjectileUtil;getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;"
-            )
+    @Inject(
+            method= "getEntityHitResult(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;D)Lnet/minecraft/world/phys/EntityHitResult;",
+            at = @At(value = "RETURN"),
+            cancellable = true
     )
-    private EntityHitResult complexRaycast(Entity entity, Vec3 min, Vec3 max, AABB box, Predicate<Entity> predicate, double d) {
-        EntityHitResult baseResult = ProjectileUtil.getEntityHitResult(entity, min, max, box, predicate, d);
+    private static void complexRaycast(Entity shooter, Vec3 startVec, Vec3 endVec, AABB boundingBox, Predicate<Entity> filter, double distance, CallbackInfoReturnable<EntityHitResult> cir) {
+        EntityHitResult baseResult = cir.getReturnValue();
 
-        Level world = entity.level();
-        double currentHitDistance = d;
+        Level world = shooter.level();
+        double currentHitDistance = distance;
         Entity currentHitEntity = null;
         Vec3 currentHitPoint = null;
 
         if(baseResult != null) {
-            currentHitEntity = baseResult.getEntity();
             currentHitPoint = baseResult.getLocation();
-            currentHitDistance = min.distanceToSqr(currentHitPoint);
+            currentHitDistance = startVec.distanceToSqr(currentHitPoint);
         }
 
-        for(Entity potentialHitEntity : world.getEntities(entity, box, testEntity -> !testEntity.isSpectator() && testEntity instanceof IComplexRaycast)) {
-            Vec3 hit = complexRaycast(potentialHitEntity, min, max, currentHitDistance);
+        for(Entity potentialHitEntity : world.getEntities(shooter, boundingBox, testEntity -> !testEntity.isSpectator() && testEntity instanceof IComplexRaycast)) {
+            Vec3 hit = powerGrid$complexRaycast(potentialHitEntity, startVec, endVec, currentHitDistance);
             if(hit != null) {
-                double hitSquaredDistance = min.distanceToSqr(hit);
+                double hitSquaredDistance = startVec.distanceToSqr(hit);
                 if(hitSquaredDistance < currentHitDistance) {
                     currentHitEntity = potentialHitEntity;
                     currentHitPoint = hit;
@@ -87,10 +84,9 @@ public abstract class ComplexEntityRaycastMixin {
             }
         }
 
-        if(currentHitEntity == null) {
-            return null;
-        } else {
-            return new EntityHitResult(currentHitEntity, currentHitPoint);
+        if(currentHitEntity != null) {
+            // We found a closer entity
+            cir.setReturnValue(new EntityHitResult(currentHitEntity, currentHitPoint));
         }
     }
 }
