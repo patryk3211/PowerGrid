@@ -34,6 +34,8 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 
 import java.util.*;
 import java.util.function.Function;
@@ -72,10 +74,11 @@ public class BakedCircuit {
             var external = placed.component.emitExternalTerminals();
             int nodeOffset = external ? result.externalNodes.size() : result.internalNodes.size();
             for(var i = 0; i < nodeIndexSet.size(); ++i) {
-                var node = new FloatingNode();
                 if(external) {
+                    var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, nodeOffset + i));
                     result.externalNodes.add(node);
                 } else {
+                    var node = new FloatingNode();
                     result.internalNodes.add(node);
                 }
             }

@@ -46,7 +46,7 @@ public class UnresolvedTransmissionLine {
 
     public UnresolvedTransmissionLine(TransmissionLine line) {
         if(!(line.getNode1() instanceof OwnedFloatingNode node1) || !(line.getNode2() instanceof OwnedFloatingNode node2))
-            throw new IllegalArgumentException("Transmission line saved to nbt must consist of OwnedFloatingNodes");
+            throw new IllegalArgumentException("Transmission line saved to nbt must consist of OwnedFloatingNodes (currently, " + line.getNode1() + " and " + line.getNode2() + ")");
         endpoint1 = node1.endpoint;
         endpoint2 = node2.endpoint;
         resistance = line.getResistance();

@@ -264,9 +264,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
         if(!(node1 instanceof OwnedFloatingNode))
-            PowerGrid.LOGGER.warn("Creating a transmission line for non-owned floating node (node1 - this might cause issues)");
+            PowerGrid.LOGGER.warn("Creating a transmission line for non-owned floating node (node1 {} - this might cause issues)", node1);
         if(!(node2 instanceof OwnedFloatingNode))
-            PowerGrid.LOGGER.warn("Creating a transmission line for non-owned floating node (node2 - this might cause issues)");
+            PowerGrid.LOGGER.warn("Creating a transmission line for non-owned floating node (node2 {} - this might cause issues)", node2);
 
         int nConns1 = connectionCount(endpoint1);
         int nConns2 = connectionCount(endpoint2);
