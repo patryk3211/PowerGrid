@@ -13,3 +13,6 @@ flip that one unmarked switch...
 Create's in-game 'Ponder' documentation will walk you through the basic physics behind the mod and help you get started
 with concepts like Ohm's law.
 </p>
+
+## Contributing
+Want to help translate this mod to another language? You can do so with [CrowdIn](https://crowdin.com/project/create-power-grid)
