@@ -52,6 +52,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     public VariacBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         arm = LerpedFloat.linear().chase(0, 0, LerpedFloat.Chaser.LINEAR);
+        arm.setValue(1);
     }
 
     @Override

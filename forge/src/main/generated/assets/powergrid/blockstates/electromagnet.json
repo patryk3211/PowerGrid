@@ -10,11 +10,11 @@
     },
     "facing=north": {
       "model": "powergrid:block/electromagnet",
-      "x": 90
+      "x": -90
     },
     "facing=south": {
       "model": "powergrid:block/electromagnet",
-      "x": -90
+      "x": 90
     },
     "facing=up": {
       "model": "powergrid:block/electromagnet",

@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
@@ -409,6 +410,7 @@ public class ModdedBlocks {
             .transform(CStress.setCapacity(64))
             .transform(CResistance.setResistance(2))
             .transform(pickaxeOnly())
+            .onRegister(BlockStressValues.setGeneratorSpeed(256, true))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/electric_motor/item"))
@@ -424,6 +426,7 @@ public class ModdedBlocks {
             .transform(CStress.setCapacity(32))
             .transform(CResistance.setResistances("on", 2, "idle", 20))
             .transform(pickaxeOnly())
+            .onRegister(BlockStressValues.setGeneratorSpeed(32, true))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/servo/item"))

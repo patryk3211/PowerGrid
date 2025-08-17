@@ -34,14 +34,6 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
         super(type, pos, state);
     }
 
-    public float resistance() {
-        return ResistanceValues.get(getBlockState().getBlock());
-    }
-
-    public float resistance(String suffix) {
-        return ResistanceValues.get(getBlockState().getBlock(), suffix);
-    }
-
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         electricBehaviour = new ElectricBehaviour(this);

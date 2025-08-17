@@ -16,7 +16,9 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.BakedCircuit;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -31,6 +33,18 @@ import java.util.List;
 
 public interface IElectricEntity {
     void buildCircuit(CircuitBuilder builder);
+
+    default float resistance() {
+        if(this instanceof BlockEntity be)
+            return ResistanceValues.get(be.getBlockState().getBlock());
+        throw new IllegalCallerException("Cannot get resistance if not extending a block entity");
+    }
+
+    default float resistance(String suffix) {
+        if(this instanceof BlockEntity be)
+            return ResistanceValues.get(be.getBlockState().getBlock(), suffix);
+        throw new IllegalCallerException("Cannot get resistance if not extending a block entity");
+    }
 
     class CircuitBuilder {
         private ElectricalNetwork network;

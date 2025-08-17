@@ -24,7 +24,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse",
-        "x": 90
+        "x": -90
       },
       "when": {
         "facing": "north",
@@ -34,7 +34,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_blown",
-        "x": 90
+        "x": -90
       },
       "when": {
         "facing": "north",
@@ -106,7 +106,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse",
-        "x": -90
+        "x": 90
       },
       "when": {
         "facing": "south",
@@ -116,7 +116,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_blown",
-        "x": -90
+        "x": 90
       },
       "when": {
         "facing": "south",

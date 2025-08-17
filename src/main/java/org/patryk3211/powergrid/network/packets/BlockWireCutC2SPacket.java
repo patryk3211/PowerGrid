@@ -92,7 +92,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
                 return;
             }
             int wireCount = wire.getWireCount();
-            int gridLength = 0;
+            int gridLength2 = 0;
             var secondSegments = new ArrayList<BlockWireEntity.Point>();
             Vec3 secondStart = null;
             for(int i = index2; i < wire.segments.size(); ++i) {
@@ -102,48 +102,58 @@ public class BlockWireCutC2SPacket implements SimplePacket {
                     var len = segment.gridLength - point2;
                     if(len > 0) {
                         secondSegments.add(new BlockWireEntity.Point(segment.direction, len));
-                        gridLength += len;
+                        gridLength2 += len;
                     }
                 } else {
                     secondSegments.add(new BlockWireEntity.Point(segment.direction, segment.gridLength));
-                    gridLength += segment.gridLength;
+                    gridLength2 += segment.gridLength;
                 }
             }
-            int wire2Count = (int) Math.ceil(gridLength / 16f);
-            gridLength = 0;
+            int wire2Count = (int) Math.ceil(gridLength2 / 16f);
             while(wire.segments.size() > index1 + 1) {
                 // Remove all segments above index1
                 wire.segments.remove(wire.segments.size() - 1);
             }
             var last = wire.segments.remove(wire.segments.size() - 1);
             wire.segments.add(new BlockWireEntity.Point(last.direction, Math.min(last.gridLength, point1)));
+            int gridLength1 = 0;
             for(var segment : wire.segments) {
-                gridLength += segment.gridLength;
+                gridLength1 += segment.gridLength;
             }
-            int wire1Count = (int) Math.ceil(gridLength / 16f);
+            int wire1Count = (int) Math.ceil(gridLength1 / 16f);
             if(wire1Count >= wire2Count) {
                 // Wire1 is the largest
-                wire.setItem(wire.getWireItem(), Math.min(wireCount, wire1Count));
-                wireCount -= wire1Count;
-                if(wireCount <= 0) {
-                    // Wire2 is discarded - not enough items
-                    wire.setEndpoint2(null);
+                if(gridLength1 < 3) {
+                    // Too short, discard, no wire2 since it's even shorter.
+                    wire.discard();
                 } else {
-                    // Spawn wire2
-                    var wire2 = spawnWire2(wire, secondStart, Math.min(wire2Count, wireCount), secondSegments);
-                    wireCount -= wire2Count;
+                    wire.setItem(wire.getWireItem(), Math.min(wireCount, wire1Count));
+                    wireCount -= wire1Count;
+                    if (wireCount <= 0) {
+                        // Wire2 is discarded - not enough items
+                        wire.setEndpoint2(null);
+                    } else {
+                        // Spawn wire2
+                        var wire2 = spawnWire2(wire, secondStart, Math.min(wire2Count, wireCount), secondSegments);
+                        wireCount -= wire2Count;
+                    }
                 }
             } else {
                 // Wire2 is the largest
-                var wire2 = spawnWire2(wire, secondStart, Math.min(wireCount, wire2Count), secondSegments);
-                wireCount -= wire2Count;
-                if(wireCount <= 0) {
-                    // Wire1 is discarded - not enough items
+                if(gridLength2 < 3) {
+                    // Too short, discard wire2 but also wire1 since it's even shorter
                     wire.discard();
                 } else {
-                    // Keep wire1
-                    wire.setItem(wire.getWireItem(), Math.min(wire1Count, wireCount));
-                    wireCount -= wire1Count;
+                    var wire2 = spawnWire2(wire, secondStart, Math.min(wireCount, wire2Count), secondSegments);
+                    wireCount -= wire2Count;
+                    if (wireCount <= 0) {
+                        // Wire1 is discarded - not enough items
+                        wire.discard();
+                    } else {
+                        // Keep wire1
+                        wire.setItem(wire.getWireItem(), Math.min(wire1Count, wireCount));
+                        wireCount -= wire1Count;
+                    }
                 }
             }
             if(wireCount > 0) {

@@ -41,6 +41,7 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 
 import java.util.List;
 
@@ -140,5 +141,6 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
+        Voltage.max(resistance() * 4, player, tooltip);
     }
 }

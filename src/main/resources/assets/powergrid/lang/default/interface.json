@@ -51,11 +51,13 @@
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
   "powergrid.generic.control_terminal": "Control",
+  "powergrid.generic.common": "Common",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
 
   "powergrid.variac.tap": "Tap",
+  "powergrid.variac.primary": "Primary",
 
   "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
   "powergrid.devices.creative.voltage": "Output voltage",
@@ -98,8 +100,8 @@
   "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
   "powergrid.component.property.relay_state": "State",
 
-  "powergrid.component.property.resistor_value": "Resistance",
-  "powergrid.component.property.capacitor_value": "Capacitance",
+  "powergrid.component.property.resistor_value": "Resistance [Ω]",
+  "powergrid.component.property.capacitor_value": "Capacitance [F]",
 
   "powergrid.component.property.redstone_emitter_digital": "Digital",
 

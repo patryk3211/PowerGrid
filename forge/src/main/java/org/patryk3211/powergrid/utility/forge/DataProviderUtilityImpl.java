@@ -400,8 +400,8 @@ public class DataProviderUtilityImpl {
     public static void rotateDownFacingModel(ConfiguredModel.Builder<?> builder, Direction facing) {
         switch(facing) {
             case UP -> builder.rotationX(180);
-            case NORTH -> builder.rotationX(90);
-            case SOUTH -> builder.rotationX(-90);
+            case NORTH -> builder.rotationX(-90);
+            case SOUTH -> builder.rotationX(90);
             case WEST -> builder.rotationX(90).rotationY(90);
             case EAST -> builder.rotationX(90).rotationY(-90);
         }

@@ -38,6 +38,7 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
@@ -122,5 +123,6 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance("on"), player, tooltip);
+        Voltage.max(20, player, tooltip);
     }
 }

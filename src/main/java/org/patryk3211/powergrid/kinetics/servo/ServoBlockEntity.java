@@ -61,7 +61,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = ThermalBehaviour.forMaxPower(this, 3.5f, 200);
+        thermalBehaviour = ThermalBehaviour.forVoltageAtResistance(this, 20, 3.5f); //ThermalBehaviour.forMaxPower(this, 3.5f, 200);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
     }

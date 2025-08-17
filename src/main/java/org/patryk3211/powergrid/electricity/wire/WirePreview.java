@@ -82,6 +82,8 @@ public class WirePreview {
             var entity = bwe.getEntity(world);
             if(entity != null) {
                 var segments = entity.segments;
+                if(segments.isEmpty())
+                    return;
                 if (bwe.getEnd()) {
                     var last = segments.get(segments.size() - 1);
                     continueDir = last.direction;

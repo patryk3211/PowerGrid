@@ -105,6 +105,16 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         return simple(be, thermalMass, dissipation, overheatTemperature);
     }
 
+    @Nullable
+    public static <T extends SmartBlockEntity&IElectricEntity> ThermalBehaviour forVoltageAtResistance(T be, float voltage, float thermalMass) {
+        return forMaxPower(be, thermalMass, voltage * voltage / be.resistance());
+    }
+
+    @Nullable
+    public static <T extends SmartBlockEntity&IElectricEntity> ThermalBehaviour forVoltageAtResistance(T be, float voltage, float thermalMass, float overheatTemperature) {
+        return forMaxPower(be, thermalMass, voltage * voltage / be.resistance(), overheatTemperature);
+    }
+
     public static boolean shouldExplode() {
         return ModdedConfigs.server().electricity.explosiveDeconstruction.get();
     }

@@ -37,6 +37,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 
 import java.util.List;
 
@@ -80,5 +81,6 @@ public class BasinHeaterBlock extends ElectricBlock implements IBE<BasinHeaterBl
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance("idle"), player, tooltip);
+        Voltage.min(100, player, tooltip);
     }
 }

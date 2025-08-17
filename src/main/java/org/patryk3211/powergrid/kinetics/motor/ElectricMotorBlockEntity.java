@@ -22,7 +22,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -44,17 +43,13 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         super(typeIn, pos, state);
     }
 
-    public float resistance() {
-        return ResistanceValues.get(getBlockState().getBlock());
-    }
-
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, 1.75f);
+        thermalBehaviour = ThermalBehaviour.forVoltageAtResistance(this, 128, 3.5f);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
     }

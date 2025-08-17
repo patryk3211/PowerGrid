@@ -30,6 +30,10 @@ public interface IDecoratedTerminal {
             .translate("generic.negative_terminal")
             .style(ChatFormatting.BLUE)
             .component();
+    Component COMMON = Lang.builder()
+            .translate("generic.common")
+            .style(ChatFormatting.BLUE)
+            .component();
     Component CONNECTOR = Lang.builder()
             .translate("generic.terminal")
             .style(ChatFormatting.GRAY)
