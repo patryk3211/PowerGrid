@@ -45,7 +45,7 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        var b = ThermalBehaviour.simple(this, 8.0f, 2.5f);
+        var b = ThermalBehaviour.forMaxPower(this, 8.0f, 2500f);
         if(b != null) {
             if (isMain()) {
                 b.overheatCallback(() -> {

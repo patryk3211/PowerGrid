@@ -29,7 +29,7 @@ public class TransformerSmallBlockEntity extends TransformerBlockEntity implemen
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.simple(this, 2.0f, 0.5f);
+        return ThermalBehaviour.forMaxPower(this, 2.0f, 500f);
     }
 
     @Override
