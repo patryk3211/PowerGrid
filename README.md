@@ -16,3 +16,4 @@ with concepts like Ohm's law.
 
 ## Contributing
 Want to help translate this mod to another language? You can do so with [CrowdIn](https://crowdin.com/project/create-power-grid)
+Reporting a bug? Make sure to test it with the latest version available. Describe the steps it takes to reproduce it and include anything that can help with resolving it (screenshots, videos, logs)
