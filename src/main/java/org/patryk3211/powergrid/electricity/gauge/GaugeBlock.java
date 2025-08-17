@@ -100,6 +100,19 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
     }
 
     @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        var be = getBlockEntity(level, pos);
+        if(be == null)
+            return 0;
+        return be.redstoneOutput;
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(BlockStateProperties.HORIZONTAL_FACING);

@@ -19,6 +19,7 @@ import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -37,6 +38,7 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
     public float dialTarget;
     public float prevDialState;
     public float dialState;
+    public int redstoneOutput;
 
     public GaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -53,6 +55,11 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
             dialState += (dialTarget - dialState) * .125f;
             if (dialState > 1 && level.random.nextFloat() < 1 / 2f)
                 dialState -= (dialState - 1) * level.random.nextFloat();
+            var newOutput = Mth.floor(Mth.clamp(dialTarget * 15, 0, 15));
+            if(newOutput != redstoneOutput) {
+                redstoneOutput = newOutput;
+                level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            }
         }
     }
 
