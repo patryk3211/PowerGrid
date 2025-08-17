@@ -32,8 +32,10 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.*;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
@@ -41,10 +43,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
-import org.patryk3211.powergrid.collections.ItemDisplay;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
@@ -52,6 +51,7 @@ import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 
 @Mod(PowerGrid.MOD_ID)
@@ -104,6 +104,23 @@ public class PowerGridImpl {
     @SubscribeEvent
     public static void soundEventRegister(RegisterEvent event) {
         event.register(Registries.SOUND_EVENT, ModdedSoundEventsImpl::register);
+    }
+
+    @SubscribeEvent
+    public static void imcEnqueue(InterModEnqueueEvent event) {
+        var forbiddenBlockEntities = List.of(
+                ModdedBlockEntities.GENERATOR_CLUTCH,
+                ModdedBlockEntities.GENERATOR_ROTOR,
+                ModdedBlockEntities.GENERATOR_INDUCTION_ROTOR,
+                ModdedBlockEntities.GENERATOR_COMMUTATOR,
+                ModdedBlockEntities.WINDING,
+                ModdedBlockEntities.TRANSFORMER_MEDIUM,
+                ModdedBlockEntities.HV_SWITCH,
+                ModdedBlockEntities.DEVICE_CONNECTOR
+        );
+        forbiddenBlockEntities.stream()
+                .map(entry -> entry.getId().toString())
+                .forEach(id -> InterModComms.sendTo("carryon", "blacklistBlock", () -> id));
     }
 
     @SubscribeEvent
