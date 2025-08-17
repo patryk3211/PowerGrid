@@ -387,6 +387,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     public void initialize() {
         if(collectedBEs == null)
             collectWindingParts();
+        if(parallelPositions != null) {
+            // Everything is set up, and we haven't even initialized, make sure wires know where to go.
+            parallelPositions.forEach(pos -> level.getBlockEntity(pos, ModdedBlockEntities.WINDING.get())
+                    .ifPresent(WindingBlockEntity::rewire));
+        }
         super.initialize();
         grabRotors();
     }
