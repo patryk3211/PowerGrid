@@ -23,16 +23,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     public static final float MAX_SPEED = 32.0f;
@@ -51,17 +48,13 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         super(type, pos, state);
     }
 
-    public float resistance(String suffix) {
-        return ResistanceValues.get(getBlockState().getBlock(), suffix);
-    }
-
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = ThermalBehaviour.forVoltageAtResistance(this, 20, 3.5f); //ThermalBehaviour.forMaxPower(this, 3.5f, 200);
+        thermalBehaviour = ThermalBehaviour.forVoltageAtResistance(this, 20, resistance("on"), 3.5f);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
     }

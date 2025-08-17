@@ -98,21 +98,29 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         return forMaxPower(be, thermalMass, power, 175.0f);
     }
 
+    public static float dissipationFactor(float power, float temperature) {
+        return power / (temperature - BASE_TEMPERATURE);
+    }
+
     @Nullable
     public static ThermalBehaviour forMaxPower(SmartBlockEntity be, float thermalMass, float power, float overheatTemperature) {
         var targetTemperature = overheatTemperature - 25;
-        var dissipation = power / (targetTemperature - BASE_TEMPERATURE);
-        return simple(be, thermalMass, dissipation, overheatTemperature);
+        return simple(be, thermalMass, dissipationFactor(power, targetTemperature), overheatTemperature);
     }
 
     @Nullable
     public static <T extends SmartBlockEntity&IElectricEntity> ThermalBehaviour forVoltageAtResistance(T be, float voltage, float thermalMass) {
-        return forMaxPower(be, thermalMass, voltage * voltage / be.resistance());
+        return forVoltageAtResistance(be, voltage, be.resistance(), thermalMass, 175);
     }
 
     @Nullable
-    public static <T extends SmartBlockEntity&IElectricEntity> ThermalBehaviour forVoltageAtResistance(T be, float voltage, float thermalMass, float overheatTemperature) {
-        return forMaxPower(be, thermalMass, voltage * voltage / be.resistance(), overheatTemperature);
+    public static <T extends SmartBlockEntity&IElectricEntity> ThermalBehaviour forVoltageAtResistance(T be, float voltage, float resistance, float thermalMass) {
+        return forMaxPower(be, thermalMass, voltage * voltage / resistance, 175);
+    }
+
+    @Nullable
+    public static <T extends SmartBlockEntity&IElectricEntity> ThermalBehaviour forVoltageAtResistance(T be, float voltage, float resistance, float thermalMass, float overheatTemperature) {
+        return forMaxPower(be, thermalMass, voltage * voltage / resistance, overheatTemperature);
     }
 
     public static boolean shouldExplode() {
