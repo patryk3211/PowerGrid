@@ -32,7 +32,7 @@ public class Directions {
             UP, DOWN
     };
     public static final Axis[] HORIZONTAL_AXIS = {
-            Axis.X, Axis.Y
+            Axis.X, Axis.Z
     };
 
     public static BooleanProperty property(Direction dir) {
