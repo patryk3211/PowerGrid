@@ -291,12 +291,12 @@ public class GeneratorScenes {
                 .placeNearTarget();
         scene.idle(90);
 
-        scene.overlay().showText(80)
+        scene.overlay().showText(100)
                 .text("Connected windings have lower total resistance but their voltage is constrained to the lowest of all connected windings.")
                 .attachKeyFrame()
                 .pointAt(util.vector().topOf(2, 2, 2))
                 .placeNearTarget();
-        scene.idle(90);
+        scene.idle(110);
 
         scene.markAsFinished();
     }
