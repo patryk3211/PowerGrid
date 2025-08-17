@@ -195,6 +195,8 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             // Dissipate energy
             float dissipatedPower = dissipationFactor * coolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
             temperature -= dissipatedPower / 20f / thermalMass;
+            if(dissipatedPower > 0 && temperature < BASE_TEMPERATURE)
+                temperature = BASE_TEMPERATURE;
             if(dissipatedPower != 0)
                 blockEntity.setChanged();
         }
@@ -242,7 +244,6 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     public void applyTickPower(float power) {
         var energy = power / 20f;
         temperature += energy / thermalMass;
-        blockEntity.setChanged();
     }
 
     @Override

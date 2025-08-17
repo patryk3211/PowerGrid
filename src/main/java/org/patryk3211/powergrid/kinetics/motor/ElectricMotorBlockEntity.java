@@ -39,6 +39,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     private float generatedSpeed = 0;
 
+    private float baseFactor, factorPerSpeed;
+
     public ElectricMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
@@ -49,7 +51,10 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = ThermalBehaviour.forVoltageAtResistance(this, 128, 3.5f);
+        var maxVoltage = 256 / ElectricMotorBlock.rpmPerVolt();
+        baseFactor = ThermalBehaviour.dissipationFactor(120 * 120 / resistance(), 125);
+        factorPerSpeed = (ThermalBehaviour.dissipationFactor(maxVoltage * maxVoltage / resistance(), 150) - baseFactor) / 256;
+        thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
     }
@@ -127,7 +132,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     public void updateDissipation() {
         // Simulate a fan moving more air and providing more cooling
         if(thermalBehaviour != null)
-            thermalBehaviour.setDissipationFactor(Math.max(Math.abs(getSpeed()) * 0.2f, 0.3f));
+            thermalBehaviour.setDissipationFactor(baseFactor + Math.abs(getSpeed()) * factorPerSpeed);
     }
 
     @Override
