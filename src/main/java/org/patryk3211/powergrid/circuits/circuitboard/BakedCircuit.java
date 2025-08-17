@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.circuits.thermal.ThermalUnit;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -174,26 +175,28 @@ public class BakedCircuit {
 
     public void tick() {
         var client = world.get().isClientSide;
-        for(var unit : thermalUnits) {
-            var overheated = unit.hasOverheated();
-            unit.tick();
-            if(client) {
-                var world = this.world.get();
-                var random = world.random;
-                var pos = unit.getPosition();
-                var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                var y = (float) pos.y() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                var z = (float) pos.z() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                if(!unit.hasOverheated() && unit.getTemperature() >= unit.getOverheatTemperature() - 50f) {
-                    // Spawn particles
-                    float chance = (unit.getTemperature() - unit.getOverheatTemperature() + 100) / 100;
-                    if (random.nextFloat() < chance) {
-                        world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+        if(ThermalBehaviour.shouldOverheat()) {
+            for (var unit : thermalUnits) {
+                var overheated = unit.hasOverheated();
+                unit.tick();
+                if (client) {
+                    var world = this.world.get();
+                    var random = world.random;
+                    var pos = unit.getPosition();
+                    var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                    var y = (float) pos.y() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                    var z = (float) pos.z() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                    if (!unit.hasOverheated() && unit.getTemperature() >= unit.getOverheatTemperature() - 50f) {
+                        // Spawn particles
+                        float chance = (unit.getTemperature() - unit.getOverheatTemperature() + 100) / 100;
+                        if (random.nextFloat() < chance) {
+                            world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+                        }
+                    } else if (!overheated && unit.hasOverheated()) {
+                        // Spawn a spark explosion
+                        SparkParticleData.explodeParticles(world, x, y, z, Direction.UP, 10);
+                        ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
                     }
-                } else if(!overheated && unit.hasOverheated()) {
-                    // Spawn a spark explosion
-                    SparkParticleData.explodeParticles(world, x, y, z, Direction.UP, 10);
-                    ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
                 }
             }
         }
