@@ -16,19 +16,20 @@
 package org.patryk3211.powergrid.collections.forge;
 
 import com.simibubi.create.AllFluids;
+import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.util.entry.FluidEntry;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.common.SoundAction;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -40,8 +41,17 @@ public class ModdedFluidsImpl {
                             ResourceLocation.tryBuild("minecraft", "block/water_flow"),
                             AcidFluidType::new)
                     .tag(FluidTags.create(PowerGrid.asResource("acid")))
-                    .renderType(RenderType::translucent)
+                    .transform(translucent())
                     .register();
+
+    private static <T extends ForgeFlowingFluid, P> NonNullUnaryOperator<FluidBuilder<T, P>> translucent() {
+        return b -> {
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+                b.renderType(RenderType::translucent);
+            });
+            return b;
+        };
+    }
 
     public static Fluid acid() {
         return ACID.getSource().getSource();
