@@ -90,6 +90,8 @@ public interface IElectric extends IWrenchable {
             if(stack.hasTag()) {
                 // Continuing a connection.
                 var endpoint = WireEndpointType.deserialize(stack.getTag());
+                if(endpoint == null)
+                    return InteractionResult.FAIL;
                 var result = makeConnection(context.getLevel(), endpoint, new BlockWireEndpoint(pos, terminal), context);
                 if(result.consumesAction())
                     stack.setTag(null);
