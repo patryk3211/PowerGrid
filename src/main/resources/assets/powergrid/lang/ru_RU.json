@@ -30,6 +30,7 @@
   "block.powergrid.light_fixture": "Цоколь лампы",
   "block.powergrid.lv_button": "Низковольтная кнопка",
   "block.powergrid.lv_switch": "Низковольтный переключатель",
+  "block.powergrid.mv_switch": "Средневольтный переключатель",
   "block.powergrid.portable_battery": "Портативный аккумулятор",
   "block.powergrid.potato_battery": "Картофельная батарейка",
   "block.powergrid.potato_battery.tooltip.summary": "Полностью натуральный источник зелёной энергии",
