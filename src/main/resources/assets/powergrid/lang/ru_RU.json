@@ -1,1 +1,9 @@
-{}
+{
+  "block.powergrid.acid": "Кислота",
+  "block.powergrid.alarm_bell": "Сигнальный звонок",
+  "block.powergrid.andesite_current_gauge": "Андезитовый амперметр",
+  "block.powergrid.andesite_voltage_gauge": "Андезитовый вольтметр",
+  "block.powergrid.battery": "Аккумулятор",
+  "block.powergrid.brass_current_gauge": "Латунный амперметр",
+  "block.powergrid.brass_voltage_gauge": "Латунный вольтметр"
+}
