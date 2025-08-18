@@ -1,4 +1,15 @@
 {
   "block.powergrid.acid": "Kwas",
-  "block.powergrid.battery": "Bateria"
+  "block.powergrid.alarm_bell": "Dzwonek Alarmowy",
+  "block.powergrid.battery": "Bateria",
+  "block.powergrid.electric_motor": "Silnik elektryczny",
+  "block.powergrid.electromagnet": "Elektromagnes",
+  "block.powergrid.servo": "Serwomechanizm",
+  "block.powergrid.transformer_core": "Rdzeń Transformatora",
+  "block.powergrid.transformer_medium": "Średni Transformator",
+  "block.powergrid.transformer_small": "Mały Transformator",
+  "block.powergrid.winding": "Uzwojenie",
+  "component.powergrid.diode.0": "Anoda",
+  "component.powergrid.diode.1": "Katoda",
+  "component.powergrid.electron_tube.0": "Katoda"
 }
