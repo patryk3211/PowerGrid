@@ -26,6 +26,16 @@ public class TransformerSmallBlockEntity extends TransformerBlockEntity implemen
     }
 
     @Override
+    public double coreAl() {
+        return 1.5;
+    }
+
+    @Override
+    public double couplingFactor() {
+        return 0.9999;
+    }
+
+    @Override
     public void updateCoilBlockState() {
         assert level != null;
         int coilCount = secondaryCoil.isDefined() ? 2 : primaryCoil.isDefined() ? 1 : 0;

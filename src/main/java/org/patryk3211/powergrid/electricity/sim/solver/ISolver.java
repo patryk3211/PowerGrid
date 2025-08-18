@@ -16,12 +16,13 @@
 package org.patryk3211.powergrid.electricity.sim.solver;
 
 import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.DMatrixSparseCSC;
 
 import java.util.Collection;
 
 public interface ISolver {
     void setStateSize(int size);
-    DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b);
+    DMatrixRMaj solve(DMatrixSparseCSC A, DMatrixRMaj b);
     void zero();
 
     void addHook(ISolverHook hook);

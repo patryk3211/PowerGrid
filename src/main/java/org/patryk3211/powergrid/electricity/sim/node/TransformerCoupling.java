@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.sim.node;
 
 import org.ejml.data.DMatrixRMaj;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +27,8 @@ public abstract class TransformerCoupling extends CouplingNode {
     protected final Collection<IElectricNode> coupledNodes;
 
     protected TransformerCoupling(float ratio, float resistance, Collection<IElectricNode> coupledNodes) {
+        if(resistance == 0 && ElectricalNetwork.LOGGER != null)
+            ElectricalNetwork.LOGGER.warn("Zero-resistance transformer couplings can cause unstable behaviour.");
         this.ratio = ratio;
         this.resistance = resistance;
         this.coupledNodes = coupledNodes;

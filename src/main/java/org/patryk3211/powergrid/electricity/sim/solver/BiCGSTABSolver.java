@@ -15,10 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
+import org.ejml.sparse.csc.CommonOps_DSCC;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -92,7 +95,7 @@ public class BiCGSTABSolver implements ISolver {
         }
     }
 
-    private void preconditioned(DMatrixRMaj K, DMatrixRMaj input, DMatrixRMaj output) {
+    private void preconditioned(DMatrix K, DMatrixRMaj input, DMatrixRMaj output) {
         for(int i = 0; i < input.getNumRows(); ++i) {
             var k = K.get(i, i);
             if(k == 0) {
@@ -103,21 +106,38 @@ public class BiCGSTABSolver implements ISolver {
         }
     }
 
+    private double pickHatResidual() {
+        if(USE_RANDOM_HAT_RESIDUAL) {
+            RandomMatrices_DDRM.fillUniform(hatResidual, random);
+        } else {
+            hatResidual.setTo(residual);
+            return 1;
+        }
+        double dot = CommonOps_DDRM.dot(hatResidual, residual);
+        if(USE_RANDOM_HAT_RESIDUAL) {
+            if(dot == 0) {
+                hatResidual.setTo(residual);
+                return 1;
+            }
+        }
+        return dot;
+    }
+
     @Override
-    public DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b) {
+    public DMatrixRMaj solve(DMatrixSparseCSC A, DMatrixRMaj b) {
         if(b.getNumRows() == 0)
             return guess;
 
         for(var hook : hooks) {
-            hook.preSolve(A, guess, b);
+            hook.preSolve();
         }
 
         // r = b - A * x
-        CommonOps_DDRM.mult(A, guess, v);
+        CommonOps_DSCC.mult(A, guess, v);
         CommonOps_DDRM.subtract(b, v, residual);
 
         for(var hook : hooks) {
-            hook.addResidual(A, guess, b, residual);
+            hook.addResidual(residual);
         }
 
         // Check if result is already good enough.
@@ -126,28 +146,24 @@ public class BiCGSTABSolver implements ISolver {
             return guess;
         }
 
-        if(USE_RANDOM_HAT_RESIDUAL) {
-            RandomMatrices_DDRM.fillUniform(hatResidual, random);
-        } else {
-            hatResidual.setTo(residual);
-        }
-        double dot = CommonOps_DDRM.dot(hatResidual, residual);
-        if(USE_RANDOM_HAT_RESIDUAL) {
-            if(dot == 0)
-                hatResidual.setTo(residual);
-        }
+        double dot = pickHatResidual();
         p.setTo(residual);
 
         int iters = 0;
         while(iters++ < MAX_ITERATIONS) {
-            for(var hook : hooks) {
-                hook.iteration(A, guess, residual, p);
-            }
+//            for(var hook : hooks) {
+//                hook.iteration(A, guess, residual, p);
+//            }
+//            if(iters == 100) {
+//                // Pick new hat residual.
+//                hatResidual.setTo(residual);
+////                pickHatResidual();
+//            }
 
             preconditioned(A, p, y);
 
             // v = A * y
-            CommonOps_DDRM.mult(A, y, v);
+            CommonOps_DSCC.mult(A, y, v);
 
             double alpha = dot / CommonOps_DDRM.dot(hatResidual, v);
             // h = x + alpha * y
@@ -164,7 +180,7 @@ public class BiCGSTABSolver implements ISolver {
             preconditioned(A, s, z);
 
             // t = A * z
-            CommonOps_DDRM.mult(A, z, t);
+            CommonOps_DSCC.mult(A, z, t);
             double omega = CommonOps_DDRM.dot(t, s) / CommonOps_DDRM.dot(t, t);
 
             // x = h + omega * z
@@ -185,8 +201,12 @@ public class BiCGSTABSolver implements ISolver {
             CommonOps_DDRM.add(residual, beta, t, p);
         }
 
-        if(iters >= MAX_ITERATIONS && LOGGER != null) {
-            LOGGER.warn("Solver iteration limit, final precision: {}", norm);
+        if(iters >= MAX_ITERATIONS) {
+            if(LOGGER != null) {
+                LOGGER.warn("Solver iteration limit, final precision: {}", norm);
+            } else {
+                System.out.printf("Solver iteration limit, final precision: %g", norm);
+            }
         }
 
         return guess;

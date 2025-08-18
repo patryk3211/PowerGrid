@@ -83,6 +83,7 @@ allprojects {
 		implementation(include("org.ejml:ejml-core:0.44.0"))
 		implementation(include("org.ejml:ejml-simple:0.44.0"))
 		implementation(include("org.ejml:ejml-ddense:0.44.0"))
+		implementation(include("org.ejml:ejml-dsparse:0.44.0"))
 //		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	}
 
@@ -239,16 +240,16 @@ dependencies {
 //	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}") { transitive false }
 
 	// Support for unit tests
-//	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 
 	modApi "dev.architectury:architectury:${project.architectury_api_version}"
 
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 }
 
-//test {
-//	useJUnitPlatform()
-//}
+test {
+	useJUnitPlatform()
+}
 
 sourceSets.main {
 	resources {

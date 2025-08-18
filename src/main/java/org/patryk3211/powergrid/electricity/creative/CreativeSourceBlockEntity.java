@@ -82,12 +82,12 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         if(getBlockState().is(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
             voltageSource = true;
             sourceNode = builder.addInternalNode(VoltageSourceNode.class);
-            builder.couple(1, sourceNode, positive, negative);
+            builder.couple(1, 1e-4f, sourceNode, positive, negative);
         } else if(getBlockState().is(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
             voltageSource = false;
             sourceNode = builder.addInternalNode(CurrentSourceNode.class);
             // Transformer needs some resistance for solver to work correctly with the current source.
-            builder.couple(1, 1e-6f, sourceNode, positive, negative);
+            builder.couple(1, 1e-4f, sourceNode, positive, negative);
         } else {
             throw new IllegalArgumentException();
         }

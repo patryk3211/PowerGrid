@@ -226,14 +226,17 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
                 if (random.nextFloat() < chance)
                     world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
             }
+            if(isOverheated()) {
+                world.addParticle(ParticleTypes.FLAME, x, y, z, 0, 0, 0);
+            }
         }
 
         if(isOverheated() && !world.isClientSide) {
-            if(overheatCallback != null)
-                overheatCallback.run();
-            if((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
-                explode(world, pos, blockEntity.getBlockState(), 1.0f);
-            }
+//            if(overheatCallback != null)
+//                overheatCallback.run();
+//            if((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
+//                explode(world, pos, blockEntity.getBlockState(), 1.0f);
+//            }
         }
     }
 

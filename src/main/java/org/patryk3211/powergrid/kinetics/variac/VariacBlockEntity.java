@@ -42,7 +42,6 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     protected LerpedFloat arm;
 
     protected ElectricWire primaryStray;
-    protected ElectricWire secondaryStray;
     protected ElectricWire mutualInductance;
     protected TransformerCoupling coupling;
 
@@ -110,13 +109,10 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         float secondaryStray = secondaryInductance - ratio * ratio * mutualInductance;
 
         var Tnode = builder.addInternalNode();
-        var Pnode = builder.addInternalNode();
 
         this.primaryStray = builder.connect(primaryStray, builder.terminalNode(0), Tnode);
         this.mutualInductance = builder.connect(mutualInductance, Tnode, builder.terminalNode(1));
-        // TODO: Find out if this can be replaced with the transformer coupling's resistance.
-        this.secondaryStray = builder.connect(secondaryStray, Tnode, Pnode);
-        this.coupling = builder.couple(ratio, Pnode, builder.terminalNode(1),
+        this.coupling = builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, builder.terminalNode(1),
                 builder.terminalNode(2), builder.terminalNode(1));
     }
 
@@ -130,8 +126,9 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         float secondaryStray = secondaryInductance - ratio * ratio * mutualInductance;
         this.primaryStray.setResistance(primaryStray);
         this.mutualInductance.setResistance(mutualInductance);
-        this.secondaryStray.setResistance(secondaryStray);
+//        this.secondaryStray.setResistance(secondaryStray);
         this.coupling.setRatio(ratio);
+        this.coupling.setResistance(secondaryStray * ratio * ratio);
     }
 
     @Override
@@ -145,11 +142,6 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
             var I1 = primaryStray.current();
             power += (float) (I1 * I1 * primaryStray.getResistance());
             lastCurrent += Math.abs(I1);
-        }
-        if(secondaryStray != null) {
-            var I2 = secondaryStray.current();
-            power += (float) (I2 * I2 * secondaryStray.getResistance());
-            lastCurrent += Math.abs(I2);
         }
         if(mutualInductance != null) {
             var I3 = mutualInductance.current();

@@ -43,6 +43,7 @@ dependencies {
     forgeRuntimeLibrary "org.ejml:ejml-core:0.44.0"
     forgeRuntimeLibrary "org.ejml:ejml-simple:0.44.0"
     forgeRuntimeLibrary "org.ejml:ejml-ddense:0.44.0"
+    forgeRuntimeLibrary "org.ejml:ejml-dsparse:0.44.0"
 
     modLocalRuntime("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}")
     modLocalRuntime("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")

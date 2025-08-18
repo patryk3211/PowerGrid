@@ -139,4 +139,49 @@ public class TransformerTests extends TestHelper {
         Assertions.assertEquals(((5f * 2) / 15f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
         Assertions.assertEquals((5f * 2) * (10f / 15f), Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
     }
+
+    void parametrizedTransformerTestTModel(float Lp, float Ls, float Lm, float ratio) {
+        var Net1 = new Network();
+
+        var Net1V = Net1.V(5);
+        var Net1GND = Net1.V(0);
+        var Net1T = Net1.N();
+        var Net1P = Net1.N();
+        var Net1S1 = Net1.N();
+        var Net1S2 = Net1.N();
+
+        Net1.W(Lp, Net1V, Net1T);
+        Net1.W(Ls, Net1T, Net1P);
+        Net1.W(Lm, Net1T, Net1GND);
+        Net1.TR(ratio, Net1P, Net1GND, Net1S1, Net1S2);
+        var L1 = Net1.W(2, Net1S1, Net1S2);
+
+        Net1.calculate();
+
+        var Net2 = new Network();
+
+        var Net2V = Net2.V(5);
+        var Net2GND = Net2.V(0);
+        var Net2T = Net2.N();
+        var Net2S1 = Net2.N();
+        var Net2S2 = Net2.N();
+
+        Net2.W(Lp, Net2V, Net2T);
+        Net2.W(Lm, Net2T, Net2GND);
+        Net2.TR(ratio, Ls * ratio * ratio, Net2T, Net2GND, Net2S1, Net2S2);
+        var L2 = Net2.W(2, Net2S1, Net2S2);
+
+        Net2.calculate();
+
+        Assertions.assertEquals(Net1V.getCurrent(), Net2V.getCurrent(), 1e-6, "Voltage source currents are not equal");
+        Assertions.assertEquals(L1.potentialDifference(), L2.potentialDifference(), 1e-6, "Secondary winding voltages are not equal");
+    }
+
+    @Test
+    void testTransformerTModelEquivalence() {
+        parametrizedTransformerTestTModel(1, 1, 1, 1);
+        parametrizedTransformerTestTModel(0.1f, 2f, 10f, 1);
+        parametrizedTransformerTestTModel(0.1f, 2f, 10f, 2f);
+        parametrizedTransformerTestTModel(0.1f, 2f, 10f, 0.5f);
+    }
 }

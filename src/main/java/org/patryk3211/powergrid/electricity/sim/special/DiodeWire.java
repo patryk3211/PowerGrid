@@ -50,7 +50,7 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
     }
 
     @Override
-    public void preSolve(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b) {
+    public void preSolve() {
         var V = potentialDifference();
         var Ia = diodeCurrent(V);
 

@@ -15,26 +15,26 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.DMatrixSparseCSC;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.sparse.csc.CommonOps_DSCC;
 
-public interface ISolverHook {
-    /**
-     * Called before iterative solving loop is started
-     */
-    default void preSolve() { }
+public class DynamicallyTypedMatrix {
+    private DMatrix matrix;
+    private boolean sparse;
 
-    /**
-     * Called at the start of every iteration
-     * @param A Admittance matrix
-     * @param x Current best guess solution
-     * @param residual Residual matrix
-     * @param p Direction matrix
-     */
-    default void iteration(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj residual, DMatrixRMaj p) { }
+    public DynamicallyTypedMatrix(int rows, int cols) {
+        matrix = new DMatrixRMaj(rows, cols);
+        sparse = false;
+    }
 
-    /**
-     * Called after the initial residual has been calculated (r = b - A * x)
-     * @param residual Residual matrix
-     */
-    default void addResidual(DMatrixRMaj residual) { }
+    public void mult(DMatrixRMaj in, DMatrixRMaj out) {
+        if(sparse) {
+            CommonOps_DSCC.mult((DMatrixSparseCSC) matrix, in, out);
+        } else {
+            CommonOps_DDRM.mult((DMatrixRMaj) matrix, in, out);
+        }
+    }
 }

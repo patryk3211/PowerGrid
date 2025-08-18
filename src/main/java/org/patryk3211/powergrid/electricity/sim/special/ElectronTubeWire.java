@@ -87,7 +87,7 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
     }
 
     @Override
-    public void preSolve(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b) {
+    public void preSolve() {
         var newConductance = conductance();
         network.updateConductance(this, newConductance - prevConductance);
         prevConductance = newConductance;
