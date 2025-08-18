@@ -47,7 +47,7 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.forMaxPower(this, 2.0f, 2000f);
+        return ThermalBehaviour.fromConfig(this);
     }
 
     private void checkPos(BlockPos pos, boolean newState, List<BlockPos> checkQueue) {

@@ -19,6 +19,10 @@ import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -34,5 +38,20 @@ public class Current {
                 .add(Component.nullToEmpty(" ")).add(Lang.number(value))
                 .add(Component.nullToEmpty(" ")).add(Unit.CURRENT.get())
                 .style(ChatFormatting.RED).addTo(tooltip);
+    }
+
+    public static void max(ItemStack stack, Player player, List<Component> tooltip) {
+        if(stack.getItem() instanceof BlockItem blockItem) {
+            var block = blockItem.getBlock();
+            var resistance = ResistanceValues.get(block);
+            var power = ThermalValues.getPower(block);
+            var current = Math.sqrt(power / resistance);
+            max((float) Math.round(current * 10) / 10, player, tooltip);
+        }
+    }
+
+    public static void max(float resistance, float power, Player player, List<Component> tooltip) {
+        var current = Math.sqrt(power / resistance);
+        max((float) Math.round(current * 10) / 10, player, tooltip);
     }
 }

@@ -48,7 +48,7 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.forMaxPower(this, 1.0f, 100.0f);
+        return ThermalBehaviour.fromConfig(this);
     }
 
     @Override

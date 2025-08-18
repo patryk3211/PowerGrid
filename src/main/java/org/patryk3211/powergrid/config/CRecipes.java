@@ -18,7 +18,7 @@ package org.patryk3211.powergrid.config;
 import net.createmod.catnip.config.ConfigBase;
 
 public class CRecipes extends ConfigBase {
-    public final ConfigFloat lightningMagnetizationChance = f(0.05f, 0, 1, "encasedFanCooling", Comments.lightningMagnetizationChance);
+    public final ConfigFloat lightningMagnetizationChance = f(0.05f, 0, 1, "lightningMagnetizationChance", Comments.lightningMagnetizationChance);
 
     @Override
     public String getName() {

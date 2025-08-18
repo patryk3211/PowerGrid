@@ -23,6 +23,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
@@ -322,8 +323,10 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     private void updateThermals() {
         if(thermalBehaviour != null) {
-            thermalBehaviour.setDissipationFactor(spec.getDissipationFactor() * getSize());
-            thermalBehaviour.setThermalMass(spec.getThermalMass() * getSize());
+            var block = getBlockState().getBlock();
+            var factor = ThermalBehaviour.dissipationFactor(ThermalValues.getPower(block), 175f);
+            thermalBehaviour.setDissipationFactor(factor * getSize());
+            thermalBehaviour.setThermalMass(ThermalValues.getMass(block) * getSize());
         }
     }
 

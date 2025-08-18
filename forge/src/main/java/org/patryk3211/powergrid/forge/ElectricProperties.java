@@ -16,10 +16,20 @@
 package org.patryk3211.powergrid.forge;
 
 import com.simibubi.create.foundation.item.TooltipModifier;
+import com.simibubi.create.foundation.utility.CreateLang;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.utility.Lang;
+
+import static net.minecraft.ChatFormatting.*;
+import static net.minecraft.ChatFormatting.DARK_GRAY;
 
 public class ElectricProperties implements TooltipModifier {
     private final IHaveElectricProperties properties;
@@ -40,8 +50,25 @@ public class ElectricProperties implements TooltipModifier {
         return null;
     }
 
+    private Component header(boolean shift) {
+        String[] holdDesc = Lang.translateDirect("tooltip.holdForDescription", "$")
+                .getString()
+                .split("\\$");
+        MutableComponent keyShift = CreateLang.translateDirect("tooltip.keyShift");
+        MutableComponent tabBuilder = Component.empty();
+        tabBuilder.append(Component.literal(holdDesc[0]).withStyle(DARK_GRAY));
+        tabBuilder.append(keyShift.plainCopy()
+                .withStyle(shift ? WHITE : GRAY));
+        tabBuilder.append(Component.literal(holdDesc[1]).withStyle(DARK_GRAY));
+        return tabBuilder;
+    }
+
     @Override
     public void modify(ItemTooltipEvent context) {
-        properties.appendProperties(context.getItemStack(), context.getEntity(), context.getToolTip());
+        var shift = EnvExecutor.getInEnv(Env.CLIENT, () -> Screen::hasShiftDown).orElse(false);
+        context.getToolTip().add(header(shift));
+        if(shift) {
+            properties.appendProperties(context.getItemStack(), context.getEntity(), context.getToolTip());
+        }
     }
 }

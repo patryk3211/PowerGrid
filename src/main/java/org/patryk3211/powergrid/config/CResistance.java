@@ -41,7 +41,7 @@ public class CResistance extends ConfigBase implements ResistanceValues.Provider
     @Override
     public void registerAll(ForgeConfigSpec.Builder builder) {
         builder.comment(".", Comments.ohm, Comments.resistance)
-                .push("impact");
+                .push("resistance");
         DEFAULT_RESISTANCES.forEach((id, value) -> this.resistances.put(id, builder.define(id.getPath(), value)));
         builder.pop();
     }

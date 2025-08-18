@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
+import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.wire.IWire;
@@ -102,5 +103,6 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
+        Current.max(stack, player, tooltip);
     }
 }

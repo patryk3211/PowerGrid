@@ -19,17 +19,10 @@ import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
 public class TransformerSmallBlockEntity extends TransformerBlockEntity implements IHaveGoggleInformation {
     public TransformerSmallBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-    }
-
-    @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.forMaxPower(this, 2.0f, 500f);
     }
 
     @Override

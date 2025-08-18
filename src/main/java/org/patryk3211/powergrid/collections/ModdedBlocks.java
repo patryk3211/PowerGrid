@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.config.CResistance;
 import org.patryk3211.powergrid.config.CStress;
+import org.patryk3211.powergrid.config.CThermal;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
@@ -90,6 +91,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
+            .transform(CThermal.maxPower(100, 1.5f))
             .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
             .simpleItem()
             .register();
@@ -187,6 +189,7 @@ public class ModdedBlocks {
             .transform(GaugeBlock.setMaxValue(5))
             .transform(GaugeBlock.setMaterial(GaugeBlock.Material.ANDESITE))
             .transform(CResistance.setResistance(0.25f))
+            .transform(CThermal.maxPower(15, 3.0f))
             .transform(axeOrPickaxe())
             .defaultLoot()
             .item()
@@ -199,6 +202,7 @@ public class ModdedBlocks {
             .transform(GaugeBlock.setMaxValue(25))
             .transform(GaugeBlock.setMaterial(GaugeBlock.Material.BRASS))
             .transform(CResistance.setResistance(0.05f))
+            .transform(CThermal.maxPower(35, 3.0f))
             .transform(axeOrPickaxe())
             .defaultLoot()
             .item()
@@ -267,6 +271,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CResistance.setResistance(0.15))
+            .transform(CThermal.maxPower(20, 0.5f))
             .lang("LV Switch")
             .item()
                 .model(itemWithParent("block/switches/lv_switch_off_v"))
@@ -278,6 +283,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CResistance.setResistance(0.15))
+            .transform(CThermal.maxPower(20, 0.5f))
             .lang("LV Button")
             .item()
                 .model(itemWithParent("block/switches/lv_button_off_v"))
@@ -290,6 +296,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CResistance.setResistance(0.05))
+            .transform(CThermal.maxPower(40, 1.0f))
             .item()
                 .model(itemWithParent("block/switches/mv_switch_off_v"))
                 .build()
@@ -301,6 +308,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(2))
             .transform(CResistance.setResistance(0.1))
+            .transform(CThermal.maxPower(100, 2.0f))
             .loot((tables, block) ->
                     tables.add(block, b -> LootTable.lootTable()
                             .withPool(LootPool.lootPool()
@@ -329,6 +337,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistances("coil", 12, "switch", 0.05))
+            .transform(CThermal.maxPower(200, 2.0f))
             .simpleItem()
             .register();
 
@@ -379,6 +388,7 @@ public class ModdedBlocks {
             .loot((tables, block) -> tables.dropOther(block, TRANSFORMER_CORE.get()))
             .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
             .transform(pickaxeOnly())
+            .transform(CThermal.maxPower(1000, 4.0f))
             .register();
     public static final BlockEntry<TransformerMediumBlock> TRANSFORMER_MEDIUM = REGISTRATE.block("transformer_medium", TransformerMediumBlock::new)
             .initialProperties(TRANSFORMER_CORE)
@@ -389,6 +399,7 @@ public class ModdedBlocks {
                     ))
             .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
             .transform(pickaxeOnly())
+            .transform(CThermal.maxPower(4000, 16.0f))
             .register();
 
     public static final BlockEntry<VariacBlock> VARIAC = REGISTRATE.block("variac", VariacBlock::new)
@@ -396,6 +407,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/variac/block"))
             .transform(pickaxeOnly())
             .transform(CStress.setNoImpact())
+            .transform(CThermal.maxPower(1000, 4.0f))
             .item()
                 .model(itemWithParent("block/variac/item"))
                 .build()
@@ -438,6 +450,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(15))
+            .transform(CThermal.maxPower(1500, 4.0f))
             .defaultLoot()
             .item(AssemblyOperatorBlockItem::new)
             .build()
@@ -460,6 +473,7 @@ public class ModdedBlocks {
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(25))
+            .transform(CThermal.maxPower(100, 1.0f))
             .loot((tables, block) -> tables.add(block, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .when(ExplosionCondition.survivesExplosion())
@@ -501,6 +515,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(0.1))
+            .transform(CThermal.maxPower(15, 1.5f))
             .addLayer(() -> RenderType::cutoutMipped)
             .loot((tables, block) -> tables.dropOther(block, ModdedItems.COPPER_COIL))
             .register();
@@ -526,6 +541,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(10))
+            .transform(CThermal.maxPower(30, 1.5f))
             .simpleItem()
             .register();
 

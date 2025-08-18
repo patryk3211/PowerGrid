@@ -50,7 +50,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.simple(this, 5.0f, 0.1f);
+        return ThermalBehaviour.fromConfig(this);
     }
 
     @Override

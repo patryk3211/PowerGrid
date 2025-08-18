@@ -35,6 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
+import org.patryk3211.powergrid.config.ThermalValues;
 
 public class ThermalBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<ThermalBehaviour> TYPE = new BehaviourType<>("thermal");
@@ -96,6 +97,18 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     @Nullable
     public static ThermalBehaviour forMaxPower(SmartBlockEntity be, float thermalMass, float power) {
         return forMaxPower(be, thermalMass, power, 175.0f);
+    }
+
+    @Nullable
+    public static ThermalBehaviour fromConfig(SmartBlockEntity be) {
+        var block = be.getBlockState().getBlock();
+        return forMaxPower(be, ThermalValues.getMass(block), ThermalValues.getPower(block));
+    }
+
+    @Nullable
+    public static ThermalBehaviour fromConfig(SmartBlockEntity be, float overheatTemperature) {
+        var block = be.getBlockState().getBlock();
+        return forMaxPower(be, ThermalValues.getMass(block), ThermalValues.getPower(block), overheatTemperature);
     }
 
     public static float dissipationFactor(float power, float temperature) {

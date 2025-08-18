@@ -37,12 +37,18 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigFloat basinHeaterCurrent = f(10, 1, "basinHeaterCurrent", Comments.basinHeaterCurrent);
 
+    public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
+    public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
+
     @Override
     public String getName() {
         return "electricity";
     }
 
     private static class Comments {
+        public static final String resistance = "Resistance values for all devices";
+        public static final String thermal = "Thermal properties for all devices";
+
         public static final String explosiveDeconstruction = "Controls the behaviour of overheated devices. If false, instead of exploding, they break without dropping items.";
         public static final String overheating = "Controls the overheat mechanic. Devices which are overheated, break.";
         public static final String wireOverheating = "Controls the overheat mechanic for wires. Wires will burn if they overheat.";

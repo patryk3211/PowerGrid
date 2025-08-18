@@ -22,10 +22,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.config.CResistance;
-import org.patryk3211.powergrid.config.CServer;
-import org.patryk3211.powergrid.config.CStress;
-import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.config.*;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -41,10 +38,6 @@ public class ModdedConfigs {
 
     public static CServer server() {
         return server;
-    }
-
-    public static CResistance resistance() {
-        return server.resistance;
     }
 
     public static ConfigBase byType(ModConfig.Type type) {
@@ -78,7 +71,8 @@ public class ModdedConfigs {
         BlockStressValues.IMPACTS.registerProvider(stress::getImpact);
         BlockStressValues.CAPACITIES.registerProvider(stress::getCapacity);
 
-        ResistanceValues.register(resistance());
+        ResistanceValues.register(server.electricity.resistance);
+        ThermalValues.register(server.electricity.thermal);
     }
 
     public static void onLoad(ModConfig modConfig) {

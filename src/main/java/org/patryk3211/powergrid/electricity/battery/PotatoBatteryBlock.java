@@ -39,8 +39,6 @@ public class PotatoBatteryBlock extends AbstractBatteryBlock<PotatoBatteryBlockE
     public static final BatterySpec BATTERY_SPEC = new SimpleBatterySpec(
             0.216f,
             0.216f,
-            0.5f,
-            0.01f,
             e -> 0.4f * e + 0.5f,
             e -> (float) Math.exp(-6.15619f * e + 9.28731f) + 430
     );

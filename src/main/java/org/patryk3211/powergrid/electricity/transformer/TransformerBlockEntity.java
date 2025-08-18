@@ -27,7 +27,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -49,6 +51,11 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     public TransformerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return ThermalBehaviour.fromConfig(this);
     }
 
     @Override

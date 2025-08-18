@@ -153,7 +153,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.simple(this, 2.0f, 0.1f);
+        return ThermalBehaviour.fromConfig(this);
     }
 
     private void checkParallelPosition(BlockPos pos, boolean positive, boolean thisIsOwner) {

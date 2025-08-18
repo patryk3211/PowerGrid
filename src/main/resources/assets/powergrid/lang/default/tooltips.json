@@ -1,4 +1,6 @@
 {
+  "powergrid.tooltip.holdForDescription": "Hold [%1$s] for Properties",
+
   "item.powergrid.electrozapper.tooltip.summary": "Fires a lightning bolt that bounces off of nearby enemies, splitting the damage between them. Can be powered with _Forge Energy_ from a _Portable Battery_",
   "item.powergrid.electrozapper.tooltip.condition1": "When R-Clicked",
   "item.powergrid.electrozapper.tooltip.behaviour1": "_Shoots_ a lightning bolt",
