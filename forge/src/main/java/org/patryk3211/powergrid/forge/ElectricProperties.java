@@ -22,6 +22,7 @@ import dev.architectury.utils.EnvExecutor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -65,8 +66,23 @@ public class ElectricProperties implements TooltipModifier {
 
     @Override
     public void modify(ItemTooltipEvent context) {
+        var hasSummary = false;
+        for(var line : context.getToolTip()) {
+            var siblings = line.getSiblings();
+            if(siblings.size() < 2)
+                continue;
+            var key = line.getSiblings().get(1);
+            if(key.getContents() instanceof TranslatableContents) {
+                // If the structure matches we assume that the summary thing is present.
+                hasSummary = true;
+                break;
+            }
+        }
+
         var shift = EnvExecutor.getInEnv(Env.CLIENT, () -> Screen::hasShiftDown).orElse(false);
-        context.getToolTip().add(header(shift));
+        if(!hasSummary) {
+            context.getToolTip().add(header(shift));
+        }
         if(shift) {
             properties.appendProperties(context.getItemStack(), context.getEntity(), context.getToolTip());
         }
