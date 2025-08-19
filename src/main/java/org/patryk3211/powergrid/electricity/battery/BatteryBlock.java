@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
@@ -113,5 +114,6 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Voltage.max(spec.calculateVoltage(1), player, tooltip);
+        Power.max(stack, player, tooltip);
     }
 }

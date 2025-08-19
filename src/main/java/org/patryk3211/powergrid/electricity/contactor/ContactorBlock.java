@@ -90,7 +90,8 @@ public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<C
         Resistance.coil(resistance("coil"), player, tooltip);
         Voltage.rated(24, player, tooltip);
         Resistance.switchResistance(resistance("switch"), player, tooltip);
-        Current.max(resistance("switch"), ThermalValues.getPower(this), player, tooltip);
+        // Subtract the coil's rated power.
+        Current.max(resistance("switch"), ThermalValues.getPower(this) - 48, player, tooltip);
     }
 
     @Override

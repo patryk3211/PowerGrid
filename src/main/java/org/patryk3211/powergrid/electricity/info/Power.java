@@ -18,6 +18,9 @@ package org.patryk3211.powergrid.electricity.info;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -31,5 +34,17 @@ public class Power {
                 .add(Component.nullToEmpty(" ")).add(Lang.number(value))
                 .add(Component.nullToEmpty(" ")).add(Unit.POWER.get())
                 .style(ChatFormatting.YELLOW).addTo(tooltip);
+    }
+
+    public static void max(ItemStack stack, Player player, List<Component> tooltip) {
+        if(stack.getItem() instanceof BlockItem blockItem) {
+            var power = ThermalValues.getPower(blockItem.getBlock());
+            Lang.translate("tooltip.power.max")
+                    .style(ChatFormatting.GRAY).addTo(tooltip);
+            Lang.builder()
+                    .add(Component.nullToEmpty(" ")).add(Lang.number(power))
+                    .add(Component.nullToEmpty(" ")).add(Unit.POWER.get())
+                    .style(ChatFormatting.RED).addTo(tooltip);
+        }
     }
 }
