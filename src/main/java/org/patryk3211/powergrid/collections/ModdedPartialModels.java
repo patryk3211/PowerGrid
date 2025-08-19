@@ -50,6 +50,9 @@ public class ModdedPartialModels {
     public static final PartialModel ROTOR = block("generator/rotor");
     public static final PartialModel INDUCTION_ROTOR = block("generator/induction_rotor");
 
+    public static final PartialModel THERMOMETER_NEEDLE = block("thermometer/needle");
+    public static final PartialModel THERMOMETER_NEEDLE_RED = block("thermometer/needle_red");
+
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));
     }

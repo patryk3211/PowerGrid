@@ -407,6 +407,21 @@ public class DataProviderUtilityImpl {
         }
     }
 
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> northFacing(String name) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            builder.modelFile(modModel(prov, name));
+            switch(state.getValue(FACING)) {
+                case DOWN -> builder.rotationX(90);
+                case UP -> builder.rotationX(-90);
+                case SOUTH -> builder.rotationY(180);
+                case EAST -> builder.rotationY(90);
+                case WEST -> builder.rotationY(-90);
+            }
+            return builder.build();
+        });
+    }
+
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> downFacing(String name) {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
                 .forAllStates(state -> {

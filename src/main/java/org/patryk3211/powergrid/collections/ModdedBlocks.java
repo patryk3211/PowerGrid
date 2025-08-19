@@ -70,6 +70,8 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
@@ -544,6 +546,15 @@ public class ModdedBlocks {
             .transform(CResistance.setResistance(10))
             .transform(CThermal.maxPower(30, 1.5f))
             .simpleItem()
+            .register();
+
+    public static final BlockEntry<ThermometerBlock> THERMOMETER = REGISTRATE.block("thermometer", ThermometerBlock::new)
+            .blockstate(northFacing("block/thermometer/base"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .item(ThermometerItem::new)
+                .model(itemWithParent("block/thermometer/item"))
+                .build()
             .register();
 
     @SuppressWarnings("EmptyMethod")

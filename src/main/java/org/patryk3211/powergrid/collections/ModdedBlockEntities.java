@@ -47,6 +47,8 @@ import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchVisual;
@@ -249,6 +251,12 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<AlarmBellBlockEntity> ALARM_BELL =
             REGISTRATE.blockEntity("alarm_bell", AlarmBellBlockEntity::new)
                     .validBlock(ModdedBlocks.ALARM_BELL)
+                    .register();
+
+    public static final BlockEntityEntry<ThermometerBlockEntity> THERMOMETER =
+            REGISTRATE.blockEntity("thermometer", ThermometerBlockEntity::new)
+                    .validBlock(ModdedBlocks.THERMOMETER)
+                    .renderer(() -> ThermometerRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

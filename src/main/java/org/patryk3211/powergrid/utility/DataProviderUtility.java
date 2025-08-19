@@ -33,6 +33,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 
+import java.rmi.dgc.DGC;
 import java.util.function.Function;
 
 public class DataProviderUtility {
@@ -167,6 +168,11 @@ public class DataProviderUtility {
 
     @ExpectPlatform
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> barrier() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> northFacing(String name) {
         throw new AssertionError();
     }
 }

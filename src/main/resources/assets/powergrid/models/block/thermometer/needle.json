@@ -1,0 +1,23 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"0": "powergrid:block/thermometer",
+		"particle": "powergrid:block/thermometer"
+	},
+	"elements": [
+		{
+			"from": [5, 5.25, 2.75],
+			"to": [10, 6.25, 3.45],
+			"rotation": {"angle": 0, "axis": "z", "origin": [10, 5.75, 3]},
+			"faces": {
+				"east": {"uv": [3, 8, 4, 9], "texture": "#0"},
+				"south": {"uv": [3, 8, 8, 9], "texture": "#0"},
+				"west": {"uv": [3, 8, 4, 9], "texture": "#0"},
+				"up": {"uv": [3, 8, 8, 9], "texture": "#0"},
+				"down": {"uv": [3, 8, 8, 9], "texture": "#0"}
+			}
+		}
+	]
+}

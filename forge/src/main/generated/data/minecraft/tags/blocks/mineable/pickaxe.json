@@ -38,6 +38,7 @@
     "powergrid:winding",
     "powergrid:device_connector",
     "powergrid:fuse_holder",
-    "powergrid:alarm_bell"
+    "powergrid:alarm_bell",
+    "powergrid:thermometer"
   ]
 }
