@@ -49,10 +49,6 @@ import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
-    // TODO: These have to be taken from the used item and adjusted for wire length.
-    public static final float DISSIPATION_FACTOR = 0.2f;
-    public static final float THERMAL_MASS = 1f;
-
     protected static final EntityDataAccessor<Float> TEMPERATURE = SynchedEntityData.defineId(WireEntity.class, EntityDataSerializers.FLOAT);
 
     // TODO: Transmission line flipping might mess with this. Make sure it is safe.
@@ -299,8 +295,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         this.itemCount = count;
 
         int thermalCount = Math.max(itemCount, 1);
-        thermalMass = THERMAL_MASS * thermalCount;
-        dissipationFactor = DISSIPATION_FACTOR * thermalCount;
+        thermalMass = item.getThermalMass() * thermalCount;
+        dissipationFactor = item.getDissipationFactor() * thermalCount;
     }
 
     public float getResistance() {
@@ -412,8 +408,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             itemCount = 0;
 
         int thermalCount = Math.max(itemCount, 1);
-        thermalMass = THERMAL_MASS * thermalCount;
-        dissipationFactor = DISSIPATION_FACTOR * thermalCount;
+        thermalMass = item.getThermalMass() * thermalCount;
+        dissipationFactor = item.getDissipationFactor() * thermalCount;
     }
 
     @Override
