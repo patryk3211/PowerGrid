@@ -72,7 +72,7 @@ public class RotorSoundInstance extends AbstractTickableSoundInstance {
             }
 
             var velocity = Math.abs(behaviour.getAngularVelocity());
-            var pitch = velocity / 128f;
+            var pitch = velocity / (behaviour.getMaxRotationSpeed() / 2f);
             if(velocity < 32) {
                 this.volume = 0.0f;
                 stop();
@@ -80,7 +80,7 @@ public class RotorSoundInstance extends AbstractTickableSoundInstance {
                 var volume = (velocity / 128);
                 this.volume = Mth.clamp(volume, 0, 1) * 0.3f;
             }
-            this.pitch = Mth.clamp(pitch, 0.5f, 2.0f);
+            this.pitch = Mth.clamp(pitch, 0.5f, 2f);
         }
     }
 }
