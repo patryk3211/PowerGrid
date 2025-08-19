@@ -18,9 +18,9 @@ package org.patryk3211.powergrid.config;
 import net.createmod.catnip.config.ConfigBase;
 
 public class CServer extends ConfigBase {
-    public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
     public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
     public final CRecipes recipes = nested(0, CRecipes::new, Comments.recipes);
+    public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
 
     @Override
     public String getName() {
