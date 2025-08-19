@@ -31,6 +31,8 @@ public class CKinetics extends ConfigBase {
 
     public final ConfigFloat motorRPMPerVolt = f(0.5f, 0, "motorRPMPerVolt", Comments.motorRPMPerVolt);
 
+    public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
+
     public final CStress stressValues = nested(1, CStress::new, Comments.stress);
 
     @Override
@@ -46,7 +48,8 @@ public class CKinetics extends ConfigBase {
         public static final String lightningAttractorMaxFrequency = "How often can the lightning attractor fire";
         public static final String rotorAssemblyMaxSize = "Maximum length of a rotor assembly";
         public static final String motorRPMPerVolt = "Rotation speed of the electric motor for every volt across it";
-
+        public static final String rotorRPMMax = "Maximum rotation speed of a rotor";
+        
         public static final String stress = "Fine tune the kinetic stats of individual components";
     }
 }
