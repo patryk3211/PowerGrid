@@ -55,7 +55,7 @@ public class CThermal extends ConfigBase implements ThermalValues.Provider {
 
     @Override
     public String getName() {
-        return "thermal.v" + VERSION;
+        return "thermal-v" + VERSION;
     }
 
     @Nullable

@@ -48,7 +48,7 @@ public class CResistance extends ConfigBase implements ResistanceValues.Provider
 
     @Override
     public String getName() {
-        return "resistance.v" + VERSION;
+        return "resistance-v" + VERSION;
     }
 
     @Nullable
