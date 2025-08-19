@@ -487,6 +487,11 @@ public class DataProviderUtilityImpl {
                 .simpleBlockWithItem(ctx.getEntry(), prov.models().cubeAll(ctx.getName(), prov.modLoc(name)));
     }
 
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> simple(String model) {
+        return (ctx, prov) -> prov
+                .simpleBlock(ctx.getEntry(), modModel(prov, model));
+    }
+
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {
         return (ctx, prov) -> prov
                 .generated(ctx.lazy());

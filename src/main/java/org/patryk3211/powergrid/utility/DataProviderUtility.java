@@ -146,6 +146,11 @@ public class DataProviderUtility {
     }
 
     @ExpectPlatform
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> simple(String model) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {
         throw new AssertionError();
     }

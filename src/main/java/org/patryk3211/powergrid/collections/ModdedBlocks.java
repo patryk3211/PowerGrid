@@ -446,7 +446,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
-            .blockstate(downFacing("block/electromagnet"))
+            .blockstate(simple("block/electromagnet"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(15))
