@@ -147,6 +147,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(10))
+            .transform(CThermal.maxPower(60, 1.5f))
             .defaultLoot()
             .simpleItem()
             .register();
