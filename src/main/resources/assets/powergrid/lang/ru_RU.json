@@ -87,7 +87,7 @@
   "item.powergrid.portable_battery": "Портативный аккумулятор",
   "item.powergrid.portable_battery.tooltip.behaviour1": "Снабжает _Forge Energy_ Снаряжение, которое в ней нуждается",
   "item.powergrid.portable_battery.tooltip.behaviour2": "Накапливает энергию со скоростью, зависящей от _Подаваемого напряжения_",
-  "item.powergrid.portable_battery.tooltip.condition2": "При размещении питается от электричества",
+  "item.powergrid.portable_battery.tooltip.condition2": "Когда размещён и подключен к электричеству",
   "item.powergrid.portable_battery.tooltip.summary": "_Носимая батарея_ для переноса энергии",
   "item.powergrid.portable_battery_placeable": "Возможность установки портативной батареи"
 }
