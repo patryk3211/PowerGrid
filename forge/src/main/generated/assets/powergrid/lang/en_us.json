@@ -348,6 +348,7 @@
   "powergrid.tooltip.circuit_assembly.progress": "Progress",
   "powergrid.tooltip.current.max": "Maximum current:",
   "powergrid.tooltip.holdForDescription": "Hold [%1$s] for Properties",
+  "powergrid.tooltip.power.max": "Maximum power:",
   "powergrid.tooltip.power.rated": "Rated power:",
   "powergrid.tooltip.range.max": "Maximum range:",
   "powergrid.tooltip.resistance.coil": "Coil resistance:",
