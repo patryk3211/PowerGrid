@@ -22,6 +22,8 @@ import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
+import java.util.List;
+
 @SuppressWarnings("unused")
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
@@ -350,7 +352,9 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('C', ModdedBlocks.DEVICE_CONNECTOR)
                     .define('Z', RecipeTags.zincSheet())
                     .define('D', RecipeTags.electricalGizmo())
-                    .define('B', ModdedBlocks.BATTERY))
+                    .define('B', ModdedBlocks.BATTERY)),
+
+    HOUSING_CYCLE = conversionCycle(List.of(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING))
             ;
 
     public CraftingRecipes(PackOutput output) {

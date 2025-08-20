@@ -15,6 +15,7 @@
     "powergrid:generator_commutator",
     "powergrid:generator_clutch",
     "powergrid:generator_housing",
+    "powergrid:vertical_generator_housing",
     "powergrid:lv_switch",
     "powergrid:lv_button",
     "powergrid:mv_switch",

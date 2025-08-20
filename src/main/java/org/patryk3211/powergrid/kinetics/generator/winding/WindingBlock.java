@@ -52,6 +52,7 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.Optional;
@@ -228,6 +229,14 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
                 var expectUp = !positive;
                 return state.getValue(UP) == expectUp;
             }
+        } else if(state.getBlock() instanceof VerticalGeneratorHousing) {
+            var windingBlock = (WindingBlock) thisState.getBlock();
+            var parallelAxis = windingBlock.getParallelCheckAxis(thisState);
+            if(parallelAxis.isVertical())
+                return false;
+            var expectedFacing = Direction.fromAxisAndDirection(parallelAxis, positive ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
+            var housingFacing = state.getValue(HORIZONTAL_FACING);
+            return housingFacing == expectedFacing || housingFacing.getCounterClockWise() == expectedFacing;
         }
         return false;
     }

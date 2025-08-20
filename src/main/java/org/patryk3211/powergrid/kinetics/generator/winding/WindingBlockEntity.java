@@ -31,6 +31,7 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 import java.util.HashSet;
@@ -210,6 +211,36 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     }
                 });
             }
+        } else if(state.getBlock() instanceof VerticalGeneratorHousing) {
+            var windingBlock = (WindingBlock) thisState.getBlock();
+            var parallelAxis = windingBlock.getParallelCheckAxis(thisState);
+            if(parallelAxis.isVertical()) {
+                // Illegal state
+                return;
+            }
+            var expectedFacing = Direction.get(positive ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE, parallelAxis);
+            var housingFacing = state.getValue(HORIZONTAL_FACING);
+            if(housingFacing != expectedFacing && housingFacing.getCounterClockWise() != expectedFacing)
+                return;
+            if(housingFacing == expectedFacing) {
+                // From first to second
+                pos = pos.relative(housingFacing.getCounterClockWise());
+            } else {
+                // From second to first
+                pos = pos.relative(housingFacing);
+            }
+            var nextState = level.getBlockState(pos);
+            var be = windingBlock.getMainBlockEntity(level, pos);
+            be.ifPresent(winding -> {
+                if(nextState.getValue(AXIS) == thisState.getValue(AXIS) && nextState.getValue(ALONG_FIRST_AXIS) != thisState.getValue(ALONG_FIRST_AXIS)) {
+                    // Alignment matches and block entity is valid, these can be connected.
+                    if(thisIsOwner) {
+                        this.addParallel(winding);
+                    } else {
+                        winding.addParallel(this);
+                    }
+                }
+            });
         }
     }
 

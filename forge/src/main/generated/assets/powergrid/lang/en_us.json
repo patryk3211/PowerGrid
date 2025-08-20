@@ -44,6 +44,7 @@
   "block.powergrid.transformer_medium": "Transformer Medium",
   "block.powergrid.transformer_small": "Transformer Small",
   "block.powergrid.variac": "Variac",
+  "block.powergrid.vertical_generator_housing": "Vertical Generator Housing",
   "block.powergrid.winding": "Winding",
   "block.powergrid.wire_connector": "Wire Connector",
   "component.powergrid.diode.0": "Anode",

@@ -76,6 +76,7 @@ import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
@@ -267,11 +268,24 @@ public class ModdedBlocks {
     public static final BlockEntry<GeneratorHousing> GENERATOR_HOUSING = REGISTRATE.block("generator_housing", GeneratorHousing::new)
             .blockstate(housing("block/generator/housing"))
             .initialProperties(SharedProperties::softMetal)
+            .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
             .addLayer(() -> RenderType::cutoutMipped)
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/generator/housing"))
+                .build()
+            .register();
+
+    public static final BlockEntry<VerticalGeneratorHousing> VERTICAL_GENERATOR_HOUSING = REGISTRATE.block("vertical_generator_housing", VerticalGeneratorHousing::new)
+            .blockstate(horizontalBlock("block/generator/housing_vertical"))
+            .initialProperties(SharedProperties::softMetal)
+            .properties(BlockBehaviour.Properties::noOcclusion)
+            .transform(pickaxeOnly())
+            .addLayer(() -> RenderType::cutoutMipped)
+            .defaultLoot()
+            .item()
+                .model(itemWithParent("block/generator/housing_vertical"))
                 .build()
             .register();
 
