@@ -45,6 +45,10 @@ public class Lang extends net.createmod.catnip.lang.Lang {
     }
 
     public static LangBuilder number(double n) {
-        return builder().text(PreciseNumberFormat.format(n));
+        return builder().text(NumberFormats.formatPrecise(n));
+    }
+
+    public static LangBuilder numberConstant(double n) {
+        return builder().text(NumberFormats.formatConstant(n));
     }
 }

@@ -26,13 +26,13 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.utility.Lang;
-import org.patryk3211.powergrid.utility.PreciseNumberFormat;
+import org.patryk3211.powergrid.utility.NumberFormats;
 
 public class CreativeResistorValueBehaviour extends ScrollValueBehaviour {
     public CreativeResistorValueBehaviour(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
         super(label, be, slot);
         between(0, 72);
-        withFormatter(i -> PreciseNumberFormat.format(exponentialValue(i)));
+        withFormatter(i -> NumberFormats.formatPrecise(exponentialValue(i)));
     }
 
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
@@ -64,7 +64,7 @@ public class CreativeResistorValueBehaviour extends ScrollValueBehaviour {
 
     public MutableComponent formatSettings(ValueSettings settings) {
         return Lang
-                .text(PreciseNumberFormat.format(exponentialValue(settings.value())))
+                .text(NumberFormats.formatPrecise(exponentialValue(settings.value())))
                 .component();
     }
 }

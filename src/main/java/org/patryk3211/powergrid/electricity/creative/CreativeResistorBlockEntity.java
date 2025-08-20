@@ -31,7 +31,7 @@ import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
-import org.patryk3211.powergrid.utility.PreciseNumberFormat;
+import org.patryk3211.powergrid.utility.NumberFormats;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
@@ -81,7 +81,7 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
                 .forGoggles(tooltip);
 
         var resistance = wire.getResistance();
-        var resistanceText = PreciseNumberFormat.format(resistance);
+        var resistanceText = NumberFormats.formatPrecise(resistance);
         Lang.builder()
                 .text(resistanceText)
                 .add(Component.nullToEmpty(" "))
@@ -94,7 +94,7 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
                 .forGoggles(tooltip);
 
         float current = wire.current();
-        var currentText = PreciseNumberFormat.format(current);
+        var currentText = NumberFormats.formatPrecise(current);
         Lang.builder()
                 .text(currentText)
                 .add(Component.nullToEmpty(" "))
@@ -106,7 +106,7 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        var power = PreciseNumberFormat.format(current * current * resistance);
+        var power = NumberFormats.formatPrecise(current * current * resistance);
         Lang.builder()
                 .text(power)
                 .add(Component.nullToEmpty(" "))

@@ -15,9 +15,12 @@
  */
 package org.patryk3211.powergrid.equipment.thermometer;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.utility.CreateLang;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -25,11 +28,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     public float maxState;
+    public float maxTemperature;
 
     public float dialTarget;
     public float prevDialState;
@@ -41,16 +48,25 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
         super(type, pos, state);
     }
 
-    @Override
-    public void tick() {
-        super.tick();
+    private float temperature() {
         var facing = getBlockState().getValue(ThermometerBlock.FACING);
         var thermal = BlockEntityBehaviour.get(level, worldPosition.relative(facing), ThermalBehaviour.TYPE);
         if(thermal != null) {
-            dialTarget = (thermal.getTemperature() - 22f) / (175 - 22);
+            return thermal.getTemperature();
         }
+        return 22f;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        var temperature = temperature();
+        if(temperature > maxTemperature)
+            maxTemperature = temperature;
+        dialTarget = Mth.clamp((temperature - 22f) / (175 - 22), 0, 1.125f);
         if(!Float.isNaN(dialTarget)) {
             prevDialState = dialState;
+
             dialState += (dialTarget - dialState) * .125f;
             if (dialState > 1 && level.random.nextFloat() < 1 / 2f)
                 dialState -= (dialState - 1) * level.random.nextFloat();
@@ -73,24 +89,62 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
 
     public void resetMax() {
         maxState = dialState;
+        maxTemperature = temperature();
         setChanged();
     }
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        tag.putFloat("Max", maxState);
+        tag.putFloat("Max", maxTemperature);
+        tag.putFloat("MaxState", maxState);
     }
 
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        maxState = tag.getFloat("Max");
+        maxTemperature = tag.getFloat("Max");
+        maxState = tag.getFloat("MaxState");
+    }
+
+    private ChatFormatting color(float temperature) {
+        var color = ChatFormatting.GREEN;
+        if(temperature > 150) {
+            color = ChatFormatting.RED;
+        } else if(temperature > 125) {
+            color = ChatFormatting.YELLOW;
+        }
+        return color;
     }
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        CreateLang.translate("gui.gauge.info_header").forGoggles(tooltip);
 
+        Lang.translate("gui.thermometer.title")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        var temperature = temperature();
+        Lang.number(temperature)
+                .add(Component.literal(" "))
+                .add(Unit.TEMPERATURE.get())
+                .style(color(temperature))
+                .forGoggles(tooltip);
+
+        Lang.translate("gui.thermometer.max_title")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        Lang.number(maxTemperature)
+                .add(Component.literal(" "))
+                .add(Unit.TEMPERATURE.get())
+                .style(color(maxTemperature))
+                .forGoggles(tooltip);
+
+        Lang.translate("gui.thermometer.click")
+                .style(ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip);
         return true;
     }
 }

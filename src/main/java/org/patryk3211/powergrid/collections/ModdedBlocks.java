@@ -72,6 +72,7 @@ import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
@@ -553,7 +554,8 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .item(ThermometerItem::new)
-                .model(itemWithParent("block/thermometer/item"))
+                .model(itemWithParent("block/thermometer/base"))
+                .transform(ModdedItems.customRenderer(() -> ThermometerItemRenderer::new))
                 .build()
             .register();
 

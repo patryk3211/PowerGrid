@@ -15,9 +15,7 @@
  */
 package org.patryk3211.powergrid.equipment.thermometer;
 
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 
 public class ThermometerItem extends BlockItem {

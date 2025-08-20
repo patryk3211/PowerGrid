@@ -1,6 +1,9 @@
 {
   "powergrid.gui.voltage_meter.title": "Measured voltage",
   "powergrid.gui.current_meter.title": "Measured current",
+  "powergrid.gui.thermometer.title": "Measured temperature",
+  "powergrid.gui.thermometer.max_title": "Max measured temperature",
+  "powergrid.gui.thermometer.click": "Click to reset max measurement",
 
   "powergrid.gui.heater.info_header": "Heating coil information",
   "powergrid.gui.heater.title": "Coil temperature",
@@ -22,6 +25,8 @@
 
   "powergrid.gui.circuit_board.damage_header": "Damaged",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
+
+  "powergrid.gui.thermometer.temperature": "Temperature: ",
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",

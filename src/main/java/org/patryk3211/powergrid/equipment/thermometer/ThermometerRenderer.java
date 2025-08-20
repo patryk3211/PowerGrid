@@ -35,8 +35,7 @@ public class ThermometerRenderer extends SafeBlockEntityRenderer<ThermometerBloc
         var facing = state.getValue(ThermometerBlock.FACING);
 
         var buffer = CachedBuffers.partial(ModdedPartialModels.THERMOMETER_NEEDLE, state);
-        var progress = Mth.lerp(partialTicks, be.prevDialState, be.dialState);
-        prepareDial(buffer, facing, progress, light)
+        prepareDial(buffer, facing, Mth.lerp(partialTicks, be.prevDialState, be.dialState), light)
                 .renderInto(ms, bufferSource.getBuffer(RenderType.solid()));
 
         var buffer2 = CachedBuffers.partial(ModdedPartialModels.THERMOMETER_NEEDLE_RED, state);
