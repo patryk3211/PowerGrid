@@ -220,6 +220,10 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         return fieldStrength;
     }
 
+    public int getMaxRotationSpeed() {
+        return ModdedConfigs.server().kinetics.rotorRPMMax.get();
+    }
+
     public void setFieldStrength(float value) {
         fieldStrength = value;
         blockEntity.setChanged();
@@ -238,7 +242,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity))
                 angularVelocity = 0;
 
-            if(Math.abs(angularVelocity) > 320 && !getWorld().isClientSide) {
+            if(Math.abs(angularVelocity) > getMaxRotationSpeed() && !getWorld().isClientSide) {
                 // TODO: Maybe make this a bit more destructive.
                 getWorld().destroyBlock(getPos(), false);
             }

@@ -45,7 +45,7 @@ public class ClientWireInteractions {
     public static void clientTick() {
         var mc = Minecraft.getInstance();
         var target = mc.hitResult;
-        if(target.getType() != HitResult.Type.ENTITY)
+        if(target == null || target.getType() != HitResult.Type.ENTITY)
             return;
         var entityHit = (EntityHitResult) target;
         if(currentEntity != entityHit.getEntity())
