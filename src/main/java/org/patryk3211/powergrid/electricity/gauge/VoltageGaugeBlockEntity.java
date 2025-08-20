@@ -58,6 +58,11 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
         return node1.getVoltage() - node2.getVoltage();
     }
 
+    @Override
+    public Unit getUnit() {
+        return Unit.VOLTAGE;
+    }
+
     protected ChatFormatting measurementColor(float value) {
         if(value < maxValue * 0.01)
             return ChatFormatting.DARK_GRAY;

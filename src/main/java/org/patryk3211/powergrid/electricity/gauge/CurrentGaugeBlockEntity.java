@@ -66,6 +66,11 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
         return wire.current();
     }
 
+    @Override
+    public Unit getUnit() {
+        return Unit.CURRENT;
+    }
+
     protected ChatFormatting measurementColor(float value) {
         if(value < maxValue * 0.01)
             return ChatFormatting.DARK_GRAY;

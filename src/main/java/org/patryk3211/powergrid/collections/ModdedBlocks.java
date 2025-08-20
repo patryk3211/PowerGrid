@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
@@ -170,6 +171,7 @@ public class ModdedBlocks {
             .transform(GaugeBlock.setMaxValue(20))
             .transform(GaugeBlock.setMaterial(GaugeBlock.Material.ANDESITE))
             .transform(axeOrPickaxe())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .defaultLoot()
             .item()
                 .model(gauge("block/gauge/item_voltage", "block/andesite_gauge"))
@@ -181,6 +183,7 @@ public class ModdedBlocks {
             .transform(GaugeBlock.setMaxValue(200))
             .transform(GaugeBlock.setMaterial(GaugeBlock.Material.BRASS))
             .transform(axeOrPickaxe())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .defaultLoot()
             .item()
                 .model(gauge("block/gauge/item_voltage", "block/brass_gauge"))
@@ -195,6 +198,7 @@ public class ModdedBlocks {
             .transform(CResistance.setResistance(0.25f))
             .transform(CThermal.maxPower(15, 3.0f))
             .transform(axeOrPickaxe())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .defaultLoot()
             .item()
                 .model(gauge("block/gauge/item_current", "block/andesite_gauge"))
@@ -208,6 +212,7 @@ public class ModdedBlocks {
             .transform(CResistance.setResistance(0.05f))
             .transform(CThermal.maxPower(35, 3.0f))
             .transform(axeOrPickaxe())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .defaultLoot()
             .item()
                 .model(gauge("block/gauge/item_current", "block/brass_gauge"))

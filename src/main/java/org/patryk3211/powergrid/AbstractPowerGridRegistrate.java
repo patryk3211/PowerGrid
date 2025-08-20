@@ -15,7 +15,11 @@
  */
 package org.patryk3211.powergrid;
 
+import com.simibubi.create.api.behaviour.display.DisplaySource;
+import com.simibubi.create.api.registry.CreateRegistries;
+import com.simibubi.create.api.registry.registrate.SimpleBuilder;
 import com.simibubi.create.foundation.data.CreateBlockEntityBuilder;
+import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder;
@@ -28,6 +32,7 @@ import org.patryk3211.powergrid.circuits.components.ComponentBuilder;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<AbstractPowerGridRegistrate> {
     protected Function<Item, TooltipModifier> tooltipModifierFactory;
@@ -59,5 +64,11 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
 
     public <T extends Component, P> ComponentBuilder<T, P> component(P parent, String name, NonNullFunction<ComponentFootprint, T> factory) {
         return this.entry(name, callback ->  ComponentBuilder.create(this, parent, name, callback, factory));
+    }
+
+    public <T extends DisplaySource> SimpleBuilder<DisplaySource, T, AbstractPowerGridRegistrate> displaySource(String name, Supplier<T> supplier) {
+        return this.entry(name, callback ->
+                new SimpleBuilder<>(this, this, name, callback, CreateRegistries.DISPLAY_SOURCE, supplier)
+                        .byBlock(DisplaySource.BY_BLOCK).byBlockEntity(DisplaySource.BY_BLOCK_ENTITY));
     }
 }

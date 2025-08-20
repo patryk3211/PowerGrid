@@ -127,5 +127,11 @@
   "powergrid.keyinfo.pick_component": "Pick Component",
   "powergrid.keyinfo.place_trace": "Place Trace",
   "powergrid.keyinfo.rotate_component": "Rotate Component",
-  "powergrid.keyinfo.switch_layer": "Switch Layer"
+  "powergrid.keyinfo.switch_layer": "Switch Layer",
+
+  "powergrid.display_source.electric_gauge": "Electric Gauge",
+  "powergrid.display_source.electric_gauge.progress_bar": "Progress bar",
+  "powergrid.display_source.electric_gauge.absolute": "Absolute value",
+  "powergrid.display_source.electric_gauge.polarized": "Polarized value",
+  "powergrid.display_source.electric_gauge.display": "Display information"
 }

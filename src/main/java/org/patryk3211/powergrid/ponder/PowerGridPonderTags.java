@@ -82,5 +82,11 @@ public class PowerGridPonderTags {
         helper.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR.getId())
                 .add(ModdedBlocks.SERVO.getId());
+
+        helper.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
+                .add(ModdedBlocks.ANDESITE_VOLTAGE_METER.getId())
+                .add(ModdedBlocks.ANDESITE_CURRENT_METER.getId())
+                .add(ModdedBlocks.BRASS_VOLTAGE_METER.getId())
+                .add(ModdedBlocks.BRASS_CURRENT_METER.getId());
     }
 }

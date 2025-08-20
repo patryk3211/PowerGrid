@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
@@ -63,7 +64,12 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
         }
     }
 
+    public float getProgress() {
+        return Mth.clamp(dialTarget, 0, 1);
+    }
+
     public abstract float getValue();
+    public abstract Unit getUnit();
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
