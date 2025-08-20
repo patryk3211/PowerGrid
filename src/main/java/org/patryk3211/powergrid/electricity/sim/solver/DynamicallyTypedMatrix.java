@@ -19,6 +19,7 @@ import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.ops.DConvertMatrixStruct;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 
 public class DynamicallyTypedMatrix {
@@ -35,6 +36,42 @@ public class DynamicallyTypedMatrix {
             CommonOps_DSCC.mult((DMatrixSparseCSC) matrix, in, out);
         } else {
             CommonOps_DDRM.mult((DMatrixRMaj) matrix, in, out);
+        }
+    }
+
+    public void set(int row, int col, double value) {
+        matrix.set(row, col, value);
+    }
+
+    public double get(int row, int col) {
+        return matrix.get(row, col);
+    }
+
+    public void add(int row, int col, double value) {
+        if(!sparse) {
+            ((DMatrixRMaj) matrix).add(row, col, value);
+        } else {
+            var current = matrix.get(row, col);
+            matrix.set(row, col, current + value);
+        }
+    }
+
+    public void setTo(DMatrixRMaj matrix) {
+        // This will need to be tuned, probably.
+        if(matrix.getNumRows() > 6) {
+            if(sparse) {
+                DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) this.matrix, 1e-6);
+            } else {
+                this.matrix = DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) null, 1e-6);
+            }
+            sparse = true;
+        } else {
+            if(!sparse) {
+                this.matrix.setTo(matrix);
+            } else {
+                this.matrix = new DMatrixRMaj(matrix);
+            }
+            sparse = false;
         }
     }
 }

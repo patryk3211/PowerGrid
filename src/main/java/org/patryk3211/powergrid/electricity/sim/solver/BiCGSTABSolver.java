@@ -15,13 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
-import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
-import org.ejml.sparse.csc.CommonOps_DSCC;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -39,6 +36,7 @@ public class BiCGSTABSolver implements ISolver {
     private static final int MAX_ITERATIONS = 200;
 
     private final Random random;
+    private double initialDistance;
 
     // Solved vector
     private DMatrixRMaj guess;
@@ -57,7 +55,7 @@ public class BiCGSTABSolver implements ISolver {
 
     private final double targetPrecision;
 
-    private Set<ISolverHook> hooks = new HashSet<>();
+    private final Set<ISolverHook> hooks = new HashSet<>();
 
     public BiCGSTABSolver(double targetPrecision) {
         this.targetPrecision = targetPrecision;
@@ -95,7 +93,7 @@ public class BiCGSTABSolver implements ISolver {
         }
     }
 
-    private void preconditioned(DMatrix K, DMatrixRMaj input, DMatrixRMaj output) {
+    private void preconditioned(DynamicallyTypedMatrix K, DMatrixRMaj input, DMatrixRMaj output) {
         for(int i = 0; i < input.getNumRows(); ++i) {
             var k = K.get(i, i);
             if(k == 0) {
@@ -124,7 +122,7 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
-    public DMatrixRMaj solve(DMatrixSparseCSC A, DMatrixRMaj b) {
+    public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b) {
         if(b.getNumRows() == 0)
             return guess;
 
@@ -133,7 +131,7 @@ public class BiCGSTABSolver implements ISolver {
         }
 
         // r = b - A * x
-        CommonOps_DSCC.mult(A, guess, v);
+        A.mult(guess, v);
         CommonOps_DDRM.subtract(b, v, residual);
 
         for(var hook : hooks) {
@@ -142,6 +140,7 @@ public class BiCGSTABSolver implements ISolver {
 
         // Check if result is already good enough.
         double norm = NormOps_DDRM.normP2(residual);
+        initialDistance = norm;
         if(norm <= targetPrecision) {
             return guess;
         }
@@ -151,19 +150,10 @@ public class BiCGSTABSolver implements ISolver {
 
         int iters = 0;
         while(iters++ < MAX_ITERATIONS) {
-//            for(var hook : hooks) {
-//                hook.iteration(A, guess, residual, p);
-//            }
-//            if(iters == 100) {
-//                // Pick new hat residual.
-//                hatResidual.setTo(residual);
-////                pickHatResidual();
-//            }
-
             preconditioned(A, p, y);
 
             // v = A * y
-            CommonOps_DSCC.mult(A, y, v);
+            A.mult(y, v);
 
             double alpha = dot / CommonOps_DDRM.dot(hatResidual, v);
             // h = x + alpha * y
@@ -180,7 +170,7 @@ public class BiCGSTABSolver implements ISolver {
             preconditioned(A, s, z);
 
             // t = A * z
-            CommonOps_DSCC.mult(A, z, t);
+            A.mult(z, t);
             double omega = CommonOps_DDRM.dot(t, s) / CommonOps_DDRM.dot(t, t);
 
             // x = h + omega * z
@@ -225,5 +215,10 @@ public class BiCGSTABSolver implements ISolver {
     @Override
     public Collection<ISolverHook> getHooks() {
         return hooks;
+    }
+
+    @Override
+    public double getInitialGuessDistance() {
+        return initialDistance;
     }
 }

@@ -24,15 +24,6 @@ public interface ISolverHook {
     default void preSolve() { }
 
     /**
-     * Called at the start of every iteration
-     * @param A Admittance matrix
-     * @param x Current best guess solution
-     * @param residual Residual matrix
-     * @param p Direction matrix
-     */
-    default void iteration(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj residual, DMatrixRMaj p) { }
-
-    /**
      * Called after the initial residual has been calculated (r = b - A * x)
      * @param residual Residual matrix
      */

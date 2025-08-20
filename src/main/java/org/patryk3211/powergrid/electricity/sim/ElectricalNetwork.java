@@ -16,10 +16,9 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.data.DMatrixSparseCSC;
-import org.ejml.ops.DConvertMatrixStruct;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.BiCGSTABSolver;
+import org.patryk3211.powergrid.electricity.sim.solver.DynamicallyTypedMatrix;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
@@ -36,8 +35,8 @@ public class ElectricalNetwork {
 
     private final ISolver solver;
     private boolean[] voltageSources;
-    private DMatrixSparseCSC conductanceMatrix;
-    private DMatrixSparseCSC AMatrix;
+    private DMatrixRMaj conductanceMatrix;
+    private DynamicallyTypedMatrix AMatrix;
     private DMatrixRMaj currentMatrix;
     private int sourceCount;
 
@@ -59,6 +58,10 @@ public class ElectricalNetwork {
     // Make sure all variables are completely rebuilt and repopulated.
     public void setDirty() {
         this.dirty = true;
+    }
+
+    public boolean hasHooks() {
+        return !solver.getHooks().isEmpty();
     }
 
     public void addNode(INode node) {
@@ -184,36 +187,9 @@ public class ElectricalNetwork {
             alterConductanceUnsafe(index2, index2, change);
             alterConductanceUnsafe(index1, index2, -change);
             alterConductanceUnsafe(index2, index1, -change);
-//            conductanceMatrix.add(index1, index1, change);
-//            conductanceMatrix.add(index2, index2, change);
-//            conductanceMatrix.add(index1, index2, -change);
-//            conductanceMatrix.add(index2, index1, -change);
-//            if(!voltageSources[index1]) {
-//                AMatrix.add(index1, index1, change);
-//                AMatrix.add(index2, index1, -change);
-//            } else {
-//                var U = ((VoltageSourceNode) nodes.get(index1)).getVoltage();
-//                currentMatrix.add(index1, 0, U * -change);
-//                currentMatrix.add(index2, 0, U * change);
-//            }
-//            if(!voltageSources[index2]) {
-//                AMatrix.add(index2, index2, change);
-//                AMatrix.add(index1, index2, -change);
-//            } else {
-//                var U = ((VoltageSourceNode) nodes.get(index2)).getVoltage();
-//                currentMatrix.add(index2, 0, U * -change);
-//                currentMatrix.add(index1, 0, U * change);
-//            }
         } else {
             var index = wire.node1 != null ? wire.node1.getIndex() : wire.node2.getIndex();
             alterConductanceUnsafe(index, index, change);
-//            conductanceMatrix.add(index, index, change);
-//            if(!voltageSources[index]) {
-//                AMatrix.add(index, index, change);
-//            } else {
-//                var U = ((VoltageSourceNode) nodes.get(index)).getVoltage();
-//                currentMatrix.add(index, 0, U * change);
-//            }
         }
     }
 
@@ -283,11 +259,9 @@ public class ElectricalNetwork {
     }
 
     private void populateConductanceMatrix() {
-        var nodeCount = nodes.size();
-        var intermediary = new DMatrixRMaj(nodeCount, nodeCount);
-
         conductanceDelta = 0;
         conductanceUpdates = 0;
+        conductanceMatrix.zero();
         List<AbstractElectricWire> staleWires = new ArrayList<>();
         for(var wire : wires) {
             var G = wire.conductance();
@@ -301,13 +275,13 @@ public class ElectricalNetwork {
                     staleWires.add(wire);
                     continue;
                 }
-                intermediary.add(index1, index1, G);
-                intermediary.add(index2, index2, G);
-                intermediary.add(index1, index2, -G);
-                intermediary.add(index2, index1, -G);
+                conductanceMatrix.add(index1, index1, G);
+                conductanceMatrix.add(index2, index2, G);
+                conductanceMatrix.add(index1, index2, -G);
+                conductanceMatrix.add(index2, index1, -G);
             } else {
                 var index = wire.node1 != null ? wire.node1.getIndex() : wire.node2.getIndex();
-                intermediary.add(index, index, G);
+                conductanceMatrix.add(index, index, G);
             }
         }
 //        for(var node : nodes) {
@@ -324,11 +298,9 @@ public class ElectricalNetwork {
             wires.remove(wire);
         });
         for(var node : couplings) {
-            node.couple(intermediary);
+            node.couple(conductanceMatrix);
         }
 
-        conductanceMatrix.zero();
-        DConvertMatrixStruct.convert(intermediary, conductanceMatrix, 1e-6);
         AMatrix.setTo(conductanceMatrix);
     }
 
@@ -364,22 +336,36 @@ public class ElectricalNetwork {
         other.couplings.clear();
     }
 
-    public void calculate(boolean printResult, boolean printState) {
-        if(sourceCount == 0) {
-            for(var node : nodes) {
-                if(node instanceof IElectricNode enode) {
-                    enode.receiveResult(0);
+    private boolean acceptResults(DMatrixRMaj result, boolean canRepeat) {
+        for(var node : nodes) {
+            if(node instanceof IElectricNode enode) {
+                if(node.getIndex() >= result.getNumRows()) {
+                    // Why is it here???
+                    continue;
+                }
+                float value = (float) result.get(node.getIndex(), 0);
+                if(Float.isNaN(value) || Float.isInfinite(value)) {
+                    solver.zero();
+                    if(canRepeat) {
+                        // Try again.
+                        return false;
+                    } else {
+                        // Failed again
+                        enode.receiveResult(0);
+                    }
+                } else {
+                    enode.receiveResult(value);
                 }
             }
-            return;
         }
+        return true;
+    }
 
+    private void prepareMatrices() {
         var nodeCount = nodes.size();
         if(conductanceMatrix == null || dirty || conductanceMatrix.getNumRows() != nodeCount) {
-            conductanceMatrix = new DMatrixSparseCSC(nodeCount, nodeCount);
-            // new DMatrixRMaj(nodeCount, nodeCount);
-            AMatrix = new DMatrixSparseCSC(nodeCount, nodeCount);
-            // new DMatrixRMaj(nodeCount, nodeCount);
+            conductanceMatrix = new DMatrixRMaj(nodeCount, nodeCount);
+            AMatrix = new DynamicallyTypedMatrix(nodeCount, nodeCount);
             currentMatrix = new DMatrixRMaj(nodeCount, 1);
             voltageSources = new boolean[nodeCount];
             solver.setStateSize(nodeCount);
@@ -398,38 +384,41 @@ public class ElectricalNetwork {
             populateCurrentMatrix();
         }
 
+    }
+
+    public void calculate(boolean printResult, boolean printState) {
+        if(sourceCount == 0) {
+            for(var node : nodes) {
+                if(node instanceof IElectricNode enode) {
+                    enode.receiveResult(0);
+                }
+            }
+            return;
+        }
+
+        prepareMatrices();
         if(printState) {
             System.out.println(AMatrix);
             System.out.println(currentMatrix);
         }
 
-        var result = solver.solve(AMatrix, currentMatrix);
-        lastGuess = result;
-        if(printResult) {
-            System.out.println(result);
-        }
-        for(var node : nodes) {
-            if(node instanceof IElectricNode enode) {
-                if(node.getIndex() >= result.getNumRows()) {
-                    // Why is it here???
+        int maxAttempts = hasHooks() ? 5 : 2;
+        for(int i = 0; i < maxAttempts; ++i) {
+            var result = solver.solve(AMatrix, currentMatrix);
+            lastGuess = result;
+            if(solver.getInitialGuessDistance() < PRECISION) {
+                acceptResults(result, false);
+                break;
+            }
+            if (printResult) {
+                System.out.println(result);
+            }
+            if(acceptResults(result, i < maxAttempts - 1)) {
+                // If the network has ~special~ components, solving is continued
+                // util the guess is good with updated properties (updated by the hooks)
+                if(hasHooks())
                     continue;
-                }
-                float value = (float) result.get(node.getIndex(), 0);
-                if(Float.isNaN(value)) {
-                    if(!recalculating) {
-                        // Try again.
-                        solver.zero();
-                        recalculating = true;
-                        calculate();
-                        recalculating = false;
-                        break;
-                    } else {
-                        // Failed again
-                        enode.receiveResult(0);
-                    }
-                } else {
-                    enode.receiveResult(value);
-                }
+                break;
             }
         }
     }
