@@ -69,9 +69,13 @@ public class SolverStateS2CPacket implements SimplePacket {
             var doubles = new double[external.size() + internal.size()];
             int index = 0;
             for(var eNode : behaviour.getExternalNodes()) {
+                if(vector.getNumRows() <= eNode.getIndex())
+                    continue;
                 doubles[index++] = vector.get(eNode.getIndex(), 0);
             }
             for(var iNode : behaviour.getInternalNodes()) {
+                if(vector.getNumRows() <= iNode.getIndex())
+                    continue;
                 doubles[index++] = vector.get(iNode.getIndex(), 0);
             }
             solverValues.put(behaviour.getPos(), doubles);
@@ -126,12 +130,16 @@ public class SolverStateS2CPacket implements SimplePacket {
                 if(vector == null)
                     continue;
                 for(var eNode : external) {
+                    if(vector.getNumRows() <= eNode.getIndex())
+                        continue;
                     var diff = doubles[index] - vector.get(eNode.getIndex(), 0);
                     if(diff > 0.5)
                         PowerGrid.LOGGER.debug("Solver sync corrected difference of {} at {}", diff, pos);
                     vector.set(eNode.getIndex(), 0, doubles[index++]);
                 }
                 for(var iNode : behaviour.getInternalNodes()) {
+                    if(vector.getNumRows() <= iNode.getIndex())
+                        continue;
                     var diff = doubles[index] - vector.get(iNode.getIndex(), 0);
                     if(diff > 0.5)
                         PowerGrid.LOGGER.debug("Solver sync corrected difference of {} at {}", diff, pos);
