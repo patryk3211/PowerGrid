@@ -5,12 +5,15 @@
     "C": {
       "item": "powergrid:copper_coil"
     },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
     "I": {
       "tag": "forge:plates/iron"
     }
   },
   "pattern": [
-    "CCC",
+    " E ",
     "CIC",
     "CCC"
   ],

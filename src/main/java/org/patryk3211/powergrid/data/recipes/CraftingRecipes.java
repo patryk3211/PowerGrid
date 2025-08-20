@@ -155,9 +155,10 @@ public class CraftingRecipes extends StandardRecipeProvider {
     ELECTROMAGNET = create(ModdedBlocks.ELECTROMAGNET)
             .unlockedBy(() -> ModdedItems.COPPER_COIL)
             .viaShaped(b -> b
-                    .pattern("CCC")
+                    .pattern(" E ")
                     .pattern("CIC")
                     .pattern("CCC")
+                    .define('E', RecipeTags.conductiveCasing())
                     .define('C', ModdedItems.COPPER_COIL)
                     .define('I', RecipeTags.ironSheet())),
 
