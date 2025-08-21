@@ -100,7 +100,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         assert controller.isController();
         this.controllerPos = controller.getPos();
         this.segments = null;
-        if(controller.segments.size() > maxSize) {
+        if(controller.segments.size() + 1 >= maxSize) {
             // This assembly is too big.
             var world = getWorld();
             if(!world.isClientSide)
@@ -220,21 +220,27 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
 
         var kept = new HashSet<T>();
         var removed = new ArrayList<T>();
-        var iter = segments.iterator();
-        while(iter.hasNext()) {
-            var segment = iter.next();
-            if(segment == without)
-                continue;
-            if(allConnected.contains(segment)) {
-                kept.add(segment);
-                continue;
-            }
-            iter.remove();
+        if(without == this) {
+            // All removed, none kept
+            removed.addAll(segments);
+            segments.forEach(SegmentedBehaviour::makeController);
+        } else {
+            var iter = segments.iterator();
+            while(iter.hasNext()) {
+                var segment = iter.next();
+                if(segment == without)
+                    continue;
+                if(allConnected.contains(segment)) {
+                    kept.add(segment);
+                    continue;
+                }
+                iter.remove();
 
-            removed.add(segment);
-            segmentRemoved(segment);
-            // Make all removed segments standalone controllers
-            segment.makeController();
+                removed.add(segment);
+                segmentRemoved(segment);
+                // Make all removed segments standalone controllers
+                segment.makeController();
+            }
         }
 
         while(!removed.isEmpty()) {
@@ -257,6 +263,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             }
         }
         // Add newly connected segments
+        segments.clear();
         for(var segment : allConnected) {
             if(kept.contains(segment) || segment == this)
                 continue;
