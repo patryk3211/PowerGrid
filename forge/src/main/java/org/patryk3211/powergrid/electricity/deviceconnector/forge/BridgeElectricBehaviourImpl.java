@@ -25,6 +25,8 @@ public class BridgeElectricBehaviourImpl {
     public static IFEBridgeHandler makeFEHandler(BlockEntity be) {
         var facing = be.getBlockState().getValue(DeviceConnectorBlock.FACING);
         var neighbor = be.getLevel().getBlockEntity(be.getBlockPos().relative(facing));
+        if(neighbor == null)
+            return null;
         var capability = neighbor.getCapability(ForgeCapabilities.ENERGY, facing.getOpposite());
         if(capability.filter(IEnergyStorage::canReceive).isEmpty())
             return null;
