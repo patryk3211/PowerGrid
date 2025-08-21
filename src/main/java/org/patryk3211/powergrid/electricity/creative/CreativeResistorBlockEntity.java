@@ -56,9 +56,8 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        var terminal1 = builder.addExternalNode();
-        var terminal2 = builder.addExternalNode();
-        wire = builder.connect(100f, terminal1, terminal2);
+        builder.setTerminalCount(2);
+        wire = builder.connect(100f, builder.terminalNode(0), builder.terminalNode(1));
     }
 
     @Override

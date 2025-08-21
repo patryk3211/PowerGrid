@@ -86,9 +86,8 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        var node1 = builder.addExternalNode();
-        var node2 = builder.addExternalNode();
-        wire = builder.connect(resistance(), node1, node2);
+        builder.setTerminalCount(2);
+        wire = builder.connect(resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 
     protected ChatFormatting temperatureColor(float value) {

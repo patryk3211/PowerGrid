@@ -103,14 +103,12 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        var node1 = builder.addExternalNode();
-        var node2 = builder.addExternalNode();
-
+        builder.setTerminalCount(2);
         if(!(getBlockState().getBlock() instanceof SwitchBlock block))
             throw new IllegalArgumentException("Blocks with SwitchBlockEntity must inherit from SwitchBlock");
         maxVoltage = block.getMaxVoltage();
         switchState = !getBlockState().getValue(SwitchBlock.OPEN);
-        wire = builder.connectSwitch(resistance(), node1, node2, switchState);
+        wire = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), switchState);
         if(overvoltResistance != null) {
             wire.setResistance(overvoltResistance);
             wire.setState(true);

@@ -91,9 +91,8 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        var node1 = builder.addExternalNode();
-        var node2 = builder.addExternalNode();
-        filament = builder.connectSwitch(1, node1, node2, false);
+        builder.setTerminalCount(2);
+        filament = builder.connectSwitch(1, builder.terminalNode(0), builder.terminalNode(1), false);
     }
 
     public boolean replaceBulb(Player player, InteractionHand hand, ItemStack usedStack) {

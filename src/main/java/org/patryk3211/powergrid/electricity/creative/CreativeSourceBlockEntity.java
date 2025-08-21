@@ -76,8 +76,9 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        var positive = builder.addExternalNode();
-        var negative = builder.addExternalNode();
+        builder.setTerminalCount(2);
+        var positive = builder.terminalNode(0);
+        var negative = builder.terminalNode(1);
 
         if(getBlockState().is(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
             voltageSource = true;

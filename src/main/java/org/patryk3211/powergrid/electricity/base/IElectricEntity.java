@@ -66,6 +66,7 @@ public interface IElectricEntity {
             return this;
         }
 
+        @Deprecated
         public CircuitBuilder alterExternal(boolean value) {
             alterExternal = false;
             return this;
@@ -88,8 +89,7 @@ public interface IElectricEntity {
          * Add an external node to the circuit. The order in which these are added affects
          * node bindings for electric block terminal indices.
          */
-        @Deprecated
-        public FloatingNode addExternalNode() {
+        protected FloatingNode addExternalNode() {
             if(!alterExternal)
                 return null;
             int index = externalNodes.size();
@@ -166,6 +166,7 @@ public interface IElectricEntity {
          * @param index Index of node to alter
          * @param present Set if the node should exist
          */
+        @Deprecated
         public void setExternalNode(int index, boolean present) {
             var node = externalNodes.get(index);
             if(node == null && present) {
