@@ -177,7 +177,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end",
+        "model": "powergrid:block/winding/end_1",
         "y": 90
       },
       "when": {
@@ -213,7 +213,8 @@
     {
       "apply": {
         "model": "powergrid:block/winding/end_v",
-        "x": 90
+        "x": 90,
+        "y": 180
       },
       "when": {
         "axis": "y",
@@ -283,7 +284,8 @@
     {
       "apply": {
         "model": "powergrid:block/winding/middle_v",
-        "x": 90
+        "x": 90,
+        "y": 180
       },
       "when": {
         "axis": "y",
@@ -306,7 +308,8 @@
     {
       "apply": {
         "model": "powergrid:block/winding/middle_v_case_n",
-        "x": 90
+        "x": 90,
+        "y": 180
       },
       "when": {
         "axis": "y",
@@ -585,7 +588,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end",
+        "model": "powergrid:block/winding/end_1",
         "y": 180
       },
       "when": {
