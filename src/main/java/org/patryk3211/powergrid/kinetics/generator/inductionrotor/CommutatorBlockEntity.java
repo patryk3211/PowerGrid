@@ -89,7 +89,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     public void remove() {
         super.remove();
         if(electricBehaviour != null) {
-            electricBehaviour.breakConnections();
+            electricBehaviour.remove();
         }
     }
 

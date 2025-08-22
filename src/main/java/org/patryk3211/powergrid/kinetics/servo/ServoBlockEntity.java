@@ -107,7 +107,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     public void remove() {
         super.remove();
         if(electricBehaviour != null) {
-            electricBehaviour.breakConnections();
+            electricBehaviour.remove();
         }
     }
 

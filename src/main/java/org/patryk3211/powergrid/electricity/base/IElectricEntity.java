@@ -89,15 +89,14 @@ public interface IElectricEntity {
          * Add an external node to the circuit. The order in which these are added affects
          * node bindings for electric block terminal indices.
          */
-        protected FloatingNode addExternalNode() {
+        protected void addExternalNode() {
             if(!alterExternal)
-                return null;
+                return;
             int index = externalNodes.size();
             var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, index));
             externalNodes.add(node);
             if(network != null)
                 network.addNode(node);
-            return node;
         }
 
         /**

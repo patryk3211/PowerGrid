@@ -22,8 +22,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -96,6 +98,31 @@ public class GlobalElectricNetworks {
             for(var wire : worldNetworks.globalGraph.getWires(node, connected)) {
                 user.sendSystemMessage(Component.literal("  via " + wire));
             }
+        }
+    }
+
+    // This function should handle unloading unneeded transmission lines and removal of electric nodes.
+    public static void nodeHolderUnloaded(ElectricBehaviour behaviour) {
+        var worldNetworks = getWorldNetworks(behaviour.blockEntity.getLevel());
+        for(IElectricNode node : behaviour.getExternalNodes()) {
+            if(node instanceof OwnedFloatingNode ownedNode)
+                worldNetworks.nodeHolderUnloaded(ownedNode);
+        }
+    }
+
+    public static void nodeHolderRemoved(ElectricBehaviour behaviour) {
+        var worldNetworks = getWorldNetworks(behaviour.blockEntity.getLevel());
+        for(IElectricNode node : behaviour.getExternalNodes()) {
+            if(node instanceof OwnedFloatingNode ownedNode)
+                worldNetworks.nodeHolderRemoved(ownedNode);
+        }
+    }
+
+    public static void nodeHolderAdded(ElectricBehaviour behaviour) {
+        var worldNetworks = getWorldNetworks(behaviour.blockEntity.getLevel());
+        for(IElectricNode node : behaviour.getExternalNodes()) {
+            if(node instanceof OwnedFloatingNode ownedNode)
+                worldNetworks.nodeHolderAdded(ownedNode);
         }
     }
 }

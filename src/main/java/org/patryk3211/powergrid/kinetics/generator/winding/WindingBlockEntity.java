@@ -277,6 +277,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             var old = electricBehaviour;
             electricBehaviour = new ProxyElectricBehaviour(this, () -> ownerPosition);
             electricBehaviour.inheritConnections(old);
+            electricBehaviour.remove();
             removeBehaviour(ElectricBehaviour.TYPE);
             attachBehaviourLate(electricBehaviour);
             // Drop nodes
@@ -320,7 +321,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     be.collectedBEs = null;
                     be.mainBE = this;
                     if(be.electricBehaviour != null) {
-                        be.electricBehaviour.breakConnections();
+                        be.electricBehaviour.remove();
                         be.electricBehaviour = null;
                         be.removeBehaviour(ElectricBehaviour.TYPE);
                         // Drop nodes

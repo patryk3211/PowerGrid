@@ -68,7 +68,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     public void remove() {
         super.remove();
         if(electricBehaviour != null) {
-            electricBehaviour.breakConnections();
+            electricBehaviour.remove();
         }
     }
 

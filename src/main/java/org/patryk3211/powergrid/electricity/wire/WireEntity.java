@@ -36,6 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -301,6 +302,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     public float getResistance() {
         return item.getResistance() * Math.max(itemCount, 1);
+    }
+
+    @Override
+    public @Nullable ItemStack getPickResult() {
+        return new ItemStack(item, 1);
     }
 
     public void makeWire() {

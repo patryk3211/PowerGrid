@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
@@ -43,12 +44,17 @@ import java.util.*;
 
 public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
     public final Level world;
+    public final NetworkGraph globalGraph = new NetworkGraph();
+
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
     public final Set<TransmissionLine> transmissionLines = new HashSet<>();
-    public final NetworkGraph globalGraph = new NetworkGraph();
     public final List<UnresolvedTransmissionLine> unresolvedLines = new ArrayList<>();
+
+    public final Map<IWireEndpoint, OwnedFloatingNode> globalExternalNodes = new HashMap<>();
+
     private final Set<WireEntity> deferredRewireEntities = new HashSet<>();
+    private final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
     private int syncTicks = 0;
 
     public WorldNetworks(Level world) {
@@ -66,6 +72,26 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         assignTransmissionLine(node, null);
     }
 
+    @Override
+    public void lineDisconnected(TransmissionLine line) {
+        islandDiscoveryQueue.add(line.getNetwork());
+    }
+
+    private void traceIsland(OwnedFloatingNode first) {
+
+    }
+
+    private void runIslandDiscoveryFor(ElectricalNetwork network) {
+        var visited = new HashSet<OwnedFloatingNode>();
+//        for(var node : network.getNodes()) {
+//            if(!(node instanceof OwnedFloatingNode owned))
+//                continue;
+//            if(visited.add(owned)) {
+//
+//            }
+//        }
+    }
+
     public void tick() {
         deferredRewireEntities.removeIf(entity -> {
             if(entity.isRemoved())
@@ -73,6 +99,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             entity.makeWire();
             return entity.getWire() != null;
         });
+
+        for(var network : islandDiscoveryQueue) {
+            runIslandDiscoveryFor(network);
+        }
+        islandDiscoveryQueue.clear();
 
         var iter = subnetworks.iterator();
         while(iter.hasNext()) {
@@ -391,6 +422,25 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         for(var lineEntryGeneric : lineList) {
             var lineEntry = (CompoundTag) lineEntryGeneric;
             unresolvedLines.add(new UnresolvedTransmissionLine(lineEntry));
+        }
+    }
+
+    public void nodeHolderUnloaded(@NotNull OwnedFloatingNode ownedNode) {
+        // Here, we need to choose between preserving transmission line junction nodes or removing them.
+    }
+
+    public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
+        // Connections should already be broken by endpoint removal stuff.
+        if(ownedNode.getNetwork() != null) {
+            ownedNode.getNetwork().removeNode(ownedNode);
+        }
+        globalExternalNodes.remove(ownedNode.endpoint);
+    }
+
+    public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
+        var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
+        if(oldNode != null) {
+            // TODO: Migrate connections into the new node.
         }
     }
 }

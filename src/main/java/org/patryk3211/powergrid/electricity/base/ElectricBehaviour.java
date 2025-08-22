@@ -21,6 +21,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -134,11 +135,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     @Override
     public void unload() {
-        for(var terminalConnections : connections.values()) {
-            for(var entity : terminalConnections) {
-                entity.dropWire();
-            }
-        }
         internalWires.forEach(AbstractElectricWire::remove);
         if(externalNodes.isEmpty())
             return;
@@ -146,11 +142,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         var network = getNetwork();
         if(network != null) {
             internalNodes.forEach(network::removeNode);
-            externalNodes.forEach(node -> {
-                if(node != null)
-                    network.removeNode(node);
-            });
         }
+        // Unload doesn't remove external nodes since they might be utilized by transmission lines.
+        // Wires are not dropped either since they could be forming an important transmission line junction.
+        GlobalElectricNetworks.nodeHolderUnloaded(this);
     }
 
     public void refreshConnectionEntities() {
@@ -165,6 +160,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     @Override
     public void initialize() {
         super.initialize();
+        GlobalElectricNetworks.nodeHolderAdded(this);
     }
 
     public void addConnection(BlockWireEndpoint endpoint, WireEntity wire) {
@@ -232,6 +228,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
         blockEntity.notifyUpdate();
         destroying = false;
+    }
+
+    public void remove() {
+        breakConnections();
+        GlobalElectricNetworks.nodeHolderRemoved(this);
     }
 
     @Override
