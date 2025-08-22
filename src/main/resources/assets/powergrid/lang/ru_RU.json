@@ -126,7 +126,6 @@
   "powergrid.component.property.tube_saturation_current.summary": "Максимальный ток, который может пройти через трубку",
   "powergrid.contactor.switch1": "Переключатель 1",
   "powergrid.contactor.switch2": "Переключатель 2",
-  "powergrid.devices.coil.aggregate_type": "Тип соединения для узла катушек",
   "powergrid.devices.creative.current": "Выходной ток",
   "powergrid.devices.creative.resistance": "Сопротивление",
   "powergrid.devices.creative.voltage": "Выходное напряжение",
