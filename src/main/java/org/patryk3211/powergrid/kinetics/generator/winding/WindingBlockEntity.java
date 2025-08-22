@@ -540,7 +540,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(ownerPosition == null) {
             builder.setTerminalCount(2);
             sourceNode = builder.addInternalNode(VoltageSourceNode.class);
-            coupling = builder.couple(1, resistance, sourceNode, builder.terminalNode(0), builder.terminalNode(1));
+            coupling = builder.couple(1, Math.max(resistance, resistance()), sourceNode, builder.terminalNode(0), builder.terminalNode(1));
         }
     }
 

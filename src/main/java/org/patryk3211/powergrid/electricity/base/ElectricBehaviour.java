@@ -133,19 +133,33 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return true;
     }
 
-    @Override
-    public void unload() {
+    private void removeInternalStructure() {
         internalWires.forEach(AbstractElectricWire::remove);
         if(externalNodes.isEmpty())
             return;
 
         var network = getNetwork();
         if(network != null) {
-            internalNodes.forEach(network::removeNode);
+            // Remove nodes in reverse order.
+            for(int i = internalNodes.size() - 1; i >= 0; --i) {
+                var node = internalNodes.get(i);
+                network.removeNode(node);
+            }
         }
+    }
+
+    @Override
+    public void unload() {
+        removeInternalStructure();
         // Unload doesn't remove external nodes since they might be utilized by transmission lines.
         // Wires are not dropped either since they could be forming an important transmission line junction.
         GlobalElectricNetworks.nodeHolderUnloaded(this);
+    }
+
+    public void remove() {
+        breakConnections();
+        removeInternalStructure();
+        GlobalElectricNetworks.nodeHolderRemoved(this);
     }
 
     public void refreshConnectionEntities() {
@@ -228,11 +242,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
         blockEntity.notifyUpdate();
         destroying = false;
-    }
-
-    public void remove() {
-        breakConnections();
-        GlobalElectricNetworks.nodeHolderRemoved(this);
     }
 
     @Override

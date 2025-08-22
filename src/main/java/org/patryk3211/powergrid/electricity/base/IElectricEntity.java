@@ -74,10 +74,10 @@ public interface IElectricEntity {
 
         public void clear() {
             if(network != null) {
+                wires.forEach(network::removeWire);
+                internalNodes.forEach(network::removeNode);
                 if(alterExternal)
                     externalNodes.forEach(network::removeNode);
-                internalNodes.forEach(network::removeNode);
-                wires.forEach(network::removeWire);
             }
             if(alterExternal)
                 externalNodes.clear();
