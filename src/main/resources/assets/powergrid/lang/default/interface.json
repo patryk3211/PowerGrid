@@ -21,6 +21,13 @@
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
 
+  "powergrid.gui.device_connector.info_header": "Connector information",
+  "powergrid.gui.device_connector.supplying": "Currently supplying:",
+  "powergrid.gui.device_connector.supplying.unit": "FE/t",
+  "powergrid.gui.device_connector.buffered": "Buffered:",
+  "powergrid.gui.device_connector.buffered.unit": "FE",
+  "powergrid.gui.device_connector.for": " for ",
+
   "powergrid.gui.potentiometer.setting": "Setting",
 
   "powergrid.gui.circuit_board.damage_header": "Damaged",

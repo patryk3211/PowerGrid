@@ -35,7 +35,7 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     private final BlockPos behaviourPosition;
     private IFEBridgeHandler bridgeBehaviour;
     private long readEnergy;
-    private long currentRate;
+    public long currentRate;
     private boolean fetched = false;
     private final Supplier<SwitchedWire> converterWire;
 
@@ -145,5 +145,13 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     @ExpectPlatform
     public static IFEBridgeHandler makeFEHandler(BlockEntity be) {
         throw new AssertionError();
+    }
+
+    public boolean isFE() {
+        return bridgeBehaviour != null;
+    }
+
+    public long getBufferedAmount() {
+        return bridgeBehaviour.getAmount();
     }
 }

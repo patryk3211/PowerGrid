@@ -103,10 +103,15 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
             // Try to move energy
             var facing = be.getBlockState().getValue(BlockStateProperties.FACING);
             var neighbour = be.getLevel().getBlockEntity(be.getBlockPos().relative(facing));
+            if(neighbour == null)
+                return 0;
+            final long[] amounts = new long[1];
             neighbour.getCapability(ForgeCapabilities.ENERGY, facing.getOpposite()).ifPresent(handler -> {
                 var received = handler.receiveEnergy((int) amount, false);
                 extractEnergy(received, false);
+                amounts[0] = received;
             });
+            return amounts[0];
         }
         return 0;
     }
