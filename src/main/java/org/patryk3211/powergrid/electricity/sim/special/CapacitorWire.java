@@ -23,11 +23,13 @@ import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 public class CapacitorWire extends AbstractElectricWire implements ISolverHook {
     private float capacitance;
     private float voltageInject;
+    private float storedPotential;
 
     public CapacitorWire(float capacitance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
         this.capacitance = capacitance;
         this.voltageInject = 0;
+        this.storedPotential = 0;
     }
 
     @Override
@@ -49,11 +51,16 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook {
     @Override
     public void addResidual(DMatrixRMaj residual) {
         // Calculate current with a bit of leakage
-        var current = conductance() * (potentialDifference() + voltageInject) * 0.9999f;
+        var current = conductance() * (storedPotential + voltageInject) * 0.9999f;
         if(node1 != null)
             residual.add(node1.getIndex(), 0, current);
         if(node2 != null)
             residual.add(node2.getIndex(), 0, -current);
+    }
+
+    @Override
+    public void postUpperSolve() {
+        storedPotential = potentialDifference();
         voltageInject = 0;
     }
 }

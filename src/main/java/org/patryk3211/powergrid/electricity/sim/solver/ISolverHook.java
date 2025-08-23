@@ -28,4 +28,9 @@ public interface ISolverHook {
      * @param residual Residual matrix
      */
     default void addResidual(DMatrixRMaj residual) { }
+
+    /**
+     * Called once the whole process of solving (including repeats) is complete
+     */
+    default void postUpperSolve() { }
 }
