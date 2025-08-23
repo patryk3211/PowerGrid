@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.SolverStateS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
@@ -43,6 +44,7 @@ import org.patryk3211.powergrid.utility.PlayerLookup;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
     public final Level world;
@@ -51,7 +53,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
     public final Map<Integer, TransmissionLine> transmissionLines = new IntObjectHashMap<>();
-    public final List<UnresolvedTransmissionLine> unresolvedLines = new ArrayList<>();
+    public final Queue<UnresolvedTransmissionLine> unresolvedLines = new ConcurrentLinkedQueue<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
     private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
@@ -264,11 +266,21 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(part != null)
                 return part;
         }
+        for(var line : globalGraph.getConnectedLines(node1)) {
+            var part = line.grabUnloaded(forEntity);
+            if(part != null)
+                return part;
+        }
 
         var node2 = endpoint2.getNode(world);
         var line2 = transmissionLineNodes.get(node2);
         if(line2 != null) {
             var part = line2.grabUnloaded(forEntity);
+            if(part != null)
+                return part;
+        }
+        for(var line : globalGraph.getConnectedLines(node2)) {
+            var part = line.grabUnloaded(forEntity);
             if(part != null)
                 return part;
         }
@@ -283,11 +295,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
 
         // Next move onto the unresolved lines
-//        for(var unresolved : unresolvedLines) {
-//            var part = unresolved.resolvePart(this, forEntity);
-//            if(part != null)
-//                return part;
-//        }
+        for(var unresolved : unresolvedLines) {
+            var part = unresolved.resolvePart(this, forEntity);
+            if(part != null)
+                return part;
+        }
         return null;
     }
 
@@ -425,6 +437,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             lineList.add(unresolved.writeNbt());
         }
         nbt.put("TransmissionLines", lineList);
+
+        // Write important transmission line junction nodes.
+        var nodeList = new ListTag();
+        for(var entry : globalExternalNodes.entrySet()) {
+            var lines = globalGraph.getConnectedLines(entry.getValue());
+            if(lines.size() > 1) {
+                nodeList.add(entry.getKey().serialize());
+            }
+        }
+        nbt.put("Nodes", nodeList);
         return nbt;
     }
 
@@ -434,11 +456,38 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             var lineEntry = (CompoundTag) lineEntryGeneric;
             unresolvedLines.add(new UnresolvedTransmissionLine(lineEntry));
         }
+        // TODO: This will need to try and resolve lines on every stored node.
+        var nodeList = nbt.getList("Nodes", Tag.TAG_COMPOUND);
+        for(var tag : nodeList) {
+            var endpoint = WireEndpointType.deserialize((CompoundTag) tag);
+            globalExternalNodes.put(endpoint, new OwnedFloatingNode(endpoint));
+        }
     }
 
     public void nodeHolderUnloaded(@NotNull OwnedFloatingNode ownedNode) {
-        // TODO:
         // Here, we need to choose between preserving transmission line junction nodes or removing them.
+        // A transmission line should be preserved if terminates on a junction which connects to more
+        // transmission lines.
+        Collection<TransmissionLine> lines;
+        do {
+            lines = globalGraph.getConnectedLines(ownedNode);
+            if(lines.isEmpty())
+                break;
+            // No need to keep this line (or the node).
+            var line = lines.iterator().next();
+            var removeNode = ownedNode;
+            if(line.getNode1() == ownedNode) {
+                ownedNode = line.getNode2();
+            } else {
+                assert line.getNode2() == ownedNode;
+                ownedNode = line.getNode1();
+            }
+            line.remove();
+            if(removeNode.getNetwork() != null) {
+                removeNode.getNetwork().removeNode(removeNode);
+            }
+            globalExternalNodes.remove(removeNode.endpoint);
+        } while(lines.size() == 1);
     }
 
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
@@ -452,9 +501,21 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
         var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
         if(oldNode != null) {
-            // TODO:
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
+            prepareForConnection(ownedNode.endpoint, oldNode.endpoint);
+            var lines = globalGraph.getConnectedLines(oldNode);
+            for(var line : lines) {
+                if(line.getNode1() == oldNode) {
+                    line.setNode1(ownedNode);
+                } else if(line.getNode2() == oldNode) {
+                    line.setNode2(ownedNode);
+                }
+            }
+        }
+        // Try to resolve an end of a transmission line
+        for(var unresolved : unresolvedLines) {
+            unresolved.resolveEnd(this, ownedNode);
         }
     }
 

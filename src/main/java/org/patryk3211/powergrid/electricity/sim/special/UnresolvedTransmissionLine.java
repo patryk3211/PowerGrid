@@ -18,8 +18,10 @@ package org.patryk3211.powergrid.electricity.sim.special;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -172,6 +174,15 @@ public class UnresolvedTransmissionLine {
             }
         }
         return null;
+    }
+
+    public void resolveEnd(WorldNetworks global, @NotNull OwnedFloatingNode node) {
+        if(node.endpoint.equals(endpoint1)) {
+            setEndpoint1Resolved();
+        } else if(node.endpoint.equals(endpoint2)) {
+            setEndpoint2Resolved();
+        }
+        resolve(global);
     }
 
     public static class Segment {

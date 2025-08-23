@@ -46,6 +46,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     private boolean destroying = false;
     private boolean rebuildOnClient = false;
     private boolean removed = false;
+    private boolean paused = false;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
         this(be, true);
@@ -149,10 +150,29 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
     }
 
+    public void pause() {
+        if(!paused) {
+            paused = true;
+            removeInternalStructure();
+        }
+    }
+
+    public void unpause() {
+        if(paused) {
+            paused = false;
+            var network = getNetwork();
+            if (network == null)
+                return;
+            // External nodes weren't removed so they don't have to be added.
+            internalNodes.forEach(network::addNode);
+            internalWires.forEach(network::addWire);
+        }
+    }
+
     @Override
     public void unload() {
         if(!removed) {
-            removeInternalStructure();
+            pause();
             // Unload doesn't remove external nodes since they might be utilized by transmission lines.
             // Wires are not dropped either since they could be forming an important transmission line junction.
             GlobalElectricNetworks.nodeHolderUnloaded(this);
@@ -161,7 +181,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public void remove() {
         breakConnections();
-        removeInternalStructure();
+        pause();
         GlobalElectricNetworks.nodeHolderRemoved(this);
         removed = true;
     }
