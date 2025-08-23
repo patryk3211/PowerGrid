@@ -163,17 +163,6 @@ public class ElectricalNetwork {
             solver.addHook(hook);
     }
 
-    private void alterConductanceUnsafe(int row, int column, double change) {
-        var current = conductanceMatrix.get(row, column);
-        conductanceMatrix.set(row, column, current + change);
-        if(!voltageSources[column]) {
-            AMatrix.set(row, column, current + change);
-        } else {
-            var U = ((VoltageSourceNode) nodes.get(column)).getVoltage();
-            currentMatrix.add(column, 0, U * -change);
-        }
-    }
-
     public void updateConductance(AbstractElectricWire wire, double change) {
         if(conductanceMatrix == null || dirty || change == 0)
             return;
@@ -183,20 +172,48 @@ public class ElectricalNetwork {
         if(wire.node1 != null && wire.node2 != null) {
             var index1 = wire.node1.getIndex();
             var index2 = wire.node2.getIndex();
-            alterConductanceUnsafe(index1, index1, change);
-            alterConductanceUnsafe(index2, index2, change);
-            alterConductanceUnsafe(index1, index2, -change);
-            alterConductanceUnsafe(index2, index1, -change);
+            conductanceMatrix.add(index1, index1, change);
+            conductanceMatrix.add(index2, index2, change);
+            conductanceMatrix.add(index1, index2, -change);
+            conductanceMatrix.add(index2, index1, -change);
+            if(!voltageSources[index1]) {
+                AMatrix.add(index1, index1, change);
+                AMatrix.add(index2, index1, -change);
+            } else {
+                var U = ((VoltageSourceNode) nodes.get(index1)).getVoltage();
+                currentMatrix.add(index1, 0, U * -change);
+                currentMatrix.add(index2, 0, U * change);
+            }
+            if(!voltageSources[index2]) {
+                AMatrix.add(index2, index2, change);
+                AMatrix.add(index1, index2, -change);
+            } else {
+                var U = ((VoltageSourceNode) nodes.get(index2)).getVoltage();
+                currentMatrix.add(index2, 0, U * -change);
+                currentMatrix.add(index1, 0, U * change);
+            }
         } else {
             var index = wire.node1 != null ? wire.node1.getIndex() : wire.node2.getIndex();
-            alterConductanceUnsafe(index, index, change);
+            conductanceMatrix.add(index, index, change);
+            if(!voltageSources[index]) {
+                AMatrix.add(index, index, change);
+            } else {
+                var U = ((VoltageSourceNode) nodes.get(index)).getVoltage();
+                currentMatrix.add(index, 0, U * change);
+            }
         }
     }
 
     public void alterConductanceMatrix(int row, int column, double change) {
         if(conductanceMatrix == null || dirty)
             return;
-        alterConductanceUnsafe(row, column, change);
+        conductanceMatrix.add(row, column, change);
+        if(!voltageSources[column]) {
+            AMatrix.add(row, column, change);
+        } else {
+            var U = ((VoltageSourceNode) nodes.get(column)).getVoltage();
+            currentMatrix.add(column, 0, U * -change);
+        }
     }
 
     public void removeWire(AbstractElectricWire wire) {
@@ -420,6 +437,9 @@ public class ElectricalNetwork {
                     continue;
                 break;
             }
+        }
+        for(var hook : solver.getHooks()) {
+            hook.postUpperSolve();
         }
     }
 
