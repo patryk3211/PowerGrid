@@ -80,8 +80,6 @@
   "item.powergrid.empty_circuit": "Пустая плата",
   "item.powergrid.golden_wire": "Золотой провод",
   "item.powergrid.growth_lamp": "Фитосветильник",
-  "item.powergrid.incomplete_battery": "Незаконченный Аккумулятор",
-  "item.powergrid.incomplete_circuit": "Незаконченная Печатная плата",
   "item.powergrid.incomplete_circuit.tooltip.summary": "Используйте _Механическую руку_ чтобы добавить компоненты и закончить печатную плату",
   "item.powergrid.incomplete_electrical_gizmo": "Незаконченный Электрический прибор",
   "item.powergrid.incomplete_transformer_core": "Незаконченный Сердечник трансформатора",
