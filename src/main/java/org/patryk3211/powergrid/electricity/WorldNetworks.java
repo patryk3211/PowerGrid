@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity;
 
+import io.netty.util.collection.IntObjectHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -36,7 +37,8 @@ import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLi
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.SolverStateS2CPacket;
-import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
+import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
+import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 import org.patryk3211.powergrid.utility.PlayerLookup;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
@@ -48,13 +50,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
-    public final Set<TransmissionLine> transmissionLines = new HashSet<>();
+    public final Map<Integer, TransmissionLine> transmissionLines = new IntObjectHashMap<>();
     public final List<UnresolvedTransmissionLine> unresolvedLines = new ArrayList<>();
+
+    private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
+    private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
 
     public final Map<IWireEndpoint, OwnedFloatingNode> globalExternalNodes = new HashMap<>();
 
     private final Set<WireEntity> deferredRewireEntities = new HashSet<>();
-    private final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
+    protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
     private int syncTicks = 0;
 
     public WorldNetworks(Level world) {
@@ -73,8 +78,19 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Override
+    public void lineConnected(TransmissionLine line) {
+        var id = line.getId();
+        transmissionLines.put(id, line);
+        updatedEndpoints.add(line.getNode1().endpoint);
+        updatedEndpoints.add(line.getNode2().endpoint);
+    }
+
+    @Override
     public void lineDisconnected(TransmissionLine line) {
+        transmissionLines.remove(line.getId());
         islandDiscoveryQueue.add(line.getNetwork());
+        updatedEndpoints.add(line.getNode1().endpoint);
+        updatedEndpoints.add(line.getNode2().endpoint);
     }
 
     private void traceIsland(OwnedFloatingNode first) {
@@ -120,7 +136,15 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             network.calculate();
         }
         if(world instanceof ServerLevel serverWorld) {
-            var iter2 = transmissionLines.iterator();
+            for(var endpoint : updatedEndpoints) {
+                var players = trackers.get(endpoint);
+                if(players == null)
+                    continue;
+                var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
+                ModdedPackets.sendToClients(new TransmissionLineManagementS2CPacket(endpoint, lines), players);
+            }
+            updatedEndpoints.clear();
+            var iter2 = transmissionLines.values().iterator();
             while(iter2.hasNext()) {
                 var line = iter2.next();
                 if(line.segments.isEmpty()) {
@@ -132,7 +156,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 if(players.isEmpty())
                     continue;
                 try {
-                    var packet = new TransmissionLineS2CPacket(line);
+                    var packet = new TransmissionLineStateS2CPacket(line);
                     ModdedPackets.sendToClients(packet, players);
                 } catch (RuntimeException e) {
                     PowerGrid.LOGGER.error("Failed to send a transmission line packet", e);
@@ -171,11 +195,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void assignTransmissionLine(IElectricNode node, @Nullable TransmissionLine line) {
         if (line != null) {
             transmissionLineNodes.put(node, line);
-            transmissionLines.add(line);
+//            transmissionLines.add(line);
         } else {
-            var removed = transmissionLineNodes.remove(node);
-            if(!transmissionLineNodes.containsValue(removed))
-                transmissionLines.remove(removed);
+            transmissionLineNodes.remove(node);
+//            if(!transmissionLineNodes.containsValue(removed))
+//                transmissionLines.remove(removed);
         }
     }
 
@@ -294,10 +318,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
-        if(!(node1 instanceof OwnedFloatingNode))
-            PowerGrid.LOGGER.warn("Creating a transmission line for non-owned floating node (node1 {} - this might cause issues)", node1);
-        if(!(node2 instanceof OwnedFloatingNode))
-            PowerGrid.LOGGER.warn("Creating a transmission line for non-owned floating node (node2 {} - this might cause issues)", node2);
 
         int nConns1 = connectionCount(endpoint1);
         int nConns2 = connectionCount(endpoint2);
@@ -366,16 +386,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return linePart;
     }
 
-    protected void splitTransmissionLine(IElectricNode node) {
-        var connCount = globalGraph.connectionCount(node);
-        if(connCount == 0) {
-            var line = transmissionLineNodes.get(node);
-            if(line != null) {
-                line.splitAt(node);
-            }
-        }
-    }
-
     public List<WireEntity> findConnectedWires(ElectricBehaviour behaviour) {
         var wires = new ArrayList<WireEntity>();
         for(var node : behaviour.getExternalNodes()) {
@@ -404,9 +414,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Override
-    public CompoundTag save(CompoundTag nbt) {
+    @NotNull
+    public CompoundTag save(@NotNull CompoundTag nbt) {
         var lineList = new ListTag();
-        for(var line : transmissionLines) {
+        for(var line : transmissionLines.values()) {
             lineList.add(new UnresolvedTransmissionLine(line).writeNbt());
         }
         // Write unresolved lines back to nbt.
@@ -440,7 +451,23 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
         var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
         if(oldNode != null) {
-            // TODO: Migrate connections into the new node.
+            // Migrate connections into the new node.
+            // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
+        }
+    }
+
+    public void tracking(ServerPlayer tracker, IWireEndpoint endpoint, boolean end) {
+        if(!end) {
+            trackers.computeIfAbsent(endpoint, $ -> new HashSet<>()).add(tracker);
+            var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
+            ModdedPackets.sendToClient(new TransmissionLineManagementS2CPacket(endpoint, lines), tracker);
+        } else {
+            var list = trackers.get(endpoint);
+            if(list == null)
+                return;
+            list.remove(tracker);
+            if(list.isEmpty())
+                trackers.remove(endpoint);
         }
     }
 }

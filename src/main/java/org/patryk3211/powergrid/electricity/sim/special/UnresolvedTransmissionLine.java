@@ -20,7 +20,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -45,10 +44,8 @@ public class UnresolvedTransmissionLine {
     }
 
     public UnresolvedTransmissionLine(TransmissionLine line) {
-        if(!(line.getNode1() instanceof OwnedFloatingNode node1) || !(line.getNode2() instanceof OwnedFloatingNode node2))
-            throw new IllegalArgumentException("Transmission line saved to nbt must consist of OwnedFloatingNodes (currently, " + line.getNode1() + " and " + line.getNode2() + ")");
-        endpoint1 = node1.endpoint;
-        endpoint2 = node2.endpoint;
+        endpoint1 = line.getNode1().endpoint;
+        endpoint2 = line.getNode2().endpoint;
         resistance = line.getResistance();
 
         segments = new ArrayList<>();
@@ -56,10 +53,8 @@ public class UnresolvedTransmissionLine {
             IWireEndpoint endpoint;
             if(segment.getNode2() == null) {
                 endpoint = segment.endpoint2;
-            } else if(segment.getNode2() instanceof OwnedFloatingNode node) {
-                endpoint = node.endpoint;
             } else {
-                throw new IllegalArgumentException("Transmission line saved to nbt must consist of OwnedFloatingNodes");
+                endpoint = segment.getNode2().endpoint;
             }
             segments.add(new Segment(endpoint, segment.persistentOwnerId, segment.getResistance()));
         }

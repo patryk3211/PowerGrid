@@ -43,7 +43,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class BakedCircuit {
-    public final List<IElectricNode> externalNodes = new ArrayList<>();
+    public final List<OwnedFloatingNode> externalNodes = new ArrayList<>();
     public final List<INode> internalNodes = new ArrayList<>();
     public final List<AbstractElectricWire> wires = new ArrayList<>();
     public final List<TerminalBoundingBox> terminals = new ArrayList<>();

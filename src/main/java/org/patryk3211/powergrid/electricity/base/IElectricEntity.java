@@ -49,12 +49,12 @@ public interface IElectricEntity {
     class CircuitBuilder {
         private ElectricalNetwork network;
         private final BlockPos pos;
-        private final List<IElectricNode> externalNodes;
+        private final List<OwnedFloatingNode> externalNodes;
         private final Collection<INode> internalNodes;
         private final Collection<AbstractElectricWire> wires;
         private boolean alterExternal = true;
 
-        public CircuitBuilder(BlockPos pos, List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
+        public CircuitBuilder(BlockPos pos, List<OwnedFloatingNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
             this.pos = pos;
             this.externalNodes = externalNodes;
             this.internalNodes = internalNodes;
@@ -156,27 +156,6 @@ public interface IElectricEntity {
                         }
                     }
                 }
-            }
-        }
-
-        /**
-         * Set if external node should be present in the external node list.
-         * This method allows for altering the external node structure even on circuit rebuilds.
-         * @param index Index of node to alter
-         * @param present Set if the node should exist
-         */
-        @Deprecated
-        public void setExternalNode(int index, boolean present) {
-            var node = externalNodes.get(index);
-            if(node == null && present) {
-                node = new FloatingNode();
-                if(network != null)
-                    network.addNode(node);
-                externalNodes.set(index, node);
-            } else if(node != null && !present) {
-                if(network != null)
-                    network.removeNode(node);
-                externalNodes.set(index, null);
             }
         }
 

@@ -15,34 +15,61 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class TransmissionLine extends ElectricWire {
     public final List<TransmissionLinePart> segments = new ArrayList<>();
     protected final Set<TransmissionLinePart> unloadedParts = new HashSet<>();
 
+    private static int NEXT_ID = 0;
+    private final int id;
+
     private final WorldNetworks global;
 
-    protected TransmissionLine(double resistance, IElectricNode node1, IElectricNode node2, WorldNetworks global) {
+    protected TransmissionLine(double resistance, OwnedFloatingNode node1, OwnedFloatingNode node2, WorldNetworks global) {
         super(resistance, node1, node2);
+        if(global.world.isClientSide)
+            PowerGrid.LOGGER.warn("This method probably shouldn't be used on client-side");
         this.global = global;
+        id = NEXT_ID++;
     }
 
-    public TransmissionLine(double resistance, IElectricNode node1, IElectricNode node2, TransmissionLinePart firstSegment, WorldNetworks global) {
+    public TransmissionLine(double resistance, OwnedFloatingNode node1, OwnedFloatingNode node2, TransmissionLinePart firstSegment, WorldNetworks global) {
         super(resistance, node1, node2);
+        if(global.world.isClientSide)
+            PowerGrid.LOGGER.warn("This method probably shouldn't be used on client-side");
         segments.add(firstSegment);
         this.global = global;
+        id = NEXT_ID++;
+    }
+
+    // This should only be utilized by the client
+    public TransmissionLine(Info info, WorldNetworks global) {
+        super(info.resistance, info.endpoint1.getNode(global.world), info.endpoint2.getNode(global.world));
+        if(!global.world.isClientSide)
+            PowerGrid.LOGGER.warn("This method probably shouldn't be used on server-side");
+        this.global = global;
+        id = info.id;
+    }
+
+    public TransmissionLine(int id, double resistance, OwnedFloatingNode node1, OwnedFloatingNode node2, WorldNetworks global) {
+        super(resistance, node1, node2);
+        if(!global.world.isClientSide)
+            PowerGrid.LOGGER.warn("This method probably shouldn't be used on server-side");
+        this.global = global;
+        this.id = id;
     }
 
     private int validateEndpoints(TransmissionLinePart part, WireEntity owner) {
@@ -57,6 +84,29 @@ public class TransmissionLine extends ElectricWire {
             }
         }
         return 0;
+    }
+
+    @Override
+    public void setNode1(IElectricNode node1) {
+        assert node1 instanceof OwnedFloatingNode;
+        super.setNode1(node1);
+    }
+
+    @Override
+    public void setNode2(IElectricNode node2) {
+        assert node2 instanceof OwnedFloatingNode;
+        super.setNode2(node2);
+    }
+
+    @Override
+    public OwnedFloatingNode getNode1() {
+        assert node1 instanceof OwnedFloatingNode;
+        return (OwnedFloatingNode) node1;
+    }
+
+    @Override
+    public OwnedFloatingNode getNode2() {
+        return (OwnedFloatingNode) node2;
     }
 
     @Nullable
@@ -326,6 +376,45 @@ public class TransmissionLine extends ElectricWire {
 
     @Override
     public String toString() {
-        return String.format("TransmissionLine@%s", Integer.toHexString(hashCode()));
+        return String.format("TransmissionLine[id=%d]", id);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public CompoundTag toNbt() {
+        var tag = new CompoundTag();
+        tag.putInt("Id", id);
+        tag.putDouble("Resistance", resistance);
+        assert node1 instanceof OwnedFloatingNode && node2 instanceof OwnedFloatingNode;
+        tag.put("Endpoint1", ((OwnedFloatingNode) node1).endpoint.serialize());
+        tag.put("Endpoint2", ((OwnedFloatingNode) node2).endpoint.serialize());
+        return tag;
+    }
+
+    public record Info(int id, double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2) {
+        @Override
+        public int hashCode() {
+            return Objects.hash(id);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj instanceof Info info) {
+                return id == info.id;
+            }
+            return false;
+        }
+
+        public static Info fromNbt(CompoundTag tag) {
+            var id = tag.getInt("Id");
+            var resistance = tag.getDouble("Resistance");
+            var e1 = WireEndpointType.deserialize(tag.getCompound("Endpoint1"));
+            var e2 = WireEndpointType.deserialize(tag.getCompound("Endpoint2"));
+            return new Info(id, resistance, e1, e2);
+        }
     }
 }

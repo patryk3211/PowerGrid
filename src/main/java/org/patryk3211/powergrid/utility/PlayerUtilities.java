@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -75,6 +76,16 @@ public class PlayerUtilities {
         players1 = Set.copyOf(PlayerLookup.tracking(firstSegment.owner));
         players2 = Set.copyOf(PlayerLookup.tracking(lastSegment.owner));
         return Sets.symmetricDifference(players1, players2);
+    }
+
+    @NotNull
+    public static Collection<ServerPlayer> tracking(@NotNull ServerLevel world, @NotNull TransmissionLine line) {
+        var node1 = line.getNode1().endpoint.getExactPosition(world);
+        var node2 = line.getNode2().endpoint.getExactPosition(world);
+
+        var trackers = new HashSet<>(PlayerLookup.tracking(world, BlockPos.containing(node1)));
+        trackers.addAll(PlayerLookup.tracking(world, BlockPos.containing(node2)));
+        return trackers;
     }
 
     @ExpectPlatform

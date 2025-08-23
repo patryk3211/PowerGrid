@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -78,7 +79,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public IElectricNode getNode(Level world) {
+    public OwnedFloatingNode getNode(Level world) {
         return getNode(world, id, false, this).node;
     }
 
@@ -185,7 +186,11 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             throw new IllegalArgumentException("Invalid id passed to junction node map");
         if(!nullable) {
             var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new HashMap<>());
-            return worldNodeMap.computeIfAbsent(id, k -> new NodeEntry(endpoint));
+            return worldNodeMap.computeIfAbsent(id, k -> {
+                var entry = new NodeEntry(endpoint);
+                GlobalElectricNetworks.getWorldNetworks(world).nodeHolderAdded(entry.node);
+                return entry;
+            });
         } else {
             var worldNodeMap = JUNCTION_NODES.get(world);
             if(worldNodeMap == null)
@@ -205,10 +210,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             PowerGrid.LOGGER.error("Tried to remove junction endpoint entry for a junction with holders");
             return;
         }
-        var network = entry.node.getNetwork();
-        if(network == null)
-            return;
-        network.removeNode(entry.node);
+        GlobalElectricNetworks.getWorldNetworks(world).nodeHolderRemoved(entry.node);
     }
 
     @Override
@@ -223,7 +225,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     private static class NodeEntry {
-        public final FloatingNode node;
+        public final OwnedFloatingNode node;
         public final Set<WireEntity> holders = new HashSet<>();
 
         public NodeEntry(IWireEndpoint endpoint) {

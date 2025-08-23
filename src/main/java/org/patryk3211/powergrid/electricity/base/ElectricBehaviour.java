@@ -20,12 +20,14 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -39,7 +41,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     // Order of these lists should be the same on server and client.
     private final List<INode> internalNodes = new ArrayList<>();
-    private final List<IElectricNode> externalNodes = new ArrayList<>();
+    private final List<OwnedFloatingNode> externalNodes = new ArrayList<>();
     private final List<AbstractElectricWire> internalWires = new ArrayList<>();
 
     private final Map<BlockWireEndpoint, Set<WireEntity>> connections = new HashMap<>();
@@ -120,7 +122,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return internalNodes;
     }
 
-    public List<IElectricNode> getExternalNodes() {
+    public List<OwnedFloatingNode> getExternalNodes() {
         return externalNodes;
     }
 
@@ -150,10 +152,12 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     @Override
     public void unload() {
-        removeInternalStructure();
-        // Unload doesn't remove external nodes since they might be utilized by transmission lines.
-        // Wires are not dropped either since they could be forming an important transmission line junction.
-        GlobalElectricNetworks.nodeHolderUnloaded(this);
+        if(!blockEntity.isRemoved()) {
+            removeInternalStructure();
+            // Unload doesn't remove external nodes since they might be utilized by transmission lines.
+            // Wires are not dropped either since they could be forming an important transmission line junction.
+            GlobalElectricNetworks.nodeHolderUnloaded(this);
+        }
     }
 
     public void remove() {
@@ -182,7 +186,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         // Check for stale wires here
         sourceConnections.removeIf(Entity::isRemoved);
         sourceConnections.add(wire);
-        blockEntity.notifyUpdate();
     }
 
     public void removeConnection(BlockWireEndpoint endpoint, WireEntity wire) {
@@ -200,7 +203,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     @Nullable
-    public IElectricNode getTerminal(int index) {
+    public OwnedFloatingNode getTerminal(int index) {
         if(index >= externalNodes.size())
             return null;
         return externalNodes.get(index);
@@ -221,7 +224,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return connections;
     }
 
-
     public boolean hasTerminal(int terminal) {
         return terminal >= 0 && terminal < externalNodes.size() && externalNodes.get(terminal) != null;
     }
@@ -240,7 +242,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             }
             connections.clear();
         }
-        blockEntity.notifyUpdate();
         destroying = false;
     }
 

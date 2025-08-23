@@ -28,22 +28,22 @@ import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.function.Supplier;
 
-public class TransmissionLineS2CPacket implements SimplePacket {
+public class TransmissionLineStateS2CPacket implements SimplePacket {
     public final IWireEndpoint endpoint1;
     public final IWireEndpoint endpoint2;
     public final float lineResistance;
     public final float node1Voltage;
     public final float node2Voltage;
 
-    public TransmissionLineS2CPacket(TransmissionLine line) {
-        this.endpoint1 = ((OwnedFloatingNode) line.getNode1()).endpoint;
-        this.endpoint2 = ((OwnedFloatingNode) line.getNode2()).endpoint;
+    public TransmissionLineStateS2CPacket(TransmissionLine line) {
+        this.endpoint1 = line.getNode1().endpoint;
+        this.endpoint2 = line.getNode2().endpoint;
         this.lineResistance = (float) line.getResistance();
         this.node1Voltage = line.getNode1().getVoltage();
         this.node2Voltage = line.getNode2().getVoltage();
     }
 
-    public TransmissionLineS2CPacket(FriendlyByteBuf buf) {
+    public TransmissionLineStateS2CPacket(FriendlyByteBuf buf) {
         this.endpoint1 = WireEndpointType.deserialize(buf.readNbt());
         this.endpoint2 = WireEndpointType.deserialize(buf.readNbt());
         this.lineResistance = buf.readFloat();

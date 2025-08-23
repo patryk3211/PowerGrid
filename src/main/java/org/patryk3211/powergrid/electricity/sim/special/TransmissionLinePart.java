@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
@@ -34,7 +35,7 @@ public class TransmissionLinePart extends ElectricWire {
     public IWireEndpoint endpoint1;
     public IWireEndpoint endpoint2;
 
-    public TransmissionLinePart(double resistance, IElectricNode node1, IElectricNode node2, @NotNull WireEntity owner, TransmissionLine line) {
+    public TransmissionLinePart(double resistance, OwnedFloatingNode node1, OwnedFloatingNode node2, @NotNull WireEntity owner, TransmissionLine line) {
         super(resistance, node1, node2);
         this.line = line;
         this.owner = owner;
@@ -47,6 +48,28 @@ public class TransmissionLinePart extends ElectricWire {
         this.endpoint1 = endpoint1;
         this.endpoint2 = endpoint2;
         this.line = line;
+    }
+
+    @Override
+    public void setNode1(IElectricNode node1) {
+        assert node1 instanceof OwnedFloatingNode;
+        super.setNode1(node1);
+    }
+
+    @Override
+    public void setNode2(IElectricNode node2) {
+        assert node2 instanceof OwnedFloatingNode;
+        super.setNode2(node2);
+    }
+
+    @Override
+    public OwnedFloatingNode getNode1() {
+        return (OwnedFloatingNode) node1;
+    }
+
+    @Override
+    public OwnedFloatingNode getNode2() {
+        return (OwnedFloatingNode) node2;
     }
 
     public TransmissionLine getLine() {

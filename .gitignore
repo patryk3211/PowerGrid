@@ -42,3 +42,4 @@ replay_*.log
 *.kra
 DESIGN.md
 *.bbmodel
+*.jar

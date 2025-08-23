@@ -43,11 +43,6 @@ public class ComponentCircuitBuilder extends IElectricEntity.CircuitBuilder {
     }
 
     @Override
-    public void setExternalNode(int index, boolean present) {
-        throw new IllegalCallerException("Cannot alter external node in ComponentCircuitBuilder");
-    }
-
-    @Override
     public FloatingNode terminalNode(int index) {
         return externalNodeProvider.apply(index);
     }

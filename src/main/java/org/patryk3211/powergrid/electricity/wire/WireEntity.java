@@ -93,10 +93,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             return;
         }
 
-        var temperature = entityData.get(TEMPERATURE);
         if(level().isClientSide)
             return;
 
+        float temperature = entityData.get(TEMPERATURE);
         float energy = 0;
         if (wire != null) {
             // We have to use current here since the wire might be a transmission line,
@@ -310,13 +310,17 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public void makeWire() {
+        // Client doesn't make a wire, connections are handled differently.
+        var world = level();
+        if(world.isClientSide)
+            return;
+
         dropWire();
 
         // Cannot make a wire unless both endpoints are valid.
         if(endpoint1 == null || endpoint2 == null)
             return;
 
-        var world = level();
         if(!endpoint1.isValid(world) || !endpoint2.isValid(world))
             return;
 

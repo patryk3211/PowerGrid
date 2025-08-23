@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 import java.util.UUID;
 
@@ -97,7 +98,7 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public IElectricNode getNode(Level world) {
+    public OwnedFloatingNode getNode(Level world) {
         throw new IllegalStateException("Cannot fetch node");
     }
 

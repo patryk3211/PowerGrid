@@ -20,12 +20,16 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.patryk3211.powergrid.network.ClientBoundPackets;
-import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
+import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 
 @Environment(EnvType.CLIENT)
 public class ClientElectricNetwork extends GlobalElectricNetworks {
-    public static void partialTrackedLine(TransmissionLineS2CPacket packet) {
-        ((ClientWorldNetworks) getWorldNetworks(ClientBoundPackets.world())).partialLine(packet);
+    public static void partialTrackedLine(TransmissionLineStateS2CPacket packet) {
+        getWorldNetworks().partialLine(packet);
+    }
+
+    public static ClientWorldNetworks getWorldNetworks() {
+        return (ClientWorldNetworks) getWorldNetworks(ClientBoundPackets.world());
     }
 
     public static void unloadWorld(Minecraft minecraftClient, ClientLevel world) {

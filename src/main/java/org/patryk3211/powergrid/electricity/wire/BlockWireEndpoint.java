@@ -25,11 +25,9 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 import java.util.Objects;
-
-;
 
 public class BlockWireEndpoint implements IWireEndpoint {
     private BlockPos pos;
@@ -89,7 +87,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public IElectricNode getNode(Level world) {
+    public OwnedFloatingNode getNode(Level world) {
         var behaviour = getElectricBehaviour(world);
         if(behaviour == null)
             return null;

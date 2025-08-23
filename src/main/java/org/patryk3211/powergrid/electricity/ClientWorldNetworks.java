@@ -16,10 +16,14 @@
 package org.patryk3211.powergrid.electricity;
 
 import com.google.common.base.Objects;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
@@ -28,10 +32,13 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
-import org.patryk3211.powergrid.network.packets.TransmissionLineS2CPacket;
+import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
+import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
+import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
 public class ClientWorldNetworks extends WorldNetworks {
@@ -63,21 +70,21 @@ public class ClientWorldNetworks extends WorldNetworks {
             phantomLines.clear();
 
             var line = part.getLine();
-            if(line.getNode1() instanceof OwnedFloatingNode node1 && line.getNode2() instanceof OwnedFloatingNode node2) {
-                var key1 = new PhantomLine(node1.endpoint, node2.endpoint);
-                if(phantomLines.containsKey(key1)) {
-                    phantomLines.remove(key1).remove();
-                }
-                var key2 = new PhantomLine(node2.endpoint, node1.endpoint);
-                if(phantomLines.containsKey(key2)) {
-                    phantomLines.remove(key2).remove();
-                }
+            var node1 = line.getNode1();
+            var node2 = line.getNode2();
+            var key1 = new PhantomLine(node1.endpoint, node2.endpoint);
+            if(phantomLines.containsKey(key1)) {
+                phantomLines.remove(key1).remove();
+            }
+            var key2 = new PhantomLine(node2.endpoint, node1.endpoint);
+            if(phantomLines.containsKey(key2)) {
+                phantomLines.remove(key2).remove();
             }
         }
         return result;
     }
 
-    public void partialLine(TransmissionLineS2CPacket packet) {
+    public void partialLine(TransmissionLineStateS2CPacket packet) {
        if(packet.endpoint1.isValid(world) && packet.endpoint2.isValid(world)) {
             var node1 = packet.endpoint1.getNode(world);
             var node2 = packet.endpoint2.getNode(world);
@@ -115,6 +122,85 @@ public class ClientWorldNetworks extends WorldNetworks {
             line.wire.setResistance(resistance);
         line.age = 0;
         return line;
+    }
+
+    @Override
+    public void lineConnected(TransmissionLine line) {
+        transmissionLines.put(line.getId(), line);
+    }
+
+    @Override
+    public void lineDisconnected(TransmissionLine line) {
+        transmissionLines.remove(line.getId());
+        islandDiscoveryQueue.add(line.getNetwork());
+    }
+
+    @Override
+    public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
+        super.nodeHolderAdded(ownedNode);
+        ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, false));
+    }
+
+    @Override
+    public void nodeHolderUnloaded(@NotNull OwnedFloatingNode ownedNode) {
+        super.nodeHolderUnloaded(ownedNode);
+        ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, true));
+    }
+
+    @Override
+    public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
+        var lines = globalGraph.getConnectedLines(ownedNode);
+        lines.forEach(TransmissionLine::remove);
+
+        super.nodeHolderRemoved(ownedNode);
+        ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, true));
+    }
+
+    public void lineManagement(IWireEndpoint endpoint, TransmissionLineManagementS2CPacket.Entry[] entries) {
+        var lines = globalGraph.getConnectedLines(endpoint.getNode(world))
+                .stream().map(TransmissionLine::getId).collect(Collectors.toCollection(IntOpenHashSet::new));
+        for(var entry : entries) {
+            if(!entry.endpoint1().isValid(world) || !entry.endpoint2().isValid(world)) {
+                // If an endpoint of the line is not valid it is discarded. If it existed before,
+                // it is treated as if it were removed.
+                continue;
+            }
+            var line = transmissionLines.get(entry.id());
+            if(line != null) {
+                // Alter existing line
+                lines.remove(line.getId());
+                var e1 = line.getNode1().endpoint;
+                var e2 = line.getNode2().endpoint;
+                if(!(e1.equals(entry.endpoint1()) && e2.equals(entry.endpoint2()) ||
+                    e1.equals(entry.endpoint2()) && e2.equals(entry.endpoint1()))) {
+                    // Endpoints do not match.
+                    if(!e1.equals(entry.endpoint1())) {
+                        line.setNode1(entry.endpoint1().getNode(world));
+                    }
+                    if(!e2.equals(entry.endpoint2())) {
+                        line.setNode2(entry.endpoint2().getNode(world));
+                    }
+                }
+                line.setResistance(entry.resistance());
+            } else {
+                // Completely new line
+                var node1 = entry.endpoint1().getNode(world);
+                var node2 = entry.endpoint2().getNode(world);
+                var network = prepareForConnection(entry.endpoint1(), entry.endpoint2());
+                if(network == null) {
+                    PowerGrid.LOGGER.warn("Failed to create a new transmission line from management packet");
+                    return;
+                }
+                line = new TransmissionLine(entry.id(), entry.resistance(),
+                        node1, node2, this);
+                network.addWire(line);
+            }
+        }
+        for(var id : lines) {
+            // Remaining lines have been removed.
+            var line = transmissionLines.get(id);
+            line.remove();
+        }
     }
 
     private record PhantomLine(IWireEndpoint endpoint, IWireEndpoint otherEndpoint) {

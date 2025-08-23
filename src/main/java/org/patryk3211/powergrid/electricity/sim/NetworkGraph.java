@@ -78,19 +78,19 @@ public class NetworkGraph {
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
 
-        if(wire instanceof TransmissionLine line) {
-            object1.connectedLines.add(line);
-            object2.connectedLines.add(line);
-            if(hooks != null)
-                hooks.lineConnected(line);
-        }
-
         var conns1 = object1.connections.computeIfAbsent(object2, key -> new ArrayList<>());
         if(!conns1.contains(wire)) conns1.add(wire);
         var conns2 = object2.connections.computeIfAbsent(object1, key -> new ArrayList<>());
         if(!conns2.contains(wire)) conns2.add(wire);
         if(hooks != null)
             hooks.addWire(wire);
+
+        if(wire instanceof TransmissionLine line) {
+            object1.connectedLines.add(line);
+            object2.connectedLines.add(line);
+            if(hooks != null)
+                hooks.lineConnected(line);
+        }
     }
 
     public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
@@ -99,13 +99,6 @@ public class NetworkGraph {
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
-
-        if(wire instanceof TransmissionLine line) {
-            object1.connectedLines.remove(line);
-            object2.connectedLines.remove(line);
-            if(hooks != null)
-                hooks.lineDisconnected(line);
-        }
 
         var conns1 = object1.connections.get(object2);
         if(conns1 != null) {
@@ -121,6 +114,13 @@ public class NetworkGraph {
         }
         if(hooks != null)
             hooks.removeWire(wire);
+
+        if(wire instanceof TransmissionLine line) {
+            object1.connectedLines.remove(line);
+            object2.connectedLines.remove(line);
+            if(hooks != null)
+                hooks.lineDisconnected(line);
+        }
     }
 
     public void couple(ICouplingNode coupling) {
