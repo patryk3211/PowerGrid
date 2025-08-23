@@ -30,7 +30,6 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
-import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
@@ -38,7 +37,9 @@ import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPac
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
@@ -64,25 +65,25 @@ public class ClientWorldNetworks extends WorldNetworks {
 
     @Override
     public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        var result = super.makeTransmissionLine(endpoint1, endpoint2, forEntity);
-        if(result instanceof TransmissionLinePart part) {
-            // Delete all phantom lines
-            phantomLines.forEach((key, line) -> line.remove());
-            phantomLines.clear();
+        throw new IllegalCallerException("Not on the client");
+    }
 
-            var line = part.getLine();
-            var node1 = line.getNode1();
-            var node2 = line.getNode2();
-            var key1 = new PhantomLine(node1.endpoint, node2.endpoint);
-            if(phantomLines.containsKey(key1)) {
-                phantomLines.remove(key1).remove();
-            }
-            var key2 = new PhantomLine(node2.endpoint, node1.endpoint);
-            if(phantomLines.containsKey(key2)) {
-                phantomLines.remove(key2).remove();
-            }
+    private void removePhantomLines(TransmissionLine line) {
+        // TODO: I don't remember why all lines are getting deleted, this needs verification.
+        // Delete all phantom lines
+        phantomLines.forEach((key, line2) -> line2.remove());
+        phantomLines.clear();
+
+        var node1 = line.getNode1();
+        var node2 = line.getNode2();
+        var key1 = new PhantomLine(node1.endpoint, node2.endpoint);
+        if(phantomLines.containsKey(key1)) {
+            phantomLines.remove(key1).remove();
         }
-        return result;
+        var key2 = new PhantomLine(node2.endpoint, node1.endpoint);
+        if(phantomLines.containsKey(key2)) {
+            phantomLines.remove(key2).remove();
+        }
     }
 
     public void partialLine(TransmissionLineStateS2CPacket packet) {
@@ -144,13 +145,12 @@ public class ClientWorldNetworks extends WorldNetworks {
 
     @Override
     public void nodeHolderUnloaded(@NotNull OwnedFloatingNode ownedNode) {
-        super.nodeHolderUnloaded(ownedNode);
-        ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, true));
+        nodeHolderRemoved(ownedNode);
     }
 
     @Override
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
-        var lines = globalGraph.getConnectedLines(ownedNode);
+        var lines = Set.copyOf(globalGraph.getConnectedLines(ownedNode));
         lines.forEach(TransmissionLine::remove);
 
         super.nodeHolderRemoved(ownedNode);
@@ -215,16 +215,20 @@ public class ClientWorldNetworks extends WorldNetworks {
             if(line != null) {
                 // Alter existing line
                 lines.remove(line.getId());
-                var e1 = line.getNode1().endpoint;
-                var e2 = line.getNode2().endpoint;
-                if(!(e1.equals(entry.endpoint1()) && e2.equals(entry.endpoint2()) ||
-                    e1.equals(entry.endpoint2()) && e2.equals(entry.endpoint1()))) {
-                    // Endpoints do not match.
-                    if(!e1.equals(entry.endpoint1())) {
-                        line.setNode1(entry.endpoint1().getNode(world));
+                // We compare NODES and ENDPOINTS.
+                // This is important since stale endpoints might remain here.
+                // They shouldn't, but that's a whole different subject.
+                var ln1 = line.getNode1();
+                var ln2 = line.getNode2();
+                var en1 = entry.endpoint1().getNode(world);
+                var en2 = entry.endpoint2().getNode(world);
+                if(!((ln1 == en1 && ln2 == en2) || (ln1 == en2 && ln2 == en1))) {
+                    // Nodes do not match.
+                    if(ln1 != en1) {
+                        line.setNode1(en1);
                     }
-                    if(!e2.equals(entry.endpoint2())) {
-                        line.setNode2(entry.endpoint2().getNode(world));
+                    if(ln2 != en2) {
+                        line.setNode2(en2);
                     }
                 }
                 line.setResistance(entry.resistance());
@@ -241,6 +245,7 @@ public class ClientWorldNetworks extends WorldNetworks {
                         node1, node2, this);
                 network.addWire(line);
             }
+            removePhantomLines(line);
         }
         for(var id : lines) {
             // Remaining lines have been removed.

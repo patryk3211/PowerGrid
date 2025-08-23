@@ -19,6 +19,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -30,6 +31,7 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.utility.NumberFormats;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -90,12 +92,15 @@ public class GlobalElectricNetworks {
         return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity);
     }
 
-    private static String display(IElectricNode node) {
+    private static Component display(IElectricNode node) {
+        MutableComponent line;
         if(node instanceof OwnedFloatingNode ofn) {
-            return "OFN[" + ofn.endpoint + "]";
+            line = Component.literal("OFN[" + ofn.endpoint + "]");
         } else {
-            return node.toString();
+            line = Component.literal(node.toString());
         }
+        line.append(Component.literal("@" + NumberFormats.formatPrecise(node.getVoltage()) + "V").withStyle(ChatFormatting.DARK_GRAY));
+        return line;
     }
 
     public static void inspect(ElectricBehaviour behaviour, Player user) {
@@ -105,10 +110,10 @@ public class GlobalElectricNetworks {
                 : Component.literal("Client:").withStyle(ChatFormatting.GREEN));
         int index = 0;
         for(var node : behaviour.getExternalNodes()) {
-            user.sendSystemMessage(Component.literal((index++) + " = " + display(node))
+            user.sendSystemMessage(Component.literal((index++) + " = ").append(display(node))
                     .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
             for (var connected : worldNetworks.globalGraph.getConnectedNodes(node)) {
-                user.sendSystemMessage(Component.literal(" - " + display(connected))
+                user.sendSystemMessage(Component.literal(" - ").append(display(connected))
                         .withStyle(ChatFormatting.BLUE));
                 for (var wire : worldNetworks.globalGraph.getWires(node, connected)) {
                     user.sendSystemMessage(Component.literal("    via " + wire)

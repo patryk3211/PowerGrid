@@ -68,9 +68,9 @@ public class DeviceConnectorBlockEntity extends ElectricBlockEntity implements I
                 .add(unit)
                 .style(ChatFormatting.AQUA)
                 .add(Lang.translate("gui.device_connector.for")
-                        .add(Lang.numberConstant(A))
+                        .add(Lang.numberConstant(A * A * converterWire.getResistance()))
                         .add(Component.literal(" "))
-                        .add(Unit.CURRENT.get())
+                        .add(Unit.POWER.get())
                         .style(ChatFormatting.DARK_GRAY))
                 .forGoggles(tooltip, 1);
 

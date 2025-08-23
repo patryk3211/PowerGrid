@@ -20,14 +20,12 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
-import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -47,6 +45,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     private final Map<BlockWireEndpoint, Set<WireEntity>> connections = new HashMap<>();
     private boolean destroying = false;
     private boolean rebuildOnClient = false;
+    private boolean removed = false;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
         this(be, true);
@@ -152,7 +151,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     @Override
     public void unload() {
-        if(!blockEntity.isRemoved()) {
+        if(!removed) {
             removeInternalStructure();
             // Unload doesn't remove external nodes since they might be utilized by transmission lines.
             // Wires are not dropped either since they could be forming an important transmission line junction.
@@ -164,6 +163,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         breakConnections();
         removeInternalStructure();
         GlobalElectricNetworks.nodeHolderRemoved(this);
+        removed = true;
     }
 
     public void refreshConnectionEntities() {

@@ -27,6 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 
 import java.util.Collection;
@@ -65,27 +66,10 @@ public class PlayerUtilities {
 
     @NotNull
     public static Collection<ServerPlayer> partialTracking(@NotNull ServerLevel world, @NotNull TransmissionLine line) {
-        if(line.segments.isEmpty())
-            return List.of();
-        var firstSegment = line.segments.get(0);
-        var lastSegment = line.segments.get(line.segments.size() - 1);
-        if(firstSegment.owner == null || lastSegment.owner == null)
-            return List.of();
-
-        Set<ServerPlayer> players1 = null, players2 = null;
-        players1 = Set.copyOf(PlayerLookup.tracking(firstSegment.owner));
-        players2 = Set.copyOf(PlayerLookup.tracking(lastSegment.owner));
+        Set<ServerPlayer> players1, players2;
+        players1 = GlobalElectricNetworks.getWorldNetworks(world).getTrackers(line.getNode1().endpoint);
+        players2 = GlobalElectricNetworks.getWorldNetworks(world).getTrackers(line.getNode2().endpoint);
         return Sets.symmetricDifference(players1, players2);
-    }
-
-    @NotNull
-    public static Collection<ServerPlayer> tracking(@NotNull ServerLevel world, @NotNull TransmissionLine line) {
-        var node1 = line.getNode1().endpoint.getExactPosition(world);
-        var node2 = line.getNode2().endpoint.getExactPosition(world);
-
-        var trackers = new HashSet<>(PlayerLookup.tracking(world, BlockPos.containing(node1)));
-        trackers.addAll(PlayerLookup.tracking(world, BlockPos.containing(node2)));
-        return trackers;
     }
 
     @ExpectPlatform

@@ -437,6 +437,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void nodeHolderUnloaded(@NotNull OwnedFloatingNode ownedNode) {
+        // TODO:
         // Here, we need to choose between preserving transmission line junction nodes or removing them.
     }
 
@@ -451,6 +452,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
         var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
         if(oldNode != null) {
+            // TODO:
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
         }
@@ -469,5 +471,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(list.isEmpty())
                 trackers.remove(endpoint);
         }
+    }
+
+    @NotNull
+    public Set<ServerPlayer> getTrackers(IWireEndpoint endpoint) {
+        var set = trackers.get(endpoint);
+        if(set == null)
+            return Set.of();
+        return set;
     }
 }
