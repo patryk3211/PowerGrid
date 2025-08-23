@@ -262,6 +262,8 @@ public class TransmissionLine extends ElectricWire {
     }
 
     private void optimizeNode(IElectricNode node) {
+        if(global.world.isClientSide)
+            return;
         if(global.globalGraph.connectionCount(node) == 2) {
             // We can possibly merge two transmission lines here.
             var nodes = global.globalGraph.getConnectedNodes(node);

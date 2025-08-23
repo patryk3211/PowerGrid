@@ -283,11 +283,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
 
         // Next move onto the unresolved lines
-        for(var unresolved : unresolvedLines) {
-            var part = unresolved.resolvePart(this, forEntity);
-            if(part != null)
-                return part;
-        }
+//        for(var unresolved : unresolvedLines) {
+//            var part = unresolved.resolvePart(this, forEntity);
+//            if(part != null)
+//                return part;
+//        }
         return null;
     }
 

@@ -215,7 +215,7 @@ public class ClientWorldNetworks extends WorldNetworks {
             if(line != null) {
                 // Alter existing line
                 lines.remove(line.getId());
-                // We compare NODES and ENDPOINTS.
+                // We compare NODES not ENDPOINTS.
                 // This is important since stale endpoints might remain here.
                 // They shouldn't, but that's a whole different subject.
                 var ln1 = line.getNode1();
