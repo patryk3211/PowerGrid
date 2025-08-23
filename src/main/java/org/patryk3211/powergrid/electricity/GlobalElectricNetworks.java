@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -89,14 +90,30 @@ public class GlobalElectricNetworks {
         return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity);
     }
 
-    public static void inspect(IElectricNode node, Player user) {
+    private static String display(IElectricNode node) {
+        if(node instanceof OwnedFloatingNode ofn) {
+            return "OFN[" + ofn.endpoint + "]";
+        } else {
+            return node.toString();
+        }
+    }
+
+    public static void inspect(ElectricBehaviour behaviour, Player user) {
         var worldNetworks = getWorldNetworks(user.level());
-        user.sendSystemMessage(Component.nullToEmpty(user instanceof ServerPlayer ? "Server:" : "Client:"));
-        user.sendSystemMessage(Component.literal(node.toString()));
-        for(var connected : worldNetworks.globalGraph.getConnectedNodes(node)) {
-            user.sendSystemMessage(Component.literal(" - " + connected));
-            for(var wire : worldNetworks.globalGraph.getWires(node, connected)) {
-                user.sendSystemMessage(Component.literal("  via " + wire));
+        user.sendSystemMessage(user instanceof ServerPlayer
+                ? Component.literal("Server:").withStyle(ChatFormatting.GOLD)
+                : Component.literal("Client:").withStyle(ChatFormatting.GREEN));
+        int index = 0;
+        for(var node : behaviour.getExternalNodes()) {
+            user.sendSystemMessage(Component.literal((index++) + " = " + display(node))
+                    .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
+            for (var connected : worldNetworks.globalGraph.getConnectedNodes(node)) {
+                user.sendSystemMessage(Component.literal(" - " + display(connected))
+                        .withStyle(ChatFormatting.BLUE));
+                for (var wire : worldNetworks.globalGraph.getWires(node, connected)) {
+                    user.sendSystemMessage(Component.literal("    via " + wire)
+                            .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+                }
             }
         }
     }

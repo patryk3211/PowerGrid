@@ -32,6 +32,7 @@ import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
+import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
@@ -70,7 +71,7 @@ public class ModdedItems {
     public static final ItemEntry<Item> EMPTY_CIRCUIT = REGISTRATE.item("empty_circuit", Item::new)
             .register();
 
-//    public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
+    public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
 
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
             .transform(LightBulb.setModelProvider(() -> state -> switch(state) {

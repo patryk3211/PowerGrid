@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
@@ -154,6 +155,51 @@ public class ClientWorldNetworks extends WorldNetworks {
 
         super.nodeHolderRemoved(ownedNode);
         ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, true));
+    }
+
+    @Override
+    public @Nullable ElectricalNetwork prepareForConnection(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+        var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
+
+        add(endpoint1);
+        add(endpoint2);
+
+        if(node1 == node2)
+            return null;
+        if(node1 == null || node2 == null)
+            return null;
+
+        // Client doesn't do line splitting
+
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
+
+        // Put both nodes into the same network.
+        ElectricalNetwork network;
+        if(net1 == null && net2 == null) {
+            network = newNetwork();
+            endpoint1.joinNetwork(world, network);
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 == null) {
+            network = net2;
+            endpoint1.joinNetwork(world, network);
+        } else if(net2 == null) {
+            network = net1;
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 != net2) {
+            if(net1.size() >= net2.size()) {
+                network = net1;
+                network.merge(net2);
+            } else {
+                network = net2;
+                network.merge(net1);
+            }
+        } else {
+            network = net1;
+        }
+
+        return network;
     }
 
     public void lineManagement(IWireEndpoint endpoint, TransmissionLineManagementS2CPacket.Entry[] entries) {

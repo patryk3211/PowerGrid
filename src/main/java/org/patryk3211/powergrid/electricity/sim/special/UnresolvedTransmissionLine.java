@@ -141,6 +141,10 @@ public class UnresolvedTransmissionLine {
         global.assignTransmissionLine(node1, null);
         global.assignTransmissionLine(node2, null);
         global.unresolvedLines.remove(this);
+        network = global.prepareForConnection(line.getNode1().endpoint, line.getNode2().endpoint);
+        if(network == null)
+            // Very bad
+            return;
         network.addWire(line);
     }
 

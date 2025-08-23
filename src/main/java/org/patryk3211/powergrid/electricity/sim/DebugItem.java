@@ -15,11 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 
 public class DebugItem extends Item {
     public DebugItem(Properties settings) {
@@ -28,11 +30,13 @@ public class DebugItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
+        if(context.getPlayer() == null)
+            return InteractionResult.FAIL;
         var world = context.getLevel();
-        var opt = world.getBlockEntity(context.getClickedPos(), ModdedBlockEntities.WIRE_CONNECTOR.get());
-        return opt.map(be -> {
-            GlobalElectricNetworks.inspect(be.getElectricBehaviour().getTerminal(0), context.getPlayer());
-            return InteractionResult.SUCCESS;
-        }).orElse(InteractionResult.FAIL);
+        var behaviour = BlockEntityBehaviour.get(world, context.getClickedPos(), ElectricBehaviour.TYPE);
+        if(behaviour == null)
+            return InteractionResult.FAIL;
+        GlobalElectricNetworks.inspect(behaviour, context.getPlayer());
+        return InteractionResult.SUCCESS;
     }
 }
