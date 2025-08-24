@@ -15,12 +15,16 @@
  */
 package org.patryk3211.powergrid.kinetics.variac;
 
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,14 +35,16 @@ import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSoundInstance;
 import org.patryk3211.powergrid.electricity.transformer.TransformerVolumeProvider;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
+import org.patryk3211.powergrid.utility.Lang;
 
-public class VariacBlockEntity extends ElectricKineticBlockEntity implements TransformerVolumeProvider {
+import java.util.List;
+
+public class VariacBlockEntity extends ElectricKineticBlockEntity implements TransformerVolumeProvider, IHaveGoggleInformation {
     public static final float PRIMARY_TURNS = 25;
     public static final float CORE_AL = 1.5f;
     public static final float COUPLING_FACTOR = 0.9999f;
     public static final float PRIMARY_INDUCTANCE = PRIMARY_TURNS * PRIMARY_TURNS * CORE_AL;
 
-//    protected ModelData assembly;
     protected LerpedFloat arm;
 
     protected ElectricWire primaryStray;
@@ -85,7 +91,13 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
             arm.forceNextSync();
             return;
         }
-        arm.chase(speed > 0 ? 1 : 0, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
+        if(sequenceContext != null && sequenceContext.instruction() == SequencerInstructions.TURN_ANGLE) {
+            var angle = sequenceContext.getEffectiveValue(getTheoreticalSpeed());
+            var target = Mth.clamp((arm.getValue() + angle / 315f * Math.signum(speed)), 0, 1);
+            arm.chase(target, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
+        } else {
+            arm.chase(speed > 0 ? 1 : 0, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
+        }
         sendData();
     }
 
@@ -126,7 +138,6 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         float secondaryStray = secondaryInductance - ratio * ratio * mutualInductance;
         this.primaryStray.setResistance(primaryStray);
         this.mutualInductance.setResistance(mutualInductance);
-//        this.secondaryStray.setResistance(secondaryStray);
         this.coupling.setRatio(ratio);
         this.coupling.setResistance(secondaryStray * ratio * ratio);
     }
@@ -184,5 +195,20 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         super.read(compound, clientPacket);
         arm.readNBT(compound.getCompound("Arm"), clientPacket);
         refreshParameters();
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        if(!isPlayerSneaking)
+            return false;
+
+        Lang.builder().translate("gui.transformer.info_header").forGoggles(tooltip);
+        Lang.builder().translate("gui.transformer.ratio")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        var ratio = Lang.number(1 / getRatio()).add(Component.literal(":1"));
+        ratio.style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+        return true;
     }
 }
