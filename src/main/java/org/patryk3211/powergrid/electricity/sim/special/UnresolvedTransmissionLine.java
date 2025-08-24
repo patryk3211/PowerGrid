@@ -51,6 +51,7 @@ public class UnresolvedTransmissionLine {
         resistance = line.getResistance();
 
         segments = new ArrayList<>();
+        var prevEndpoint = line.getNode1().endpoint;
         for(var segment : line.segments) {
             IWireEndpoint endpoint;
             if(segment.getNode2() == null) {
@@ -58,7 +59,17 @@ public class UnresolvedTransmissionLine {
             } else {
                 endpoint = segment.getNode2().endpoint;
             }
-            segments.add(new Segment(endpoint, segment.persistentOwnerId, segment.getResistance()));
+            if(endpoint.equals(prevEndpoint)) {
+                if(segment.getNode1() == null) {
+                    endpoint = segment.endpoint1;
+                } else {
+                    endpoint = segment.getNode1().endpoint;
+                }
+            }
+            prevEndpoint = endpoint;
+            var unSegment = new Segment(endpoint, segment.persistentOwnerId, segment.getResistance());
+            unSegment.resolvedWire = segment;
+            segments.add(unSegment);
         }
     }
 
