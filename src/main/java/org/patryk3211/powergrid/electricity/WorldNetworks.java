@@ -35,7 +35,6 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.SolverStateS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
@@ -53,7 +52,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
     public final Map<Integer, TransmissionLine> transmissionLines = new IntObjectHashMap<>();
-    public final Queue<UnresolvedTransmissionLine> unresolvedLines = new ConcurrentLinkedQueue<>();
+
+    private final Set<UnresolvedTransmissionLine> unresolvedLines = new HashSet<>();
+    private final Map<IWireEndpoint, Queue<UnresolvedTransmissionLine>> unresolvedLineNodeMap = new HashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
     private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
@@ -437,30 +438,37 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             lineList.add(unresolved.writeNbt());
         }
         nbt.put("TransmissionLines", lineList);
-
-        // Write important transmission line junction nodes.
-        var nodeList = new ListTag();
-        for(var entry : globalExternalNodes.entrySet()) {
-            var lines = globalGraph.getConnectedLines(entry.getValue());
-            if(lines.size() > 1) {
-                nodeList.add(entry.getKey().serialize());
-            }
-        }
-        nbt.put("Nodes", nodeList);
         return nbt;
+    }
+
+    private void addUnresolvedLineMapping(IWireEndpoint endpoint, UnresolvedTransmissionLine line) {
+        unresolvedLineNodeMap.computeIfAbsent(endpoint, $ -> new ConcurrentLinkedQueue<>()).add(line);
+    }
+
+    public void removeUnresolvedLine(UnresolvedTransmissionLine line) {
+        unresolvedLines.remove(line);
+        var lines1 = unresolvedLineNodeMap.get(line.endpoint1());
+        if(lines1 != null) {
+            lines1.remove(line);
+            if(lines1.isEmpty())
+                unresolvedLineNodeMap.remove(line.endpoint1());
+        }
+        var lines2 = unresolvedLineNodeMap.get(line.endpoint2());
+        if(lines2 != null) {
+            lines2.remove(line);
+            if(lines2.isEmpty())
+                unresolvedLineNodeMap.remove(line.endpoint2());
+        }
     }
 
     protected void readNbt(CompoundTag nbt) {
         var lineList = nbt.getList("TransmissionLines", Tag.TAG_COMPOUND);
         for(var lineEntryGeneric : lineList) {
             var lineEntry = (CompoundTag) lineEntryGeneric;
-            unresolvedLines.add(new UnresolvedTransmissionLine(lineEntry));
-        }
-        // TODO: This will need to try and resolve lines on every stored node.
-        var nodeList = nbt.getList("Nodes", Tag.TAG_COMPOUND);
-        for(var tag : nodeList) {
-            var endpoint = WireEndpointType.deserialize((CompoundTag) tag);
-            globalExternalNodes.put(endpoint, new OwnedFloatingNode(endpoint));
+            var line = new UnresolvedTransmissionLine(lineEntry);
+            unresolvedLines.add(line);
+            addUnresolvedLineMapping(line.endpoint1(), line);
+            addUnresolvedLineMapping(line.endpoint2(), line);
         }
     }
 
@@ -469,9 +477,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         // A transmission line should be preserved if terminates on a junction which connects to more
         // transmission lines.
         Collection<TransmissionLine> lines;
-        do {
+        while(true) {
             lines = globalGraph.getConnectedLines(ownedNode);
-            if(lines.isEmpty())
+            if(lines.size() != 1)
                 break;
             // No need to keep this line (or the node).
             var line = lines.iterator().next();
@@ -482,12 +490,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 assert line.getNode2() == ownedNode;
                 ownedNode = line.getNode1();
             }
+            var unresolved = new UnresolvedTransmissionLine(line);
+            unresolvedLines.add(unresolved);
+            addUnresolvedLineMapping(unresolved.endpoint1(), unresolved);
+            addUnresolvedLineMapping(unresolved.endpoint2(), unresolved);
             line.remove();
             if(removeNode.getNetwork() != null) {
                 removeNode.getNetwork().removeNode(removeNode);
             }
             globalExternalNodes.remove(removeNode.endpoint);
-        } while(lines.size() == 1);
+        }
     }
 
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
@@ -496,6 +508,84 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             ownedNode.getNetwork().removeNode(ownedNode);
         }
         globalExternalNodes.remove(ownedNode.endpoint);
+    }
+
+    private void resolveLine(UnresolvedTransmissionLine line) {
+        // If node already exists then the resolving code must have triggered for it (no need to resolve again)
+        var node1 = globalExternalNodes.get(line.endpoint1());
+        if(node1 == null) {
+            node1 = new OwnedFloatingNode(line.endpoint1());
+            globalExternalNodes.put(line.endpoint1(), node1);
+            line.resolveEnd(this, node1);
+        }
+        var node2 = globalExternalNodes.get(line.endpoint2());
+        if(node2 == null) {
+            node2 = new OwnedFloatingNode(line.endpoint2());
+            globalExternalNodes.put(line.endpoint2(), node2);
+            line.resolveEnd(this, node2);
+        }
+    }
+
+    private boolean traceTree(IWireEndpoint endpoint, Set<IWireEndpoint> visited) {
+        if(!visited.add(endpoint))
+            return false;
+        var lines = unresolvedLineNodeMap.get(endpoint);
+        if(lines == null)
+            return false;
+        boolean continueResolving = false;
+        for(var line : lines) {
+            if(lines.size() == 1) {
+                if(line.endpoint1().equals(endpoint)) {
+                    // Check endpoint2
+                    if(line.endpoint2().isValid(world)) {
+                        // Resolve segment
+                        resolveLine(line);
+                        return true;
+                    }
+                } else {
+                    assert line.endpoint2().equals(endpoint);
+                    // Check endpoint1
+                    if(line.endpoint1().isValid(world)) {
+                        // Resolve segment
+                        resolveLine(line);
+                        return true;
+                    }
+                }
+                break;
+            }
+            if(line.endpoint1().equals(endpoint)) {
+                if(traceTree(line.endpoint2(), visited)) {
+                    resolveLine(line);
+                    continueResolving = true;
+                }
+            } else {
+                assert line.endpoint2().equals(endpoint);
+                if(traceTree(line.endpoint1(), visited)) {
+                    resolveLine(line);
+                    continueResolving = true;
+                }
+            }
+        }
+        return continueResolving;
+    }
+
+    private void resolveTree(@NotNull OwnedFloatingNode ownedNode) {
+        var unresolvedLines = unresolvedLineNodeMap.get(ownedNode.endpoint);
+        if(unresolvedLines == null)
+            return;
+        // We need to trace the graph to all terminating nodes and see if any are loaded,
+        // if so, we need to resolve all lines between them to ensure correct unloaded chunk behaviour.
+        var visited = new HashSet<IWireEndpoint>();
+        visited.add(ownedNode.endpoint);
+        for(var line : unresolvedLines) {
+            line.resolveEnd(this, ownedNode);
+            if(line.endpoint1().equals(ownedNode.endpoint)) {
+                traceTree(line.endpoint2(), visited);
+            } else {
+                assert line.endpoint2().equals(ownedNode.endpoint);
+                traceTree(line.endpoint1(), visited);
+            }
+        }
     }
 
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
@@ -514,9 +604,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
         }
         // Try to resolve an end of a transmission line
-        for(var unresolved : unresolvedLines) {
-            unresolved.resolveEnd(this, ownedNode);
-        }
+        resolveTree(ownedNode);
     }
 
     public void tracking(ServerPlayer tracker, IWireEndpoint endpoint, boolean end) {

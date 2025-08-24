@@ -95,6 +95,14 @@ public class UnresolvedTransmissionLine {
         return lineEntry;
     }
 
+    public IWireEndpoint endpoint1() {
+        return endpoint1;
+    }
+
+    public IWireEndpoint endpoint2() {
+        return endpoint2;
+    }
+
     public void setEndpoint1Resolved() {
         resolvedEndpoints |= 1;
     }
@@ -142,7 +150,7 @@ public class UnresolvedTransmissionLine {
         }
         global.assignTransmissionLine(node1, null);
         global.assignTransmissionLine(node2, null);
-        global.unresolvedLines.remove(this);
+        global.removeUnresolvedLine(this);
         network = global.prepareForConnection(line.getNode1().endpoint, line.getNode2().endpoint);
         if(network == null)
             // Very bad

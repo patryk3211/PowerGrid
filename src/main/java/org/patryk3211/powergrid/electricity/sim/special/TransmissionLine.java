@@ -89,7 +89,6 @@ public class TransmissionLine extends ElectricWire {
 
     @Override
     public OwnedFloatingNode getNode1() {
-        assert node1 instanceof OwnedFloatingNode;
         return (OwnedFloatingNode) node1;
     }
 
