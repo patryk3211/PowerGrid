@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
@@ -63,7 +64,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private RotorBehaviour rotorP;
     private RotorBehaviour rotorN;
 
-    private float coilConstant = 1;
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
     private VoltageSourceNode sourceNode;
@@ -75,6 +75,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         super(type, pos, state);
     }
 
+    public static float coilConstant() {
+        return ModdedConfigs.server().electricity.windingCoilConstant.getF();
+    }
+
     private boolean isMain() {
         return getBlockState().getValue(PART) == 0;
     }
@@ -82,10 +86,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     public float emfVoltage() {
         float voltage = 0;
         if(rotorP != null) {
-            voltage -= rotorP.getAngularVelocityRadians() * rotorP.getFieldStrength() * coilConstant;
+            voltage -= rotorP.getAngularVelocityRadians() * rotorP.getFieldStrength() * coilConstant();
         }
         if(rotorN != null) {
-            voltage -= rotorN.getAngularVelocityRadians() * rotorN.getFieldStrength() * coilConstant;
+            voltage -= rotorN.getAngularVelocityRadians() * rotorN.getFieldStrength() * coilConstant();
         }
         return voltage;
     }
@@ -703,7 +707,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         applyLostPower(current * current * resistance());
 
         if(rotorP != null) {
-            float torque = coilConstant * rotorP.getFieldStrength() * current;
+            float torque = coilConstant() * rotorP.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
             if (Pe > 0) {
@@ -717,7 +721,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             rotorP.applyTickForce(rotorP.limitForce(torque));
         }
         if(rotorN != null) {
-            float torque = coilConstant * rotorN.getFieldStrength() * current;
+            float torque = coilConstant() * rotorN.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
             if (Pe > 0) {

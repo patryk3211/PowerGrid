@@ -42,7 +42,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        rotorBehaviour = new RotorBehaviour(this);
+        rotorBehaviour = new RotorBehaviour(this, ModdedConfigs.server().kinetics.generatorClutchInertia.getF());
         rotorBehaviour.noField();
         behaviours.add(rotorBehaviour);
     }
@@ -74,15 +74,16 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
         if(theoreticalForce > maxForce)
             theoreticalForce = maxForce;
         theoreticalForce *= couplingStrength;
+        final var defaultImpact = (float) ModdedConfigs.server().kinetics.stressValues.getImpact(getBlockState().getBlock()).getAsDouble();
         if(hasNetwork()) {
             var network = getOrCreateNetwork();
             var newImpact = currentImpact;
             if(theoreticalForce <= maxForce / 4) {
-                newImpact = 2f * segmentCount;
+                newImpact = defaultImpact * segmentCount * 0.5f;
             } else if(theoreticalForce <= maxForce / 2) {
-                newImpact = 4f * segmentCount;
+                newImpact = defaultImpact * segmentCount * 1.0f;
             } else {
-                newImpact = 8f * segmentCount;
+                newImpact = defaultImpact * segmentCount * 2.0f;
             }
             if(newImpact != currentImpact) {
                 if(!level.isClientSide)

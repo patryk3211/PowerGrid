@@ -25,6 +25,7 @@ import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
 import java.util.ArrayList;
@@ -33,11 +34,11 @@ import java.util.List;
 
 public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("generator_rotor");
-    private static final float ROTOR_INERTIA = 0.1f;
 
     // Energy values get loaded from NBT.
     protected float angularVelocity = 0;
     private float fieldStrength = 0.3f;
+    private final float individualInertia;
 
     // Segment count and inertia get calculated from added segments every time.
     private float inertia = 0;
@@ -49,8 +50,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     private boolean emitsField = true;
     private boolean hasSoundSource = false;
 
-    public RotorBehaviour(SmartBlockEntity be) {
-        super(be, ModdedConfigs.server().kinetics.rotorAssemblyMaxSize.get());
+    public RotorBehaviour(SmartBlockEntity be, float inertia) {
+        super(be, ModdedConfigs.server().kinetics.rotorAssemblyMaxSize.get(),
+                segment -> !segment.blockEntity.getBlockState()
+                        .is(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag));
+        this.individualInertia = inertia;
     }
 
     public void noField() {
@@ -107,7 +111,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     protected void makeController() {
         super.makeController();
-        inertia = ROTOR_INERTIA;
+        inertia = individualInertia;
         segmentCount = 1;
     }
 
@@ -154,8 +158,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     public void segmentAdded(RotorBehaviour segment) {
         super.segmentAdded(segment);
-        var momentum = angularVelocity * inertia + segment.angularVelocity * ROTOR_INERTIA;
-        inertia += ROTOR_INERTIA;
+        var momentum = angularVelocity * inertia + segment.angularVelocity * segment.individualInertia;
+        inertia += segment.individualInertia;
         angularVelocity = momentum / inertia;
         segmentCount += 1;
     }
@@ -163,7 +167,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     public void segmentRemoved(RotorBehaviour segment) {
         super.segmentRemoved(segment);
-        inertia -= ROTOR_INERTIA;
+        inertia -= segment.individualInertia;
         segmentCount -= 1;
     }
 

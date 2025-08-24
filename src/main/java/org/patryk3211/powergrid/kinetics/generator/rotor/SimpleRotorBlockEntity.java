@@ -15,32 +15,18 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.rotor;
 
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 
-import java.util.List;
-
-public abstract class RotorBlockEntity extends SmartBlockEntity {
-    protected RotorBehaviour rotorBehaviour;
-
-    public RotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
+public class SimpleRotorBlockEntity extends RotorBlockEntity {
+    public SimpleRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
 
-    public abstract float inertia();
-
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        rotorBehaviour = new RotorBehaviour(this, inertia());
-        behaviours.add(rotorBehaviour);
-    }
-
-    @Override
-    public void remove() {
-        super.remove();
-        rotorBehaviour.remove();
+    public float inertia() {
+        return ModdedConfigs.server().kinetics.generatorRotorInertia.getF();
     }
 }

@@ -27,6 +27,7 @@ import org.patryk3211.powergrid.PowerGrid;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extends BlockEntityBehaviour {
     @Nullable
@@ -37,10 +38,13 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     protected Runnable changeCallback;
     protected final int maxSize;
 
-    public SegmentedBehaviour(SmartBlockEntity be, int maxSize) {
+    protected Predicate<T> countToSize;
+
+    public SegmentedBehaviour(SmartBlockEntity be, int maxSize, Predicate<T> countToSize) {
         super(be);
 
         this.maxSize = maxSize;
+        this.countToSize = countToSize;
         controllerPos = null;
         segments = null;
         changeCallback = null;
@@ -100,12 +104,14 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         assert controller.isController();
         this.controllerPos = controller.getPos();
         this.segments = null;
-        if(controller.segments.size() + 1 >= maxSize) {
-            // This assembly is too big.
-            var world = getWorld();
-            if(!world.isClientSide)
-                world.destroyBlock(getPos(), true);
-            return;
+        if(isCounted()) {
+            if (controller.getLimitedSize() + 1 > maxSize) {
+                // This assembly is too big.
+                var world = getWorld();
+                if (!world.isClientSide)
+                    world.destroyBlock(getPos(), true);
+                return;
+            }
         }
 
         controller.segments.add((T) this);
@@ -180,9 +186,9 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             // Already in an assembly so the size check doesn't matter
             return true;
         }
-        int totalSize = 1;
+        int totalSize = isCounted() ? 1 : 0;
         for(var connected : getConnected()) {
-            totalSize += connected.getSegmentCount();
+            totalSize += connected.getLimitedSize();
         }
         if(totalSize > maxSize) {
             var world = getWorld();
@@ -300,5 +306,21 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         if(controller.segments == null)
             return 1;
         return controller.segments.size() + 1;
+    }
+
+    protected boolean isCounted() {
+        return countToSize.test((T) this);
+    }
+
+    public int getLimitedSize() {
+        int count = isCounted() ? 1 : 0;
+        var controller = getControllerOrThis();
+        if(controller.segments == null)
+            return count;
+        for(var segment : controller.segments) {
+            if(segment.isCounted())
+                ++count;
+        }
+        return count;
     }
 }

@@ -57,9 +57,9 @@ import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBloc
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorVisual;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorVisual;
+import org.patryk3211.powergrid.kinetics.generator.rotor.SimpleRotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
@@ -109,8 +109,8 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.BASIN_HEATER)
                     .register();
 
-    public static final BlockEntityEntry<RotorBlockEntity> GENERATOR_ROTOR =
-            REGISTRATE.blockEntity("generator_rotor", RotorBlockEntity::new)
+    public static final BlockEntityEntry<SimpleRotorBlockEntity> GENERATOR_ROTOR =
+            REGISTRATE.blockEntity("generator_rotor", SimpleRotorBlockEntity::new)
                     .visual(() -> RotorVisual.of(ModdedPartialModels.ROTOR))
                     .validBlock(ModdedBlocks.GENERATOR_ROTOR)
                     .renderer(() -> RotorRenderer::new)
