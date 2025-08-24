@@ -96,16 +96,9 @@ public class ClientWorldNetworks extends WorldNetworks {
                     // Packet is not needed, the nodes are actually connected.
                     return;
             }
-            if(node1.getNetwork() == null) {
-                var network = newNetwork();
-                packet.endpoint1.joinNetwork(world, network);
-            }
             var line1 = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance);
             line1.source.setVoltage(packet.node2Voltage);
-            if(node2.getNetwork() != null) {
-                var network = newNetwork();
-                packet.endpoint2.joinNetwork(world, network);
-            }
+
             var line2 = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance);
             line2.source.setVoltage(packet.node1Voltage);
         } else if(packet.endpoint1.isValid(world)) {
@@ -118,7 +111,13 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     private PhantomLineData getPhantomLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
-        var line = phantomLines.computeIfAbsent(new PhantomLine(endpoint1, endpoint2), key -> new PhantomLineData(endpoint1.getNode(world), resistance));
+        var targetNode = endpoint1.getNode(world);
+        if(targetNode.getNetwork() == null) {
+            var network = newNetwork();
+            endpoint1.joinNetwork(world, network);
+        }
+        var line = phantomLines.computeIfAbsent(new PhantomLine(endpoint1, endpoint2),
+                key -> new PhantomLineData(targetNode, resistance));
         if(line.wire.getResistance() != resistance)
             line.wire.setResistance(resistance);
         line.age = 0;
@@ -138,7 +137,11 @@ public class ClientWorldNetworks extends WorldNetworks {
 
     @Override
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
-        super.nodeHolderAdded(ownedNode);
+        var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
+        if(oldNode != null) {
+            // Drops all connections from the old node (they will be recreated by the line management packet)
+            nodeHolderRemoved(oldNode);
+        }
         ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, false));
     }
 

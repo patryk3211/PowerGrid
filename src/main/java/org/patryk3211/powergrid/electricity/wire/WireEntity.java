@@ -327,8 +327,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         try {
             wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
         } catch(RuntimeException e) {
-            kill();
             PowerGrid.LOGGER.error("Failed to create wire for entity", e);
+            kill();
         }
     }
 

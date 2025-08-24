@@ -78,13 +78,13 @@ public class TransmissionLine extends ElectricWire {
     @Override
     public void setNode1(IElectricNode node1) {
         assert node1 instanceof OwnedFloatingNode;
-        super.setNode1(node1);
+        super.setNode1(Objects.requireNonNull(node1));
     }
 
     @Override
     public void setNode2(IElectricNode node2) {
         assert node2 instanceof OwnedFloatingNode;
-        super.setNode2(node2);
+        super.setNode2(Objects.requireNonNull(node2));
     }
 
     @Override
@@ -122,6 +122,12 @@ public class TransmissionLine extends ElectricWire {
                     setResistance(getResistance() + diff);
                 }
                 unloadedParts.remove(part);
+                if(part.getNode2() != node2) {
+                    global.assignTransmissionLine(part.getNode2(), this);
+                }
+                if(part.getNode1() != node1) {
+                    global.assignTransmissionLine(part.getNode1(), this);
+                }
                 return part;
             }
         }
@@ -133,6 +139,7 @@ public class TransmissionLine extends ElectricWire {
         part.endpoint1 = part.owner.getEndpoint1();
         part.endpoint2 = part.owner.getEndpoint2();
         part.owner = null;
+        global.bounty(part.persistentOwnerId, this);
         unloadedParts.add(part);
     }
 
@@ -286,7 +293,7 @@ public class TransmissionLine extends ElectricWire {
         }
     }
 
-    public void removeSegment(ElectricWire wire) {
+    public void removeSegment(TransmissionLinePart wire) {
         if(segments.isEmpty()) {
             PowerGrid.LOGGER.error("Cannot remove segments from an empty transmission line. How is it even here?");
             remove();

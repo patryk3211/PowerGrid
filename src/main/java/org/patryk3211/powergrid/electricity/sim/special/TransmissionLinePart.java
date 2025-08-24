@@ -24,6 +24,7 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class TransmissionLinePart extends ElectricWire {
@@ -53,13 +54,13 @@ public class TransmissionLinePart extends ElectricWire {
     @Override
     public void setNode1(IElectricNode node1) {
         assert node1 instanceof OwnedFloatingNode;
-        super.setNode1(node1);
+        super.setNode1(Objects.requireNonNull(node1));
     }
 
     @Override
     public void setNode2(IElectricNode node2) {
         assert node2 instanceof OwnedFloatingNode;
-        super.setNode2(node2);
+        super.setNode2(Objects.requireNonNull(node2));
     }
 
     @Override

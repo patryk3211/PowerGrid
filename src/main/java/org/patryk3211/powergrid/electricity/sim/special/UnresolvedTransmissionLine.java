@@ -147,6 +147,7 @@ public class UnresolvedTransmissionLine {
             var part = new TransmissionLinePart(segment.resistance, endpoint1, endpoint2, segment.id, line);
             line.segments.add(part);
             line.unloadedParts.add(part);
+            global.bounty(segment.id, line);
         }
         global.assignTransmissionLine(node1, null);
         global.assignTransmissionLine(node2, null);

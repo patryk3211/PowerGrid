@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity;
 
 import io.netty.util.collection.IntObjectHashMap;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -55,6 +56,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     private final Set<UnresolvedTransmissionLine> unresolvedLines = new HashSet<>();
     private final Map<IWireEndpoint, Queue<UnresolvedTransmissionLine>> unresolvedLineNodeMap = new HashMap<>();
+    private final Map<UUID, Integer> unresolvedPartHolders = new HashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
     private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
@@ -77,7 +79,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     @Override
     public void removeNode(IElectricNode node) {
-        assignTransmissionLine(node, null);
+        if(node instanceof OwnedFloatingNode owned) {
+            assignTransmissionLine(owned, null);
+        }
     }
 
     @Override
@@ -188,22 +192,23 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void add(IWireEndpoint endpoint) {
-        globalGraph.addNode(endpoint.getNode(world));
+        var node = endpoint.getNode(world);
+        globalGraph.addNode(node);
     }
 
     public int connectionCount(IWireEndpoint endpoint) {
         return globalGraph.connectionCount(endpoint.getNode(world));
     }
 
-    public void assignTransmissionLine(IElectricNode node, @Nullable TransmissionLine line) {
+    public void assignTransmissionLine(OwnedFloatingNode node, @Nullable TransmissionLine line) {
+        if(node == null)
+            return;
         if (line != null) {
             transmissionLineNodes.put(node, line);
-//            transmissionLines.add(line);
         } else {
             transmissionLineNodes.remove(node);
-//            if(!transmissionLineNodes.containsValue(removed))
-//                transmissionLines.remove(removed);
         }
+        updatedEndpoints.add(node.endpoint);
     }
 
     @Nullable
@@ -211,13 +216,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
 
-        add(endpoint1);
-        add(endpoint2);
-
         if(node1 == node2)
             return null;
         if(node1 == null || node2 == null)
             return null;
+
+        add(endpoint1);
+        add(endpoint2);
 
         // Split transmission lines if needed.
         var line1 = transmissionLineNodes.get(node1);
@@ -259,8 +264,25 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     @Nullable
     protected ElectricWire tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        // First try with existing lines
+        // Try to resolve trees for correct merging of lines
         var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
+
+        resolveTree(node1);
+        resolveTree(node2);
+
+        // First try with existing lines
+        var holderId = unresolvedPartHolders.remove(forEntity.getUUID());
+        if(holderId != null) {
+            var line = transmissionLines.get(holderId);
+            if(line != null) {
+                var part = line.grabUnloaded(forEntity);
+                if (part != null)
+                    return part;
+            }
+        }
+
+        // TODO: Some of these checks might be redundant
         var line1 = transmissionLineNodes.get(node1);
         if(line1 != null) {
             var part = line1.grabUnloaded(forEntity);
@@ -273,7 +295,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 return part;
         }
 
-        var node2 = endpoint2.getNode(world);
         var line2 = transmissionLineNodes.get(node2);
         if(line2 != null) {
             var part = line2.grabUnloaded(forEntity);
@@ -590,21 +611,28 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
         var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
-        if(oldNode != null) {
+        if(oldNode != null && oldNode != ownedNode) {
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
-            prepareForConnection(ownedNode.endpoint, oldNode.endpoint);
-            var lines = globalGraph.getConnectedLines(oldNode);
-            for(var line : lines) {
-                if(line.getNode1() == oldNode) {
-                    line.setNode1(ownedNode);
-                } else if(line.getNode2() == oldNode) {
-                    line.setNode2(ownedNode);
+            if(oldNode.getNetwork() != null) {
+                prepareForConnection(ownedNode.endpoint, oldNode.endpoint);
+                var lines = globalGraph.getConnectedLines(oldNode);
+                for (var line : lines) {
+                    if (line.getNode1() == oldNode) {
+                        line.setNode1(ownedNode);
+                    } else if (line.getNode2() == oldNode) {
+                        line.setNode2(ownedNode);
+                    }
                 }
+                oldNode.getNetwork().removeNode(oldNode);
             }
         }
         // Try to resolve an end of a transmission line
         resolveTree(ownedNode);
+    }
+
+    public void bounty(UUID entityId, TransmissionLine linePartHolder) {
+        unresolvedPartHolders.put(entityId, linePartHolder.getId());
     }
 
     public void tracking(ServerPlayer tracker, IWireEndpoint endpoint, boolean end) {
