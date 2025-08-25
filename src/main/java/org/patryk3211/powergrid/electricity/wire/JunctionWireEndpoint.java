@@ -186,8 +186,12 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             throw new IllegalArgumentException("Invalid id passed to junction node map");
         if(!nullable) {
             var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new HashMap<>());
-            var entry = worldNodeMap.computeIfAbsent(id, k -> new NodeEntry(endpoint));
-            GlobalElectricNetworks.getWorldNetworks(world).nodeHolderAdded(entry.node);
+            var entry = worldNodeMap.get(id);
+            if(entry == null) {
+                entry = new NodeEntry(endpoint);
+                worldNodeMap.put(id, entry);
+                GlobalElectricNetworks.getWorldNetworks(world).nodeHolderAdded(entry.node);
+            }
             return entry;
         } else {
             var worldNodeMap = JUNCTION_NODES.get(world);
