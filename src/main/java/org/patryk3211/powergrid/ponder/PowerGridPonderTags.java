@@ -42,6 +42,7 @@ public class PowerGridPonderTags {
                 .item(ModdedBlocks.GENERATOR_COMMUTATOR)
                 .item(ModdedItems.COPPER_COIL)
                 .item(ModdedBlocks.GENERATOR_HOUSING)
+                .item(ModdedBlocks.VERTICAL_GENERATOR_HOUSING)
                 .addToIndex()
                 .register();
 

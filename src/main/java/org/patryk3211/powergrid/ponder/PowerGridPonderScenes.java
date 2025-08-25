@@ -50,7 +50,8 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("generator/clutch", GeneratorScenes::clutch, PowerGridPonderTags.GENERATOR_ASSEMBLY, AllCreatePonderTags.KINETIC_APPLIANCES)
                 .addStoryBoard("generator/generator", GeneratorScenes::generator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
-        HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing, PowerGridPonderTags.GENERATOR_ASSEMBLY);
+        HELPER.forComponents(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING)
+                .addStoryBoard("generator/housing", GeneratorScenes::housing, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
         HELPER.forComponents(ModdedBlocks.GENERATOR_INDUCTION_ROTOR, ModdedBlocks.GENERATOR_COMMUTATOR)
                 .addStoryBoard("generator/inductive", GeneratorScenes::inductive, PowerGridPonderTags.GENERATOR_ASSEMBLY, PowerGridPonderTags.ELECTRIC_DEVICES);
