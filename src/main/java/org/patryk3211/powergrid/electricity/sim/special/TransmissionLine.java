@@ -28,7 +28,7 @@ import java.util.*;
 
 public class TransmissionLine extends ElectricWire {
     public final List<TransmissionLinePart> segments = new ArrayList<>();
-    protected final Set<TransmissionLinePart> unloadedParts = new HashSet<>();
+//    protected final Set<TransmissionLinePart> unloadedParts = new HashSet<>();
 
     private static int NEXT_ID = 0;
     private final int id;
@@ -99,29 +99,26 @@ public class TransmissionLine extends ElectricWire {
 
     @Nullable
     public TransmissionLinePart grabUnloaded(@NotNull WireEntity owner) {
-        for(var part : unloadedParts) {
+        for(var part : segments) {
             if(part.persistentOwnerId.equals(owner.getUUID())) {
                 // If the owner id matches then the endpoints should match too
                 var endpointArrangement = validateEndpoints(part, owner);
-                if(endpointArrangement == 1) {
+                if(endpointArrangement == 1 || endpointArrangement == 2) {
                     part.setNode1(part.endpoint1.getNode(owner.level()));
                     part.setNode2(part.endpoint2.getNode(owner.level()));
-                } else if(endpointArrangement == 2) {
-                    part.setNode1(part.endpoint2.getNode(owner.level()));
-                    part.setNode2(part.endpoint1.getNode(owner.level()));
+                    if(endpointArrangement == 2)
+                        owner.flipEndpoints();
                 } else {
                     PowerGrid.LOGGER.error("Endpoint of wire and unloaded line segment do not match");
                     return null;
                 }
                 part.owner = owner;
-                part.endpoint1 = null;
-                part.endpoint2 = null;
                 if(part.getResistance() != owner.getResistance()) {
                     var diff = owner.getResistance() - part.getResistance();
                     part.setResistance(owner.getResistance());
                     setResistance(getResistance() + diff);
                 }
-                unloadedParts.remove(part);
+//                unloadedParts.remove(part);
                 if(part.getNode2() != node2) {
                     global.assignTransmissionLine(part.getNode2(), this);
                 }
@@ -136,11 +133,12 @@ public class TransmissionLine extends ElectricWire {
 
     public void unloadPart(TransmissionLinePart part) {
         // Save endpoints and drop owner
-        part.endpoint1 = part.owner.getEndpoint1();
-        part.endpoint2 = part.owner.getEndpoint2();
+        assert part.getNode1() != null && part.getNode2() != null;
+//        part.endpoint1 = part.getNode1().endpoint;
+//        part.endpoint2 = part.getNode2().endpoint;
         part.owner = null;
         global.bounty(part.persistentOwnerId, this);
-        unloadedParts.add(part);
+//        unloadedParts.add(part);
     }
 
     public void addLastSegment(TransmissionLinePart wire) {

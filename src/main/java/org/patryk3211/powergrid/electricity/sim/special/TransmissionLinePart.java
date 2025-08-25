@@ -40,6 +40,8 @@ public class TransmissionLinePart extends ElectricWire {
         super(resistance, node1, node2);
         this.line = line;
         this.owner = owner;
+        this.endpoint1 = node1.endpoint;
+        this.endpoint2 = node2.endpoint;
         this.persistentOwnerId = owner.getUUID();
     }
 
@@ -55,12 +57,22 @@ public class TransmissionLinePart extends ElectricWire {
     public void setNode1(IElectricNode node1) {
         assert node1 instanceof OwnedFloatingNode;
         super.setNode1(Objects.requireNonNull(node1));
+        endpoint1 = ((OwnedFloatingNode) node1).endpoint;
     }
 
     @Override
     public void setNode2(IElectricNode node2) {
         assert node2 instanceof OwnedFloatingNode;
         super.setNode2(Objects.requireNonNull(node2));
+        endpoint2 = ((OwnedFloatingNode) node2).endpoint;
+    }
+
+    @Override
+    public void flipNodes() {
+        super.flipNodes();
+        var endpoint = endpoint1;
+        endpoint1 = endpoint2;
+        endpoint2 = endpoint;
     }
 
     @Override

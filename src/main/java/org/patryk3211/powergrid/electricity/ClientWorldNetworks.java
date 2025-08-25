@@ -204,6 +204,49 @@ public class ClientWorldNetworks extends WorldNetworks {
         return network;
     }
 
+    @Override
+    public @Nullable ElectricalNetwork prepareForConnection(OwnedFloatingNode node1, OwnedFloatingNode node2) {
+        var endpoint1 = node1.endpoint;
+        var endpoint2 = node2.endpoint;
+
+        if(node1 == node2)
+            return null;
+
+        add(endpoint1);
+        add(endpoint2);
+
+        // Client doesn't do line splitting
+
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
+
+        // Put both nodes into the same network.
+        ElectricalNetwork network;
+        if(net1 == null && net2 == null) {
+            network = newNetwork();
+            endpoint1.joinNetwork(world, network);
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 == null) {
+            network = net2;
+            endpoint1.joinNetwork(world, network);
+        } else if(net2 == null) {
+            network = net1;
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 != net2) {
+            if(net1.size() >= net2.size()) {
+                network = net1;
+                network.merge(net2);
+            } else {
+                network = net2;
+                network.merge(net1);
+            }
+        } else {
+            network = net1;
+        }
+
+        return network;
+    }
+
     public void lineManagement(IWireEndpoint endpoint, TransmissionLineManagementS2CPacket.Entry[] entries) {
         var lines = globalGraph.getConnectedLines(endpoint.getNode(world))
                 .stream().map(TransmissionLine::getId).collect(Collectors.toCollection(IntOpenHashSet::new));
@@ -238,7 +281,7 @@ public class ClientWorldNetworks extends WorldNetworks {
                 // Completely new line
                 var node1 = entry.endpoint1().getNode(world);
                 var node2 = entry.endpoint2().getNode(world);
-                var network = prepareForConnection(entry.endpoint1(), entry.endpoint2());
+                var network = prepareForConnection(node1, node2);
                 if(network == null) {
                     PowerGrid.LOGGER.warn("Failed to create a new transmission line from management packet");
                     return;

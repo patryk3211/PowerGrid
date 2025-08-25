@@ -20,7 +20,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
+import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
@@ -37,6 +39,7 @@ public class UnresolvedTransmissionLine {
     private final List<Segment> segments;
 
     private byte resolvedEndpoints = 0;
+    private boolean resolved = false;
 
     public UnresolvedTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, double resistance, List<Segment> segments) {
         this.endpoint1 = endpoint1;
@@ -123,18 +126,20 @@ public class UnresolvedTransmissionLine {
     }
 
     public void resolve(WorldNetworks global) {
+        if(resolved)
+            return;
         if((resolvedEndpoints & 3) != 3)
             return;
         var network = global.prepareForConnection(endpoint1, endpoint2);
         if(network == null)
             return;
+        resolved = true;
 
         var node1 = endpoint1.getNode(global.world);
         var node2 = endpoint2.getNode(global.world);
 
         var line = new TransmissionLine(resistance, node1, node2, global);
-        var endpoint1 = this.endpoint1;
-        var endpoint2 = this.endpoint1;
+        IWireEndpoint endpoint1, endpoint2 = this.endpoint1;
         for(var segment : segments) {
             endpoint1 = endpoint2;
             endpoint2 = segment.endpoint;
@@ -157,13 +162,13 @@ public class UnresolvedTransmissionLine {
             }
             var part = new TransmissionLinePart(segment.resistance, endpoint1, endpoint2, segment.id, line);
             line.segments.add(part);
-            line.unloadedParts.add(part);
+//            line.unloadedParts.add(part);
             global.bounty(segment.id, line);
         }
         global.assignTransmissionLine(node1, null);
         global.assignTransmissionLine(node2, null);
         global.removeUnresolvedLine(this);
-        network = global.prepareForConnection(line.getNode1().endpoint, line.getNode2().endpoint);
+        network = global.prepareForConnection(line.getNode1(), line.getNode2());
         if(network == null)
             // Very bad
             return;
@@ -178,6 +183,11 @@ public class UnresolvedTransmissionLine {
             endpoint1 = endpoint2;
             endpoint2 = segment.endpoint;
             if(segment.id.equals(entity.getUUID())) {
+                // Test for flipped endpoints.
+                if(endpoint1.equals(entity.getEndpoint2()) && endpoint2.equals(entity.getEndpoint1())) {
+                    // Flipped.
+                    entity.flipEndpoints();
+                }
                 // This is the segment.
                 var part = new TransmissionLinePart(segment.resistance, endpoint1.getNode(global.world), endpoint2.getNode(global.world), entity, null);
                 segment.resolvedWire = part;

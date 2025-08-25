@@ -130,6 +130,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         // We don't need Entity#baseTick() in wires
         var world = level();
         temperatureUpdate();
+        baseTick();
 
         if((deferEndpointResolution & 1) != 0) {
             if(endpoint1.isValid(world)) {
@@ -216,6 +217,15 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             endpoint2 = endpoint;
             makeWire();
         }
+    }
+
+    // This method shouldn't be used too much. It's only needed in very special cases.
+    public void flipEndpoints() {
+        var endpoint = endpoint1;
+        endpoint1 = endpoint2;
+        endpoint2 = endpoint;
+        deferEndpointResolution = (byte) (((deferEndpointResolution & 1) << 1) | ((deferEndpointResolution & 2) >> 1));
+        PowerGrid.LOGGER.debug("Wire entity endpoints have been flipped.");
     }
 
     public IWireEndpoint getEndpoint1() {

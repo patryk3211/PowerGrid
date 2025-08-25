@@ -263,6 +263,55 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Nullable
+    public ElectricalNetwork prepareForConnection(@NotNull OwnedFloatingNode node1, @NotNull OwnedFloatingNode node2) {
+        var endpoint1 = node1.endpoint;
+        var endpoint2 = node2.endpoint;
+
+        if(node1 == node2)
+            return null;
+
+        add(endpoint1);
+        add(endpoint2);
+
+        // Split transmission lines if needed.
+        var line1 = transmissionLineNodes.get(node1);
+        if(line1 != null)
+            line1.splitAt(node1);
+        var line2 = transmissionLineNodes.get(node2);
+        if(line2 != null)
+            line2.splitAt(node2);
+
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
+
+        // Put both nodes into the same network.
+        ElectricalNetwork network;
+        if(net1 == null && net2 == null) {
+            network = newNetwork();
+            endpoint1.joinNetwork(world, network);
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 == null) {
+            network = net2;
+            endpoint1.joinNetwork(world, network);
+        } else if(net2 == null) {
+            network = net1;
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 != net2) {
+            if(net1.size() >= net2.size()) {
+                network = net1;
+                network.merge(net2);
+            } else {
+                network = net2;
+                network.merge(net1);
+            }
+        } else {
+            network = net1;
+        }
+
+        return network;
+    }
+
+    @Nullable
     protected ElectricWire tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
         // Try to resolve trees for correct merging of lines
         var node1 = endpoint1.getNode(world);
@@ -307,14 +356,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 return part;
         }
 
-        var wires = globalGraph.getWires(node1, node2);
-        for(var wire : wires) {
-            if(wire instanceof TransmissionLine line) {
-                var part = line.grabUnloaded(forEntity);
-                if(part != null)
-                    return part;
-            }
-        }
+//        var wires = globalGraph.getWires(node1, node2);
+//        for(var wire : wires) {
+//            if(wire instanceof TransmissionLine line) {
+//                var part = line.grabUnloaded(forEntity);
+//                if(part != null)
+//                    return part;
+//            }
+//        }
 
         // Next move onto the unresolved lines
         for(var unresolved : unresolvedLines) {
@@ -618,7 +667,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
             if(oldNode.getNetwork() != null) {
-                prepareForConnection(ownedNode.endpoint, oldNode.endpoint);
+                prepareForConnection(ownedNode, oldNode);
                 var lines = globalGraph.getConnectedLines(oldNode);
                 for (var line : lines) {
                     if (line.getNode1() == oldNode) {
