@@ -30,8 +30,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.kinetics.generator.winding.IWindingConnectable;
 
-public class GeneratorHousing extends Block implements IWrenchable {
+public class GeneratorHousing extends Block implements IWrenchable, IWindingConnectable {
     public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty UP = BlockStateProperties.UP;
 
@@ -90,5 +91,25 @@ public class GeneratorHousing extends Block implements IWrenchable {
         var facing = ctx.getHorizontalDirection();
         var up = (ctx.getClickLocation().y - ctx.getClickedPos().getY()) > 0.5f;
         return defaultBlockState().setValue(HORIZONTAL_FACING, facing).setValue(UP, up);
+    }
+
+    @Override
+    public boolean canConnect(BlockState state, Direction side) {
+        if(side.getAxis() == Direction.Axis.Y) {
+            var up = state.getValue(UP);
+            return (up && side == Direction.UP) ||
+                   (!up && side == Direction.DOWN);
+        } else {
+            return side == state.getValue(HORIZONTAL_FACING);
+        }
+    }
+
+    @Override
+    public Direction getOtherSide(BlockState state, Direction sideIn) {
+        if(sideIn.getAxis() == Direction.Axis.Y) {
+            return state.getValue(HORIZONTAL_FACING);
+        } else {
+            return state.getValue(UP) ? Direction.UP : Direction.DOWN;
+        }
     }
 }

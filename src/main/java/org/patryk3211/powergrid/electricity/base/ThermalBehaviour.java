@@ -213,6 +213,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             if(dissipatedPower != 0)
                 blockEntity.setChanged();
         }
+        if(!Float.isFinite(temperature)) {
+            // Reset if something went wrong.
+            temperature = BASE_TEMPERATURE;
+        }
 
         var world = getWorld();
         var pos = getPos();
@@ -258,8 +262,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     }
 
     public void applyTickPower(float power) {
-        var energy = power / 20f;
-        temperature += energy / thermalMass;
+        if(Float.isFinite(power)) {
+            var energy = power / 20f;
+            temperature += energy / thermalMass;
+        }
     }
 
     @Override

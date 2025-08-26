@@ -148,6 +148,21 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             network.calculate();
         }
         if(world instanceof ServerLevel serverWorld) {
+            // Check for chunk existance
+            // TODO: Put this on a lazy tick thing.
+            var chunkIter = expectedInChunks.entrySet().iterator();
+            while(chunkIter.hasNext()) {
+                var entry = chunkIter.next();
+                var chunk = entry.getKey();
+                if(!world.hasChunk(chunk.x, chunk.z))
+                    continue;
+                if(checkForExistence.containsKey(chunk)) {
+                    checkForExistence.get(chunk).addAll(entry.getValue().entities);
+                } else {
+                    checkForExistence.put(chunk, entry.getValue());
+                }
+                chunkIter.remove();
+            }
             // Check for line parts existence
             var checkIter = checkForExistence.entrySet().iterator();
             while(checkIter.hasNext()) {
@@ -514,6 +529,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     .filter(wire -> wire instanceof TransmissionLine)
                     .map(wire -> {
                         var line = (TransmissionLine) wire;
+                        if(line.segments.isEmpty())
+                            return null;
                         if(line.getNode1() == node)
                             return line.segments.get(0);
                         else if(line.getNode2() == node)
@@ -704,7 +721,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
             if(oldNode.getNetwork() != null) {
                 prepareForConnection(ownedNode, oldNode);
-                var lines = globalGraph.getConnectedLines(oldNode);
+                var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {
                     if (line.getNode1() == oldNode) {
                         line.setNode1(ownedNode);

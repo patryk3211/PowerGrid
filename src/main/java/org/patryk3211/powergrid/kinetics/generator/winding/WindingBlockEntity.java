@@ -21,20 +21,25 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -148,8 +153,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         if(isMain()) {
             electricBehaviour = new ElectricBehaviour(this);
-            behaviours.add(electricBehaviour);
+        } else {
+            var block = (WindingBlock) getBlockState().getBlock();
+            electricBehaviour = new ProxyElectricBehaviour(this, () -> block.getMainBlockPos(level, worldPosition));
         }
+        behaviours.add(electricBehaviour);
 
         thermalBehaviour = specifyThermalBehaviour();
         if(thermalBehaviour != null)
@@ -161,14 +169,23 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return ThermalBehaviour.fromConfig(this);
     }
 
-    private void checkParallelPosition(BlockPos pos, boolean positive, boolean thisIsOwner) {
-        var state = level.getBlockState(pos);
-        var thisState = getBlockState();
-        if(state.getBlock() instanceof WindingBlock windingBlock) {
+    private void checkParallelPosition(BlockPos thisPos, Direction side, boolean thisIsOwner) {
+        var checkPos = thisPos.relative(side);
+        var checkState = level.getBlockState(checkPos);
+        var thisState = level.getBlockState(thisPos);
+
+        var thisConnectible = (IWindingConnectable) thisState.getBlock();
+        if(!(checkState.getBlock() instanceof IWindingConnectable checkConnectible))
+            return;
+        if(!thisConnectible.canConnect(thisState, side))
+            return;
+        if(!checkConnectible.canConnect(checkState, side.getOpposite()))
+            return;
+        if(checkState.getBlock() instanceof WindingBlock windingBlock) {
             // Another winding, check for alignment
-            var be = windingBlock.getMainBlockEntity(level, pos);
+            var be = windingBlock.getMainBlockEntity(level, checkPos);
             be.ifPresent(winding -> {
-                if(state.getValue(AXIS) == thisState.getValue(AXIS) && state.getValue(ALONG_FIRST_AXIS) == thisState.getValue(ALONG_FIRST_AXIS)) {
+                if(checkState.getValue(AXIS) == thisState.getValue(AXIS)) {
                     // Alignment matches and block entity is valid, these can be connected.
                     if(thisIsOwner) {
                         this.addParallel(winding);
@@ -177,66 +194,20 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     }
                 }
             });
-        } else if(state.getBlock() instanceof GeneratorHousing) {
-            var windingBlock = (WindingBlock) thisState.getBlock();
-            var parallelAxis = windingBlock.getParallelCheckAxis(thisState);
-            if(parallelAxis.isHorizontal()) {
-                var expectedFacing = Direction.fromAxisAndDirection(parallelAxis, positive ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
-                if(state.getValue(HORIZONTAL_FACING) != expectedFacing)
-                    return;
-                pos = state.getValue(UP) ? pos.above() : pos.below();
-                var nextState = level.getBlockState(pos);
-                var be = windingBlock.getMainBlockEntity(level, pos);
-                be.ifPresent(winding -> {
-                    if(nextState.getValue(AXIS) == thisState.getValue(AXIS) && nextState.getValue(ALONG_FIRST_AXIS) != thisState.getValue(ALONG_FIRST_AXIS)) {
-                        // Alignment matches and block entity is valid, these can be connected.
-                        if(thisIsOwner) {
-                            this.addParallel(winding);
-                        } else {
-                            winding.addParallel(this);
-                        }
-                    }
-                });
-            } else {
-                var expectUp = !positive;
-                if(state.getValue(UP) != expectUp)
-                    return;
-                pos = pos.relative(state.getValue(HORIZONTAL_FACING));
-                var nextState = level.getBlockState(pos);
-                var be = windingBlock.getMainBlockEntity(level, pos);
-                be.ifPresent(winding -> {
-                    if(nextState.getValue(AXIS) == thisState.getValue(AXIS) && nextState.getValue(ALONG_FIRST_AXIS) != thisState.getValue(ALONG_FIRST_AXIS)) {
-                        // Alignment matches and block entity is valid, these can be connected.
-                        if(thisIsOwner) {
-                            this.addParallel(winding);
-                        } else {
-                            winding.addParallel(this);
-                        }
-                    }
-                });
-            }
-        } else if(state.getBlock() instanceof VerticalGeneratorHousing) {
-            var windingBlock = (WindingBlock) thisState.getBlock();
-            var parallelAxis = windingBlock.getParallelCheckAxis(thisState);
-            if(parallelAxis.isVertical()) {
-                // Illegal state
+        } else {
+            // We need to go through a connectible block into another winding.
+            var sideOut = checkConnectible.getOtherSide(checkState, side.getOpposite());
+            checkPos = checkPos.relative(sideOut);
+            var checkState2 = level.getBlockState(checkPos);
+            if(!(checkState2.getBlock() instanceof WindingBlock windingBlock))
                 return;
-            }
-            var expectedFacing = Direction.get(positive ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE, parallelAxis);
-            var housingFacing = state.getValue(HORIZONTAL_FACING);
-            if(housingFacing != expectedFacing && housingFacing.getCounterClockWise() != expectedFacing)
+            if(!windingBlock.canConnect(checkState2, sideOut.getOpposite()))
                 return;
-            if(housingFacing == expectedFacing) {
-                // From first to second
-                pos = pos.relative(housingFacing.getCounterClockWise());
-            } else {
-                // From second to first
-                pos = pos.relative(housingFacing);
-            }
-            var nextState = level.getBlockState(pos);
-            var be = windingBlock.getMainBlockEntity(level, pos);
+            if(!checkConnectible.canConnect(checkState, sideOut))
+                return;
+            var be = windingBlock.getMainBlockEntity(level, checkPos);
             be.ifPresent(winding -> {
-                if(nextState.getValue(AXIS) == thisState.getValue(AXIS) && nextState.getValue(ALONG_FIRST_AXIS) != thisState.getValue(ALONG_FIRST_AXIS)) {
+                if(checkState2.getValue(AXIS) == thisState.getValue(AXIS)) {
                     // Alignment matches and block entity is valid, these can be connected.
                     if(thisIsOwner) {
                         this.addParallel(winding);
@@ -246,24 +217,25 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 }
             });
         }
+    }
+
+    @NotNull
+    private Collection<WireEntity> wires() {
+        if(electricBehaviour == null)
+            return List.of();
+        return GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
     }
 
     private void rewire() {
         if(electricBehaviour != null) {
-            for(var wires : electricBehaviour.getConnections().values()) {
-                for(var wire : wires) {
-                    wire.dropWire();
-                }
-            }
-            for(var wires : electricBehaviour.getConnections().values()) {
-                for(var wire : wires) {
-                    wire.makeWire();
-                }
-            }
+            var wires = wires();
+            wires.forEach(WireEntity::dropWire);
+            wires.forEach(WireEntity::makeWire);
         }
     }
 
     public void addElectricBehaviour() {
+        var wires = wires();
         if(electricBehaviour == null) {
             electricBehaviour = new ElectricBehaviour(this);
             attachBehaviourLate(electricBehaviour);
@@ -273,22 +245,25 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             removeBehaviour(ElectricBehaviour.TYPE);
             attachBehaviourLate(electricBehaviour);
         }
-        rewire();
+        wires.forEach(WireEntity::dropWire);
+        wires.forEach(WireEntity::makeWire);
     }
 
     public void removeElectricBehaviour() {
+        var wires = wires();
         if(electricBehaviour != null && !(electricBehaviour instanceof ProxyElectricBehaviour)) {
             var old = electricBehaviour;
             electricBehaviour = new ProxyElectricBehaviour(this, () -> ownerPosition);
             electricBehaviour.inheritConnections(old);
-            electricBehaviour.remove();
+            old.remove();
             removeBehaviour(ElectricBehaviour.TYPE);
             attachBehaviourLate(electricBehaviour);
             // Drop nodes
             sourceNode = null;
             coupling = null;
         }
-        rewire();
+        wires.forEach(WireEntity::dropWire);
+        wires.forEach(WireEntity::makeWire);
     }
 
     private void collectWindingParts() {
@@ -335,8 +310,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 }
                 if(!level.isClientSide) {
                     // Check for parallel windings and housings
-                    checkParallelPosition(pos1.relative(parallelCheckAxis,  1), true, false);
-                    checkParallelPosition(pos1.relative(parallelCheckAxis, -1), false, false);
+                    checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.POSITIVE, parallelCheckAxis), false);
+                    checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.NEGATIVE, parallelCheckAxis), false);
                 }
             });
             calculateElectricalParameters();
@@ -405,6 +380,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 // Merge owners
                 be.ifPresent(this::addParallel);
             }
+            otherMain.clearScheduledChange();
             otherMain.ownerPosition = worldPosition;
             otherMain.removeElectricBehaviour();
             // Synchronize to client
@@ -438,13 +414,24 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return collectedBEs.size();
     }
 
+    private void clearScheduledChange() {
+        neighborChanged = false;
+        if(collectedBEs == null)
+            return;
+        for(var be : collectedBEs) {
+            be.neighborChanged = false;
+        }
+    }
+
     private void calculateElectricalParameters() {
+        // This makes sure that ownership (which could change if collection method is called) is correct.
+        totalCoilCount = getCoilCount();
         if(ownerPosition != null) {
             // If non-owner calls this method then its structure (and possibly resistance) has changed
-            level.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get()).ifPresent(WindingBlockEntity::calculateElectricalParameters);
+            level.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get())
+                    .ifPresent(WindingBlockEntity::calculateElectricalParameters);
             return;
         }
-        totalCoilCount = getCoilCount();
         var conductance = 1 / (totalCoilCount * resistance());
         if(parallelPositions != null) {
             var iter = parallelPositions.iterator();
@@ -560,8 +547,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         // Perform the initial walk
         block.walk(level, worldPosition, (pos1, state) -> {
             // Check for parallel windings and housings
-            checkParallelPosition(pos1.relative(parallelCheckAxis, 1), true, true);
-            checkParallelPosition(pos1.relative(parallelCheckAxis, -1), false, true);
+            checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.POSITIVE, parallelCheckAxis), true);
+            checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.NEGATIVE, parallelCheckAxis), true);
         });
         if(parallelPositions != null) {
             var checkedPositions = new HashSet<BlockPos>();
@@ -576,8 +563,9 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     if (checkedPositions.add(position)) {
                         block.walk(level, position, (pos1, state) -> {
                             // Check for parallel windings and housings
-                            checkParallelPosition(pos1.relative(parallelCheckAxis, 1), true, true);
-                            checkParallelPosition(pos1.relative(parallelCheckAxis, -1), false, true);
+                            var newCheckAxis = block.getParallelCheckAxis(state);
+                            checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.POSITIVE, newCheckAxis), true);
+                            checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.NEGATIVE, newCheckAxis), true);
                         });
                         shouldContinue = true;
                     }

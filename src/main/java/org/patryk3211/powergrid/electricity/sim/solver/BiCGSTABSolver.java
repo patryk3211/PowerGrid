@@ -40,6 +40,7 @@ public class BiCGSTABSolver implements ISolver {
 
     // Solved vector
     private DMatrixRMaj guess;
+    private DMatrixRMaj prevGuess;
 
     // Intermediate vectors used in the solver
     private DMatrixRMaj residual;
@@ -66,6 +67,7 @@ public class BiCGSTABSolver implements ISolver {
     public void setStateSize(int newSize) {
         if(guess == null || guess.getNumRows() != newSize) {
             guess = new DMatrixRMaj(newSize, 1);
+            prevGuess = new DMatrixRMaj(newSize, 1);
             residual = new DMatrixRMaj(newSize, 1);
             hatResidual = new DMatrixRMaj(newSize, 1);
             p = new DMatrixRMaj(newSize, 1);
@@ -83,6 +85,7 @@ public class BiCGSTABSolver implements ISolver {
     public void zero() {
         if(guess != null) {
             guess.zero();
+            prevGuess.zero();
             residual.zero();
             hatResidual.zero();
             p.zero();
@@ -126,6 +129,7 @@ public class BiCGSTABSolver implements ISolver {
         if(b.getNumRows() == 0)
             return guess;
 
+        prevGuess.setTo(guess);
         for(var hook : hooks) {
             hook.preSolve();
         }
@@ -196,6 +200,12 @@ public class BiCGSTABSolver implements ISolver {
                 LOGGER.warn("Solver iteration limit, final precision: {}", norm);
             } else {
                 System.out.printf("Solver iteration limit, final precision: %g", norm);
+            }
+            if(norm > 10) {
+                if(LOGGER != null) {
+                    LOGGER.warn("Large imprecision, dropping result");
+                }
+                guess.setTo(prevGuess);
             }
         }
 

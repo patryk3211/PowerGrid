@@ -29,8 +29,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.kinetics.generator.winding.IWindingConnectable;
 
-public class VerticalGeneratorHousing extends Block implements IWrenchable {
+public class VerticalGeneratorHousing extends Block implements IWrenchable, IWindingConnectable {
     public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private static final VoxelShape SHAPE = box(1, 1, 1, 15, 15, 15);
@@ -89,5 +90,20 @@ public class VerticalGeneratorHousing extends Block implements IWrenchable {
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var facing = ctx.getHorizontalDirection();
         return defaultBlockState().setValue(HORIZONTAL_FACING, facing);
+    }
+
+    @Override
+    public boolean canConnect(BlockState state, Direction side) {
+        var face = state.getValue(HORIZONTAL_FACING);
+        return side == face || side == face.getCounterClockWise();
+    }
+
+    @Override
+    public Direction getOtherSide(BlockState state, Direction sideIn) {
+        if(sideIn == state.getValue(HORIZONTAL_FACING)) {
+            return sideIn.getCounterClockWise();
+        } else {
+            return sideIn.getClockWise();
+        }
     }
 }
