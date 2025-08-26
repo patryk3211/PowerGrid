@@ -16,12 +16,12 @@
 package org.patryk3211.powergrid.electricity;
 
 import io.netty.util.collection.IntObjectHashMap;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
@@ -42,11 +42,14 @@ import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPac
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 import org.patryk3211.powergrid.utility.PlayerLookup;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
+    private static final Logger log = LoggerFactory.getLogger(WorldNetworks.class);
     public final Level world;
     public final NetworkGraph globalGraph = new NetworkGraph();
 
@@ -57,6 +60,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private final Set<UnresolvedTransmissionLine> unresolvedLines = new HashSet<>();
     private final Map<IWireEndpoint, Queue<UnresolvedTransmissionLine>> unresolvedLineNodeMap = new HashMap<>();
     private final Map<UUID, Integer> unresolvedPartHolders = new HashMap<>();
+    private final Map<ChunkPos, CheckChunk> expectedInChunks = new HashMap<>();
+    private final Map<ChunkPos, CheckChunk> checkForExistence = new HashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
     private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
@@ -143,6 +148,44 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             network.calculate();
         }
         if(world instanceof ServerLevel serverWorld) {
+            // Check for line parts existence
+            var checkIter = checkForExistence.entrySet().iterator();
+            while(checkIter.hasNext()) {
+                var entry = checkIter.next();
+                var chunk = entry.getKey();
+                if(!world.hasChunk(chunk.x, chunk.z)) {
+                    if(expectedInChunks.containsKey(chunk)) {
+                        expectedInChunks.get(chunk).addAll(entry.getValue().entities);
+                    } else {
+                        expectedInChunks.put(chunk, entry.getValue());
+                    }
+                    continue;
+                }
+                var remove = entry.getValue().ticks++ >= 10;
+                var entityIter = entry.getValue().entities.iterator();
+                while(entityIter.hasNext()) {
+                    var id = entityIter.next();
+                    if(serverWorld.getEntity(id) == null) {
+                        if(remove) {
+                            // Doesn't exist even after chunk has been loaded.
+                            var lineId = unresolvedPartHolders.remove(id);
+                            if (lineId == null)
+                                continue;
+                            // Destroy line
+                            var line = transmissionLines.get(lineId);
+                            if (line == null)
+                                continue;
+                            line.remove();
+                        }
+                    } else {
+                        entityIter.remove();
+                    }
+                }
+                if(remove || entry.getValue().entities.isEmpty()) {
+                    checkIter.remove();
+                }
+            }
+            // Send lines to clients
             for(var endpoint : updatedEndpoints) {
                 var players = trackers.get(endpoint);
                 if(players == null)
@@ -151,6 +194,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 ModdedPackets.sendToClients(new TransmissionLineManagementS2CPacket(endpoint, lines), players);
             }
             updatedEndpoints.clear();
+            // Send partial lines to clients
             var iter2 = transmissionLines.values().iterator();
             while(iter2.hasNext()) {
                 var line = iter2.next();
@@ -169,6 +213,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     PowerGrid.LOGGER.error("Failed to send a transmission line packet", e);
                 }
             }
+            // Synchronize solver state with clients
             if(syncTicks++ >= 20) {
                 for(var network : subnetworks) {
                     if(network.getLastGuess() == null)
@@ -355,15 +400,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(part != null)
                 return part;
         }
-
-//        var wires = globalGraph.getWires(node1, node2);
-//        for(var wire : wires) {
-//            if(wire instanceof TransmissionLine line) {
-//                var part = line.grabUnloaded(forEntity);
-//                if(part != null)
-//                    return part;
-//            }
-//        }
 
         // Next move onto the unresolved lines
         for(var unresolved : unresolvedLines) {
@@ -683,8 +719,20 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         resolveTree(ownedNode);
     }
 
-    public void bounty(UUID entityId, TransmissionLine linePartHolder) {
+    /**
+     * Save an entity to be recovered into the transmission line once its chunk is loaded back into the world.
+     *
+     * @param entityId       Transmission line part entity id
+     * @param lastKnownChunk Last known chunk of the entity
+     * @param linePartHolder Transmission line which holds the part
+     */
+    public void bounty(UUID entityId, ChunkPos lastKnownChunk, TransmissionLine linePartHolder) {
         unresolvedPartHolders.put(entityId, linePartHolder.getId());
+        if(world.hasChunk(lastKnownChunk.x, lastKnownChunk.z)) {
+            checkForExistence.computeIfAbsent(lastKnownChunk, $ -> new CheckChunk()).add(entityId);
+            return;
+        }
+        expectedInChunks.computeIfAbsent(lastKnownChunk, $ -> new CheckChunk()).add(entityId);
     }
 
     public void tracking(ServerPlayer tracker, IWireEndpoint endpoint, boolean end) {
@@ -708,5 +756,31 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(set == null)
             return Set.of();
         return set;
+    }
+
+    public void chunkLoaded(ChunkPos chunkPos) {
+        var set = expectedInChunks.remove(chunkPos);
+        if(set != null) {
+            if(checkForExistence.containsKey(chunkPos)) {
+                checkForExistence.get(chunkPos).addAll(set.entities);
+            } else {
+                checkForExistence.put(chunkPos, set);
+            }
+        }
+    }
+
+    private static class CheckChunk {
+        public final Set<UUID> entities = new HashSet<>();
+        public int ticks = 0;
+
+        public void add(UUID id) {
+            entities.add(id);
+            ticks = 0;
+        }
+
+        public void addAll(Set<UUID> ids) {
+            entities.addAll(ids);
+            ticks = 0;
+        }
     }
 }

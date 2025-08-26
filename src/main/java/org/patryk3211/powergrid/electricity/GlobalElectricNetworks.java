@@ -24,6 +24,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -65,6 +67,11 @@ public class GlobalElectricNetworks {
                     "powergrid_electric_network_data"
             );
         });
+    }
+
+    @Nullable
+    public static WorldNetworks getWorldNetworks(LevelAccessor world) {
+        return worldNetworks.get(world);
     }
 
     public static TransmissionLine getLine(WireEntity entity) {

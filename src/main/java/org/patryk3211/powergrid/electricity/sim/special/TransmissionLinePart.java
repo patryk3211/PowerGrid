@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -32,6 +33,7 @@ public class TransmissionLinePart extends ElectricWire {
     @Nullable
     public WireEntity owner;
     public final UUID persistentOwnerId;
+    public ChunkPos lastKnownChunk;
 
     public IWireEndpoint endpoint1;
     public IWireEndpoint endpoint2;
@@ -43,11 +45,13 @@ public class TransmissionLinePart extends ElectricWire {
         this.endpoint1 = node1.endpoint;
         this.endpoint2 = node2.endpoint;
         this.persistentOwnerId = owner.getUUID();
+        this.lastKnownChunk = new ChunkPos(owner.blockPosition());
     }
 
-    public TransmissionLinePart(double resistance, IWireEndpoint endpoint1, IWireEndpoint endpoint2, UUID ownerId, TransmissionLine line) {
+    public TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, UUID ownerId, ChunkPos lastKnownChunk, TransmissionLine line) {
         super(resistance, null, null);
         this.persistentOwnerId = ownerId;
+        this.lastKnownChunk = lastKnownChunk;
         this.endpoint1 = endpoint1;
         this.endpoint2 = endpoint2;
         this.line = line;

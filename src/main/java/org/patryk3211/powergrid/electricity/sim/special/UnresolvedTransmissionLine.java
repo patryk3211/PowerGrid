@@ -18,17 +18,17 @@ package org.patryk3211.powergrid.electricity.sim.special;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
-import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -70,7 +70,7 @@ public class UnresolvedTransmissionLine {
                 }
             }
             prevEndpoint = endpoint;
-            var unSegment = new Segment(endpoint, segment.persistentOwnerId, segment.getResistance());
+            var unSegment = new Segment(endpoint, segment.persistentOwnerId, segment.lastKnownChunk, segment.getResistance());
             unSegment.resolvedWire = segment;
             segments.add(unSegment);
         }
@@ -87,7 +87,8 @@ public class UnresolvedTransmissionLine {
             var endpoint = WireEndpointType.deserialize(segment.getCompound("Node"));
             var id = segment.getUUID("Id");
             var resistance2 = segment.getDouble("Resistance");
-            segments.add(new UnresolvedTransmissionLine.Segment(endpoint, id, resistance2));
+            var chunkPos = new ChunkPos(segment.getInt("X"), segment.getInt("Z"));
+            segments.add(new UnresolvedTransmissionLine.Segment(endpoint, id, chunkPos, resistance2));
         }
     }
 
@@ -103,6 +104,8 @@ public class UnresolvedTransmissionLine {
             var segmentEntry = new CompoundTag();
             segmentEntry.put("Node", segment.endpoint.serialize());
             segmentEntry.putUUID("Id", segment.id);
+            segmentEntry.putInt("X", segment.chunkPos.x);
+            segmentEntry.putInt("Z", segment.chunkPos.z);
             segmentEntry.putDouble("Resistance", segment.resistance);
             segmentList.add(segmentEntry);
         }
@@ -160,10 +163,10 @@ public class UnresolvedTransmissionLine {
                 }
                 continue;
             }
-            var part = new TransmissionLinePart(segment.resistance, endpoint1, endpoint2, segment.id, line);
+            var part = new TransmissionLinePart(segment.resistance, endpoint1, endpoint2, segment.id, segment.chunkPos, line);
             line.segments.add(part);
-//            line.unloadedParts.add(part);
-            global.bounty(segment.id, line);
+            line.unloadedParts.add(part);
+            global.bounty(segment.id, segment.chunkPos, line);
         }
         global.assignTransmissionLine(node1, null);
         global.assignTransmissionLine(node2, null);
@@ -209,22 +212,32 @@ public class UnresolvedTransmissionLine {
     public void resolveEnd(WorldNetworks global, @NotNull OwnedFloatingNode node) {
         if(node.endpoint.equals(endpoint1)) {
             setEndpoint1Resolved();
+            if(endpoint2.isValid(global.world)) {
+                setEndpoint2Resolved();
+            }
         } else if(node.endpoint.equals(endpoint2)) {
             setEndpoint2Resolved();
+            if(endpoint1.isValid(global.world)) {
+                setEndpoint1Resolved();
+            }
         }
+
         resolve(global);
     }
 
     public static class Segment {
         public final IWireEndpoint endpoint;
         public final UUID id;
+        public final ChunkPos chunkPos;
+
         public final double resistance;
 
         public TransmissionLinePart resolvedWire;
 
-        public Segment(IWireEndpoint endpoint, UUID id, double resistance) {
+        public Segment(IWireEndpoint endpoint, UUID id, ChunkPos chunkPos, double resistance) {
             this.endpoint = endpoint;
             this.id = id;
+            this.chunkPos = chunkPos;
             this.resistance = resistance;
         }
     }
