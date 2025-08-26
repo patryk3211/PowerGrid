@@ -158,8 +158,10 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             controllerPos = null;
             if(segments == null)
                 segments = new HashSet<>();
-            if(clientPacket)
+            if(clientPacket) {
+                makeController();
                 checkConnectivity(null);
+            }
             readController(compound, clientPacket);
         }
         if(compound.contains("LastKnownPos")) {
@@ -285,6 +287,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     }
 
     protected void onChange() {
+        blockEntity.notifyUpdate();
         if(changeCallback != null)
             changeCallback.run();
     }
