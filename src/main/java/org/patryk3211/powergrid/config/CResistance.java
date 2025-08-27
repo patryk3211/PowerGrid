@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 public class CResistance extends ConfigBase implements ResistanceValues.Provider {
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     private static final Object2DoubleMap<ResourceLocation> DEFAULT_RESISTANCES = new Object2DoubleOpenHashMap<>();
 

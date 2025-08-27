@@ -50,17 +50,17 @@ import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParen
 
 public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
-            .transform(WireProperties.setAll(0.005f, 16, 1.0f, 0.2f))
+            .transform(WireProperties.setAll(0.0015f, 16, 1.0f, 0.064f))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
             .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
-            .transform(WireProperties.setAll(0.015f, 32, 2.0f, 0.3f))
+            .transform(WireProperties.setAll(0.005f, 32, 2.0f, 0.12f))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.FUSE_RESETTING.tag)
             .register();
     public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
-            .transform(WireProperties.setAll(0.007f, 8, 0.8f, 0.4f))
+            .transform(WireProperties.setAll(0.003f, 8, 0.8f, 0.288f))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();

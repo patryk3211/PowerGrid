@@ -35,7 +35,7 @@ public interface IWire extends IHaveElectricProperties {
     @Override
     default void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(getResistance(), player, tooltip);
-        Current.max(getResistance(), getDissipationFactor() * 175, player, tooltip);
+        Current.max(getResistance(), getDissipationFactor() * 150, player, tooltip);
         Range.max((int) getMaximumLength(), tooltip);
     }
 

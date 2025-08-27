@@ -37,7 +37,7 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigFloat basinHeaterCurrent = f(10, 1, "basinHeaterCurrent", Comments.basinHeaterCurrent);
 
-    public final ConfigFloat windingCoilConstant = f(2, 0.1f, "windingCoilConstant", Comments.windingCoilConstant);
+    public final ConfigFloat windingCoilConstant = f(5, 0.1f, "windingCoilConstant", Comments.windingCoilConstant);
 
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);

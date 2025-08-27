@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
+import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
 
 import java.util.List;
 
@@ -136,5 +137,17 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     @Override
     public float getGeneratedSpeed() {
         return convertToDirection(generatedSpeed, getBlockState().getValue(ElectricMotorBlock.FACING));
+    }
+
+    @Override
+    public void applyNewSpeed(float prevSpeed, float speed) {
+        super.applyNewSpeed(prevSpeed, speed);
+        if(Math.signum(prevSpeed) == Math.signum(speed)) {
+            // HACK: To prevent varying voltage from annihilating the network through flickering speed,
+            // the electric motor removes the score it added through its speed update.
+            for (var entry : getOrCreateNetwork().members.keySet()) {
+                ((KineticBlockEntityAccessor) entry).setFlickerTally(Math.max(entry.getFlickerScore() - 5, 0));
+            }
+        }
     }
 }

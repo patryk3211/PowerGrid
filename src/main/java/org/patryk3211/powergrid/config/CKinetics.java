@@ -34,7 +34,7 @@ public class CKinetics extends ConfigBase {
     public final ConfigFloat generatorCommutatorInertia = f(0.05f, 0, "generatorCommutatorInertia");
     public final ConfigFloat generatorClutchInertia = f(0.05f, 0, "generatorClutchInertia");
 
-    public final ConfigFloat motorRPMPerVolt = f(0.5f, 0, "motorRPMPerVolt", Comments.motorRPMPerVolt);
+    public final ConfigFloat motorRPMPerVolt = f(1.5f, 0, "motorRPMPerVolt", Comments.motorRPMPerVolt);
 
     public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
 
