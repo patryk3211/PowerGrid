@@ -205,7 +205,7 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     @Override
-    public @Nullable ElectricalNetwork prepareForConnection(OwnedFloatingNode node1, OwnedFloatingNode node2) {
+    public @Nullable ElectricalNetwork prepareForConnection(@NotNull OwnedFloatingNode node1, @NotNull OwnedFloatingNode node2) {
         var endpoint1 = node1.endpoint;
         var endpoint2 = node2.endpoint;
 
@@ -270,10 +270,10 @@ public class ClientWorldNetworks extends WorldNetworks {
                 if(!((ln1 == en1 && ln2 == en2) || (ln1 == en2 && ln2 == en1))) {
                     // Nodes do not match.
                     if(ln1 != en1) {
-                        line.setNode1(en1);
+                        line.setNode1(entry.endpoint1());
                     }
                     if(ln2 != en2) {
-                        line.setNode2(en2);
+                        line.setNode2(entry.endpoint2());
                     }
                 }
                 line.setResistance(entry.resistance());

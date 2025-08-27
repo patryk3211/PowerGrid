@@ -41,16 +41,9 @@ public class UnresolvedTransmissionLine {
     private byte resolvedEndpoints = 0;
     private boolean resolved = false;
 
-    public UnresolvedTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, double resistance, List<Segment> segments) {
-        this.endpoint1 = endpoint1;
-        this.endpoint2 = endpoint2;
-        this.resistance = resistance;
-        this.segments = segments;
-    }
-
     public UnresolvedTransmissionLine(TransmissionLine line) {
-        endpoint1 = line.getNode1().endpoint;
-        endpoint2 = line.getNode2().endpoint;
+        endpoint1 = line.getEndpoint1();
+        endpoint2 = line.getEndpoint2();
         resistance = line.getResistance();
 
         segments = new ArrayList<>();
@@ -141,7 +134,7 @@ public class UnresolvedTransmissionLine {
         var node1 = endpoint1.getNode(global.world);
         var node2 = endpoint2.getNode(global.world);
 
-        var line = new TransmissionLine(resistance, node1, node2, global);
+        var line = new TransmissionLine(resistance, endpoint1, endpoint2, global);
         IWireEndpoint endpoint1, endpoint2 = this.endpoint1;
         for(var segment : segments) {
             endpoint1 = endpoint2;
@@ -192,7 +185,7 @@ public class UnresolvedTransmissionLine {
                     entity.flipEndpoints();
                 }
                 // This is the segment.
-                var part = new TransmissionLinePart(segment.resistance, endpoint1.getNode(global.world), endpoint2.getNode(global.world), entity, null);
+                var part = new TransmissionLinePart(segment.resistance, endpoint1, endpoint2, global.world, entity, null);
                 segment.resolvedWire = part;
                 if(endpoint1.equals(this.endpoint1)) {
                     // First segment.
@@ -209,13 +202,13 @@ public class UnresolvedTransmissionLine {
         return null;
     }
 
-    public void resolveEnd(WorldNetworks global, @NotNull OwnedFloatingNode node) {
-        if(node.endpoint.equals(endpoint1)) {
+    public void resolveEnd(WorldNetworks global, @NotNull IWireEndpoint endpoint) {
+        if(endpoint.equals(endpoint1)) {
             setEndpoint1Resolved();
             if(endpoint2.isValid(global.world)) {
                 setEndpoint2Resolved();
             }
-        } else if(node.endpoint.equals(endpoint2)) {
+        } else if(endpoint.equals(endpoint2)) {
             setEndpoint2Resolved();
             if(endpoint1.isValid(global.world)) {
                 setEndpoint1Resolved();

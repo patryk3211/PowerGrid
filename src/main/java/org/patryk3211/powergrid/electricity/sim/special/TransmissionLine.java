@@ -23,6 +23,7 @@ import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.*;
@@ -36,21 +37,22 @@ public class TransmissionLine extends ElectricWire {
 
     private final WorldNetworks global;
 
-    protected TransmissionLine(double resistance, OwnedFloatingNode node1, OwnedFloatingNode node2, WorldNetworks global) {
-        super(resistance, node1, node2);
+    private IWireEndpoint endpoint1;
+    private IWireEndpoint endpoint2;
+
+    protected TransmissionLine(double resistance, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WorldNetworks global) {
+        super(resistance, endpoint1.getNode(global.world), endpoint2.getNode(global.world));
         if(global.world.isClientSide)
             PowerGrid.LOGGER.warn("This method probably shouldn't be used on client-side");
         this.global = global;
+        this.endpoint1 = endpoint1;
+        this.endpoint2 = endpoint2;
         id = NEXT_ID++;
     }
 
-    public TransmissionLine(double resistance, OwnedFloatingNode node1, OwnedFloatingNode node2, TransmissionLinePart firstSegment, WorldNetworks global) {
-        super(resistance, node1, node2);
-        if(global.world.isClientSide)
-            PowerGrid.LOGGER.warn("This method probably shouldn't be used on client-side");
+    public TransmissionLine(double resistance, IWireEndpoint endpoint1, IWireEndpoint endpoint2, TransmissionLinePart firstSegment, WorldNetworks global) {
+        this(resistance, endpoint1, endpoint2, global);
         segments.add(firstSegment);
-        this.global = global;
-        id = NEXT_ID++;
     }
 
     // This should only be utilized by the client
@@ -76,16 +78,36 @@ public class TransmissionLine extends ElectricWire {
         return 0;
     }
 
+    public void setNode1(@NotNull IWireEndpoint endpoint) {
+        this.endpoint1 = endpoint;
+        super.setNode1(endpoint.getNode(global.world));
+    }
+
+    public void setNode2(@NotNull IWireEndpoint endpoint) {
+        this.endpoint2 = endpoint;
+        super.setNode2(endpoint.getNode(global.world));
+    }
+
     @Override
     public void setNode1(IElectricNode node1) {
         assert node1 instanceof OwnedFloatingNode;
         super.setNode1(Objects.requireNonNull(node1));
+        endpoint1 = ((OwnedFloatingNode) node1).endpoint;
     }
 
     @Override
     public void setNode2(IElectricNode node2) {
         assert node2 instanceof OwnedFloatingNode;
         super.setNode2(Objects.requireNonNull(node2));
+        endpoint2 = ((OwnedFloatingNode) node2).endpoint;
+    }
+
+    @Override
+    public void flipNodes() {
+        super.flipNodes();
+        var endpoint = endpoint1;
+        endpoint1 = endpoint2;
+        endpoint2 = endpoint;
     }
 
     @Override
@@ -98,6 +120,14 @@ public class TransmissionLine extends ElectricWire {
         return (OwnedFloatingNode) node2;
     }
 
+    public IWireEndpoint getEndpoint1() {
+        return endpoint1;
+    }
+
+    public IWireEndpoint getEndpoint2() {
+        return endpoint2;
+    }
+
     @Nullable
     public TransmissionLinePart grabUnloaded(@NotNull WireEntity owner) {
         for(var part : segments) {
@@ -105,12 +135,14 @@ public class TransmissionLine extends ElectricWire {
                 // If the owner id matches then the endpoints should match too
                 var endpointArrangement = validateEndpoints(part, owner);
                 if(endpointArrangement == 1 || endpointArrangement == 2) {
-                    part.setNode1(part.endpoint1.getNode(owner.level()));
-                    part.setNode2(part.endpoint2.getNode(owner.level()));
+                    part.setNode1(part.endpoint1, part.endpoint1.getNode(owner.level()));
+                    part.setNode2(part.endpoint2, part.endpoint2.getNode(owner.level()));
                     if(endpointArrangement == 2)
                         owner.flipEndpoints();
                 } else {
-                    PowerGrid.LOGGER.error("Endpoint of wire and unloaded line segment do not match");
+                    PowerGrid.LOGGER.warn("Endpoint of wire and unloaded line segment do not match\n{}, {} vs {}, {}",
+                            part.endpoint1, part.endpoint2, owner.getEndpoint1(), owner.getEndpoint2());
+                    remove();
                     return null;
                 }
                 part.owner = owner;
@@ -150,7 +182,7 @@ public class TransmissionLine extends ElectricWire {
 
         // Move boundary
         global.assignTransmissionLine(getNode2(), this);
-        setNode2(wire.getNode2());
+        setNode2(wire.endpoint2);
         global.assignTransmissionLine(getNode2(), null);
     }
 
@@ -163,7 +195,7 @@ public class TransmissionLine extends ElectricWire {
 
         // Move boundary
         global.assignTransmissionLine(getNode1(), this);
-        setNode1(wire.getNode1());
+        setNode1(wire.endpoint1);
         global.assignTransmissionLine(getNode1(), null);
     }
 
@@ -179,7 +211,7 @@ public class TransmissionLine extends ElectricWire {
         });
         global.assignTransmissionLine(line.getNode2(), null);
         line.segments.clear();
-        setNode2(line.getNode2());
+        setNode2(line.endpoint2);
         line.remove();
     }
 
@@ -201,11 +233,11 @@ public class TransmissionLine extends ElectricWire {
                 if (splitNode == atNode) {
                     // This is the last segment of this line.
                     // All other segments go to the next line.
-                    line2 = new TransmissionLine(1, splitNode, getNode2(), global);
+                    line2 = new TransmissionLine(1, segment.endpoint2, endpoint2, global);
                     global.assignTransmissionLine(splitNode, null);
                     if(network != null)
                         network.addNode(splitNode);
-                    setNode2(splitNode);
+                    setNode2(segment.getEndpoint2());
                 }
             } else {
                 R2 += segment.getResistance();
@@ -318,7 +350,7 @@ public class TransmissionLine extends ElectricWire {
             if(network != null)
                 network.addNode(node1);
             var optiNode = getNode1();
-            setNode1(node1);
+            setNode1(wire.endpoint2);
             optimizeNode(optiNode);
         } else if (wire.getNode2() == node2) {
             // Last segment
@@ -337,7 +369,7 @@ public class TransmissionLine extends ElectricWire {
             if(network != null)
                 network.addNode(node2);
             var optiNode = getNode2();
-            setNode2(node2);
+            setNode2(wire.endpoint1);
             optimizeNode(optiNode);
         } else {
             // Middle segment
@@ -365,7 +397,7 @@ public class TransmissionLine extends ElectricWire {
             setResistance(resistance - removed.getResistance());
             if(network != null)
                 network.addNode(terminatingNode);
-            setNode2(terminatingNode);
+            setNode2(wire.endpoint1);
         }
     }
 

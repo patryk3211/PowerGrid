@@ -70,13 +70,11 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
 
     private static final VoxelShaper HORIZONTAL_END_SHAPER = VoxelShaper.forDirectional(Shapes.or(
             box(2, 3, 3, 14, 13, 16),
-            box(0, 6, 6, 16, 10, 10),
-            box(6, 6, 0, 10, 10, 3)
+            box(0, 6, 6, 16, 10, 10)
     ), Direction.SOUTH);
     private static final VoxelShaper VERTICAL_END_SHAPER = VoxelShaper.forDirectional(Shapes.or(
             box(3, 2, 3, 13, 14, 16),
-            box(6, 0, 6, 10, 16, 10),
-            box(6, 6, 0, 10, 10, 3)
+            box(6, 0, 6, 10, 16, 10)
     ), Direction.SOUTH);
 
     private static final VoxelShaper HORIZONTAL_MIDDLE_SHAPER = VoxelShaper.forAxis(
