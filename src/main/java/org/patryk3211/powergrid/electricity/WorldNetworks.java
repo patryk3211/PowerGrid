@@ -155,20 +155,20 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
         if(world instanceof ServerLevel serverWorld) {
             // Check for chunk existance
-            // TODO: Put this on a lazy tick thing.
-            var chunkIter = expectedInChunks.entrySet().iterator();
-            while(chunkIter.hasNext()) {
-                var entry = chunkIter.next();
-                var chunk = entry.getKey();
-                if(!world.hasChunk(chunk.x, chunk.z))
-                    continue;
-                if(checkForExistence.containsKey(chunk)) {
-                    checkForExistence.get(chunk).addAll(entry.getValue().entities);
-                } else {
-                    checkForExistence.put(chunk, entry.getValue());
-                }
-                chunkIter.remove();
-            }
+//            // TODO: Put this on a lazy tick thing.
+//            var chunkIter = expectedInChunks.entrySet().iterator();
+//            while(chunkIter.hasNext()) {
+//                var entry = chunkIter.next();
+//                var chunk = entry.getKey();
+//                if(!world.hasChunk(chunk.x, chunk.z))
+//                    continue;
+//                if(checkForExistence.containsKey(chunk)) {
+//                    checkForExistence.get(chunk).addAll(entry.getValue().entities);
+//                } else {
+//                    checkForExistence.put(chunk, entry.getValue());
+//                }
+//                chunkIter.remove();
+//            }
             // Check for line parts existence
             var checkIter = checkForExistence.entrySet().iterator();
             while(checkIter.hasNext()) {
@@ -592,33 +592,31 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         // Here, we need to choose between preserving transmission line junction nodes or removing them.
         // A transmission line should be preserved if terminates on a junction which connects to more
         // transmission lines.
-//        Collection<TransmissionLine> lines;
-//        while(true) {
-//            lines = globalGraph.getConnectedLines(ownedNode);
-//            if(lines.size() != 1)
-//                break;
+        Collection<TransmissionLine> lines;
+        while(true) {
+            lines = globalGraph.getConnectedLines(ownedNode);
+            if(lines.size() != 1)
+                break;
             // No need to keep this line (or the node).
-//            var line = lines.iterator().next();
-//            var removeNode = ownedNode;
-//            if(line.getNode1() == ownedNode) {
-//                ownedNode = line.getNode2();
-//            } else {
-//                assert line.getNode2() == ownedNode;
-//                ownedNode = line.getNode1();
-//            }
-            // TODO: Maybe make this line deletion only take place when its entities are getting unloaded.
-            // TODO: This has to put the resolved and valid segments into the unresolved transmission line.
+            var line = lines.iterator().next();
+            var removeNode = ownedNode;
+            if(line.getNode1() == ownedNode) {
+                ownedNode = line.getNode2();
+            } else {
+                assert line.getNode2() == ownedNode;
+                ownedNode = line.getNode1();
+            }
             // Also, we need to inform the wire entities about this.
-//            var unresolved = new UnresolvedTransmissionLine(line);
-//            unresolvedLines.add(unresolved);
-//            addUnresolvedLineMapping(unresolved.endpoint1(), unresolved);
-//            addUnresolvedLineMapping(unresolved.endpoint2(), unresolved);
-//            line.remove();
-//            if(removeNode.getNetwork() != null) {
-//                removeNode.getNetwork().removeNode(removeNode);
-//            }
-//            globalExternalNodes.remove(removeNode.endpoint);
-//        }
+            var unresolved = new UnresolvedTransmissionLine(line);
+            unresolvedLines.add(unresolved);
+            addUnresolvedLineMapping(unresolved.endpoint1(), unresolved);
+            addUnresolvedLineMapping(unresolved.endpoint2(), unresolved);
+            line.remove();
+            if(removeNode.getNetwork() != null) {
+                removeNode.getNetwork().removeNode(removeNode);
+            }
+            globalExternalNodes.remove(removeNode.endpoint);
+        }
     }
 
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
