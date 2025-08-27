@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity;
 
+import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -59,6 +60,8 @@ public class GlobalElectricNetworks {
 
     public static WorldNetworks getWorldNetworks(Level world) {
         return worldNetworks.computeIfAbsent(world, key -> {
+            if(key instanceof PonderLevel)
+                return new WorldNetworks(key);
             if(key.isClientSide) return makeClientWorldNetworks(key);
             var server = (ServerLevel) world;
             return server.getDataStorage().computeIfAbsent(

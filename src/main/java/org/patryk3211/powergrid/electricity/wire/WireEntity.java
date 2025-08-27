@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -93,7 +94,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             return;
         }
 
-        if(level().isClientSide)
+        if(level().isClientSide && !(level() instanceof PonderLevel))
             return;
 
         float temperature = entityData.get(TEMPERATURE);
@@ -322,7 +323,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     public void makeWire() {
         // Client doesn't make a wire, connections are handled differently.
         var world = level();
-        if(world.isClientSide)
+        if(world.isClientSide && !(world instanceof PonderLevel))
             return;
 
         dropWire();
