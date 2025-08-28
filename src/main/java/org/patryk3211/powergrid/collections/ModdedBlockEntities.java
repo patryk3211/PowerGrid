@@ -89,13 +89,13 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<VoltageGaugeBlockEntity> VOLTAGE_METER =
             REGISTRATE.blockEntity("voltage_meter", VoltageGaugeBlockEntity::new)
-                    .validBlocks(ModdedBlocks.ANDESITE_VOLTAGE_METER, ModdedBlocks.BRASS_VOLTAGE_METER)
+                    .validBlocks(ModdedBlocks.VOLTAGE_METER)
                     .renderer(() -> GaugeRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<CurrentGaugeBlockEntity> CURRENT_METER =
             REGISTRATE.blockEntity("current_meter", CurrentGaugeBlockEntity::new)
-                    .validBlocks(ModdedBlocks.ANDESITE_CURRENT_METER, ModdedBlocks.BRASS_CURRENT_METER)
+                    .validBlocks(ModdedBlocks.CURRENT_METER)
                     .renderer(() -> GaugeRenderer::new)
                     .register();
 

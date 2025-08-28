@@ -72,18 +72,16 @@
   "powergrid.variac.tap": "Tap",
   "powergrid.variac.primary": "Primary",
 
-  "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
   "powergrid.devices.creative.voltage": "Output voltage",
   "powergrid.devices.creative.current": "Output current",
   "powergrid.devices.creative.resistance": "Resistance",
   "powergrid.devices.fuse.setting": "Max current",
   "powergrid.devices.spark_gap.voltage": "Breakdown Voltage",
+  "powergrid.devices.gauge.voltage": "Maximum voltage",
+  "powergrid.devices.gauge.current": "Maximum current",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",
-
-  "create.aggregate_type.series": "Series",
-  "create.aggregate_type.parallel": "Parallel",
 
   "powergrid.gui.circuit_designer.edit": "Edit circuit",
   "powergrid.gui.circuit_designer.save": "Save changes",

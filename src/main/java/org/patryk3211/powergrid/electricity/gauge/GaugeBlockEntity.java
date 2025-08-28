@@ -17,11 +17,17 @@ package org.patryk3211.powergrid.electricity.gauge;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
+import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
@@ -34,7 +40,8 @@ import java.util.List;
  * @see com.simibubi.create.content.kinetics.gauge.GaugeBlockEntity
  */
 public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
-    protected final float maxValue;
+    protected GaugeValueBehaviour gaugeValue;
+    protected float maxValue;
 
     public float dialTarget;
     public float prevDialState;
@@ -44,8 +51,8 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
     public GaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
 
-        assert state.getBlock() instanceof IGaugeBlock;
-        maxValue = ((IGaugeBlock) state.getBlock()).getMaxValue();
+//        assert state.getBlock() instanceof IGaugeBlock;
+//        maxValue = ((IGaugeBlock) state.getBlock()).getMaxValue();
     }
 
     @Override
@@ -76,5 +83,16 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
         // Use default Create header here.
         Lang.builder(Create.ID).translate("gui.gauge.info_header").forGoggles(tooltip);
         return true;
+    }
+
+    public static class BoxTransform extends CenteredSideValueBoxTransform {
+        public BoxTransform() {
+            super((state, dir) -> dir == Direction.UP);
+        }
+
+        @Override
+        protected Vec3 getSouthLocation() {
+            return VecHelper.voxelSpace(8.0f, 8.0f, 14.5f);
+        }
     }
 }

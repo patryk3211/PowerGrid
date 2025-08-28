@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create:crafting//andesite_voltage_gauge"
+        "recipe": "create:crafting//voltage_gauge_convert"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "create:crafting//andesite_voltage_gauge"
+      "create:crafting//voltage_gauge_convert"
     ]
   },
   "sends_telemetry_event": false

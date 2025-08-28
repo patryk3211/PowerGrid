@@ -7,7 +7,7 @@
     "powergrid:relay",
     "powergrid:resistor",
     "powergrid:redstone_relay",
-    "powergrid:andesite_voltage_gauge",
+    "powergrid:voltage_gauge",
     "powergrid:diode",
     "powergrid:capacitor",
     "powergrid:led",

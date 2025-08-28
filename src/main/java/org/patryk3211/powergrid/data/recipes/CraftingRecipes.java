@@ -102,46 +102,26 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .requires(AllItems.ANDESITE_ALLOY)
             ),
 
-    ANDESITE_VOLTAGE_GAUGE = create(ModdedBlocks.ANDESITE_VOLTAGE_METER)
-            .unlockedBy(AllBlocks.ANDESITE_CASING::get)
+    VOLTAGE_GAUGE = create(ModdedBlocks.VOLTAGE_METER)
+            .unlockedBy(ModdedBlocks.CONDUCTIVE_CASING::get)
             .viaShaped(b -> b
-                    .pattern("NCN")
-                    .pattern(" A ")
-                    .define('N', RecipeTags.copperNugget())
-                    .define('A', AllBlocks.ANDESITE_CASING)
+                    .pattern("C")
+                    .pattern("c")
+                    .pattern("A")
+                    .define('A', RecipeTags.conductiveCasing())
+                    .define('c', RecipeTags.copperCoil())
                     .define('C', Items.COMPASS)
             ),
 
-    BRASS_VOLTAGE_GAUGE = create(ModdedBlocks.BRASS_VOLTAGE_METER)
-            .unlockedBy(AllBlocks.BRASS_CASING::get)
-            .viaShaped(b -> b
-                    .pattern("NCN")
-                    .pattern(" B ")
-                    .define('N', RecipeTags.copperNugget())
-                    .define('B', AllBlocks.BRASS_CASING)
-                    .define('C', Items.COMPASS)
-            ),
-
-    ANDESITE_CURRENT_GAUGE = create(ModdedBlocks.ANDESITE_CURRENT_METER)
+    CURRENT_GAUGE = create(ModdedBlocks.CURRENT_METER)
             .unlockedBy(AllBlocks.ANDESITE_CASING::get)
-            .viaShapeless(b -> b.requires(ModdedBlocks.ANDESITE_VOLTAGE_METER)
+            .viaShapeless(b -> b.requires(ModdedBlocks.VOLTAGE_METER)
             ),
 
-    BRASS_CURRENT_GAUGE = create(ModdedBlocks.BRASS_CURRENT_METER)
-            .unlockedBy(AllBlocks.BRASS_CASING::get)
-            .viaShapeless(b -> b.requires(ModdedBlocks.BRASS_VOLTAGE_METER)
-            ),
-
-    ANDESITE_VOLTAGE_GAUGE_BACK = create(ModdedBlocks.ANDESITE_VOLTAGE_METER)
+    VOLTAGE_GAUGE_BACK = create(ModdedBlocks.VOLTAGE_METER)
             .unlockedBy(AllBlocks.ANDESITE_CASING::get)
             .withSuffix("_convert")
-            .viaShapeless(b -> b.requires(ModdedBlocks.ANDESITE_CURRENT_METER)
-            ),
-
-    BRASS_VOLTAGE_GAUGE_BACK = create(ModdedBlocks.BRASS_VOLTAGE_METER)
-            .unlockedBy(AllBlocks.BRASS_CASING::get)
-            .withSuffix("_convert")
-            .viaShapeless(b -> b.requires(ModdedBlocks.BRASS_CURRENT_METER)
+            .viaShapeless(b -> b.requires(ModdedBlocks.CURRENT_METER)
             ),
 
     LIGHT_FIXTURE = create(ModdedBlocks.LIGHT_FIXTURE)

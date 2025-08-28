@@ -26,6 +26,9 @@ public class ModdedPartialModels {
     public static final PartialModel BRASS_GAUGE_DIAL = block("gauge/brass/dial");
     public static final PartialModel SHAFT_BIT = block("shaft_bit");
 
+    public static final PartialModel CONDUCTIVE_VOLTAGE_HEAD = block("gauge/conductive/voltage_head");
+    public static final PartialModel CONDUCTIVE_CURRENT_HEAD = block("gauge/conductive/current_head");
+
     public static final PartialModel COMMUTATOR_SHAFT = block("generator/commutator_shaft");
     public static final PartialModel COMMUTATOR_BRUSH = block("generator/commutator_brush");
 

@@ -2,22 +2,23 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "create:brass_casing"
+    "A": {
+      "item": "powergrid:conductive_casing"
     },
     "C": {
       "item": "minecraft:compass"
     },
-    "N": {
-      "tag": "forge:nuggets/copper"
+    "c": {
+      "tag": "forge:copper_coils"
     }
   },
   "pattern": [
-    "NCN",
-    " B "
+    "C",
+    "c",
+    "A"
   ],
   "result": {
-    "item": "powergrid:brass_voltage_gauge"
+    "item": "powergrid:voltage_gauge"
   },
   "show_notification": true
 }

@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powergrid:andesite_current_gauge"
+          "name": "powergrid:current_gauge"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid:blocks/andesite_current_gauge"
+  "random_sequence": "powergrid:blocks/current_gauge"
 }

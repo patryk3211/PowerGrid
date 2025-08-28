@@ -21,6 +21,5 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface IGaugeBlock {
-    float getMaxValue();
     boolean shouldRenderHeadOnFace(Level world, BlockPos pos, BlockState state, Direction dir);
 }

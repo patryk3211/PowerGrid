@@ -190,12 +190,6 @@ subprojects {
 	}
 }
 
-//fabricApi {
-//	configureDataGeneration {
-//		client = true
-//	}
-//}
-
 // configure the maven publication
 //publishing {
 //	publications {

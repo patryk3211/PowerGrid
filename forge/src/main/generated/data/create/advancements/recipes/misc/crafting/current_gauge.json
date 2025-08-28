@@ -6,7 +6,7 @@
         "items": [
           {
             "items": [
-              "create:brass_casing"
+              "create:andesite_casing"
             ]
           }
         ]
@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create:crafting//brass_voltage_gauge"
+        "recipe": "create:crafting//current_gauge"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "create:crafting//brass_voltage_gauge"
+      "create:crafting//current_gauge"
     ]
   },
   "sends_telemetry_event": false

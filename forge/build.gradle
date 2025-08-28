@@ -48,6 +48,19 @@ dependencies {
     modLocalRuntime("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}")
     modLocalRuntime("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
+
+    modLocalRuntime(files(
+            "mods/chunkloaders-1.2.9-forge-mc1.20.1.jar",
+            "mods/createaddition-1.20.1-1.3.1.jar",
+            "mods/embeddium-0.3.31+mc1.20.1.jar",
+            "mods/ferritecore-6.0.1-forge.jar",
+            "mods/journeymap-1.20.1-5.10.3-forge.jar",
+            "mods/kotlinforforge-4.10.0-all.jar",
+            "mods/oculus-mc1.20.1-1.8.0.jar",
+            "mods/resourcefullib-forge-1.20.1-2.1.29.jar",
+            "mods/supermartijn642configlib-1.1.8-forge-mc1.20.jar",
+            "mods/supermartijn642corelib-1.1.18-forge-mc1.20.1.jar"
+    ))
 }
 
 loom {

@@ -1,9 +1,7 @@
 {
   "values": [
-    "powergrid:andesite_voltage_gauge",
-    "powergrid:brass_voltage_gauge",
-    "powergrid:andesite_current_gauge",
-    "powergrid:brass_current_gauge",
+    "powergrid:voltage_gauge",
+    "powergrid:current_gauge",
     "powergrid:generator_clutch",
     "powergrid:lv_switch",
     "powergrid:lv_button",

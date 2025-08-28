@@ -66,34 +66,13 @@ public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
     }
 
     public static PartialModel getHeadModel(BlockState state, GaugeBlockEntity entity) {
-        var block = state.getBlock();
-        if(block instanceof GaugeBlock<?> gaugeBlock) {
-            return switch(gaugeBlock.material) {
-                case ANDESITE -> {
-                    if(entity instanceof CurrentGaugeBlockEntity)
-                        yield ModdedPartialModels.ANDESITE_CURRENT_HEAD;
-                    else
-                        yield ModdedPartialModels.ANDESITE_VOLTAGE_HEAD;
-                }
-                case BRASS -> {
-                    if(entity instanceof CurrentGaugeBlockEntity)
-                        yield ModdedPartialModels.BRASS_CURRENT_HEAD;
-                    else
-                        yield ModdedPartialModels.BRASS_VOLTAGE_HEAD;
-                }
-            };
-        }
-        throw new IllegalArgumentException("Unknown block type");
+        if(entity instanceof CurrentGaugeBlockEntity)
+            return ModdedPartialModels.CONDUCTIVE_CURRENT_HEAD;
+        else
+            return ModdedPartialModels.CONDUCTIVE_VOLTAGE_HEAD;
     }
 
     public static PartialModel getDialModel(BlockState state) {
-        var block = state.getBlock();
-        if(block instanceof GaugeBlock<?> gaugeBlock) {
-            return switch(gaugeBlock.material) {
-                case ANDESITE -> AllPartialModels.GAUGE_DIAL;
-                case BRASS -> ModdedPartialModels.BRASS_GAUGE_DIAL;
-            };
-        }
-        throw new IllegalArgumentException("Unknown block type");
+        return AllPartialModels.GAUGE_DIAL;
     }
 }

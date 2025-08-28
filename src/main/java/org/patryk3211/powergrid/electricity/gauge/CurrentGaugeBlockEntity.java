@@ -15,8 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.gauge;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,10 +31,31 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
+    private static final float[] MAX_VALUES = new float[] { 0.02f, 0.2f, 2.0f, 20.0f };
     private ElectricWire wire;
 
     public CurrentGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        gaugeValue = new GaugeValueBehaviour(Component.translatable("powergrid.devices.gauge.current"),
+                Unit.CURRENT.get().component(), MAX_VALUES, this, new BoxTransform());
+        gaugeValue.withCallback(i -> {
+            maxValue = MAX_VALUES[i];
+            sendData();
+        });
+        behaviours.add(gaugeValue);
+    }
+
+    @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        if(clientPacket) {
+            maxValue = MAX_VALUES[gaugeValue.getValue()];
+        }
     }
 
     @Override
@@ -90,20 +113,34 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
                 .forGoggles(tooltip);
 
         var current = getValue();
-        current = Math.round(current * 100f) / 100f;
-        var currentText = String.format("%.2f", current);
-        if(Math.abs(current) > maxValue) {
-            if(current > 0)
-                currentText = String.format("> %.2f", maxValue);
-            else
-                currentText = String.format("< %.2f", -maxValue);
+        String currentText;
+        var milli = false;
+        if(gaugeValue.getValue() > 1) {
+            current = Math.round(current * 100f) / 100f;
+            currentText = String.format("%.2f", current);
+            if(Math.abs(current) > maxValue) {
+                if(current > 0)
+                    currentText = String.format("> %.2f", maxValue);
+                else
+                    currentText = String.format("< %.2f", -maxValue);
+            }
+        } else {
+            milli = true;
+            current = Math.round(current * 100000f) / 100f;
+            currentText = String.format("%.1f", current);
+            if(Math.abs(current / 1000) > maxValue) {
+                if(current > 0)
+                    currentText = String.format("> %.1f", maxValue * 1000);
+                else
+                    currentText = String.format("< %.1f", -maxValue * 1000);
+            }
         }
 
         Lang.builder()
                 .text(currentText)
-                .add(Component.nullToEmpty(" "))
+                .add(Component.nullToEmpty(milli ? " m" : " "))
                 .add(Unit.CURRENT.get())
-                .style(measurementColor(Math.abs(current)))
+                .style(measurementColor(Math.abs(current / 1000)))
                 .forGoggles(tooltip, 1);
 
         return true;

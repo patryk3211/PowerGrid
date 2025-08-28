@@ -94,11 +94,11 @@ public class Components {
             .footprint(3, 5, b -> b
                     .addPad(1, 0, 0)
                     .addPad(1, 4, 1)
-                    .withItem(ModdedBlocks.ANDESITE_VOLTAGE_METER::asItem)
+                    .withItem(ModdedBlocks.VOLTAGE_METER::asItem)
                     .withArrow()
                     .withOutline()
             )
-            .item(ModdedBlocks.ANDESITE_VOLTAGE_METER)
+            .item(ModdedBlocks.VOLTAGE_METER)
             .register();
 
     public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)

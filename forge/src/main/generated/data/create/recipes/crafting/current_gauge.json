@@ -3,10 +3,10 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "powergrid:andesite_current_gauge"
+      "item": "powergrid:voltage_gauge"
     }
   ],
   "result": {
-    "item": "powergrid:andesite_voltage_gauge"
+    "item": "powergrid:current_gauge"
   }
 }

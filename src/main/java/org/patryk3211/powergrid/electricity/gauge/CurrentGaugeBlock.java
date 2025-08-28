@@ -43,6 +43,6 @@ public class CurrentGaugeBlock extends GaugeBlock<CurrentGaugeBlockEntity> imple
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Current.max(maxValue, player, tooltip);
+        Current.max(20, player, tooltip);
     }
 }

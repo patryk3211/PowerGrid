@@ -28,10 +28,8 @@ public class PowerGridPonderScenes {
     public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
-        HELPER.addStoryBoard(ModdedBlocks.ANDESITE_VOLTAGE_METER, "gauges", GaugeScenes::voltage);
-        HELPER.addStoryBoard(ModdedBlocks.BRASS_VOLTAGE_METER, "gauges", GaugeScenes::voltage);
-        HELPER.addStoryBoard(ModdedBlocks.ANDESITE_CURRENT_METER, "gauges", GaugeScenes::current);
-        HELPER.addStoryBoard(ModdedBlocks.BRASS_CURRENT_METER, "gauges", GaugeScenes::current);
+        HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "gauges", GaugeScenes::voltage);
+        HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "gauges", GaugeScenes::current);
 
         HELPER.forComponents(ModdedBlocks.HEATING_COIL)
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic, PowerGridPonderTags.ELECTRIC_DEVICES)

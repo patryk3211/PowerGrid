@@ -6,7 +6,7 @@
         "items": [
           {
             "items": [
-              "create:andesite_casing"
+              "powergrid:conductive_casing"
             ]
           }
         ]
@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "create:crafting//andesite_current_gauge"
+        "recipe": "create:crafting//voltage_gauge"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "create:crafting//andesite_current_gauge"
+      "create:crafting//voltage_gauge"
     ]
   },
   "sends_telemetry_event": false

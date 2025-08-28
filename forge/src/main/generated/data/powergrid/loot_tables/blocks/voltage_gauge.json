@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "powergrid:brass_voltage_gauge"
+          "name": "powergrid:voltage_gauge"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "powergrid:blocks/brass_voltage_gauge"
+  "random_sequence": "powergrid:blocks/voltage_gauge"
 }

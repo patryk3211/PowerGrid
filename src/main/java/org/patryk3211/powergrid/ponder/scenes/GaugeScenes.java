@@ -45,7 +45,7 @@ public class GaugeScenes {
         BlockPos sourcePos = util.grid().at(2, 1, 4);
         BlockPos gaugePos = util.grid().at(2, 1, 2);
         if(!voltage) {
-            scene.world().setBlock(gaugePos, ModdedBlocks.ANDESITE_CURRENT_METER.getDefaultState(), false);
+            scene.world().setBlock(gaugePos, ModdedBlocks.CURRENT_METER.getDefaultState(), false);
         }
 
         scene.showBasePlate();
