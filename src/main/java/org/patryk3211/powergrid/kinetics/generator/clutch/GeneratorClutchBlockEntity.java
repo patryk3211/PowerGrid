@@ -33,6 +33,8 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
 
     private int currentRedstonePower;
 
+    public float load;
+
     public GeneratorClutchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         currentImpact = (float) BlockStressValues.getImpact(state.getBlock());
@@ -81,11 +83,13 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
             }
         }
 
+        float force = 0;
         if(delta > 0 && !isOverStressed()) {
-            var force = delta * 20f * rotorBehaviour.getInertia();
+            force = delta * 20f * rotorBehaviour.getInertia();
             force = Math.min(Math.abs(force), maxForce) * Math.signum(getSpeed()) * couplingStrength;
             rotorBehaviour.applyTickForce(force);
         }
+        load = force / maxForce;
     }
 
     @Override

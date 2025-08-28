@@ -97,6 +97,7 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
             .transform(CThermal.maxPower(100, 1.5f))
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.BATTERY))
             .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
             .simpleItem()
             .register();
@@ -151,8 +152,8 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/heating_coil"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(10))
-            .transform(CThermal.maxPower(60, 1.5f))
+            .transform(CResistance.setResistance(25))
+            .transform(CThermal.maxPower(60, 1.0f))
             .defaultLoot()
             .simpleItem()
             .register();
@@ -259,6 +260,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(16))
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.CLUTCH))
             .tag(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag)
             .defaultLoot()
             .item()
@@ -564,8 +566,8 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("alarm_bell"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(10))
-            .transform(CThermal.maxPower(30, 1.5f))
+            .transform(CResistance.setResistance(20))
+            .transform(CThermal.maxPower(50, 1.5f))
             .simpleItem()
             .register();
 

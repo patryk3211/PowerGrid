@@ -16,13 +16,23 @@
 package org.patryk3211.powergrid.collections;
 
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import org.patryk3211.powergrid.electricity.battery.BatteryDisplaySource;
 import org.patryk3211.powergrid.electricity.gauge.ElectricGaugeDisplaySource;
+import org.patryk3211.powergrid.kinetics.generator.clutch.ClutchDisplaySource;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedDisplaySources {
     public static final RegistryEntry<ElectricGaugeDisplaySource> ELECTRIC_GAUGE =
             REGISTRATE.displaySource("electric_gauge", ElectricGaugeDisplaySource::new)
+                    .register();
+
+    public static final RegistryEntry<ClutchDisplaySource> CLUTCH =
+            REGISTRATE.displaySource("clutch", ClutchDisplaySource::new)
+                    .register();
+
+    public static final RegistryEntry<BatteryDisplaySource> BATTERY =
+            REGISTRATE.displaySource("battery", BatteryDisplaySource::new)
                     .register();
 
     public static void register() { }

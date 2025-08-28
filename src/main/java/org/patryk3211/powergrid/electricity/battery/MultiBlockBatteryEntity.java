@@ -145,7 +145,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         super.tick();
         if (lastKnownPos == null)
             lastKnownPos = getBlockPos();
-        else if (!lastKnownPos.equals(worldPosition) && worldPosition != null) {
+        else if (!lastKnownPos.equals(worldPosition)) {
             onPositionChanged();
             return;
         }

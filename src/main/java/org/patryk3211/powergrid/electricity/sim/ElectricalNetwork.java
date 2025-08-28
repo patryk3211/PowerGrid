@@ -93,6 +93,8 @@ public class ElectricalNetwork {
     }
 
     public void removeNode(INode node) {
+        if(node == null)
+            return;
         if(node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
             // This node is not actually in this network.
             return;
@@ -146,12 +148,12 @@ public class ElectricalNetwork {
         if(wire.node1 != null && !nodes.contains(wire.node1)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node1.getNetwork() == null ? "no network" : "different network";
-            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 isn't - " + suffix + ")");
+            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 " + wire.node1 + " isn't - " + suffix + ")");
         }
         if(wire.node2 != null && !nodes.contains(wire.node2)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
-            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 isn't - " + suffix + ")");
+            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
         }
         wire.setNetwork(this);
         wires.add(wire);

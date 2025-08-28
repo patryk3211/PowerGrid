@@ -88,6 +88,7 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.ANDESITE_VOLTAGE_METER.getId())
                 .add(ModdedBlocks.ANDESITE_CURRENT_METER.getId())
                 .add(ModdedBlocks.BRASS_VOLTAGE_METER.getId())
-                .add(ModdedBlocks.BRASS_CURRENT_METER.getId());
+                .add(ModdedBlocks.BRASS_CURRENT_METER.getId())
+                .add(ModdedBlocks.GENERATOR_CLUTCH.getId());
     }
 }

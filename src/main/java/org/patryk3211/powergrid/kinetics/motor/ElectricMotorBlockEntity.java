@@ -88,9 +88,9 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     @Override
     public void tick() {
+        applyLostPower(coil.power());
         super.tick();
 
-        applyLostPower(coil.power());
         var voltage = coil.potentialDifference();
         if(!level.isClientSide || isVirtual()) {
             var newSpeed = (int) (voltage * ElectricMotorBlock.rpmPerVolt());

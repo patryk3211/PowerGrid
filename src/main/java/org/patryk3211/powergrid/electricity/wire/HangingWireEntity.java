@@ -288,6 +288,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         return null;
     }
 
+    @Override
+    public void flipEndpoints() {
+        super.flipEndpoints();
+        refreshTerminalPositions();
+    }
+
     public void refreshTerminalPositions() {
         var world = level();
         if(world != null && (!world.isClientSide || world instanceof PonderLevel)) {

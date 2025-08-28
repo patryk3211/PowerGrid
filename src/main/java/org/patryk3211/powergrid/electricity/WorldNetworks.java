@@ -154,21 +154,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             network.calculate();
         }
         if(world instanceof ServerLevel serverWorld) {
-            // Check for chunk existance
-//            // TODO: Put this on a lazy tick thing.
-//            var chunkIter = expectedInChunks.entrySet().iterator();
-//            while(chunkIter.hasNext()) {
-//                var entry = chunkIter.next();
-//                var chunk = entry.getKey();
-//                if(!world.hasChunk(chunk.x, chunk.z))
-//                    continue;
-//                if(checkForExistence.containsKey(chunk)) {
-//                    checkForExistence.get(chunk).addAll(entry.getValue().entities);
-//                } else {
-//                    checkForExistence.put(chunk, entry.getValue());
-//                }
-//                chunkIter.remove();
-//            }
             // Check for line parts existence
             var checkIter = checkForExistence.entrySet().iterator();
             while(checkIter.hasNext()) {

@@ -78,14 +78,14 @@ public class TransmissionLine extends ElectricWire {
         return 0;
     }
 
-    public void setNode1(@NotNull IWireEndpoint endpoint) {
+    public void setNode1(@NotNull IWireEndpoint endpoint, OwnedFloatingNode node) {
         this.endpoint1 = endpoint;
-        super.setNode1(endpoint.getNode(global.world));
+        super.setNode1(node);
     }
 
-    public void setNode2(@NotNull IWireEndpoint endpoint) {
+    public void setNode2(@NotNull IWireEndpoint endpoint, OwnedFloatingNode node) {
         this.endpoint2 = endpoint;
-        super.setNode2(endpoint.getNode(global.world));
+        super.setNode2(node);
     }
 
     @Override
@@ -182,7 +182,7 @@ public class TransmissionLine extends ElectricWire {
 
         // Move boundary
         global.assignTransmissionLine(getNode2(), this);
-        setNode2(wire.endpoint2);
+        setNode2(wire.endpoint2, wire.getNode2());
         global.assignTransmissionLine(getNode2(), null);
     }
 
@@ -195,7 +195,7 @@ public class TransmissionLine extends ElectricWire {
 
         // Move boundary
         global.assignTransmissionLine(getNode1(), this);
-        setNode1(wire.endpoint1);
+        setNode1(wire.endpoint1, wire.getNode1());
         global.assignTransmissionLine(getNode1(), null);
     }
 
@@ -211,7 +211,7 @@ public class TransmissionLine extends ElectricWire {
         });
         global.assignTransmissionLine(line.getNode2(), null);
         line.segments.clear();
-        setNode2(line.endpoint2);
+        setNode2(line.endpoint2, line.getNode2());
         line.remove();
     }
 
@@ -237,7 +237,7 @@ public class TransmissionLine extends ElectricWire {
                     global.assignTransmissionLine(splitNode, null);
                     if(network != null)
                         network.addNode(splitNode);
-                    setNode2(segment.getEndpoint2());
+                    setNode2(segment.getEndpoint2(), splitNode);
                 }
             } else {
                 R2 += segment.getResistance();
@@ -350,7 +350,7 @@ public class TransmissionLine extends ElectricWire {
             if(network != null)
                 network.addNode(node1);
             var optiNode = getNode1();
-            setNode1(wire.endpoint2);
+            setNode1(wire.endpoint2, node1);
             optimizeNode(optiNode);
         } else if (wire.getNode2() == node2) {
             // Last segment
@@ -369,7 +369,7 @@ public class TransmissionLine extends ElectricWire {
             if(network != null)
                 network.addNode(node2);
             var optiNode = getNode2();
-            setNode2(wire.endpoint1);
+            setNode2(wire.endpoint1, node2);
             optimizeNode(optiNode);
         } else {
             // Middle segment
@@ -397,7 +397,7 @@ public class TransmissionLine extends ElectricWire {
             setResistance(resistance - removed.getResistance());
             if(network != null)
                 network.addNode(terminatingNode);
-            setNode2(wire.endpoint1);
+            setNode2(wire.endpoint1, terminatingNode);
         }
     }
 

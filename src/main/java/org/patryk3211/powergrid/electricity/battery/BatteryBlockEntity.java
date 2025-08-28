@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
+import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -32,6 +33,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     protected final BatterySpec spec;
     protected double capacity;
     protected double energy;
+    protected boolean refreshLinks;
 
     public BatteryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -76,6 +78,9 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
 
         // Extracted energy
         var power = calculatePower();
+        if(Math.abs(power) > 0.05f) {
+            refreshLinks = true;
+        }
         energy -= power * 0.05f;
         if(energy <= 0) {
             // If a battery reaches zero volts it is probably dead.
@@ -97,6 +102,10 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     public void lazyTick() {
         super.lazyTick();
         sendData();
+        if(refreshLinks) {
+            refreshLinks = false;
+            DisplayLinkBlock.notifyGatherers(level, worldPosition);
+        }
     }
 
     @Override

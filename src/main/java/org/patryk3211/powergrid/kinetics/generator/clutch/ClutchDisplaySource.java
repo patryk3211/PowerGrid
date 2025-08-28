@@ -13,44 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.gauge;
+package org.patryk3211.powergrid.kinetics.generator.clutch;
 
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.source.PercentOrProgressBarDisplaySource;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import com.simibubi.create.foundation.utility.CreateLang;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.utility.Lang;
 
-public class ElectricGaugeDisplaySource extends PercentOrProgressBarDisplaySource {
+import java.util.Optional;
+
+public class ClutchDisplaySource extends PercentOrProgressBarDisplaySource {
+    private Optional<GeneratorClutchBlockEntity> get(DisplayLinkContext ctx) {
+        if(ctx.getSourceBlockEntity() instanceof GeneratorClutchBlockEntity clutch)
+            return Optional.of(clutch);
+        return Optional.empty();
+    }
+
     @Override
     protected @Nullable Float getProgress(DisplayLinkContext context) {
-        if(context.getSourceBlockEntity() instanceof GaugeBlockEntity gauge) {
-            return gauge.getProgress();
-        }
-        return 0f;
+        return get(context).map(be -> be.load).orElse(0f);
     }
 
     @Override
     protected MutableComponent formatNumeric(DisplayLinkContext context, Float currentLevel) {
-        if(context.getSourceBlockEntity() instanceof GaugeBlockEntity gauge) {
-            var value = gauge.getValue();
-            if(getMode(context) == 1) {
-                value = Math.abs(value);
-            }
-            return Lang.numberConstant(value)
-                    .add(Component.literal(" "))
-                    .add(gauge.getUnit().get())
-                    .component();
-        }
-        return super.formatNumeric(context, currentLevel);
+        if(getMode(context) != 2)
+            return super.formatNumeric(context, currentLevel);
+        return get(context).map(be ->
+                Lang.numberConstant(Math.abs(be.rotorBehaviour.getAngularVelocity()))
+                        .add(Component.literal(" "))
+                        .add(CreateLang.translate("generic.unit.rpm"))
+                        .component())
+                .orElseGet(() -> super.formatNumeric(context, currentLevel));
     }
 
-    private int getMode(DisplayLinkContext context) {
-        return context.sourceConfig().getInt("Mode");
+    @Override
+    public int getPassiveRefreshTicks() {
+        return 40;
     }
 
     @Override
@@ -65,21 +67,23 @@ public class ElectricGaugeDisplaySource extends PercentOrProgressBarDisplaySourc
 
     @Override
     protected String getTranslationKey() {
-        return "electric_gauge";
+        return "generator_clutch";
+    }
+
+    private int getMode(DisplayLinkContext context) {
+        return context.sourceConfig().getInt("Mode");
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
     public void initConfigurationWidgets(DisplayLinkContext context, ModularGuiLineBuilder builder, boolean isFirstLine) {
         super.initConfigurationWidgets(context, builder, isFirstLine);
-        if (isFirstLine)
+        if(isFirstLine)
             return;
 
         builder.addSelectionScrollInput(0, 120, (si, l) -> si
-                        .forOptions(Lang.translatedOptions("display_source.electric_gauge",
-                                "progress_bar", "absolute", "polarized"))
+                        .forOptions(Lang.translatedOptions("display_source.generator_clutch",
+                                "load_bar", "load_value", "rpm"))
                         .titled(Lang.translateDirect("display_source.display_information")),
                 "Mode");
     }
-
 }

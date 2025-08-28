@@ -30,21 +30,20 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import java.util.*;
 
 public class JunctionWireEndpoint implements IWireEndpoint {
-    private static final Map<Level, Map<Integer, NodeEntry>> JUNCTION_NODES = new HashMap<>();
-    private static int NEXT_ID = 0;
+    private static final Map<Level, Map<UUID, NodeEntry>> JUNCTION_NODES = new HashMap<>();
 
-    private int id;
+    private UUID id;
     private Vec3 pos;
 
     public JunctionWireEndpoint() {
-        this(null, -1);
+        this(null, null);
     }
 
     public JunctionWireEndpoint(Vec3 pos) {
-        this(pos, NEXT_ID++);
+        this(pos, UUID.randomUUID());
     }
 
-    private JunctionWireEndpoint(Vec3 pos, int id) {
+    private JunctionWireEndpoint(Vec3 pos, UUID id) {
         this.pos = pos;
         this.id = id;
     }
@@ -61,7 +60,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 nbt.getFloat("Y"),
                 nbt.getFloat("Z")
         );
-        id = nbt.getInt("Id");
+        id = nbt.getUUID("Id");
     }
 
     @Override
@@ -69,7 +68,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         nbt.putFloat("X", (float) pos.x);
         nbt.putFloat("Y", (float) pos.y);
         nbt.putFloat("Z", (float) pos.z);
-        nbt.putInt("Id", id);
+        nbt.putUUID("Id", id);
     }
 
     @Override
@@ -157,9 +156,11 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 for(var segment : source.segments) {
                     segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
                 }
+                source.dropWire();
                 target.setEndpoint2(source.getEndpoint1());
                 target.extend(segments, source.getWireCount());
             } else {
+                source.dropWire();
                 target.setEndpoint2(source.getEndpoint2());
                 target.extend(source.segments, source.getWireCount());
             }
@@ -181,9 +182,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Contract("_, _, false, _ -> !null")
-    private static NodeEntry getNode(Level world, int id, boolean nullable, JunctionWireEndpoint endpoint) {
-        if(id < 0)
-            throw new IllegalArgumentException("Invalid id passed to junction node map");
+    private static NodeEntry getNode(Level world, UUID id, boolean nullable, JunctionWireEndpoint endpoint) {
         if(!nullable) {
             var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new HashMap<>());
             var entry = worldNodeMap.get(id);
@@ -201,7 +200,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         }
     }
 
-    private static void removeEntry(Level world, int id) {
+    private static void removeEntry(Level world, UUID id) {
         var worldNodeMap = JUNCTION_NODES.get(world);
         if(worldNodeMap == null)
             return;
@@ -221,9 +220,19 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             return true;
         if(obj instanceof JunctionWireEndpoint other) {
             // Note: We don't compare position since it might be slightly different due to imprecision.
-            return this.id == other.id;
+            return id.equals(other.id);
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Junction(id=%s)", id);
     }
 
     private static class NodeEntry {

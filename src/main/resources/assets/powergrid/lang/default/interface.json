@@ -136,9 +136,20 @@
   "powergrid.keyinfo.rotate_component": "Rotate Component",
   "powergrid.keyinfo.switch_layer": "Switch Layer",
 
+  "powergrid.display_source.display_information": "Displayed information",
+
   "powergrid.display_source.electric_gauge": "Electric Gauge",
   "powergrid.display_source.electric_gauge.progress_bar": "Progress bar",
   "powergrid.display_source.electric_gauge.absolute": "Absolute value",
   "powergrid.display_source.electric_gauge.polarized": "Polarized value",
-  "powergrid.display_source.electric_gauge.display": "Display information"
+
+  "powergrid.display_source.generator_clutch": "Generator Clutch",
+  "powergrid.display_source.generator_clutch.load_bar": "Load progress bar",
+  "powergrid.display_source.generator_clutch.load_value": "Load percent",
+  "powergrid.display_source.generator_clutch.rpm": "Speed",
+
+  "powergrid.display_source.battery": "Battery",
+  "powergrid.display_source.battery.bar": "Progress Bar",
+  "powergrid.display_source.battery.value": "Value",
+  "powergrid.display_source.battery.mode": "Display mode"
 }
