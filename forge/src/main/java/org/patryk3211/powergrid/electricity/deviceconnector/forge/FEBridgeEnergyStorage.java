@@ -128,7 +128,11 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
 
         float targetAmps = missingCharge / ampToFE();
         float resistance = wire.potentialDifference() / targetAmps;
-        wire.setResistance(resistance);
-        wire.setState(true);
+        if(resistance > 0) {
+            wire.setResistance(resistance);
+            wire.setState(true);
+        } else {
+            wire.setState(false);
+        }
     }
 }

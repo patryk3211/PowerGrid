@@ -219,7 +219,7 @@ public class TransmissionLine extends ElectricWire {
     public TransmissionLine splitAt(IElectricNode atNode) {
         if(atNode == node1 || atNode == node2)
             return null;
-        if(segments.size() == 1)
+        if(segments.size() <= 1)
             return null;
         PowerGrid.LOGGER.trace("{}: Splitting transmission line between {} and {} at {}", this, node1, node2, atNode);
         TransmissionLine line2 = null;
@@ -248,7 +248,7 @@ public class TransmissionLine extends ElectricWire {
             }
         }
         setResistance(R1);
-        if(line2 != null) {
+        if(line2 != null && R2 > 0) {
             line2.setResistance(R2);
             global.assignTransmissionLine(line2.getNode2(), null);
             if(network != null)
