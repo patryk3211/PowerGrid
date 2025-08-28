@@ -72,14 +72,16 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
         delta = Math.max(0, delta);
 
         float maxForce = ModdedConfigs.server().kinetics.generatorClutchForcePerSegment.getF() * segmentCount;
-        final var defaultImpact = (float) ModdedConfigs.server().kinetics.stressValues.getImpact(getBlockState().getBlock()).getAsDouble();
+        final var defaultImpact = (float) BlockStressValues.getImpact(getBlockState().getBlock());
         if(hasNetwork()) {
             var network = getOrCreateNetwork();
             var newImpact = defaultImpact * segmentCount;
             if(newImpact != currentImpact) {
                 currentImpact = newImpact;
-                if(!level.isClientSide)
-                    network.updateStressFor(this, newImpact);
+                if(!level.isClientSide) {
+                    network.remove(this);
+                    network.add(this);
+                }
             }
         }
 
