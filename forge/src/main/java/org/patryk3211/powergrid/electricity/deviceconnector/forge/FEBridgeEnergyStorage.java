@@ -92,7 +92,8 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
     public void charge(SwitchedWire wire) {
         float ampToFe = FEBridgeEnergyStorage.ampToFE();
         if(wire.getState()) {
-            amount += Math.round(wire.current() * ampToFe);
+            var I = Math.abs(wire.current());
+            amount += Math.round(I * ampToFe);
             be.setChanged();
         }
     }
@@ -118,7 +119,8 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
 
     @Override
     public void manageWire(SwitchedWire wire) {
-        long maxCharge = (long) (wire.potentialDifference() * FEBridgeEnergyStorage.voltToFE());
+        var V = Math.abs(wire.potentialDifference());
+        long maxCharge = (long) (V * FEBridgeEnergyStorage.voltToFE());
         capacity = maxCharge;
         long missingCharge = maxCharge - amount;
         if(missingCharge <= 0) {
@@ -127,7 +129,7 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
         }
 
         float targetAmps = missingCharge / ampToFE();
-        float resistance = wire.potentialDifference() / targetAmps;
+        float resistance = V / targetAmps;
         if(resistance > 0) {
             wire.setResistance(resistance);
             wire.setState(true);

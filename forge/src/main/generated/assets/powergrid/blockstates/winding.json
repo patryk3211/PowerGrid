@@ -2,17 +2,6 @@
   "multipart": [
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v",
-        "y": -90
-      },
-      "when": {
-        "axis": "x",
-        "axis_along_first": "true",
-        "part": "0"
-      }
-    },
-    {
-      "apply": {
         "model": "powergrid:block/winding/end_v_case_n",
         "y": -90
       },
@@ -37,12 +26,12 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end",
+        "model": "powergrid:block/winding/end_v",
         "y": -90
       },
       "when": {
         "axis": "x",
-        "axis_along_first": "false",
+        "axis_along_first": "true",
         "part": "0"
       }
     },
@@ -72,13 +61,13 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle_v",
+        "model": "powergrid:block/winding/end",
         "y": -90
       },
       "when": {
         "axis": "x",
-        "axis_along_first": "true",
-        "part": "1"
+        "axis_along_first": "false",
+        "part": "0"
       }
     },
     {
@@ -107,12 +96,12 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle",
+        "model": "powergrid:block/winding/middle_v",
         "y": -90
       },
       "when": {
         "axis": "x",
-        "axis_along_first": "false",
+        "axis_along_first": "true",
         "part": "1"
       }
     },
@@ -142,153 +131,154 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v",
-        "y": 90
-      },
-      "when": {
-        "axis": "x",
-        "axis_along_first": "true",
-        "part": "2"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_v_case_p",
-        "y": 90
-      },
-      "when": {
-        "axis": "x",
-        "axis_along_first": "true",
-        "left": "true",
-        "part": "2"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_v_case_n",
-        "y": 90
-      },
-      "when": {
-        "axis": "x",
-        "axis_along_first": "true",
-        "part": "2",
-        "right": "true"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end",
-        "y": 90
+        "model": "powergrid:block/winding/middle",
+        "y": -90
       },
       "when": {
         "axis": "x",
         "axis_along_first": "false",
-        "part": "2"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_case_p",
-        "y": 90
-      },
-      "when": {
-        "axis": "x",
-        "axis_along_first": "false",
-        "left": "true",
-        "part": "2"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_case_n",
-        "y": 90
-      },
-      "when": {
-        "axis": "x",
-        "axis_along_first": "false",
-        "part": "2",
-        "right": "true"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_v",
-        "x": 90
-      },
-      "when": {
-        "axis": "y",
-        "axis_along_first": "true",
-        "part": "0"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_v_case_p",
-        "x": 90
-      },
-      "when": {
-        "axis": "y",
-        "axis_along_first": "true",
-        "left": "true",
-        "part": "0"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_v_case_n",
-        "x": 90
-      },
-      "when": {
-        "axis": "y",
-        "axis_along_first": "true",
-        "part": "0",
-        "right": "true"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end",
-        "x": 90
-      },
-      "when": {
-        "axis": "y",
-        "axis_along_first": "false",
-        "part": "0"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_case_n",
-        "x": 90
-      },
-      "when": {
-        "axis": "y",
-        "axis_along_first": "false",
-        "left": "true",
-        "part": "0"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/end_case_p",
-        "x": 90
-      },
-      "when": {
-        "axis": "y",
-        "axis_along_first": "false",
-        "part": "0",
-        "right": "true"
-      }
-    },
-    {
-      "apply": {
-        "model": "powergrid:block/winding/middle_v",
-        "x": 90
-      },
-      "when": {
-        "axis": "y",
-        "axis_along_first": "true",
         "part": "1"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_p",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_n",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "part": "2",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_p",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_n",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "part": "2",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_1",
+        "y": 90
+      },
+      "when": {
+        "axis": "x",
+        "axis_along_first": "false",
+        "part": "2"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_p",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "left": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v_case_n",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "part": "0",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_v",
+        "x": 90,
+        "y": 180
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_n",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "left": "true",
+        "part": "0"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_case_p",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "0",
+        "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end",
+        "x": 90
+      },
+      "when": {
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "0"
       }
     },
     {
@@ -317,12 +307,13 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle",
-        "x": 90
+        "model": "powergrid:block/winding/middle_v",
+        "x": 90,
+        "y": 180
       },
       "when": {
         "axis": "y",
-        "axis_along_first": "false",
+        "axis_along_first": "true",
         "part": "1"
       }
     },
@@ -352,13 +343,13 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v",
-        "x": 270
+        "model": "powergrid:block/winding/middle",
+        "x": 90
       },
       "when": {
         "axis": "y",
-        "axis_along_first": "true",
-        "part": "2"
+        "axis_along_first": "false",
+        "part": "1"
       }
     },
     {
@@ -387,12 +378,12 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end",
+        "model": "powergrid:block/winding/end_v",
         "x": 270
       },
       "when": {
         "axis": "y",
-        "axis_along_first": "false",
+        "axis_along_first": "true",
         "part": "2"
       }
     },
@@ -422,12 +413,13 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v"
+        "model": "powergrid:block/winding/end",
+        "x": 270
       },
       "when": {
-        "axis": "z",
-        "axis_along_first": "true",
-        "part": "0"
+        "axis": "y",
+        "axis_along_first": "false",
+        "part": "2"
       }
     },
     {
@@ -454,11 +446,11 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end"
+        "model": "powergrid:block/winding/end_v"
       },
       "when": {
         "axis": "z",
-        "axis_along_first": "false",
+        "axis_along_first": "true",
         "part": "0"
       }
     },
@@ -486,12 +478,12 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle_v"
+        "model": "powergrid:block/winding/end"
       },
       "when": {
         "axis": "z",
-        "axis_along_first": "true",
-        "part": "1"
+        "axis_along_first": "false",
+        "part": "0"
       }
     },
     {
@@ -518,11 +510,11 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/middle"
+        "model": "powergrid:block/winding/middle_v"
       },
       "when": {
         "axis": "z",
-        "axis_along_first": "false",
+        "axis_along_first": "true",
         "part": "1"
       }
     },
@@ -550,13 +542,12 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end_v",
-        "y": 180
+        "model": "powergrid:block/winding/middle"
       },
       "when": {
         "axis": "z",
-        "axis_along_first": "true",
-        "part": "2"
+        "axis_along_first": "false",
+        "part": "1"
       }
     },
     {
@@ -585,12 +576,12 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/winding/end",
+        "model": "powergrid:block/winding/end_v",
         "y": 180
       },
       "when": {
         "axis": "z",
-        "axis_along_first": "false",
+        "axis_along_first": "true",
         "part": "2"
       }
     },
@@ -616,6 +607,17 @@
         "axis_along_first": "false",
         "part": "2",
         "right": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "powergrid:block/winding/end_1",
+        "y": 180
+      },
+      "when": {
+        "axis": "z",
+        "axis_along_first": "false",
+        "part": "2"
       }
     }
   ]

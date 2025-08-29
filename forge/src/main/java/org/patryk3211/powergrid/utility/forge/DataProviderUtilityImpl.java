@@ -289,24 +289,24 @@ public class DataProviderUtilityImpl {
     }
 
     public static void transformerMedium(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, Direction.Axis axis) {
-        transformerMediumPart(builder, prov, "block/transformer/medium_bottom", axis, 0).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_bottom", axis, 1).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_top", axis, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_top", axis, 3).end();
+        transformerMediumPart(builder, prov, "block/transformer/medium_bottom", axis, 0, false).end();
+        transformerMediumPart(builder, prov, "block/transformer/medium_bottom_1", axis, 1, false).end();
+        transformerMediumPart(builder, prov, "block/transformer/medium_top", axis, 2, false).end();
+        transformerMediumPart(builder, prov, "block/transformer/medium_top_1", axis, 3, false).end();
 
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 0)
+        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 0, true)
                 .condition(TransformerMediumBlock.COILS, 1, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 1)
+        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 1, true)
                 .condition(TransformerMediumBlock.COILS, 1, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 2)
+        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 2, true)
                 .condition(TransformerMediumBlock.COILS, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 3)
+        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 3, true)
                 .condition(TransformerMediumBlock.COILS, 2).end();
     }
 
-    private static MultiPartBlockStateBuilder.PartBuilder transformerMediumPart(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, String model, Direction.Axis axis, int part) {
+    private static MultiPartBlockStateBuilder.PartBuilder transformerMediumPart(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, String model, Direction.Axis axis, int part, boolean coil) {
         int y = 0;
-        if(part % 2 == 1)
+        if((part % 2 == 1) && coil)
             y = 180;
         if(axis == Direction.Axis.X)
             y -= 90;
@@ -344,7 +344,12 @@ public class DataProviderUtilityImpl {
             }
         }
         var model = switch(part) {
-            case 0, 2 -> modModel(prov, alongFirst ? "block/winding/end_v" : "block/winding/end");
+            case 0, 2 -> {
+                var base = alongFirst ? "block/winding/end_v" : "block/winding/end";
+                if(part == 2 && !alongFirst && axis.isHorizontal())
+                    base += "_1";
+                yield modModel(prov, base);
+            }
             case 1 -> modModel(prov, alongFirst ? "block/winding/middle_v" : "block/winding/middle");
             default -> throw new IllegalStateException();
         };
@@ -364,16 +369,6 @@ public class DataProviderUtilityImpl {
                 default -> throw new IllegalStateException();
             };
         };
-
-        builder.part()
-                .modelFile(model)
-                .rotationX(x)
-                .rotationY(y)
-                .addModel()
-                .condition(AXIS, axis)
-                .condition(WindingBlock.PART, part)
-                .condition(ALONG_FIRST_AXIS, alongFirst)
-                .end();
         // Case halves
         builder.part()
                 .modelFile(caseModel.apply(false))
@@ -394,6 +389,20 @@ public class DataProviderUtilityImpl {
                 .condition(WindingBlock.PART, part)
                 .condition(ALONG_FIRST_AXIS, alongFirst)
                 .condition(WindingBlock.CASE_RIGHT, true)
+                .end();
+        if(axis == Direction.Axis.Y && alongFirst && part == 0)
+            y = 180;
+        else if(axis == Direction.Axis.Y && alongFirst && part == 1)
+            y += 180;
+        // Main
+        builder.part()
+                .modelFile(model)
+                .rotationX(x)
+                .rotationY(y)
+                .addModel()
+                .condition(AXIS, axis)
+                .condition(WindingBlock.PART, part)
+                .condition(ALONG_FIRST_AXIS, alongFirst)
                 .end();
     }
 

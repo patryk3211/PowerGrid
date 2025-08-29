@@ -11,8 +11,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/transformer/medium_bottom",
-        "y": 180
+        "model": "powergrid:block/transformer/medium_bottom_1"
       },
       "when": {
         "axis": "z",
@@ -30,8 +29,7 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/transformer/medium_top",
-        "y": 180
+        "model": "powergrid:block/transformer/medium_top_1"
       },
       "when": {
         "axis": "z",
@@ -92,8 +90,8 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/transformer/medium_bottom",
-        "y": 90
+        "model": "powergrid:block/transformer/medium_bottom_1",
+        "y": -90
       },
       "when": {
         "axis": "x",
@@ -112,8 +110,8 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/transformer/medium_top",
-        "y": 90
+        "model": "powergrid:block/transformer/medium_top_1",
+        "y": -90
       },
       "when": {
         "axis": "x",

@@ -282,6 +282,7 @@ public class ElectricalNetwork {
         conductanceUpdates = 0;
         conductanceMatrix.zero();
         List<AbstractElectricWire> staleWires = new ArrayList<>();
+        var size = conductanceMatrix.getNumRows();
         for(var wire : wires) {
             var G = wire.conductance();
             if(wire.node1 != null && wire.node2 != null) {
@@ -292,6 +293,15 @@ public class ElectricalNetwork {
                         LOGGER.warn("Dropped a stale wire (wire nodes not part of this network) between {} and {}.", wire.node1, wire.node2);
                     }
                     staleWires.add(wire);
+                    continue;
+                }
+                if(index1 >= size || index2 >= size) {
+                    if(LOGGER != null) {
+                        if(index1 >= size)
+                            LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node1);
+                        if(index2 >= size)
+                            LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node2);
+                    }
                     continue;
                 }
                 conductanceMatrix.add(index1, index1, G);
