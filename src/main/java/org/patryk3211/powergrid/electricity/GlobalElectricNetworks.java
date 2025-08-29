@@ -36,11 +36,11 @@ import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.utility.NumberFormats;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GlobalElectricNetworks {
-    protected static final Map<Level, WorldNetworks> worldNetworks = new HashMap<>();
+    protected static final Map<Level, WorldNetworks> worldNetworks = new ConcurrentHashMap<>();
 
     public static void tick(Level world) {
         var networks = worldNetworks.get(world);
