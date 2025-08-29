@@ -20,11 +20,13 @@ import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -39,6 +41,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -51,6 +55,12 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.ArrayList;
+import java.util.List;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixtureBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 2);
@@ -166,12 +176,26 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
         if(be.isEmpty())
             return InteractionResult.PASS;
 
-        if(stack == null || stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
+        if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
             return be.get().replaceBulb(player, hand, stack) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
         } else {
             // Holding something else.
             return InteractionResult.PASS;
         }
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        var be = params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if(be instanceof LightFixtureBlockEntity fixture) {
+            var bulb = fixture.getBulbState();
+            if(bulb != null && !bulb.isBurned()) {
+                var drops = new ArrayList<>(super.getDrops(state, params));
+                drops.add(new ItemStack(fixture.getBulbState().getItem(), 1));
+                return drops;
+            }
+        }
+        return super.getDrops(state, params);
     }
 
     @Override

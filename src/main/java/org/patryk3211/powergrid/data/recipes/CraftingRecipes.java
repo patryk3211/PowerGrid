@@ -47,6 +47,17 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('T', Items.TERRACOTTA)
             ),
 
+    LV_LIGHT_BULB = create(ModdedItems.LV_LIGHT_BULB)
+            .unlockedBy(ModdedBlocks.LIGHT_FIXTURE::get)
+            .viaShaped(b -> b
+                    .pattern(" G ")
+                    .pattern("GFG")
+                    .pattern(" I ")
+                    .define('G', Items.GLASS_PANE)
+                    .define('F', RecipeTags.coal())
+                    .define('I', RecipeTags.ironSheet())
+            ),
+
     LIGHT_BULB = create(ModdedItems.LIGHT_BULB)
             .unlockedBy(ModdedBlocks.LIGHT_FIXTURE::get)
             .viaShaped(b -> b

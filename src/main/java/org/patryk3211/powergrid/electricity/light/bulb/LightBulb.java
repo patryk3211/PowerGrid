@@ -26,6 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
@@ -91,6 +92,10 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
 
     @Override
     public float resistanceFunction(float temperature) {
+        return resistanceFunction(R_min, R_max, k, T_mid, temperature);
+    }
+
+    public static float resistanceFunction(float R_min, float R_max, float k, float T_mid, float temperature) {
         return (float) (R_min + (R_max - R_min) / (1 + Math.exp(-k * (temperature - T_mid))));
     }
 
@@ -115,7 +120,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     }
 
     public enum State {
-        OFF, LOW_POWER, ON, BROKEN
+        OFF, LOW_POWER, ON, BROKEN, LIGHT
     }
 
     public static class SimpleState extends LightBulbState {
@@ -143,6 +148,25 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
                 }
             }
             return modelProvider.apply(state);
+        }
+
+        @Override
+        @Environment(EnvType.CLIENT)
+        public @NotNull PartialModel getLightModel() {
+            return modelProvider.apply(State.LIGHT);
+        }
+
+        @Override
+        public float getAlpha() {
+            var blockState = fixture.getBlockState();
+            var powerLevel = blockState.getValue(LightFixtureBlock.POWER);
+            if(powerLevel == 2) {
+                return 1;
+            } else if(powerLevel == 1) {
+                return Math.max(0.5625f, super.getAlpha());
+            } else {
+                return super.getAlpha();
+            }
         }
     }
 }

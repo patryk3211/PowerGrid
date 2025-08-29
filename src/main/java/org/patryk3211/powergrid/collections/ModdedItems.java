@@ -31,6 +31,7 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
+import org.patryk3211.powergrid.electricity.light.bulb.LvLightBulb;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
@@ -73,13 +74,25 @@ public class ModdedItems {
 
     public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
 
+    public static final ItemEntry<LvLightBulb> LV_LIGHT_BULB = REGISTRATE.item("lv_light_bulb", LvLightBulb::new)
+            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
+                case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
+                case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
+                case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
+                case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
+            }))
+            .transform(LightBulb.setProperties(3, 12, 20, 1450, 0.002f))
+            .model(itemWithParent("block/lamps/light_bulb"))
+            .register();
+
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
             .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
                 case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
                 case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
+                case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
             }))
-            .transform(LightBulb.setProperties(30, 60, 30, 1450, 0.005f))
+            .transform(LightBulb.setProperties(30, 120, 120, 1450, 0.005f))
             .model(itemWithParent("block/lamps/light_bulb"))
             .register();
 
@@ -88,8 +101,9 @@ public class ModdedItems {
                 case OFF -> ModdedPartialModels.GROWTH_LAMP_OFF;
                 case LOW_POWER, ON -> ModdedPartialModels.GROWTH_LAMP_ON;
                 case BROKEN -> ModdedPartialModels.GROWTH_LAMP_BROKEN;
+                case LIGHT -> ModdedPartialModels.GROWTH_LAMP_LIGHT;
             }))
-            .transform(LightBulb.setProperties(120, 90, 40, 1600, 0.01f))
+            .transform(LightBulb.setProperties(120, 240, 120, 1600, 0.01f))
             .model(itemWithParent("block/lamps/growth_lamp"))
             .register();
 

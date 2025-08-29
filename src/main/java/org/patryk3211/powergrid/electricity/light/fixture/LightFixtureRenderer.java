@@ -19,6 +19,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -48,6 +49,19 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
                 .translate(((LightFixtureBlock) state.getBlock()).modelOffset)
                 .light(light)
                 .renderInto(matrices, vb);
+
+        if(bulbState.isBurned())
+            return;
+
+        var vba = consumer.getBuffer(RenderType.translucent());
+        var lightModel = bulbState.getLightModel();
+        var lightBuffer = CachedBuffers.partial(lightModel, state);
+        rotateToFacing(lightBuffer, facing)
+                .translate(((LightFixtureBlock) state.getBlock()).modelOffset)
+                .light(light)
+//                .light(LightTexture.pack(Math.max(LightTexture.block(light), 6), LightTexture.sky(light)))
+                .color(255, 255, 255, (int) (255 * bulbState.getAlpha()))
+                .renderInto(matrices, vba);
     }
 
     public SuperByteBuffer rotateToFacing(SuperByteBuffer buffer, Direction facing) {

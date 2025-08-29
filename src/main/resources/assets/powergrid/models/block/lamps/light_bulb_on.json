@@ -1,42 +1,11 @@
 {
+	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
 	"textures": {
 		"0": "powergrid:block/light_bulb",
 		"particle": "powergrid:block/light_bulb"
 	},
 	"elements": [
-		{
-			"name": "Light",
-			"from": [11, 7.5, 11],
-			"to": [5, 2, 5],
-			"shade": false,
-			"light_emission": 7,
-			"rotation": {"angle": 0, "axis": "y", "origin": [12, 7, 11]},
-			"faces": {
-				"north": {"uv": [14, 1, 15, 2], "texture": "#0"},
-				"east": {"uv": [14, 1, 15, 2], "texture": "#0"},
-				"south": {"uv": [14, 1, 15, 2], "texture": "#0"},
-				"west": {"uv": [14, 1, 15, 2], "texture": "#0"},
-				"up": {"uv": [14, 1, 15, 2], "texture": "#0"},
-				"down": {"uv": [14, 1, 15, 2], "texture": "#0"}
-			}
-		},
-		{
-			"name": "LightInner",
-			"from": [10.5, 7.001, 10.5],
-			"to": [5.5, 2.002, 5.5],
-			"shade": false,
-			"light_emission": 7,
-			"rotation": {"angle": 0, "axis": "y", "origin": [10, 7, 5]},
-			"faces": {
-				"north": {"uv": [14, 2, 15, 3], "texture": "#0"},
-				"east": {"uv": [14, 2, 15, 3], "texture": "#0"},
-				"south": {"uv": [14, 2, 15, 3], "texture": "#0"},
-				"west": {"uv": [14, 2, 15, 3], "texture": "#0"},
-				"up": {"uv": [14, 3, 15, 4], "texture": "#0"},
-				"down": {"uv": [14, 2, 15, 3], "texture": "#0"}
-			}
-		},
 		{
 			"name": "Casing",
 			"from": [5.5, 2, 5.5],
