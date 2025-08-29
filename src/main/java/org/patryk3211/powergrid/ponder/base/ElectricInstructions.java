@@ -40,7 +40,6 @@ public class ElectricInstructions {
     }
 
     public ElementLink<WireElement> connect(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
-
         var link = new ElementLinkImpl<>(WireElement.class);
         var element = new WireElement(pos1, terminal1, pos2, terminal2, resistance);
         builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));

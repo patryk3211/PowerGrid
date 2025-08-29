@@ -71,6 +71,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     private float dissipationFactor;
     private float thermalMass;
 
+    protected Float resistanceOverride = null;
+
     public WireEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
@@ -312,6 +314,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public float getResistance() {
+        if(resistanceOverride != null)
+            return resistanceOverride;
         return item.getResistance() * Math.max(itemCount, 1);
     }
 

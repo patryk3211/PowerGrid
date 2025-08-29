@@ -53,9 +53,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        if(clientPacket) {
-            maxValue = MAX_VALUES[gaugeValue.getValue()];
-        }
+        maxValue = MAX_VALUES[gaugeValue.getValue()];
     }
 
     @Override

@@ -23,7 +23,9 @@ import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 public class GaugeScenes {
@@ -46,6 +48,8 @@ public class GaugeScenes {
         BlockPos gaugePos = util.grid().at(2, 1, 2);
         if(!voltage) {
             scene.world().setBlock(gaugePos, ModdedBlocks.CURRENT_METER.getDefaultState(), false);
+            scene.world().modifyBlockEntityNBT(util.select().position(2, 1, 2),
+                    CurrentGaugeBlockEntity.class, tag -> tag.putInt("ScrollValue", 2));
         }
 
         scene.showBasePlate();

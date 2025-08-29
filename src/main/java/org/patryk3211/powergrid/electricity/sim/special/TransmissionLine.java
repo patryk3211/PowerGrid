@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,7 +43,7 @@ public class TransmissionLine extends ElectricWire {
 
     protected TransmissionLine(double resistance, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WorldNetworks global) {
         super(resistance, endpoint1.getNode(global.world), endpoint2.getNode(global.world));
-        if(global.world.isClientSide)
+        if(global.world.isClientSide && !(global.world instanceof PonderLevel))
             PowerGrid.LOGGER.warn("This method probably shouldn't be used on client-side");
         this.global = global;
         this.endpoint1 = endpoint1;
