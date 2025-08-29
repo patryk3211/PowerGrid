@@ -90,7 +90,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     protected void updateConnectivity() {
         updateConnectivity = false;
-        if (level.isClientSide)
+        if (level.isClientSide && !isVirtual())
             return;
         if (!isController())
             return;
@@ -205,7 +205,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     @Override
     public void removeController(boolean keepContents) {
-        if (level.isClientSide)
+        if (level.isClientSide && !isVirtual())
             return;
         updateConnectivity = true;
         if (!keepContents) {

@@ -242,7 +242,7 @@
   "powergrid.ponder.basin_heater.text_2": "When given enough power the heater can give the highest level of heat",
   "powergrid.ponder.battery.header": "Storing electricity",
   "powergrid.ponder.battery.text_1": "The Battery allows you to store electricity for later use",
-  "powergrid.ponder.battery.text_2": "As the battery discharges, its electrical parameters will begin to change",
+  "powergrid.ponder.battery.text_2": "As the battery discharges, its voltage and resistance will begin to change",
   "powergrid.ponder.bell.header": "Alarm bell",
   "powergrid.ponder.bell.text_1": "The Alarm Bell is an electric device which makes sound when you power it.",
   "powergrid.ponder.contactor.header": "Heavy-duty relay",

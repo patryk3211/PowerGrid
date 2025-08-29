@@ -38,4 +38,9 @@ public class PowerGridPonderPlugin implements PonderPlugin {
     public String getModId() {
         return PowerGrid.MOD_ID;
     }
+
+    @Override
+    public void onPonderLevelRestore(PonderLevel ponderLevel) {
+        PonderWorldBlockEntityFix.fixControllerBlockEntities(ponderLevel);
+    }
 }
