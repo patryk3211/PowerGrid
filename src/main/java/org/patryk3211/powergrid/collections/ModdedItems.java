@@ -81,8 +81,9 @@ public class ModdedItems {
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
                 case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
             }))
-            .transform(LightBulb.setProperties(3, 12, 20, 1450, 0.002f))
+            .transform(LightBulb.setProperties(3, 12, 20, 1450, 0.001f))
             .model(itemWithParent("block/lamps/light_bulb"))
+            .lang("LV Light Bulb")
             .register();
 
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)

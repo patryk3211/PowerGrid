@@ -101,7 +101,7 @@
   "item.powergrid.iron_wire": "Iron Wire",
   "item.powergrid.led": "LED",
   "item.powergrid.light_bulb": "Light Bulb",
-  "item.powergrid.lv_light_bulb": "Lv Light Bulb",
+  "item.powergrid.lv_light_bulb": "LV Light Bulb",
   "item.powergrid.magnet": "Magnet",
   "item.powergrid.portable_battery": "Portable Battery",
   "item.powergrid.portable_battery.tooltip.behaviour1": "Provides _Forge Energy_ to Equipment that requires it",

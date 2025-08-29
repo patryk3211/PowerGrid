@@ -72,6 +72,7 @@ public class PowerGridPonderTags {
                 .item(ModdedBlocks.HEATING_COIL)
                 .item(ModdedBlocks.ELECTRIC_FAN)
                 .item(ModdedBlocks.BASIN_HEATER)
+                .item(ModdedItems.LV_LIGHT_BULB)
                 .item(ModdedItems.LIGHT_BULB)
                 .item(ModdedItems.GROWTH_LAMP)
                 .addToIndex()
@@ -87,6 +88,7 @@ public class PowerGridPonderTags {
         helper.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
                 .add(ModdedBlocks.VOLTAGE_METER.getId())
                 .add(ModdedBlocks.CURRENT_METER.getId())
-                .add(ModdedBlocks.GENERATOR_CLUTCH.getId());
+                .add(ModdedBlocks.GENERATOR_CLUTCH.getId())
+                .add(ModdedBlocks.BATTERY.getId());
     }
 }

@@ -97,7 +97,7 @@ public abstract class LightBulbState {
             }
             updatePowerLevel(0);
             return;
-        } else {
+        } else if(!isOverheated()) {
             overheatTicks = 0;
         }
 
