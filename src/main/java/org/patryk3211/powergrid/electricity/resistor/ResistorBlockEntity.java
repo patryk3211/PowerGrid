@@ -57,7 +57,7 @@ public class ResistorBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        wire = builder.connect(100f, builder.terminalNode(0), builder.terminalNode(1));
+        wire = builder.connect(0.1f, builder.terminalNode(0), builder.terminalNode(1));
     }
 
     @Override
