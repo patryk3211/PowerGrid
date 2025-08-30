@@ -66,6 +66,8 @@
   "component.powergrid.relay.4": "uǝdO ʎןןɐɯɹoN",
   "death.attack.overloaded_machine": "%s pǝpɐoןɹǝʌo uɐ ʎq pǝןןıʞ sɐʍ %s",
   "death.attack.overloaded_machine.player": "%s ǝdɐɔsǝ oʇ buıʎɹʇ ʇsןıɥʍ %s pǝpɐoןɹǝʌo uɐ ʎq pǝןןıʞ sɐʍ %s",
+  "death.attack.zap": "%2$s ʎq pǝddɐz sɐʍ %1$s",
+  "death.attack.zap.item": "%3$s buısn %2$s ʎq pǝddɐz sɐʍ %1$s",
   "entity.powergrid.block_wire": "ǝɹıM ʞɔoןᗺ",
   "entity.powergrid.hanging_wire": "ǝɹıM buıbuɐH",
   "entity.powergrid.zap_projectile": "ǝןıʇɔǝظoɹԀ dɐZ",

@@ -66,6 +66,8 @@
   "component.powergrid.relay.4": "Normally Open",
   "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
+  "death.attack.zap": "%1$s was zapped by %2$s",
+  "death.attack.zap.item": "%1$s was zapped by %2$s using %3$s",
   "entity.powergrid.block_wire": "Block Wire",
   "entity.powergrid.hanging_wire": "Hanging Wire",
   "entity.powergrid.zap_projectile": "Zap Projectile",
