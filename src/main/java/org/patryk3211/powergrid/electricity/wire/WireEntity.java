@@ -44,6 +44,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
@@ -70,6 +71,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     private float dissipationFactor;
     private float thermalMass;
+    private int overheatTicks;
 
     protected Float resistanceOverride = null;
 
@@ -107,21 +109,25 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             var I = wire.current();
             energy += I * I * getResistance() / 20f;
         }
-        if(temperature < overheatTemperature) {
+        if(!isOverheated()) {
             // If wire is overheated it is considered dead.
             energy -= dissipationFactor * (temperature - BASE_TEMPERATURE) / 20f;
+            temperature += energy / thermalMass;
+
+            if(temperature > overheatTemperature && energy > 0) {
+                // Temperature is high and keeps rising.
+                ++overheatTicks;
+            } else if(energy <= 0) {
+                // Cooling down so it's fine.
+                overheatTicks = 0;
+            }
         }
-        // This should allow fuses to act
-        boolean isSafe = temperature < overheatTemperature - 50f;
-        temperature += energy / thermalMass;
-        if(temperature >= overheatTemperature && isSafe)
-            temperature = overheatTemperature - 25f;
 
         entityData.set(TEMPERATURE, temperature);
     }
 
     public boolean isOverheated() {
-        return entityData.get(TEMPERATURE) >= overheatTemperature;
+        return entityData.get(TEMPERATURE) >= overheatTemperature && overheatTicks >= ThermalBehaviour.OVERHEAT_TICKS;
     }
 
     public float getTemperature() {
