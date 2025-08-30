@@ -270,9 +270,11 @@ public class ClientWorldNetworks extends WorldNetworks {
                 if(!((ln1 == en1 && ln2 == en2) || (ln1 == en2 && ln2 == en1))) {
                     // Nodes do not match.
                     if(ln1 != en1) {
+                        prepareForConnection(ln1, en1);
                         line.setNode1(entry.endpoint1(), en1);
                     }
                     if(ln2 != en2) {
+                        prepareForConnection(ln2, en2);
                         line.setNode2(entry.endpoint2(), en2);
                     }
                 }

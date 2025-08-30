@@ -21,14 +21,15 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -113,14 +114,29 @@ public class UnresolvedTransmissionLine {
         resolvedEndpoints |= 2;
     }
 
+    private static void shouldSplit(WorldNetworks global, ElectricalNetwork network, TransmissionLine line, OwnedFloatingNode node) {
+        var line1 = global.transmissionLineNodes.get(node);
+        if(line1 != null)
+            line1.splitAt(node);
+        if(global.connectionCount(node.endpoint) != 0) {
+            // Cannot simply assign node to a line, this line must be split.
+            PowerGrid.LOGGER.warn("Line has a junction in the middle.");
+        } else {
+            global.assignTransmissionLine(node, line);
+            network.removeNode(node);
+        }
+    }
+
     public void resolve(WorldNetworks global) {
         if(resolved)
             return;
         if((resolvedEndpoints & 3) != 3)
             return;
         var network = global.prepareForConnection(endpoint1, endpoint2);
-        if(network == null)
+        if(network == null) {
+            PowerGrid.LOGGER.error("Failed to prepare endpoints of line while resolving");
             return;
+        }
         resolved = true;
 
         var node1 = endpoint1.getNode(global.world);
@@ -137,14 +153,12 @@ public class UnresolvedTransmissionLine {
                 if(!endpoint1.equals(this.endpoint1)) {
                     // Not the first segment
                     var node = segment.resolvedWire.getNode1();
-                    global.assignTransmissionLine(node, line);
-                    network.removeNode(node);
+                    shouldSplit(global, network, line, node);
                 }
                 if(!endpoint2.equals(this.endpoint2)) {
                     // Not the last segment
                     var node = segment.resolvedWire.getNode2();
-                    global.assignTransmissionLine(node, line);
-                    network.removeNode(node);
+                    shouldSplit(global, network, line, node);
                 }
                 continue;
             }
@@ -157,9 +171,11 @@ public class UnresolvedTransmissionLine {
         global.assignTransmissionLine(node2, null);
         global.removeUnresolvedLine(this);
         network = global.prepareForConnection(line.getNode1(), line.getNode2());
-        if(network == null)
+        if(network == null) {
             // Very bad
+            PowerGrid.LOGGER.error("Failed to prepare nodes of just resolved line {}", line);
             return;
+        }
         network.addWire(line);
     }
 

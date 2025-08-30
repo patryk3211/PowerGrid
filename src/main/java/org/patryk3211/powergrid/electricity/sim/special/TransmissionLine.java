@@ -283,6 +283,15 @@ public class TransmissionLine extends ElectricWire {
         optimizeNode(getNode2());
     }
 
+    public UnresolvedTransmissionLine unresolve() {
+        super.remove();
+        PowerGrid.LOGGER.trace("{}: Unresolving transmission line between {} and {}", this, node1, node2);
+        for(var segment : segments) {
+            global.assignTransmissionLine(segment.getNode2(), null);
+        }
+        return new UnresolvedTransmissionLine(this);
+    }
+
     public boolean isPart(ElectricWire wire) {
         return segments.contains(wire);
     }

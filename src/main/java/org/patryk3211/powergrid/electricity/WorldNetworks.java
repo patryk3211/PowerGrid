@@ -592,11 +592,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 ownedNode = line.getNode1();
             }
             // Also, we need to inform the wire entities about this.
-            var unresolved = new UnresolvedTransmissionLine(line);
+            var unresolved = line.unresolve();
             unresolvedLines.add(unresolved);
             addUnresolvedLineMapping(unresolved.endpoint1(), unresolved);
             addUnresolvedLineMapping(unresolved.endpoint2(), unresolved);
-            line.remove();
             if(removeNode.getNetwork() != null) {
                 removeNode.getNetwork().removeNode(removeNode);
             }

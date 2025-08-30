@@ -21,6 +21,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -69,10 +70,14 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     public IElectric getElectricBlock(Level world) {
+        if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
+            return null;
         return IElectric.getAt(world, pos);
     }
 
     public ElectricBehaviour getElectricBehaviour(Level world) {
+        if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
+            return null;
         var electric = getElectricBlock(world);
         if(electric == null)
             return null;
@@ -89,16 +94,22 @@ public class BlockWireEndpoint implements IWireEndpoint {
     @Override
     public OwnedFloatingNode getNode(Level world) {
         var behaviour = getElectricBehaviour(world);
-        if(behaviour == null)
-            return null;
+        if(behaviour == null) {
+            // Try grabbing a node from the global map.
+            return GlobalElectricNetworks.getWorldNetworks(world).globalExternalNodes.get(this);
+        }
         return behaviour.getTerminal(terminal);
     }
 
     @Override
     public void joinNetwork(Level world, ElectricalNetwork network) {
         var behaviour = getElectricBehaviour(world);
-        if(behaviour == null)
+        if(behaviour == null) {
+            var node = GlobalElectricNetworks.getWorldNetworks(world).globalExternalNodes.get(this);
+            if(node != null)
+                network.addNode(node);
             return;
+        }
         behaviour.joinNetwork(network);
     }
 
