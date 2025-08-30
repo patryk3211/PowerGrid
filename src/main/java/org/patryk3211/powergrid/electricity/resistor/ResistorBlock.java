@@ -16,10 +16,17 @@
 package org.patryk3211.powergrid.electricity.resistor;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Power;
 
-public class ResistorBlock extends AbstractResistorBlock implements IBE<ResistorBlockEntity> {
+import java.util.List;
+
+public class ResistorBlock extends AbstractResistorBlock implements IBE<ResistorBlockEntity>, IHaveElectricProperties {
     public ResistorBlock(Properties settings) {
         super(settings);
     }
@@ -32,5 +39,10 @@ public class ResistorBlock extends AbstractResistorBlock implements IBE<Resistor
     @Override
     public BlockEntityType<? extends ResistorBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.RESISTOR.get();
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Power.max(stack, player, tooltip);
     }
 }
