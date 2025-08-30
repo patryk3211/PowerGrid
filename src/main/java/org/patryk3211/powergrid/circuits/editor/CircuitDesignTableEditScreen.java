@@ -25,12 +25,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
@@ -200,6 +202,10 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         addRenderableWidget(layerBtn);
     }
 
+    public Rect2i ghostTarget() {
+        return new Rect2i(editWidget.getX(), editWidget.getY(), editWidget.getWidth(), editWidget.getHeight());
+    }
+
     @Override
     protected List<net.minecraft.network.chat.Component> getTooltipFromContainerItem(ItemStack stack) {
         var lines = super.getTooltipFromContainerItem(stack);
@@ -240,6 +246,21 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         editWidget.componentPlacement(placed, this::placeComponent);
         currentComponent = placed;
         selectedSlot = slot;
+    }
+
+    public void toolSelect(Item item) {
+        var component = Component.forItem(item);
+        if(component == null)
+            return;
+        editWidget.cancelSelection();
+        if(selectedComponent != null) {
+            selectedComponent = null;
+            propertiesWidget.setComponent(null);
+        }
+        var placed = new PlacedComponent(component, 0, 0, UUID.randomUUID());
+        editWidget.componentPlacement(placed, this::placeComponent);
+        currentComponent = placed;
+        selectedSlot = null;
     }
 
     private CircuitEditWidget.SelectionResult placeTrace(int x1, int y1, int x2, int y2, int clickX, int clickY) {
@@ -363,6 +384,10 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     @Override
     protected void containerTick() {
         super.containerTick();
+        if(!this.menu.getCarried().isEmpty()) {
+            toolSelect(this.menu.getCarried().getItem());
+            this.menu.setCarried(ItemStack.EMPTY);
+        }
         if(unsavedPopupTimeout > 0)
             --unsavedPopupTimeout;
     }

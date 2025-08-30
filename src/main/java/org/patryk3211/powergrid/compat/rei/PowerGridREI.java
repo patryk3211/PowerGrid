@@ -24,15 +24,22 @@ import com.simibubi.create.compat.rei.display.CreateDisplay;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.config.CRecipes;
+import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.Renderer;
+import me.shedaniel.rei.api.client.gui.drag.DraggableStack;
+import me.shedaniel.rei.api.client.gui.drag.DraggableStackVisitor;
+import me.shedaniel.rei.api.client.gui.drag.DraggedAcceptorResult;
+import me.shedaniel.rei.api.client.gui.drag.DraggingContext;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
 import me.shedaniel.rei.api.client.registry.entry.EntryRegistry;
+import me.shedaniel.rei.api.client.registry.screen.ScreenRegistry;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import net.createmod.catnip.config.ConfigBase;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -40,6 +47,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.compat.HiddenItems;
@@ -54,6 +62,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static com.simibubi.create.compat.rei.CreateREI.*;
 
@@ -65,6 +74,35 @@ public class PowerGridREI implements REIClientPlugin {
     @Override
     public String getPluginProviderName() {
         return ID.toString();
+    }
+
+    @Override
+    public void registerScreens(ScreenRegistry registry) {
+        REIClientPlugin.super.registerScreens(registry);
+        registry.registerDraggableStackVisitor(new DraggableStackVisitor<CircuitDesignTableEditScreen>() {
+            @Override
+            public <R extends Screen> boolean isHandingScreen(R screen) {
+                return screen instanceof CircuitDesignTableEditScreen;
+            }
+
+            @Override
+            public Stream<BoundsProvider> getDraggableAcceptingBounds(DraggingContext<CircuitDesignTableEditScreen> context, DraggableStack stack) {
+                return Stream.of(() -> {
+                    var r = context.getScreen().ghostTarget();
+                    return BoundsProvider.fromRectangle(new Rectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight()));
+                });
+            }
+
+            @Override
+            public DraggedAcceptorResult acceptDraggedStack(DraggingContext<CircuitDesignTableEditScreen> context, DraggableStack stack) {
+                if(stack.get().getType() == VanillaEntryTypes.ITEM) {
+                    var itemStack = ((EntryStack<ItemStack>) stack.get()).getValue();
+                    context.getScreen().toolSelect(itemStack.getItem());
+                    return DraggedAcceptorResult.ACCEPTED;
+                }
+                return DraggedAcceptorResult.PASS;
+            }
+        });
     }
 
     @Override
