@@ -41,6 +41,7 @@ public class DiodeTests extends TestHelper {
             System.out.printf("Iteration %d:\n", i);
             System.out.printf("Anode voltage: %f\n", Anode.getVoltage());
             System.out.printf("Cathode voltage: %f\n", Cathode.getVoltage());
+            System.out.printf("Diode current: %f\n", D.current());
 
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("GND current %f\n\n", GND.getCurrent());

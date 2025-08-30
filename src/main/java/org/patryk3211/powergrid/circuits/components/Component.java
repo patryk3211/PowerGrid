@@ -65,7 +65,7 @@ public abstract class Component {
     }
 
     public float getPadResistance(int padIndex) {
-        return 0.01f;
+        return 0.002f;
     }
 
     public boolean emitExternalTerminals() {

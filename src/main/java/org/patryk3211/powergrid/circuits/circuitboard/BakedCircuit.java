@@ -19,7 +19,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -33,14 +32,12 @@ import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class BakedCircuit {
     public final List<OwnedFloatingNode> externalNodes = new ArrayList<>();
@@ -52,18 +49,20 @@ public class BakedCircuit {
     private final Map<PlacedComponent, Function<Integer, FloatingNode>> padNodeProviderMap = new HashMap<>();
 
     private boolean isDamaged = false;
-    private final Supplier<Level> world;
+    private final CircuitBoardBlockEntity be;
 
-    protected BakedCircuit(Supplier<Level> world) {
-        this.world = world;
+    protected BakedCircuit(CircuitBoardBlockEntity be) {
+        this.be = be;
     }
 
     private FloatingNode getNode(CircuitSchematic.Node node) {
         return padNodeProviderMap.get(node.placed()).apply(node.pad());
     }
 
-    public static BakedCircuit from(CircuitSchematic schematic, Supplier<Level> world, BlockPos pos) {
-        var result = new BakedCircuit(world);
+    public static BakedCircuit from(CircuitSchematic schematic, CircuitBoardBlockEntity be, BlockPos pos) {
+        var result = new BakedCircuit(be);
+        var facing = be.getBlockState().getValue(CircuitBoardBlock.HORIZONTAL_FACING);
+        var offset = Vec3.atLowerCornerOf(pos);
 
         // Create component pad nodes.
         for(var placed : schematic.components()) {
@@ -102,7 +101,12 @@ public class BakedCircuit {
             };
             placed.component.bake(placed, builder, thermalEmitter);
             var footprint = placed.footprint();
-            var localPos = Vec3.atLowerCornerOf(pos).add((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f);
+            var localPos = //Vec3.atLowerCornerOf(pos)
+                    new Vec3((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f)
+                            .subtract(0.5, 0, 0.5)
+                            .yRot((float) ((180 - facing.toYRot()) * Math.PI / 180))
+                            .add(0.5, 0, 0.5)
+                            .add(offset);
             thermalBuilders.stream()
                     .map(b -> b.build().withPosition(localPos))
                     .forEach(result.thermalUnits::add);
@@ -174,13 +178,13 @@ public class BakedCircuit {
     }
 
     public void tick() {
-        var client = world.get().isClientSide;
+        var client = be.getLevel().isClientSide;
         if(ThermalBehaviour.shouldOverheat()) {
             for (var unit : thermalUnits) {
                 var overheated = unit.hasOverheated();
                 unit.tick();
                 if (client) {
-                    var world = this.world.get();
+                    var world = this.be.getLevel();
                     var random = world.random;
                     var pos = unit.getPosition();
                     var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;

@@ -121,6 +121,8 @@
   "powergrid.component.property.led_red": "Red",
   "powergrid.component.property.led_green": "Green",
   "powergrid.component.property.led_blue": "Blue",
+  "powergrid.component.property.led_vf": "Forward Voltage",
+  "powergrid.component.property.led_if": "Forward Current",
 
   "powergrid.component.property.potentiometer_resistance": "Resistance",
   "powergrid.component.property.potentiometer_value": "Setting",

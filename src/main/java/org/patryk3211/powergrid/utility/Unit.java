@@ -37,4 +37,8 @@ public enum Unit {
     public LangBuilder get() {
         return Lang.unit(this);
     }
+
+    public String string() {
+        return get().string();
+    }
 }

@@ -35,11 +35,6 @@ public class ConnectorComponent extends Component {
     }
 
     @Override
-    public float getPadResistance(int padIndex) {
-        return 0.01f;
-    }
-
-    @Override
     public boolean emitExternalTerminals() {
         return true;
     }

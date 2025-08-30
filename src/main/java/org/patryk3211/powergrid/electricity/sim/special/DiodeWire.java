@@ -15,17 +15,18 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
 public class DiodeWire extends AbstractElectricWire implements ISolverHook {
-    private static final float I_LEAK = 1e-6f;
-
     private final float resistance;
     private final float biasVoltage;
     private double currentConductance;
     private double prevConductance;
+
+    private double In;
 
     public DiodeWire(float resistance, float biasVoltage, IElectricNode cathode, IElectricNode anode) {
         super(anode, cathode);
@@ -40,13 +41,31 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
     }
 
     @Override
+    public float current() {
+        return (float) (super.current() - Math.min(biasVoltage, potentialDifference()) * currentConductance);
+    }
+
+    @Override
+    public float power() {
+        return potentialDifference() * current();
+    }
+
+    @Override
     public void preSolve() {
-        var V = potentialDifference();
+        var V = super.potentialDifference();
+
         var maxConductance = 1 / resistance;
-        var strength = 0.5 * (Math.tanh(2 * (V - biasVoltage)) + 1);
+        var strength = 0.5 * (Math.tanh(10 * (V - biasVoltage - 0.3)) + 1);
         currentConductance = maxConductance * strength;
+        In = -Math.min(biasVoltage, V) * currentConductance;
 
         network.updateConductance(this, currentConductance - prevConductance);
         prevConductance = currentConductance;
+    }
+
+    @Override
+    public void addResidual(DMatrixRMaj residual) {
+        residual.add(node1.getIndex(), 0, -In);
+        residual.add(node2.getIndex(), 0,  In);
     }
 }

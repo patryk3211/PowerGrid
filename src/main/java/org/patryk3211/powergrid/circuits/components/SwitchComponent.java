@@ -53,7 +53,7 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
         var wire = builder.connectSwitch(0.150f, builder.terminalNode(0), builder.terminalNode(1), placed.get(STATE));
         placed.add(wire);
         thermals.builder()
-                .setMaxPower(20, 150)
+                .setMaxPower(30, 150)
                 .setThermalMass(0.01f)
                 .addHeatSource(wire);
     }
