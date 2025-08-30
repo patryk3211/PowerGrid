@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.data.recipes;
 
 import com.google.common.base.Supplier;
 import com.google.gson.JsonObject;
-import com.simibubi.create.Create;
 import com.simibubi.create.api.data.recipe.BaseRecipeProvider;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import net.createmod.catnip.platform.CatnipServices;
@@ -71,7 +70,7 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 
 	GeneratedRecipe createSpecial(Supplier<? extends SimpleCraftingRecipeSerializer<?>> serializer, String recipeType,
                                   String path) {
-		ResourceLocation location = Create.asResource(recipeType + "/" + currentFolder + "/" + path);
+		ResourceLocation location = PowerGrid.asResource(recipeType + "/" + currentFolder + "/" + path);
 		return register(consumer -> {
 			SpecialRecipeBuilder b = SpecialRecipeBuilder.special(serializer.get());
 			b.save(consumer, location.toString());
@@ -99,7 +98,7 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 	@Override
 	public void buildRecipes(Consumer<FinishedRecipe> p_200404_1_) {
 		all.forEach(c -> c.register(p_200404_1_));
-		Create.LOGGER.info(getName() + " registered " + all.size() + " recipe" + (all.size() == 1 ? "" : "s"));
+		PowerGrid.LOGGER.info(getName() + " registered " + all.size() + " recipe" + (all.size() == 1 ? "" : "s"));
 	}
 
 	protected GeneratedRecipe register(GeneratedRecipe recipe) {
@@ -191,11 +190,11 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		}
 
 		private ResourceLocation createSimpleLocation(String recipeType) {
-			return Create.asResource(recipeType + "/" + getRegistryName().getPath() + suffix);
+			return PowerGrid.asResource(recipeType + "/" + getRegistryName().getPath() + suffix);
 		}
 
 		private ResourceLocation createLocation(String recipeType) {
-			return Create.asResource(recipeType + "/" + path + "/" + getRegistryName().getPath() + suffix);
+			return PowerGrid.asResource(recipeType + "/" + path + "/" + getRegistryName().getPath() + suffix);
 		}
 
 		private ResourceLocation getRegistryName() {
