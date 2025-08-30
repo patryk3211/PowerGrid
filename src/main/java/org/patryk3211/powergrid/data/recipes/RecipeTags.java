@@ -19,6 +19,7 @@ import com.simibubi.create.AllBlocks;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -92,5 +93,9 @@ public class RecipeTags {
 
     public static ItemLike electricalGizmo() {
         return ModdedItems.ELECTRICAL_GIZMO;
+    }
+
+    public static ItemLike coalBlock() {
+        return Items.COAL_BLOCK;
     }
 }

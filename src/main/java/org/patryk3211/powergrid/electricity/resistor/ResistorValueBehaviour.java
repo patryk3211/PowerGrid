@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.creative;
+package org.patryk3211.powergrid.electricity.resistor;
 
 import com.google.common.collect.ImmutableList;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -28,11 +28,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.NumberFormats;
 
-public class CreativeResistorValueBehaviour extends ScrollValueBehaviour {
-    public CreativeResistorValueBehaviour(Component label, SmartBlockEntity be, ValueBoxTransform slot) {
+import java.util.function.Consumer;
+
+public class ResistorValueBehaviour extends ScrollValueBehaviour {
+    private final int minOffset;
+
+    public ResistorValueBehaviour(Component label, SmartBlockEntity be, ValueBoxTransform slot, int minOffset, int max) {
         super(label, be, slot);
-        between(0, 72);
-        withFormatter(i -> NumberFormats.formatPrecise(exponentialValue(i)));
+        this.minOffset = minOffset;
+        between(0, max);
+        withFormatter(i -> NumberFormats.formatPrecise(exponentialValue(minOffset, i)));
     }
 
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
@@ -40,7 +45,7 @@ public class CreativeResistorValueBehaviour extends ScrollValueBehaviour {
                 Lang.translateDirect("generic.unit.ohm")
         );
         ValueSettingsFormatter formatter = new ValueSettingsFormatter(this::formatSettings);
-        return new ValueSettingsBoard(this.label, 72, 9, rows, formatter);
+        return new ValueSettingsBoard(this.label, max, 9, rows, formatter);
     }
 
     public void setValueSettings(Player player, ValueSettings valueSetting, boolean ctrlHeld) {
@@ -52,19 +57,23 @@ public class CreativeResistorValueBehaviour extends ScrollValueBehaviour {
         this.setValue(value);
     }
 
-    public ValueSettings getValueSettings() {
-        return new ValueSettings(0, this.value);
+    public ScrollValueBehaviour withResistanceCallback(Consumer<Float> resistanceCallback) {
+        return super.withCallback(i -> resistanceCallback.accept(exponentialValue(minOffset, i)));
     }
 
-    public static float exponentialValue(int i) {
+    public static float exponentialValue(int min, int i) {
         var number = i % 9 + 1;
-        var mult = Math.pow(10, i / 9 - 3);
+        var mult = Math.pow(10, i / 9 - min);
         return (float) (number * mult);
     }
 
     public MutableComponent formatSettings(ValueSettings settings) {
         return Lang
-                .text(NumberFormats.formatPrecise(exponentialValue(settings.value())))
+                .text(NumberFormats.formatPrecise(exponentialValue(minOffset, settings.value())))
                 .component();
+    }
+
+    public float getResistance() {
+        return exponentialValue(minOffset, value);
     }
 }

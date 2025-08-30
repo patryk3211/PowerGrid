@@ -345,7 +345,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('D', RecipeTags.electricalGizmo())
                     .define('B', ModdedBlocks.BATTERY)),
 
-    HOUSING_CYCLE = conversionCycle(List.of(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING))
+    HOUSING_CYCLE = conversionCycle(List.of(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING)),
+
+    POWER_RESISTOR = create(ModdedBlocks.RESISTOR)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
+            .viaShaped(b -> b
+                    .pattern("CBC")
+                    .pattern(" E ")
+                    .define('C', RecipeTags.copperSheet())
+                    .define('B', RecipeTags.coalBlock())
+                    .define('E', RecipeTags.conductiveCasing()))
             ;
 
     public CraftingRecipes(PackOutput output) {

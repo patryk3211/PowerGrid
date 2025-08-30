@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.creative;
+package org.patryk3211.powergrid.electricity.resistor;
 
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.resistor.AbstractResistorBlock;
 
-public class CreativeResistorBlock extends AbstractResistorBlock implements IBE<CreativeResistorBlockEntity> {
-    public CreativeResistorBlock(Properties settings) {
+public class ResistorBlock extends AbstractResistorBlock implements IBE<ResistorBlockEntity> {
+    public ResistorBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    public Class<CreativeResistorBlockEntity> getBlockEntityClass() {
-        return CreativeResistorBlockEntity.class;
+    public Class<ResistorBlockEntity> getBlockEntityClass() {
+        return ResistorBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends CreativeResistorBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.CREATIVE_RESISTOR.get();
+    public BlockEntityType<? extends ResistorBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.RESISTOR.get();
     }
 }

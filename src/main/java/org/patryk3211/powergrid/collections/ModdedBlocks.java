@@ -65,6 +65,7 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
@@ -352,11 +353,23 @@ public class ModdedBlocks {
             .simpleItem()
             .register();
     public static final BlockEntry<CreativeResistorBlock> CREATIVE_RESISTOR = REGISTRATE.block("creative_resistor", CreativeResistorBlock::new)
-            .blockstate(horizontalAxisBlock("block/creative_resistor"))
+            .blockstate(surfaceBlock("block/creative_resistor"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
-            .simpleItem()
+            .item()
+                .model(itemWithParent("block/creative_resistor_v"))
+                .build()
+            .register();
+
+    public static final BlockEntry<ResistorBlock> RESISTOR = REGISTRATE.block("power_resistor", ResistorBlock::new)
+            .blockstate(surfaceBlock("block/resistor"))
+            .initialProperties(SharedProperties::stone)
+            .transform(pickaxeOnly())
+            .transform(CThermal.maxPower(1000, 2.0f))
+            .item()
+                .model(itemWithParent("block/resistor_v"))
+                .build()
             .register();
 
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)

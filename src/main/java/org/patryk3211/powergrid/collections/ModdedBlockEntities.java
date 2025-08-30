@@ -42,6 +42,7 @@ import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlockEntity;
+import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
@@ -167,6 +168,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CreativeResistorBlockEntity> CREATIVE_RESISTOR =
             REGISTRATE.blockEntity("creative_resistor", CreativeResistorBlockEntity::new)
                     .validBlock(ModdedBlocks.CREATIVE_RESISTOR)
+                    .register();
+
+    public static final BlockEntityEntry<ResistorBlockEntity> RESISTOR =
+            REGISTRATE.blockEntity("resistor", ResistorBlockEntity::new)
+                    .validBlock(ModdedBlocks.RESISTOR)
                     .register();
 
     public static final BlockEntityEntry<LightFixtureBlockEntity> LIGHT_FIXTURE =
