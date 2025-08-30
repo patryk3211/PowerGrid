@@ -69,7 +69,7 @@ public class BatteryUtils {
         return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery != null && getCurrentCharge(battery) > fePerUse)
+                    if(battery != null && getCurrentCharge(battery) >= fePerUse)
                         return true;
                     return stack.isDamaged();
                 }).orElse(false);
@@ -81,7 +81,7 @@ public class BatteryUtils {
         return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery == null)
+                    if(battery == null || getCurrentCharge(battery) < fePerUse)
                         return Math.round(13.0F - (float) stack.getDamageValue() / stack.getMaxDamage() * 13.0F);
                     return battery.getBarWidth();
                 }).orElse(13);
@@ -93,7 +93,7 @@ public class BatteryUtils {
         return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery == null)
+                    if(battery == null || getCurrentCharge(battery) < fePerUse)
                         return Mth.hsvToRgb(Math.max(0.0F, 1.0F - (float) stack.getDamageValue() / stack.getMaxDamage()) / 3.0F, 1.0F, 1.0F);
                     return battery.getBarColor();
                 }).orElse(0);
