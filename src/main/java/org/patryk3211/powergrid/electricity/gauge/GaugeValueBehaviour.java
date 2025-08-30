@@ -49,7 +49,7 @@ public class GaugeValueBehaviour extends ScrollValueBehaviour {
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
         ImmutableList<Component> rows = ImmutableList.of(unit);
         ValueSettingsFormatter formatter = new ValueSettingsFormatter(this::formatSettings);
-        return new ValueSettingsBoard(this.label, values.length - 1, values.length - 1, rows, formatter);
+        return new ValueSettingsBoard(this.label, max, 1, rows, formatter);
     }
 
     public MutableComponent formatSettings(ValueSettings settings) {
