@@ -17,31 +17,16 @@ package org.patryk3211.powergrid.electricity.resistor;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
 import net.createmod.catnip.math.VecHelper;
-import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.SurfaceElectricBlock;
 
 public class ResistorBoxTransform extends CenteredSideValueBoxTransform {
     public ResistorBoxTransform() {
-        super((state, dir) -> {
-            var facing = state.getValue(SurfaceElectricBlock.FACING);
-            var along = state.getValue(SurfaceElectricBlock.ALONG_FIRST_AXIS);
-            var axis = switch(facing.getAxis()) {
-                case X -> along ? Direction.Axis.Z : Direction.Axis.Y;
-                case Y -> along ? Direction.Axis.Z : Direction.Axis.X;
-                case Z -> along ? Direction.Axis.Y : Direction.Axis.X;
-            };
-            if (dir.getAxis() == axis)
-                return false;
-            return dir != facing;
-        });
+        super((state, dir) -> dir == state.getValue(SurfaceElectricBlock.FACING).getOpposite());
     }
 
     @Override
     protected Vec3 getSouthLocation() {
-        if (direction != Direction.UP)
-            return VecHelper.voxelSpace(8.0f, 6.0f, 10.5f);
-        else
-            return VecHelper.voxelSpace(8.0f, 8.0f, 8.5f);
+        return VecHelper.voxelSpace(8.0f, 8.0f, 8.5f);
     }
 }
