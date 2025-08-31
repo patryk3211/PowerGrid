@@ -28,6 +28,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.gui.CircuitFileBox;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -45,6 +46,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<CircuitDesignTableLoadMenu> {
     private static final ResourceLocation BACKGROUND = PowerGrid.texture("gui/circuit_design_table_load");
@@ -113,6 +115,8 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
 
     private void load() {
         var file = Path.of("circuits", fileNameInput.getValue());
+        if(!file.toString().endsWith(".nbt"))
+            file = Path.of(file + ".nbt");
         if(!Files.exists(file)) {
             popup(DOESNT_EXIST);
             return;
@@ -181,13 +185,24 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
 //        renderPlayerInventory(ctx, bgX + 2, invY);
 
         ctx.blit(BACKGROUND, bgX, topPos, 0, 0, WIDTH, HEIGHT);
-        ctx.drawString(font, FILE_DIALOG, leftPos + 4, topPos + 3, 0x404040, false);
+        ctx.drawString(font, FILE_DIALOG, leftPos + 5, topPos + 4, 0x404040, false);
 
         if(popupTimeout > 0) {
             int color = 0xFF6060;
             int alpha = Math.min(popupTimeout, 20) * 255 / 20;
             color |= alpha << 24;
             ctx.drawCenteredString(font, popupText, width / 2, topPos - 12, color);
+        }
+    }
+
+    @Override
+    protected void renderForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderForeground(graphics, mouseX, mouseY, partialTicks);
+        if(fileNameInput.isMouseOver(mouseX, mouseY)) {
+            List<Component> tooltip = fileNameInput.getToolTip();
+            if (tooltip.isEmpty())
+                return;
+            graphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
         }
     }
 }

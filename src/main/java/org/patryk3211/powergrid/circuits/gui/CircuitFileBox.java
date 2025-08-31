@@ -18,12 +18,14 @@ package org.patryk3211.powergrid.circuits.gui;
 import com.simibubi.create.AllKeys;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.utility.FilesHelper;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,11 +34,17 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.createmod.catnip.gui.widget.AbstractSimiWidget.HEADER_RGB;
+
 public class CircuitFileBox extends EditBox {
     private int tick;
     private final List<String> availableSchematics = new ArrayList<>();
     private int selectedIndex = 0;
     private boolean soundPlayed = false;
+    private final List<Component> toolTip = new ArrayList<>();
+
+    private final Component title = Lang.translateDirect("gui.circuit_designer.files");
+    private final Component scrollToSelect = Lang.translateDirect("gui.circuit_designer.file_scroll");
 
     public CircuitFileBox(Font font, int x, int y, int width, int height, Component message) {
         super(font, x, y, width, height, message);
@@ -133,17 +141,19 @@ public class CircuitFileBox extends EditBox {
         clamp();
         if(prev != selectedIndex)
             onChanged();
+        updateTooltip();
     }
 
     private void onChanged() {
         if(selectedIndex >= 0 && selectedIndex < availableSchematics.size()) {
             setValue(availableSchematics.get(selectedIndex));
         }
+        updateTooltip();
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        int step = (int) Math.signum(delta) * (AllKeys.shiftDown() ? 5 : 1);
+        int step = (int) -Math.signum(delta) * (AllKeys.shiftDown() ? 5 : 1);
 
         int priorState = selectedIndex;
         boolean shifted = AllKeys.shiftDown();
@@ -171,5 +181,46 @@ public class CircuitFileBox extends EditBox {
             selectedIndex = 0;
         if(selectedIndex >= availableSchematics.size())
             selectedIndex = availableSchematics.size() - 1;
+    }
+
+    protected void updateTooltip() {
+        toolTip.clear();
+        toolTip.add(title.plainCopy()
+                .withStyle(s -> s.withColor(HEADER_RGB.getRGB())));
+        int min = Math.min(this.availableSchematics.size() - 16, selectedIndex - 7);
+        int max = Math.max(16, selectedIndex + 8);
+        min = Math.max(min, 0);
+        max = Math.min(max, this.availableSchematics.size());
+        if (1 == min)
+            min--;
+        if (min > 0) {
+            toolTip.add(Component.literal("> ...")
+                    .withStyle(ChatFormatting.GRAY));
+        }
+        if (this.availableSchematics.size() - 1 == max)
+            max++;
+        for (int i = min; i < max; i++) {
+            if (i == selectedIndex)
+                toolTip.add(Component.empty()
+                        .append("-> ")
+                        .append(availableSchematics.get(i))
+                        .withStyle(ChatFormatting.WHITE));
+            else
+                toolTip.add(Component.empty()
+                        .append("> ")
+                        .append(availableSchematics.get(i))
+                        .withStyle(ChatFormatting.GRAY));
+        }
+        if (max < this.availableSchematics.size()) {
+            toolTip.add(Component.literal("> ...")
+                    .withStyle(ChatFormatting.GRAY));
+        }
+
+        toolTip.add(scrollToSelect.plainCopy()
+                .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+    }
+
+    public List<Component> getToolTip() {
+        return toolTip;
     }
 }
