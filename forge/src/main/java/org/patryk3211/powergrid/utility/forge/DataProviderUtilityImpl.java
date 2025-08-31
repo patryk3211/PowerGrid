@@ -47,6 +47,7 @@ import java.util.function.Function;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.*;
 import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
+import static org.patryk3211.powergrid.base.CustomProperties.ROTATION_4;
 
 @SuppressWarnings("unused")
 public class DataProviderUtilityImpl {
@@ -152,7 +153,12 @@ public class DataProviderUtilityImpl {
     // This function needs two models. One for Y axis and one for other axis.
     public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
         var facing = state.getValue(FACING);
-        var axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+        boolean axis_along_first = false;
+        if(state.hasProperty(ALONG_FIRST_AXIS)) {
+            axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+        } else if (state.hasProperty(ROTATION_4)) {
+            axis_along_first = state.getValue(ROTATION_4) % 2 == 1;
+        }
 
         int x = 0, y = 0;
         boolean verticalModel = false;

@@ -1,102 +1,202 @@
 {
   "variants": {
-    "axis_along_first=false,facing=down,polarized=false": {
+    "facing=down,polarized=false,rotation=0": {
       "model": "powergrid:block/device_connector_v",
       "y": 90
     },
-    "axis_along_first=false,facing=down,polarized=true": {
+    "facing=down,polarized=false,rotation=1": {
+      "model": "powergrid:block/device_connector_v"
+    },
+    "facing=down,polarized=false,rotation=2": {
       "model": "powergrid:block/device_connector_v",
       "y": 90
     },
-    "axis_along_first=false,facing=east,polarized=false": {
+    "facing=down,polarized=false,rotation=3": {
+      "model": "powergrid:block/device_connector_v"
+    },
+    "facing=down,polarized=true,rotation=0": {
+      "model": "powergrid:block/device_connector_v",
+      "y": 90
+    },
+    "facing=down,polarized=true,rotation=1": {
+      "model": "powergrid:block/device_connector_v"
+    },
+    "facing=down,polarized=true,rotation=2": {
+      "model": "powergrid:block/device_connector_v",
+      "y": 90
+    },
+    "facing=down,polarized=true,rotation=3": {
+      "model": "powergrid:block/device_connector_v"
+    },
+    "facing=east,polarized=false,rotation=0": {
       "model": "powergrid:block/device_connector_h",
       "x": -90
     },
-    "axis_along_first=false,facing=east,polarized=true": {
+    "facing=east,polarized=false,rotation=1": {
+      "model": "powergrid:block/device_connector_h"
+    },
+    "facing=east,polarized=false,rotation=2": {
       "model": "powergrid:block/device_connector_h",
       "x": -90
     },
-    "axis_along_first=false,facing=north,polarized=false": {
+    "facing=east,polarized=false,rotation=3": {
+      "model": "powergrid:block/device_connector_h"
+    },
+    "facing=east,polarized=true,rotation=0": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90
+    },
+    "facing=east,polarized=true,rotation=1": {
+      "model": "powergrid:block/device_connector_h"
+    },
+    "facing=east,polarized=true,rotation=2": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90
+    },
+    "facing=east,polarized=true,rotation=3": {
+      "model": "powergrid:block/device_connector_h"
+    },
+    "facing=north,polarized=false,rotation=0": {
       "model": "powergrid:block/device_connector_h",
       "x": -90,
       "y": -90
     },
-    "axis_along_first=false,facing=north,polarized=true": {
+    "facing=north,polarized=false,rotation=1": {
+      "model": "powergrid:block/device_connector_h",
+      "y": -90
+    },
+    "facing=north,polarized=false,rotation=2": {
       "model": "powergrid:block/device_connector_h",
       "x": -90,
       "y": -90
     },
-    "axis_along_first=false,facing=south,polarized=false": {
+    "facing=north,polarized=false,rotation=3": {
+      "model": "powergrid:block/device_connector_h",
+      "y": -90
+    },
+    "facing=north,polarized=true,rotation=0": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": -90
+    },
+    "facing=north,polarized=true,rotation=1": {
+      "model": "powergrid:block/device_connector_h",
+      "y": -90
+    },
+    "facing=north,polarized=true,rotation=2": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": -90
+    },
+    "facing=north,polarized=true,rotation=3": {
+      "model": "powergrid:block/device_connector_h",
+      "y": -90
+    },
+    "facing=south,polarized=false,rotation=0": {
       "model": "powergrid:block/device_connector_h",
       "x": -90,
       "y": 90
     },
-    "axis_along_first=false,facing=south,polarized=true": {
+    "facing=south,polarized=false,rotation=1": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 90
+    },
+    "facing=south,polarized=false,rotation=2": {
       "model": "powergrid:block/device_connector_h",
       "x": -90,
       "y": 90
     },
-    "axis_along_first=false,facing=up,polarized=false": {
+    "facing=south,polarized=false,rotation=3": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 90
+    },
+    "facing=south,polarized=true,rotation=0": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": 90
+    },
+    "facing=south,polarized=true,rotation=1": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 90
+    },
+    "facing=south,polarized=true,rotation=2": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": 90
+    },
+    "facing=south,polarized=true,rotation=3": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 90
+    },
+    "facing=up,polarized=false,rotation=0": {
       "model": "powergrid:block/device_connector_v",
       "x": 180,
       "y": 90
     },
-    "axis_along_first=false,facing=up,polarized=true": {
+    "facing=up,polarized=false,rotation=1": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180
+    },
+    "facing=up,polarized=false,rotation=2": {
       "model": "powergrid:block/device_connector_v",
       "x": 180,
       "y": 90
     },
-    "axis_along_first=false,facing=west,polarized=false": {
+    "facing=up,polarized=false,rotation=3": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180
+    },
+    "facing=up,polarized=true,rotation=0": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180,
+      "y": 90
+    },
+    "facing=up,polarized=true,rotation=1": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180
+    },
+    "facing=up,polarized=true,rotation=2": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180,
+      "y": 90
+    },
+    "facing=up,polarized=true,rotation=3": {
+      "model": "powergrid:block/device_connector_v",
+      "x": 180
+    },
+    "facing=west,polarized=false,rotation=0": {
       "model": "powergrid:block/device_connector_h",
       "x": -90,
       "y": 180
     },
-    "axis_along_first=false,facing=west,polarized=true": {
+    "facing=west,polarized=false,rotation=1": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 180
+    },
+    "facing=west,polarized=false,rotation=2": {
       "model": "powergrid:block/device_connector_h",
       "x": -90,
       "y": 180
     },
-    "axis_along_first=true,facing=down,polarized=false": {
-      "model": "powergrid:block/device_connector_v"
-    },
-    "axis_along_first=true,facing=down,polarized=true": {
-      "model": "powergrid:block/device_connector_v"
-    },
-    "axis_along_first=true,facing=east,polarized=false": {
-      "model": "powergrid:block/device_connector_h"
-    },
-    "axis_along_first=true,facing=east,polarized=true": {
-      "model": "powergrid:block/device_connector_h"
-    },
-    "axis_along_first=true,facing=north,polarized=false": {
-      "model": "powergrid:block/device_connector_h",
-      "y": -90
-    },
-    "axis_along_first=true,facing=north,polarized=true": {
-      "model": "powergrid:block/device_connector_h",
-      "y": -90
-    },
-    "axis_along_first=true,facing=south,polarized=false": {
-      "model": "powergrid:block/device_connector_h",
-      "y": 90
-    },
-    "axis_along_first=true,facing=south,polarized=true": {
-      "model": "powergrid:block/device_connector_h",
-      "y": 90
-    },
-    "axis_along_first=true,facing=up,polarized=false": {
-      "model": "powergrid:block/device_connector_v",
-      "x": 180
-    },
-    "axis_along_first=true,facing=up,polarized=true": {
-      "model": "powergrid:block/device_connector_v",
-      "x": 180
-    },
-    "axis_along_first=true,facing=west,polarized=false": {
+    "facing=west,polarized=false,rotation=3": {
       "model": "powergrid:block/device_connector_h",
       "y": 180
     },
-    "axis_along_first=true,facing=west,polarized=true": {
+    "facing=west,polarized=true,rotation=0": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": 180
+    },
+    "facing=west,polarized=true,rotation=1": {
+      "model": "powergrid:block/device_connector_h",
+      "y": 180
+    },
+    "facing=west,polarized=true,rotation=2": {
+      "model": "powergrid:block/device_connector_h",
+      "x": -90,
+      "y": 180
+    },
+    "facing=west,polarized=true,rotation=3": {
       "model": "powergrid:block/device_connector_h",
       "y": 180
     }
