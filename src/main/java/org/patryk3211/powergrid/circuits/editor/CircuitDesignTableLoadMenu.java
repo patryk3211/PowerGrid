@@ -22,22 +22,22 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 
-public class CircuitDesignTableEditMenu extends AbstractCircuitDesignTableMenu {
-    public CircuitDesignTableEditMenu(MenuType<?> type, int id, Inventory inv, CircuitDesignTableBlockEntity contentHolder) {
+public class CircuitDesignTableLoadMenu extends AbstractCircuitDesignTableMenu {
+    public CircuitDesignTableLoadMenu(MenuType<?> type, int id, Inventory inv, CircuitDesignTableBlockEntity contentHolder) {
         super(type, id, inv, contentHolder);
     }
 
-    public CircuitDesignTableEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public CircuitDesignTableLoadMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
-    public static CircuitDesignTableEditMenu create(int id, Inventory inv, CircuitDesignTableBlockEntity be) {
-        return new CircuitDesignTableEditMenu(ModdedMenus.CIRCUIT_DESIGN_TABLE_EDIT.get(), id, inv, be);
+    public static CircuitDesignTableLoadMenu create(int id, Inventory inv, CircuitDesignTableBlockEntity be) {
+        return new CircuitDesignTableLoadMenu(ModdedMenus.CIRCUIT_DESIGN_TABLE_LOAD.get(), id, inv, be);
     }
 
     @Override
     protected void addSlots() {
-        addPlayerSlots(3, 182);
+//        addPlayerSlots(3, 182);
     }
 
     @Override

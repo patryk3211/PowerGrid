@@ -22,16 +22,15 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditMenu;
-import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen;
-import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableMenu;
-import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableScreen;
+import org.patryk3211.powergrid.circuits.editor.*;
 
 public class ModdedMenus {
-    public static final MenuEntry<CircuitDesignTableMenu> CIRCUIT_DESIGN_BENCH =
+    public static final MenuEntry<CircuitDesignTableMenu> CIRCUIT_DESIGN_TABLE =
             register("circuit_design_table", CircuitDesignTableMenu::new, () -> CircuitDesignTableScreen::new);
-    public static final MenuEntry<CircuitDesignTableEditMenu> CIRCUIT_DESIGN_BENCH_EDIT =
+    public static final MenuEntry<CircuitDesignTableEditMenu> CIRCUIT_DESIGN_TABLE_EDIT =
             register("circuit_design_table_edit", CircuitDesignTableEditMenu::new, () -> CircuitDesignTableEditScreen::new);
+    public static final MenuEntry<CircuitDesignTableLoadMenu> CIRCUIT_DESIGN_TABLE_LOAD =
+            register("circuit_design_table_load", CircuitDesignTableLoadMenu::new, () -> CircuitDesignTableLoadScreen::new);
 
     private static <C extends AbstractContainerMenu, S extends Screen & MenuAccess<C>> MenuEntry<C> register(String name, MenuBuilder.ForgeMenuFactory<C> factory, NonNullSupplier<MenuBuilder.ScreenFactory<C, S>> screenFactory) {
         return PowerGrid.REGISTRATE.menu(name, factory, screenFactory).register();

@@ -94,6 +94,15 @@
   "powergrid.gui.circuit_designer.placeable": "Placeable",
   "powergrid.gui.circuit_designer.not_saved": "You have unsaved changes!",
 
+  "powergrid.gui.circuit_designer.no_name": "Please enter a valid name",
+  "powergrid.gui.circuit_designer.confirm_overwrite": "File already exists, click again to overwrite",
+  "powergrid.gui.circuit_designer.doesnt_exist": "Specified file doesn't exist",
+  "powergrid.gui.circuit_designer.invalid_file": "Invalid or corrupted schematic file",
+  "powergrid.gui.circuit_designer.file_dialog": "File dialog",
+  "powergrid.gui.circuit_designer.cancel": "Cancel",
+  "powergrid.gui.circuit_designer.file_load": "Load from file",
+  "powergrid.gui.circuit_designer.file_save": "Save to file",
+
   "powergrid.component.property.tube_gain": "Gain",
   "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
   "powergrid.component.property.tube_anode_resistance": "Anode Resistance",
