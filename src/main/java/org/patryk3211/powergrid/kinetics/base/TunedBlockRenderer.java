@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.variac;
+package org.patryk3211.powergrid.kinetics.base;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPartialModels;
@@ -26,14 +26,16 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
+import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
+import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
 
-public class VariacRenderer extends KineticBlockEntityRenderer<VariacBlockEntity> {
-    public VariacRenderer(BlockEntityRendererProvider.Context context) {
+public class TunedBlockRenderer<T extends TunedBlockEntity> extends KineticBlockEntityRenderer<T> {
+    public TunedBlockRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    protected void renderSafe(VariacBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource provider, int light, int overlay) {
+    protected void renderSafe(T be, float partialTicks, PoseStack ms, MultiBufferSource provider, int light, int overlay) {
         super.renderSafe(be, partialTicks, ms, provider, light, overlay);
 
         var state = be.getBlockState();
@@ -47,7 +49,7 @@ public class VariacRenderer extends KineticBlockEntityRenderer<VariacBlockEntity
     }
 
     @Override
-    protected SuperByteBuffer getRotatedModel(VariacBlockEntity be, BlockState state) {
+    protected SuperByteBuffer getRotatedModel(T be, BlockState state) {
         return CachedBuffers.partialFacing(AllPartialModels.SHAFT_HALF, state, Direction.UP);
     }
 }

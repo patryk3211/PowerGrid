@@ -35,6 +35,7 @@
   "block.powergrid.potato_battery": "Potato Battery",
   "block.powergrid.potato_battery.tooltip.summary": "An all natural source of green energy",
   "block.powergrid.power_resistor": "Power Resistor",
+  "block.powergrid.rheostat": "Rheostat",
   "block.powergrid.servo": "Servo",
   "block.powergrid.spark_gap": "Spark Gap",
   "block.powergrid.thermometer": "Thermometer",
@@ -178,6 +179,7 @@
   "powergrid.generic.control_terminal": "Control",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.positive_terminal": "Positive",
+  "powergrid.generic.tap": "Tap",
   "powergrid.generic.terminal": "Connector",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.block": "blocks",
@@ -224,6 +226,8 @@
   "powergrid.gui.heater.info_header": "Heating coil information",
   "powergrid.gui.heater.title": "Coil temperature",
   "powergrid.gui.potentiometer.setting": "Setting",
+  "powergrid.gui.rheostat.info_header": "Rheostat information",
+  "powergrid.gui.rheostat.ratio": "Resistance ratio",
   "powergrid.gui.thermometer.click": "Click to reset max measurement",
   "powergrid.gui.thermometer.max_title": "Max measured temperature",
   "powergrid.gui.thermometer.temperature": "Temperature: ",
@@ -402,6 +406,5 @@
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
-  "powergrid.variac.primary": "Primary",
-  "powergrid.variac.tap": "Tap"
+  "powergrid.variac.primary": "Primary"
 }

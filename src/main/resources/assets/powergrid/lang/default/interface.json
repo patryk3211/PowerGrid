@@ -35,6 +35,9 @@
 
   "powergrid.gui.thermometer.temperature": "Temperature: ",
 
+  "powergrid.gui.rheostat.info_header": "Rheostat information",
+  "powergrid.gui.rheostat.ratio": "Resistance ratio",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
@@ -65,11 +68,11 @@
   "powergrid.generic.terminal": "Connector",
   "powergrid.generic.control_terminal": "Control",
   "powergrid.generic.common": "Common",
+  "powergrid.generic.tap": "Tap",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
 
-  "powergrid.variac.tap": "Tap",
   "powergrid.variac.primary": "Primary",
 
   "powergrid.devices.creative.voltage": "Output voltage",

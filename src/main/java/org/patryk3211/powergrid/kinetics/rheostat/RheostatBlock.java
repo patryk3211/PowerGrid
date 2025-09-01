@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.variac;
+package org.patryk3211.powergrid.kinetics.rheostat;
 
 import com.simibubi.create.foundation.block.IBE;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -37,9 +35,8 @@ import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
-import org.patryk3211.powergrid.utility.Lang;
 
-public class VariacBlock extends ElectricKineticBlock implements IBE<VariacBlockEntity> {
+public class RheostatBlock extends ElectricKineticBlock implements IBE<RheostatBlockEntity> {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private static final VoxelShape SHAPE_NORTH = Shapes.or(
@@ -48,19 +45,13 @@ public class VariacBlock extends ElectricKineticBlock implements IBE<VariacBlock
             box(5, 10, 5, 11, 16, 11)
     );
 
-    private static final Component PRIMARY = Lang.builder()
-            .translate("variac.primary")
-            .style(ChatFormatting.GRAY)
-            .component();
-
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(PRIMARY, 10, 2, 0, 12, 4, 1),
-            new TerminalBoundingBox(IDecoratedTerminal.COMMON, 7, 2, 0, 9, 4, 1)
-                    .withColor(IDecoratedTerminal.BLUE),
-            new TerminalBoundingBox(IDecoratedTerminal.TAP, 4, 2, 0, 6, 4, 1)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 10, 2, 0, 12, 4, 1),
+            new TerminalBoundingBox(IDecoratedTerminal.TAP, 7, 2, 0, 9, 4, 1),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 4, 2, 0, 6, 4, 1)
     };
 
-    public VariacBlock(Properties properties) {
+    public RheostatBlock(Properties properties) {
         super(properties);
         setTerminalCollection(HorizontalElectricBlock.horizontalNorthTerminals(this, TERMINALS_NORTH, SHAPE_NORTH));
     }
@@ -100,12 +91,12 @@ public class VariacBlock extends ElectricKineticBlock implements IBE<VariacBlock
     }
 
     @Override
-    public Class<VariacBlockEntity> getBlockEntityClass() {
-        return VariacBlockEntity.class;
+    public Class<RheostatBlockEntity> getBlockEntityClass() {
+        return RheostatBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends VariacBlockEntity> getBlockEntityType() {
-        return ModdedBlockEntities.VARIAC.get();
+    public BlockEntityType<? extends RheostatBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.RHEOSTAT.get();
     }
 }

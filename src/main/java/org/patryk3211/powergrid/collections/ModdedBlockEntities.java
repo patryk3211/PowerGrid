@@ -51,6 +51,7 @@ import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
+import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchVisual;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchRenderer;
@@ -64,11 +65,11 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.SimpleRotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
+import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
-import org.patryk3211.powergrid.kinetics.variac.VariacVisual;
-import org.patryk3211.powergrid.kinetics.variac.VariacRenderer;
+import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -263,6 +264,13 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("thermometer", ThermometerBlockEntity::new)
                     .validBlock(ModdedBlocks.THERMOMETER)
                     .renderer(() -> ThermometerRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<RheostatBlockEntity> RHEOSTAT =
+            REGISTRATE.blockEntity("rheostat", RheostatBlockEntity::new)
+                    .visual(() -> TunedBlockVisual::new)
+                    .validBlock(ModdedBlocks.RHEOSTAT)
+                    .renderer(() -> TunedBlockRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

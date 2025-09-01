@@ -35,17 +35,16 @@ import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSoundInstance;
 import org.patryk3211.powergrid.electricity.transformer.TransformerVolumeProvider;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
+import org.patryk3211.powergrid.kinetics.base.TunedBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-public class VariacBlockEntity extends ElectricKineticBlockEntity implements TransformerVolumeProvider, IHaveGoggleInformation {
+public class VariacBlockEntity extends TunedBlockEntity implements TransformerVolumeProvider, IHaveGoggleInformation {
     public static final float PRIMARY_TURNS = 25;
     public static final float CORE_AL = 1.5f;
     public static final float COUPLING_FACTOR = 0.9999f;
     public static final float PRIMARY_INDUCTANCE = PRIMARY_TURNS * PRIMARY_TURNS * CORE_AL;
-
-    protected LerpedFloat arm;
 
     protected ElectricWire primaryStray;
     protected ElectricWire mutualInductance;
@@ -56,19 +55,6 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
 
     public VariacBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        arm = LerpedFloat.linear().chase(0, 0, LerpedFloat.Chaser.LINEAR);
-        arm.setValue(1);
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-        arm.forceNextSync();
-        sendData();
-    }
-
-    private float getChaseSpeed() {
-        return Mth.clamp(Math.abs(getSpeed()) / 60.0f * 0.05f, 0, 1);
     }
 
     @Override
@@ -80,25 +66,6 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     public float getVolume() {
         var volume = lastCurrent / 80;
         return Mth.clamp(volume * volume, 0, 0.5f);
-    }
-
-    @Override
-    public void onSpeedChanged(float previousSpeed) {
-        super.onSpeedChanged(previousSpeed);
-        float speed = getSpeed();
-        if(speed == 0) {
-            arm.chase(arm.getValue(), 0, LerpedFloat.Chaser.LINEAR);
-            arm.forceNextSync();
-            return;
-        }
-        if(sequenceContext != null && sequenceContext.instruction() == SequencerInstructions.TURN_ANGLE) {
-            var angle = sequenceContext.getEffectiveValue(getTheoreticalSpeed());
-            var target = Mth.clamp((arm.getValue() + angle / 315f * Math.signum(speed)), 0, 1);
-            arm.chase(target, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
-        } else {
-            arm.chase(speed > 0 ? 1 : 0, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
-        }
-        sendData();
     }
 
     public float getRatio() {
@@ -128,6 +95,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
                 builder.terminalNode(2), builder.terminalNode(1));
     }
 
+    @Override
     public void refreshParameters() {
         var secondaryTurns = getRatio() * PRIMARY_TURNS;
         float secondaryInductance = secondaryTurns * secondaryTurns * CORE_AL;
@@ -144,9 +112,6 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
 
     @Override
     public void tick() {
-        super.tick();
-        arm.tickChaser();
-
         float power = 0;
         lastCurrent = 0;
         if(primaryStray != null) {
@@ -161,13 +126,7 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         }
         applyLostPower(power);
 
-        if(!arm.settled()) {
-            if(getSpeed() == 0) {
-                arm.updateChaseTarget(arm.getValue());
-            }
-            refreshParameters();
-            setChanged();
-        }
+        super.tick();
     }
 
     @Override
@@ -180,21 +139,6 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         } else if(hasSoundSource && getVolume() <= 0) {
             hasSoundSource = false;
         }
-    }
-
-    @Override
-    protected void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
-        if(clientPacket)
-            arm.forceNextSync();
-        compound.put("Arm", arm.writeNBT());
-    }
-
-    @Override
-    protected void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
-        arm.readNBT(compound.getCompound("Arm"), clientPacket);
-        refreshParameters();
     }
 
     @Override

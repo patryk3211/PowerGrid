@@ -35,6 +35,7 @@
   "block.powergrid.potato_battery": "ʎɹǝʇʇɐᗺ oʇɐʇoԀ",
   "block.powergrid.potato_battery.tooltip.summary": "ʎbɹǝuǝ uǝǝɹb ɟo ǝɔɹnos ןɐɹnʇɐu ןןɐ uⱯ",
   "block.powergrid.power_resistor": "ɹoʇsısǝᴚ ɹǝʍoԀ",
+  "block.powergrid.rheostat": "ʇɐʇsoǝɥᴚ",
   "block.powergrid.servo": "oʌɹǝS",
   "block.powergrid.spark_gap": "dɐ⅁ ʞɹɐdS",
   "block.powergrid.thermometer": "ɹǝʇǝɯoɯɹǝɥ⟘",
@@ -178,6 +179,7 @@
   "powergrid.generic.control_terminal": "ןoɹʇuoƆ",
   "powergrid.generic.negative_terminal": "ǝʌıʇɐbǝN",
   "powergrid.generic.positive_terminal": "ǝʌıʇısoԀ",
+  "powergrid.generic.tap": "dɐ⟘",
   "powergrid.generic.terminal": "ɹoʇɔǝuuoƆ",
   "powergrid.generic.unit.amp": "Ɐ",
   "powergrid.generic.unit.block": "sʞɔoןq",
@@ -224,6 +226,8 @@
   "powergrid.gui.heater.info_header": "uoıʇɐɯɹoɟuı ןıoɔ buıʇɐǝH",
   "powergrid.gui.heater.title": "ǝɹnʇɐɹǝdɯǝʇ ןıoƆ",
   "powergrid.gui.potentiometer.setting": "buıʇʇǝS",
+  "powergrid.gui.rheostat.info_header": "uoıʇɐɯɹoɟuı ʇɐʇsoǝɥᴚ",
+  "powergrid.gui.rheostat.ratio": "oıʇɐɹ ǝɔuɐʇsısǝᴚ",
   "powergrid.gui.thermometer.click": "ʇuǝɯǝɹnsɐǝɯ xɐɯ ʇǝsǝɹ oʇ ʞɔıןƆ",
   "powergrid.gui.thermometer.max_title": "ǝɹnʇɐɹǝdɯǝʇ pǝɹnsɐǝɯ xɐW",
   "powergrid.gui.thermometer.temperature": " :ǝɹnʇɐɹǝdɯǝ⟘",
@@ -402,6 +406,5 @@
   "powergrid.tooltip.voltage.min": ":ǝbɐʇןoʌ ɯnɯıuıW",
   "powergrid.tooltip.voltage.rated": ":ǝbɐʇןoʌ pǝʇɐᴚ",
   "powergrid.tooltip.voltage.rpm": ":ʇןoΛ ɹǝd WԀᴚ",
-  "powergrid.variac.primary": "ʎɹɐɯıɹԀ",
-  "powergrid.variac.tap": "dɐ⟘"
+  "powergrid.variac.primary": "ʎɹɐɯıɹԀ"
 }

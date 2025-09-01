@@ -60,7 +60,6 @@ import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
-import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
@@ -83,6 +82,7 @@ import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotor
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
+import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
@@ -561,6 +561,18 @@ public class ModdedBlocks {
             .item(ThermometerItem::new)
                 .model(itemWithParent("block/thermometer/base"))
                 .transform(ModdedItems.customRenderer(() -> ThermometerItemRenderer::new))
+                .build()
+            .register();
+
+    public static final BlockEntry<RheostatBlock> RHEOSTAT = REGISTRATE.block("rheostat", RheostatBlock::new)
+            .initialProperties(CONDUCTIVE_CASING)
+            .blockstate(horizontalBlock("block/rheostat/block"))
+            .transform(pickaxeOnly())
+            .transform(CStress.setNoImpact())
+            .transform(CResistance.setResistance(100))
+            .transform(CThermal.maxPower(1000, 4.0f))
+            .item()
+                .model(itemWithParent("block/rheostat/item"))
                 .build()
             .register();
 
