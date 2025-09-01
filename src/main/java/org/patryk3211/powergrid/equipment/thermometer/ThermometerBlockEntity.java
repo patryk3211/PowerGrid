@@ -126,7 +126,11 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
                 .forGoggles(tooltip);
 
         var temperature = temperature();
-        Lang.number(temperature)
+        var temperatureText = Lang.numberConstant(temperature);
+        if(temperature > 175) {
+            temperatureText = Lang.text(">175.0");
+        }
+        temperatureText
                 .add(Component.literal(" "))
                 .add(Unit.TEMPERATURE.get())
                 .style(color(temperature))
@@ -136,7 +140,11 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        Lang.number(maxTemperature)
+        var maxTemperatureText = Lang.numberConstant(maxTemperature);
+        if(maxTemperature > 175) {
+            maxTemperatureText = Lang.text(">175.0");
+        }
+        maxTemperatureText
                 .add(Component.literal(" "))
                 .add(Unit.TEMPERATURE.get())
                 .style(color(maxTemperature))
