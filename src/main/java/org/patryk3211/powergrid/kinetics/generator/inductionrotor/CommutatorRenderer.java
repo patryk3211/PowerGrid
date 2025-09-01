@@ -85,9 +85,9 @@ public class CommutatorRenderer extends RotorRenderer {
     @Override
     protected SuperByteBuffer getModelForState(BlockState state) {
         if(state.getBlock() instanceof VerticalCommutatorBlock) {
-            return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_BRUSH, state, Direction.UP);
+            return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.UP);
         } else {
-            return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_BRUSH, state,
+            return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state,
                     Direction.get(Direction.AxisDirection.POSITIVE, state.getValue(CommutatorBlock.HORIZONTAL_FACING).getAxis()));
         }
     }
