@@ -33,7 +33,8 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
-    private static final int MAX_ITERATIONS = 200;
+    private static final int MAX_ITERATIONS = 300;
+    private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
 
     private final Random random;
     private double initialDistance;
@@ -201,7 +202,7 @@ public class BiCGSTABSolver implements ISolver {
             } else {
                 System.out.printf("Solver iteration limit, final precision: %g", norm);
             }
-            if(norm > 10) {
+            if(norm > MAXIMUM_ALLOWED_IMPRECISION) {
                 if(LOGGER != null) {
                     LOGGER.warn("Large imprecision, dropping result");
                 }

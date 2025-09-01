@@ -25,6 +25,7 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
     private final float biasVoltage;
     private double currentConductance;
     private double prevConductance;
+    private double prevPotential;
 
     private double In;
 
@@ -53,11 +54,17 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
     @Override
     public void preSolve() {
         var V = super.potentialDifference();
+        float step;
+        if(V >= prevPotential) {
+            step = 0.05f;
+            V = (float) (prevPotential + step * Math.log(1 + (V - prevPotential) / step));
+        }
+        prevPotential = V;
 
         var maxConductance = 1 / resistance;
         var strength = 0.5 * (Math.tanh(10 * (V - biasVoltage - 0.3)) + 1);
         currentConductance = maxConductance * strength;
-        In = -Math.min(biasVoltage, V) * currentConductance;
+        In = -Math.min(biasVoltage, V) * currentConductance * 0.995;
 
         network.updateConductance(this, currentConductance - prevConductance);
         prevConductance = currentConductance;
