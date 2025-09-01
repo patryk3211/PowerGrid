@@ -48,6 +48,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     @Override
     public void initialize() {
         super.initialize();
+        updateBehaviour();
         sendData();
     }
 
@@ -125,7 +126,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
             }
             var controller = getControllerBE();
             if(controller != null && thermalBehaviour != null)
-                thermalBehaviour.track(getControllerBE().thermalBehaviour);
+                thermalBehaviour.track(controller.thermalBehaviour);
         }
         if(wires != null) {
             // Rewire connected wires.
