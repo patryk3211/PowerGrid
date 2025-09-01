@@ -104,7 +104,8 @@ public class BakedCircuit {
             var localPos = //Vec3.atLowerCornerOf(pos)
                     new Vec3((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f)
                             .subtract(0.5, 0, 0.5)
-                            .yRot((float) ((180 - facing.toYRot()) * Math.PI / 180))
+                            .xRot((float) Math.PI * CircuitBoardBlock.getAngleX(be.getBlockState()) / 180f)
+                            .yRot((float) Math.PI * CircuitBoardBlock.getAngleY(be.getBlockState()) / 180f)
                             .add(0.5, 0, 0.5)
                             .add(offset);
             thermalBuilders.stream()

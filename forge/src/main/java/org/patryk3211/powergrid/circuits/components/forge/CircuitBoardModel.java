@@ -152,7 +152,7 @@ public class CircuitBoardModel implements BakedModel {
                     // We need the raw footprint dimensions (without rotations)
                     var footprint = placed.component.footprint(null);
                         transformer = QuadTransformers.applying(new Transformation(
-                                new Vector3f(placed.x / 16f, 2 / 16f, placed.y / 16f),
+                                new Vector3f(placed.x / 16f - 0.5f, 2 / 16f - 0.5f, placed.y / 16f - 0.5f),
                                 new Quaternionf().rotationY(orientation.ordinal() * (float) Math.PI * 0.5f),
                                 null, null
                         ));
@@ -168,7 +168,7 @@ public class CircuitBoardModel implements BakedModel {
                     }
                 } else {
                     transformer = QuadTransformers.applying(
-                            new Transformation(new Vector3f(placed.x / 16f, 2 / 16f, placed.y / 16f),
+                            new Transformation(new Vector3f(placed.x / 16f - 0.5f, 2 / 16f - 0.5f, placed.y / 16f - 0.5f),
                                     null, null, null)
                     );
                 }
@@ -192,23 +192,12 @@ public class CircuitBoardModel implements BakedModel {
         }
 
         if(state != null) {
-            var facing = state.getValue(CircuitBoardBlock.HORIZONTAL_FACING);
             var transformer = QuadTransformers.applying(new Transformation(
-                    switch(facing) {
-                        case NORTH -> new Vector3f();
-                        case SOUTH -> new Vector3f(1, 0, 1);
-                        case EAST -> new Vector3f(1, 0, 0);
-                        case WEST -> new Vector3f(0, 0, 1);
-                        default -> throw new IllegalStateException();
-                    },
-                    null, null,
-                    new Quaternionf().rotateY(switch(facing) {
-                        case NORTH -> 0;
-                        case SOUTH -> (float) Math.PI;
-                        case EAST -> (float) Math.PI * -0.5f;
-                        case WEST -> (float) Math.PI * 0.5f;
-                        default -> throw new IllegalStateException();
-                    })
+                    new Vector3f(0.5f, 0.5f, 0.5f),
+                    new Quaternionf()
+                            .rotateY((float) Math.PI * CircuitBoardBlock.getAngleY(state) / 180f)
+                            .rotateX((float) Math.PI * CircuitBoardBlock.getAngleX(state) / 180f),
+                    null, null
             ));
             return transformer.process(quads);
         }
@@ -222,8 +211,8 @@ public class CircuitBoardModel implements BakedModel {
         float y2 = (float) area.y2() / GRID_TO_GRID_SCALE;
 
         return bakery.bakeQuad(
-                new Vector3f(x1, 2.05f, y1),
-                new Vector3f(x2, 2.05f, y2),
+                new Vector3f(x1 - 8, 2.05f - 8, y1 - 8),
+                new Vector3f(x2 - 8, 2.05f - 8, y2 - 8),
                 new BlockElementFace(
                         null, BlockElementFace.NO_TINT, "circuit_board_trace",
                         new BlockFaceUV(new float[] { x1, y1, x2, y2 }, 0)
@@ -244,8 +233,8 @@ public class CircuitBoardModel implements BakedModel {
         y1 /= GRID_TO_GRID_SCALE;
         y2 /= GRID_TO_GRID_SCALE;
         return bakery.bakeQuad(
-                new Vector3f(x1, 2.05f, y1),
-                new Vector3f(x2, 2.05f, y2),
+                new Vector3f(x1 - 8, 2.05f - 8, y1 - 8),
+                new Vector3f(x2 - 8, 2.05f - 8, y2 - 8),
                 new BlockElementFace(
                         null, BlockElementFace.NO_TINT, "circuit_board_trace",
                         new BlockFaceUV(new float[] { x1, y1, x2, y2 }, 0)
