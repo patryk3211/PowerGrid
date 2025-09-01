@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Configuration name="Dev" status="WARN" packages="org.patryk3211">
-    <Loggers>
-        <Logger name="PowerGrid" level="all">
-            <AppenderRef ref="SysOut" level="all" />
-            <AppenderRef ref="ServerGuiConsole" level="all" />
-        </Logger>
-    </Loggers>
-</Configuration>

@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public class PowerGrid  {
 	public static final String MOD_ID = "powergrid";
 
-	public static final Logger LOGGER = LoggerFactory.getLogger("PowerGrid");
+	public static final Logger LOGGER = LoggerFactory.getLogger(PowerGrid.class);
 
 	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(MOD_ID, Registries.RECIPE_SERIALIZER);
 	public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(MOD_ID, Registries.RECIPE_TYPE);
