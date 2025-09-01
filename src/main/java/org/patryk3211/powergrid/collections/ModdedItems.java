@@ -81,7 +81,7 @@ public class ModdedItems {
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
                 case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
             }))
-            .transform(LightBulb.setProperties(3, 12, 20, 1450, 0.001f))
+            .transform(LightBulb.setProperties(3, 12, 20, 0.001f))
             .model(itemWithParent("block/lamps/light_bulb"))
             .lang("LV Light Bulb")
             .register();
@@ -93,7 +93,7 @@ public class ModdedItems {
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
                 case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
             }))
-            .transform(LightBulb.setProperties(30, 120, 120, 1450, 0.005f))
+            .transform(LightBulb.setProperties(30, 120, 120, 0.005f))
             .model(itemWithParent("block/lamps/light_bulb"))
             .register();
 
@@ -104,7 +104,7 @@ public class ModdedItems {
                 case BROKEN -> ModdedPartialModels.GROWTH_LAMP_BROKEN;
                 case LIGHT -> ModdedPartialModels.GROWTH_LAMP_LIGHT;
             }))
-            .transform(LightBulb.setProperties(120, 240, 120, 1600, 0.01f))
+            .transform(LightBulb.setProperties(120, 240, 120, 0.01f))
             .model(itemWithParent("block/lamps/growth_lamp"))
             .register();
 
