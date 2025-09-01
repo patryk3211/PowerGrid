@@ -285,6 +285,7 @@ public class TransmissionLine extends ElectricWire {
         if(line2 != null && R2 > 0) {
             line2.setResistance(R2);
             global.assignTransmissionLine(line2.getNode2(), null);
+            var network = global.prepareForConnection(line2.endpoint1, line2.endpoint2);
             if(network != null)
                 network.addWire(line2);
         } else {
@@ -367,10 +368,8 @@ public class TransmissionLine extends ElectricWire {
             global.assignTransmissionLine(segment.getNode1(), null);
             global.assignTransmissionLine(segment.getNode2(), null);
         }
-        if(!segments.isEmpty()) {
-            optimizeNode(getNode1());
-            optimizeNode(getNode2());
-        }
+        optimizeNode(getNode1());
+        optimizeNode(getNode2());
     }
 
     public UnresolvedTransmissionLine unresolve() {

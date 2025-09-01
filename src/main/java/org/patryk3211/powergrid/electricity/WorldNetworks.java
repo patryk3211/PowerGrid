@@ -234,15 +234,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
                 syncTicks = 0;
             }
-        } else {
-            var iter2 = transmissionLines.values().iterator();
-            while(iter2.hasNext()) {
-                var line = iter2.next();
-                if(line.segments.isEmpty()) {
-                    PowerGrid.LOGGER.warn("Empty transmission line {} dropped during tick", line);
-                    iter2.remove();
-                }
-            }
         }
     }
 
@@ -706,7 +697,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
             if(oldNode.getNetwork() != null) {
-                prepareForConnection(ownedNode, oldNode);
+                var unified = prepareForConnection(ownedNode, oldNode);
+                if(unified == null)
+                    PowerGrid.LOGGER.error("Failed to unify network of old and new external node");
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {
                     if (line.getNode1() == oldNode) {
@@ -715,7 +708,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         line.setNode2(ownedNode);
                     }
                 }
-                oldNode.getNetwork().removeNode(oldNode);
+                unified.removeNode(oldNode);
             }
         }
         // Try to resolve an end of a transmission line

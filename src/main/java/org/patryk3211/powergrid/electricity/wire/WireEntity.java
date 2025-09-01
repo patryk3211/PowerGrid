@@ -142,14 +142,14 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         baseTick();
 
         if((deferEndpointResolution & 1) != 0) {
-            if(endpoint1.isValid(world)) {
+            if(endpoint1 != null && endpoint1.isValid(world)) {
                 endpoint1.assignWireEntity(this);
                 deferEndpointResolution &= ~1;
                 makeWire();
             }
         }
         if((deferEndpointResolution & 2) != 0) {
-            if(endpoint2.isValid(world)) {
+            if(endpoint2 != null && endpoint2.isValid(world)) {
                 endpoint2.assignWireEntity(this);
                 deferEndpointResolution &= ~2;
                 makeWire();
