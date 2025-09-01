@@ -53,15 +53,15 @@ public class RheostatBlockEntity extends TunedBlockEntity implements IHaveGoggle
         builder.setTerminalCount(3);
 
         float ratio = getRatio();
-        half1 = builder.connect(ratio * resistance(), builder.terminalNode(0), builder.terminalNode(1));
-        half2 = builder.connect((1 - ratio) * resistance(), builder.terminalNode(1), builder.terminalNode(2));
+        half1 = builder.connect((1 - ratio) * resistance(), builder.terminalNode(0), builder.terminalNode(1));
+        half2 = builder.connect(ratio * resistance(), builder.terminalNode(1), builder.terminalNode(2));
     }
 
     @Override
     public void refreshParameters() {
         float ratio = getRatio();
-        half1.setResistance(ratio * resistance());
-        half2.setResistance((1 - ratio) * resistance());
+        half1.setResistance((1 - ratio) * resistance());
+        half2.setResistance(ratio * resistance());
     }
 
     @Override
@@ -82,9 +82,9 @@ public class RheostatBlockEntity extends TunedBlockEntity implements IHaveGoggle
                 .forGoggles(tooltip);
 
         var ratio = getRatio();
-        var ratioText = Lang.number(ratio)
+        var ratioText = Lang.number(1 - ratio)
                 .add(Component.literal(" : "))
-                .add(Lang.number(1 - ratio));
+                .add(Lang.number(ratio));
         ratioText.style(ChatFormatting.AQUA)
                 .forGoggles(tooltip, 1);
         return true;
