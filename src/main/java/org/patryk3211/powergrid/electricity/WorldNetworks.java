@@ -560,6 +560,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(lines2.isEmpty())
                 unresolvedLineNodeMap.remove(line.endpoint2());
         }
+        setDirty();
     }
 
     protected void readNbt(CompoundTag nbt) {
@@ -594,6 +595,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Also, we need to inform the wire entities about this.
             var unresolved = line.unresolve();
             unresolvedLines.add(unresolved);
+            setDirty();
             addUnresolvedLineMapping(unresolved.endpoint1(), unresolved);
             addUnresolvedLineMapping(unresolved.endpoint2(), unresolved);
             if(removeNode.getNetwork() != null) {
@@ -613,7 +615,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     private void resolveLine(UnresolvedTransmissionLine line) {
         // If node already exists then the resolving code must have triggered for it (no need to resolve again)
-        // TODO: This will break if the resolve actually succeeded
         var node1 = globalExternalNodes.get(line.endpoint1());
         if(node1 == null) {
             node1 = new OwnedFloatingNode(line.endpoint1());
@@ -760,6 +761,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 checkForExistence.put(chunkPos, set);
             }
         }
+    }
+
+    @NotNull
+    public OwnedFloatingNode holderOrPlaceholderNode(@NotNull IWireEndpoint endpoint) {
+        var node = globalExternalNodes.get(endpoint);
+        if(node != null)
+            return node;
+        node = new OwnedFloatingNode(endpoint);
+        globalExternalNodes.put(endpoint, node);
+        return node;
     }
 
     private static class CheckChunk {

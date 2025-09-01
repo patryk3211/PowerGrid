@@ -43,6 +43,8 @@ public class UnresolvedTransmissionLine {
     private boolean resolved = false;
 
     public UnresolvedTransmissionLine(TransmissionLine line) {
+        if(TransmissionLine.ENABLE_VALIDATION)
+            line.validateLine();
         endpoint1 = line.getEndpoint1();
         endpoint2 = line.getEndpoint2();
         resistance = line.getResistance();
@@ -54,12 +56,16 @@ public class UnresolvedTransmissionLine {
             endpoint = segment.endpoint2;
             if(endpoint.equals(prevEndpoint)) {
                 endpoint = segment.endpoint1;
+                PowerGrid.LOGGER.warn("Flipped segment endpoints in unresolved line.");
             }
             prevEndpoint = endpoint;
             var unSegment = new Segment(endpoint, segment.persistentOwnerId, segment.lastKnownChunk, segment.getResistance());
-            unSegment.resolvedWire = segment;
+            if(segment.owner != null && !segment.owner.isRemoved())
+                unSegment.resolvedWire = segment;
             segments.add(unSegment);
         }
+        if(!endpoint2.equals(prevEndpoint))
+            PowerGrid.LOGGER.error("Unresolved line segments have not ended on the specified endpoint");
     }
 
     public UnresolvedTransmissionLine(CompoundTag nbt) {
@@ -76,6 +82,8 @@ public class UnresolvedTransmissionLine {
             var chunkPos = new ChunkPos(segment.getInt("X"), segment.getInt("Z"));
             segments.add(new UnresolvedTransmissionLine.Segment(endpoint, id, chunkPos, resistance2));
         }
+        if(!endpoint2.equals(segments.get(segments.size() - 1).endpoint))
+            PowerGrid.LOGGER.error("Read unresolved line segments have not ended on the specified endpoint");
     }
 
     public CompoundTag writeNbt() {
@@ -121,9 +129,6 @@ public class UnresolvedTransmissionLine {
         if(global.connectionCount(node.endpoint) != 0) {
             // Cannot simply assign node to a line, this line must be split.
             PowerGrid.LOGGER.warn("Line has a junction in the middle.");
-        } else {
-            global.assignTransmissionLine(node, line);
-            network.removeNode(node);
         }
     }
 
@@ -167,8 +172,6 @@ public class UnresolvedTransmissionLine {
             line.unloadedParts.add(part);
             global.bounty(segment.id, segment.chunkPos, line);
         }
-        global.assignTransmissionLine(node1, null);
-        global.assignTransmissionLine(node2, null);
         global.removeUnresolvedLine(this);
         network = global.prepareForConnection(line.getNode1(), line.getNode2());
         if(network == null) {
@@ -177,6 +180,20 @@ public class UnresolvedTransmissionLine {
             return;
         }
         network.addWire(line);
+        for(var segment : line.segments) {
+            var n1 = segment.getNode1();
+            if(n1 != null && n1 != node1) {
+                global.assignTransmissionLine(n1, line);
+                network.removeNode(n1);
+            }
+            var n2 = segment.getNode2();
+            if(n2 != null && n2 != node2) {
+                global.assignTransmissionLine(n2, line);
+                network.removeNode(n2);
+            }
+        }
+        global.assignTransmissionLine(node1, null);
+        global.assignTransmissionLine(node2, null);
     }
 
     @Nullable
