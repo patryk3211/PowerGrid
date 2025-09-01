@@ -24,6 +24,7 @@
   "block.powergrid.generator_housing": "Generator Housing",
   "block.powergrid.generator_induction_rotor": "Generator Induction Rotor",
   "block.powergrid.generator_rotor": "Generator Rotor",
+  "block.powergrid.generator_vertical_commutator": "Vertical Generator Commutator",
   "block.powergrid.heating_coil": "Heating Coil",
   "block.powergrid.heavy_wire_connector": "Heavy Wire Connector",
   "block.powergrid.hv_switch": "HV Switch",

@@ -128,7 +128,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CommutatorBlockEntity> GENERATOR_COMMUTATOR =
             REGISTRATE.blockEntity("generator_commutator", CommutatorBlockEntity::new)
                     .visual(() -> CommutatorVisual::new)
-                    .validBlock(ModdedBlocks.GENERATOR_COMMUTATOR)
+                    .validBlocks(ModdedBlocks.GENERATOR_COMMUTATOR, ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
                     .renderer(() -> CommutatorRenderer::new)
                     .register();
 
@@ -194,9 +194,9 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<VariacBlockEntity> VARIAC =
             REGISTRATE.blockEntity("variac", VariacBlockEntity::new)
-                    .visual(() -> VariacVisual::new)
+                    .visual(() -> TunedBlockVisual::new)
                     .validBlock(ModdedBlocks.VARIAC)
-                    .renderer(() -> VariacRenderer::new)
+                    .renderer(() -> TunedBlockRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ElectricMotorBlockEntity> ELECTRIC_MOTOR =

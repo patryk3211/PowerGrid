@@ -26,7 +26,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
     public RotorRenderer(BlockEntityRendererProvider.Context context) {
@@ -38,14 +37,7 @@ public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
             return;
 
         var state = rotor.getBlockState();
-        Direction.Axis axis;
-        if(state.hasProperty(BlockStateProperties.AXIS)) {
-            axis = state.getValue(BlockStateProperties.AXIS);
-        } else if(state.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
-            axis = state.getValue(BlockStateProperties.HORIZONTAL_AXIS);
-        } else {
-            return;
-        }
+        Direction.Axis axis = ((AbstractRotorBlock) state.getBlock()).getAssemblyRotationAxis(state);
 
         var rotorModel = getModelForState(state);
         var rotorAngle = getRotorAngle(rotor, partialTicks);

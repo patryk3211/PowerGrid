@@ -79,6 +79,7 @@ import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
@@ -217,13 +218,24 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CommutatorBlock> GENERATOR_COMMUTATOR = REGISTRATE.block("generator_commutator", CommutatorBlock::new)
-            .blockstate(rotorModel("block/generator/commutator_base_horizontal"))
+            .blockstate(horizontalBlock("block/generator/commutator_base_horizontal"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/generator/commutator"))
                 .build()
+            .register();
+
+    public static final BlockEntry<VerticalCommutatorBlock> GENERATOR_VERTICAL_COMMUTATOR = REGISTRATE.block("generator_vertical_commutator", VerticalCommutatorBlock::new)
+            .blockstate(verticalCommutator("block/generator/commutator_base_vertical"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .lang("Vertical Generator Commutator")
+            .item()
+            .model(itemWithParent("block/generator/vertical_commutator"))
+            .build()
             .register();
 
     public static final BlockEntry<GeneratorClutchBlock> GENERATOR_CLUTCH = REGISTRATE.block("generator_clutch", GeneratorClutchBlock::new)

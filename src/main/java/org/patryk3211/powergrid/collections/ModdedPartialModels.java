@@ -31,6 +31,7 @@ public class ModdedPartialModels {
 
     public static final PartialModel COMMUTATOR_SHAFT = block("generator/commutator_shaft");
     public static final PartialModel COMMUTATOR_BRUSH = block("generator/commutator_brush");
+    public static final PartialModel VERTICAL_COMMUTATOR_BRUSH = block("generator/vertical_commutator_brush");
 
     public static final PartialModel CLUTCH_SHAFT = block("generator/clutch_shaft");
 

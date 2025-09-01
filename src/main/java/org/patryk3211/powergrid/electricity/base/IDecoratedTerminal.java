@@ -42,6 +42,10 @@ public interface IDecoratedTerminal {
             .translate("generic.control_terminal")
             .style(ChatFormatting.DARK_GREEN)
             .component();
+    Component TAP = Lang.builder()
+            .translate("generic.tap")
+            .style(ChatFormatting.GRAY)
+            .component();
 
     int RED = 0xFF3B3B;
     int BLUE = 0x3B80FF;

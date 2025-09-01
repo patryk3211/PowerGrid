@@ -31,8 +31,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-import static net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS;
-import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.getRotorAngle;
 
 public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntityVisual<T> implements SimpleDynamicVisual {
@@ -41,12 +39,9 @@ public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntity
     public static <T extends RotorBlockEntity> SimpleBlockEntityVisualizer.Factory<T> of(PartialModel model) {
         return (ctx, be, partialTick) -> {
             var state = be.getBlockState();
-            Direction facing = null;
-            if(state.hasProperty(AXIS))
-                facing = Direction.get(Direction.AxisDirection.POSITIVE, state.getValue(AXIS));
-            else if(state.hasProperty(HORIZONTAL_AXIS))
-                facing = Direction.get(Direction.AxisDirection.POSITIVE, state.getValue(HORIZONTAL_AXIS));
-            var model1 = facing == null ? Models.partial(model) : Models.partial(model, facing);
+            var axis = ((AbstractRotorBlock) state.getBlock()).getAssemblyRotationAxis(state);
+            var facing = Direction.get(Direction.AxisDirection.POSITIVE, axis);
+            var model1 = Models.partial(model, facing);
             return new RotorVisual<>(ctx, be, partialTick, model1);
         };
     }
@@ -61,11 +56,7 @@ public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntity
     }
 
     public Direction.Axis getRotationAxis() {
-        if(blockState.hasProperty(AXIS))
-            return blockState.getValue(AXIS);
-        if(blockState.hasProperty(HORIZONTAL_AXIS))
-            return blockState.getValue(HORIZONTAL_AXIS);
-        return Direction.Axis.X;
+        return ((AbstractRotorBlock) blockState.getBlock()).getAssemblyRotationAxis(blockState);
     }
 
     @Override

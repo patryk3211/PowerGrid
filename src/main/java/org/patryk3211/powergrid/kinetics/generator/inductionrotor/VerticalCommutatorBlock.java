@@ -24,12 +24,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -40,10 +40,10 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
-import org.patryk3211.powergrid.utility.Directions;
 
-public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, IElectric, IBrushPlacement {
+public class VerticalCommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, IElectric, IBrushPlacement {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final BooleanProperty UP = BlockStateProperties.UP;
 
     private final BlockStateTerminalCollection terminals;
     private final ImmutableMap<BlockState, VoxelShape> outlines;
@@ -55,22 +55,30 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    public CommutatorBlock(Properties properties) {
+    public VerticalCommutatorBlock(Properties properties) {
         super(properties);
-        var baseShaper = VoxelShaper.forHorizontalAxis(Shapes.or(
-                box(0, 0, 3, 16, 12, 13),
+        var shaperUp = VoxelShaper.forHorizontalAxis(Shapes.or(
+                box(0, 4, 2, 16, 12, 14),
                 box(0, 12, 6, 3, 16, 9),
                 box(13, 12, 7, 16, 16, 10)
+        ), Direction.Axis.Z);
+        var shaperDown = VoxelShaper.forHorizontalAxis(Shapes.or(
+                box(0, 4, 2, 16, 12, 14),
+                box(0, 0, 7, 3, 4, 10),
+                box(13, 0, 6, 16, 4, 9)
         ), Direction.Axis.Z);
         terminals = BlockStateTerminalCollection.builder(this)
                 .forAllStatesExcept(state -> {
                     var facing = state.getValue(HORIZONTAL_FACING);
+                    var up = state.getValue(UP);
                     return BlockStateTerminalCollection.each(TERMINALS_HORIZONTAL, terminal -> terminal
+                            .rotateAroundX(up ? 0 : 180)
                             .rotateAroundY((int) facing.toYRot() - 180));
                 })
                 .withShapeMapper(state -> {
                     var axis = state.getValue(HORIZONTAL_FACING).getAxis();
-                    return baseShaper.get(axis);
+                    var up = state.getValue(UP);
+                    return (up ? shaperUp : shaperDown).get(axis);
                 })
                 .build();
         outlines = getShapeForEachState(terminals.shapeMapper());
@@ -78,7 +86,7 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(HORIZONTAL_FACING);
+        builder.add(HORIZONTAL_FACING, UP);
     }
 
     @Override
@@ -115,64 +123,43 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
     }
 
     @Override
+    public BlockState getRotatedBlockState(BlockState originalState, Direction targetedFace) {
+        if(targetedFace.getAxis() == Direction.Axis.Y) {
+            return super.getRotatedBlockState(originalState, targetedFace);
+        }
+        return originalState.cycle(UP);
+    }
+
+    @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Level world = context.getLevel();
-        BlockPos pos = context.getClickedPos();
-
-        Direction.Axis preferredAxis = null;
-        for(Direction.Axis axis : Directions.HORIZONTAL_AXIS) {
-            if(hasPositive(world, pos, axis) ||
-                    hasNegative(world, pos, axis)) {
-                if(preferredAxis != null) {
-                    preferredAxis = null;
-                    break;
-                }
-                preferredAxis = axis;
-            }
-        }
-
-        Direction facing = null;
-        if(preferredAxis != null) {
-            for (var dir : context.getNearestLookingDirections()) {
-                if(dir.getAxis() == preferredAxis) {
-                    facing = dir;
-                    break;
-                }
-            }
-        }
-        if(facing == null) {
-            facing = context.getHorizontalDirection();
-        }
-
-        return defaultBlockState()
-                .setValue(HORIZONTAL_FACING, facing);
+        return defaultBlockState().setValue(HORIZONTAL_FACING, context.getHorizontalDirection());
     }
 
     @Override
     public boolean canConnect(BlockState state, Direction dir) {
-        return state.getValue(HORIZONTAL_FACING).getAxis() == dir.getAxis();
+        return dir.getAxis() == Direction.Axis.Y;
     }
 
     @Override
-    public Direction.@NotNull Axis getAssemblyRotationAxis(BlockState state) {
-        return state.getValue(HORIZONTAL_FACING).getAxis();
+    public @NotNull Direction.Axis getAssemblyRotationAxis(BlockState state) {
+        return Direction.Axis.Y;
     }
 
     @Override
     public Vec3 brushOffset(BlockState state) {
-        return switch (state.getValue(HORIZONTAL_FACING).getAxis()) {
-            case Z -> new Vec3(3.5 / 16f, 0, 2 / 16f);
-            case X -> new Vec3(-2 / 16f, 0, 3.5 / 16);
-            default -> throw new IllegalStateException();
-        };
+        var facing = state.getValue(HORIZONTAL_FACING);
+        if(!state.getValue(UP))
+            facing = facing.getOpposite();
+        return new Vec3(-3.5 / 16, 2 / 16f, 0)
+                .yRot((float) Math.PI * (facing.toYRot() - 180) / 180f);
     }
 
     @Override
     public Vec3 sparkVelocity(BlockState state, float angularVelocity) {
-        return switch(state.getValue(HORIZONTAL_FACING).getAxis()) {
-            case Z -> new Vec3(0, 1 / 4f + Math.abs(angularVelocity) / 100f, 0);
-            case X -> new Vec3(0, -1 / 4f - Math.abs(angularVelocity) / 100f, 0);
-            default -> throw new IllegalStateException();
-        };
+        var facing = state.getValue(HORIZONTAL_FACING);
+        if(!state.getValue(UP))
+            facing = facing.getOpposite();
+        return new Vec3(0, 0, 1 / 4f + Math.abs(angularVelocity) / 100f)
+                .yRot((float) Math.PI * (facing.toYRot() - 180) / 180f);
     }
 }

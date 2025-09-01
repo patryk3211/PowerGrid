@@ -346,6 +346,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('B', ModdedBlocks.BATTERY)),
 
     HOUSING_CYCLE = conversionCycle(List.of(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING)),
+    COMMUTATOR_CYCLE = conversionCycle(List.of(ModdedBlocks.GENERATOR_COMMUTATOR, ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)),
 
     POWER_RESISTOR = create(ModdedBlocks.RESISTOR)
             .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)

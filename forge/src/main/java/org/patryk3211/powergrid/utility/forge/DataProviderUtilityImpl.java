@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 
@@ -236,6 +237,18 @@ public class DataProviderUtilityImpl {
         });
     }
 
+    public static <T extends VerticalCommutatorBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> verticalCommutator(String name) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+            var model = modModel(prov, name);
+            var builder = ConfiguredModel.builder().modelFile(model);
+            Direction facing = state.getValue(HORIZONTAL_FACING);
+            if(!state.getValue(UP)) {
+                builder.rotationX(180);
+            }
+            builder.rotationY((int) (facing.toYRot() - 180));
+            return builder.build();
+        });
+    }
 
     public static <T extends HvSwitchBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> hvSwitch(String baseName) {
         return (ctx, prov) ->

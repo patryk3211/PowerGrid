@@ -40,6 +40,7 @@ public class PowerGridPonderTags {
                 .item(ModdedBlocks.GENERATOR_CLUTCH)
                 .item(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
                 .item(ModdedBlocks.GENERATOR_COMMUTATOR)
+                .item(ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
                 .item(ModdedItems.COPPER_COIL)
                 .item(ModdedBlocks.GENERATOR_HOUSING)
                 .item(ModdedBlocks.VERTICAL_GENERATOR_HOUSING)
