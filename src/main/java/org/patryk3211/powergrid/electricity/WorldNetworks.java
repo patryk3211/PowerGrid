@@ -234,6 +234,15 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
                 syncTicks = 0;
             }
+        } else {
+            var iter2 = transmissionLines.values().iterator();
+            while(iter2.hasNext()) {
+                var line = iter2.next();
+                if(line.segments.isEmpty()) {
+                    PowerGrid.LOGGER.warn("Empty transmission line {} dropped during tick", line);
+                    iter2.remove();
+                }
+            }
         }
     }
 
