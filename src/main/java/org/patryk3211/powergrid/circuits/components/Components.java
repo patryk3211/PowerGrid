@@ -22,6 +22,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
+@SuppressWarnings("unused")
 public class Components {
     public static final RegistryEntry<ViaComponent> VIA = REGISTRATE.component("via", ViaComponent::new)
             .footprint(1, 1, b -> b.addPad(0, 0))
@@ -70,9 +71,9 @@ public class Components {
             .register();
 
     public static final RegistryEntry<ResistorComponent> RESISTOR = REGISTRATE.component("resistor", ResistorComponent::new)
-            .footprint(6, 3, b -> b
+            .footprint(5, 3, b -> b
                     .addPad(0, 1, 0)
-                    .addPad(5, 1, 1)
+                    .addPad(4, 1, 1)
                     .withItem(ModdedItems.RESISTOR)
                     .withOutline()
             )
@@ -102,9 +103,9 @@ public class Components {
             .register();
 
     public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
-            .footprint(6, 3, b -> b
+            .footprint(5, 3, b -> b
                     .addPad(0, 1, 0, "Anode")
-                    .addPad(5, 1, 1, "Cathode")
+                    .addPad(4, 1, 1, "Cathode")
                     .withItem(ModdedItems.DIODE)
                     .withOutline()
             )
