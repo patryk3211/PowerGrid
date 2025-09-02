@@ -323,4 +323,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
                 .forGoggles(tooltip);
         return true;
     }
+
+    public BakedCircuit getBaked() {
+        return baked;
+    }
 }

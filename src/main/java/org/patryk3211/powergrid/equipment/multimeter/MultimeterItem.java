@@ -15,10 +15,13 @@
  */
 package org.patryk3211.powergrid.equipment.multimeter;
 
+import net.createmod.catnip.math.VecHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -30,10 +33,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.CircuitBoardEndpoint;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
@@ -63,7 +70,20 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 return onTerminal(context.getLevel(), new BlockWireEndpoint(pos, terminal), context.getItemInHand());
             }
         }
-        return super.useOn(context);
+        return context.getLevel().getBlockEntity(context.getClickedPos(), ModdedBlockEntities.CIRCUIT_BOARD.get())
+                .map(be -> {
+                    var pos = context.getClickedPos();
+                    var state = context.getLevel().getBlockState(context.getClickedPos());
+                    var hitLocalPos = context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+                    hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -CircuitBoardBlock.getAngleY(state), Direction.Axis.Y);
+                    hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -CircuitBoardBlock.getAngleX(state), Direction.Axis.X);
+                    if(hitLocalPos.y >= 2 / 16f && hitLocalPos.y <= 3 / 16f) {
+                        int x = (int) (hitLocalPos.x * 16);
+                        int y = (int) (hitLocalPos.z * 16);
+                        return onTerminal(context.getLevel(), new CircuitBoardEndpoint(pos, x, y), context.getItemInHand());
+                    }
+                    return InteractionResult.PASS;
+                }).orElse(InteractionResult.PASS);
     }
 
     @Override
@@ -126,7 +146,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         return super.use(level, player, usedHand);
     }
 
-    private InteractionResult onTerminal(Level level, BlockWireEndpoint endpoint, ItemStack stack) {
+    private InteractionResult onTerminal(Level level, IWireEndpoint endpoint, ItemStack stack) {
         if(getMode(stack) != 0)
             return InteractionResult.PASS;
         var data = getModeData(stack);
@@ -160,8 +180,8 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     yield null;
                 if(!pos.isValid(level) || !neg.isValid(level))
                     yield null;
-                var posNode = pos.getNode(level);
-                var negNode = neg.getNode(level);
+                var posNode = pos instanceof CircuitBoardEndpoint e ? e.getGenericNode(level) : pos.getNode(level);
+                var negNode = neg instanceof CircuitBoardEndpoint e ? e.getGenericNode(level) : neg.getNode(level);
                 var voltageNum = posNode.getVoltage() - negNode.getVoltage();
                 var voltage = Unit.VOLTAGE.formatWithPrefixes(voltageNum);
                 if(voltageNum > 500) {
