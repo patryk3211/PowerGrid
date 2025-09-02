@@ -259,6 +259,8 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
 
     @Nullable
     public BlockPos getMainBlockPos(Level world, BlockPos pos) {
+        if(!world.isLoaded(pos))
+            return null;
         var state = world.getBlockState(pos);
         if(!state.is(this))
             return null;
@@ -270,6 +272,8 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             case 1, 2 -> {
                 while(true) {
                     pos = pos.relative(axis, -1);
+                    if(!world.isLoaded(pos))
+                        return null;
                     state = world.getBlockState(pos);
                     if(!state.is(this))
                         return null;

@@ -49,6 +49,10 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     private void constructBehaviours() {
         fetched = true;
         var world = getWorld();
+        if(!world.isLoaded(behaviourPosition)) {
+            fetched = false;
+            return;
+        }
         var mainBehaviour = get(world, behaviourPosition, TYPE);
         if(mainBehaviour != null)
             return;
@@ -61,6 +65,8 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     }
 
     public Optional<ElectricBehaviour> getMainBehaviour() {
+        if(!getWorld().isLoaded(behaviourPosition))
+            return Optional.empty();
         if(!fetched)
             constructBehaviours();
         return Optional.ofNullable(get(getWorld(), behaviourPosition, TYPE));
@@ -79,6 +85,28 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
                 b -> b.joinNetwork(network),
                 () -> super.joinNetwork(network)
         );
+    }
+
+    @Override
+    public void initialize() {
+        if(getBridgeBehaviour() != null)
+            super.initialize();
+    }
+
+    @Override
+    public void unload() {
+        if(getBridgeBehaviour() != null)
+            super.unload();
+    }
+
+    @Override
+    public void remove() {
+        if(getBridgeBehaviour() != null) {
+            super.remove();
+        } else {
+            // Node holder might not be removed.
+            breakConnections();
+        }
     }
 
     @Override

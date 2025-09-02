@@ -37,6 +37,8 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
         var pos = behaviourPosition.get();
         if(getPos().equals(pos) || pos == null)
             return Optional.empty();
+        if(!getWorld().isLoaded(pos))
+            return Optional.empty();
         return Optional.ofNullable(get(getWorld(), pos, TYPE));
     }
 
@@ -68,4 +70,19 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
                 .map(ElectricBehaviour::getExternalNodes)
                 .orElseGet(super::getExternalNodes);
     }
+
+    @Override
+    public void initialize() {
+    }
+
+    @Override
+    public void unload() {
+    }
+
+    @Override
+    public void remove() {
+        // Node holder might not be removed.
+        breakConnections();
+    }
+
 }
