@@ -141,7 +141,7 @@ public class UnresolvedTransmissionLine {
             return;
         var network = global.prepareForConnection(endpoint1, endpoint2);
         if(network == null) {
-            PowerGrid.LOGGER.error("Failed to prepare endpoints of line while resolving");
+            PowerGrid.LOGGER.error("Failed to prepare endpoints of line while resolving for {} and {}", endpoint1, endpoint2);
             return;
         }
         resolved = true;

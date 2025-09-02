@@ -709,6 +709,18 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     }
                 }
                 unified.removeNode(oldNode);
+            } else {
+                var line = transmissionLineNodes.remove(oldNode);
+                if(line != null) {
+                    for (var segment : line.segments) {
+                        if (segment.getNode1() == oldNode) {
+                            segment.setNode1(ownedNode);
+                        } else if (segment.getNode2() == oldNode) {
+                            segment.setNode2(ownedNode);
+                        }
+                        transmissionLineNodes.put(ownedNode, line);
+                    }
+                }
             }
         }
         // Try to resolve an end of a transmission line
