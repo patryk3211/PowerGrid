@@ -237,7 +237,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
     }
 
-    protected ElectricalNetwork newNetwork() {
+    public ElectricalNetwork newNetwork() {
         var network = new GraphedElectricalNetwork(globalGraph);
         subnetworks.add(network);
         return network;
@@ -454,12 +454,12 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     if(line1 != line2) {
                         linePart = new TransmissionLinePart(forEntity.getResistance(), endpoint1, endpoint2, world, forEntity, line1);
                         // We can extend the first line by the second node.
-                        PowerGrid.LOGGER.trace("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
+                        PowerGrid.LOGGER.debug("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
                         if(line1.getNode2() != node1)
                             line1.flip();
                         line1.addLastSegment(linePart);
                         // We need to merge lines.
-                        PowerGrid.LOGGER.trace("{}: Merging transmission lines between {} and {}", line1, node1, node2);
+                        PowerGrid.LOGGER.debug("{}: Merging transmission lines between {} and {}", line1, node1, node2);
                         if (curLine.getNode1() != line1.getNode2())
                             curLine.flip();
                         line1.merge(curLine);
@@ -470,7 +470,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     line1 = null;
                 } else {
                     linePart = new TransmissionLinePart(forEntity.getResistance(), endpoint1, endpoint2, world, forEntity, line2);
-                    PowerGrid.LOGGER.trace("{}: Extending line at beginning by wire {}, starting node is now {}", line2, linePart, node1);
+                    PowerGrid.LOGGER.debug("{}: Extending line at beginning by wire {}, starting node is now {}", line2, linePart, node1);
                     // We can extend this line by the first node.
                     if(line2.getNode1() != node2)
                         line2.flip();
@@ -481,7 +481,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(line1 != null) {
             linePart = new TransmissionLinePart(forEntity.getResistance(), endpoint1, endpoint2, world, forEntity, line1);
             // We can extend this line by the second node.
-            PowerGrid.LOGGER.trace("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
+            PowerGrid.LOGGER.debug("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
             if(line1.getNode2() != node1)
                 line1.flip();
             line1.addLastSegment(linePart);
@@ -491,7 +491,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             var line = new TransmissionLine(forEntity.getResistance(), endpoint1, endpoint2, linePart, this);
             linePart.setLine(line);
             network.addWire(line);
-            PowerGrid.LOGGER.trace("{}: New transmission line between {} and {}", line, node1, node2);
+            PowerGrid.LOGGER.debug("{}: New transmission line between {} and {}", line, node1, node2);
         }
 
         setDirty();

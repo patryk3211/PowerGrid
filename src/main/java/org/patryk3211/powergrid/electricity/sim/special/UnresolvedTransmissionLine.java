@@ -122,14 +122,16 @@ public class UnresolvedTransmissionLine {
         resolvedEndpoints |= 2;
     }
 
-    private static void shouldSplit(WorldNetworks global, ElectricalNetwork network, TransmissionLine line, OwnedFloatingNode node) {
+    private static boolean shouldSplit(WorldNetworks global, ElectricalNetwork network, TransmissionLine line, OwnedFloatingNode node) {
         var line1 = global.transmissionLineNodes.get(node);
         if(line1 != null)
             line1.splitAt(node);
         if(global.connectionCount(node.endpoint) != 0) {
             // Cannot simply assign node to a line, this line must be split.
             PowerGrid.LOGGER.warn("Line has a junction in the middle.");
+            return true;
         }
+        return false;
     }
 
     public void resolve(WorldNetworks global) {
@@ -147,23 +149,28 @@ public class UnresolvedTransmissionLine {
         var node1 = endpoint1.getNode(global.world);
         var node2 = endpoint2.getNode(global.world);
 
+        var splitAt = new ArrayList<OwnedFloatingNode>();
         var line = new TransmissionLine(resistance, endpoint1, endpoint2, global);
         IWireEndpoint endpoint1, endpoint2 = this.endpoint1;
         for(var segment : segments) {
             endpoint1 = endpoint2;
             endpoint2 = segment.endpoint;
-            if(segment.resolvedWire != null) {
+            if(segment.resolvedWire != null && segment.resolvedWire.owner != null && !segment.resolvedWire.owner.isRemoved()) {
                 line.segments.add(segment.resolvedWire);
                 segment.resolvedWire.setLine(line);
                 if(!endpoint1.equals(this.endpoint1)) {
                     // Not the first segment
                     var node = segment.resolvedWire.getNode1();
-                    shouldSplit(global, network, line, node);
+                    if(shouldSplit(global, network, line, node) && !splitAt.contains(node)) {
+                        splitAt.add(node);
+                    }
                 }
                 if(!endpoint2.equals(this.endpoint2)) {
                     // Not the last segment
                     var node = segment.resolvedWire.getNode2();
-                    shouldSplit(global, network, line, node);
+                    if(shouldSplit(global, network, line, node) && !splitAt.contains(node)) {
+                        splitAt.add(node);
+                    }
                 }
                 continue;
             }
@@ -179,6 +186,7 @@ public class UnresolvedTransmissionLine {
             PowerGrid.LOGGER.error("Failed to prepare nodes of just resolved line {}", line);
             return;
         }
+        // Assign nodes
         network.addWire(line);
         for(var segment : line.segments) {
             var n1 = segment.getNode1();
@@ -194,6 +202,14 @@ public class UnresolvedTransmissionLine {
         }
         global.assignTransmissionLine(node1, null);
         global.assignTransmissionLine(node2, null);
+        // Split at new junctions
+        for(var node : splitAt) {
+            line = line.splitAt(node);
+            if(line == null) {
+                PowerGrid.LOGGER.error("Failed at post-resolve splitting");
+                break;
+            }
+        }
     }
 
     @Nullable
