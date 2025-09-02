@@ -130,7 +130,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         return wire;
     }
 
-    private void processNeighbor(@NotNull CircuitBoardBlockEntity be) {
+    private void processNeighbor(@NotNull CircuitBoardBlockEntity be, Orientation expectedOrientation) {
         for(var placed : getComponents(ViaComponent.class)) {
             // Which edge
             Orientation edge;
@@ -151,6 +151,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
                 // Not on edge
                 continue;
             }
+            if(edge != expectedOrientation)
+                continue;
             var dir = CircuitBoardBlock.getDirection(getBlockState(), edge);
             var viaNode = be.getViaAt(dir.getOpposite(), position);
             var thisViaNode = baked.getNode(new CircuitSchematic.Node(placed, 0));
@@ -171,6 +173,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     private void bakeCircuit() {
         componentCache.clear();
+        disconnectViad();
         baked = BakedCircuit.from(schematic, this);
         for(var placed : schematic.components()) {
             placed.withWorld(this::getLevel, worldPosition);
@@ -184,6 +187,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     private void edgeConnect() {
+        disconnectViad();
         var state = getBlockState();
         for(var orientation : Orientation.values()) {
             var dir = CircuitBoardBlock.getDirection(state, orientation);
@@ -195,9 +199,9 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             if(state.getValue(ROTATION) == 1) {
                 if(neighborState.getValue(ROTATION) == 1 &&
                         state.getValue(HORIZONTAL_FACING) == neighborState.getValue(HORIZONTAL_FACING))
-                    processNeighbor(be);
+                    processNeighbor(be, orientation);
             } else if(state.getValue(ROTATION).equals(neighborState.getValue(ROTATION))) {
-                processNeighbor(be);
+                processNeighbor(be, orientation);
             }
         }
     }
