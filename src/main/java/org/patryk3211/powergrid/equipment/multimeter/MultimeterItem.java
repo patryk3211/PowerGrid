@@ -15,15 +15,21 @@
  */
 package org.patryk3211.powergrid.equipment.multimeter;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -33,15 +39,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Voltage;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.CircuitBoardEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -216,6 +221,34 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         if(!(stack.getItem() instanceof MultimeterItem multimeter))
             return;
         multimeter.switchMode(stack, player);
+    }
+
+    private static final ResourceLocation TEXTURE = PowerGrid.texture("special/copper_wire");
+    @Environment(EnvType.CLIENT)
+    private static void renderProbe(Vec3 point, SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player) {
+        HangingWireRenderer.renderFromPositions(matrixStack, buffer.getBuffer(RenderType.entitySolid(TEXTURE)),
+                player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
+                point, 1.01f, 1.01f, 1 / 16f, world, -1);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player) {
+        var stack = player.getMainHandItem();
+        if(!(stack.getItem() instanceof MultimeterItem multimeter))
+            return;
+        switch(multimeter.getMode(stack)) {
+            case 0 -> {
+                var data = multimeter.getModeData(stack);
+                var pos = WireEndpointType.deserialize(data.getCompound("Pos"));
+                if(pos != null && pos.isValid(world)) {
+                    renderProbe(pos.getExactPosition(world), buffer, matrixStack, world, player);
+                }
+                var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
+                if(neg != null && neg.isValid(world)) {
+                    renderProbe(neg.getExactPosition(world), buffer, matrixStack, world, player);
+                }
+            }
+        }
     }
 
     @Override
