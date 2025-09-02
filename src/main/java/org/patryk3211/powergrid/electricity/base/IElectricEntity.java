@@ -46,6 +46,14 @@ public interface IElectricEntity {
         throw new IllegalCallerException("Cannot get resistance if not extending a block entity");
     }
 
+    default void paused() {
+
+    }
+
+    default void unpaused() {
+
+    }
+
     class CircuitBuilder {
         private ElectricalNetwork network;
         private final BlockPos pos;

@@ -202,7 +202,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     }
 
     @Nullable
-    public Orientation getOrientation(BlockState state, Direction side) {
+    public static Orientation getOrientation(BlockState state, Direction side) {
         var facing = state.getValue(HORIZONTAL_FACING);
         if(state.getValue(ROTATION) == 1) {
             if(side == Direction.UP)
@@ -215,28 +215,47 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                 return Orientation.RIGHT;
             return null;
         }
-        var orientation = switch(side) {
-            case NORTH -> Orientation.UP;
-            case EAST -> Orientation.RIGHT;
-            case SOUTH -> Orientation.DOWN;
-            case WEST -> Orientation.LEFT;
-            default -> null;
-        };
+        Orientation orientation;
+        if(state.getValue(ROTATION) == 0) {
+            orientation = switch (side) {
+                case NORTH -> Orientation.UP;
+                case EAST -> Orientation.RIGHT;
+                case SOUTH -> Orientation.DOWN;
+                case WEST -> Orientation.LEFT;
+                default -> null;
+            };
+        } else {
+            orientation = switch (side) {
+                case NORTH -> Orientation.UP;
+                case EAST -> Orientation.LEFT;
+                case SOUTH -> Orientation.DOWN;
+                case WEST -> Orientation.RIGHT;
+                default -> null;
+            };
+        }
         if(orientation == null)
             return null;
-        orientation = switch (facing) {
-            case NORTH -> orientation;
-            case SOUTH -> orientation.getOpposite();
-            case EAST -> orientation.getCounterClockwise();
-            case WEST -> orientation.getClockwise();
-            default -> throw new IllegalStateException();
-        };
-        if(state.getValue(ROTATION) == 2)
-            orientation = orientation.getOpposite();
+        if(state.getValue(ROTATION) == 0) {
+            orientation = switch (facing) {
+                case NORTH -> orientation;
+                case SOUTH -> orientation.getOpposite();
+                case EAST -> orientation.getCounterClockwise();
+                case WEST -> orientation.getClockwise();
+                default -> throw new IllegalStateException();
+            };
+        } else {
+            orientation = switch (facing) {
+                case NORTH -> orientation;
+                case SOUTH -> orientation.getOpposite();
+                case WEST -> orientation.getCounterClockwise();
+                case EAST -> orientation.getClockwise();
+                default -> throw new IllegalStateException();
+            };
+        }
         return orientation;
     }
 
-    public Direction getDirection(BlockState state, Orientation orientation) {
+    public static Direction getDirection(BlockState state, Orientation orientation) {
         var facing = state.getValue(HORIZONTAL_FACING);
         if(state.getValue(ROTATION) == 1) {
             if(orientation == Orientation.UP)
@@ -249,21 +268,36 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                 return facing.getClockWise();
             throw new IllegalStateException();
         }
-        var dir = switch(orientation) {
-            case UP -> Direction.NORTH;
-            case RIGHT -> Direction.EAST;
-            case DOWN -> Direction.SOUTH;
-            case LEFT -> Direction.WEST;
-        };
-        dir = switch(state.getValue(HORIZONTAL_FACING)) {
-            case NORTH -> dir;
-            case SOUTH -> dir.getOpposite();
-            case EAST -> dir.getClockWise();
-            case WEST -> dir.getCounterClockWise();
-            default -> throw new IllegalStateException();
-        };
-        if(state.getValue(ROTATION) == 2)
-            dir = dir.getOpposite();
+        Direction dir;
+        if(state.getValue(ROTATION) == 0) {
+            dir = switch (orientation) {
+                case UP -> Direction.NORTH;
+                case RIGHT -> Direction.EAST;
+                case DOWN -> Direction.SOUTH;
+                case LEFT -> Direction.WEST;
+            };
+            dir = switch (state.getValue(HORIZONTAL_FACING)) {
+                case NORTH -> dir;
+                case SOUTH -> dir.getOpposite();
+                case EAST -> dir.getClockWise();
+                case WEST -> dir.getCounterClockWise();
+                default -> throw new IllegalStateException();
+            };
+        } else {
+            dir = switch (orientation) {
+                case UP -> Direction.SOUTH;
+                case RIGHT -> Direction.EAST;
+                case DOWN -> Direction.NORTH;
+                case LEFT -> Direction.WEST;
+            };
+            dir = switch (state.getValue(HORIZONTAL_FACING)) {
+                case NORTH -> dir.getOpposite();
+                case SOUTH -> dir;
+                case EAST -> dir.getCounterClockWise();
+                case WEST -> dir.getClockWise();
+                default -> throw new IllegalStateException();
+            };
+        }
         return dir;
     }
 

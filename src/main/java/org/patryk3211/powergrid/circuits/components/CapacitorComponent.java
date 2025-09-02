@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 
 public class CapacitorComponent extends OrientableComponent {
     public static final FloatProperty CAPACITANCE = new FloatProperty(PowerGrid.MOD_ID, "capacitor_value", 0.1f, 1e-4f, 1.0f);
+    private static final ChargeProperty CHARGE = new ChargeProperty(PowerGrid.MOD_ID, "charge");
 
     public CapacitorComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -42,6 +43,39 @@ public class CapacitorComponent extends OrientableComponent {
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var capacitorWire = new CapacitorWire(placed.get(CAPACITANCE), builder.terminalNode(0), builder.terminalNode(1));
+        capacitorWire.setVoltage(placed.get(CHARGE));
         builder.add(capacitorWire);
+        placed.add(capacitorWire);
+    }
+
+    @Override
+    public boolean tick(@NotNull PlacedComponent placed) {
+        if(!placed.wires.isEmpty()) {
+            // Make charge persistent
+            placed.set(CHARGE, placed.wires.get(0).potentialDifference());
+        }
+        return true;
+    }
+
+    private static class ChargeProperty extends FloatProperty {
+        public ChargeProperty(String namespace, String name) {
+            super(namespace, name, 0, 0, 0);
+        }
+
+        @Override
+        public Float parse(String str) throws NumberFormatException {
+            // Not allowed
+            return 0.0f;
+        }
+
+        @Override
+        public boolean isHidden() {
+            return true;
+        }
+
+        @Override
+        protected float limit(float value) {
+            return value;
+        }
     }
 }

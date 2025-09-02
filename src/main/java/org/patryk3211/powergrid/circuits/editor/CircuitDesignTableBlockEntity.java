@@ -76,11 +76,13 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         };
     }
 
-    public void writeToItem() {
-        var stack = inventory.getItem(1);
-        if(stack.isEmpty() || level.isClientSide)
-            return;
-        stack.shrink(1);
+    public void writeToItem(boolean isCreative) {
+        if(!isCreative) {
+            var stack = inventory.getItem(1);
+            if (stack.isEmpty() || level.isClientSide)
+                return;
+            stack.shrink(1);
+        }
         var result = schematic.toItemStack();
         inventory.setItem(2, result);
         schematic.clear();

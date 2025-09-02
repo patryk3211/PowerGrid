@@ -298,7 +298,7 @@ public class CircuitSchematic {
     }
 
     @NotNull
-    private Collection<Node> flood(Layer layer, int x, int y, VisitMap visitMap) {
+    public Collection<Node> flood(Layer layer, int x, int y, VisitMap visitMap) {
         if(!visitMap.canVisit(layer, x, y))
             return List.of();
 
@@ -377,7 +377,7 @@ public class CircuitSchematic {
         }
     }
 
-    private static class VisitMap {
+    public static class VisitMap {
         private final BitSet front = new BitSet(GRID_SIZE * GRID_SIZE);
         private final BitSet back = new BitSet(GRID_SIZE * GRID_SIZE);
 

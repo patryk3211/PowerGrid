@@ -63,8 +63,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     @Nullable
     public ElectricalNetwork getNetwork() {
-        if(externalNodes.isEmpty())
-            return null;
+        if(externalNodes.isEmpty()) {
+            if(internalNodes.isEmpty())
+                return null;
+            // Same as below, only the first node really matters.
+            for(var node : internalNodes) {
+                return node.getNetwork();
+            }
+        }
         // Since every node has to have the same network we can
         // just take the network of the first external node and
         // assume that every other node belongs to it.
@@ -77,8 +83,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void joinNetwork(ElectricalNetwork network) {
-        if(externalNodes.isEmpty())
-            throw new IllegalStateException("Cannot join a network if no external nodes are defined");
+        if(externalNodes.isEmpty() && internalNodes.isEmpty())
+            throw new IllegalStateException("Cannot join a network if no nodes are defined");
         if(getNetwork() == null) {
             externalNodes.forEach(node -> {
                 if(node != null)
@@ -153,6 +159,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void pause() {
         if(!paused) {
             paused = true;
+            element.paused();
             removeInternalStructure();
         }
     }
@@ -166,6 +173,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             // External nodes weren't removed so they don't have to be added.
             internalNodes.forEach(network::addNode);
             internalWires.forEach(network::addWire);
+            element.unpaused();
         }
     }
 
@@ -291,5 +299,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             thisList.addAll(entry.getValue());
         }
         otherBehaviour.connections.clear();
+    }
+
+    public boolean isPaused() {
+        return paused;
     }
 }

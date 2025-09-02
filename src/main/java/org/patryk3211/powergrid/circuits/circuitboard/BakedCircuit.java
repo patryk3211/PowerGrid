@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.circuits.circuitboard;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -55,16 +54,13 @@ public class BakedCircuit {
         this.be = be;
     }
 
-    private FloatingNode getNode(CircuitSchematic.Node node) {
+    public FloatingNode getNode(CircuitSchematic.Node node) {
         return padNodeProviderMap.get(node.placed()).apply(node.pad());
     }
 
-    public static BakedCircuit from(CircuitSchematic schematic, CircuitBoardBlockEntity be, BlockPos pos) {
-        var result = new BakedCircuit(be);
-        var facing = be.getBlockState().getValue(CircuitBoardBlock.HORIZONTAL_FACING);
+    private static void makePadNodes(BakedCircuit result, CircuitSchematic schematic, CircuitBoardBlockEntity be) {
+        var pos = be.getBlockPos();
         var offset = Vec3.atLowerCornerOf(pos);
-
-        // Create component pad nodes.
         for(var placed : schematic.components()) {
             var nodeIndexSet = new HashSet<Integer>();
             for(var pad : placed.footprint().getPads().values()) {
@@ -118,6 +114,13 @@ public class BakedCircuit {
                 bbs.stream().map(bb -> bb.offset(placed.x / 16f, 2 / 16f, placed.y / 16f)).forEach(result.terminals::add);
             }
         }
+    }
+
+    public static BakedCircuit from(CircuitSchematic schematic, CircuitBoardBlockEntity be) {
+        var result = new BakedCircuit(be);
+
+        // Create component pad nodes.
+        makePadNodes(result, schematic, be);
 
         var bundles = schematic.findNodeBundles();
         for(var bundle : bundles) {
@@ -127,12 +130,12 @@ public class BakedCircuit {
             }
             if(bundle.size() == 2) {
                 // Direct wire
-                var nodes = bundle.toArray(CircuitSchematic.Node[]::new);
-                var node1 = result.getNode(nodes[0]);
-                var node2 = result.getNode(nodes[1]);
+                var iter = bundle.iterator();
+                var node1 = iter.next();
+                var node2 = iter.next();
 
-                var R = nodes[0].getPadResistance() + nodes[1].getPadResistance();
-                var wire = new ElectricWire(R, node1, node2);
+                var R = node1.getPadResistance() + node2.getPadResistance();
+                var wire = new ElectricWire(R, result.getNode(node1), result.getNode(node2));
                 result.wires.add(wire);
             } else {
                 // Junction between pads

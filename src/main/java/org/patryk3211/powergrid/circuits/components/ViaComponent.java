@@ -16,14 +16,29 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
+import org.patryk3211.powergrid.circuits.schematic.CircuitLayer;
+import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
 public class ViaComponent extends Component {
+    private static final ComponentFootprint NODED_FOOTPRINT = new ComponentFootprint.Builder(1, 1)
+            .addPad(0, 0, 0).build();
+
     public ViaComponent(ComponentFootprint footprint) {
         super(footprint);
+    }
+
+    @Override
+    public ComponentFootprint footprint(@Nullable PlacedComponent placed) {
+        if(placed != null) {
+            if(placed.x == 0 || placed.y == 0 || placed.x == 15 || placed.y == 15)
+                return NODED_FOOTPRINT;
+        }
+        return super.footprint(placed);
     }
 
     @Override

@@ -77,6 +77,7 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
                 ModdedSoundEvents.MICROSWITCH_OFF.playOnServer(be.getLevel(), be.getBlockPos());
             }
             placed.notifyClients(STATE);
+            stateUpdated(placed);
         }
         be.setChanged();
         return InteractionResult.SUCCESS;
