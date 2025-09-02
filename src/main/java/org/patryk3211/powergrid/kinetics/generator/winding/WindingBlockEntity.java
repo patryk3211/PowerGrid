@@ -715,12 +715,13 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             if (Pe > 0) {
                 // Generator is sourcing power
                 torque *= 1.0f;
+                torque = rotorN.limitForce(torque);
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
                 torque *= 0.9f;
             }
-            rotorN.applyTickForce(rotorN.limitForce(torque));
+            rotorN.applyTickForce(torque);
         }
 
         if(sourceNode != null) {
