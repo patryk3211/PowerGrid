@@ -29,7 +29,9 @@ public enum ModdedKeys {
     PLACE_TRACE("place_trace", GLFW.GLFW_KEY_T),
     DELETE_AREA("delete_area", GLFW.GLFW_KEY_D),
     PICK_COMPONENT("pick_component", GLFW.GLFW_KEY_S),
-    SWITCH_LAYER("switch_layer", GLFW.GLFW_KEY_X)
+    SWITCH_LAYER("switch_layer", GLFW.GLFW_KEY_X),
+
+    MULTIMETER_MODE("multimeter_mode", GLFW.GLFW_KEY_M)
 
     ;
 

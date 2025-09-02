@@ -98,4 +98,16 @@ public class RecipeTags {
     public static ItemLike coalBlock() {
         return Items.COAL_BLOCK;
     }
+
+    public static ItemLike copperWire() {
+        return ModdedItems.WIRE;
+    }
+
+    public static ItemLike voltageMeter() {
+        return ModdedBlocks.VOLTAGE_METER;
+    }
+
+    public static ItemLike currentMeter() {
+        return ModdedBlocks.CURRENT_METER;
+    }
 }

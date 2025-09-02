@@ -127,6 +127,13 @@ public class GaugeScenes {
             scene.idle(50);
         }
 
+        scene.overlay().showText(60)
+                .text("You can change the gauge's range by clicking on top of it")
+                .attachKeyFrame()
+                .pointAt(util.vector().topOf(gaugePos))
+                .placeNearTarget();
+        scene.idle(70);
+
         Vec3 blockSurface = util.vector().blockSurface(gaugePos, Direction.NORTH);
         scene.overlay().showControls(blockSurface, Pointing.RIGHT, 80).withItem(AllItems.GOGGLES.asStack());
         scene.idle(7);

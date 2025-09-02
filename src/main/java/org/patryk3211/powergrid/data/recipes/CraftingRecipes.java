@@ -355,7 +355,18 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" E ")
                     .define('C', RecipeTags.copperSheet())
                     .define('B', RecipeTags.coalBlock())
-                    .define('E', RecipeTags.conductiveCasing()))
+                    .define('E', RecipeTags.conductiveCasing())),
+
+    MULTIMETER = create(ModdedItems.MULTIMETER)
+            .unlockedBy(() -> ModdedItems.ELECTRICAL_GIZMO)
+            .viaShaped(b -> b
+                    .pattern("WGW")
+                    .pattern("CEV")
+                    .define('W', RecipeTags.copperWire())
+                    .define('E', RecipeTags.conductiveCasing())
+                    .define('G', RecipeTags.electricalGizmo())
+                    .define('C', RecipeTags.currentMeter())
+                    .define('V', RecipeTags.voltageMeter()))
             ;
 
     public CraftingRecipes(PackOutput output) {

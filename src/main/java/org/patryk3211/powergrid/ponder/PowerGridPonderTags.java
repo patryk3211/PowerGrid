@@ -26,7 +26,8 @@ public class PowerGridPonderTags {
     public static final ResourceLocation
             GENERATOR_ASSEMBLY = id("generator_assembly"),
             ELECTRIC_RELAYS = id("electric_relays"),
-            ELECTRIC_DEVICES = id("electric_devices");
+            ELECTRIC_DEVICES = id("electric_devices"),
+            CIRCUIT_COMPONENTS = id("circuit_components");
 
     private static ResourceLocation id(String name) {
         return PowerGrid.asResource(name);
@@ -76,6 +77,15 @@ public class PowerGridPonderTags {
                 .item(ModdedItems.LV_LIGHT_BULB)
                 .item(ModdedItems.LIGHT_BULB)
                 .item(ModdedItems.GROWTH_LAMP)
+                .addToIndex()
+                .register();
+
+        helper.registerTag(CIRCUIT_COMPONENTS)
+                .title("Circuit Components")
+                .description("Components which can be placed on a circuit")
+                .item(ModdedItems.RESISTOR)
+                .item(ModdedItems.DIODE)
+                .item(ModdedItems.CAPACITOR)
                 .addToIndex()
                 .register();
 

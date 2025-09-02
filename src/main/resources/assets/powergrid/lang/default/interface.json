@@ -65,6 +65,12 @@
   "powergrid.tooltip.circuit_assembly.progress": "Progress",
   "powergrid.tooltip.circuit_assembly.insert": "Insert",
 
+  "powergrid.tooltip.multimeter.mode": "Mode: ",
+  "powergrid.tooltip.multimeter.mode.0": "Voltage",
+  "powergrid.tooltip.multimeter.mode.1": "Wire Current",
+
+  "powergrid.tooltip.multimeter.voltage": "Voltage: ",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
