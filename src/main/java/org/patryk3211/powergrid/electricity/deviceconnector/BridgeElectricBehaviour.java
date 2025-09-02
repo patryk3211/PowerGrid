@@ -26,9 +26,9 @@ import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -93,6 +93,13 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
         return getMainBehaviour()
                 .map(b -> b.hasTerminal(terminal))
                 .orElseGet(() -> super.hasTerminal(terminal));
+    }
+
+    @Override
+    public List<OwnedFloatingNode> getExternalNodes() {
+        return getMainBehaviour()
+                .map(ElectricBehaviour::getExternalNodes)
+                .orElseGet(super::getExternalNodes);
     }
 
     @Override
