@@ -53,6 +53,7 @@ public class PlacementOverlay {
     public static void init() {
         overlayProviders.add(PlacementOverlay::getTransformerText);
         overlayProviders.add(TerminalHandler::overlayText);
+        overlayProviders.add(WirePreview::distanceOverlay);
         overlayProviders.add(ThermometerItemRenderer::overlayText);
     }
 
