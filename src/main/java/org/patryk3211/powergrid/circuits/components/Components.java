@@ -57,13 +57,12 @@ public class Components {
             .register();
 
     public static final RegistryEntry<RelayComponent> RELAY = REGISTRATE.component("relay", RelayComponent::new)
-            .footprint(5, 4, b -> b
+            .footprint(4, 3, b -> b
                     .addPad(0, 0, 0, "Coil")
-                    .addPad(0, 3, 1, "Coil")
-                    .addPad(3, 0, 2, "Normally Closed")
-                    .addPad(4, 1, 3, "Common")
-                    .addPad(4, 2, 3, "Common")
-                    .addPad(3, 3, 4, "Normally Open")
+                    .addPad(0, 2, 1, "Coil")
+                    .addPad(2, 0, 2, "Normally Closed")
+                    .addPad(3, 1, 3, "Common")
+                    .addPad(2, 2, 4, "Normally Open")
                     .withItem(ModdedItems.RELAY)
                     .withOutline()
             )
