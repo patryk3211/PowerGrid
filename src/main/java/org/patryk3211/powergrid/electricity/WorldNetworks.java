@@ -743,7 +743,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
             PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
             if(oldNode.getNetwork() != null) {
-                var unified = prepareForConnection(newNode, oldNode);
+                var unified = prepareForConnection(oldNode, newNode);
                 if(unified == null)
                     PowerGrid.LOGGER.error("Failed to unify network of old and new external node");
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));

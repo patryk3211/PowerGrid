@@ -235,7 +235,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         var newState = state.setValue(CASE_LEFT, left)
                 .setValue(CASE_RIGHT, right);
         if(newState != state) {
-            world.setBlock(pos, newState, 0);
+            world.setBlock(pos, newState, Block.UPDATE_CLIENTS);
         }
     }
 

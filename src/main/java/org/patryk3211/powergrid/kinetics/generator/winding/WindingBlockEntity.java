@@ -645,7 +645,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 return be.get().windingCurrent();
             }
         }
-        if(mainBE.sourceNode == null)
+        if(mainBE.sourceNode == null || mainBE.totalCoilCount == 0)
             return 0;
         return mainBE.sourceNode.getCurrent() / mainBE.totalCoilCount;
     }
