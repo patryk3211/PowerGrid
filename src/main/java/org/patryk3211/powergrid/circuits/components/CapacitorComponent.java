@@ -37,7 +37,7 @@ public class CapacitorComponent extends OrientableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(CAPACITANCE);
+        properties.add(CAPACITANCE, CHARGE);
     }
 
     @Override
