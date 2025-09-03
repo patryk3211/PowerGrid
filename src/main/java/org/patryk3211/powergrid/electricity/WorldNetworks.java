@@ -42,14 +42,11 @@ import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPac
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 import org.patryk3211.powergrid.utility.PlayerLookup;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
-    private static final Logger log = LoggerFactory.getLogger(WorldNetworks.class);
     public final Level world;
     public final NetworkGraph globalGraph = new NetworkGraph();
 
@@ -81,13 +78,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         this(world);
         readNbt(nbt);
     }
-
-    @Override
-    public void removeNode(IElectricNode node) {
-        if(node instanceof OwnedFloatingNode owned) {
-            assignTransmissionLine(owned, null);
-        }
-    }
+//
+//    @Override
+//    public void removeNode(IElectricNode node) {
+//        if(node instanceof OwnedFloatingNode owned) {
+//            assignTransmissionLine(owned, null);
+//        }
+//    }
 
     @Override
     public void lineConnected(TransmissionLine line) {
@@ -109,6 +106,24 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         updatedEndpoints.add(line.getNode1().endpoint);
         updatedEndpoints.add(line.getNode2().endpoint);
         setDirty();
+    }
+
+    @Override
+    public void addWire(AbstractElectricWire wire) {
+        var line1 = transmissionLineNodes.get(wire.getNode1());
+        if(line1 != null && wire.getNode1() instanceof OwnedFloatingNode owned)
+            line1.splitAt(owned);
+        var line2 = transmissionLineNodes.get(wire.getNode2());
+        if(line2 != null && wire.getNode2() instanceof OwnedFloatingNode owned)
+            line2.splitAt(owned);
+    }
+
+    @Override
+    public void addNode(IElectricNode node) {
+        if(node instanceof OwnedFloatingNode owned) {
+            // Make sure nodes are always up to date
+            addAndMigrateNode(owned.endpoint);
+        }
     }
 
     private void traceIsland(OwnedFloatingNode first) {
@@ -246,6 +261,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void add(IWireEndpoint endpoint) {
         var node = endpoint.getNode(world);
         globalGraph.addNode(node);
+        addAndMigrateNode(endpoint);
     }
 
     public int connectionCount(IWireEndpoint endpoint) {
@@ -419,6 +435,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     @Nullable
     public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+        add(endpoint1);
+        add(endpoint2);
+
         var unloadedPart = tryGrabUnloadedPart(endpoint1, endpoint2, forEntity);
         if(unloadedPart != null)
             return unloadedPart;
@@ -614,19 +633,34 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     private void resolveLine(UnresolvedTransmissionLine line) {
-        // If node already exists then the resolving code must have triggered for it (no need to resolve again)
         var node1 = globalExternalNodes.get(line.endpoint1());
         if(node1 == null) {
-            node1 = new OwnedFloatingNode(line.endpoint1());
+            if(line.endpoint1().isValid(world)) {
+                // Try to fetch from the endpoint first
+                node1 = line.endpoint1().getNode(world);
+                PowerGrid.LOGGER.debug("Resolving line {} endpoint 1 {} with world node", line, line.endpoint1());
+            } else {
+                // Create a dummy node that gets replaced later
+                PowerGrid.LOGGER.debug("Resolving line {} endpoint 1 {} with dummy node", line, line.endpoint1());
+                node1 = new OwnedFloatingNode(line.endpoint1());
+            }
             globalExternalNodes.put(line.endpoint1(), node1);
-            line.resolveEnd(this, line.endpoint1());
         }
         var node2 = globalExternalNodes.get(line.endpoint2());
         if(node2 == null) {
-            node2 = new OwnedFloatingNode(line.endpoint2());
+            if(line.endpoint2().isValid(world)) {
+                // Try to fetch from the endpoint first
+                node2 = line.endpoint2().getNode(world);
+                PowerGrid.LOGGER.debug("Resolving line {} endpoint 2 {} with world node", line, line.endpoint2());
+            } else {
+                // Create a dummy node that gets replaced later
+                node2 = new OwnedFloatingNode(line.endpoint2());
+                PowerGrid.LOGGER.debug("Resolving line {} endpoint 2 {} with dummy node", line, line.endpoint2());
+            }
             globalExternalNodes.put(line.endpoint2(), node2);
-            line.resolveEnd(this, line.endpoint2());
         }
+        line.resolveEnd(this, line.endpoint1());
+        line.resolveEnd(this, line.endpoint2());
     }
 
     private boolean traceTree(IWireEndpoint endpoint, Set<IWireEndpoint> visited) {
@@ -637,7 +671,15 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             return false;
         boolean continueResolving = false;
         for(var line : lines) {
+            if(globalGraph.transmissionLineCount(endpoint.getNode(world)) > 0) {
+                // There are valid lines at this node so it is an edge node,
+                // regardless of the validity of the endpoint.
+                PowerGrid.LOGGER.debug("Found edge line at {} (loaded lines at endpoint)", endpoint);
+                resolveLine(line);
+                return true;
+            }
             if(lines.size() == 1) {
+                PowerGrid.LOGGER.debug("Found edge line at {}", endpoint);
                 if(line.endpoint1().equals(endpoint)) {
                     // Check endpoint2
                     if(line.endpoint2().isValid(world)) {
@@ -656,6 +698,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
                 break;
             }
+            PowerGrid.LOGGER.debug("Continuing line trace through {}", endpoint);
             if(line.endpoint1().equals(endpoint)) {
                 if(traceTree(line.endpoint2(), visited)) {
                     resolveLine(line);
@@ -680,6 +723,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         // if so, we need to resolve all lines between them to ensure correct unloaded chunk behaviour.
         var visited = new HashSet<IWireEndpoint>();
         visited.add(endpoint);
+        PowerGrid.LOGGER.debug("Starting line trace at {}", endpoint);
         for(var line : unresolvedLines) {
             line.resolveEnd(this, endpoint);
             if(line.endpoint1().equals(endpoint)) {
@@ -691,21 +735,25 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
     }
 
-    public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
-        var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
-        if(oldNode != null && oldNode != ownedNode) {
+    private void addAndMigrateNode(IWireEndpoint endpoint) {
+        var newNode = endpoint.getNode(world);
+        var oldNode = globalExternalNodes.put(endpoint, newNode);
+        if(oldNode != null && oldNode != newNode) {
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
+            PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
             if(oldNode.getNetwork() != null) {
-                var unified = prepareForConnection(ownedNode, oldNode);
+                var unified = prepareForConnection(newNode, oldNode);
                 if(unified == null)
                     PowerGrid.LOGGER.error("Failed to unify network of old and new external node");
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {
                     if (line.getNode1() == oldNode) {
-                        line.setNode1(ownedNode);
+                        line.setNode1(newNode);
+                        PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                     } else if (line.getNode2() == oldNode) {
-                        line.setNode2(ownedNode);
+                        line.setNode2(newNode);
+                        PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                     }
                 }
                 unified.removeNode(oldNode);
@@ -714,15 +762,21 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 if(line != null) {
                     for (var segment : line.segments) {
                         if (segment.getNode1() == oldNode) {
-                            segment.setNode1(ownedNode);
+                            segment.setNode1(newNode);
+                            PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
                         } else if (segment.getNode2() == oldNode) {
-                            segment.setNode2(ownedNode);
+                            segment.setNode2(newNode);
+                            PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
                         }
-                        transmissionLineNodes.put(ownedNode, line);
+                        transmissionLineNodes.put(newNode, line);
                     }
                 }
             }
         }
+    }
+
+    public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
+        addAndMigrateNode(ownedNode.endpoint);
         // Try to resolve an end of a transmission line
         resolveTree(ownedNode.endpoint);
     }
@@ -785,6 +839,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         node = new OwnedFloatingNode(endpoint);
         globalExternalNodes.put(endpoint, node);
         return node;
+    }
+
+    public void addLine(TransmissionLine line) {
+
     }
 
     private static class CheckChunk {

@@ -152,6 +152,7 @@ public class TransmissionLine extends ElectricWire {
     public TransmissionLinePart grabUnloaded(@NotNull WireEntity owner) {
         for(var part : segments) {
             if(part.persistentOwnerId.equals(owner.getUUID())) {
+                // TODO: This is failing because nodes are not updated
                 // If the owner id matches then the endpoints should match too
                 var endpointArrangement = validateEndpoints(part, owner);
                 if(endpointArrangement == 1 || endpointArrangement == 2) {
@@ -180,6 +181,7 @@ public class TransmissionLine extends ElectricWire {
                 }
                 if(ENABLE_VALIDATION)
                     validateLine();
+                PowerGrid.LOGGER.debug("{}: Grabbed unloaded part of this line, owner={}, between=({}, {})", this, owner, part.getNode1(), part.getNode2());
                 return part;
             }
         }
@@ -189,6 +191,7 @@ public class TransmissionLine extends ElectricWire {
     public void unloadPart(TransmissionLinePart part) {
         // Save endpoints and drop owner
         assert part.getNode1() != null && part.getNode2() != null && part.owner != null;
+        PowerGrid.LOGGER.debug("{}: Unloading part, UUID={}, chunk={}", this, part.persistentOwnerId, part.lastKnownChunk);
         part.lastKnownChunk = new ChunkPos(part.owner.blockPosition());
         global.bounty(part.persistentOwnerId, part.lastKnownChunk, this);
         part.owner = null;
@@ -248,7 +251,7 @@ public class TransmissionLine extends ElectricWire {
     }
 
     @Nullable
-    public TransmissionLine splitAt(IElectricNode atNode) {
+    public TransmissionLine splitAt(OwnedFloatingNode atNode) {
         if(atNode == node1 || atNode == node2)
             return null;
         if(segments.size() <= 1)
@@ -270,6 +273,17 @@ public class TransmissionLine extends ElectricWire {
                     if(network != null)
                         network.addNode(splitNode);
                     setNode2(segment.getEndpoint2(), splitNode);
+                } else if(segment.getEndpoint2().equals(atNode.endpoint)) {
+                    // Nodes do not match but the endpoint does. Split should occur.
+                    line2 = new TransmissionLine(1, segment.endpoint2, endpoint2, global);
+                    // Get the most up-to-date node.
+                    var newNode = atNode.endpoint.getNode(global.world);
+                    global.assignTransmissionLine(newNode, null);
+                    global.assignTransmissionLine(splitNode, null);
+                    global.assignTransmissionLine(atNode, null);
+                    if(network != null)
+                        network.addNode(newNode);
+                    setNode2(segment.getEndpoint2(), newNode);
                 }
             } else {
                 R2 += segment.getResistance();
@@ -289,58 +303,7 @@ public class TransmissionLine extends ElectricWire {
             if(network != null)
                 network.addWire(line2);
         } else {
-            PowerGrid.LOGGER.debug("{}:   Splitting failed", this);
-            global.assignTransmissionLine(getNode2(), null);
-        }
-        if(ENABLE_VALIDATION)
-            validateLine();
-        return line2;
-    }
-
-    @Nullable
-    public TransmissionLine splitAt(IWireEndpoint atEndpoint) {
-        if(atEndpoint.equals(endpoint1) || atEndpoint.equals(endpoint2))
-            return null;
-        if(segments.size() <= 1)
-            return null;
-        PowerGrid.LOGGER.debug("{}: Splitting transmission line between {} and {} at {}", this, endpoint1, endpoint2, atEndpoint);
-        TransmissionLine line2 = null;
-        double R1 = 0, R2 = 0;
-        var iter = segments.iterator();
-        while (iter.hasNext()) {
-            var segment = iter.next();
-            if (line2 == null) {
-                R1 += segment.getResistance();
-                var splitEndpoint = segment.endpoint2;
-                if (splitEndpoint.equals(atEndpoint)) {
-                    // This is the last segment of this line.
-                    // All other segments go to the next line.
-                    var splitNode = global.holderOrPlaceholderNode(segment.endpoint2);
-                    line2 = new TransmissionLine(1, segment.endpoint2, endpoint2, global);
-                    global.assignTransmissionLine(splitNode, null);
-                    if(network != null)
-                        network.addNode(splitNode);
-                    setNode2(segment.getEndpoint2(), splitNode);
-                }
-            } else {
-                R2 += segment.getResistance();
-                line2.segments.add(segment);
-                segment.setLine(line2);
-                global.assignTransmissionLine(segment.getNode2(), line2);
-                if(segment.owner == null || segment.owner.isRemoved())
-                    global.bounty(segment.persistentOwnerId, segment.lastKnownChunk, line2);
-                iter.remove();
-            }
-        }
-        setResistance(R1);
-        if(line2 != null && R2 > 0) {
-            line2.setResistance(R2);
-            global.assignTransmissionLine(line2.getNode2(), null);
-            if(network != null)
-                network.addWire(line2);
-        } else {
-            PowerGrid.LOGGER.debug("{}:   Splitting failed", this);
-            global.assignTransmissionLine(getNode2(), null);
+            throw new IllegalStateException("Splitting failed for " + this);
         }
         if(ENABLE_VALIDATION)
             validateLine();

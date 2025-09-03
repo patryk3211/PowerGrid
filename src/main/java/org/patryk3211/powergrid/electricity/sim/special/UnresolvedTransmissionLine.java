@@ -187,6 +187,7 @@ public class UnresolvedTransmissionLine {
             return;
         }
         // Assign nodes
+        PowerGrid.LOGGER.debug("Resolved new line {}", line);
         network.addWire(line);
         for(var segment : line.segments) {
             var n1 = segment.getNode1();
