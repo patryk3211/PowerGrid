@@ -173,6 +173,10 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     public void applyTickForce(float force) {
         var controller = getControllerOrThis();
+        if(controller.inertia <= 0) {
+            // Not initialized yet (most likely)
+            return;
+        }
         if(Math.abs(force) > 0.001f) {
             controller.angularVelocity += force / controller.inertia / 20f;
             if(Float.isNaN(controller.angularVelocity))
