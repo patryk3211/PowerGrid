@@ -118,6 +118,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             }
             iter.remove();
         }
+        GlobalElectricNetworks.nodeHolderAdded(this);
 
         var world = getWorld();
         if(world != null && !world.isClientSide)
