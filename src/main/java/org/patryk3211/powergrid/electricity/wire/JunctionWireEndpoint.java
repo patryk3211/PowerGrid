@@ -30,7 +30,7 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import java.util.*;
 
 public class JunctionWireEndpoint implements IWireEndpoint {
-    private static final Map<Level, Map<UUID, NodeEntry>> JUNCTION_NODES = new HashMap<>();
+    private static final Map<Level, WorldEntry> JUNCTION_NODES = new HashMap<>();
 
     private UUID id;
     private Vec3 pos;
@@ -184,19 +184,20 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     @Contract("_, _, false, _ -> !null")
     private static NodeEntry getNode(Level world, UUID id, boolean nullable, JunctionWireEndpoint endpoint) {
         if(!nullable) {
-            var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new HashMap<>());
-            var entry = worldNodeMap.get(id);
+            var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new WorldEntry());
+            var entry = worldNodeMap.nodes.get(id);
             if(entry == null) {
                 entry = new NodeEntry(endpoint);
-                worldNodeMap.put(id, entry);
-                GlobalElectricNetworks.getWorldNetworks(world).nodeHolderAdded(entry.node);
+                worldNodeMap.nodes.put(id, entry);
+                worldNodeMap.newNodes.add(entry.node);
+//                GlobalElectricNetworks.getWorldNetworks(world).nodeHolderAdded(entry.node);
             }
             return entry;
         } else {
             var worldNodeMap = JUNCTION_NODES.get(world);
             if(worldNodeMap == null)
                 return null;
-            return worldNodeMap.get(id);
+            return worldNodeMap.nodes.get(id);
         }
     }
 
@@ -204,7 +205,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         var worldNodeMap = JUNCTION_NODES.get(world);
         if(worldNodeMap == null)
             return;
-        var entry = worldNodeMap.remove(id);
+        var entry = worldNodeMap.nodes.remove(id);
         if(entry == null)
             return;
         if(!entry.holders.isEmpty()) {
@@ -212,6 +213,18 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             return;
         }
         GlobalElectricNetworks.getWorldNetworks(world).nodeHolderRemoved(entry.node);
+    }
+
+    public static void processNewNodes(Level world) {
+        var worldNodeMap = JUNCTION_NODES.get(world);
+        if(worldNodeMap != null && !worldNodeMap.newNodes.isEmpty()) {
+            var global = GlobalElectricNetworks.getWorldNetworks(world);
+            var nodes = worldNodeMap.newNodes;
+            worldNodeMap.newNodes = new HashSet<>();
+            for(var node : nodes) {
+                global.nodeHolderAdded(node, false);
+            }
+        }
     }
 
     @Override
@@ -242,5 +255,10 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         public NodeEntry(IWireEndpoint endpoint) {
             node = new OwnedFloatingNode(endpoint);
         }
+    }
+
+    private static class WorldEntry {
+        public final Map<UUID, NodeEntry> nodes = new HashMap<>();
+        public Set<OwnedFloatingNode> newNodes = new HashSet<>();
     }
 }

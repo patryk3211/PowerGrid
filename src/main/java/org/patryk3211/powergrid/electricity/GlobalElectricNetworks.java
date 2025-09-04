@@ -154,7 +154,7 @@ public class GlobalElectricNetworks {
         var worldNetworks = getWorldNetworks(behaviour.blockEntity.getLevel());
         for(IElectricNode node : behaviour.getExternalNodes()) {
             if(node instanceof OwnedFloatingNode ownedNode)
-                worldNetworks.nodeHolderAdded(ownedNode);
+                worldNetworks.nodeHolderAdded(ownedNode, behaviour.hasInternals());
         }
     }
 }

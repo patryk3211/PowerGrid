@@ -304,4 +304,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public boolean isPaused() {
         return paused;
     }
+
+    public boolean hasInternals() {
+        return !internalNodes.isEmpty() || !internalWires.isEmpty();
+    }
 }

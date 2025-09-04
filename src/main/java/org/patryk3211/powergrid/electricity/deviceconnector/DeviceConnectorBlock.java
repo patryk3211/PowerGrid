@@ -110,16 +110,15 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
         int rotation = 0;
         if(facing.getAxis() == Direction.Axis.Y) {
             var player = ctx.getHorizontalDirection();
-//            if(player.getAxis() == Direction.Axis.X)
-//                along = false;
+            rotation = player.get2DDataValue();
         } else {
-//            rotation = ctx.getNearestLookingDirection().getAxis() == facing.getClockWise().getAxis();
+            rotation = 1;
         }
         var neighbor = ctx.getLevel().getBlockState(ctx.getClickedPos().relative(facing));
         var polarized = neighbor.getBlock() instanceof IAcceptConnector acceptor && acceptor.isPolarized();
 
-//        if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
-//            along = !along;
+        if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
+            rotation = (rotation + 2) % 3;
         return defaultBlockState()
                 .setValue(FACING, facing)
                 .setValue(ROTATION, rotation)

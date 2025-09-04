@@ -34,8 +34,8 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
-import org.patryk3211.powergrid.electricity.sim.special.UnresolvedTransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.SolverStateS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
@@ -44,7 +44,7 @@ import org.patryk3211.powergrid.utility.PlayerLookup;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
     public final Level world;
@@ -54,11 +54,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
     public final Map<Integer, TransmissionLine> transmissionLines = new IntObjectHashMap<>();
 
-    private final Set<UnresolvedTransmissionLine> unresolvedLines = new HashSet<>();
-    private final Map<IWireEndpoint, Queue<UnresolvedTransmissionLine>> unresolvedLineNodeMap = new HashMap<>();
-    private final Map<UUID, Integer> unresolvedPartHolders = new HashMap<>();
-    private final Map<ChunkPos, CheckChunk> expectedInChunks = new HashMap<>();
-    private final Map<ChunkPos, CheckChunk> checkForExistence = new HashMap<>();
+    private final Map<ChunkPos, CheckChunk> expectedInChunks = new ConcurrentHashMap<>();
+    private final Map<ChunkPos, CheckChunk> checkForExistence = new ConcurrentHashMap<>();
+    private final Map<UUID, TransmissionLinePart> lineParts = new HashMap<>();
+    private final Map<OwnedFloatingNode, Set<TransmissionLinePart>> partNodeMap = new HashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
     private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
@@ -148,6 +147,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             entity.makeWire();
             return entity.getWire() != null;
         });
+        JunctionWireEndpoint.processNewNodes(world);
 
         for(var network : islandDiscoveryQueue) {
             runIslandDiscoveryFor(network);
@@ -190,14 +190,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     if(serverWorld.getEntity(id) == null) {
                         if(remove) {
                             // Doesn't exist even after chunk has been loaded.
-                            var lineId = unresolvedPartHolders.remove(id);
-                            if (lineId == null)
+                            var part = lineParts.get(id);
+                            if (part == null)
                                 continue;
                             // Destroy line
-                            var line = transmissionLines.get(lineId);
-                            if (line == null)
-                                continue;
-                            line.remove();
+                            part.remove();
+//                            var line = part.getLine();
+//                            line.remove();
                         }
                     } else {
                         entityIter.remove();
@@ -380,75 +379,39 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Nullable
-    protected ElectricWire tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    protected TransmissionLinePart tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
         // Try to resolve trees for correct merging of lines
-        var node1 = endpoint1.getNode(world);
-        var node2 = endpoint2.getNode(world);
-
         resolveTree(endpoint1);
         resolveTree(endpoint2);
 
-        // First try with existing lines
-        var holderId = unresolvedPartHolders.remove(forEntity.getUUID());
-        if(holderId != null) {
-            var line = transmissionLines.get(holderId);
-            if(line != null) {
-                var part = line.grabUnloaded(forEntity);
-                if (part != null)
-                    return part;
-            }
+        var existingPart = lineParts.get(forEntity.getUUID());
+        if(existingPart != null) {
+            existingPart.grab(forEntity);
+            return existingPart;
         }
 
-        // TODO: Some of these checks might be redundant
-        var line1 = transmissionLineNodes.get(node1);
-        if(line1 != null) {
-            var part = line1.grabUnloaded(forEntity);
-            if(part != null)
-                return part;
-        }
-        for(var line : globalGraph.getConnectedLines(node1)) {
-            var part = line.grabUnloaded(forEntity);
-            if(part != null)
-                return part;
-        }
-
-        var line2 = transmissionLineNodes.get(node2);
-        if(line2 != null) {
-            var part = line2.grabUnloaded(forEntity);
-            if(part != null)
-                return part;
-        }
-        for(var line : globalGraph.getConnectedLines(node2)) {
-            var part = line.grabUnloaded(forEntity);
-            if(part != null)
-                return part;
-        }
-
-        // Next move onto the unresolved lines
-        for(var unresolved : unresolvedLines) {
-            var part = unresolved.resolvePart(this, forEntity);
-            if(part != null)
-                return part;
-        }
         return null;
     }
 
-    @Nullable
-    public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        add(endpoint1);
-        add(endpoint2);
+    private boolean makeTransmissionLine(TransmissionLinePart linePart) {
+        if(linePart.getLine() != null)
+            return true;
 
-        var unloadedPart = tryGrabUnloadedPart(endpoint1, endpoint2, forEntity);
-        if(unloadedPart != null)
-            return unloadedPart;
+        var endpoint1 = linePart.getEndpoint1();
+        var endpoint2 = linePart.getEndpoint2();
 
         // This method needs to ensure proper ordering of segments in the transmission line.
         var network = prepareForConnection(endpoint1, endpoint2);
         if(network == null)
-            return null;
+            return false;
 
+        PowerGrid.LOGGER.debug("Creating a transmission line for {}", linePart);
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
+
+        // Make sure nodes are up-to-date
+        linePart.setNode1(node1);
+        linePart.setNode2(node2);
 
         int nConns1 = connectionCount(endpoint1);
         int nConns2 = connectionCount(endpoint2);
@@ -456,7 +419,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var connected2 = nConns2 == 1 ? globalGraph.getConnectedNodes(node2).get(0) : null;
 
         TransmissionLine line1 = null, line2 = null;
-        TransmissionLinePart linePart = null;
         if(nConns1 == 1) {
             // We can attach to an existing line on endpoint1
             var wire = globalGraph.getFirstWire(node1, connected1);
@@ -471,7 +433,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 line2 = curLine;
                 if(line1 != null) {
                     if(line1 != line2) {
-                        linePart = new TransmissionLinePart(forEntity.getResistance(), endpoint1, endpoint2, world, forEntity, line1);
+                        linePart.setLine(line1);
                         // We can extend the first line by the second node.
                         PowerGrid.LOGGER.debug("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
                         if(line1.getNode2() != node1)
@@ -488,7 +450,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     }
                     line1 = null;
                 } else {
-                    linePart = new TransmissionLinePart(forEntity.getResistance(), endpoint1, endpoint2, world, forEntity, line2);
+                    linePart.setLine(line2);
                     PowerGrid.LOGGER.debug("{}: Extending line at beginning by wire {}, starting node is now {}", line2, linePart, node1);
                     // We can extend this line by the first node.
                     if(line2.getNode1() != node2)
@@ -498,7 +460,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
         }
         if(line1 != null) {
-            linePart = new TransmissionLinePart(forEntity.getResistance(), endpoint1, endpoint2, world, forEntity, line1);
+            linePart.setLine(line1);
             // We can extend this line by the second node.
             PowerGrid.LOGGER.debug("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
             if(line1.getNode2() != node1)
@@ -506,15 +468,32 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             line1.addLastSegment(linePart);
         }
         if(line1 == null && line2 == null) {
-            linePart = new TransmissionLinePart(forEntity.getResistance(), endpoint1, endpoint2, world, forEntity, null);
-            var line = new TransmissionLine(forEntity.getResistance(), endpoint1, endpoint2, linePart, this);
+            var line = new TransmissionLine(linePart.getResistance(), endpoint1, endpoint2, this);
             linePart.setLine(line);
+            line.segments.add(linePart);
             network.addWire(line);
             PowerGrid.LOGGER.debug("{}: New transmission line between {} and {}", line, node1, node2);
         }
 
         setDirty();
-        return linePart;
+        return true;
+    }
+
+    @Nullable
+    public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+        add(endpoint1);
+        add(endpoint2);
+
+        var linePart = tryGrabUnloadedPart(endpoint1, endpoint2, forEntity);
+        if(linePart != null && linePart.getLine() != null)
+            return linePart;
+
+        if(linePart == null)
+            linePart = TransmissionLinePart.uniquePart(forEntity.getResistance(), endpoint1, endpoint2, forEntity, this);
+
+        if(makeTransmissionLine(linePart))
+            return linePart;
+        return null;
     }
 
     public List<WireEntity> findConnectedWires(ElectricBehaviour behaviour) {
@@ -549,47 +528,19 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     @Override
     @NotNull
     public CompoundTag save(@NotNull CompoundTag nbt) {
-        var lineList = new ListTag();
-        for(var line : transmissionLines.values()) {
-            lineList.add(new UnresolvedTransmissionLine(line).writeNbt());
+        var partList = new ListTag();
+        for(var part : lineParts.values()) {
+            partList.add(part.toNbt());
         }
-        // Write unresolved lines back to nbt.
-        for(var unresolved : unresolvedLines) {
-            lineList.add(unresolved.writeNbt());
-        }
-        nbt.put("TransmissionLines", lineList);
+        nbt.put("Parts", partList);
         return nbt;
     }
 
-    private void addUnresolvedLineMapping(IWireEndpoint endpoint, UnresolvedTransmissionLine line) {
-        unresolvedLineNodeMap.computeIfAbsent(endpoint, $ -> new ConcurrentLinkedQueue<>()).add(line);
-    }
-
-    public void removeUnresolvedLine(UnresolvedTransmissionLine line) {
-        unresolvedLines.remove(line);
-        var lines1 = unresolvedLineNodeMap.get(line.endpoint1());
-        if(lines1 != null) {
-            lines1.remove(line);
-            if(lines1.isEmpty())
-                unresolvedLineNodeMap.remove(line.endpoint1());
-        }
-        var lines2 = unresolvedLineNodeMap.get(line.endpoint2());
-        if(lines2 != null) {
-            lines2.remove(line);
-            if(lines2.isEmpty())
-                unresolvedLineNodeMap.remove(line.endpoint2());
-        }
-        setDirty();
-    }
-
     protected void readNbt(CompoundTag nbt) {
-        var lineList = nbt.getList("TransmissionLines", Tag.TAG_COMPOUND);
-        for(var lineEntryGeneric : lineList) {
-            var lineEntry = (CompoundTag) lineEntryGeneric;
-            var line = new UnresolvedTransmissionLine(lineEntry);
-            unresolvedLines.add(line);
-            addUnresolvedLineMapping(line.endpoint1(), line);
-            addUnresolvedLineMapping(line.endpoint2(), line);
+        var partList = nbt.getList("Parts", Tag.TAG_COMPOUND);
+        for(var entryGeneric : partList) {
+            var partEntry = (CompoundTag) entryGeneric;
+            TransmissionLinePart.uniquePart(partEntry, this);
         }
     }
 
@@ -612,11 +563,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 ownedNode = line.getNode1();
             }
             // Also, we need to inform the wire entities about this.
-            var unresolved = line.unresolve();
-            unresolvedLines.add(unresolved);
+            line.unresolve();
             setDirty();
-            addUnresolvedLineMapping(unresolved.endpoint1(), unresolved);
-            addUnresolvedLineMapping(unresolved.endpoint2(), unresolved);
             if(removeNode.getNetwork() != null) {
                 removeNode.getNetwork().removeNode(removeNode);
             }
@@ -632,82 +580,48 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         globalExternalNodes.remove(ownedNode.endpoint);
     }
 
-    private void resolveLine(UnresolvedTransmissionLine line) {
-        var node1 = globalExternalNodes.get(line.endpoint1());
-        if(node1 == null) {
-            if(line.endpoint1().isValid(world)) {
-                // Try to fetch from the endpoint first
-                node1 = line.endpoint1().getNode(world);
-                PowerGrid.LOGGER.debug("Resolving line {} endpoint 1 {} with world node", line, line.endpoint1());
-            } else {
-                // Create a dummy node that gets replaced later
-                PowerGrid.LOGGER.debug("Resolving line {} endpoint 1 {} with dummy node", line, line.endpoint1());
-                node1 = new OwnedFloatingNode(line.endpoint1());
-            }
-            globalExternalNodes.put(line.endpoint1(), node1);
-        }
-        var node2 = globalExternalNodes.get(line.endpoint2());
-        if(node2 == null) {
-            if(line.endpoint2().isValid(world)) {
-                // Try to fetch from the endpoint first
-                node2 = line.endpoint2().getNode(world);
-                PowerGrid.LOGGER.debug("Resolving line {} endpoint 2 {} with world node", line, line.endpoint2());
-            } else {
-                // Create a dummy node that gets replaced later
-                node2 = new OwnedFloatingNode(line.endpoint2());
-                PowerGrid.LOGGER.debug("Resolving line {} endpoint 2 {} with dummy node", line, line.endpoint2());
-            }
-            globalExternalNodes.put(line.endpoint2(), node2);
-        }
-        line.resolveEnd(this, line.endpoint1());
-        line.resolveEnd(this, line.endpoint2());
-    }
-
     private boolean traceTree(IWireEndpoint endpoint, Set<IWireEndpoint> visited) {
         if(!visited.add(endpoint))
             return false;
-        var lines = unresolvedLineNodeMap.get(endpoint);
+        var lines = partNodeMap.get(globalExternalNodes.get(endpoint));
         if(lines == null)
             return false;
         boolean continueResolving = false;
-        for(var line : lines) {
-            if(globalGraph.transmissionLineCount(endpoint.getNode(world)) > 0) {
-                // There are valid lines at this node so it is an edge node,
-                // regardless of the validity of the endpoint.
-                PowerGrid.LOGGER.debug("Found edge line at {} (loaded lines at endpoint)", endpoint);
-                resolveLine(line);
-                return true;
+        for(var linePart : lines) {
+            if(linePart.getLine() != null) {
+                // This branch connects to a valid line, back-trace and resolve all line parts.
+                continueResolving = true;
             }
             if(lines.size() == 1) {
                 PowerGrid.LOGGER.debug("Found edge line at {}", endpoint);
-                if(line.endpoint1().equals(endpoint)) {
+                if(linePart.getEndpoint1().equals(endpoint)) {
                     // Check endpoint2
-                    if(line.endpoint2().isValid(world)) {
+                    if(linePart.getEndpoint2().isValid(world)) {
                         // Resolve segment
-                        resolveLine(line);
+                        makeTransmissionLine(linePart);
                         return true;
                     }
                 } else {
-                    assert line.endpoint2().equals(endpoint);
+                    assert linePart.getEndpoint2().equals(endpoint);
                     // Check endpoint1
-                    if(line.endpoint1().isValid(world)) {
+                    if(linePart.getEndpoint1().isValid(world)) {
                         // Resolve segment
-                        resolveLine(line);
+                        makeTransmissionLine(linePart);
                         return true;
                     }
                 }
                 break;
             }
             PowerGrid.LOGGER.debug("Continuing line trace through {}", endpoint);
-            if(line.endpoint1().equals(endpoint)) {
-                if(traceTree(line.endpoint2(), visited)) {
-                    resolveLine(line);
+            if(linePart.getEndpoint1().equals(endpoint)) {
+                if(traceTree(linePart.getEndpoint2(), visited)) {
+                    makeTransmissionLine(linePart);
                     continueResolving = true;
                 }
             } else {
-                assert line.endpoint2().equals(endpoint);
-                if(traceTree(line.endpoint1(), visited)) {
-                    resolveLine(line);
+                assert linePart.getEndpoint2().equals(endpoint);
+                if(traceTree(linePart.getEndpoint1(), visited)) {
+                    makeTransmissionLine(linePart);
                     continueResolving = true;
                 }
             }
@@ -716,25 +630,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     private void resolveTree(@NotNull IWireEndpoint endpoint) {
-        var unresolvedLines = unresolvedLineNodeMap.get(endpoint);
+        var unresolvedLines = partNodeMap.get(globalExternalNodes.get(endpoint));
         if(unresolvedLines == null)
             return;
         // We need to trace the graph to all terminating nodes and see if any are loaded,
         // if so, we need to resolve all lines between them to ensure correct unloaded chunk behaviour.
         var visited = new HashSet<IWireEndpoint>();
-        visited.add(endpoint);
         PowerGrid.LOGGER.debug("Starting line trace at {}", endpoint);
-        for(var line : unresolvedLines) {
-            line.resolveEnd(this, endpoint);
-            if(line.endpoint1().equals(endpoint)) {
-                traceTree(line.endpoint2(), visited);
-            } else {
-                assert line.endpoint2().equals(endpoint);
-                traceTree(line.endpoint1(), visited);
-            }
-        }
+        traceTree(endpoint, visited);
     }
 
+    // TODO: This could break for proxy nodes.
     private void addAndMigrateNode(IWireEndpoint endpoint) {
         var newNode = endpoint.getNode(world);
         var oldNode = globalExternalNodes.put(endpoint, newNode);
@@ -742,6 +648,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
             PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
+            var parts = partNodeMap.remove(oldNode);
+            if(parts != null) {
+                for(TransmissionLinePart part : parts) {
+                    PowerGrid.LOGGER.debug("Migrating node for part {}", part);
+                    if(part.getEndpoint1().equals(endpoint) || part.getNode1() == oldNode)
+                        part.setNode1(newNode);
+                    if(part.getEndpoint2().equals(endpoint) || part.getNode2() == oldNode)
+                        part.setNode2(newNode);
+                    partNodeMap.computeIfAbsent(newNode, $ -> new HashSet<>()).add(part);
+                }
+            }
             if(oldNode.getNetwork() != null) {
                 var unified = prepareForConnection(oldNode, newNode);
                 if(unified == null)
@@ -775,10 +692,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
     }
 
-    public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
+    public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode, boolean hasInternals) {
+        PowerGrid.LOGGER.debug("Node holder added, {}", ownedNode);
         addAndMigrateNode(ownedNode.endpoint);
         // Try to resolve an end of a transmission line
         resolveTree(ownedNode.endpoint);
+        if(hasInternals) {
+            var line = transmissionLineNodes.get(ownedNode);
+            if(line != null) {
+                line.splitAt(ownedNode);
+            }
+        }
     }
 
     /**
@@ -786,10 +710,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
      *
      * @param entityId       Transmission line part entity id
      * @param lastKnownChunk Last known chunk of the entity
-     * @param linePartHolder Transmission line which holds the part
      */
-    public void bounty(UUID entityId, ChunkPos lastKnownChunk, TransmissionLine linePartHolder) {
-        unresolvedPartHolders.put(entityId, linePartHolder.getId());
+    public void bounty(UUID entityId, ChunkPos lastKnownChunk) {
         if(world.hasChunk(lastKnownChunk.x, lastKnownChunk.z)) {
             checkForExistence.computeIfAbsent(lastKnownChunk, $ -> new CheckChunk()).add(entityId);
             return;
@@ -831,18 +753,58 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
     }
 
-    @NotNull
     public OwnedFloatingNode holderOrPlaceholderNode(@NotNull IWireEndpoint endpoint) {
         var node = globalExternalNodes.get(endpoint);
-        if(node != null)
+        if (node != null)
             return node;
-        node = new OwnedFloatingNode(endpoint);
+        if(endpoint.isValid(world)) {
+            node = endpoint.getNode(world);
+        } else {
+            node = new OwnedFloatingNode(endpoint);
+        }
         globalExternalNodes.put(endpoint, node);
         return node;
     }
 
-    public void addLine(TransmissionLine line) {
+    public void registerPart(UUID persistentOwnerId, TransmissionLinePart part) {
+        lineParts.put(persistentOwnerId, part);
+        partNodeMap.computeIfAbsent(part.getNode1(), $ -> new HashSet<>()).add(part);
+        partNodeMap.computeIfAbsent(part.getNode2(), $ -> new HashSet<>()).add(part);
+        setDirty();
+    }
 
+    public void unregisterPart(UUID persistentOwnerId, TransmissionLinePart part) {
+        lineParts.remove(persistentOwnerId);
+        var set = partNodeMap.get(part.getNode1());
+        if(set != null) {
+            set.remove(part);
+            if(set.isEmpty())
+                partNodeMap.remove(part.getNode1());
+        }
+        set = partNodeMap.get(part.getNode2());
+        if(set != null) {
+            set.remove(part);
+            if(set.isEmpty())
+                partNodeMap.remove(part.getNode2());
+        }
+        setDirty();
+    }
+
+    @Nullable
+    public TransmissionLinePart getPart(UUID persistentOwnerId) {
+        return lineParts.get(persistentOwnerId);
+    }
+
+    public void inNetwork(@Nullable ElectricalNetwork network, @NotNull OwnedFloatingNode node) {
+        if(network == null)
+            return;
+        if(node.getNetwork() != null) {
+            if(node.getNetwork() != network) {
+                network.merge(node.getNetwork());
+            }
+        } else {
+            node.endpoint.joinNetwork(world, network);
+        }
     }
 
     private static class CheckChunk {

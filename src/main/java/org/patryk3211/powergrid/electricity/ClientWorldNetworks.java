@@ -136,7 +136,7 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     @Override
-    public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode) {
+    public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode, boolean hasInternals) {
         var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
         if(oldNode != null && oldNode != ownedNode) {
             // Drops all connections from the old node (they will be recreated by the line management packet)
