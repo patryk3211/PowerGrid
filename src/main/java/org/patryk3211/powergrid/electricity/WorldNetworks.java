@@ -162,9 +162,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 continue;
             }
             if(network.isDirty()) {
-                // Two more recalculations to make sure the network is stable.
-                network.calculate();
-                network.calculate();
+                network.warmUp();
             }
             network.calculate();
         }
@@ -252,7 +250,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph);
+        var network = new GraphedElectricalNetwork(globalGraph, true);
         subnetworks.add(network);
         return network;
     }

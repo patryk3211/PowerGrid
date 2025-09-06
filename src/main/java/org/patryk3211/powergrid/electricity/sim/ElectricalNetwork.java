@@ -43,16 +43,18 @@ public class ElectricalNetwork {
     private DMatrixRMaj lastGuess;
 
     private boolean dirty;
-    private boolean recalculating;
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
 
+    private final boolean groundLeaks;
+
     public static Logger LOGGER = null;
 
-    public ElectricalNetwork() {
+    public ElectricalNetwork(boolean groundLeaks) {
         solver = new BiCGSTABSolver(PRECISION);
         dirty = true;
         sourceCount = 0;
+        this.groundLeaks = groundLeaks;
     }
 
     // Make sure all variables are completely rebuilt and repopulated.
@@ -313,13 +315,15 @@ public class ElectricalNetwork {
                 conductanceMatrix.add(index, index, G);
             }
         }
-//        for(var node : nodes) {
-//            if(node instanceof IElectricNode) {
-//                // Leakage/ground coupling.
-//                var index = node.getIndex();
-//                conductanceMatrix.add(index, index, 1e-5);
-//            }
-//        }
+        if(groundLeaks) {
+            for (var node : nodes) {
+                if (node instanceof IElectricNode) {
+                    // Leakage/ground coupling.
+                    var index = node.getIndex();
+                    conductanceMatrix.add(index, index, 1e-7);
+                }
+            }
+        }
 
         staleWires.forEach(wire -> {
             if(wire instanceof ISolverHook hook)
@@ -373,7 +377,7 @@ public class ElectricalNetwork {
                     continue;
                 }
                 float value = (float) result.get(node.getIndex(), 0);
-                if(Float.isNaN(value) || Float.isInfinite(value)) {
+                if(!Float.isFinite(value)) {
                     solver.zero();
                     if(canRepeat) {
                         // Try again.
@@ -404,15 +408,15 @@ public class ElectricalNetwork {
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix();
             populateCurrentMatrix();
+            // TODO: Maybe try to populate the initial guess matrix from old node values.
         } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
             if(LOGGER != null)
-                LOGGER.trace("Cumulated conductance updates triggered admittance matrix recalculation");
+                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
             populateConductanceMatrix();
             populateCurrentMatrix();
         }
-
     }
 
     public void calculate(boolean printResult, boolean printState) {
@@ -431,9 +435,10 @@ public class ElectricalNetwork {
             System.out.println(currentMatrix);
         }
 
-        int maxAttempts = hasHooks() ? 5 : 2;
+        int maxAttempts = hasHooks() ? 5 : 3;
         for(int i = 0; i < maxAttempts; ++i) {
-            var result = solver.solve(AMatrix, currentMatrix);
+            var canRepeat = i < maxAttempts - 1;
+            var result = solver.solve(AMatrix, currentMatrix, canRepeat);
             lastGuess = result;
             if(solver.getInitialGuessDistance() < PRECISION) {
                 acceptResults(result, false);
@@ -442,12 +447,14 @@ public class ElectricalNetwork {
             if (printResult) {
                 System.out.println(result);
             }
-            if(acceptResults(result, i < maxAttempts - 1)) {
+            if(acceptResults(result, canRepeat)) {
                 // If the network has ~special~ components, solving is continued
                 // util the guess is good with updated properties (updated by the hooks)
                 if(hasHooks())
                     continue;
-                break;
+                // If not, check if the current guess is good enough.
+                if(solver.getFinalGuessDistance() < PRECISION)
+                    break;
             }
         }
         for(var hook : solver.getHooks()) {
@@ -457,6 +464,36 @@ public class ElectricalNetwork {
 
     public void calculate() {
         calculate(false, false);
+    }
+
+    public void warmUp() {
+        if(sourceCount == 0) {
+            for(var node : nodes) {
+                if(node instanceof IElectricNode enode) {
+                    enode.receiveResult(0);
+                }
+            }
+            return;
+        }
+
+        prepareMatrices();
+
+        int maxAttempts = 4;
+        for(int i = 0; i < maxAttempts; ++i) {
+            var result = solver.solve(AMatrix, currentMatrix, true);
+            lastGuess = result;
+            if(solver.getInitialGuessDistance() < PRECISION) {
+                acceptResults(result, false);
+                break;
+            }
+            if(acceptResults(result, i < maxAttempts - 1)) {
+                // If the network has ~special~ components, solving is continued
+                // util the guess is good with updated properties (updated by the hooks)
+                if(hasHooks())
+                    continue;
+                break;
+            }
+        }
     }
 
     public class ConductanceMatrixAccess {

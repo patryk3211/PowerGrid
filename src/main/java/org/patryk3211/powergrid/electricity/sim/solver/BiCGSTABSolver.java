@@ -38,6 +38,7 @@ public class BiCGSTABSolver implements ISolver {
 
     private final Random random;
     private double initialDistance;
+    private double finalDistance;
 
     // Solved vector
     private DMatrixRMaj guess;
@@ -126,7 +127,7 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
-    public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b) {
+    public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll) {
         if(b.getNumRows() == 0)
             return guess;
 
@@ -146,6 +147,7 @@ public class BiCGSTABSolver implements ISolver {
         // Check if result is already good enough.
         double norm = NormOps_DDRM.normP2(residual);
         initialDistance = norm;
+        finalDistance = norm;
         if(norm <= targetPrecision) {
             return guess;
         }
@@ -196,20 +198,37 @@ public class BiCGSTABSolver implements ISolver {
             CommonOps_DDRM.add(residual, beta, t, p);
         }
 
-        if(iters >= MAX_ITERATIONS) {
-            if(LOGGER != null) {
-                LOGGER.warn("Solver iteration limit, final precision: {}", norm);
-            } else {
-                System.out.printf("Solver iteration limit, final precision: %g", norm);
-            }
-            if(norm > MAXIMUM_ALLOWED_IMPRECISION) {
-                if(LOGGER != null) {
-                    LOGGER.warn("Large imprecision, dropping result");
+        if(!acceptAll) {
+            if (iters >= MAX_ITERATIONS) {
+                if (LOGGER != null) {
+                    LOGGER.warn("Solver iteration limit, final precision: {}", norm);
+                } else {
+                    System.out.printf("Solver iteration limit, final precision: %g", norm);
                 }
-                guess.setTo(prevGuess);
+                if (norm > MAXIMUM_ALLOWED_IMPRECISION && (initialDistance / norm) < 10) {
+                    if (LOGGER != null) {
+                        LOGGER.warn("Large imprecision, dropping result");
+                    }
+                    guess.setTo(prevGuess);
+                }
+            }
+        } else {
+            if (iters >= MAX_ITERATIONS) {
+                if (LOGGER != null) {
+                    LOGGER.warn("(AcceptAll) Solver iteration limit, final precision: {}", norm);
+                } else {
+                    System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
+                }
+                if(initialDistance / norm < 10) {
+                    if (LOGGER != null) {
+                        LOGGER.warn("(AcceptAll) Large imprecision, dropping result");
+                    }
+                    guess.setTo(prevGuess);
+                }
             }
         }
 
+        finalDistance = norm;
         return guess;
     }
 
@@ -231,5 +250,10 @@ public class BiCGSTABSolver implements ISolver {
     @Override
     public double getInitialGuessDistance() {
         return initialDistance;
+    }
+
+    @Override
+    public double getFinalGuessDistance() {
+        return finalDistance;
     }
 }
