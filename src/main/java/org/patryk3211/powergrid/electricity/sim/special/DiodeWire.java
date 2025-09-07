@@ -16,15 +16,11 @@
 package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.ejml.data.DMatrixRMaj;
-import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class DiodeWire extends AbstractElectricWire implements ISolverHook {
+public class DiodeWire extends DynamicConductanceWire {
     private final float resistance;
     private final float biasVoltage;
-    private double currentConductance;
-    private double prevConductance;
     private double prevPotential;
 
     private double In;
@@ -33,12 +29,6 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
         super(anode, cathode);
         this.resistance = resistance;
         this.biasVoltage = biasVoltage;
-        prevConductance = 0;
-    }
-
-    @Override
-    public double conductance() {
-        return currentConductance;
     }
 
     @Override
@@ -52,22 +42,15 @@ public class DiodeWire extends AbstractElectricWire implements ISolverHook {
     }
 
     @Override
-    public void preSolve() {
-        var V = super.potentialDifference();
-        float step;
-        if(V >= prevPotential) {
-            step = 0.05f;
-            V = (float) (prevPotential + step * Math.log(1 + (V - prevPotential) / step));
-        }
+    public double calculateConductance() {
+        double V = super.potentialDifference();
+        V = PNJunction.pnlim(V, prevPotential);
         prevPotential = V;
 
-        var maxConductance = 1 / resistance;
-        var strength = 0.5 * (Math.tanh(10 * (V - biasVoltage - 0.3)) + 1);
-        currentConductance = maxConductance * strength;
+        var currentConductance = PNJunction.gm(V, 1 / resistance, biasVoltage);
         In = -Math.min(biasVoltage, V) * currentConductance * 0.995;
 
-        network.updateConductance(this, currentConductance - prevConductance);
-        prevConductance = currentConductance;
+        return currentConductance;
     }
 
     @Override

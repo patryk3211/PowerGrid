@@ -23,8 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 import java.util.*;
@@ -190,7 +188,6 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 entry = new NodeEntry(endpoint);
                 worldNodeMap.nodes.put(id, entry);
                 worldNodeMap.newNodes.add(entry.node);
-//                GlobalElectricNetworks.getWorldNetworks(world).nodeHolderAdded(entry.node);
             }
             return entry;
         } else {
