@@ -45,7 +45,7 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(STATE);
+        properties.add(STATE, current(16));
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
         var wire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(1), false);
         placed.add(wire);
         thermals.builder()
-                .setMaxPower(30, 150)
+                .setMaxCurrent(16, 0.1f, 150)
                 .setThermalMass(0.01f)
                 .addHeatSource(wire);
     }

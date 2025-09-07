@@ -40,7 +40,7 @@ public class RelayComponent extends OrientableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(THRESHOLD_VOLTAGE, STATE);
+        properties.add(THRESHOLD_VOLTAGE, STATE, current(32));
     }
 
     @Override
@@ -64,7 +64,7 @@ public class RelayComponent extends OrientableComponent {
                 .setThermalMass(0.02f)
                 .addHeatSource(coilWire);
         thermals.builder()
-                .setMaxPower(250, 125f)
+                .setMaxCurrent(32, switchResistance, 125f)
                 .setThermalMass(0.075f)
                 .addHeatSource(normallyClosed)
                 .addHeatSource(normallyOpen);

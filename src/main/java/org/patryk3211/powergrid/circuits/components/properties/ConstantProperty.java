@@ -32,17 +32,17 @@ public class ConstantProperty extends ComponentProperty<String> {
 
     @Override
     public String parse(String value) throws RuntimeException {
-        return this.value.toString();
+        return this.value.getString();
     }
 
     @Override
     public String toString(String value) {
-        return this.value.toString();
+        return this.value.getString();
     }
 
     @Override
     public String read(@Nullable Tag element) {
-        return this.value.toString();
+        return this.value.getString();
     }
 
     @Override
@@ -52,6 +52,6 @@ public class ConstantProperty extends ComponentProperty<String> {
 
     @Override
     public String defaultValue() {
-        return this.value.toString();
+        return this.value.getString();
     }
 }

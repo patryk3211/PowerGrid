@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -109,5 +110,9 @@ public class RecipeTags {
 
     public static ItemLike currentMeter() {
         return ModdedBlocks.CURRENT_METER;
+    }
+
+    public static ItemLike polishedRoseQuartz() {
+        return AllItems.POLISHED_ROSE_QUARTZ;
     }
 }

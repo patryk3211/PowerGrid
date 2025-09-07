@@ -366,7 +366,27 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('E', RecipeTags.conductiveCasing())
                     .define('G', RecipeTags.electricalGizmo())
                     .define('C', RecipeTags.currentMeter())
-                    .define('V', RecipeTags.voltageMeter()))
+                    .define('V', RecipeTags.voltageMeter())),
+
+    THERMOMETER = create(ModdedBlocks.THERMOMETER)
+            .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
+            .viaShaped(b -> b
+                    .pattern(" R ")
+                    .pattern("CSI")
+                    .define('R', Items.COMPASS)
+                    .define('C', RecipeTags.copperSheet())
+                    .define('S', RecipeTags.resistiveCoil())
+                    .define('I', RecipeTags.ironSheet())),
+
+    TRANSISTOR = create(ModdedItems.TRANSISTOR)
+            .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
+            .viaShaped(b -> b
+                    .pattern("I")
+                    .pattern("R")
+                    .pattern("C")
+                    .define('I', RecipeTags.ironSheet())
+                    .define('R', RecipeTags.polishedRoseQuartz())
+                    .define('C', RecipeTags.copperSheet()))
             ;
 
     public CraftingRecipes(PackOutput output) {

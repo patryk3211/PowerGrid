@@ -62,7 +62,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(RESISTANCE, VALUE);
+        properties.add(RESISTANCE, VALUE, power(25));
     }
 
     @Override

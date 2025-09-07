@@ -62,7 +62,15 @@ public abstract class Component {
     }
 
     public static ConstantProperty power(float value) {
-        return new ConstantProperty(PowerGrid.MOD_ID, "power", Unit.POWER.format(value));
+        return new ConstantProperty(PowerGrid.MOD_ID, "power", Unit.POWER.formatWithPrefixes(value).component());
+    }
+
+    public static ConstantProperty current(float resistance, float power) {
+        return current((float) Math.sqrt(power / resistance));
+    }
+
+    public static ConstantProperty current(float value) {
+        return new ConstantProperty(PowerGrid.MOD_ID, "current", Unit.CURRENT.formatWithPrefixes(value).component());
     }
 
     @Environment(EnvType.CLIENT)

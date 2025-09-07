@@ -35,7 +35,7 @@ public class ResistorComponent extends OrientableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(RESISTANCE);
+        properties.add(RESISTANCE, power(25));
     }
 
     @Override
