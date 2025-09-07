@@ -23,7 +23,7 @@ public class TransistorTest {
     void simpleBJTTest() {
         var Net = new TestHelper.Network();
 
-        var V1 = Net.V(-10.0f);
+        var V1 = Net.V(10.0f);
         var VB = Net.V(0.8f);
         var GND = Net.V(0);
 
@@ -45,6 +45,8 @@ public class TransistorTest {
             System.out.printf("Collector voltage: %f\n", Collector.getVoltage());
             System.out.printf("Base voltage: %f\n", Base.getVoltage());
             System.out.printf("Emitter voltage: %f\n", Emitter.getVoltage());
+
+            System.out.printf("T Current: %f\n", T.current());
 
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("VB current: %f\n", VB.getCurrent());

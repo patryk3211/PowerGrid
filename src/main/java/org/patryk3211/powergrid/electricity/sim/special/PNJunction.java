@@ -23,8 +23,8 @@ class PNJunction extends AbstractElectricWire {
     private double currentConductance;
     private double prevV;
 
-    public PNJunction(IElectricNode base, IElectricNode emitter) {
-        super(base, emitter);
+    public PNJunction(IElectricNode p, IElectricNode n) {
+        super(p, n);
     }
 
     public static double pnlim(double V, double Vprev) {

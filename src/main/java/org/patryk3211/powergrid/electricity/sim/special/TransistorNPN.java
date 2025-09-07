@@ -85,4 +85,14 @@ public class TransistorNPN extends DynamicConductanceWire {
         residual.add(beJunction.getNode1().getIndex(), 0, Ibe);
         residual.add(node2.getIndex(), 0, -Ibe - Ice);
     }
+
+    @Override
+    public float current() {
+        return (float) (super.current() - Ice + beJunction.current());
+    }
+
+    @Override
+    public float power() {
+        return (float) (potentialDifference() * (super.current() - Ice) + beJunction.power());
+    }
 }
