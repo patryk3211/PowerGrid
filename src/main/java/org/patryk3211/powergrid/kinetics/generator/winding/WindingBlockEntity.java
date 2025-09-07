@@ -32,7 +32,9 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
@@ -71,8 +73,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
-    private VoltageSourceNode sourceNode;
-    private TransformerCoupling coupling;
+    private VoltageSourceCoupling sourceCoupling;
 
     private boolean neighborChanged = false;
 
@@ -259,8 +260,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             removeBehaviour(ElectricBehaviour.TYPE);
             attachBehaviourLate(electricBehaviour);
             // Drop nodes
-            sourceNode = null;
-            coupling = null;
+            sourceCoupling = null;
         }
         wires.forEach(WireEntity::dropWire);
         wires.forEach(WireEntity::makeWire);
@@ -304,8 +304,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         be.electricBehaviour = null;
                         be.removeBehaviour(ElectricBehaviour.TYPE);
                         // Drop nodes
-                        be.sourceNode = null;
-                        be.coupling = null;
+                        be.sourceCoupling = null;
                     }
                 }
                 if(!level.isClientSide) {
@@ -448,11 +447,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             }
         }
         resistance = 1 / conductance;
-        if(sourceNode == null) {
+        if(sourceCoupling == null) {
             // We only need the nodes on the owner block entity
             addElectricBehaviour();
         } else {
-            coupling.setResistance(resistance);
+            sourceCoupling.setResistance(resistance);
         }
         if(!level.isClientSide)
             sendData();
@@ -530,8 +529,9 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     public void buildCircuit(CircuitBuilder builder) {
         if(ownerPosition == null) {
             builder.setTerminalCount(2);
-            sourceNode = builder.addInternalNode(VoltageSourceNode.class);
-            coupling = builder.couple(1, Math.max(resistance, resistance()), sourceNode, builder.terminalNode(0), builder.terminalNode(1));
+            sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class,
+                    builder.terminalNode(0), builder.terminalNode(1),
+                    Math.max(resistance, resistance()));
         }
     }
 
@@ -645,9 +645,9 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 return be.get().windingCurrent();
             }
         }
-        if(mainBE.sourceNode == null || mainBE.totalCoilCount == 0)
+        if(mainBE.sourceCoupling == null || mainBE.totalCoilCount == 0)
             return 0;
-        return mainBE.sourceNode.getCurrent() / mainBE.totalCoilCount;
+        return mainBE.sourceCoupling.getCurrent() / mainBE.totalCoilCount;
     }
 
     @Override
@@ -724,12 +724,12 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             rotorN.applyTickForce(torque);
         }
 
-        if(sourceNode != null) {
+        if(sourceCoupling != null) {
             if(!isMain()) {
                 PowerGrid.LOGGER.warn("Non-main winding has a source node.");
                 return;
             }
-            sourceNode.setVoltage(outputVoltage());
+            sourceCoupling.setVoltage(outputVoltage());
         }
     }
 }

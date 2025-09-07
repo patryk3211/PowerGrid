@@ -92,6 +92,20 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             });
             internalNodes.forEach(network::addNode);
             internalWires.forEach(network::addWire);
+        } else {
+            externalNodes.forEach(node -> {
+                if(node != null && node.getNetwork() == null) {
+                    network.addNode(node);
+                }
+            });
+            internalNodes.forEach(node -> {
+                if(node.getNetwork() == null)
+                    network.addNode(node);
+            });
+            internalWires.forEach(wire -> {
+                if(wire.getNetwork() == null)
+                    network.addWire(wire);
+            });
         }
     }
 

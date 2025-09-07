@@ -21,7 +21,7 @@ import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class Simulation {
     public static void main(String[] args) throws InterruptedException {
-        var network = new ElectricalNetwork(false);
+        var network = new ElectricalNetwork();
         var generator = new Generator(10.0f, 0.2f);
 
         var source = new VoltageSourceNode(10);

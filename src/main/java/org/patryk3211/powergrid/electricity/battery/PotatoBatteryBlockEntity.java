@@ -43,7 +43,7 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
     @Override
     public void tick() {
         if(getBlockState().getValue(PotatoBatteryBlock.BAKED)) {
-            sourceNode.setVoltage(0);
+            sourceCoupling.setVoltage(0);
             energy = 0;
             return;
         }

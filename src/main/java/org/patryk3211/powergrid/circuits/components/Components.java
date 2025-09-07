@@ -152,6 +152,16 @@ public class Components {
             .item(ModdedItems.POTENTIOMETER)
             .register();
 
+    public static final RegistryEntry<BJTComponent> BJT = REGISTRATE.component("bjt", BJTComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 0, 0, "Collector")
+                    .addPad(1, 2, 1, "Base")
+                    .addPad(2, 0, 2, "Emitter")
+                    .withItem(ModdedItems.TRANSISTOR)
+                    .withOutline())
+            .item(ModdedItems.TRANSISTOR)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }

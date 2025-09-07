@@ -33,8 +33,13 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
-    private static final int MAX_ITERATIONS = 300;
+    private static final int MAX_ITERATIONS = 500;
     private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
+
+    private static long solveMicros;
+    private static long solveMin;
+    private static long solveMax;
+    private static long solveCount;
 
     private final Random random;
     private double initialDistance;
@@ -131,6 +136,8 @@ public class BiCGSTABSolver implements ISolver {
         if(b.getNumRows() == 0)
             return guess;
 
+        var start = System.nanoTime();
+
         prevGuess.setTo(guess);
         for(var hook : hooks) {
             hook.preSolve();
@@ -198,6 +205,28 @@ public class BiCGSTABSolver implements ISolver {
             CommonOps_DDRM.add(residual, beta, t, p);
         }
 
+        var end = System.nanoTime();
+        var dur = end - start;
+        solveMicros += dur / 1000;
+        if(solveMin == 0) {
+            solveMin = dur;
+        } else if(solveMin > dur) {
+            solveMin = dur;
+        }
+        if(solveMax < dur) {
+            solveMax = dur;
+        }
+        if(++solveCount >= 1000) {
+            if(LOGGER != null) {
+                LOGGER.info("Average time of previous {} solver runs = {}µs, min = {}µs, max = {}µs",
+                        solveCount, (double) solveMicros / solveCount, (double) solveMin / 1000, (double) solveMax / 1000);
+            }
+            solveMicros = 0;
+            solveCount = 0;
+            solveMax = 0;
+            solveMin = 0;
+        }
+
         if(!acceptAll) {
             if (iters >= MAX_ITERATIONS) {
                 if (LOGGER != null) {
@@ -219,7 +248,7 @@ public class BiCGSTABSolver implements ISolver {
                 } else {
                     System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
                 }
-                if(initialDistance / norm < 10) {
+                if(norm > MAXIMUM_ALLOWED_IMPRECISION && initialDistance / norm < 1) {
                     if (LOGGER != null) {
                         LOGGER.warn("(AcceptAll) Large imprecision, dropping result");
                     }

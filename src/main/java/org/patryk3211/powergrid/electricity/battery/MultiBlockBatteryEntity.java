@@ -54,11 +54,11 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     @Override
     public void updateParameters() {
-        if(energy <= 0 || sourceNode == null)
+        if(energy <= 0 || sourceCoupling == null)
             return;
         float chargeLevel = (float) (energy / capacity);
-        sourceNode.setVoltage(spec.calculateVoltage(chargeLevel));
-        coupling.setResistance(spec.calculateResistance(chargeLevel) / getSize());
+        sourceCoupling.setVoltage(spec.calculateVoltage(chargeLevel));
+        sourceCoupling.setResistance(spec.calculateResistance(chargeLevel) / getSize());
     }
 
     private void overheated() {
@@ -121,8 +121,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 electricBehaviour.inheritConnections(old);
                 removeBehaviour(ElectricBehaviour.TYPE);
                 attachBehaviourLate(electricBehaviour);
-                sourceNode = null;
-                coupling = null;
+                sourceCoupling = null;
             }
             var controller = getControllerBE();
             if(controller != null && thermalBehaviour != null)

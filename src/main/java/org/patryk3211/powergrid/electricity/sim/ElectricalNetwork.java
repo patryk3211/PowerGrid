@@ -46,15 +46,12 @@ public class ElectricalNetwork {
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
 
-    private final boolean groundLeaks;
-
     public static Logger LOGGER = null;
 
-    public ElectricalNetwork(boolean groundLeaks) {
+    public ElectricalNetwork() {
         solver = new BiCGSTABSolver(PRECISION);
         dirty = true;
         sourceCount = 0;
-        this.groundLeaks = groundLeaks;
     }
 
     // Make sure all variables are completely rebuilt and repopulated.
@@ -114,7 +111,7 @@ public class ElectricalNetwork {
 
         if(node instanceof ICouplingNode)
             couplings.remove(node);
-        if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode)
+        if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode || node instanceof VoltageSourceCoupling)
             --sourceCount;
         if(node instanceof ISolverHook hook)
             solver.removeHook(hook);
@@ -247,6 +244,9 @@ public class ElectricalNetwork {
         nodes.add(coupling);
         setDirty();
 
+        if(coupling instanceof VoltageSourceCoupling)
+            ++sourceCount;
+
         if(coupling instanceof ISolverHook hook)
             solver.addHook(hook);
     }
@@ -271,12 +271,10 @@ public class ElectricalNetwork {
         }
     }
 
-    public void updateCurrent(CurrentSourceNode node, float oldCurrent) {
+    public void updateCurrentMatrix(INode node, float change) {
         if(currentMatrix == null || dirty)
             return;
-
-        var diff = node.getCurrent() - oldCurrent;
-        currentMatrix.add(node.getIndex(), 0, diff);
+        currentMatrix.add(node.getIndex(), 0, change);
     }
 
     private void populateConductanceMatrix() {
@@ -315,15 +313,6 @@ public class ElectricalNetwork {
                 conductanceMatrix.add(index, index, G);
             }
         }
-        if(groundLeaks) {
-            for (var node : nodes) {
-                if (node instanceof IElectricNode) {
-                    // Leakage/ground coupling.
-                    var index = node.getIndex();
-                    conductanceMatrix.add(index, index, 1e-7);
-                }
-            }
-        }
 
         staleWires.forEach(wire -> {
             if(wire instanceof ISolverHook hook)
@@ -354,6 +343,10 @@ public class ElectricalNetwork {
             } else if(node instanceof final CurrentSourceNode source) {
                 currentMatrix.add(node.getIndex(), 0, source.getCurrent());
                 voltageSources[nodeIndex] = false;
+            } else if(node instanceof VoltageSourceCoupling source) {
+                currentMatrix.add(node.getIndex(), 0, source.getVoltage());
+                // This only applies to single terminal voltage sources
+                voltageSources[nodeIndex] = false;
             } else {
                 voltageSources[nodeIndex] = false;
             }
@@ -371,24 +364,22 @@ public class ElectricalNetwork {
 
     private boolean acceptResults(DMatrixRMaj result, boolean canRepeat) {
         for(var node : nodes) {
-            if(node instanceof IElectricNode enode) {
-                if(node.getIndex() >= result.getNumRows()) {
-                    // Why is it here???
-                    continue;
-                }
-                float value = (float) result.get(node.getIndex(), 0);
-                if(!Float.isFinite(value)) {
-                    solver.zero();
-                    if(canRepeat) {
-                        // Try again.
-                        return false;
-                    } else {
-                        // Failed again
-                        enode.receiveResult(0);
-                    }
+            if(node.getIndex() >= result.getNumRows()) {
+                // Why is it here???
+                continue;
+            }
+            float value = (float) result.get(node.getIndex(), 0);
+            if(!Float.isFinite(value)) {
+                solver.zero();
+                if(canRepeat) {
+                    // Try again.
+                    return false;
                 } else {
-                    enode.receiveResult(value);
+                    // Failed again
+                    node.receiveResult(0);
                 }
+            } else {
+                node.receiveResult(value);
             }
         }
         return true;
@@ -422,9 +413,7 @@ public class ElectricalNetwork {
     public void calculate(boolean printResult, boolean printState) {
         if(sourceCount == 0) {
             for(var node : nodes) {
-                if(node instanceof IElectricNode enode) {
-                    enode.receiveResult(0);
-                }
+                node.receiveResult(0);
             }
             return;
         }
@@ -469,9 +458,7 @@ public class ElectricalNetwork {
     public void warmUp() {
         if(sourceCount == 0) {
             for(var node : nodes) {
-                if(node instanceof IElectricNode enode) {
-                    enode.receiveResult(0);
-                }
+                node.receiveResult(0);
             }
             return;
         }

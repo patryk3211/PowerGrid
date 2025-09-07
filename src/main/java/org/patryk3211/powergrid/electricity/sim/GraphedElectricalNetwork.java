@@ -22,12 +22,12 @@ import org.patryk3211.powergrid.electricity.sim.node.INode;
 public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
 
-    public GraphedElectricalNetwork(boolean groundLeaks) {
-        this(new NetworkGraph(), groundLeaks);
+    public GraphedElectricalNetwork() {
+        this(new NetworkGraph());
     }
 
-    public GraphedElectricalNetwork(NetworkGraph graph, boolean groundLeaks) {
-        super(groundLeaks);
+    public GraphedElectricalNetwork(NetworkGraph graph) {
+        super();
         this.graph = graph;
     }
 

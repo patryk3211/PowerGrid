@@ -12,6 +12,7 @@
     "powergrid:capacitor",
     "powergrid:led",
     "powergrid:lv_button",
-    "powergrid:potentiometer"
+    "powergrid:potentiometer",
+    "powergrid:transistor"
   ]
 }

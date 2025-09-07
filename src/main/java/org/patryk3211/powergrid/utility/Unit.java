@@ -65,4 +65,11 @@ public enum Unit {
         }
         return valueText;
     }
+
+    public Component format(double v) {
+        return Lang.number(v)
+                .add(Component.literal(" "))
+                .add(get())
+                .component();
+    }
 }

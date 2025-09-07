@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -116,9 +117,24 @@ public interface IElectricEntity {
          */
         public <T extends INode> T addInternalNode(Class<T> clazz, Object... params) {
             try {
-                var node = clazz.getConstructor(Arrays.stream(params).map(Object::getClass).toArray(len -> new Class<?>[len])).newInstance(params);
-                add(node);
-                return node;
+                for(var constructor : clazz.getConstructors()) {
+                    var paramTypes = constructor.getParameterTypes();
+                    if(params.length == paramTypes.length) {
+                        var valid = true;
+                        for(int i = 0; i < params.length; ++i) {
+                            if(!paramTypes[i].isInstance(params[i])) {
+                                valid = false;
+                                break;
+                            }
+                        }
+                        if(valid) {
+                            var node = (T) constructor.newInstance(params);
+                            add(node);
+                            return node;
+                        }
+                    }
+                }
+                throw new NoSuchMethodException();
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
                 throw new RuntimeException(e);

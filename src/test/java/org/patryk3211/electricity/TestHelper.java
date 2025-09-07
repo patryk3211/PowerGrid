@@ -25,7 +25,7 @@ public abstract class TestHelper {
         public ElectricalNetwork network;
 
         public Network() {
-            network = new ElectricalNetwork(false);
+            network = new ElectricalNetwork();
         }
 
         public FloatingNode N() {

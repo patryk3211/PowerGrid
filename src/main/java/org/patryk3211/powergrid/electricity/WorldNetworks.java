@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity;
 
+import com.google.common.collect.Sets;
 import io.netty.util.collection.IntObjectHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -250,7 +251,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph, true);
+        var network = new GraphedElectricalNetwork(globalGraph);
         subnetworks.add(network);
         return network;
     }
@@ -806,7 +807,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     private static class CheckChunk {
-        public final Set<UUID> entities = new HashSet<>();
+        public final Set<UUID> entities = Sets.newConcurrentHashSet();
         public int ticks = 0;
 
         public void add(UUID id) {

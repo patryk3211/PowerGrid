@@ -23,4 +23,6 @@ public interface INode {
 
     void setNetwork(ElectricalNetwork network);
     ElectricalNetwork getNetwork();
+
+    void receiveResult(float value);
 }

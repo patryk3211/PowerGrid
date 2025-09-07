@@ -116,6 +116,9 @@
   "powergrid.gui.circuit_designer.files": "Available Schematics",
   "powergrid.gui.circuit_designer.file_scroll": "Scroll to Select or Type in a Name",
 
+  "powergrid.component.property.power": "Power",
+  "powergrid.component.property.power.summary": "Maximum power that this component can handle for prolonged periods of time",
+
   "powergrid.component.property.tube_gain": "Gain",
   "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
   "powergrid.component.property.tube_anode_resistance": "Anode Resistance",
@@ -148,6 +151,9 @@
 
   "powergrid.component.property.potentiometer_resistance": "Resistance",
   "powergrid.component.property.potentiometer_value": "Setting",
+
+  "powergrid.component.property.bjt_beta": "Beta",
+  "powergrid.component.property.bjt_beta.summary": "Transistor forward current gain value",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",

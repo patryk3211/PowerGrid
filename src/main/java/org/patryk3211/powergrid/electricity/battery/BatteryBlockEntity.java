@@ -24,11 +24,11 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class BatteryBlockEntity extends ElectricBlockEntity {
-    protected VoltageSourceNode sourceNode;
-    protected TransformerCoupling coupling;
+    protected VoltageSourceCoupling sourceCoupling;
 
     protected final BatterySpec spec;
     protected double capacity;
@@ -53,8 +53,8 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
         if(energy <= 0)
             return;
         float chargeLevel = (float) (energy / capacity);
-        sourceNode.setVoltage(spec.calculateVoltage(chargeLevel));
-        coupling.setResistance(spec.calculateResistance(chargeLevel));
+        sourceCoupling.setVoltage(spec.calculateVoltage(chargeLevel));
+        sourceCoupling.setResistance(spec.calculateResistance(chargeLevel));
     }
 
     /**
@@ -62,19 +62,19 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
      * @return Positive power draws energy, negative power recharges
      */
     public float calculatePower() {
-        return sourceNode.getCurrent() * sourceNode.getVoltage();
+        return sourceCoupling.getCurrent() * sourceCoupling.getVoltage();
     }
 
     @Override
     public void tick() {
         super.tick();
 
-        if(sourceNode == null)
+        if(sourceCoupling == null)
             return;
 
         // Internal resistive losses
-        var I = sourceNode.getCurrent();
-        applyLostPower(I * I * coupling.getResistance());
+        var I = sourceCoupling.getCurrent();
+        applyLostPower(I * I * sourceCoupling.getResistance());
 
         // Extracted energy
         var power = calculatePower();
@@ -86,7 +86,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
             // If a battery reaches zero volts it is probably dead.
             // This should be simulated with a high resistance.
             energy = 0;
-            sourceNode.setVoltage(0);
+            sourceCoupling.setVoltage(0);
             return;
         } else if(energy >= capacity) {
             energy = capacity;
@@ -124,8 +124,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        sourceNode = builder.addInternalNode(VoltageSourceNode.class);
-        coupling = builder.couple(1, 0.5f, sourceNode, builder.terminalNode(0), builder.terminalNode(1));
+        sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class, builder.terminalNode(0), builder.terminalNode(1), 0.5f);
     }
 
     public void setEnergy(double energy) {

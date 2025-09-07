@@ -25,12 +25,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
+import org.patryk3211.powergrid.circuits.components.properties.ConstantProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,6 +55,14 @@ public abstract class Component {
         var properties = new ImmutableList.Builder<ComponentProperty<?>>();
         addProperties(properties);
         this.properties = properties.build();
+    }
+
+    static ConstantProperty c(String name, net.minecraft.network.chat.Component value) {
+        return new ConstantProperty(PowerGrid.MOD_ID, name, value);
+    }
+
+    public static ConstantProperty power(float value) {
+        return new ConstantProperty(PowerGrid.MOD_ID, "power", Unit.POWER.format(value));
     }
 
     @Environment(EnvType.CLIENT)

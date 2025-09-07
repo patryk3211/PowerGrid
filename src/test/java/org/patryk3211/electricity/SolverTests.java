@@ -18,6 +18,7 @@ package org.patryk3211.electricity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class SolverTests extends TestHelper {
@@ -54,5 +55,21 @@ public class SolverTests extends TestHelper {
 
         Assertions.assertEquals( 1f / 10, V1.getCurrent(), 1e-6, "Voltage source 1 current is incorrect");
         Assertions.assertEquals(-1f / 10, V2.getCurrent(), 1e-6, "Voltage source 2 current is incorrect");
+    }
+
+    @Test
+    void testTwoTerminalSource() {
+        var Net = new Network();
+
+        var N1 = Net.N();
+        var N2 = Net.N();
+        var V = new VoltageSourceCoupling(N1, N2, 0, 5);
+        Net.network.addNode(V);
+
+        Net.W(1, N1, N2);
+
+        Net.calculate();
+
+        Assertions.assertEquals(-5, V.getCurrent(), 1e-6, "Voltage source current is incorrect");
     }
 }
