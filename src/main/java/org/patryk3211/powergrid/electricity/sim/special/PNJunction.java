@@ -29,12 +29,18 @@ class PNJunction extends AbstractElectricWire {
 
     public static double pnlim(double V, double Vprev) {
         double step;
-        if(V >= Vprev) {
-            step = Math.E / 55; //0.05f;
+        var diff = V - Vprev;
+        if(Math.abs(diff) > 0.2) {
+            step = 0.05f;
+            if(V < Vprev)
+                step *= -1;
         } else {
-            step = -Math.E / 50; //-0.055f;
+            step = diff * 0.1f;
+            //0.01f;
         }
-        V = (float) (Vprev + step * Math.log10(1 + (V - Vprev) / step));
+        if(step == 0)
+            return V;
+        V = (float) (Vprev + step * Math.log(1 + diff / step));
         return V;
     }
 
