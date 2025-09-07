@@ -138,5 +138,6 @@
   "powergrid.generic.unit.amp": "А",
   "powergrid.gui.circuit_board.damage_body": "У этой платы есть поврежденные компоненты",
   "powergrid.gui.circuit_board.damage_header": "Повреждено",
-  "powergrid.gui.circuit_designer.discard": "Сбросить изменения"
+  "powergrid.gui.circuit_designer.discard": "Сбросить изменения",
+  "powergrid.gui.circuit_designer.saving": "Сохранение..."
 }
