@@ -145,7 +145,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        var current = (voltageSource ? voltageSourceNode.getCurrent() : currentSourceNode.getCurrent());
+        var current = (voltageSource ? -voltageSourceNode.getCurrent() : currentSourceNode.getCurrent());
         var currentText = String.format("%.2f", current);
         Lang.builder()
                 .text(currentText)

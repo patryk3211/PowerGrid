@@ -62,7 +62,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
      * @return Positive power draws energy, negative power recharges
      */
     public float calculatePower() {
-        return sourceCoupling.getCurrent() * sourceCoupling.getVoltage();
+        return -sourceCoupling.getCurrent() * sourceCoupling.getVoltage();
     }
 
     @Override
