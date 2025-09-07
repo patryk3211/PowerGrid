@@ -39,16 +39,16 @@ public abstract class AirCurrentMixin {
     @Shadow public Direction direction;
 
     @Unique
-    private final List<ThermalBehaviour> affectedThermals = new ArrayList<>();
+    private final List<ThermalBehaviour> powerGrid$affectedThermals = new ArrayList<>();
 
     @Inject(method = "rebuild()V", at = @At("HEAD"))
-    private void rebuildHead(CallbackInfo ci) {
-        affectedThermals.forEach(ThermalBehaviour::noCooling);
-        affectedThermals.clear();
+    private void powerGrid$rebuildHead(CallbackInfo ci) {
+        powerGrid$affectedThermals.forEach(ThermalBehaviour::noCooling);
+        powerGrid$affectedThermals.clear();
     }
 
     @Inject(method = "rebuild()V", at = @At("TAIL"))
-    private void rebuildTail(CallbackInfo ci) {
+    private void powerGrid$rebuildTail(CallbackInfo ci) {
         var world = source.getAirCurrentWorld();
         var start = source.getAirCurrentPos();
 
