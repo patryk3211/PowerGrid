@@ -216,10 +216,12 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             updatedEndpoints.clear();
             // Send partial lines to clients
             var iter2 = transmissionLines.values().iterator();
+            var removed = new ArrayList<TransmissionLine>();
             while(iter2.hasNext()) {
                 var line = iter2.next();
                 if(line.segments.isEmpty()) {
                     PowerGrid.LOGGER.warn("Empty transmission line {} dropped during tick", line);
+                    removed.add(line);
                     iter2.remove();
                     continue;
                 }
@@ -233,6 +235,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     PowerGrid.LOGGER.error("Failed to send a transmission line packet", e);
                 }
             }
+            removed.forEach(TransmissionLine::remove);
             // Synchronize solver state with clients
             if(syncTicks++ >= 20) {
                 for(var network : subnetworks) {

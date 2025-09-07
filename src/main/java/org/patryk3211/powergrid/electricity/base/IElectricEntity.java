@@ -61,7 +61,7 @@ public interface IElectricEntity {
         private final List<OwnedFloatingNode> externalNodes;
         private final Collection<INode> internalNodes;
         private final Collection<AbstractElectricWire> wires;
-        private boolean alterExternal = true;
+        private boolean paused = false;
 
         public CircuitBuilder(BlockPos pos, List<OwnedFloatingNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
             this.pos = pos;
@@ -75,21 +75,13 @@ public interface IElectricEntity {
             return this;
         }
 
-        @Deprecated
-        public CircuitBuilder alterExternal(boolean value) {
-            alterExternal = false;
-            return this;
-        }
-
         public void clear() {
             if(network != null) {
                 wires.forEach(network::removeWire);
                 internalNodes.forEach(network::removeNode);
-                if(alterExternal)
-                    externalNodes.forEach(network::removeNode);
+                externalNodes.forEach(network::removeNode);
             }
-            if(alterExternal)
-                externalNodes.clear();
+            externalNodes.clear();
             internalNodes.clear();
             wires.clear();
         }
@@ -99,8 +91,6 @@ public interface IElectricEntity {
          * node bindings for electric block terminal indices.
          */
         protected void addExternalNode() {
-            if(!alterExternal)
-                return;
             int index = externalNodes.size();
             var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, index));
             externalNodes.add(node);
@@ -165,19 +155,17 @@ public interface IElectricEntity {
          * @param count Number of nodes
          */
         public void setTerminalCount(int count) {
-            if(alterExternal) {
-                var currentCount = externalNodes.size();
-                if(currentCount != count) {
-                    if(currentCount < count) {
-                        for(int i = 0; i < count - currentCount; ++i) {
-                            addExternalNode();
-                        }
-                    } else {
-                        for(int i = 0; i < currentCount - count; ++i) {
-                            var node = externalNodes.remove(externalNodes.size() - 1);
-                            if(network != null)
-                                network.removeNode(node);
-                        }
+            var currentCount = externalNodes.size();
+            if(currentCount != count) {
+                if(currentCount < count) {
+                    for(int i = 0; i < count - currentCount; ++i) {
+                        addExternalNode();
+                    }
+                } else {
+                    for(int i = 0; i < currentCount - count; ++i) {
+                        var node = externalNodes.remove(externalNodes.size() - 1);
+                        if(network != null)
+                            network.removeNode(node);
                     }
                 }
             }
@@ -212,13 +200,13 @@ public interface IElectricEntity {
 
         public void add(AbstractElectricWire wire) {
             wires.add(wire);
-            if(network != null)
+            if(network != null && !paused)
                 network.addWire(wire);
         }
 
         public void add(INode node) {
             internalNodes.add(node);
-            if(network != null)
+            if(network != null && !paused)
                 network.addNode(node);
         }
 
@@ -270,8 +258,6 @@ public interface IElectricEntity {
         }
 
         public void setTo(BakedCircuit circuit) {
-            if(!alterExternal)
-                throw new IllegalStateException("Alter external must be allowed for baked circuit");
             clear();
             for(var node : circuit.externalNodes) {
                 externalNodes.add(node);
@@ -280,14 +266,18 @@ public interface IElectricEntity {
             }
             for(var node : circuit.internalNodes) {
                 internalNodes.add(node);
-                if(network != null)
+                if(network != null && !paused)
                     network.addNode(node);
             }
             for(var wire : circuit.wires) {
                 wires.add(wire);
-                if(network != null)
+                if(network != null && !paused)
                     network.addWire(wire);
             }
+        }
+
+        public void paused() {
+            paused = true;
         }
     }
 }

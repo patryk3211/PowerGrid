@@ -242,7 +242,7 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
 
     @Nullable
     public TransmissionLine splitAt(OwnedFloatingNode atNode) {
-        if(atNode == node1 || atNode == node2)
+        if(atNode == node1 || atNode == node2 || endpoint1.equals(atNode.endpoint) || endpoint2.equals(atNode.endpoint))
             return null;
         if(segments.size() <= 1)
             return null;

@@ -46,7 +46,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     private boolean destroying = false;
     private boolean rebuildOnClient = false;
     private boolean removed = false;
-    private boolean paused = false;
+    private boolean paused = true;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
         this(be, true);
@@ -90,28 +90,34 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 if(node != null)
                     network.addNode(node);
             });
-            internalNodes.forEach(network::addNode);
-            internalWires.forEach(network::addWire);
+            if(!paused) {
+                internalNodes.forEach(network::addNode);
+                internalWires.forEach(network::addWire);
+            }
         } else {
             externalNodes.forEach(node -> {
                 if(node != null && node.getNetwork() == null) {
                     network.addNode(node);
                 }
             });
-            internalNodes.forEach(node -> {
-                if(node.getNetwork() == null)
-                    network.addNode(node);
-            });
-            internalWires.forEach(wire -> {
-                if(wire.getNetwork() == null)
-                    network.addWire(wire);
-            });
+            if(!paused) {
+                internalNodes.forEach(node -> {
+                    if (node.getNetwork() == null)
+                        network.addNode(node);
+                });
+                internalWires.forEach(wire -> {
+                    if (wire.getNetwork() == null)
+                        network.addWire(wire);
+                });
+            }
         }
     }
 
     public void rebuildCircuit() {
         var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         builder.with(getNetwork());
+        if(paused)
+            builder.paused();
         builder.clear();
         element.buildCircuit(builder);
 
@@ -146,10 +152,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public List<OwnedFloatingNode> getExternalNodes() {
         return externalNodes;
-    }
-
-    public boolean needsRebuild() {
-        return rebuildOnClient;
     }
 
     @Override
@@ -223,6 +225,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void initialize() {
         super.initialize();
         GlobalElectricNetworks.nodeHolderAdded(this);
+        unpause();
     }
 
     public void addConnection(BlockWireEndpoint endpoint, WireEntity wire) {

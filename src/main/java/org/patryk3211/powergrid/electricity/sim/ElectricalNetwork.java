@@ -94,7 +94,7 @@ public class ElectricalNetwork {
     public void removeNode(INode node) {
         if(node == null)
             return;
-        if(node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
+        if(node.getNetwork() != this || node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
             // This node is not actually in this network.
             return;
 
