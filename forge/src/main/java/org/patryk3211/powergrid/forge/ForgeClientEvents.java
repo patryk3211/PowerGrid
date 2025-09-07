@@ -17,13 +17,10 @@ package org.patryk3211.powergrid.forge;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.patryk3211.powergrid.collections.ModdedKeys;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
-import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 public class ForgeClientEvents {
@@ -31,8 +28,6 @@ public class ForgeClientEvents {
     public static void clientWorldUnload(LevelEvent.Unload unload) {
         if(unload.getLevel().isClientSide() && unload.getLevel() instanceof ClientLevel world) {
             ClientElectricNetwork.unloadWorld(Minecraft.getInstance(), world);
-//            EntityJoinLevelEvent
-//                    levelEvent
         }
     }
 
@@ -40,13 +35,6 @@ public class ForgeClientEvents {
     public static void entityJoin(EntityJoinLevelEvent event) {
         if(event.getLevel().isClientSide) {
             EntityDataS2CPacket.clientEntityAdded(event.getEntity());
-        }
-    }
-
-    @SubscribeEvent
-    public static void keyInput(InputEvent.Key event) {
-        if(ModdedKeys.MULTIMETER_MODE.matchesKey(event.getKey(), event.getScanCode())) {
-            MultimeterItem.keybindPressed();
         }
     }
 }

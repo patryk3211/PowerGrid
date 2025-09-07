@@ -29,6 +29,7 @@ import org.patryk3211.powergrid.network.SimplePacket;
 import java.util.function.Supplier;
 
 public class TransmissionLineStateS2CPacket implements SimplePacket {
+    public final int lineId;
     public final IWireEndpoint endpoint1;
     public final IWireEndpoint endpoint2;
     public final float lineResistance;
@@ -36,6 +37,7 @@ public class TransmissionLineStateS2CPacket implements SimplePacket {
     public final float node2Voltage;
 
     public TransmissionLineStateS2CPacket(TransmissionLine line) {
+        this.lineId = line.getId();
         this.endpoint1 = line.getNode1().endpoint;
         this.endpoint2 = line.getNode2().endpoint;
         this.lineResistance = (float) line.getResistance();
@@ -44,6 +46,7 @@ public class TransmissionLineStateS2CPacket implements SimplePacket {
     }
 
     public TransmissionLineStateS2CPacket(FriendlyByteBuf buf) {
+        this.lineId = buf.readInt();
         this.endpoint1 = WireEndpointType.deserialize(buf.readNbt());
         this.endpoint2 = WireEndpointType.deserialize(buf.readNbt());
         this.lineResistance = buf.readFloat();
@@ -53,6 +56,7 @@ public class TransmissionLineStateS2CPacket implements SimplePacket {
 
     @Override
     public void encode(FriendlyByteBuf buf) {
+        buf.writeInt(lineId);
         buf.writeNbt(endpoint1.serialize());
         buf.writeNbt(endpoint2.serialize());
         buf.writeFloat(lineResistance);

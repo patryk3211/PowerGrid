@@ -31,8 +31,6 @@ public enum ModdedKeys {
     PICK_COMPONENT("pick_component", GLFW.GLFW_KEY_S),
     SWITCH_LAYER("switch_layer", GLFW.GLFW_KEY_X),
 
-    MULTIMETER_MODE("multimeter_mode", GLFW.GLFW_KEY_M)
-
     ;
 
     public static final String CATEGORY = "Power Grid";

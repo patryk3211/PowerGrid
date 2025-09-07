@@ -32,4 +32,6 @@ public interface ITransmissionLine {
     default float current() {
         return 0;
     }
+
+    int getId();
 }

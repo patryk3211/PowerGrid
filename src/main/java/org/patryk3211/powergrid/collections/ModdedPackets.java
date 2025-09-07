@@ -51,6 +51,7 @@ public enum ModdedPackets {
     BLOCK_WIRE_CUT(BlockWireCutC2SPacket.class, BlockWireCutC2SPacket::new),
     BLOCK_WIRE_ATTACH(BlockWireAttachC2SPacket.class, BlockWireAttachC2SPacket::new),
     ENDPOINT_TRACKING(EndpointTrackingC2SPacket.class, EndpointTrackingC2SPacket::new),
+    MULTIMETER_DATA(MultimeterDataC2SPacket.class, MultimeterDataC2SPacket::new),
 
     UPDATE_COMPONENT(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new),
     ;

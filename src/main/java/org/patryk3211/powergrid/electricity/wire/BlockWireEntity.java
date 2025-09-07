@@ -243,7 +243,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
                 return InteractionResult.CONSUME;
             }
         }
-        return InteractionResult.PASS;
+        return super.interact(player, hand);
     }
 
     @Override

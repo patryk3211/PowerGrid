@@ -47,6 +47,7 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
@@ -421,6 +422,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             ModdedSoundEvents.WIRE_CUT.playAt(level(), position(), 0.75f, 1.25f, false);
             kill();
             return InteractionResult.SUCCESS;
+        } else if(player.getItemInHand(hand).getItem() instanceof MultimeterItem multimeter) {
+            return multimeter.useOnWire(player, player.getItemInHand(hand), hand, this);
         }
         return super.interact(player, hand);
     }

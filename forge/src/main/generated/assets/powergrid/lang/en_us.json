@@ -416,6 +416,7 @@
   "powergrid.tooltip.circuit_assembly.progress": "Progress",
   "powergrid.tooltip.current.max": "Maximum current:",
   "powergrid.tooltip.holdForDescription": "Hold [%1$s] for Properties",
+  "powergrid.tooltip.multimeter.current": "Current: ",
   "powergrid.tooltip.multimeter.mode": "Mode: ",
   "powergrid.tooltip.multimeter.mode.0": "Voltage",
   "powergrid.tooltip.multimeter.mode.1": "Wire Current",

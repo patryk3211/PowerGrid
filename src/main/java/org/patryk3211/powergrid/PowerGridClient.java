@@ -27,6 +27,7 @@ import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
 import org.patryk3211.powergrid.electricity.wire.ClientWireInteractions;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperRenderHandler;
+import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
@@ -64,6 +65,7 @@ public class PowerGridClient {
 		TransformerWindingScreen.clientTick();
 		ClientWireInteractions.clientTick();
 		ThermometerItemRenderer.clientTick();
+		MultimeterItemRenderer.clientTick(client.level, client.player);
 	}
 
 	public static void registerOverlays() {

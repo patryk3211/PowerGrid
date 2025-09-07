@@ -19,11 +19,6 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPartialModels {
-    public static final PartialModel ANDESITE_VOLTAGE_HEAD = block("gauge/andesite/voltage_head");
-    public static final PartialModel BRASS_VOLTAGE_HEAD = block("gauge/brass/voltage_head");
-    public static final PartialModel ANDESITE_CURRENT_HEAD = block("gauge/andesite/current_head");
-    public static final PartialModel BRASS_CURRENT_HEAD = block("gauge/brass/current_head");
-    public static final PartialModel BRASS_GAUGE_DIAL = block("gauge/brass/dial");
     public static final PartialModel SHAFT_BIT = block("shaft_bit");
 
     public static final PartialModel CONDUCTIVE_VOLTAGE_HEAD = block("gauge/conductive/voltage_head");
@@ -58,6 +53,8 @@ public class ModdedPartialModels {
 
     public static final PartialModel THERMOMETER_NEEDLE = block("thermometer/needle");
     public static final PartialModel THERMOMETER_NEEDLE_RED = block("thermometer/needle_red");
+
+    public static final PartialModel MULTIMETER_NEEDLE = model("item/multimeter/indicator");
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));

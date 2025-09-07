@@ -96,21 +96,21 @@ public class ClientWorldNetworks extends WorldNetworks {
                     // Packet is not needed, the nodes are actually connected.
                     return;
             }
-            var line1 = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance);
+            var line1 = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance, packet.lineId);
             line1.source.setVoltage(packet.node2Voltage);
 
-            var line2 = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance);
+            var line2 = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance, packet.lineId);
             line2.source.setVoltage(packet.node1Voltage);
         } else if(packet.endpoint1.isValid(world)) {
-            var line = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance);
+            var line = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance, packet.lineId);
             line.source.setVoltage(packet.node2Voltage);
         } else if(packet.endpoint2.isValid(world)) {
-            var line = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance);
+            var line = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance, packet.lineId);
             line.source.setVoltage(packet.node1Voltage);
         }
     }
 
-    private PhantomLineData getPhantomLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
+    private PhantomLineData getPhantomLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance, int lineId) {
         var targetNode = endpoint1.getNode(world);
         if(targetNode.getNetwork() == null) {
             var network = newNetwork();
@@ -121,6 +121,7 @@ public class ClientWorldNetworks extends WorldNetworks {
         if(line.wire.getResistance() != resistance)
             line.wire.setResistance(resistance);
         line.age = 0;
+        line.lineId = lineId;
         return line;
     }
 
@@ -301,6 +302,18 @@ public class ClientWorldNetworks extends WorldNetworks {
         }
     }
 
+    public float tryGetCurrent(int lineId) {
+        var line = transmissionLines.get(lineId);
+        if(line != null)
+            return line.current();
+        for(var data : phantomLines.values()) {
+            if(data.lineId == lineId) {
+                return data.source.getCurrent();
+            }
+        }
+        return 0;
+    }
+
     private record PhantomLine(IWireEndpoint endpoint, IWireEndpoint otherEndpoint) {
         @Override
         public boolean equals(Object obj) {
@@ -323,6 +336,7 @@ public class ClientWorldNetworks extends WorldNetworks {
         public final ElectricWire wire;
         public final IElectricNode node;
         public int age;
+        public int lineId;
 
         public PhantomLineData(IElectricNode node, float resistance) {
             assert node.getNetwork() != null;

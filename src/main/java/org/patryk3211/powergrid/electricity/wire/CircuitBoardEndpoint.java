@@ -66,11 +66,18 @@ public class CircuitBoardEndpoint implements IWireEndpoint {
 
     @Override
     public @NotNull Vec3 getExactPosition(Level world) {
-        var pos = new Vec3(x / 16f, 2 / 16f, y / 16f);
+        var pos = new Vec3((x + 0.5f) / 16f, 2 / 16f, (y + 0.5f) / 16f);
         var state = world.getBlockState(this.pos);
         pos = VecHelper.rotateCentered(pos, CircuitBoardBlock.getAngleX(state), Direction.Axis.X);
         pos = VecHelper.rotateCentered(pos, CircuitBoardBlock.getAngleY(state), Direction.Axis.Y);
         return pos.add(this.pos.getX(), this.pos.getY(), this.pos.getZ());
+    }
+
+    @Override
+    public boolean isValid(Level world) {
+        var opt = world.getBlockEntity(pos, ModdedBlockEntities.CIRCUIT_BOARD.get());
+        return opt.map(be -> be.getSchematic().front().get(x, y))
+                .orElse(false);
     }
 
     public IElectricNode getGenericNode(Level world) {

@@ -70,6 +70,7 @@
   "powergrid.tooltip.multimeter.mode.1": "Wire Current",
 
   "powergrid.tooltip.multimeter.voltage": "Voltage: ",
+  "powergrid.tooltip.multimeter.current": "Current: ",
 
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",

@@ -468,7 +468,21 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
         return String.format("TransmissionLine[id=%d]", id);
     }
 
+    @Override
     public int getId() {
         return id;
+    }
+
+    public float voltageFor(OwnedFloatingNode node) {
+        if(node == node1 || node == node2)
+            return node.getVoltage();
+        float R = 0;
+        for(var segment : segments) {
+            R += segment.getResistance();
+            if(segment.getNode2() == node) {
+                return node1.getVoltage() + R * current();
+            }
+        }
+        return node2.getVoltage();
     }
 }
