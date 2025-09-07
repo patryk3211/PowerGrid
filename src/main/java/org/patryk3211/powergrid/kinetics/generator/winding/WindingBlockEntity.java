@@ -701,12 +701,13 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             if (Pe > 0) {
                 // Generator is sourcing power
                 torque *= 1.0f;
+                torque = rotorP.limitForce(torque);
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
                 torque *= 0.9f;
             }
-            rotorP.applyTickForce(rotorP.limitForce(torque));
+            rotorP.applyTickForce(torque);
         }
         if(rotorN != null) {
             float torque = coilConstant() * rotorN.getFieldStrength() * current;
@@ -715,12 +716,13 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             if (Pe > 0) {
                 // Generator is sourcing power
                 torque *= 1.0f;
+                torque = rotorN.limitForce(torque);
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
                 torque *= 0.9f;
             }
-            rotorN.applyTickForce(rotorN.limitForce(torque));
+            rotorN.applyTickForce(torque);
         }
 
         if(sourceCoupling != null) {
