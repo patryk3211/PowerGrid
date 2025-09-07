@@ -33,6 +33,7 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
+    private static final boolean PERFORMANCE_LOGGING = false;
     private static final int MAX_ITERATIONS = 500;
     private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
 
@@ -205,26 +206,28 @@ public class BiCGSTABSolver implements ISolver {
             CommonOps_DDRM.add(residual, beta, t, p);
         }
 
-        var end = System.nanoTime();
-        var dur = end - start;
-        solveMicros += dur / 1000;
-        if(solveMin == 0) {
-            solveMin = dur;
-        } else if(solveMin > dur) {
-            solveMin = dur;
-        }
-        if(solveMax < dur) {
-            solveMax = dur;
-        }
-        if(++solveCount >= 1000) {
-            if(LOGGER != null) {
-                LOGGER.info("Average time of previous {} solver runs = {}µs, min = {}µs, max = {}µs",
-                        solveCount, (double) solveMicros / solveCount, (double) solveMin / 1000, (double) solveMax / 1000);
+        if(PERFORMANCE_LOGGING) {
+            var end = System.nanoTime();
+            var dur = end - start;
+            solveMicros += dur / 1000;
+            if (solveMin == 0) {
+                solveMin = dur;
+            } else if (solveMin > dur) {
+                solveMin = dur;
             }
-            solveMicros = 0;
-            solveCount = 0;
-            solveMax = 0;
-            solveMin = 0;
+            if (solveMax < dur) {
+                solveMax = dur;
+            }
+            if (++solveCount >= 1000) {
+                if (LOGGER != null) {
+                    LOGGER.info("Average time of previous {} solver runs = {}µs, min = {}µs, max = {}µs",
+                            solveCount, (double) solveMicros / solveCount, (double) solveMin / 1000, (double) solveMax / 1000);
+                }
+                solveMicros = 0;
+                solveCount = 0;
+                solveMax = 0;
+                solveMin = 0;
+            }
         }
 
         if(!acceptAll) {
