@@ -193,9 +193,12 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             if (part == null)
                                 continue;
                             // Destroy line
-                            part.remove();
-//                            var line = part.getLine();
-//                            line.remove();
+                            var line = part.getLine();
+                            if(line != null) {
+                                line.remove();
+                            } else {
+                                part.remove();
+                            }
                         }
                     } else {
                         entityIter.remove();
@@ -412,9 +415,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var node2 = endpoint2.getNode(world);
 
         // Make sure nodes are up-to-date
-        movePartMap(linePart.getNode1(), node1, linePart);
+//        movePartMap(linePart.getNode1(), node1, linePart);
         linePart.setNode1(node1);
-        movePartMap(linePart.getNode2(), node2, linePart);
+//        movePartMap(linePart.getNode2(), node2, linePart);
         linePart.setNode2(node2);
 
         int nConns1 = connectionCount(endpoint1);

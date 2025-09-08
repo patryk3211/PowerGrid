@@ -152,8 +152,8 @@ public class TransmissionLine extends ElectricWire {
             if(endpointArrangement == 1 || endpointArrangement == 2) {
                 var node1 = part.endpoint1.getNode(owner.level());
                 var node2 = part.endpoint2.getNode(owner.level());
-                global.movePartMap(part.getNode1(), node1, part);
-                global.movePartMap(part.getNode2(), node2, part);
+//                global.movePartMap(part.getNode1(), node1, part);
+//                global.movePartMap(part.getNode2(), node2, part);
                 part.setNode1(node1);
                 part.setNode2(node2);
                 if(endpointArrangement == 2)
