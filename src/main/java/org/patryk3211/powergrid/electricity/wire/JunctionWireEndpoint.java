@@ -120,9 +120,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             assert wire1.getWireItem() == wire2.getWireItem();
             var wire1End = this.equals(wire1.getEndpoint2());
             var wire2End = this.equals(wire2.getEndpoint2());
-            // Preemptively remove entry since it is going to be discarded anyway.
             entry.holders.clear();
-            removeEntry(entity.level(), this.id);
 
             boolean flipped = false, targetFlipped = false;
             BlockWireEntity target, source;
@@ -163,6 +161,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 target.extend(source.segments, source.getWireCount());
             }
             source.discard();
+            removeEntry(entity.level(), this.id);
         } else if(entry.holders.size() == 1) {
             // One holder remaining, remove junction from it and drop the entry.
             for(var holder : entry.holders) {

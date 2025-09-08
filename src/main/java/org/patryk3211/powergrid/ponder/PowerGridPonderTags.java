@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.ponder;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
@@ -60,6 +61,8 @@ public class PowerGridPonderTags {
                 .item(ModdedBlocks.FUSE_HOLDER)
                 .item(ModdedBlocks.TRANSFORMER_CORE)
                 .item(ModdedBlocks.VARIAC)
+                .item(ModdedBlocks.RHEOSTAT)
+                .item(ModdedBlocks.RESISTOR)
                 .item(ModdedBlocks.WIRE_CONNECTOR)
                 .item(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
                 .item(ModdedBlocks.DEVICE_CONNECTOR)
@@ -83,9 +86,20 @@ public class PowerGridPonderTags {
         helper.registerTag(CIRCUIT_COMPONENTS)
                 .title("Circuit Components")
                 .description("Components which can be placed on a circuit")
+                .item(ModdedBlocks.WIRE_CONNECTOR)
+                .item(AllItems.COPPER_NUGGET)
                 .item(ModdedItems.RESISTOR)
                 .item(ModdedItems.DIODE)
                 .item(ModdedItems.CAPACITOR)
+                .item(ModdedItems.RELAY)
+                .item(ModdedItems.REDSTONE_RELAY)
+                .item(AllItems.ELECTRON_TUBE)
+                .item(ModdedItems.LED)
+                .item(ModdedBlocks.LV_SWITCH)
+                .item(ModdedBlocks.LV_BUTTON)
+                .item(ModdedItems.POTENTIOMETER)
+                .item(ModdedItems.BJT_TRANSISTOR)
+                .item(ModdedBlocks.VOLTAGE_METER)
                 .addToIndex()
                 .register();
 

@@ -75,8 +75,7 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
             CustomConnectivityHandler.splitMulti(battery);
 
             // Rewire all wires that still target the stale behaviour
-            wires.forEach(WireEntity::dropWire);
-            wires.forEach(WireEntity::makeWire);
+            wires.forEach(WireEntity::refreshWire);
         }
     }
 

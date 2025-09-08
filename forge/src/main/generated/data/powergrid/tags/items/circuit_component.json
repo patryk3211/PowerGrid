@@ -13,6 +13,6 @@
     "powergrid:led",
     "powergrid:lv_button",
     "powergrid:potentiometer",
-    "powergrid:transistor"
+    "powergrid:bjt_transistor"
   ]
 }

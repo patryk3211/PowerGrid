@@ -129,7 +129,9 @@ public class ModdedItems {
             .lang("LED")
             .register();
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
-    public static final ItemEntry<Item> TRANSISTOR = ingredient("transistor");
+    public static final ItemEntry<Item> BJT_TRANSISTOR = REGISTRATE.item("bjt_transistor", Item::new)
+            .lang("BJT Transistor")
+            .register();
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");

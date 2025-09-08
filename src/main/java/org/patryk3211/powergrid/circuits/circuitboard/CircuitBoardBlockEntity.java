@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,6 +52,9 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     private BakedCircuit baked;
     private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
     private final Map<CircuitBoardBlockEntity, List<ElectricWire>> edgeViadWires = new HashMap<>();
+
+    private AirCurrent coolingAir;
+    protected float coolingFactorMultiplier = 1;
 
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -215,6 +219,9 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Override
     public void tick() {
         super.tick();
+        if(coolingAir != null && (coolingAir.source.isSourceRemoved() || coolingAir.source.getSpeed() == 0)) {
+            noCooling();
+        }
         if(baked != null) {
             baked.tick();
             if(!level.isClientSide)
@@ -326,5 +333,15 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     public BakedCircuit getBaked() {
         return baked;
+    }
+
+    public void setCoolingMultiplier(AirCurrent current, float value) {
+        coolingFactorMultiplier = value;
+        coolingAir = current;
+    }
+
+    public void noCooling() {
+        coolingFactorMultiplier = 1;
+        coolingAir = null;
     }
 }

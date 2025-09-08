@@ -475,4 +475,12 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             wire.dropWire();
         }
     }
+
+    public void refreshWire() {
+        if(wire == null)
+            return;
+        var global = GlobalElectricNetworks.getWorldNetworks(level());
+        global.addAndMigrateNode(endpoint1);
+        global.addAndMigrateNode(endpoint2);
+    }
 }

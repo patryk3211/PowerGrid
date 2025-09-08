@@ -157,9 +157,9 @@ public class Components {
                     .addPad(0, 0, 0, "Collector")
                     .addPad(1, 2, 1, "Base")
                     .addPad(2, 0, 2, "Emitter")
-                    .withItem(ModdedItems.TRANSISTOR)
+                    .withItem(ModdedItems.BJT_TRANSISTOR)
                     .withOutline())
-            .item(ModdedItems.TRANSISTOR)
+            .item(ModdedItems.BJT_TRANSISTOR)
             .register();
 
     @SuppressWarnings("EmptyMethod")

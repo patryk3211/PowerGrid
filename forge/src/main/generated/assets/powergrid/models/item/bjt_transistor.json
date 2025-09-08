@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "powergrid:item/transistor"
+    "layer0": "powergrid:item/bjt_transistor"
   }
 }

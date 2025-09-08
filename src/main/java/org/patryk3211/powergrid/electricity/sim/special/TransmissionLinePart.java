@@ -34,7 +34,7 @@ import java.util.UUID;
 
 public class TransmissionLinePart extends ElectricWire {
     @Nullable
-    private ITransmissionLine line;
+    private TransmissionLine line;
     @NotNull
     private final WorldNetworks global;
 
@@ -69,7 +69,7 @@ public class TransmissionLinePart extends ElectricWire {
         global.registerPart(persistentOwnerId, this);
     }
 
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull ITransmissionLine line) {
+    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull TransmissionLine line) {
         super(resistance, line.global().holderOrPlaceholderNode(endpoint1), line.global().holderOrPlaceholderNode(endpoint2));
         this.line = line;
         this.global = line.global();
@@ -81,7 +81,7 @@ public class TransmissionLinePart extends ElectricWire {
         global.registerPart(persistentOwnerId, this);
     }
 
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, UUID ownerId, ChunkPos lastKnownChunk, @NotNull ITransmissionLine line) {
+    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, UUID ownerId, ChunkPos lastKnownChunk, @NotNull TransmissionLine line) {
         super(resistance, line.global().holderOrPlaceholderNode(endpoint1), line.global().holderOrPlaceholderNode(endpoint2));
         this.global = line.global();
         this.persistentOwnerId = ownerId;
@@ -119,7 +119,7 @@ public class TransmissionLinePart extends ElectricWire {
         return part;
     }
 
-    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, UUID ownerId, ChunkPos lastKnownChunk, @NotNull ITransmissionLine line) {
+    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, UUID ownerId, ChunkPos lastKnownChunk, @NotNull TransmissionLine line) {
         var part = line.global().getPart(ownerId);
         if(part == null)
             return new TransmissionLinePart(resistance, endpoint1, endpoint2, ownerId, lastKnownChunk, line);
@@ -130,7 +130,7 @@ public class TransmissionLinePart extends ElectricWire {
         return part;
     }
 
-    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull ITransmissionLine line) {
+    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull TransmissionLine line) {
         var part = line.global().getPart(owner.getUUID());
         if(part == null)
             return new TransmissionLinePart(resistance, endpoint1, endpoint2, owner, line);
@@ -182,7 +182,7 @@ public class TransmissionLinePart extends ElectricWire {
     }
 
     @Nullable
-    public ITransmissionLine getLine() {
+    public TransmissionLine getLine() {
         return line;
     }
 

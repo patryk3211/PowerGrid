@@ -129,8 +129,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         }
         if(wires != null) {
             // Rewire connected wires.
-            wires.forEach(WireEntity::dropWire);
-            wires.forEach(WireEntity::makeWire);
+            wires.forEach(WireEntity::refreshWire);
         }
         updateParameters();
     }

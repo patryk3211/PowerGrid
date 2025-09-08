@@ -186,7 +186,7 @@ public class BakedCircuit {
         if(ThermalBehaviour.shouldOverheat()) {
             for (var unit : thermalUnits) {
                 var overheated = unit.hasOverheated();
-                unit.tick();
+                unit.tick(be.coolingFactorMultiplier);
                 if (client) {
                     var world = this.be.getLevel();
                     var random = world.random;

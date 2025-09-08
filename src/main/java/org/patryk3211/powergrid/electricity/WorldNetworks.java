@@ -58,7 +58,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private final Map<ChunkPos, CheckChunk> expectedInChunks = new ConcurrentHashMap<>();
     private final Map<ChunkPos, CheckChunk> checkForExistence = new ConcurrentHashMap<>();
     private final Map<UUID, TransmissionLinePart> lineParts = new HashMap<>();
-    private final Map<OwnedFloatingNode, Set<TransmissionLinePart>> partNodeMap = new HashMap<>();
+    private final Map<OwnedFloatingNode, Set<TransmissionLinePart>> partNodeMap = new ConcurrentHashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
     private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
@@ -412,7 +412,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var node2 = endpoint2.getNode(world);
 
         // Make sure nodes are up-to-date
+        movePartMap(linePart.getNode1(), node1, linePart);
         linePart.setNode1(node1);
+        movePartMap(linePart.getNode2(), node2, linePart);
         linePart.setNode2(node2);
 
         int nConns1 = connectionCount(endpoint1);
@@ -642,10 +644,34 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         traceTree(endpoint, visited);
     }
 
-    // TODO: This could break for proxy nodes.
-    private void addAndMigrateNode(IWireEndpoint endpoint) {
+    public void addAndMigrateNode(IWireEndpoint endpoint) {
         var newNode = endpoint.getNode(world);
+        if(newNode == null)
+            return;
+        addAndMigrateNode(newNode);
+    }
+
+    public void addAndMigrateNode(OwnedFloatingNode newNode) {
+        var endpoint = newNode.endpoint;
         var oldNode = globalExternalNodes.put(endpoint, newNode);
+        addAndMigrateNode(oldNode, newNode);
+    }
+
+    public void addAndMigrateNode(IWireEndpoint oldEndpoint, OwnedFloatingNode newNode) {
+        var endpoint = newNode.endpoint;
+        var oldNode = globalExternalNodes.put(endpoint, newNode);
+        addAndMigrateNode(oldNode, newNode);
+        var oldNode2 = globalExternalNodes.remove(oldEndpoint);
+        addAndMigrateNode(oldNode2, newNode);
+
+        var line = transmissionLineNodes.get(newNode);
+        if(line != null) {
+            line.splitAt(newNode);
+        }
+    }
+
+    public void addAndMigrateNode(OwnedFloatingNode oldNode, OwnedFloatingNode newNode) {
+        var endpoint = newNode.endpoint;
         if(oldNode != null && oldNode != newNode) {
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
@@ -654,23 +680,44 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(parts != null) {
                 for(TransmissionLinePart part : parts) {
                     PowerGrid.LOGGER.debug("Migrating node for part {}", part);
-                    if(part.getEndpoint1().equals(endpoint) || part.getNode1() == oldNode)
+                    if(part.getEndpoint1().equals(endpoint) || part.getNode1() == oldNode) {
                         part.setNode1(newNode);
-                    if(part.getEndpoint2().equals(endpoint) || part.getNode2() == oldNode)
+                        var line = part.getLine();
+                        if(line != null) {
+                            if(line.getNode1() == oldNode || line.getEndpoint1().equals(endpoint)) {
+//                                prepareForConnection(newNode, line.getNode2());
+                                inNetwork(oldNode.getNetwork(), newNode);
+                                line.setNode1(newNode);
+                                PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                            }
+                        }
+                    }
+                    if(part.getEndpoint2().equals(endpoint) || part.getNode2() == oldNode) {
                         part.setNode2(newNode);
-                    partNodeMap.computeIfAbsent(newNode, $ -> new HashSet<>()).add(part);
+                        var line = part.getLine();
+                        if(line != null) {
+                            if(line.getNode2() == oldNode || line.getEndpoint2().equals(endpoint)) {
+//                                prepareForConnection(line.getNode1(), newNode);
+                                inNetwork(oldNode.getNetwork(), newNode);
+                                line.setNode2(newNode);
+                                PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                            }
+                        }
+                    }
+                    partNodeMap.computeIfAbsent(newNode, $ -> Sets.newConcurrentHashSet()).add(part);
                 }
             }
             if(oldNode.getNetwork() != null) {
-                var unified = prepareForConnection(oldNode, newNode);
-                if(unified == null)
-                    PowerGrid.LOGGER.error("Failed to unify network of old and new external node");
+                inNetwork(oldNode.getNetwork(), newNode);
+                var unified = oldNode.getNetwork(); //prepareForConnection(oldNode, newNode);
+//                if(unified == null)
+//                    PowerGrid.LOGGER.error("Failed to unify network of old and new external node");
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {
-                    if (line.getNode1() == oldNode) {
+                    if (line.getNode1() == oldNode || line.getEndpoint1().equals(endpoint)) {
                         line.setNode1(newNode);
                         PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
-                    } else if (line.getNode2() == oldNode) {
+                    } else if (line.getNode2() == oldNode || line.getEndpoint2().equals(endpoint)) {
                         line.setNode2(newNode);
                         PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                     }
@@ -680,15 +727,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 var line = transmissionLineNodes.remove(oldNode);
                 if(line != null) {
                     for (var segment : line.segments) {
-                        if (segment.getNode1() == oldNode) {
+                        if (segment.getNode1() == oldNode || segment.getEndpoint1().equals(endpoint)) {
+                            movePartMap(segment.getNode1(), newNode, segment);
                             segment.setNode1(newNode);
                             PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
-                        } else if (segment.getNode2() == oldNode) {
+                        } else if (segment.getNode2() == oldNode || segment.getEndpoint2().equals(endpoint)) {
+                            movePartMap(segment.getNode2(), newNode, segment);
                             segment.setNode2(newNode);
                             PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
                         }
-                        transmissionLineNodes.put(newNode, line);
                     }
+                    transmissionLineNodes.put(newNode, line);
                 }
             }
         }
@@ -770,8 +819,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public void registerPart(UUID persistentOwnerId, TransmissionLinePart part) {
         lineParts.put(persistentOwnerId, part);
-        partNodeMap.computeIfAbsent(part.getNode1(), $ -> new HashSet<>()).add(part);
-        partNodeMap.computeIfAbsent(part.getNode2(), $ -> new HashSet<>()).add(part);
+        partNodeMap.computeIfAbsent(part.getNode1(), $ -> Sets.newConcurrentHashSet()).add(part);
+        partNodeMap.computeIfAbsent(part.getNode2(), $ -> Sets.newConcurrentHashSet()).add(part);
         setDirty();
     }
 
@@ -807,6 +856,18 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         } else {
             node.endpoint.joinNetwork(world, network);
         }
+    }
+
+    public void movePartMap(OwnedFloatingNode oldNode, OwnedFloatingNode newNode, TransmissionLinePart part) {
+        if(oldNode == newNode || oldNode == null || newNode == null)
+            return;
+        var parts = partNodeMap.get(oldNode);
+        if(parts == null)
+            return;
+        parts.remove(part);
+        if(parts.isEmpty())
+            partNodeMap.remove(oldNode);
+        partNodeMap.computeIfAbsent(newNode, $ -> Sets.newConcurrentHashSet()).add(part);
     }
 
     private static class CheckChunk {

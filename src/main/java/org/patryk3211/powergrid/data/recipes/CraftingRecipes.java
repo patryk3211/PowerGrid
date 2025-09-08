@@ -378,7 +378,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('S', RecipeTags.resistiveCoil())
                     .define('I', RecipeTags.ironSheet())),
 
-    TRANSISTOR = create(ModdedItems.TRANSISTOR)
+    TRANSISTOR = create(ModdedItems.BJT_TRANSISTOR)
             .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
             .viaShaped(b -> b
                     .pattern("I")

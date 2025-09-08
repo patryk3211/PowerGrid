@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "powergrid:crafting//transistor"
+        "recipe": "powergrid:crafting//bjt_transistor"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "powergrid:crafting//transistor"
+      "powergrid:crafting//bjt_transistor"
     ]
   },
   "sends_telemetry_event": false

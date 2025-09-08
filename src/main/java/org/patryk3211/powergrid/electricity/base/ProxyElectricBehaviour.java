@@ -18,18 +18,25 @@ package org.patryk3211.powergrid.electricity.base;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public class ProxyElectricBehaviour extends ElectricBehaviour {
-    private final Supplier<BlockPos> behaviourPosition;
+    protected final Supplier<BlockPos> behaviourPosition;
 
     public <T extends SmartBlockEntity & IElectricEntity> ProxyElectricBehaviour(T be, Supplier<BlockPos> behaviourPosition) {
         super(be, false);
+        this.behaviourPosition = behaviourPosition;
+    }
+
+    protected <T extends SmartBlockEntity & IElectricEntity> ProxyElectricBehaviour(T be, boolean buildCircuit, Supplier<BlockPos> behaviourPosition) {
+        super(be, buildCircuit);
         this.behaviourPosition = behaviourPosition;
     }
 
@@ -73,6 +80,15 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
 
     @Override
     public void initialize() {
+        for(var node : getExternalNodes()) {
+            if(node.endpoint instanceof BlockWireEndpoint endpoint) {
+                // Make an endpoint using the main's terminal index and proxy's position.
+                var thisEndpoint = new BlockWireEndpoint(getPos(), endpoint.getTerminal());
+                // Nodes from main behaviour are considered "new" and "up-to-date"
+                GlobalElectricNetworks.getWorldNetworks(getWorld())
+                        .addAndMigrateNode(thisEndpoint, node);
+            }
+        }
     }
 
     @Override
@@ -85,4 +101,15 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
         breakConnections();
     }
 
+    public void baseInitialize() {
+        super.initialize();
+    }
+
+    protected void baseUnload() {
+        super.unload();
+    }
+
+    protected void baseRemove() {
+        super.remove();
+    }
 }

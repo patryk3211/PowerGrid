@@ -31,14 +31,8 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
-import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
-import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 import java.util.Collection;
@@ -47,8 +41,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.HORIZONTAL_FACING;
-import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.UP;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.*;
 
 public class WindingBlockEntity extends ElectricBlockEntity {
@@ -75,7 +67,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private int totalCoilCount = 0;
     private VoltageSourceCoupling sourceCoupling;
 
-    private boolean neighborChanged = false;
+    private boolean rebuildParallels = false;
+    private boolean regrabRotors = false;
 
     public WindingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -230,8 +223,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private void rewire() {
         if(electricBehaviour != null) {
             var wires = wires();
-            wires.forEach(WireEntity::dropWire);
-            wires.forEach(WireEntity::makeWire);
+            wires.forEach(WireEntity::refreshWire);
         }
     }
 
@@ -246,24 +238,24 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             removeBehaviour(ElectricBehaviour.TYPE);
             attachBehaviourLate(electricBehaviour);
         }
-        wires.forEach(WireEntity::dropWire);
-        wires.forEach(WireEntity::makeWire);
+        wires.forEach(WireEntity::refreshWire);
     }
 
     public void removeElectricBehaviour() {
         var wires = wires();
+        ElectricBehaviour old = null;
         if(electricBehaviour != null && !(electricBehaviour instanceof ProxyElectricBehaviour)) {
-            var old = electricBehaviour;
+            old = electricBehaviour;
             electricBehaviour = new ProxyElectricBehaviour(this, () -> ownerPosition);
             electricBehaviour.inheritConnections(old);
-            old.remove();
             removeBehaviour(ElectricBehaviour.TYPE);
             attachBehaviourLate(electricBehaviour);
             // Drop nodes
             sourceCoupling = null;
         }
-        wires.forEach(WireEntity::dropWire);
-        wires.forEach(WireEntity::makeWire);
+        wires.forEach(WireEntity::refreshWire);
+        if(old != null)
+            old.remove();
     }
 
     private void collectWindingParts() {
@@ -414,11 +406,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     private void clearScheduledChange() {
-        neighborChanged = false;
+        rebuildParallels = false;
         if(collectedBEs == null)
             return;
         for(var be : collectedBEs) {
-            be.neighborChanged = false;
+            be.rebuildParallels = false;
         }
     }
 
@@ -612,7 +604,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     public void onNeighborChanged(BlockPos neighborPos) {
-        neighborChanged = true;
+        rebuildParallels = true;
+        regrabRotors = true;
     }
 
     private void safeRebuildParallels() {
@@ -685,16 +678,20 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
-        if(neighborChanged) {
+        if(rebuildParallels) {
             safeRebuildParallels();
+            rebuildParallels = false;
+        }
+        if(regrabRotors) {
             grabRotors();
-            neighborChanged = false;
+            regrabRotors = false;
         }
         super.tick();
         float current = windingCurrent();
         applyLostPower(current * current * resistance());
 
         if(rotorP != null) {
+            // There has to be an adjusted current since the torque might have affected it
             float torque = coilConstant() * rotorP.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
@@ -705,7 +702,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
-                torque *= 0.9f;
+                torque *= 0.0f;
             }
             rotorP.applyTickForce(torque);
         }
@@ -720,7 +717,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
-                torque *= 0.9f;
+                torque *= 0.0f;
             }
             rotorN.applyTickForce(torque);
         }

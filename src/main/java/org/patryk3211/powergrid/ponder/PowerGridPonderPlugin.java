@@ -15,13 +15,16 @@
  */
 package org.patryk3211.powergrid.ponder;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.ponder.PonderWorldBlockEntityFix;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.api.registration.PonderPlugin;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 
 public class PowerGridPonderPlugin implements PonderPlugin {
     @Override
@@ -42,5 +45,12 @@ public class PowerGridPonderPlugin implements PonderPlugin {
     @Override
     public void onPonderLevelRestore(PonderLevel ponderLevel) {
         PonderWorldBlockEntityFix.fixControllerBlockEntities(ponderLevel);
+        for(var be : ponderLevel.getBlockEntities()) {
+            if(be instanceof SmartBlockEntity smart) {
+                var electric = smart.getBehaviour(ElectricBehaviour.TYPE);
+                if(electric != null)
+                    electric.unpause();
+            }
+        }
     }
 }

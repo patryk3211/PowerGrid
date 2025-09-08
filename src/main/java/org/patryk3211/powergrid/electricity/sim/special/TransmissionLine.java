@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.*;
 
-public class TransmissionLine extends ElectricWire implements ITransmissionLine {
+public class TransmissionLine extends ElectricWire {
     public static final boolean ENABLE_VALIDATION = false;
 
     public final List<TransmissionLinePart> segments = new ArrayList<>();
@@ -91,7 +91,6 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
         }
     }
 
-    @Override
     public WorldNetworks global() {
         return global;
     }
@@ -138,25 +137,25 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
         return (OwnedFloatingNode) node2;
     }
 
-    @Override
     public IWireEndpoint getEndpoint1() {
         return endpoint1;
     }
 
-    @Override
     public IWireEndpoint getEndpoint2() {
         return endpoint2;
     }
 
-    @Override
     public void grabPart(@NotNull WireEntity owner, TransmissionLinePart part) {
         if(part.persistentOwnerId.equals(owner.getUUID())) {
-            // TODO: This is failing because nodes are not updated
             // If the owner id matches then the endpoints should match too
             var endpointArrangement = validateEndpoints(part, owner);
             if(endpointArrangement == 1 || endpointArrangement == 2) {
-                part.setNode1(part.endpoint1.getNode(owner.level()));
-                part.setNode2(part.endpoint2.getNode(owner.level()));
+                var node1 = part.endpoint1.getNode(owner.level());
+                var node2 = part.endpoint2.getNode(owner.level());
+                global.movePartMap(part.getNode1(), node1, part);
+                global.movePartMap(part.getNode2(), node2, part);
+                part.setNode1(node1);
+                part.setNode2(node2);
                 if(endpointArrangement == 2)
                     owner.flipEndpoints();
             } else {
@@ -195,12 +194,13 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
         wire.setLine(this);
         segments.add(wire);
         setResistance(resistance + wire.getResistance());
-        network.removeNode(getNode2());
+        var oldNode = getNode2();
 
         // Move boundary
         global.assignTransmissionLine(getNode2(), this);
         setNode2(wire.endpoint2, wire.getNode2());
         global.assignTransmissionLine(getNode2(), null);
+        network.removeNode(oldNode);
         if(ENABLE_VALIDATION)
             validateLine();
     }
@@ -210,12 +210,13 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
         wire.setLine(this);
         segments.add(0, wire);
         setResistance(resistance + wire.getResistance());
-        network.removeNode(getNode1());
+        var oldNode = getNode1();
 
         // Move boundary
         global.assignTransmissionLine(getNode1(), this);
         setNode1(wire.endpoint1, wire.getNode1());
         global.assignTransmissionLine(getNode1(), null);
+        network.removeNode(oldNode);
         if(ENABLE_VALIDATION)
             validateLine();
     }
@@ -226,6 +227,7 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
         segments.addAll(line.segments);
         setResistance(resistance + line.getResistance());
         global.assignTransmissionLine(line.getNode1(), this);
+        // TODO: REmove node here?
         segments.forEach(part -> {
             global.assignTransmissionLine(part.getNode2(), this);
             if(part.owner == null || part.owner.isRemoved())
@@ -380,7 +382,6 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
         }
     }
 
-    @Override
     public void remove(TransmissionLinePart wire) {
         if(segments.isEmpty()) {
             PowerGrid.LOGGER.error("Cannot remove segments from an empty transmission line. How is it even here?");
@@ -403,7 +404,7 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
             }
             setResistance(resistance - removed.getResistance());
 
-            var node1 = wire.getNode2();
+            var node1 = wire.endpoint2.getNode(global.world);
             global.assignTransmissionLine(node1, null);
             global.inNetwork(network, node1);
             var optiNode = getNode1();
@@ -423,7 +424,7 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
             }
             setResistance(resistance - removed.getResistance());
 
-            var node2 = wire.getNode1();
+            var node2 = wire.endpoint1.getNode(global.world);
             global.assignTransmissionLine(node2, null);
             global.inNetwork(network, node2);
             var optiNode = getNode2();
@@ -441,14 +442,11 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
             if(ENABLE_VALIDATION)
                 line2.validateLine();
 
-            global.assignTransmissionLine(splitNode, null);
-            global.inNetwork(network, splitNode);
-
             // Last segment is the removed wire.
             var removed = segments.remove(segments.size() - 1);
             assert removed == wire;
             removed.setLine(null);
-            var terminatingNode = wire.getNode1();
+            var terminatingNode = wire.endpoint1.getNode(global.world);
             global.assignTransmissionLine(terminatingNode, null);
             if(segments.isEmpty()) {
                 PowerGrid.LOGGER.debug("{}: Split and remove resulted in an empty line", this);
@@ -468,7 +466,6 @@ public class TransmissionLine extends ElectricWire implements ITransmissionLine 
         return String.format("TransmissionLine[id=%d]", id);
     }
 
-    @Override
     public int getId() {
         return id;
     }

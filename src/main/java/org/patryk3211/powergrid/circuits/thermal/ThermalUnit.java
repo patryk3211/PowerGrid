@@ -70,10 +70,10 @@ public class ThermalUnit {
         return temperature >= overheatTemperature && overheatTicks >= ThermalBehaviour.OVERHEAT_TICKS;
     }
 
-    public void tick() {
+    public void tick(float dissipationMultiplier) {
         if(hasOverheated())
             return;
-        float power = -dissipationFactor * (temperature - BASE_TEMPERATURE);
+        float power = -dissipationFactor * (temperature - BASE_TEMPERATURE) * dissipationMultiplier;
         for(var source : heatSources) {
             power += source.power();
         }
