@@ -84,6 +84,8 @@ public class ThermalUnit {
             ++overheatTicks;
         } else if(power < 0) {
             overheatTicks = 0;
+            if(temperature > overheatTemperature + 10)
+                temperature = overheatTemperature + 10;
         }
         temperatureChanged();
     }

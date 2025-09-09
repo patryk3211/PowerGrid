@@ -121,6 +121,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             } else if(energy <= 0) {
                 // Cooling down so it's fine.
                 overheatTicks = 0;
+                if(temperature > overheatTemperature + 10)
+                    temperature = overheatTemperature + 10;
             }
         }
 

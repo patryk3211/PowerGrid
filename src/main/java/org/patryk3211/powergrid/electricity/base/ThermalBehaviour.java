@@ -250,6 +250,8 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             } else if(temperatureDelta <= 0) {
                 // Overheated but temperature is falling, the device is safe this time.
                 overheatTicks = 0;
+                if(temperature > overheatTemperature + 10)
+                    temperature = overheatTemperature + 10;
             }
         }
     }
