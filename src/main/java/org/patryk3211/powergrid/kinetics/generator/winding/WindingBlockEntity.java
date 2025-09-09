@@ -620,23 +620,45 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         }
     }
 
-    public float windingCurrent() {
+    private WindingBlockEntity getSourceHolder() {
         if(mainBE == null)
-            return 0;
+            return null;
         if(mainBE.ownerPosition != null) {
             if(mainBE.ownerPosition.equals(worldPosition)) {
                 // A winding cannot be owned by itself.
                 // This is an invalid state that can be caused if the client doesn't receive all data on time.
-                return 0;
+                return null;
             }
             var be = level.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
             if(be.isPresent()) {
-                return be.get().windingCurrent();
+                return be.get();
             }
         }
         if(mainBE.sourceCoupling == null || mainBE.totalCoilCount == 0)
+            return null;
+        return mainBE;
+    }
+
+    public float windingCurrent() {
+        var be = getSourceHolder();
+        if(be == null)
             return 0;
-        return -mainBE.sourceCoupling.getCurrent() / mainBE.totalCoilCount;
+        return -be.sourceCoupling.getCurrent() / be.totalCoilCount;
+    }
+
+    public float adjustedCurrent() {
+        var be = getSourceHolder();
+        if(be == null)
+            return 0;
+        var U =  be.sourceCoupling.getVoltage();
+        var I = -be.sourceCoupling.getCurrent();
+        if(U == 0 || I == 0)
+            return 0;
+        // This might be inefficient.
+        var voltageDeviation = be.outputVoltage() - be.sourceCoupling.getVoltage();
+        var loadResistance = U / I;
+        var adjustCurrent = voltageDeviation / loadResistance;
+        return (I + adjustCurrent) / be.totalCoilCount;
     }
 
     @Override
@@ -685,12 +707,14 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         super.tick();
         float current = windingCurrent();
         applyLostPower(current * current * resistance());
+        current = adjustedCurrent();
 
         if(rotorP != null) {
             // There has to be an adjusted current since the torque might have affected it
             float torque = coilConstant() * rotorP.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
+            var torque2 = -Pe / rotorP.getAngularVelocityRadians();
             if (Pe > 0) {
                 // Generator is sourcing power
                 torque *= 1.0f;
@@ -698,14 +722,19 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
-                torque *= 0.0f;
+                torque *= 0.9f;
             }
+            if(rotorP.getAngularVelocityRadians() != 0)
+                torque = torque2;
             rotorP.applyTickForce(torque);
         }
         if(rotorN != null) {
             float torque = coilConstant() * rotorN.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
+            var torque2 = -Pe / rotorN.getAngularVelocityRadians();
+            if(rotorN.getAngularVelocityRadians() != 0)
+                torque = torque2;
             if (Pe > 0) {
                 // Generator is sourcing power
                 torque *= 1.0f;
@@ -713,7 +742,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
-                torque *= 0.0f;
+                torque *= 0.9f;
             }
             rotorN.applyTickForce(torque);
         }

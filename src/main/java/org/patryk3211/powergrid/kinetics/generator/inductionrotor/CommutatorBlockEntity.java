@@ -106,7 +106,8 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         if(level.isClientSide) {
             var angular = rotorBehaviour.getAngularVelocityRadians();
             var current = getCurrent();
-            float chance = Math.abs(angular / 32f * current / 4f);
+            // Max 5 particles per tick
+            float chance = Math.min(Math.abs(angular / 32f * current / 4f), 5);
 
             if(!(getBlockState().getBlock() instanceof IBrushPlacement brushes))
                 return;

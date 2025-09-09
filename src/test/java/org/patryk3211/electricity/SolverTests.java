@@ -72,4 +72,21 @@ public class SolverTests extends TestHelper {
 
         Assertions.assertEquals(-5, V.getCurrent(), 1e-6, "Voltage source current is incorrect");
     }
+
+    @Test
+    void testTwoTerminalSourceWithResistance() {
+        var Net = new Network();
+
+        var N1 = Net.N();
+        var N2 = Net.N();
+        var V = new VoltageSourceCoupling(N1, N2, 1, 5);
+        Net.network.addNode(V);
+
+        Net.W(1, N1, N2);
+
+        Net.calculate();
+
+        Assertions.assertEquals(-2.5, V.getCurrent(), 1e-6, "Voltage source current is incorrect");
+        Assertions.assertEquals(2.5, N1.getVoltage() - N2.getVoltage(), 1e-6, "Wire voltage is incorrect");
+    }
 }

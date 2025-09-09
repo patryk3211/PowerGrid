@@ -253,6 +253,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             if(Math.abs(angularVelocity) > getMaxRotationSpeed() && !getWorld().isClientSide) {
                 // TODO: Maybe make this a bit more destructive.
                 getWorld().destroyBlock(getPos(), false);
+                checkConnectivity(this);
             }
 
             angle = (angle + velocity * 0.3f) % 360;

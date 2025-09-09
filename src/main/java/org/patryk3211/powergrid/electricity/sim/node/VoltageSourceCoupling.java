@@ -45,11 +45,9 @@ public class VoltageSourceCoupling extends CouplingNode {
     }
 
     public void setVoltage(float voltage) {
-        var old = this.voltage;
+        if(network != null)
+            network.updateCurrentMatrix(this, voltage - this.voltage);
         this.voltage = voltage;
-        if(network != null) {
-            network.updateCurrentMatrix(this, voltage - old);
-        }
     }
 
     public void setResistance(float resistance) {
@@ -64,7 +62,7 @@ public class VoltageSourceCoupling extends CouplingNode {
         conductance.add(this.index, negative.getIndex(), -1);
         conductance.add(positive.getIndex(), this.index,  1);
         conductance.add(negative.getIndex(), this.index, -1);
-        conductance.add(this.index, this.index, resistance);
+        conductance.add(this.index, this.index, -resistance);
     }
 
     @Override
