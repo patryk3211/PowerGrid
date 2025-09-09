@@ -80,6 +80,10 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
 
     @Override
     public void initialize() {
+        refreshEndpoints();
+    }
+
+    public void refreshEndpoints() {
         for(var node : getExternalNodes()) {
             if(node.endpoint instanceof BlockWireEndpoint endpoint) {
                 // Make an endpoint using the main's terminal index and proxy's position.

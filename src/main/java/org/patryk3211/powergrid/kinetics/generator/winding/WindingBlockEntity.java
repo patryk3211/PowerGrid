@@ -223,6 +223,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private void rewire() {
         if(electricBehaviour != null) {
             var wires = wires();
+            if(electricBehaviour instanceof ProxyElectricBehaviour proxy)
+                proxy.refreshEndpoints();
             wires.forEach(WireEntity::refreshWire);
         }
     }
@@ -235,7 +237,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         } else if(electricBehaviour instanceof ProxyElectricBehaviour proxy) {
             electricBehaviour = new ElectricBehaviour(this);
             electricBehaviour.inheritConnections(proxy);
-            removeBehaviour(ElectricBehaviour.TYPE);
             attachBehaviourLate(electricBehaviour);
         }
         wires.forEach(WireEntity::refreshWire);
@@ -248,7 +249,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             old = electricBehaviour;
             electricBehaviour = new ProxyElectricBehaviour(this, () -> ownerPosition);
             electricBehaviour.inheritConnections(old);
-            removeBehaviour(ElectricBehaviour.TYPE);
+            // Pause to remove internals
+            old.pause();
             attachBehaviourLate(electricBehaviour);
             // Drop nodes
             sourceCoupling = null;
@@ -378,12 +380,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             otherMain.sendData();
             sendData();
         }
-    }
-
-    public WindingBlockEntity getBehaviourProvider() {
-        if(!isMain())
-            return mainBE.getBehaviourProvider();
-        return this;
     }
 
     @Override

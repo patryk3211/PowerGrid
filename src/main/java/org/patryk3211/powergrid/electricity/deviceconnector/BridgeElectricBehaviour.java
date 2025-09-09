@@ -76,8 +76,11 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
 
     @Override
     public void initialize() {
-        if(getBridgeBehaviour() != null)
+        if(getBridgeBehaviour() != null) {
             super.baseInitialize();
+        } else {
+            super.initialize();
+        }
     }
 
     @Override

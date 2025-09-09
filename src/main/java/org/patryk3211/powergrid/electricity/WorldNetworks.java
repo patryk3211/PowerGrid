@@ -58,7 +58,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private final Map<ChunkPos, CheckChunk> expectedInChunks = new ConcurrentHashMap<>();
     private final Map<ChunkPos, CheckChunk> checkForExistence = new ConcurrentHashMap<>();
     private final Map<UUID, TransmissionLinePart> lineParts = new HashMap<>();
-    private final Map<OwnedFloatingNode, Set<TransmissionLinePart>> partNodeMap = new ConcurrentHashMap<>();
+    private final Map<OwnedFloatingNode, Set<TransmissionLinePart>> partNodeMap = new HashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
     private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
@@ -112,9 +112,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void addWire(AbstractElectricWire wire) {
         var line1 = transmissionLineNodes.get(wire.getNode1());
         if(line1 != null && wire.getNode1() instanceof OwnedFloatingNode owned)
+//            PowerGrid.LOGGER.warn("WHY YOU SPLITTING");
             line1.splitAt(owned);
         var line2 = transmissionLineNodes.get(wire.getNode2());
         if(line2 != null && wire.getNode2() instanceof OwnedFloatingNode owned)
+//            PowerGrid.LOGGER.warn("WHY YOU SPLITTING");
             line2.splitAt(owned);
     }
 
@@ -122,7 +124,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void addNode(IElectricNode node) {
         if(node instanceof OwnedFloatingNode owned) {
             // Make sure nodes are always up to date
-            addAndMigrateNode(owned.endpoint);
+//            addAndMigrateNode(owned.endpoint);
         }
     }
 
@@ -415,9 +417,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var node2 = endpoint2.getNode(world);
 
         // Make sure nodes are up-to-date
-//        movePartMap(linePart.getNode1(), node1, linePart);
+        movePartMap(linePart.getNode1(), node1, linePart);
         linePart.setNode1(node1);
-//        movePartMap(linePart.getNode2(), node2, linePart);
+        movePartMap(linePart.getNode2(), node2, linePart);
         linePart.setNode2(node2);
 
         int nConns1 = connectionCount(endpoint1);
@@ -590,45 +592,46 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private boolean traceTree(IWireEndpoint endpoint, Set<IWireEndpoint> visited) {
         if(!visited.add(endpoint))
             return false;
-        var lines = partNodeMap.get(globalExternalNodes.get(endpoint));
-        if(lines == null)
+        Collection<TransmissionLinePart> parts = partNodeMap.get(globalExternalNodes.get(endpoint));
+        if(parts == null)
             return false;
+        parts = List.copyOf(parts);
         boolean continueResolving = false;
-        for(var linePart : lines) {
-            if(linePart.getLine() != null) {
+        for(var part : parts) {
+            if(part.getLine() != null) {
                 // This branch connects to a valid line, back-trace and resolve all line parts.
                 continueResolving = true;
             }
-            if(lines.size() == 1) {
+            if(parts.size() == 1) {
                 PowerGrid.LOGGER.debug("Found edge line at {}", endpoint);
-                if(linePart.getEndpoint1().equals(endpoint)) {
+                if(part.getEndpoint1().equals(endpoint)) {
                     // Check endpoint2
-                    if(linePart.getEndpoint2().isValid(world)) {
+                    if(part.getEndpoint2().isValid(world)) {
                         // Resolve segment
-                        makeTransmissionLine(linePart);
+                        makeTransmissionLine(part);
                         return true;
                     }
                 } else {
-                    assert linePart.getEndpoint2().equals(endpoint);
+                    assert part.getEndpoint2().equals(endpoint);
                     // Check endpoint1
-                    if(linePart.getEndpoint1().isValid(world)) {
+                    if(part.getEndpoint1().isValid(world)) {
                         // Resolve segment
-                        makeTransmissionLine(linePart);
+                        makeTransmissionLine(part);
                         return true;
                     }
                 }
                 break;
             }
             PowerGrid.LOGGER.debug("Continuing line trace through {}", endpoint);
-            if(linePart.getEndpoint1().equals(endpoint)) {
-                if(traceTree(linePart.getEndpoint2(), visited)) {
-                    makeTransmissionLine(linePart);
+            if(part.getEndpoint1().equals(endpoint)) {
+                if(traceTree(part.getEndpoint2(), visited)) {
+                    makeTransmissionLine(part);
                     continueResolving = true;
                 }
             } else {
-                assert linePart.getEndpoint2().equals(endpoint);
-                if(traceTree(linePart.getEndpoint1(), visited)) {
-                    makeTransmissionLine(linePart);
+                assert part.getEndpoint2().equals(endpoint);
+                if(traceTree(part.getEndpoint1(), visited)) {
+                    makeTransmissionLine(part);
                     continueResolving = true;
                 }
             }
@@ -685,11 +688,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     PowerGrid.LOGGER.debug("Migrating node for part {}", part);
                     if(part.getEndpoint1().equals(endpoint) || part.getNode1() == oldNode) {
                         part.setNode1(newNode);
+                        PowerGrid.LOGGER.debug("Part {} has had its node migrated", part);
                         var line = part.getLine();
                         if(line != null) {
-                            if(line.getNode1() == oldNode || line.getEndpoint1().equals(endpoint)) {
-//                                prepareForConnection(newNode, line.getNode2());
-                                inNetwork(oldNode.getNetwork(), newNode);
+                            if(line.getNode1() == oldNode) {
+                                inNetwork(line.getNetwork(), newNode);
                                 line.setNode1(newNode);
                                 PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                             }
@@ -697,30 +700,28 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     }
                     if(part.getEndpoint2().equals(endpoint) || part.getNode2() == oldNode) {
                         part.setNode2(newNode);
+                        PowerGrid.LOGGER.debug("Part {} has had its node migrated", part);
                         var line = part.getLine();
                         if(line != null) {
-                            if(line.getNode2() == oldNode || line.getEndpoint2().equals(endpoint)) {
-//                                prepareForConnection(line.getNode1(), newNode);
-                                inNetwork(oldNode.getNetwork(), newNode);
+                            if(line.getNode2() == oldNode) {
+                                inNetwork(line.getNetwork(), newNode);
                                 line.setNode2(newNode);
                                 PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                             }
                         }
                     }
-                    partNodeMap.computeIfAbsent(newNode, $ -> Sets.newConcurrentHashSet()).add(part);
+                    partNodeMap.computeIfAbsent(newNode, $ -> new HashSet<>()).add(part);
                 }
             }
             if(oldNode.getNetwork() != null) {
                 inNetwork(oldNode.getNetwork(), newNode);
-                var unified = oldNode.getNetwork(); //prepareForConnection(oldNode, newNode);
-//                if(unified == null)
-//                    PowerGrid.LOGGER.error("Failed to unify network of old and new external node");
+                var unified = oldNode.getNetwork();
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {
-                    if (line.getNode1() == oldNode || line.getEndpoint1().equals(endpoint)) {
+                    if (line.getNode1() == oldNode) {
                         line.setNode1(newNode);
                         PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
-                    } else if (line.getNode2() == oldNode || line.getEndpoint2().equals(endpoint)) {
+                    } else if (line.getNode2() == oldNode) {
                         line.setNode2(newNode);
                         PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                     }
@@ -822,8 +823,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public void registerPart(UUID persistentOwnerId, TransmissionLinePart part) {
         lineParts.put(persistentOwnerId, part);
-        partNodeMap.computeIfAbsent(part.getNode1(), $ -> Sets.newConcurrentHashSet()).add(part);
-        partNodeMap.computeIfAbsent(part.getNode2(), $ -> Sets.newConcurrentHashSet()).add(part);
+        partNodeMap.computeIfAbsent(part.getNode1(), $ -> new HashSet<>()).add(part);
+        partNodeMap.computeIfAbsent(part.getNode2(), $ -> new HashSet<>()).add(part);
         setDirty();
     }
 
@@ -867,10 +868,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var parts = partNodeMap.get(oldNode);
         if(parts == null)
             return;
-        parts.remove(part);
-        if(parts.isEmpty())
-            partNodeMap.remove(oldNode);
-        partNodeMap.computeIfAbsent(newNode, $ -> Sets.newConcurrentHashSet()).add(part);
+        if(parts.remove(part)) {
+            if (parts.isEmpty())
+                partNodeMap.remove(oldNode);
+            partNodeMap.computeIfAbsent(newNode, $ -> new HashSet<>()).add(part);
+        }
     }
 
     private static class CheckChunk {
