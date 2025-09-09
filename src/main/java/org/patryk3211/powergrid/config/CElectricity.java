@@ -28,7 +28,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt growthLampChance = i(50, 0, "growthLampChance", Comments.growthLampChance);
 
     public final ConfigFloat forgeEnergyPerVolt = f(2, 0, "forgeEnergyPerVolt", Comments.forgeEnergyPerVolt);
-    public final ConfigFloat forgeEnergyPerAmp = f(10, 0, "forgeEnergyPerAmp", Comments.forgeEnergyPerAmp);
+    public final ConfigFloat forgeEnergyPerWatt = f(10, 0, "forgeEnergyPerWatt", Comments.forgeEnergyPerWatt);
 
     public final ConfigInt electroZapperFePerShot = i(100, 1, "electroZapperFePerShot", Comments.electroZapperFePerShot);
 
@@ -65,7 +65,7 @@ public class CElectricity extends ConfigBase {
         public static final String growthLampChance = "Chance value for the growth lamp to tick a random block in its area (lower value = higher chance), this value is divided by lamp's power level";
 
         public static final String forgeEnergyPerVolt = "Conversion rate of volts to Forge Energy";
-        public static final String forgeEnergyPerAmp = "Conversion rate of amps to Forge Energy";
+        public static final String forgeEnergyPerWatt = "Conversion rate of watts to Forge Energy";
 
         public static final String electroZapperFePerShot = "Forge Energy used by Electro-Zapper per shot";
 

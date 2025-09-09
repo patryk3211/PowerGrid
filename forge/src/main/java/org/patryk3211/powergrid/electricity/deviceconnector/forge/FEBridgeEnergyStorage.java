@@ -36,8 +36,8 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
         return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
     }
 
-    public static float ampToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerAmp.getF();
+    public static float wattToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF();
     }
 
     @Override
@@ -90,10 +90,10 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
 
     @Override
     public void charge(SwitchedWire wire) {
-        float ampToFe = FEBridgeEnergyStorage.ampToFE();
+        float wattToFE = FEBridgeEnergyStorage.wattToFE();
         if(wire.getState()) {
-            var I = Math.abs(wire.current());
-            amount += Math.round(I * ampToFe);
+            var I = wire.current();
+            amount += Math.round(I * I * wire.getResistance() * wattToFE);
             be.setChanged();
         }
     }
@@ -128,8 +128,8 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
             return;
         }
 
-        float targetAmps = missingCharge / ampToFE();
-        float resistance = V / targetAmps;
+        float targetWatts = missingCharge / wattToFE();
+        float resistance = V * V / targetWatts;
         if(resistance > 0) {
             wire.setResistance(resistance);
             wire.setState(true);

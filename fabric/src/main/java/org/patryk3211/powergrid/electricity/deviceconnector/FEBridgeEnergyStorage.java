@@ -39,8 +39,8 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
         return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
     }
 
-    public static float ampToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerAmp.getF();
+    public static float wattsToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF();
     }
 
     @Override
@@ -99,9 +99,10 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
 
     @Override
     public void charge(SwitchedWire wire) {
-        float ampToFe = FEBridgeEnergyStorage.ampToFE();
+        float wattsToFE = FEBridgeEnergyStorage.wattsToFE();
         if(wire.getState()) {
-            amount += Math.round(wire.current() * ampToFe);
+            var I = wire.current();
+            amount += Math.round(I * I * wire.getResistance() * wattsToFE);
             be.setChanged();
         }
     }
@@ -127,8 +128,9 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
             return;
         }
 
-        float targetAmps = missingCharge / ampToFE();
-        float resistance = wire.potentialDifference() / targetAmps;
+        float targetWatts = missingCharge / wattsToFE();
+        var V = wire.potentialDifference();
+        float resistance = V * V / targetWatts;
         wire.setResistance(resistance);
         wire.setState(true);
     }
