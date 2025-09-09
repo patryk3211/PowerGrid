@@ -67,14 +67,15 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
+        if(sourceCoupling != null) {
+            // Internal resistive losses
+            var I = sourceCoupling.getCurrent();
+            applyLostPower(I * I * sourceCoupling.getResistance());
+        }
         super.tick();
 
         if(sourceCoupling == null)
             return;
-
-        // Internal resistive losses
-        var I = sourceCoupling.getCurrent();
-        applyLostPower(I * I * sourceCoupling.getResistance());
 
         // Extracted energy
         var power = calculatePower();

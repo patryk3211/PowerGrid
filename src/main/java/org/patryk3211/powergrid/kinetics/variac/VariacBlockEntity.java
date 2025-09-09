@@ -125,7 +125,6 @@ public class VariacBlockEntity extends TunedBlockEntity implements TransformerVo
             lastCurrent += Math.abs(I3);
         }
         applyLostPower(power);
-
         super.tick();
     }
 

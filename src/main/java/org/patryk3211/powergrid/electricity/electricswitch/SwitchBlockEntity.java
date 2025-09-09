@@ -44,8 +44,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
-        super.tick();
         applyLostPower(wire.power());
+        super.tick();
         if(wire.potentialDifference() > maxVoltage && overvoltResistance == null) {
             wire.setState(true);
             // Pick a random resistance for failed switches to spice things up.

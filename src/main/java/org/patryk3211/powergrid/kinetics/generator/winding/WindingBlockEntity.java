@@ -704,9 +704,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             grabRotors();
             regrabRotors = false;
         }
-        super.tick();
         float current = windingCurrent();
         applyLostPower(current * current * resistance());
+        super.tick();
+
         current = adjustedCurrent();
 
         if(rotorP != null) {

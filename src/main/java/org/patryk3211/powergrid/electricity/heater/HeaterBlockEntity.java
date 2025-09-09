@@ -49,12 +49,12 @@ public class HeaterBlockEntity extends ElectricBlockEntity implements IHaveGoggl
 
     @Override
     public void tick() {
+        applyLostPower(wire.power());
         super.tick();
         if(thermalBehaviour == null) {
             PowerGrid.LOGGER.warn("Heating coil should always have a thermal behaviour");
             return;
         }
-        applyLostPower(wire.power());
 
         var temperature = thermalBehaviour.getTemperature();
         if(temperature < 200f) {

@@ -53,6 +53,7 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
 
     @Override
     public void tick() {
+        applyLostPower(wire.power());
         super.tick();
         if(wire.getState()) {
             if(!level.isClientSide) {
@@ -67,7 +68,6 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
 //                if(charge == maxCharge)
 //                    sendData();
             }
-            applyLostPower(wire.power());
         }
         wire.setState(charge < maxCharge);
     }

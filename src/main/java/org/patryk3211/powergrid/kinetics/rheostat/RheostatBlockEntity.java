@@ -67,7 +67,6 @@ public class RheostatBlockEntity extends TunedBlockEntity implements IHaveGoggle
     @Override
     public void tick() {
         applyLostPower(half1.power() + half2.power());
-
         super.tick();
     }
 

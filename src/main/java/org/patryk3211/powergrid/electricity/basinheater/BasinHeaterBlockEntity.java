@@ -61,12 +61,12 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
+        applyLostPower(coil.power());
         super.tick();
         if(thermalBehaviour == null) {
             PowerGrid.LOGGER.warn("Basin heater should always have a thermal behaviour");
             return;
         }
-        applyLostPower(coil.power());
         coil.setResistance(mixerRunning() ? resistance("mixing") : resistance("idle"));
         var T = thermalBehaviour.getTemperature();
         var dissipation = 0.005625f * T - 1.625f;

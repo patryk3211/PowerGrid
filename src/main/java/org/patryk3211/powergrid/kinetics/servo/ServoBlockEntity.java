@@ -62,13 +62,12 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
 
     @Override
     public void tick() {
+        applyLostPower(coil.power());
         super.tick();
         // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
         float newTarget = Mth.clamp(control.potentialDifference() / 5.0f * 360.0f, -360f, 360f);
         newTarget = prevTarget * 0.5f + newTarget * 0.5f;
         prevTarget = newTarget;
-
-        applyLostPower(coil.power());
 
         // Target coil voltage is 20V
         float maxSpeed = Math.min(Math.abs(coil.potentialDifference()) * 0.05f, 1.0f) * MAX_SPEED;

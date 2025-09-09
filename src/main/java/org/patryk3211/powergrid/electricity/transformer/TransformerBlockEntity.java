@@ -59,8 +59,6 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     @Override
     public void tick() {
-        super.tick();
-
         float power = 0;
         lastCurrent = 0;
         if(primaryStray != null) {
@@ -69,12 +67,6 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             power += P1;
             lastCurrent += Math.abs(I1);
         }
-//        if(secondaryStray != null) {
-//            var I2 = secondaryStray.current();
-//            var P2 = I2 * I2 * secondaryStray.getResistance();
-//            power += P2;
-//            lastCurrent += Math.abs(I2);
-//        }
         if(mutualInductance != null) {
             var I3 = mutualInductance.current();
             var P3 = I3 * I3 * mutualInductance.getResistance();
@@ -82,6 +74,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             lastCurrent += Math.abs(I3);
         }
         applyLostPower(power);
+        super.tick();
         if(level.isClientSide) {
             tickAudio();
         }
