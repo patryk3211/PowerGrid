@@ -20,20 +20,31 @@ import com.simibubi.create.foundation.item.render.CustomRenderedItemModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.simibubi.create.foundation.item.render.PartialItemModelRenderer;
 import net.createmod.catnip.animation.AnimationTickHolder;
+import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
+import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
+import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 @Environment(EnvType.CLIENT)
 public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
+    private static final ResourceLocation TEXTURE = PowerGrid.texture("special/copper_wire");
     private static float mainPrevDial;
     private static float mainDial;
     private static float offPrevDial;
@@ -80,6 +91,61 @@ public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
         } else {
             offDial = 0;
             offPrevDial = 0;
+        }
+    }
+
+    /* -------=========   Probe Rendering   =========------- */
+    public static void renderProbe(Vec3 point, SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, int color) {
+        HangingWireRenderer.renderFromPositions(matrixStack, buffer.getBuffer(RenderType.entitySolid(TEXTURE)),
+                player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
+                point, 1.01f, 1.01f, 1 / 16f, world, color);
+    }
+
+    public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, ItemStack stack) {
+        if(!(stack.getItem() instanceof MultimeterItem multimeter))
+            return;
+        var data = multimeter.getModeData(stack);
+        switch(multimeter.getMode(stack)) {
+            case 0 -> {
+                var pos = WireEndpointType.deserialize(data.getCompound("Pos"));
+                if(pos != null && pos.isValid(world)) {
+                    renderProbe(pos.getExactPosition(world), buffer, matrixStack, world, player, 0xFFFF4040);
+                }
+                var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
+                if(neg != null && neg.isValid(world)) {
+                    renderProbe(neg.getExactPosition(world), buffer, matrixStack, world, player, 0xFF202020);
+                }
+            }
+            case 1 -> {
+                if(data.contains("X")) {
+                    var pos = new Vec3(data.getFloat("X"), data.getFloat("Y"), data.getFloat("Z"));
+                    renderProbe(pos, buffer, matrixStack, world, player, 0xFF202020);
+                }
+            }
+        }
+    }
+
+    public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player) {
+        render(buffer, matrixStack, world, player, player.getMainHandItem());
+        render(buffer, matrixStack, world, player, player.getOffhandItem());
+    }
+
+    public static Component multimeterOverlayText(Player player) {
+        Component right = null, left = null;
+        var stack1 = player.getMainHandItem();
+        if(stack1.getItem() instanceof MultimeterItem multimeter) {
+            right = multimeter.getText(player.level(), player, stack1);
+        }
+        var stack2 = player.getOffhandItem();
+        if(stack2.getItem() instanceof MultimeterItem multimeter) {
+            left = multimeter.getText(player.level(), player, stack2);
+        }
+        if(right != null && left != null) {
+            return Component.empty().append(left).append(" - ").append(right);
+        } else if(right != null) {
+            return right;
+        } else {
+            return left;
         }
     }
 }
