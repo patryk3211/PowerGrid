@@ -317,6 +317,52 @@ public class RelayScenes {
 
         scene.title("power_resistor", "High-power resistor");
         scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.idle(5);
+
+        var target = util.grid().at(2, 2, 2);
+
+        scene.world().showSection(util.select().fromTo(target.below(), target), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("The Power Resistor is a simple device which lets you limit the current flow in a circuit.")
+                .pointAt(util.vector().blockSurface(target, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(60)
+                .text("You can change the resistance by clicking on its top")
+                .pointAt(util.vector().topOf(target))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        var connector1 = util.grid().at(0, 2, 2);
+        var connector2 = util.grid().at(4, 2, 2);
+        var gauge = util.grid().at(1, 1, 1);
+        scene.world().showSection(util.select().fromTo(connector1.below(), connector1), Direction.EAST);
+        scene.world().showSection(util.select().fromTo(connector2.below(), connector2), Direction.WEST);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(gauge), Direction.DOWN);
+        scene.idle(5);
+
+        scene.electric().connect(connector1, 0, gauge, 1);
+        scene.electric().connect(gauge, 0, target, 1);
+        scene.electric().connect(connector2, 0, target, 0);
+        scene.idle(5);
+
+        scene.electric().addSource(connector1, 0, 1);
+        scene.electric().addSource(connector2, 0, 0);
+        scene.electric().tickFor(20);
+
+        scene.overlay().showText(80)
+                .text("The current flow is equal to the voltage across the resistor divided by its resistance (I = V / R)")
+                .pointAt(util.vector().blockSurface(gauge, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
 
         scene.markAsFinished();
     }
