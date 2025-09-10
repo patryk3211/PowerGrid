@@ -161,7 +161,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     boolean posRem = true, negRem = true;
                     if(pos != null && pos.type() == WireEndpointType.BLOCK && pos.isValid(level)) {
                         var node = pos.getNode(level);
-                        var line = GlobalElectricNetworks.getWorldNetworks(level).transmissionLineNodes.get(node);
+                        var line = GlobalElectricNetworks.getWorldNetworks(level).findLineMiddle(node);
                         if(line != null) {
                             var V = line.voltageFor(node);
                             data.putFloat("PosV", V);
@@ -170,7 +170,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     }
                     if(neg != null && neg.type() == WireEndpointType.BLOCK && neg.isValid(level)) {
                         var node = neg.getNode(level);
-                        var line = GlobalElectricNetworks.getWorldNetworks(level).transmissionLineNodes.get(node);
+                        var line = GlobalElectricNetworks.getWorldNetworks(level).findLineMiddle(node);
                         if(line != null) {
                             var V = line.voltageFor(node);
                             data.putFloat("NegV", V);

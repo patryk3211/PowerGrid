@@ -82,13 +82,17 @@ public class GlobalElectricNetworks {
         if(wire == null)
             return null;
         var worldNetworks = getWorldNetworks(entity.level());
-        var line = worldNetworks.transmissionLineNodes.get(wire.getNode1());
-        if(line != null && line.isPart(wire)) {
-            return line;
+        if(wire.getNode1() instanceof OwnedFloatingNode owned) {
+            var line = worldNetworks.findLineMiddle(owned);
+            if (line != null && line.isPart(wire)) {
+                return line;
+            }
         }
-        line = worldNetworks.transmissionLineNodes.get(wire.getNode2());
-        if(line != null && line.isPart(wire)) {
-            return line;
+        if(wire.getNode2() instanceof OwnedFloatingNode owned) {
+            var line = worldNetworks.findLineMiddle(owned);
+            if (line != null && line.isPart(wire)) {
+                return line;
+            }
         }
         // If that fails, the only other option is that the line has one segment (or doesn't exist).
         var lineWire = worldNetworks.globalGraph.getFirstWire(wire.getNode1(), wire.getNode2());
@@ -152,9 +156,15 @@ public class GlobalElectricNetworks {
 
     public static void nodeHolderAdded(ElectricBehaviour behaviour) {
         var worldNetworks = getWorldNetworks(behaviour.blockEntity.getLevel());
-        for(IElectricNode node : behaviour.getExternalNodes()) {
-            if(node instanceof OwnedFloatingNode ownedNode)
-                worldNetworks.nodeHolderAdded(ownedNode, behaviour.hasInternals());
+        for(OwnedFloatingNode node : behaviour.getExternalNodes()) {
+            worldNetworks.nodeHolderAdded(node, behaviour.hasInternals());
+        }
+    }
+
+    public static void prepareUnpaused(ElectricBehaviour behaviour) {
+        var worldNetworks = getWorldNetworks(behaviour.blockEntity.getLevel());
+        for(OwnedFloatingNode node : behaviour.getExternalNodes()) {
+            worldNetworks.prepareUnpaused(node);
         }
     }
 }

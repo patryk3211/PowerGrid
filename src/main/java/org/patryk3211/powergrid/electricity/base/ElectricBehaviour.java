@@ -159,26 +159,19 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return true;
     }
 
-    private void removeInternalStructure() {
-        internalWires.forEach(AbstractElectricWire::remove);
-        if(externalNodes.isEmpty())
-            return;
-
-        var network = getNetwork();
-        if(network != null) {
-            // Remove nodes in reverse order.
-            for(int i = internalNodes.size() - 1; i >= 0; --i) {
-                var node = internalNodes.get(i);
-                network.removeNode(node);
-            }
-        }
-    }
-
     public void pause() {
         if(!paused) {
             paused = true;
             element.paused();
-            removeInternalStructure();
+            internalWires.forEach(AbstractElectricWire::remove);
+            var network = getNetwork();
+            if(network != null) {
+                // Remove nodes in reverse order.
+                for(int i = internalNodes.size() - 1; i >= 0; --i) {
+                    var node = internalNodes.get(i);
+                    network.removeNode(node);
+                }
+            }
         }
     }
 
@@ -189,9 +182,12 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             if (network == null)
                 return;
             // External nodes weren't removed so they don't have to be added.
-            internalNodes.forEach(network::addNode);
-            internalWires.forEach(network::addWire);
-            element.unpaused();
+            if(hasInternals()) {
+                GlobalElectricNetworks.prepareUnpaused(this);
+                internalNodes.forEach(network::addNode);
+                internalWires.forEach(network::addWire);
+                element.unpaused();
+            }
         }
     }
 

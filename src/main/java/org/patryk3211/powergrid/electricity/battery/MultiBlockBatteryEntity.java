@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.List;
 
@@ -101,14 +101,13 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     @Override
     public void updateBehaviour() {
         // This also finds wires connected through device connectors/proxy behaviours
-        List<WireEntity> wires = null;
+        List<TransmissionLinePart> wires = null;
         if(level != null)
             wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
         if(isController()) {
             if(electricBehaviour instanceof ProxyElectricBehaviour proxy) {
                 electricBehaviour = new ElectricBehaviour(this);
                 electricBehaviour.inheritConnections(proxy);
-                removeBehaviour(ElectricBehaviour.TYPE);
                 attachBehaviourLate(electricBehaviour);
             }
             updateThermals();
@@ -119,7 +118,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 var old = electricBehaviour;
                 electricBehaviour = new ProxyElectricBehaviour(this, this::getController);
                 electricBehaviour.inheritConnections(old);
-                removeBehaviour(ElectricBehaviour.TYPE);
+                old.pause();
                 attachBehaviourLate(electricBehaviour);
                 sourceCoupling = null;
             }
@@ -129,7 +128,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         }
         if(wires != null) {
             // Rewire connected wires.
-            wires.forEach(WireEntity::refreshWire);
+            wires.forEach(TransmissionLinePart::refreshEndpointNodes);
         }
         updateParameters();
     }

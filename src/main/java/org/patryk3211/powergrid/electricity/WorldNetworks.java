@@ -52,8 +52,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public final NetworkGraph globalGraph = new NetworkGraph();
 
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
-    public final Map<IElectricNode, TransmissionLine> transmissionLineNodes = new HashMap<>();
     public final Map<Integer, TransmissionLine> transmissionLines = new IntObjectHashMap<>();
+    public final Map<IWireEndpoint, OwnedFloatingNode> globalExternalNodes = new HashMap<>();
 
     private final Map<ChunkPos, CheckChunk> expectedInChunks = new ConcurrentHashMap<>();
     private final Map<ChunkPos, CheckChunk> checkForExistence = new ConcurrentHashMap<>();
@@ -63,9 +63,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
     private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
 
-    public final Map<IWireEndpoint, OwnedFloatingNode> globalExternalNodes = new HashMap<>();
-
-    private final Set<WireEntity> deferredRewireEntities = new HashSet<>();
+    private final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
     protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
     private int syncTicks = 0;
 
@@ -78,7 +76,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         this(world);
         readNbt(nbt);
     }
-//
+
 //    @Override
 //    public void removeNode(IElectricNode node) {
 //        if(node instanceof OwnedFloatingNode owned) {
@@ -94,6 +92,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         updatedEndpoints.add(line.getEndpoint2());
         updatedEndpoints.add(line.getNode1().endpoint);
         updatedEndpoints.add(line.getNode2().endpoint);
+
+        var line1 = findLineMiddle(line.getNode1());
+        if(line1 != null)
+            line1.splitAt(line.getNode1());
+        var line2 = findLineMiddle(line.getNode2());
+        if(line2 != null)
+            line2.splitAt(line.getNode2());
         setDirty();
     }
 
@@ -108,17 +113,19 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         setDirty();
     }
 
-    @Override
-    public void addWire(AbstractElectricWire wire) {
-        var line1 = transmissionLineNodes.get(wire.getNode1());
-        if(line1 != null && wire.getNode1() instanceof OwnedFloatingNode owned)
-//            PowerGrid.LOGGER.warn("WHY YOU SPLITTING");
-            line1.splitAt(owned);
-        var line2 = transmissionLineNodes.get(wire.getNode2());
-        if(line2 != null && wire.getNode2() instanceof OwnedFloatingNode owned)
-//            PowerGrid.LOGGER.warn("WHY YOU SPLITTING");
-            line2.splitAt(owned);
-    }
+//    @Override
+//    public void addWire(AbstractElectricWire wire) {
+//        if(wire.getNode1() instanceof OwnedFloatingNode owned) {
+//            var line1 = findLineMiddle(owned);
+//            if(line1 != null)
+//                line1.splitAt(owned);
+//        }
+//        if(wire.getNode2() instanceof OwnedFloatingNode owned) {
+//            var line2 = findLineMiddle(owned);
+//            if(line2 != null)
+//                line2.splitAt(owned);
+//        }
+//    }
 
     @Override
     public void addNode(IElectricNode node) {
@@ -144,11 +151,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void tick() {
-        deferredRewireEntities.removeIf(entity -> {
-            if(entity.isRemoved())
-                return true;
-            entity.makeWire();
-            return entity.getWire() != null;
+        deferredRewireEntities.removeIf(part -> {
+//            if(entity.isRemoved())
+//                return true;
+//            entity.makeWire();
+//            return entity.getWire() != null;
+            part.refreshEndpointNodes();
+            return true;
         });
         JunctionWireEndpoint.processNewNodes(world);
 
@@ -274,14 +283,32 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return globalGraph.connectionCount(endpoint.getNode(world));
     }
 
-    public void assignTransmissionLine(OwnedFloatingNode node, @Nullable TransmissionLine line) {
-        if(node == null)
-            return;
-        if (line != null) {
-            transmissionLineNodes.put(node, line);
-        } else {
-            transmissionLineNodes.remove(node);
+    @Nullable
+    public TransmissionLine findLineMiddle(OwnedFloatingNode node) {
+        var parts = partNodeMap.get(node);
+        if(parts == null)
+            return null;
+        for(var part1 : parts) {
+            for(var part2 : parts) {
+                if(part1 == part2)
+                    continue;
+                if(part1.getLine() == part2.getLine() && part1.getLine() != null)
+                    return part1.getLine();
+            }
         }
+        return null;
+    }
+
+    @Deprecated
+    public void assignTransmissionLine(OwnedFloatingNode node, @Nullable TransmissionLine line) {
+//        if(node == null)
+//            return;
+//        if (line != null) {
+//            transmissionLineNodes.put(node, line);
+//        } else {
+//            transmissionLineNodes.remove(node);
+//        }
+        // TODO: This is probably redundant
         updatedEndpoints.add(node.endpoint);
     }
 
@@ -299,10 +326,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         add(endpoint2);
 
         // Split transmission lines if needed.
-        var line1 = transmissionLineNodes.get(node1);
+        var line1 = findLineMiddle(node1);
         if(line1 != null)
             line1.splitAt(node1);
-        var line2 = transmissionLineNodes.get(node2);
+        var line2 = findLineMiddle(node2);
         if(line2 != null)
             line2.splitAt(node2);
 
@@ -348,10 +375,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         add(endpoint2);
 
         // Split transmission lines if needed.
-        var line1 = transmissionLineNodes.get(node1);
+        var line1 = findLineMiddle(node1);
         if(line1 != null)
             line1.splitAt(node1);
-        var line2 = transmissionLineNodes.get(node2);
+        var line2 = findLineMiddle(node2);
         if(line2 != null)
             line2.splitAt(node2);
 
@@ -505,32 +532,35 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return null;
     }
 
-    public List<WireEntity> findConnectedWires(ElectricBehaviour behaviour) {
-        var wires = new ArrayList<WireEntity>();
+    public List<TransmissionLinePart> findConnectedWires(ElectricBehaviour behaviour) {
+        var wires = new ArrayList<TransmissionLinePart>();
         for(var node : behaviour.getExternalNodes()) {
-            var nodes = globalGraph.getConnectedNodes(node);
-            nodes.stream()
-                    .flatMap(connected -> globalGraph.getWires(node, connected).stream())
-                    .filter(wire -> wire instanceof TransmissionLine)
-                    .map(wire -> {
-                        var line = (TransmissionLine) wire;
-                        if(line.segments.isEmpty())
-                            return null;
-                        if(line.getNode1() == node)
-                            return line.segments.get(0);
-                        else if(line.getNode2() == node)
-                            return line.segments.get(line.segments.size() - 1);
-                        else
-                            return null;
-                    })
-                    .filter(segment -> segment != null && segment.owner != null)
-                    .forEach(segment -> wires.add(segment.owner));
+            var parts = partNodeMap.get(node);
+            if(parts == null)
+                continue;
+            wires.addAll(parts);
+//            var nodes = globalGraph.getConnectedNodes(node);
+//            nodes.stream()
+//                    .flatMap(connected -> globalGraph.getWires(node, connected).stream())
+//                    .filter(wire -> wire instanceof TransmissionLine)
+//                    .map(wire -> {
+//                        var line = (TransmissionLine) wire;
+//                        if(line.segments.isEmpty())
+//                            return null;
+//                        if(line.getNode1() == node)
+//                            return line.segments.get(0);
+//                        else if(line.getNode2() == node)
+//                            return line.segments.get(line.segments.size() - 1);
+//                        else
+//                            return null;
+//                    })
+//                    .filter(segment -> segment != null && segment.owner != null)
+//                    .forEach(segment -> wires.add(segment.owner));
         }
         return wires;
     }
 
-    public void deferredRewire(Collection<WireEntity> wires) {
-        wires.forEach(WireEntity::dropWire);
+    public void deferredRewire(Collection<TransmissionLinePart> wires) {
         deferredRewireEntities.addAll(wires);
     }
 
@@ -670,7 +700,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var oldNode2 = globalExternalNodes.remove(oldEndpoint);
         addAndMigrateNode(oldNode2, newNode);
 
-        var line = transmissionLineNodes.get(newNode);
+        var line = findLineMiddle(newNode);
         if(line != null) {
             line.splitAt(newNode);
         }
@@ -728,7 +758,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
                 unified.removeNode(oldNode);
             } else {
-                var line = transmissionLineNodes.remove(oldNode);
+                // TODO: This is also redundant, segments already have their nodes updated.
+                var line = findLineMiddle(oldNode);
                 if(line != null) {
                     for (var segment : line.segments) {
                         if (segment.getNode1() == oldNode || segment.getEndpoint1().equals(endpoint)) {
@@ -741,7 +772,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
                         }
                     }
-                    transmissionLineNodes.put(newNode, line);
                 }
             }
         }
@@ -753,11 +783,19 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         // Try to resolve an end of a transmission line
         resolveTree(ownedNode.endpoint);
         if(hasInternals) {
-            var line = transmissionLineNodes.get(ownedNode);
+            var line = findLineMiddle(ownedNode);
             if(line != null) {
                 line.splitAt(ownedNode);
             }
         }
+    }
+
+    // TODO: When pausing we can simplify transmission lines.
+    public void prepareUnpaused(OwnedFloatingNode node) {
+        PowerGrid.LOGGER.debug("Preparing node for unpaused internal connections");
+        var line = findLineMiddle(node);
+        if(line != null)
+            line.splitAt(node);
     }
 
     /**

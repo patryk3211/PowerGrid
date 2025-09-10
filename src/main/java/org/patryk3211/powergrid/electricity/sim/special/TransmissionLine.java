@@ -41,6 +41,8 @@ public class TransmissionLine extends ElectricWire {
     private IWireEndpoint endpoint1;
     private IWireEndpoint endpoint2;
 
+    private boolean splitting = false;
+
     public TransmissionLine(double resistance, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WorldNetworks global) {
         super(resistance, endpoint1.getNode(global.world), endpoint2.getNode(global.world));
         if(global.world.isClientSide && !(global.world instanceof PonderLevel))
@@ -248,6 +250,11 @@ public class TransmissionLine extends ElectricWire {
             return null;
         if(segments.size() <= 1)
             return null;
+        if(splitting) {
+            PowerGrid.LOGGER.warn("Prevented a double split call", new Throwable());
+            return null;
+        }
+        splitting = true;
         PowerGrid.LOGGER.debug("{}: Splitting transmission line between {} and {} at {}", this, node1, node2, atNode);
         TransmissionLine line2 = null;
         double R1 = 0, R2 = 0;
@@ -293,10 +300,12 @@ public class TransmissionLine extends ElectricWire {
             if(network != null)
                 network.addWire(line2);
         } else {
+            splitting = false;
             throw new IllegalStateException("Splitting failed for " + this);
         }
         if(ENABLE_VALIDATION)
             validateLine();
+        splitting = false;
         return line2;
     }
 

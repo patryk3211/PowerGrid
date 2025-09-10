@@ -253,4 +253,17 @@ public class TransmissionLinePart extends ElectricWire {
         tag.putDouble("Resistance", resistance);
         return tag;
     }
+
+    public void refreshEndpointNodes() {
+        var node1 = endpoint1.getNode(global.world);
+        if(this.node1 != node1) {
+            global.addAndMigrateNode(node1);
+            setNode1(node1);
+        }
+        var node2 = endpoint2.getNode(global.world);
+        if(this.node2 != node2) {
+            global.addAndMigrateNode(node2);
+            setNode2(node2);
+        }
+    }
 }

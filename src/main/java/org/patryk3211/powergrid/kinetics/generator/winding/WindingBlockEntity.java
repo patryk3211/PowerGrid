@@ -32,7 +32,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 import java.util.Collection;
@@ -214,7 +214,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     @NotNull
-    private Collection<WireEntity> wires() {
+    private Collection<TransmissionLinePart> wires() {
         if(electricBehaviour == null)
             return List.of();
         return GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
@@ -225,7 +225,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             var wires = wires();
             if(electricBehaviour instanceof ProxyElectricBehaviour proxy)
                 proxy.refreshEndpoints();
-            wires.forEach(WireEntity::refreshWire);
+            wires.forEach(TransmissionLinePart::refreshEndpointNodes);
         }
     }
 
@@ -239,7 +239,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             electricBehaviour.inheritConnections(proxy);
             attachBehaviourLate(electricBehaviour);
         }
-        wires.forEach(WireEntity::refreshWire);
+        wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
 
     public void removeElectricBehaviour() {
@@ -255,7 +255,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             // Drop nodes
             sourceCoupling = null;
         }
-        wires.forEach(WireEntity::refreshWire);
+        wires.forEach(TransmissionLinePart::refreshEndpointNodes);
         if(old != null)
             old.remove();
     }
@@ -280,9 +280,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     if(be.ownerPosition != null) {
                         // This is a parallel
                         level.getBlockEntity(be.ownerPosition, ModdedBlockEntities.WINDING.get())
-                                .ifPresent(owner -> {
-                                    owner.dissolveParallels();
-                                });
+                                .ifPresent(WindingBlockEntity::dissolveParallels);
                     } else if(be.parallelPositions != null) {
                         // This is an owner
                         be.dissolveParallels();
@@ -708,14 +706,13 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         applyLostPower(current * current * resistance());
         super.tick();
 
-        current = adjustedCurrent();
-
         if(rotorP != null) {
-            // There has to be an adjusted current since the torque might have affected it
             float torque = coilConstant() * rotorP.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
             var torque2 = -Pe / rotorP.getAngularVelocityRadians();
+            if(rotorP.getAngularVelocityRadians() != 0)
+                torque = torque2;
             if (Pe > 0) {
                 // Generator is sourcing power
                 torque *= 1.0f;
@@ -725,8 +722,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 // Reduce torque to account for losses
                 torque *= 0.9f;
             }
-            if(rotorP.getAngularVelocityRadians() != 0)
-                torque = torque2;
             rotorP.applyTickForce(torque);
         }
         if(rotorN != null) {
