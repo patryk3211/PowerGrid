@@ -31,8 +31,7 @@ import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceNode;
-import org.patryk3211.powergrid.electricity.sim.node.ElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -41,7 +40,8 @@ import java.util.List;
 public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     private ScrollValueBehaviour value;
 
-    private ElectricNode sourceNode;
+    private CurrentSourceNode currentSourceNode;
+    private VoltageSourceCoupling voltageSourceNode;
 
     private boolean overwrite = false;
     private boolean voltageSource;
@@ -66,7 +66,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
             multiplier = 0.0f;
         }
 
-        value = new CreativeSourceValueBehaviour(label, this, multiplier, new CreativeSourceBoxTransform()); //new ScrollValueBehaviour(label, this, new CreativeSourceBoxTransform());
+        value = new CreativeSourceValueBehaviour(label, this, multiplier, new CreativeSourceBoxTransform());
         value.withCallback(i -> {
             if(!overwrite)
                 setValue(i * multiplier);
@@ -76,18 +76,18 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        var positive = builder.addExternalNode();
-        var negative = builder.addExternalNode();
+        builder.setTerminalCount(2);
+        var positive = builder.terminalNode(0);
+        var negative = builder.terminalNode(1);
 
         if(getBlockState().is(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
             voltageSource = true;
-            sourceNode = builder.addInternalNode(VoltageSourceNode.class);
-            builder.couple(1, sourceNode, positive, negative);
+            voltageSourceNode = builder.addInternalNode(VoltageSourceCoupling.class, positive, negative, 1e-4f);
         } else if(getBlockState().is(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
             voltageSource = false;
-            sourceNode = builder.addInternalNode(CurrentSourceNode.class);
+            currentSourceNode = builder.addInternalNode(CurrentSourceNode.class);
             // Transformer needs some resistance for solver to work correctly with the current source.
-            builder.couple(1, 1e-6f, sourceNode, positive, negative);
+            builder.couple(1, 1e-4f, currentSourceNode, positive, negative);
         } else {
             throw new IllegalArgumentException();
         }
@@ -111,40 +111,19 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
     public void setValue(float value) {
         if(voltageSource) {
-            sourceNode.setVoltage(value);
+            voltageSourceNode.setVoltage(value);
         } else {
-            sourceNode.setCurrent(value);
+            currentSourceNode.setCurrent(value);
         }
     }
 
     public float getValue() {
         if(voltageSource) {
-            return sourceNode.getVoltage();
+            return voltageSourceNode.getVoltage();
         } else {
-            return sourceNode.getCurrent();
+            return currentSourceNode.getCurrent();
         }
     }
-
-//    @Override
-//    public void addInternalNodes(Collection<INode> nodes) {
-//        nodes.add(sourceNode);
-//        nodes.add(coupling);
-//    }
-//
-//    @Override
-//    public void addExternalNodes(List<IElectricNode> nodes) {
-//        nodes.add(positive);
-//        nodes.add(negative);
-//    }
-//
-//    @Override
-//    public void addInternalWires(Collection<ElectricWire> wires) {
-//        if(!voltageSource) {
-//            // 1 Mega-ohm wire between output nodes to prevent the solver from
-//            // exploding when nothing is connected.
-//            wires.add(new ElectricWire(1e+6f, positive, negative));
-//        }
-//    }
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
@@ -153,7 +132,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        var voltage = sourceNode.getVoltage();
+        var voltage = (voltageSource ? voltageSourceNode.getVoltage() : currentSourceNode.getVoltage());
         var voltageText = String.format("%.2f", voltage);
         Lang.builder()
                 .text(voltageText)
@@ -166,7 +145,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        var current = sourceNode.getCurrent();
+        var current = (voltageSource ? -voltageSourceNode.getCurrent() : currentSourceNode.getCurrent());
         var currentText = String.format("%.2f", current);
         Lang.builder()
                 .text(currentText)

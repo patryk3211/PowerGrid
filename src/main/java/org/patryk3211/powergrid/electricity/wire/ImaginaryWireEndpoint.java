@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 public class ImaginaryWireEndpoint implements IWireEndpoint {
     private Vec3 pos;
@@ -63,7 +64,7 @@ public class ImaginaryWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public IElectricNode getNode(Level world) {
+    public OwnedFloatingNode getNode(Level world) {
         return null;
     }
 

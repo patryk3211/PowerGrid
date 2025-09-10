@@ -21,7 +21,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 public class AlarmBellBlockEntity extends ElectricBlockEntity {
@@ -31,6 +33,11 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
 
     public AlarmBellBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return ThermalBehaviour.fromConfig(this);
     }
 
     @Environment(EnvType.CLIENT)
@@ -45,6 +52,7 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
+        applyLostPower(wire.power());
         super.tick();
         if(level.isClientSide) {
             tickAudio();

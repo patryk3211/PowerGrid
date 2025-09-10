@@ -19,7 +19,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
@@ -30,8 +30,6 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
 import java.util.List;
 
-import static org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock.HORIZONTAL_AXIS;
-
 public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
     protected ThermalBehaviour thermalBehaviour;
@@ -41,6 +39,11 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
 
     public CommutatorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+    }
+
+    @Override
+    public float inertia() {
+        return ModdedConfigs.server().kinetics.generatorCommutatorInertia.getF();
     }
 
     @Override
@@ -89,7 +92,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     public void remove() {
         super.remove();
         if(electricBehaviour != null) {
-            electricBehaviour.breakConnections();
+            electricBehaviour.remove();
         }
     }
 
@@ -103,26 +106,22 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         if(level.isClientSide) {
             var angular = rotorBehaviour.getAngularVelocityRadians();
             var current = getCurrent();
-            float chance = Math.abs(angular / 32f * current / 4f);
+            // Max 5 particles per tick
+            float chance = Math.min(Math.abs(angular / 32f * current / 4f), 5);
+
+            if(!(getBlockState().getBlock() instanceof IBrushPlacement brushes))
+                return;
 
             var r = level.random;
             while(chance > 0) {
                 if(r.nextFloat() < chance) {
                     boolean secondBrush = r.nextBoolean();
                     var pos = getBlockPos().getCenter();
-                    var brushOffset = switch (getBlockState().getValue(HORIZONTAL_AXIS)) {
-                        case Z -> new Vec3(3.5 / 16f, 0, 2 / 16f).offsetRandom(r, 1 / 16f);
-                        case X -> new Vec3(-2 / 16f, 0, 3.5 / 16).offsetRandom(r, 1 / 16f);
-                        default -> throw new IllegalStateException();
-                    };
+                    var brushOffset = brushes.brushOffset(getBlockState()).offsetRandom(r, 1 / 16f);
 
                     pos = secondBrush ? pos.add(brushOffset) : pos.subtract(brushOffset);
                     int velocityDir = (angular < 0 ^ secondBrush) ? 1 : -1;
-                    var velocity = switch (getBlockState().getValue(HORIZONTAL_AXIS)) {
-                        case Z -> new Vec3(0, 1 / 4f + Math.abs(angular) / 100f, 0).offsetRandom(r, 1 / 16f);
-                        case X -> new Vec3(0, -1 / 4f - Math.abs(angular) / 100f, 0).offsetRandom(r, 1 / 16f);
-                        default -> throw new IllegalStateException();
-                    };
+                    var velocity = brushes.sparkVelocity(getBlockState(), angular).offsetRandom(r, 1 / 16f);
 
                     level.addParticle(new SparkParticleData(r.nextIntBetweenInclusive(1, 3), false, true), pos.x, pos.y, pos.z,
                             velocity.x * velocityDir, velocity.y * velocityDir, velocity.z * velocityDir);

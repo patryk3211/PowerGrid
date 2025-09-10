@@ -68,26 +68,8 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
             EAST_TERMINAL_2.getShape()
     );
 
-    public enum Material {
-        ANDESITE,
-        BRASS
-    }
-
-    float maxValue;
-    Material material;
-
     public GaugeBlock(Properties settings) {
         super(settings);
-        maxValue = 0;
-        material = null;
-    }
-
-    public static <B extends GaugeBlock<?>, P> NonNullUnaryOperator<BlockBuilder<B, P>> setMaxValue(float value) {
-        return builder -> builder.onRegister(block -> block.maxValue = value);
-    }
-
-    public static <B extends GaugeBlock<?>, P> NonNullUnaryOperator<BlockBuilder<B, P>> setMaterial(Material material) {
-        return builder -> builder.onRegister(block -> block.material = material);
     }
 
     @Override
@@ -157,17 +139,8 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends ElectricBl
     }
 
     @Override
-    public float getMaxValue() {
-        return maxValue;
-    }
-
-    @Override
     public boolean shouldRenderHeadOnFace(Level world, BlockPos pos, BlockState state, Direction dir) {
         var facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         return dir.getAxis() == facing.getAxis();
-    }
-
-    public Material getMaterial() {
-        return material;
     }
 }

@@ -23,32 +23,33 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
+import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class BridgeElectricBehaviour extends ElectricBehaviour {
-    private final BlockPos behaviourPosition;
+public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
     private IFEBridgeHandler bridgeBehaviour;
     private long readEnergy;
-    private long currentRate;
+    public long currentRate;
     private boolean fetched = false;
     private final Supplier<SwitchedWire> converterWire;
 
     public <T extends SmartBlockEntity & IElectricEntity> BridgeElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<SwitchedWire> converterWire) {
-        super(be);
-        this.behaviourPosition = behaviourPosition;
+        super(be, true, () -> behaviourPosition);
         this.converterWire = converterWire;
     }
 
     private void constructBehaviours() {
         fetched = true;
         var world = getWorld();
-        var mainBehaviour = get(world, behaviourPosition, TYPE);
+        if(!world.isLoaded(behaviourPosition.get())) {
+            fetched = false;
+            return;
+        }
+        var mainBehaviour = get(world, behaviourPosition.get(), TYPE);
         if(mainBehaviour != null)
             return;
         bridgeBehaviour = makeFEHandler(blockEntity);
@@ -59,10 +60,11 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
         bridgeBehaviour.setAmount(readEnergy);
     }
 
+    @Override
     public Optional<ElectricBehaviour> getMainBehaviour() {
         if(!fetched)
             constructBehaviours();
-        return Optional.ofNullable(get(getWorld(), behaviourPosition, TYPE));
+        return super.getMainBehaviour();
     }
 
     @Nullable
@@ -73,25 +75,28 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     }
 
     @Override
-    public void joinNetwork(ElectricalNetwork network) {
-        getMainBehaviour().ifPresentOrElse(
-                b -> b.joinNetwork(network),
-                () -> super.joinNetwork(network)
-        );
+    public void initialize() {
+        if(getBridgeBehaviour() != null) {
+            super.baseInitialize();
+        } else {
+            super.initialize();
+        }
     }
 
     @Override
-    public @Nullable IElectricNode getTerminal(int index) {
-        return getMainBehaviour()
-                .map(b -> b.getTerminal(index))
-                .orElseGet(() -> super.getTerminal(index));
+    public void unload() {
+        if(getBridgeBehaviour() != null)
+            super.baseUnload();
     }
 
     @Override
-    public boolean hasTerminal(int terminal) {
-        return getMainBehaviour()
-                .map(b -> b.hasTerminal(terminal))
-                .orElseGet(() -> super.hasTerminal(terminal));
+    public void remove() {
+        if(getBridgeBehaviour() != null) {
+            super.baseRemove();
+        } else {
+            // Node holder might not be removed.
+            super.remove();
+        }
     }
 
     @Override
@@ -145,5 +150,13 @@ public class BridgeElectricBehaviour extends ElectricBehaviour {
     @ExpectPlatform
     public static IFEBridgeHandler makeFEHandler(BlockEntity be) {
         throw new AssertionError();
+    }
+
+    public boolean isFE() {
+        return bridgeBehaviour != null;
+    }
+
+    public long getBufferedAmount() {
+        return bridgeBehaviour.getAmount();
     }
 }

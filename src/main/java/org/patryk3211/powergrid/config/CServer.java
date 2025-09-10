@@ -18,10 +18,9 @@ package org.patryk3211.powergrid.config;
 import net.createmod.catnip.config.ConfigBase;
 
 public class CServer extends ConfigBase {
-    public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
     public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
     public final CRecipes recipes = nested(0, CRecipes::new, Comments.recipes);
-    public final CResistance resistance = nested(0, CResistance::new, Comments.resistance);
+    public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
 
     @Override
     public String getName() {
@@ -32,6 +31,5 @@ public class CServer extends ConfigBase {
         public static final String electricity = "All things related to purely electrical devices";
         public static final String kinetics = "Things related to kinetic and electrokinetic devices";
         public static final String recipes = "Recipe configuration values";
-        public static final String resistance = "Resistance values for all devices";
     }
 }

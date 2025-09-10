@@ -19,6 +19,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
 import java.util.ArrayList;
@@ -31,6 +32,11 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
 
     public InductionRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+    }
+
+    @Override
+    public float inertia() {
+        return ModdedConfigs.server().kinetics.generatorInductionRotorInertia.getF();
     }
 
     private void assemblyChanged() {

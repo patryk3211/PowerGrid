@@ -21,29 +21,27 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 import java.util.*;
 
 public class JunctionWireEndpoint implements IWireEndpoint {
-    private static final Map<Level, Map<Integer, NodeEntry>> JUNCTION_NODES = new HashMap<>();
-    private static int NEXT_ID = 0;
+    private static final Map<Level, WorldEntry> JUNCTION_NODES = new HashMap<>();
 
-    private int id;
+    private UUID id;
     private Vec3 pos;
 
     public JunctionWireEndpoint() {
-        this(null, -1);
+        this(null, null);
     }
 
     public JunctionWireEndpoint(Vec3 pos) {
-        this(pos, NEXT_ID++);
+        this(pos, UUID.randomUUID());
     }
 
-    private JunctionWireEndpoint(Vec3 pos, int id) {
+    private JunctionWireEndpoint(Vec3 pos, UUID id) {
         this.pos = pos;
         this.id = id;
     }
@@ -60,7 +58,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 nbt.getFloat("Y"),
                 nbt.getFloat("Z")
         );
-        id = nbt.getInt("Id");
+        id = nbt.getUUID("Id");
     }
 
     @Override
@@ -68,7 +66,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         nbt.putFloat("X", (float) pos.x);
         nbt.putFloat("Y", (float) pos.y);
         nbt.putFloat("Z", (float) pos.z);
-        nbt.putInt("Id", id);
+        nbt.putUUID("Id", id);
     }
 
     @Override
@@ -78,7 +76,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public IElectricNode getNode(Level world) {
+    public OwnedFloatingNode getNode(Level world) {
         return getNode(world, id, false, this).node;
     }
 
@@ -122,9 +120,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             assert wire1.getWireItem() == wire2.getWireItem();
             var wire1End = this.equals(wire1.getEndpoint2());
             var wire2End = this.equals(wire2.getEndpoint2());
-            // Preemptively remove entry since it is going to be discarded anyway.
             entry.holders.clear();
-            removeEntry(entity.level(), this.id);
 
             boolean flipped = false, targetFlipped = false;
             BlockWireEntity target, source;
@@ -156,13 +152,16 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 for(var segment : source.segments) {
                     segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
                 }
+                source.dropWire();
                 target.setEndpoint2(source.getEndpoint1());
                 target.extend(segments, source.getWireCount());
             } else {
+                source.dropWire();
                 target.setEndpoint2(source.getEndpoint2());
                 target.extend(source.segments, source.getWireCount());
             }
             source.discard();
+            removeEntry(entity.level(), this.id);
         } else if(entry.holders.size() == 1) {
             // One holder remaining, remove junction from it and drop the entry.
             for(var holder : entry.holders) {
@@ -180,35 +179,48 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Contract("_, _, false, _ -> !null")
-    private static NodeEntry getNode(Level world, int id, boolean nullable, JunctionWireEndpoint endpoint) {
-        if(id < 0)
-            throw new IllegalArgumentException("Invalid id passed to junction node map");
+    private static NodeEntry getNode(Level world, UUID id, boolean nullable, JunctionWireEndpoint endpoint) {
         if(!nullable) {
-            var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new HashMap<>());
-            return worldNodeMap.computeIfAbsent(id, k -> new NodeEntry(endpoint));
+            var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new WorldEntry());
+            var entry = worldNodeMap.nodes.get(id);
+            if(entry == null) {
+                entry = new NodeEntry(endpoint);
+                worldNodeMap.nodes.put(id, entry);
+                worldNodeMap.newNodes.add(entry.node);
+            }
+            return entry;
         } else {
             var worldNodeMap = JUNCTION_NODES.get(world);
             if(worldNodeMap == null)
                 return null;
-            return worldNodeMap.get(id);
+            return worldNodeMap.nodes.get(id);
         }
     }
 
-    private static void removeEntry(Level world, int id) {
+    private static void removeEntry(Level world, UUID id) {
         var worldNodeMap = JUNCTION_NODES.get(world);
         if(worldNodeMap == null)
             return;
-        var entry = worldNodeMap.remove(id);
+        var entry = worldNodeMap.nodes.remove(id);
         if(entry == null)
             return;
         if(!entry.holders.isEmpty()) {
             PowerGrid.LOGGER.error("Tried to remove junction endpoint entry for a junction with holders");
             return;
         }
-        var network = entry.node.getNetwork();
-        if(network == null)
-            return;
-        network.removeNode(entry.node);
+        GlobalElectricNetworks.getWorldNetworks(world).nodeHolderRemoved(entry.node);
+    }
+
+    public static void processNewNodes(Level world) {
+        var worldNodeMap = JUNCTION_NODES.get(world);
+        if(worldNodeMap != null && !worldNodeMap.newNodes.isEmpty()) {
+            var global = GlobalElectricNetworks.getWorldNetworks(world);
+            var nodes = worldNodeMap.newNodes;
+            worldNodeMap.newNodes = new HashSet<>();
+            for(var node : nodes) {
+                global.nodeHolderAdded(node, false);
+            }
+        }
     }
 
     @Override
@@ -217,17 +229,32 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             return true;
         if(obj instanceof JunctionWireEndpoint other) {
             // Note: We don't compare position since it might be slightly different due to imprecision.
-            return this.id == other.id;
+            return id.equals(other.id);
         }
         return false;
     }
 
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Junction(id=%s)", id);
+    }
+
     private static class NodeEntry {
-        public final FloatingNode node;
+        public final OwnedFloatingNode node;
         public final Set<WireEntity> holders = new HashSet<>();
 
         public NodeEntry(IWireEndpoint endpoint) {
             node = new OwnedFloatingNode(endpoint);
         }
+    }
+
+    private static class WorldEntry {
+        public final Map<UUID, NodeEntry> nodes = new HashMap<>();
+        public Set<OwnedFloatingNode> newNodes = new HashSet<>();
     }
 }

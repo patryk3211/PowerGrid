@@ -1,12 +1,13 @@
 {
+	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
 	"textures": {
 		"1": "powergrid:block/component/diode"
 	},
 	"elements": [
 		{
-			"from": [1, 0.5, 0.5],
-			"to": [5, 2.5, 2.5],
+			"from": [0.5, 0.5, 0.5],
+			"to": [4.5, 2.5, 2.5],
 			"rotation": {"angle": 0, "axis": "y", "origin": [3, 0.5, 0.5]},
 			"faces": {
 				"north": {"uv": [2, 2, 6, 4], "texture": "#1"},
@@ -18,8 +19,8 @@
 			}
 		},
 		{
-			"from": [5, 0, 1],
-			"to": [6, 2, 2],
+			"from": [4, 0, 1],
+			"to": [5, 2, 2],
 			"rotation": {"angle": 0, "axis": "y", "origin": [4, 0, 1]},
 			"faces": {
 				"north": {"uv": [1, 5, 2, 7], "texture": "#1"},
@@ -51,6 +52,5 @@
 			"color": 0,
 			"children": [0, 1, 2]
 		}
-	],
-	"format_version": "1.21.6"
+	]
 }

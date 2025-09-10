@@ -25,6 +25,7 @@ import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
 import java.util.ArrayList;
@@ -33,11 +34,13 @@ import java.util.List;
 
 public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("generator_rotor");
-    private static final float ROTOR_INERTIA = 0.1f;
+    private static final int OVERSPEED_TICKS = 5;
 
     // Energy values get loaded from NBT.
+    protected float totalForce = 0;
     protected float angularVelocity = 0;
     private float fieldStrength = 0.3f;
+    private final float individualInertia;
 
     // Segment count and inertia get calculated from added segments every time.
     private float inertia = 0;
@@ -45,12 +48,18 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     // Angle is only for rendering and doesn't have to be saved.
     private float angle = 0;
+    private int overspeedTicks = 0;
 
     private boolean emitsField = true;
     private boolean hasSoundSource = false;
+    private IForceSource forceSupplier = null;
 
-    public RotorBehaviour(SmartBlockEntity be) {
-        super(be, ModdedConfigs.server().kinetics.rotorAssemblyMaxSize.get());
+    public RotorBehaviour(SmartBlockEntity be, float inertia) {
+        super(be, ModdedConfigs.server().kinetics.rotorAssemblyMaxSize.get(),
+                segment -> !segment.blockEntity.getBlockState()
+                        .is(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag));
+        this.individualInertia = inertia;
+        setLazyTickRate(100);
     }
 
     public void noField() {
@@ -59,6 +68,10 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     public boolean hasField() {
         return emitsField;
+    }
+
+    public void forceSource(IForceSource availableForce) {
+        this.forceSupplier = availableForce;
     }
 
     @Override
@@ -107,7 +120,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     protected void makeController() {
         super.makeController();
-        inertia = ROTOR_INERTIA;
+        inertia = individualInertia;
         segmentCount = 1;
     }
 
@@ -154,8 +167,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     public void segmentAdded(RotorBehaviour segment) {
         super.segmentAdded(segment);
-        var momentum = angularVelocity * inertia + segment.angularVelocity * ROTOR_INERTIA;
-        inertia += ROTOR_INERTIA;
+        var momentum = angularVelocity * inertia + segment.angularVelocity * segment.individualInertia;
+        inertia += segment.individualInertia;
         angularVelocity = momentum / inertia;
         segmentCount += 1;
     }
@@ -163,16 +176,21 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     @Override
     public void segmentRemoved(RotorBehaviour segment) {
         super.segmentRemoved(segment);
-        inertia -= ROTOR_INERTIA;
+        inertia -= segment.individualInertia;
         segmentCount -= 1;
     }
 
     public void applyTickForce(float force) {
         var controller = getControllerOrThis();
+        if(controller.inertia <= 0) {
+            // Not initialized yet (most likely)
+            return;
+        }
         if(Math.abs(force) > 0.001f) {
-            controller.angularVelocity += force / controller.inertia / 20f;
-            if(Float.isNaN(controller.angularVelocity))
-                controller.angularVelocity = 0;
+            controller.totalForce += force;
+//            controller.angularVelocity += force / controller.inertia / 20f;
+//            if(Float.isNaN(controller.angularVelocity))
+//                controller.angularVelocity = 0;
         }
     }
 
@@ -220,13 +238,19 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         return fieldStrength;
     }
 
-    public int getMaxRotationSpeed() {
+    public static int getMaxRotationSpeed() {
         return ModdedConfigs.server().kinetics.rotorRPMMax.get();
     }
 
     public void setFieldStrength(float value) {
         fieldStrength = value;
         blockEntity.setChanged();
+    }
+
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        blockEntity.sendData();
     }
 
     @Override
@@ -237,14 +261,45 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
             float friction = Math.abs(velocity * 20f * inertia);
             friction = Math.min(friction, segmentCount * 1f);
+            totalForce -= Math.signum(velocity) * friction;
 
-            angularVelocity -= Math.signum(velocity) * friction / 20f / inertia;
+            angularVelocity += totalForce / 20f / inertia;
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity))
                 angularVelocity = 0;
+            totalForce = 0;
 
-            if(Math.abs(angularVelocity) > getMaxRotationSpeed() && !getWorld().isClientSide) {
-                // TODO: Maybe make this a bit more destructive.
-                getWorld().destroyBlock(getPos(), false);
+            forEachSegment(segment -> {
+                if(segment.forceSupplier != null) {
+                    var target = segment.forceSupplier.forceSpeed();
+                    float delta = (target - angularVelocity) * 0.75f;
+                    if(target < 0)
+                        delta = -delta;
+                    delta = Math.max(0, delta);
+
+                    float maxForce = segment.forceSupplier.sourceForce();
+                    float force = delta * 20f * inertia;
+                    force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
+                    angularVelocity += force / 20f / inertia;
+                    segment.forceSupplier.receiveUsedForce(force / maxForce);
+                }
+            });
+
+            if(!getWorld().isClientSide) {
+                var V = Math.abs(angularVelocity);
+                var Vmax = getMaxRotationSpeed();
+                if(V > Vmax) {
+                    if(overspeedTicks++ >= OVERSPEED_TICKS) {
+                        // Overspeed for too long
+                        getWorld().destroyBlock(getPos(), false);
+                        checkConnectivity(this);
+                    } else {
+                        // Clamp to max speed, if something is still accelerating it, the rotor will be destroyed
+                        angularVelocity = Vmax * Math.signum(angularVelocity);
+                        blockEntity.sendData();
+                    }
+                } else if(V <= Vmax) {
+                    overspeedTicks = 0;
+                }
             }
 
             angle = (angle + velocity * 0.3f) % 360;
@@ -259,5 +314,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             angle = getAngle();
         }
         blockEntity.setChanged();
+    }
+
+    public interface IForceSource {
+        float sourceForce();
+        float forceSpeed();
+        default void receiveUsedForce(float percent) { }
     }
 }

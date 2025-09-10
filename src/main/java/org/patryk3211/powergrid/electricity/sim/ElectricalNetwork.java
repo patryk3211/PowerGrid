@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.sim;
 import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.BiCGSTABSolver;
+import org.patryk3211.powergrid.electricity.sim.solver.DynamicallyTypedMatrix;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolver;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
@@ -26,7 +27,7 @@ import org.slf4j.Logger;
 import java.util.*;
 
 public class ElectricalNetwork {
-    private static final double PRECISION = 1e-6;
+    private static final double PRECISION = 1e-7;
 
     private final Set<AbstractElectricWire> wires = new HashSet<>();
     private final Set<ICouplingNode> couplings = new HashSet<>();
@@ -35,14 +36,13 @@ public class ElectricalNetwork {
     private final ISolver solver;
     private boolean[] voltageSources;
     private DMatrixRMaj conductanceMatrix;
-    private DMatrixRMaj AMatrix;
+    private DynamicallyTypedMatrix AMatrix;
     private DMatrixRMaj currentMatrix;
     private int sourceCount;
 
     private DMatrixRMaj lastGuess;
 
     private boolean dirty;
-    private boolean recalculating;
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
 
@@ -57,6 +57,10 @@ public class ElectricalNetwork {
     // Make sure all variables are completely rebuilt and repopulated.
     public void setDirty() {
         this.dirty = true;
+    }
+
+    public boolean hasHooks() {
+        return !solver.getHooks().isEmpty();
     }
 
     public void addNode(INode node) {
@@ -88,7 +92,9 @@ public class ElectricalNetwork {
     }
 
     public void removeNode(INode node) {
-        if(node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
+        if(node == null)
+            return;
+        if(node.getNetwork() != this || node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
             // This node is not actually in this network.
             return;
 
@@ -105,7 +111,7 @@ public class ElectricalNetwork {
 
         if(node instanceof ICouplingNode)
             couplings.remove(node);
-        if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode)
+        if(node instanceof VoltageSourceNode || node instanceof CurrentSourceNode || node instanceof VoltageSourceCoupling)
             --sourceCount;
         if(node instanceof ISolverHook hook)
             solver.removeHook(hook);
@@ -133,16 +139,20 @@ public class ElectricalNetwork {
         return dirty;
     }
 
+    public ConductanceMatrixAccess conductanceAccess() {
+        return new ConductanceMatrixAccess();
+    }
+
     public void addWire(AbstractElectricWire wire) {
         if(wire.node1 != null && !nodes.contains(wire.node1)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node1.getNetwork() == null ? "no network" : "different network";
-            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 isn't - " + suffix + ")");
+            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 " + wire.node1 + " isn't - " + suffix + ")");
         }
         if(wire.node2 != null && !nodes.contains(wire.node2)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
-            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 isn't - " + suffix + ")");
+            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
         }
         wire.setNetwork(this);
         wires.add(wire);
@@ -234,6 +244,9 @@ public class ElectricalNetwork {
         nodes.add(coupling);
         setDirty();
 
+        if(coupling instanceof VoltageSourceCoupling)
+            ++sourceCount;
+
         if(coupling instanceof ISolverHook hook)
             solver.addHook(hook);
     }
@@ -258,18 +271,16 @@ public class ElectricalNetwork {
         }
     }
 
-    public void updateCurrent(CurrentSourceNode node, float oldCurrent) {
+    public void updateCurrentMatrix(INode node, float change) {
         if(currentMatrix == null || dirty)
             return;
-
-        var diff = node.getCurrent() - oldCurrent;
-        currentMatrix.add(node.getIndex(), 0, diff);
+        currentMatrix.add(node.getIndex(), 0, change);
     }
 
     private void populateConductanceMatrix() {
-        conductanceMatrix.zero();
         conductanceDelta = 0;
         conductanceUpdates = 0;
+        conductanceMatrix.zero();
         List<AbstractElectricWire> staleWires = new ArrayList<>();
         var size = conductanceMatrix.getNumRows();
         for(var wire : wires) {
@@ -332,6 +343,10 @@ public class ElectricalNetwork {
             } else if(node instanceof final CurrentSourceNode source) {
                 currentMatrix.add(node.getIndex(), 0, source.getCurrent());
                 voltageSources[nodeIndex] = false;
+            } else if(node instanceof VoltageSourceCoupling source) {
+                currentMatrix.add(node.getIndex(), 0, source.getVoltage());
+                // This only applies to single terminal voltage sources
+                voltageSources[nodeIndex] = false;
             } else {
                 voltageSources[nodeIndex] = false;
             }
@@ -347,20 +362,34 @@ public class ElectricalNetwork {
         other.couplings.clear();
     }
 
-    public void calculate(boolean printResult, boolean printState) {
-        if(sourceCount == 0) {
-            for(var node : nodes) {
-                if(node instanceof IElectricNode enode) {
-                    enode.receiveResult(0);
-                }
+    private boolean acceptResults(DMatrixRMaj result, boolean canRepeat) {
+        for(var node : nodes) {
+            if(node.getIndex() >= result.getNumRows()) {
+                // Why is it here???
+                continue;
             }
-            return;
+            float value = (float) result.get(node.getIndex(), 0);
+            if(!Float.isFinite(value)) {
+                solver.zero();
+                if(canRepeat) {
+                    // Try again.
+                    return false;
+                } else {
+                    // Failed again
+                    node.receiveResult(0);
+                }
+            } else {
+                node.receiveResult(value);
+            }
         }
+        return true;
+    }
 
+    private void prepareMatrices() {
         var nodeCount = nodes.size();
         if(conductanceMatrix == null || dirty || conductanceMatrix.getNumRows() != nodeCount) {
             conductanceMatrix = new DMatrixRMaj(nodeCount, nodeCount);
-            AMatrix = new DMatrixRMaj(nodeCount, nodeCount);
+            AMatrix = new DynamicallyTypedMatrix(nodeCount, nodeCount);
             currentMatrix = new DMatrixRMaj(nodeCount, 1);
             voltageSources = new boolean[nodeCount];
             solver.setStateSize(nodeCount);
@@ -370,52 +399,94 @@ public class ElectricalNetwork {
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix();
             populateCurrentMatrix();
+            // TODO: Maybe try to populate the initial guess matrix from old node values.
         } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
             if(LOGGER != null)
-                LOGGER.trace("Cumulated conductance updates triggered admittance matrix recalculation");
+                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
             populateConductanceMatrix();
             populateCurrentMatrix();
         }
+    }
 
+    public void calculate(boolean printResult, boolean printState) {
+        if(sourceCount == 0) {
+            for(var node : nodes) {
+                node.receiveResult(0);
+            }
+            return;
+        }
+
+        prepareMatrices();
         if(printState) {
             System.out.println(AMatrix);
             System.out.println(currentMatrix);
         }
 
-        var result = solver.solve(AMatrix, currentMatrix);
-        lastGuess = result;
-        if(printResult) {
-            System.out.println(result);
-        }
-        for(var node : nodes) {
-            if(node instanceof IElectricNode enode) {
-                if(node.getIndex() >= result.getNumRows()) {
-                    // Why is it here???
-                    continue;
-                }
-                float value = (float) result.get(node.getIndex(), 0);
-                if(Float.isNaN(value)) {
-                    if(!recalculating) {
-                        // Try again.
-                        solver.zero();
-                        recalculating = true;
-                        calculate();
-                        recalculating = false;
-                        break;
-                    } else {
-                        // Failed again
-                        enode.receiveResult(0);
-                    }
-                } else {
-                    enode.receiveResult(value);
-                }
+        int maxAttempts = hasHooks() ? 5 : 3;
+        for(int i = 0; i < maxAttempts; ++i) {
+            var canRepeat = i < maxAttempts - 1;
+            var result = solver.solve(AMatrix, currentMatrix, canRepeat);
+            lastGuess = result;
+            if(solver.getInitialGuessDistance() < PRECISION) {
+                acceptResults(result, false);
+                break;
             }
+            if (printResult) {
+                System.out.println(result);
+            }
+            if(acceptResults(result, canRepeat)) {
+                // If the network has ~special~ components, solving is continued
+                // util the guess is good with updated properties (updated by the hooks)
+                if(hasHooks())
+                    continue;
+                // If not, check if the current guess is good enough.
+                if(solver.getFinalGuessDistance() < PRECISION)
+                    break;
+            }
+        }
+        for(var hook : solver.getHooks()) {
+            hook.postUpperSolve();
         }
     }
 
     public void calculate() {
         calculate(false, false);
+    }
+
+    public void warmUp() {
+        if(sourceCount == 0) {
+            for(var node : nodes) {
+                node.receiveResult(0);
+            }
+            return;
+        }
+
+        prepareMatrices();
+
+        int maxAttempts = 4;
+        for(int i = 0; i < maxAttempts; ++i) {
+            var result = solver.solve(AMatrix, currentMatrix, true);
+            lastGuess = result;
+            if(solver.getInitialGuessDistance() < PRECISION) {
+                acceptResults(result, false);
+                break;
+            }
+            if(acceptResults(result, i < maxAttempts - 1)) {
+                // If the network has ~special~ components, solving is continued
+                // util the guess is good with updated properties (updated by the hooks)
+                if(hasHooks())
+                    continue;
+                break;
+            }
+        }
+    }
+
+    public class ConductanceMatrixAccess {
+        public void add(int row, int column, double value) {
+            var current = conductanceMatrix.get(row, column);
+            conductanceMatrix.set(row, column, current + value);
+        }
     }
 }

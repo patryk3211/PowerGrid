@@ -28,10 +28,8 @@ public class PowerGridPonderScenes {
     public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
-        HELPER.addStoryBoard(ModdedBlocks.ANDESITE_VOLTAGE_METER, "gauges", GaugeScenes::voltage);
-        HELPER.addStoryBoard(ModdedBlocks.BRASS_VOLTAGE_METER, "gauges", GaugeScenes::voltage);
-        HELPER.addStoryBoard(ModdedBlocks.ANDESITE_CURRENT_METER, "gauges", GaugeScenes::current);
-        HELPER.addStoryBoard(ModdedBlocks.BRASS_CURRENT_METER, "gauges", GaugeScenes::current);
+        HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "gauges", GaugeScenes::voltage);
+        HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "gauges", GaugeScenes::current);
 
         HELPER.forComponents(ModdedBlocks.HEATING_COIL)
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic, PowerGridPonderTags.ELECTRIC_DEVICES)
@@ -50,9 +48,10 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("generator/clutch", GeneratorScenes::clutch, PowerGridPonderTags.GENERATOR_ASSEMBLY, AllCreatePonderTags.KINETIC_APPLIANCES)
                 .addStoryBoard("generator/generator", GeneratorScenes::generator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
-        HELPER.addStoryBoard(ModdedBlocks.GENERATOR_HOUSING, "generator/housing", GeneratorScenes::housing, PowerGridPonderTags.GENERATOR_ASSEMBLY);
+        HELPER.forComponents(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING)
+                .addStoryBoard("generator/housing", GeneratorScenes::housing, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
-        HELPER.forComponents(ModdedBlocks.GENERATOR_INDUCTION_ROTOR, ModdedBlocks.GENERATOR_COMMUTATOR)
+        HELPER.forComponents(ModdedBlocks.GENERATOR_INDUCTION_ROTOR, ModdedBlocks.GENERATOR_COMMUTATOR, ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
                 .addStoryBoard("generator/inductive", GeneratorScenes::inductive, PowerGridPonderTags.GENERATOR_ASSEMBLY, PowerGridPonderTags.ELECTRIC_DEVICES);
 
         HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE)
@@ -64,7 +63,10 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.VARIAC, "variac", RelayScenes::variac, PowerGridPonderTags.ELECTRIC_RELAYS);
 
-        HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB)
+        HELPER.addStoryBoard(ModdedBlocks.RHEOSTAT, "rheostat", RelayScenes::rheostat, PowerGridPonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.RESISTOR, "power_resistor", RelayScenes::powerResistor, PowerGridPonderTags.ELECTRIC_RELAYS);
+
+        HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB, ModdedItems.LV_LIGHT_BULB)
                 .addStoryBoard("lightbulb", DeviceScenes::light, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(ModdedItems.GROWTH_LAMP, "growth_lamp", DeviceScenes::growthLamp, PowerGridPonderTags.ELECTRIC_DEVICES);
 

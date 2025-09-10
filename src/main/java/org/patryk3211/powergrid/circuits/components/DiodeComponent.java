@@ -36,7 +36,7 @@ public class DiodeComponent extends OrientableComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var diodeWire = new DiodeWire(0.1f, 0.7f, builder.terminalNode(1), builder.terminalNode(0));
+        var diodeWire = new DiodeWire(0.001f, 0.7f, builder.terminalNode(1), builder.terminalNode(0));
         builder.add(diodeWire);
         thermals.builder()
                 .setMaxPower(200, 125f)

@@ -21,7 +21,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.config.ResistanceValues;
 
 import java.util.List;
 
@@ -62,7 +61,7 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
     public void remove() {
         super.remove();
         if(electricBehaviour != null) {
-            electricBehaviour.breakConnections();
+            electricBehaviour.remove();
         }
     }
 }

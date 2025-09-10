@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 
@@ -47,6 +48,7 @@ import java.util.function.Function;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.*;
 import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
+import static org.patryk3211.powergrid.base.CustomProperties.ROTATION_4;
 
 @SuppressWarnings("unused")
 public class DataProviderUtilityImpl {
@@ -152,7 +154,12 @@ public class DataProviderUtilityImpl {
     // This function needs two models. One for Y axis and one for other axis.
     public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
         var facing = state.getValue(FACING);
-        var axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+        boolean axis_along_first = false;
+        if(state.hasProperty(ALONG_FIRST_AXIS)) {
+            axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+        } else if (state.hasProperty(ROTATION_4)) {
+            axis_along_first = state.getValue(ROTATION_4) % 2 == 1;
+        }
 
         int x = 0, y = 0;
         boolean verticalModel = false;
@@ -230,6 +237,18 @@ public class DataProviderUtilityImpl {
         });
     }
 
+    public static <T extends VerticalCommutatorBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> verticalCommutator(String name) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+            var model = modModel(prov, name);
+            var builder = ConfiguredModel.builder().modelFile(model);
+            Direction facing = state.getValue(HORIZONTAL_FACING);
+            if(!state.getValue(UP)) {
+                builder.rotationX(180);
+            }
+            builder.rotationY((int) (facing.toYRot() - 180));
+            return builder.build();
+        });
+    }
 
     public static <T extends HvSwitchBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> hvSwitch(String baseName) {
         return (ctx, prov) ->
@@ -416,6 +435,21 @@ public class DataProviderUtilityImpl {
         }
     }
 
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> northFacing(String name) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            builder.modelFile(modModel(prov, name));
+            switch(state.getValue(FACING)) {
+                case DOWN -> builder.rotationX(90);
+                case UP -> builder.rotationX(-90);
+                case SOUTH -> builder.rotationY(180);
+                case EAST -> builder.rotationY(90);
+                case WEST -> builder.rotationY(-90);
+            }
+            return builder.build();
+        });
+    }
+
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> downFacing(String name) {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
                 .forAllStates(state -> {
@@ -494,6 +528,11 @@ public class DataProviderUtilityImpl {
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> cubeAllWithItem(String name) {
         return (ctx, prov) -> prov
                 .simpleBlockWithItem(ctx.getEntry(), prov.models().cubeAll(ctx.getName(), prov.modLoc(name)));
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> simple(String model) {
+        return (ctx, prov) -> prov
+                .simpleBlock(ctx.getEntry(), modModel(prov, model));
     }
 
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {

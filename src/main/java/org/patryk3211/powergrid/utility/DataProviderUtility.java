@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 
@@ -91,6 +92,11 @@ public class DataProviderUtility {
     }
 
     @ExpectPlatform
+    public static <T extends VerticalCommutatorBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> verticalCommutator(String name) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static <T extends WindingBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> windingModel() {
         throw new AssertionError();
     }
@@ -146,6 +152,11 @@ public class DataProviderUtility {
     }
 
     @ExpectPlatform
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> simple(String model) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {
         throw new AssertionError();
     }
@@ -162,6 +173,11 @@ public class DataProviderUtility {
 
     @ExpectPlatform
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> barrier() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> northFacing(String name) {
         throw new AssertionError();
     }
 }

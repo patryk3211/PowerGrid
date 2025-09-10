@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "powergrid:conductive_casing"
+    },
+    "C": {
+      "item": "minecraft:compass"
+    },
+    "c": {
+      "tag": "forge:copper_coils"
+    }
+  },
+  "pattern": [
+    "C",
+    "c",
+    "A"
+  ],
+  "result": {
+    "item": "powergrid:voltage_gauge"
+  },
+  "show_notification": true
+}

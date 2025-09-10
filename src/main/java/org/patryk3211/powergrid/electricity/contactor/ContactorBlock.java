@@ -28,9 +28,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
+import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
@@ -86,8 +88,10 @@ public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<C
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.coil(resistance("coil"), player, tooltip);
-        Resistance.switchResistance(resistance("switch"), player, tooltip);
         Voltage.rated(24, player, tooltip);
+        Resistance.switchResistance(resistance("switch"), player, tooltip);
+        // Subtract the coil's rated power.
+        Current.max(resistance("switch"), ThermalValues.getPower(this) - 48, player, tooltip);
     }
 
     @Override

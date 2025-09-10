@@ -42,12 +42,16 @@ import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlockEntity;
+import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
+import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchVisual;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchRenderer;
@@ -55,17 +59,17 @@ import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBloc
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorVisual;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorVisual;
+import org.patryk3211.powergrid.kinetics.generator.rotor.SimpleRotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
+import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
-import org.patryk3211.powergrid.kinetics.variac.VariacVisual;
-import org.patryk3211.powergrid.kinetics.variac.VariacRenderer;
+import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -87,13 +91,13 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<VoltageGaugeBlockEntity> VOLTAGE_METER =
             REGISTRATE.blockEntity("voltage_meter", VoltageGaugeBlockEntity::new)
-                    .validBlocks(ModdedBlocks.ANDESITE_VOLTAGE_METER, ModdedBlocks.BRASS_VOLTAGE_METER)
+                    .validBlocks(ModdedBlocks.VOLTAGE_METER)
                     .renderer(() -> GaugeRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<CurrentGaugeBlockEntity> CURRENT_METER =
             REGISTRATE.blockEntity("current_meter", CurrentGaugeBlockEntity::new)
-                    .validBlocks(ModdedBlocks.ANDESITE_CURRENT_METER, ModdedBlocks.BRASS_CURRENT_METER)
+                    .validBlocks(ModdedBlocks.CURRENT_METER)
                     .renderer(() -> GaugeRenderer::new)
                     .register();
 
@@ -107,8 +111,8 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.BASIN_HEATER)
                     .register();
 
-    public static final BlockEntityEntry<RotorBlockEntity> GENERATOR_ROTOR =
-            REGISTRATE.blockEntity("generator_rotor", RotorBlockEntity::new)
+    public static final BlockEntityEntry<SimpleRotorBlockEntity> GENERATOR_ROTOR =
+            REGISTRATE.blockEntity("generator_rotor", SimpleRotorBlockEntity::new)
                     .visual(() -> RotorVisual.of(ModdedPartialModels.ROTOR))
                     .validBlock(ModdedBlocks.GENERATOR_ROTOR)
                     .renderer(() -> RotorRenderer::new)
@@ -124,7 +128,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CommutatorBlockEntity> GENERATOR_COMMUTATOR =
             REGISTRATE.blockEntity("generator_commutator", CommutatorBlockEntity::new)
                     .visual(() -> CommutatorVisual::new)
-                    .validBlock(ModdedBlocks.GENERATOR_COMMUTATOR)
+                    .validBlocks(ModdedBlocks.GENERATOR_COMMUTATOR, ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
                     .renderer(() -> CommutatorRenderer::new)
                     .register();
 
@@ -167,6 +171,11 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.CREATIVE_RESISTOR)
                     .register();
 
+    public static final BlockEntityEntry<ResistorBlockEntity> RESISTOR =
+            REGISTRATE.blockEntity("resistor", ResistorBlockEntity::new)
+                    .validBlock(ModdedBlocks.RESISTOR)
+                    .register();
+
     public static final BlockEntityEntry<LightFixtureBlockEntity> LIGHT_FIXTURE =
             REGISTRATE.blockEntity("light_fixture", LightFixtureBlockEntity::new)
                     .validBlock(ModdedBlocks.LIGHT_FIXTURE)
@@ -185,9 +194,9 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<VariacBlockEntity> VARIAC =
             REGISTRATE.blockEntity("variac", VariacBlockEntity::new)
-                    .visual(() -> VariacVisual::new)
+                    .visual(() -> TunedBlockVisual::new)
                     .validBlock(ModdedBlocks.VARIAC)
-                    .renderer(() -> VariacRenderer::new)
+                    .renderer(() -> TunedBlockRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ElectricMotorBlockEntity> ELECTRIC_MOTOR =
@@ -249,6 +258,19 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<AlarmBellBlockEntity> ALARM_BELL =
             REGISTRATE.blockEntity("alarm_bell", AlarmBellBlockEntity::new)
                     .validBlock(ModdedBlocks.ALARM_BELL)
+                    .register();
+
+    public static final BlockEntityEntry<ThermometerBlockEntity> THERMOMETER =
+            REGISTRATE.blockEntity("thermometer", ThermometerBlockEntity::new)
+                    .validBlock(ModdedBlocks.THERMOMETER)
+                    .renderer(() -> ThermometerRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<RheostatBlockEntity> RHEOSTAT =
+            REGISTRATE.blockEntity("rheostat", RheostatBlockEntity::new)
+                    .visual(() -> TunedBlockVisual::new)
+                    .validBlock(ModdedBlocks.RHEOSTAT)
+                    .renderer(() -> TunedBlockRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

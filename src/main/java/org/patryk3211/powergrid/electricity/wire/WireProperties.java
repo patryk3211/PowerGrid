@@ -34,11 +34,13 @@ public class WireProperties {
         };
     }
 
-    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setAll(float resistance, float length) {
+    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setAll(float resistance, float length, float thermalMass, float dissipationFactor) {
         return b -> {
             b.onRegister(item -> {
                 item.resistance = resistance;
                 item.maxLength = length;
+                item.thermalMass = thermalMass;
+                item.dissipationFactor = dissipationFactor;
             });
             return b;
         };

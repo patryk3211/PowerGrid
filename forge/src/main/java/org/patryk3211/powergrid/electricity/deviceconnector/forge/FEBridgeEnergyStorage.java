@@ -36,8 +36,8 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
         return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
     }
 
-    public static float ampToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerAmp.getF();
+    public static float wattToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF();
     }
 
     @Override
@@ -90,10 +90,10 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
 
     @Override
     public void charge(SwitchedWire wire) {
-        float ampToFe = FEBridgeEnergyStorage.ampToFE();
+        float wattToFE = FEBridgeEnergyStorage.wattToFE();
         if(wire.getState()) {
-            var I = Math.abs(wire.current());
-            amount += Math.round(I * ampToFe);
+            var I = wire.current();
+            amount += Math.round(I * I * wire.getResistance() * wattToFE);
             be.setChanged();
         }
     }
@@ -104,10 +104,15 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
             // Try to move energy
             var facing = be.getBlockState().getValue(BlockStateProperties.FACING);
             var neighbour = be.getLevel().getBlockEntity(be.getBlockPos().relative(facing));
+            if(neighbour == null)
+                return 0;
+            final long[] amounts = new long[1];
             neighbour.getCapability(ForgeCapabilities.ENERGY, facing.getOpposite()).ifPresent(handler -> {
                 var received = handler.receiveEnergy((int) amount, false);
                 extractEnergy(received, false);
+                amounts[0] = received;
             });
+            return amounts[0];
         }
         return 0;
     }
@@ -123,9 +128,13 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
             return;
         }
 
-        float targetAmps = missingCharge / ampToFE();
-        float resistance = V / targetAmps;
-        wire.setResistance(resistance);
-        wire.setState(true);
+        float targetWatts = missingCharge / wattToFE();
+        float resistance = V * V / targetWatts;
+        if(resistance > 0) {
+            wire.setResistance(resistance);
+            wire.setState(true);
+        } else {
+            wire.setState(false);
+        }
     }
 }

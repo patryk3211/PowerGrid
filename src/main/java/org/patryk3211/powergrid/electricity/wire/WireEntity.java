@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -36,24 +37,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
-    // TODO: These have to be taken from the used item and adjusted for wire length.
-    public static final float DISSIPATION_FACTOR = 0.2f;
-    public static final float THERMAL_MASS = 1f;
-
     protected static final EntityDataAccessor<Float> TEMPERATURE = SynchedEntityData.defineId(WireEntity.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Byte> OVERHEAT_TICKS = SynchedEntityData.defineId(WireEntity.class, EntityDataSerializers.BYTE);
 
     // TODO: Transmission line flipping might mess with this. Make sure it is safe.
     private IWireEndpoint endpoint1;
@@ -73,6 +74,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     private float dissipationFactor;
     private float thermalMass;
 
+    protected Float resistanceOverride = null;
+
     public WireEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
@@ -88,6 +91,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     protected void defineSynchedData() {
         entityData.define(TEMPERATURE, BASE_TEMPERATURE);
+        entityData.define(OVERHEAT_TICKS, (byte) 0);
     }
 
     private void temperatureUpdate() {
@@ -96,10 +100,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             return;
         }
 
-        var temperature = entityData.get(TEMPERATURE);
-        if(level().isClientSide)
+        if(level().isClientSide && !(level() instanceof PonderLevel))
             return;
 
+        float temperature = entityData.get(TEMPERATURE);
         float energy = 0;
         if (wire != null) {
             // We have to use current here since the wire might be a transmission line,
@@ -107,21 +111,27 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             var I = wire.current();
             energy += I * I * getResistance() / 20f;
         }
-        if(temperature < overheatTemperature) {
+        if(!isOverheated()) {
             // If wire is overheated it is considered dead.
             energy -= dissipationFactor * (temperature - BASE_TEMPERATURE) / 20f;
+            temperature += energy / thermalMass;
+
+            if(temperature > overheatTemperature && energy > 0) {
+                // Temperature is high and keeps rising.
+                entityData.set(OVERHEAT_TICKS, (byte) (entityData.get(OVERHEAT_TICKS) + 1));
+            } else if(energy <= 0) {
+                // Cooling down so it's fine.
+                entityData.set(OVERHEAT_TICKS, (byte) 0);
+                if(temperature > overheatTemperature + 10)
+                    temperature = overheatTemperature + 10;
+            }
         }
-        // This should allow fuses to act
-        boolean isSafe = temperature < overheatTemperature - 50f;
-        temperature += energy / thermalMass;
-        if(temperature >= overheatTemperature && isSafe)
-            temperature = overheatTemperature - 25f;
 
         entityData.set(TEMPERATURE, temperature);
     }
 
     public boolean isOverheated() {
-        return entityData.get(TEMPERATURE) >= overheatTemperature;
+        return entityData.get(TEMPERATURE) >= overheatTemperature && entityData.get(OVERHEAT_TICKS) >= ThermalBehaviour.OVERHEAT_TICKS;
     }
 
     public float getTemperature() {
@@ -133,16 +143,17 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         // We don't need Entity#baseTick() in wires
         var world = level();
         temperatureUpdate();
+        baseTick();
 
         if((deferEndpointResolution & 1) != 0) {
-            if(endpoint1.isValid(world)) {
+            if(endpoint1 != null && endpoint1.isValid(world)) {
                 endpoint1.assignWireEntity(this);
                 deferEndpointResolution &= ~1;
                 makeWire();
             }
         }
         if((deferEndpointResolution & 2) != 0) {
-            if(endpoint2.isValid(world)) {
+            if(endpoint2 != null && endpoint2.isValid(world)) {
                 endpoint2.assignWireEntity(this);
                 deferEndpointResolution &= ~2;
                 makeWire();
@@ -219,6 +230,15 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             endpoint2 = endpoint;
             makeWire();
         }
+    }
+
+    // This method shouldn't be used too much. It's only needed in very special cases.
+    public void flipEndpoints() {
+        var endpoint = endpoint1;
+        endpoint1 = endpoint2;
+        endpoint2 = endpoint;
+        deferEndpointResolution = (byte) (((deferEndpointResolution & 1) << 1) | ((deferEndpointResolution & 2) >> 1));
+        PowerGrid.LOGGER.debug("Wire entity endpoints have been flipped.");
     }
 
     public IWireEndpoint getEndpoint1() {
@@ -299,30 +319,41 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         this.itemCount = count;
 
         int thermalCount = Math.max(itemCount, 1);
-        thermalMass = THERMAL_MASS * thermalCount;
-        dissipationFactor = DISSIPATION_FACTOR * thermalCount;
+        thermalMass = item.getThermalMass() * thermalCount;
+        dissipationFactor = item.getDissipationFactor() * thermalCount;
     }
 
     public float getResistance() {
+        if(resistanceOverride != null)
+            return resistanceOverride;
         return item.getResistance() * Math.max(itemCount, 1);
     }
 
+    @Override
+    public @Nullable ItemStack getPickResult() {
+        return new ItemStack(item, 1);
+    }
+
     public void makeWire() {
+        // Client doesn't make a wire, connections are handled differently.
+        var world = level();
+        if(world.isClientSide && !(world instanceof PonderLevel))
+            return;
+
         dropWire();
 
         // Cannot make a wire unless both endpoints are valid.
         if(endpoint1 == null || endpoint2 == null)
             return;
 
-        var world = level();
         if(!endpoint1.isValid(world) || !endpoint2.isValid(world))
             return;
 
         try {
             wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
         } catch(RuntimeException e) {
-            kill();
             PowerGrid.LOGGER.error("Failed to create wire for entity", e);
+            kill();
         }
     }
 
@@ -394,6 +425,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             ModdedSoundEvents.WIRE_CUT.playAt(level(), position(), 0.75f, 1.25f, false);
             kill();
             return InteractionResult.SUCCESS;
+        } else if(player.getItemInHand(hand).getItem() instanceof MultimeterItem multimeter) {
+            return multimeter.useOnWire(player, player.getItemInHand(hand), hand, this);
         }
         return super.interact(player, hand);
     }
@@ -412,8 +445,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             itemCount = 0;
 
         int thermalCount = Math.max(itemCount, 1);
-        thermalMass = THERMAL_MASS * thermalCount;
-        dissipationFactor = DISSIPATION_FACTOR * thermalCount;
+        thermalMass = item.getThermalMass() * thermalCount;
+        dissipationFactor = item.getDissipationFactor() * thermalCount;
     }
 
     @Override
@@ -444,5 +477,13 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         } else {
             wire.dropWire();
         }
+    }
+
+    public void refreshWire() {
+        if(wire == null)
+            return;
+        var global = GlobalElectricNetworks.getWorldNetworks(level());
+        global.addAndMigrateNode(endpoint1);
+        global.addAndMigrateNode(endpoint2);
     }
 }

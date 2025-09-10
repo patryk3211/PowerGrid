@@ -34,7 +34,7 @@ public class MagnetizationParticle extends TextureSheetParticle {
         this.controller = data.getControllerPos();
         this.hasPhysics = false;
 
-        quadSize = Mth.lerp(world.random.nextFloat(), 0.125f, 0.25f);// 0.25f;
+        quadSize = Mth.lerp(world.random.nextFloat(), 0.125f, 0.25f);
         lifetime = 20;
         triggered = false;
         setSprite(sprites.get(world.random));

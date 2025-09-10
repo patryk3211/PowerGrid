@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.function.Supplier;
@@ -88,7 +88,7 @@ public class UpdateComponentBiPacket implements SimplePacket {
 
     @Environment(EnvType.CLIENT)
     public void handleClient() {
-        var world = ClientBoundPackets.world();
+        var world = ClientSideAccess.world();
         handle(world);
     }
 

@@ -31,7 +31,7 @@ public class FloatProperty extends ComponentProperty<Float> {
         this.max = max;
     }
 
-    private float limit(float value) {
+    protected float limit(float value) {
         if(value < min)
             return min;
         if(value > max)

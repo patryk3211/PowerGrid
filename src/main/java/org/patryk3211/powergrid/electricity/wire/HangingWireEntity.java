@@ -92,11 +92,13 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         return box.setMinY(minY.getValue()).inflate(0.1f);
     }
 
-    public static HangingWireEntity create(Level world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, float resistance) {
+    public static HangingWireEntity create(Level world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, @Nullable Float resistance) {
         if(!(item.getItem() instanceof WireItem))
             throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new HangingWireEntity(ModdedEntities.HANGING_WIRE.get(), world);
         entity.setItem((WireItem) item.getItem(), item.getCount());
+
+        entity.resistanceOverride = resistance;
 
         entity.setEndpoint1(endpoint1);
         entity.setEndpoint2(endpoint2);
@@ -224,7 +226,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         // TODO: Sometimes this raycast is really finicky
         if(getWireItem() == null)
             return null;
-        var thickness = getWireItem().getWireThickness();
+        var thickness = getWireItem().getWireThickness() * 2;
         if(renderParams instanceof CurveParameters params) {
             Vec3 ray = max.subtract(min);
             var rayLength = ray.lengthSqr();
@@ -286,6 +288,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             }
         }
         return null;
+    }
+
+    @Override
+    public void flipEndpoints() {
+        super.flipEndpoints();
+        refreshTerminalPositions();
     }
 
     public void refreshTerminalPositions() {

@@ -45,15 +45,15 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(STATE);
+        properties.add(STATE, current(16));
     }
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, @NotNull ThermalBuilder.IEmitter thermals) {
-        var wire = builder.connectSwitch(0.150f, builder.terminalNode(0), builder.terminalNode(1), placed.get(STATE));
+        var wire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(1), placed.get(STATE));
         placed.add(wire);
         thermals.builder()
-                .setMaxPower(20, 150)
+                .setMaxCurrent(16, 0.1f, 150)
                 .setThermalMass(0.01f)
                 .addHeatSource(wire);
     }
@@ -77,6 +77,7 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
                 ModdedSoundEvents.MICROSWITCH_OFF.playOnServer(be.getLevel(), be.getBlockPos());
             }
             placed.notifyClients(STATE);
+            stateUpdated(placed);
         }
         be.setChanged();
         return InteractionResult.SUCCESS;

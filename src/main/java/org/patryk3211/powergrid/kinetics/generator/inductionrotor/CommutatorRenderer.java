@@ -27,8 +27,6 @@ import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 
-import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_AXIS;
-
 public class CommutatorRenderer extends RotorRenderer {
     public CommutatorRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
@@ -38,33 +36,59 @@ public class CommutatorRenderer extends RotorRenderer {
     protected void renderSafe(RotorBlockEntity rotor, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, int overlay) {
         super.renderSafe(rotor, partialTicks, matrixStack, buffer, light, overlay);
 
-        var state = rotor.getBlockState();
-        var axis = state.getValue(HORIZONTAL_AXIS);
-        var facing = Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE);
-
         var rotorAngle = getRotorAngle(rotor, partialTicks);
         var brushAngle = rotorAngle * 2;
 
         var sin = Math.sin(brushAngle);
         var brushOffset = sin * sin * 1 / 16f;
 
-        var brush = CachedBuffers.partial(ModdedPartialModels.COMMUTATOR_BRUSH, state);
-        brush.light(light)
-                .center()
-                .rotateToFace(facing)
-                .uncenter()
-                .translate(-brushOffset, 0, 0)
-                .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
-        brush.light(light)
-                .center()
-                .rotateToFace(facing.getOpposite())
-                .uncenter()
-                .translate(-brushOffset, 0, 0)
-                .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
+        var state = rotor.getBlockState();
+        if(state.getBlock() instanceof VerticalCommutatorBlock) {
+            var facing = state.getValue(VerticalCommutatorBlock.HORIZONTAL_FACING);
+            if(!state.getValue(VerticalCommutatorBlock.UP))
+                facing = facing.getOpposite();
+
+            var brush = CachedBuffers.partial(ModdedPartialModels.VERTICAL_COMMUTATOR_BRUSH, state);
+            brush.light(light)
+                    .center()
+                    .rotateToFace(facing)
+                    .uncenter()
+                    .translate(-brushOffset, 0, 0)
+                    .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
+            brush.light(light)
+                    .center()
+                    .rotateToFace(facing)
+                    .rotateZ((float) Math.PI)
+                    .uncenter()
+                    .translate(-brushOffset, 0, 0)
+                    .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
+        } else {
+            var axis = state.getValue(CommutatorBlock.HORIZONTAL_FACING).getAxis();
+            var facing = Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE);
+
+            var brush = CachedBuffers.partial(ModdedPartialModels.COMMUTATOR_BRUSH, state);
+            brush.light(light)
+                    .center()
+                    .rotateToFace(facing)
+                    .uncenter()
+                    .translate(-brushOffset, 0, 0)
+                    .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
+            brush.light(light)
+                    .center()
+                    .rotateToFace(facing.getOpposite())
+                    .uncenter()
+                    .translate(-brushOffset, 0, 0)
+                    .renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
+        }
     }
 
     @Override
     protected SuperByteBuffer getModelForState(BlockState state) {
-        return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.fromAxisAndDirection(state.getValue(HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE));
+        if(state.getBlock() instanceof VerticalCommutatorBlock) {
+            return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state, Direction.UP);
+        } else {
+            return CachedBuffers.partialFacing(ModdedPartialModels.COMMUTATOR_SHAFT, state,
+                    Direction.get(Direction.AxisDirection.POSITIVE, state.getValue(CommutatorBlock.HORIZONTAL_FACING).getAxis()));
+        }
     }
 }

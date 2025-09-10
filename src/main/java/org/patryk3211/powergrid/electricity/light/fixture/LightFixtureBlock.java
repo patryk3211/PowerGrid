@@ -20,11 +20,14 @@ import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.createmod.catnip.math.VoxelShaper;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -39,8 +42,11 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
@@ -51,6 +57,12 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.ArrayList;
+import java.util.List;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixtureBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 2);
@@ -61,12 +73,10 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 0, 7, 13, 3, 9)
     };
 
-    private static final VoxelShape SHAPE_UP = box(3.5, 0, 3.5, 12.5, 4, 12.5);
-    private static final VoxelShape SHAPE_DOWN = box(3.5, 12, 3.5, 12.5, 16, 12.5);
-    private static final VoxelShape SHAPE_SOUTH = box(3.5, 3.5, 0, 12.5, 12.5, 4);
-    private static final VoxelShape SHAPE_NORTH = box(3.5, 3.5, 12, 12.5, 12.5, 16);
-    private static final VoxelShape SHAPE_EAST = box(0, 3.5, 3.5, 4, 12.5, 12.5);
-    private static final VoxelShape SHAPE_WEST = box(12, 3.5, 3.5, 16, 12.5, 12.5);
+    private static final VoxelShape SHAPE_UP = Shapes.or(
+            box(3.5, 0, 3.5, 12.5, 2, 12.5),
+            box(4.5, 2, 4.5, 11.5, 4, 11.5)
+    );
 
     Vec3 modelOffset;
 
@@ -79,6 +89,7 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
         modelOffset = Vec3.ZERO;
         registerDefaultState(defaultBlockState().setValue(POWER, 0));
 
+        var shaper = VoxelShaper.forDirectional(SHAPE_UP, Direction.UP);
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStatesExcept(state -> BlockStateTerminalCollection.each(UP_TERMINALS, terminal -> {
                     var facing = state.getValue(FACING);
@@ -95,14 +106,8 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
                     }
                     return terminal;
                 }), POWER)
-                .withShapeMapper(state -> switch(state.getValue(FACING)) {
-                    case UP -> SHAPE_UP;
-                    case DOWN -> SHAPE_DOWN;
-                    case EAST -> SHAPE_EAST;
-                    case WEST -> SHAPE_WEST;
-                    case NORTH -> SHAPE_NORTH;
-                    case SOUTH -> SHAPE_SOUTH;
-                }).build());
+                .withShapeMapper(state -> shaper.get(state.getValue(FACING)))
+                .build());
     }
 
     public static <B extends LightFixtureBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> setBulbModelOffset(Vec3 modelOffset) {
@@ -166,12 +171,26 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
         if(be.isEmpty())
             return InteractionResult.PASS;
 
-        if(stack == null || stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
+        if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
             return be.get().replaceBulb(player, hand, stack) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
         } else {
             // Holding something else.
             return InteractionResult.PASS;
         }
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        var be = params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if(be instanceof LightFixtureBlockEntity fixture) {
+            var bulb = fixture.getBulbState();
+            if(bulb != null && !bulb.isBurned()) {
+                var drops = new ArrayList<>(super.getDrops(state, params));
+                drops.add(new ItemStack(fixture.getBulbState().getItem(), 1));
+                return drops;
+            }
+        }
+        return super.getDrops(state, params);
     }
 
     @Override

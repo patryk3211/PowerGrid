@@ -15,8 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.gauge;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,11 +29,31 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
+    private static final float[] MAX_VALUES = new float[] { 2, 20, 200, 2000 };
+
     private IElectricNode node1;
     private IElectricNode node2;
 
     public VoltageGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        gaugeValue = new GaugeValueBehaviour(Component.translatable("powergrid.devices.gauge.voltage"),
+                Unit.VOLTAGE.get().component(), MAX_VALUES, this, new BoxTransform());
+        gaugeValue.withCallback(i -> {
+            maxValue = MAX_VALUES[i];
+            sendData();
+        });
+        behaviours.add(gaugeValue);
+    }
+
+    @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        maxValue = MAX_VALUES[gaugeValue.getValue()];
     }
 
     @Override
@@ -47,15 +69,21 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        node1 = builder.addExternalNode();
-        node2 = builder.addExternalNode();
-        // 1 Mega-ohm "impedance".
-        builder.connect(1e6f, node1, node2);
+        // 20 kilo-ohm "impedance".
+        builder.setTerminalCount(2);
+        node1 = builder.terminalNode(0);
+        node2 = builder.terminalNode(1);
+        builder.connect(20e3f, node1, node2);
     }
 
     @Override
     public float getValue() {
         return node1.getVoltage() - node2.getVoltage();
+    }
+
+    @Override
+    public Unit getUnit() {
+        return Unit.VOLTAGE;
     }
 
     protected ChatFormatting measurementColor(float value) {

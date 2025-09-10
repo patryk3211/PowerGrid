@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "forge:plates/copper"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    },
+    "R": {
+      "item": "create:polished_rose_quartz"
+    }
+  },
+  "pattern": [
+    "I",
+    "R",
+    "C"
+  ],
+  "result": {
+    "item": "powergrid:bjt_transistor"
+  },
+  "show_notification": true
+}

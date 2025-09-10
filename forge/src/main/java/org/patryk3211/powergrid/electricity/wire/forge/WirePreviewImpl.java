@@ -20,6 +20,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
+import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 
 public class WirePreviewImpl {
     @SubscribeEvent
@@ -38,6 +39,7 @@ public class WirePreviewImpl {
             var target = Minecraft.getInstance().hitResult;
             if (player != null && target != null) {
                 WirePreview.render(buffer, matrixStack, world, player, target);
+                MultimeterItem.render(buffer, matrixStack, world, player);
             }
 
             buffer.draw();

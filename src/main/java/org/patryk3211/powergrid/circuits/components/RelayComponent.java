@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
@@ -39,7 +40,7 @@ public class RelayComponent extends OrientableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(THRESHOLD_VOLTAGE, STATE);
+        properties.add(THRESHOLD_VOLTAGE, STATE, current(32));
     }
 
     @Override
@@ -63,7 +64,7 @@ public class RelayComponent extends OrientableComponent {
                 .setThermalMass(0.02f)
                 .addHeatSource(coilWire);
         thermals.builder()
-                .setMaxPower(250, 125f)
+                .setMaxCurrent(32, switchResistance, 125f)
                 .setThermalMass(0.075f)
                 .addHeatSource(normallyClosed)
                 .addHeatSource(normallyOpen);
@@ -78,8 +79,8 @@ public class RelayComponent extends OrientableComponent {
         var current = Math.abs(coilWire.current());
         var NC = (SwitchedWire) placed.wires.get(1);
         var NO = (SwitchedWire) placed.wires.get(2);
-        if(placed.get(STATE) && current < 0.095f) {
-            // Below 95mA the relay can turn off
+        if(placed.get(STATE) && current < 0.1f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
+            // Below the set current the relay can turn off
             NC.setState(true);
             NO.setState(false);
             placed.set(STATE, false);

@@ -19,25 +19,26 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPartialModels {
-    public static final PartialModel ANDESITE_VOLTAGE_HEAD = block("gauge/andesite/voltage_head");
-    public static final PartialModel BRASS_VOLTAGE_HEAD = block("gauge/brass/voltage_head");
-    public static final PartialModel ANDESITE_CURRENT_HEAD = block("gauge/andesite/current_head");
-    public static final PartialModel BRASS_CURRENT_HEAD = block("gauge/brass/current_head");
-    public static final PartialModel BRASS_GAUGE_DIAL = block("gauge/brass/dial");
     public static final PartialModel SHAFT_BIT = block("shaft_bit");
+
+    public static final PartialModel CONDUCTIVE_VOLTAGE_HEAD = block("gauge/conductive/voltage_head");
+    public static final PartialModel CONDUCTIVE_CURRENT_HEAD = block("gauge/conductive/current_head");
 
     public static final PartialModel COMMUTATOR_SHAFT = block("generator/commutator_shaft");
     public static final PartialModel COMMUTATOR_BRUSH = block("generator/commutator_brush");
+    public static final PartialModel VERTICAL_COMMUTATOR_BRUSH = block("generator/vertical_commutator_brush");
 
     public static final PartialModel CLUTCH_SHAFT = block("generator/clutch_shaft");
 
     public static final PartialModel LIGHT_BULB_OFF = block("lamps/light_bulb");
     public static final PartialModel LIGHT_BULB_ON = block("lamps/light_bulb_on");
     public static final PartialModel LIGHT_BULB_BROKEN = block("lamps/light_bulb_broken");
+    public static final PartialModel LIGHT_BULB_LIGHT = block("lamps/light_bulb_light");
 
     public static final PartialModel GROWTH_LAMP_OFF = block("lamps/growth_lamp");
     public static final PartialModel GROWTH_LAMP_ON = block("lamps/growth_lamp_on");
     public static final PartialModel GROWTH_LAMP_BROKEN = block("lamps/growth_lamp_broken");
+    public static final PartialModel GROWTH_LAMP_LIGHT = block("lamps/growth_lamp_light");
 
     public static final PartialModel HV_SWITCH_ROD = block("switches/hv_switch_rod");
     public static final PartialModel VARIAC_ARMATURE = block("variac/armature");
@@ -49,6 +50,11 @@ public class ModdedPartialModels {
 
     public static final PartialModel ROTOR = block("generator/rotor");
     public static final PartialModel INDUCTION_ROTOR = block("generator/induction_rotor");
+
+    public static final PartialModel THERMOMETER_NEEDLE = block("thermometer/needle");
+    public static final PartialModel THERMOMETER_NEEDLE_RED = block("thermometer/needle_red");
+
+    public static final PartialModel MULTIMETER_NEEDLE = model("item/multimeter/indicator");
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));

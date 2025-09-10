@@ -165,15 +165,15 @@ public class GeneratorScenes {
         scene.world().showSection(util.select().fromTo(3, 1, 3, 4, 1, 3), Direction.NORTH);
         scene.idle(5);
         scene.world().showSection(util.select().fromTo(3, 2, 3, 4, 2, 3), Direction.DOWN);
+        scene.world().showSection(util.select().position(4, 3, 3), Direction.DOWN);
         scene.idle(5);
         scene.world().showSection(util.select().fromTo(4, 1, 1, 4, 2, 1), Direction.DOWN);
         scene.idle(5);
 
         var gauge = util.grid().at(4, 2, 1);
-        var windingP = util.grid().at(3, 2, 3);
-        var windingN = util.grid().at(4, 2, 3);
-        scene.electric().connect(gauge, 1, windingP, 0);
-        scene.electric().connect(gauge, 0, windingN, 1);
+        var connector = util.grid().at(4, 3, 3);
+        scene.electric().connect(gauge, 0, connector, 0);
+        scene.electric().connect(gauge, 1, connector, 1);
         scene.idle(5);
 
         scene.overlay().showText(80)
@@ -314,6 +314,7 @@ public class GeneratorScenes {
         scene.idle(10);
 
         scene.world().showSection(util.select().fromTo(3, 2, 3, 4, 2, 3), Direction.DOWN);
+        scene.world().showSection(util.select().position(4, 3, 3), Direction.DOWN);
         scene.world().showSection(util.select().position(1, 1, 2), Direction.DOWN);
         scene.world().showSection(util.select().fromTo(4, 1, 1, 4, 2, 1), Direction.DOWN);
         scene.idle(10);
@@ -324,16 +325,15 @@ public class GeneratorScenes {
         var commutator = util.grid().at(2, 1, 3);
         var meter1 = util.grid().at(1, 1, 2);
         var meter2 = util.grid().at(4, 2, 1);
-        var windingP = util.grid().at(3, 2, 3);
-        var windingN = util.grid().at(4, 2, 3);
+        var connector = util.grid().at(4, 3, 3);
 
         electric.connectInvisible(source, 0, commutator, 0);
         electric.connectInvisible(source, 1, commutator, 1);
 
         electric.connect(commutator, 0, meter1, 0);
         electric.connect(commutator, 1, meter1, 1);
-        electric.connect(windingP, 0, meter2, 1);
-        electric.connect(windingN, 1, meter2, 0);
+        electric.connect(connector, 0, meter2, 0);
+        electric.connect(connector, 1, meter2, 1);
 
         electric.setSource(source, 5);
         electric.tickFor(10);

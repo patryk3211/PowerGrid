@@ -35,7 +35,7 @@ public class ResistorComponent extends OrientableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(RESISTANCE);
+        properties.add(RESISTANCE, power(25));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class ResistorComponent extends OrientableComponent {
         // 1 watt of dissipation power, these are not high power resistors.
         thermals.builder()
                 .setThermalMass(0.01f)
-                .setMaxPower(10, 125f)
+                .setMaxPower(25, 125f)
                 .addHeatSource(wire);
     }
 }

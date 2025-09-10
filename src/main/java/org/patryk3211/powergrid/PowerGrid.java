@@ -24,7 +24,6 @@ import dev.architectury.injectables.annotations.ExpectPlatform;
 import dev.architectury.registry.registries.DeferredRegister;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
@@ -41,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public class PowerGrid  {
 	public static final String MOD_ID = "powergrid";
 
-	public static final Logger LOGGER = LoggerFactory.getLogger("PowerGrid");
+	public static final Logger LOGGER = LoggerFactory.getLogger(PowerGrid.class);
 
 	public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(MOD_ID, Registries.RECIPE_SERIALIZER);
 	public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(MOD_ID, Registries.RECIPE_TYPE);
@@ -73,6 +72,7 @@ public class PowerGrid  {
 		registerRecipes();
 		HeaterFanProcessingTypes.register();
 
+		ModdedDisplaySources.register();
 		ModdedBlocks.register();
 		ModdedItems.register();
 		ModdedFluids.register();

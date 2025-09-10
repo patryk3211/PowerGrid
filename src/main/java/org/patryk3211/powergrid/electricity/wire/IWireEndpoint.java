@@ -21,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 public interface IWireEndpoint {
     WireEndpointType type();
@@ -31,7 +32,7 @@ public interface IWireEndpoint {
     @NotNull
     Vec3 getExactPosition(Level world);
 
-    IElectricNode getNode(Level world);
+    OwnedFloatingNode getNode(Level world);
     void joinNetwork(Level world, ElectricalNetwork network);
 
     // TODO: Implement for other endpoints

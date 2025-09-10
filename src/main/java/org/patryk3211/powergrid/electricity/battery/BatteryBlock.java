@@ -30,8 +30,9 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Voltage;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.List;
 
@@ -74,8 +75,7 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
             CustomConnectivityHandler.splitMulti(battery);
 
             // Rewire all wires that still target the stale behaviour
-            wires.forEach(WireEntity::dropWire);
-            wires.forEach(WireEntity::makeWire);
+            wires.forEach(TransmissionLinePart::refreshEndpointNodes);
         }
     }
 
@@ -113,5 +113,6 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Voltage.max(spec.calculateVoltage(1), player, tooltip);
+        Power.max(stack, player, tooltip);
     }
 }

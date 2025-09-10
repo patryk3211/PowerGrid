@@ -62,7 +62,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(RESISTANCE, VALUE);
+        properties.add(RESISTANCE, VALUE, power(25));
     }
 
     @Override
@@ -77,7 +77,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
         placed.add(wire2);
 
         thermals.builder()
-                .setMaxPower(10, 125)
+                .setMaxPower(25, 125)
                 .setThermalMass(0.005f)
                 .addHeatSource(wire1)
                 .addHeatSource(wire2);

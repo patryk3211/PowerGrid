@@ -29,6 +29,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -48,10 +49,9 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
-import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.Optional;
@@ -60,9 +60,7 @@ import java.util.function.BiConsumer;
 import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.HORIZONTAL_FACING;
 import static org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing.UP;
 
-;
-
-public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntity> {
+public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntity>, IAcceptConnector, IWindingConnectable {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 2);
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
@@ -72,13 +70,11 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
 
     private static final VoxelShaper HORIZONTAL_END_SHAPER = VoxelShaper.forDirectional(Shapes.or(
             box(2, 3, 3, 14, 13, 16),
-            box(0, 6, 6, 16, 10, 10),
-            box(6, 6, 0, 10, 10, 3)
+            box(0, 6, 6, 16, 10, 10)
     ), Direction.SOUTH);
     private static final VoxelShaper VERTICAL_END_SHAPER = VoxelShaper.forDirectional(Shapes.or(
             box(3, 2, 3, 13, 14, 16),
-            box(6, 0, 6, 10, 16, 10),
-            box(6, 6, 0, 10, 10, 3)
+            box(6, 0, 6, 10, 16, 10)
     ), Direction.SOUTH);
 
     private static final VoxelShaper HORIZONTAL_MIDDLE_SHAPER = VoxelShaper.forAxis(
@@ -90,30 +86,8 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             Direction.Axis.Z
     );
 
-    private static final TerminalBoundingBox TERMINAL_POSITIVE =
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 6, 6, 0, 10, 10, 2)
-                    .withColor(IDecoratedTerminal.RED);
-    private static final TerminalBoundingBox TERMINAL_NEGATIVE =
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 6, 6, 14, 10, 10, 16)
-                    .withColor(IDecoratedTerminal.BLUE);
-
     public WindingBlock(Properties settings) {
         super(settings);
-        setTerminalCollection(BlockStateTerminalCollection.builder(this)
-                .forAllStatesExcept(state -> {
-                    var terminals = new TerminalBoundingBox[2];
-                    var part = state.getValue(PART);
-                    if(part == 1)
-                        return terminals;
-                    var terminalIn = part == 0 ? TERMINAL_POSITIVE : TERMINAL_NEGATIVE;
-                    switch(state.getValue(AXIS)) {
-                        case X -> terminalIn = terminalIn.rotateAroundY(-90);
-                        case Y -> terminalIn = terminalIn.rotateAroundX(90);
-                    }
-                    terminals[part / 2] = terminalIn;
-                    return terminals;
-                }, ALONG_FIRST_AXIS, CASE_RIGHT, CASE_LEFT)
-                .build());
     }
 
     @Override
@@ -228,8 +202,26 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
                 var expectUp = !positive;
                 return state.getValue(UP) == expectUp;
             }
+        } else if(state.getBlock() instanceof VerticalGeneratorHousing) {
+            var windingBlock = (WindingBlock) thisState.getBlock();
+            var parallelAxis = windingBlock.getParallelCheckAxis(thisState);
+            if(parallelAxis.isVertical())
+                return false;
+            var expectedFacing = Direction.fromAxisAndDirection(parallelAxis, positive ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
+            var housingFacing = state.getValue(HORIZONTAL_FACING);
+            return housingFacing == expectedFacing || housingFacing.getCounterClockWise() == expectedFacing;
         }
         return false;
+    }
+
+    @Override
+    public boolean canConnect(BlockState state, Direction side) {
+        return getParallelCheckAxis(state) == side.getAxis();
+    }
+
+    @Override
+    public Direction getOtherSide(BlockState state, Direction sideIn) {
+        return sideIn.getOpposite();
     }
 
     public void updateCase(BlockState state, LevelAccessor world, BlockPos pos) {
@@ -243,7 +235,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         var newState = state.setValue(CASE_LEFT, left)
                 .setValue(CASE_RIGHT, right);
         if(newState != state) {
-            world.setBlock(pos, newState, 0);
+            world.setBlock(pos, newState, Block.UPDATE_CLIENTS);
         }
     }
 
@@ -267,6 +259,8 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
 
     @Nullable
     public BlockPos getMainBlockPos(Level world, BlockPos pos) {
+        if(!world.isLoaded(pos))
+            return null;
         var state = world.getBlockState(pos);
         if(!state.is(this))
             return null;
@@ -278,6 +272,8 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             case 1, 2 -> {
                 while(true) {
                     pos = pos.relative(axis, -1);
+                    if(!world.isLoaded(pos))
+                        return null;
                     state = world.getBlockState(pos);
                     if(!state.is(this))
                         return null;
@@ -298,12 +294,12 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         return Optional.empty();
     }
 
-    @Override
-    public ElectricBehaviour getBehaviour(Level world, BlockPos pos, BlockState state) {
-        return getMainBlockEntity(world, pos)
-                .map(winding -> winding.getBehaviourProvider().getBehaviour(ElectricBehaviour.TYPE))
-                .orElse(null);
-    }
+//    @Override
+//    public ElectricBehaviour getBehaviour(Level world, BlockPos pos, BlockState state) {
+//        return getMainBlockEntity(world, pos)
+//                .map(winding -> winding.getBehaviourProvider().getBehaviour(ElectricBehaviour.TYPE))
+//                .orElse(null);
+//    }
 
     public Direction.Axis getParallelCheckAxis(BlockState state) {
         var along = state.getValue(ALONG_FIRST_AXIS);
@@ -411,5 +407,15 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     @Override
     public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
         return ModdedItems.COPPER_COIL.asStack();
+    }
+
+    @Override
+    public boolean canConnect(LevelReader world, BlockPos pos, BlockState state, Direction side) {
+        return side.getAxis() == getMagneticAxis(state) && state.getValue(PART) != 1;
+    }
+
+    @Override
+    public boolean isPolarized() {
+        return true;
     }
 }

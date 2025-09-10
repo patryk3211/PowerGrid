@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
 public abstract class AbstractRotorBlock extends Block implements IRotorAssemblyPart, IWrenchable {
@@ -64,7 +65,7 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
         builder.add(AXIS);
     }
 
-    public boolean hasPositive(LevelReader world, BlockPos pos, Direction.Axis axis) {
+    public static boolean hasPositive(LevelReader world, BlockPos pos, Direction.Axis axis) {
         BlockState state = world.getBlockState(switch(axis) {
             case X -> pos.east();
             case Y -> pos.above();
@@ -73,7 +74,7 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
         return state.getBlock() instanceof IRotorAssemblyPart assembly && assembly.canConnect(state, Direction.fromAxisAndDirection(axis, Direction.AxisDirection.NEGATIVE));
     }
 
-    public boolean hasNegative(LevelReader world, BlockPos pos, Direction.Axis axis) {
+    public static boolean hasNegative(LevelReader world, BlockPos pos, Direction.Axis axis) {
         BlockState state = world.getBlockState(switch(axis) {
             case X -> pos.west();
             case Y -> pos.below();
@@ -109,5 +110,10 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
     @Override
     public boolean canConnect(BlockState state, Direction dir) {
         return state.getValue(AXIS) == dir.getAxis();
+    }
+
+    @NotNull
+    public Direction.Axis getAssemblyRotationAxis(BlockState state) {
+        return state.getValue(AXIS);
     }
 }

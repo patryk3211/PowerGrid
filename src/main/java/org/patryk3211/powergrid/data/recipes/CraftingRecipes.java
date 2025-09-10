@@ -22,6 +22,8 @@ import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
+import java.util.List;
+
 @SuppressWarnings("unused")
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
@@ -43,6 +45,17 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" T ")
                     .define('I', RecipeTags.ironNugget())
                     .define('T', Items.TERRACOTTA)
+            ),
+
+    LV_LIGHT_BULB = create(ModdedItems.LV_LIGHT_BULB)
+            .unlockedBy(ModdedBlocks.LIGHT_FIXTURE::get)
+            .viaShaped(b -> b
+                    .pattern(" G ")
+                    .pattern("GFG")
+                    .pattern(" I ")
+                    .define('G', Items.GLASS_PANE)
+                    .define('F', RecipeTags.coal())
+                    .define('I', RecipeTags.ironSheet())
             ),
 
     LIGHT_BULB = create(ModdedItems.LIGHT_BULB)
@@ -100,46 +113,26 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .requires(AllItems.ANDESITE_ALLOY)
             ),
 
-    ANDESITE_VOLTAGE_GAUGE = create(ModdedBlocks.ANDESITE_VOLTAGE_METER)
-            .unlockedBy(AllBlocks.ANDESITE_CASING::get)
+    VOLTAGE_GAUGE = create(ModdedBlocks.VOLTAGE_METER)
+            .unlockedBy(ModdedBlocks.CONDUCTIVE_CASING::get)
             .viaShaped(b -> b
-                    .pattern("NCN")
-                    .pattern(" A ")
-                    .define('N', RecipeTags.copperNugget())
-                    .define('A', AllBlocks.ANDESITE_CASING)
+                    .pattern("C")
+                    .pattern("c")
+                    .pattern("A")
+                    .define('A', RecipeTags.conductiveCasing())
+                    .define('c', RecipeTags.copperCoil())
                     .define('C', Items.COMPASS)
             ),
 
-    BRASS_VOLTAGE_GAUGE = create(ModdedBlocks.BRASS_VOLTAGE_METER)
-            .unlockedBy(AllBlocks.BRASS_CASING::get)
-            .viaShaped(b -> b
-                    .pattern("NCN")
-                    .pattern(" B ")
-                    .define('N', RecipeTags.copperNugget())
-                    .define('B', AllBlocks.BRASS_CASING)
-                    .define('C', Items.COMPASS)
-            ),
-
-    ANDESITE_CURRENT_GAUGE = create(ModdedBlocks.ANDESITE_CURRENT_METER)
+    CURRENT_GAUGE = create(ModdedBlocks.CURRENT_METER)
             .unlockedBy(AllBlocks.ANDESITE_CASING::get)
-            .viaShapeless(b -> b.requires(ModdedBlocks.ANDESITE_VOLTAGE_METER)
+            .viaShapeless(b -> b.requires(ModdedBlocks.VOLTAGE_METER)
             ),
 
-    BRASS_CURRENT_GAUGE = create(ModdedBlocks.BRASS_CURRENT_METER)
-            .unlockedBy(AllBlocks.BRASS_CASING::get)
-            .viaShapeless(b -> b.requires(ModdedBlocks.BRASS_VOLTAGE_METER)
-            ),
-
-    ANDESITE_VOLTAGE_GAUGE_BACK = create(ModdedBlocks.ANDESITE_VOLTAGE_METER)
+    VOLTAGE_GAUGE_BACK = create(ModdedBlocks.VOLTAGE_METER)
             .unlockedBy(AllBlocks.ANDESITE_CASING::get)
             .withSuffix("_convert")
-            .viaShapeless(b -> b.requires(ModdedBlocks.ANDESITE_CURRENT_METER)
-            ),
-
-    BRASS_VOLTAGE_GAUGE_BACK = create(ModdedBlocks.BRASS_VOLTAGE_METER)
-            .unlockedBy(AllBlocks.BRASS_CASING::get)
-            .withSuffix("_convert")
-            .viaShapeless(b -> b.requires(ModdedBlocks.BRASS_CURRENT_METER)
+            .viaShapeless(b -> b.requires(ModdedBlocks.CURRENT_METER)
             ),
 
     LIGHT_FIXTURE = create(ModdedBlocks.LIGHT_FIXTURE)
@@ -155,9 +148,10 @@ public class CraftingRecipes extends StandardRecipeProvider {
     ELECTROMAGNET = create(ModdedBlocks.ELECTROMAGNET)
             .unlockedBy(() -> ModdedItems.COPPER_COIL)
             .viaShaped(b -> b
-                    .pattern("CCC")
+                    .pattern(" E ")
                     .pattern("CIC")
                     .pattern("CCC")
+                    .define('E', RecipeTags.conductiveCasing())
                     .define('C', ModdedItems.COPPER_COIL)
                     .define('I', RecipeTags.ironSheet())),
 
@@ -349,7 +343,50 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('C', ModdedBlocks.DEVICE_CONNECTOR)
                     .define('Z', RecipeTags.zincSheet())
                     .define('D', RecipeTags.electricalGizmo())
-                    .define('B', ModdedBlocks.BATTERY))
+                    .define('B', ModdedBlocks.BATTERY)),
+
+    HOUSING_CYCLE = conversionCycle(List.of(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING)),
+    COMMUTATOR_CYCLE = conversionCycle(List.of(ModdedBlocks.GENERATOR_COMMUTATOR, ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)),
+
+    POWER_RESISTOR = create(ModdedBlocks.RESISTOR)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
+            .viaShaped(b -> b
+                    .pattern("CBC")
+                    .pattern(" E ")
+                    .define('C', RecipeTags.copperSheet())
+                    .define('B', RecipeTags.coalBlock())
+                    .define('E', RecipeTags.conductiveCasing())),
+
+    MULTIMETER = create(ModdedItems.MULTIMETER)
+            .unlockedBy(() -> ModdedItems.ELECTRICAL_GIZMO)
+            .viaShaped(b -> b
+                    .pattern("WGW")
+                    .pattern("CEV")
+                    .define('W', RecipeTags.copperWire())
+                    .define('E', RecipeTags.conductiveCasing())
+                    .define('G', RecipeTags.electricalGizmo())
+                    .define('C', RecipeTags.currentMeter())
+                    .define('V', RecipeTags.voltageMeter())),
+
+    THERMOMETER = create(ModdedBlocks.THERMOMETER)
+            .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
+            .viaShaped(b -> b
+                    .pattern(" R ")
+                    .pattern("CSI")
+                    .define('R', Items.COMPASS)
+                    .define('C', RecipeTags.copperSheet())
+                    .define('S', RecipeTags.resistiveCoil())
+                    .define('I', RecipeTags.ironSheet())),
+
+    TRANSISTOR = create(ModdedItems.BJT_TRANSISTOR)
+            .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
+            .viaShaped(b -> b
+                    .pattern("I")
+                    .pattern("R")
+                    .pattern("C")
+                    .define('I', RecipeTags.ironSheet())
+                    .define('R', RecipeTags.polishedRoseQuartz())
+                    .define('C', RecipeTags.copperSheet()))
             ;
 
     public CraftingRecipes(PackOutput output) {

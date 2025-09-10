@@ -28,8 +28,6 @@ public class ForgeClientEvents {
     public static void clientWorldUnload(LevelEvent.Unload unload) {
         if(unload.getLevel().isClientSide() && unload.getLevel() instanceof ClientLevel world) {
             ClientElectricNetwork.unloadWorld(Minecraft.getInstance(), world);
-//            EntityJoinLevelEvent
-//                    levelEvent
         }
     }
 

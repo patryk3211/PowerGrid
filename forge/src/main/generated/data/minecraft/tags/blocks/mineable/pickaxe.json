@@ -6,15 +6,15 @@
     "powergrid:heavy_wire_connector",
     "powergrid:heating_coil",
     "powergrid:basin_heater",
-    "powergrid:andesite_voltage_gauge",
-    "powergrid:brass_voltage_gauge",
-    "powergrid:andesite_current_gauge",
-    "powergrid:brass_current_gauge",
+    "powergrid:voltage_gauge",
+    "powergrid:current_gauge",
     "powergrid:generator_rotor",
     "powergrid:generator_induction_rotor",
     "powergrid:generator_commutator",
+    "powergrid:generator_vertical_commutator",
     "powergrid:generator_clutch",
     "powergrid:generator_housing",
+    "powergrid:vertical_generator_housing",
     "powergrid:lv_switch",
     "powergrid:lv_button",
     "powergrid:mv_switch",
@@ -24,6 +24,7 @@
     "powergrid:creative_voltage_source",
     "powergrid:creative_current_source",
     "powergrid:creative_resistor",
+    "powergrid:power_resistor",
     "powergrid:light_fixture",
     "powergrid:transformer_core",
     "powergrid:transformer_small",
@@ -38,6 +39,8 @@
     "powergrid:winding",
     "powergrid:device_connector",
     "powergrid:fuse_holder",
-    "powergrid:alarm_bell"
+    "powergrid:alarm_bell",
+    "powergrid:thermometer",
+    "powergrid:rheostat"
   ]
 }

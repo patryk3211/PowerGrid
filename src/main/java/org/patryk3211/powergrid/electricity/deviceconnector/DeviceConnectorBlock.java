@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +45,7 @@ import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCol
 
 public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
-    public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
+    public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;
     public static final BooleanProperty POLARIZED = BooleanProperty.create("polarized");
 
     private final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
@@ -82,15 +83,15 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
                                 case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
                                 case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
                             };
-                            if(!state.getValue(ALONG_FIRST_AXIS)) {
-                                terminal = terminal.rotate(facing.getAxis(), 90);
-                            }
+                            var rotation = state.getValue(ROTATION);
+                            terminal = terminal.rotate(facing.getAxis(), 90 * rotation - 90);
                             return terminal;
                         })
                 )
                 .withShapeMapper(state -> {
                     var facing = state.getValue(FACING);
-                    var axis_along = state.getValue(ALONG_FIRST_AXIS);
+                    var rotation = state.getValue(ROTATION);
+                    boolean axis_along = rotation % 2 == 1;
                     var prov = (axis_along ^ facing.getAxis() == Direction.Axis.Y) ? shaper2 : shaper;
                     return prov.get(facing);
                 })
@@ -100,28 +101,27 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(FACING, ALONG_FIRST_AXIS, POLARIZED);
+        builder.add(FACING, ROTATION, POLARIZED);
     }
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var facing = ctx.getClickedFace().getOpposite();
-        boolean along = true;
+        int rotation = 0;
         if(facing.getAxis() == Direction.Axis.Y) {
             var player = ctx.getHorizontalDirection();
-            if(player.getAxis() == Direction.Axis.X)
-                along = false;
+            rotation = player.get2DDataValue();
         } else {
-            along = ctx.getNearestLookingDirection().getAxis() == facing.getClockWise().getAxis();
+            rotation = 1;
         }
         var neighbor = ctx.getLevel().getBlockState(ctx.getClickedPos().relative(facing));
         var polarized = neighbor.getBlock() instanceof IAcceptConnector acceptor && acceptor.isPolarized();
 
         if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
-            along = !along;
+            rotation = (rotation + 2) % 3;
         return defaultBlockState()
                 .setValue(FACING, facing)
-                .setValue(ALONG_FIRST_AXIS, along)
+                .setValue(ROTATION, rotation)
                 .setValue(POLARIZED, polarized);
     }
 
@@ -181,5 +181,14 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     @Override
     public BlockEntityType<? extends DeviceConnectorBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.DEVICE_CONNECTOR.get();
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState originalState, Direction targetedFace) {
+        if(targetedFace.getAxis() == originalState.getValue(FACING).getAxis()) {
+            return originalState.cycle(ROTATION);
+        } else {
+            return super.getRotatedBlockState(originalState, targetedFace);
+        }
     }
 }

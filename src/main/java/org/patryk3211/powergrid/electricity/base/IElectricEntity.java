@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,15 +47,23 @@ public interface IElectricEntity {
         throw new IllegalCallerException("Cannot get resistance if not extending a block entity");
     }
 
+    default void paused() {
+
+    }
+
+    default void unpaused() {
+
+    }
+
     class CircuitBuilder {
         private ElectricalNetwork network;
         private final BlockPos pos;
-        private final List<IElectricNode> externalNodes;
+        private final List<OwnedFloatingNode> externalNodes;
         private final Collection<INode> internalNodes;
         private final Collection<AbstractElectricWire> wires;
-        private boolean alterExternal = true;
+        private boolean paused = false;
 
-        public CircuitBuilder(BlockPos pos, List<IElectricNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
+        public CircuitBuilder(BlockPos pos, List<OwnedFloatingNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
             this.pos = pos;
             this.externalNodes = externalNodes;
             this.internalNodes = internalNodes;
@@ -66,20 +75,13 @@ public interface IElectricEntity {
             return this;
         }
 
-        public CircuitBuilder alterExternal(boolean value) {
-            alterExternal = false;
-            return this;
-        }
-
         public void clear() {
             if(network != null) {
-                if(alterExternal)
-                    externalNodes.forEach(network::removeNode);
-                internalNodes.forEach(network::removeNode);
                 wires.forEach(network::removeWire);
+                internalNodes.forEach(network::removeNode);
+                externalNodes.forEach(network::removeNode);
             }
-            if(alterExternal)
-                externalNodes.clear();
+            externalNodes.clear();
             internalNodes.clear();
             wires.clear();
         }
@@ -88,16 +90,12 @@ public interface IElectricEntity {
          * Add an external node to the circuit. The order in which these are added affects
          * node bindings for electric block terminal indices.
          */
-        @Deprecated
-        public FloatingNode addExternalNode() {
-            if(!alterExternal)
-                return null;
+        protected void addExternalNode() {
             int index = externalNodes.size();
             var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, index));
             externalNodes.add(node);
             if(network != null)
                 network.addNode(node);
-            return node;
         }
 
         /**
@@ -109,9 +107,24 @@ public interface IElectricEntity {
          */
         public <T extends INode> T addInternalNode(Class<T> clazz, Object... params) {
             try {
-                var node = clazz.getConstructor(Arrays.stream(params).map(Object::getClass).toArray(len -> new Class<?>[len])).newInstance(params);
-                add(node);
-                return node;
+                for(var constructor : clazz.getConstructors()) {
+                    var paramTypes = constructor.getParameterTypes();
+                    if(params.length == paramTypes.length) {
+                        var valid = true;
+                        for(int i = 0; i < params.length; ++i) {
+                            if(!paramTypes[i].isInstance(params[i])) {
+                                valid = false;
+                                break;
+                            }
+                        }
+                        if(valid) {
+                            var node = (T) constructor.newInstance(params);
+                            add(node);
+                            return node;
+                        }
+                    }
+                }
+                throw new NoSuchMethodException();
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
                 throw new RuntimeException(e);
@@ -142,41 +155,19 @@ public interface IElectricEntity {
          * @param count Number of nodes
          */
         public void setTerminalCount(int count) {
-            if(alterExternal) {
-                var currentCount = externalNodes.size();
-                if(currentCount != count) {
-                    if(currentCount < count) {
-                        for(int i = 0; i < count - currentCount; ++i) {
-                            addExternalNode();
-                        }
-                    } else {
-                        for(int i = 0; i < currentCount - count; ++i) {
-                            var node = externalNodes.remove(externalNodes.size() - 1);
-                            if(network != null)
-                                network.removeNode(node);
-                        }
+            var currentCount = externalNodes.size();
+            if(currentCount != count) {
+                if(currentCount < count) {
+                    for(int i = 0; i < count - currentCount; ++i) {
+                        addExternalNode();
+                    }
+                } else {
+                    for(int i = 0; i < currentCount - count; ++i) {
+                        var node = externalNodes.remove(externalNodes.size() - 1);
+                        if(network != null)
+                            network.removeNode(node);
                     }
                 }
-            }
-        }
-
-        /**
-         * Set if external node should be present in the external node list.
-         * This method allows for altering the external node structure even on circuit rebuilds.
-         * @param index Index of node to alter
-         * @param present Set if the node should exist
-         */
-        public void setExternalNode(int index, boolean present) {
-            var node = externalNodes.get(index);
-            if(node == null && present) {
-                node = new FloatingNode();
-                if(network != null)
-                    network.addNode(node);
-                externalNodes.set(index, node);
-            } else if(node != null && !present) {
-                if(network != null)
-                    network.removeNode(node);
-                externalNodes.set(index, null);
             }
         }
 
@@ -209,13 +200,13 @@ public interface IElectricEntity {
 
         public void add(AbstractElectricWire wire) {
             wires.add(wire);
-            if(network != null)
+            if(network != null && !paused)
                 network.addWire(wire);
         }
 
         public void add(INode node) {
             internalNodes.add(node);
-            if(network != null)
+            if(network != null && !paused)
                 network.addNode(node);
         }
 
@@ -267,8 +258,6 @@ public interface IElectricEntity {
         }
 
         public void setTo(BakedCircuit circuit) {
-            if(!alterExternal)
-                throw new IllegalStateException("Alter external must be allowed for baked circuit");
             clear();
             for(var node : circuit.externalNodes) {
                 externalNodes.add(node);
@@ -277,14 +266,18 @@ public interface IElectricEntity {
             }
             for(var node : circuit.internalNodes) {
                 internalNodes.add(node);
-                if(network != null)
+                if(network != null && !paused)
                     network.addNode(node);
             }
             for(var wire : circuit.wires) {
                 wires.add(wire);
-                if(network != null)
+                if(network != null && !paused)
                     network.addWire(wire);
             }
+        }
+
+        public void paused() {
+            paused = true;
         }
     }
 }

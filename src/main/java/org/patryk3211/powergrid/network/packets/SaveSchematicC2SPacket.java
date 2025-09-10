@@ -94,7 +94,7 @@ public class SaveSchematicC2SPacket implements SimplePacket {
                         table.readFromItem();
                     } else {
                         // Save schematic to item
-                        table.writeToItem();
+                        table.writeToItem(ctx.getPlayer().isCreative());
                     }
                 }
             }

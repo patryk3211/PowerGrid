@@ -40,7 +40,8 @@ public enum ModdedPackets {
     ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket::new, true),
     ZAP_PROJECTILE(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new),
     SOLVER_SYNC(SolverStateS2CPacket.class, SolverStateS2CPacket::new),
-    TRANSMISSION_LINE(TransmissionLineS2CPacket.class, TransmissionLineS2CPacket::new),
+    TRANSMISSION_LINE_STATE(TransmissionLineStateS2CPacket.class, TransmissionLineStateS2CPacket::new),
+    TRANSMISSION_LINE_MANAGEMENT(TransmissionLineManagementS2CPacket.class, TransmissionLineManagementS2CPacket::new),
     LIGHTNING_SYNC(LightningSyncS2CPacket.class, LightningSyncS2CPacket::new),
     ENTITY_DATA(EntityDataS2CPacket.class, EntityDataS2CPacket::new),
 
@@ -49,6 +50,8 @@ public enum ModdedPackets {
     SAVE_SCHEMATIC(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new),
     BLOCK_WIRE_CUT(BlockWireCutC2SPacket.class, BlockWireCutC2SPacket::new),
     BLOCK_WIRE_ATTACH(BlockWireAttachC2SPacket.class, BlockWireAttachC2SPacket::new),
+    ENDPOINT_TRACKING(EndpointTrackingC2SPacket.class, EndpointTrackingC2SPacket::new),
+    MULTIMETER_DATA(MultimeterDataC2SPacket.class, MultimeterDataC2SPacket::new),
 
     UPDATE_COMPONENT(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new),
     ;

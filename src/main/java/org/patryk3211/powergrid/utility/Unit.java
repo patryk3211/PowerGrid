@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.utility;
 
 import net.createmod.catnip.lang.LangBuilder;
+import net.minecraft.network.chat.Component;
 
 public enum Unit {
     VOLTAGE("generic.unit.volt"),
@@ -36,5 +37,39 @@ public enum Unit {
 
     public LangBuilder get() {
         return Lang.unit(this);
+    }
+
+    public String string() {
+        return get().string();
+    }
+
+    public LangBuilder formatWithPrefixes(double value) {
+        LangBuilder valueText = Lang.builder();
+        if(Math.abs(value) < 1) {
+            // Millis
+            valueText.add(Lang.number(value * 1000))
+                    .add(Component.nullToEmpty(" m"))
+                    .add(get());
+        } else if(Math.abs(value) < 1000) {
+            valueText.add(Lang.number(value))
+                    .add(Component.nullToEmpty(" "))
+                    .add(get());
+        } else if(Math.abs(value) < 1000000) {
+            valueText.add(Lang.number(value / 1000))
+                    .add(Component.nullToEmpty(" k"))
+                    .add(get());
+        } else {
+            valueText.add(Lang.number(value / 1000000))
+                    .add(Component.nullToEmpty(" M"))
+                    .add(get());
+        }
+        return valueText;
+    }
+
+    public Component format(double v) {
+        return Lang.number(v)
+                .add(Component.literal(" "))
+                .add(get())
+                .component();
     }
 }

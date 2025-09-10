@@ -43,23 +43,6 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
     CircuitSchematic schematic = new CircuitSchematic();
     boolean schematicChanged = false;
 
-//    private class CircuitDesignTableInventory extends SimpleInventory {
-//        public CircuitDesignTableInventory() {
-//            super(3);
-//        }
-//
-//        @Override
-//        public void addListener(InventoryChangedListener listener) {
-//            super.addListener(listener);
-//        }
-//
-//        @Override
-//        protected void onContentsChanged(int slot) {
-//            super.onContentsChanged(slot);
-//            markDirty();
-//        }
-//    }
-
     public CircuitDesignTableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -72,14 +55,12 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-//        tag.put("Inventory", inventory.serializeNBT());
         tag.put("Schematic", schematic.serializeNbt());
     }
 
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-//        inventory.deserializeNBT(tag.getCompound("Inventory"));
         schematic.deserializeNbt(tag.getCompound("Schematic"));
         if(clientPacket)
             schematicChanged = true;
@@ -90,15 +71,18 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         return switch(menuIndex) {
             case 0 -> CircuitDesignTableMenu.create(syncId, playerInventory, this);
             case 1 -> CircuitDesignTableEditMenu.create(syncId, playerInventory, this);
+            case 2 -> CircuitDesignTableLoadMenu.create(syncId, playerInventory, this);
             default -> null;
         };
     }
 
-    public void writeToItem() {
-        var stack = inventory.getItem(1);
-        if(stack.isEmpty() || level.isClientSide)
-            return;
-        stack.shrink(1);
+    public void writeToItem(boolean isCreative) {
+        if(!isCreative) {
+            var stack = inventory.getItem(1);
+            if (stack.isEmpty() || level.isClientSide)
+                return;
+            stack.shrink(1);
+        }
         var result = schematic.toItemStack();
         inventory.setItem(2, result);
         schematic.clear();

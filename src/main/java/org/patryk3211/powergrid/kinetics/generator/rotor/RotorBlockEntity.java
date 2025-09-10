@@ -23,16 +23,18 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
-public class RotorBlockEntity extends SmartBlockEntity {
+public abstract class RotorBlockEntity extends SmartBlockEntity {
     protected RotorBehaviour rotorBehaviour;
 
     public RotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
 
+    public abstract float inertia();
+
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        rotorBehaviour = new RotorBehaviour(this);
+        rotorBehaviour = new RotorBehaviour(this, inertia());
         behaviours.add(rotorBehaviour);
     }
 

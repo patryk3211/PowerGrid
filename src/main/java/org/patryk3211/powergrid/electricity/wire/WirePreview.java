@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllSpecialTextures;
@@ -23,6 +24,7 @@ import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -31,6 +33,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
@@ -41,6 +44,7 @@ import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
+import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
 
 @Environment(EnvType.CLIENT)
@@ -150,6 +154,30 @@ public class WirePreview {
             int requiredItemCount = Math.max(Math.round(length), 1);
             PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
         }
+    }
+
+    public static Component distanceOverlay(Player player) {
+        ItemStack wireStack = getUsedWireStack(player);
+        if(wireStack == null)
+            return null;
+        if(!(wireStack.getItem() instanceof WireItem wire))
+            return null;
+
+        var tag = wireStack.getTag();
+        var endpoint = WireEndpointType.deserialize(tag);
+        if(endpoint == null)
+            return null;
+
+        var currentPos = endpoint.getExactPosition(player.level());
+        var target = Minecraft.getInstance().hitResult;
+        if(target == null || target.getType() != HitResult.Type.BLOCK)
+            return null;
+        var hitPoint = target.getLocation();
+        var distance = hitPoint.distanceTo(currentPos);
+        return Lang.translate("gui.endpoint_distance")
+                .add(Lang.numberConstant(distance).style(distance < wire.getMaximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
+                .style(ChatFormatting.WHITE)
+                .component();
     }
 
     public static void notifyOfBlock(BlockPos pos) {

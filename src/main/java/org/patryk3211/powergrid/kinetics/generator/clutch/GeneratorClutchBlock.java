@@ -38,6 +38,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
+import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 public class GeneratorClutchBlock extends DirectionalKineticBlock implements IBE<GeneratorClutchBlockEntity>, IRotorAssemblyPart {
@@ -124,5 +125,27 @@ public class GeneratorClutchBlock extends DirectionalKineticBlock implements IBE
     public boolean canConnect(BlockState state, Direction dir) {
         // Facing side is the kinetic input, opposite is the rotor assembly.
         return state.getValue(FACING) == dir.getOpposite();
+    }
+
+    @Override
+    public Direction getPreferredFacing(BlockPlaceContext context) {
+        var preferredFacing = super.getPreferredFacing(context);
+        if(preferredFacing != null)
+            return preferredFacing;
+
+        Level world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+
+        for(Direction facing : Direction.values()) {
+            BlockState state = world.getBlockState(pos.relative(facing, -1));
+            if(state.getBlock() instanceof IRotorAssemblyPart assembly && assembly.canConnect(state, facing)) {
+                if(preferredFacing == null) {
+                    preferredFacing = facing;
+                    continue;
+                }
+                return null;
+            }
+        }
+        return preferredFacing;
     }
 }

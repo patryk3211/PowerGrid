@@ -1,6 +1,9 @@
 {
   "powergrid.gui.voltage_meter.title": "Measured voltage",
   "powergrid.gui.current_meter.title": "Measured current",
+  "powergrid.gui.thermometer.title": "Measured temperature",
+  "powergrid.gui.thermometer.max_title": "Max measured temperature",
+  "powergrid.gui.thermometer.click": "Click to reset max measurement",
 
   "powergrid.gui.heater.info_header": "Heating coil information",
   "powergrid.gui.heater.title": "Coil temperature",
@@ -18,10 +21,25 @@
   "powergrid.gui.transformer.info_header": "Transformer information",
   "powergrid.gui.transformer.ratio": "Turns ratio",
 
+  "powergrid.gui.device_connector.info_header": "Connector information",
+  "powergrid.gui.device_connector.supplying": "Currently supplying:",
+  "powergrid.gui.device_connector.supplying.unit": "FE/t",
+  "powergrid.gui.device_connector.buffered": "Buffered:",
+  "powergrid.gui.device_connector.buffered.unit": "FE",
+  "powergrid.gui.device_connector.for": " for ",
+
   "powergrid.gui.potentiometer.setting": "Setting",
 
-  "powergrid.gui.circuit_board.damage_header": "Damaged",
+  "powergrid.gui.damage_header": "Damaged",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
+  "powergrid.gui.switch.overvolted": "This switch has been overvolted",
+
+  "powergrid.gui.thermometer.temperature": "Temperature: ",
+
+  "powergrid.gui.endpoint_distance": "Distance to starting point: ",
+
+  "powergrid.gui.rheostat.info_header": "Rheostat information",
+  "powergrid.gui.rheostat.ratio": "Resistance ratio",
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
@@ -36,6 +54,7 @@
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
   "powergrid.tooltip.range.max": "Maximum range:",
+  "powergrid.tooltip.power.max": "Maximum power:",
 
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
@@ -47,30 +66,35 @@
   "powergrid.tooltip.circuit_assembly.progress": "Progress",
   "powergrid.tooltip.circuit_assembly.insert": "Insert",
 
+  "powergrid.tooltip.multimeter.mode": "Mode: ",
+  "powergrid.tooltip.multimeter.mode.0": "Voltage",
+  "powergrid.tooltip.multimeter.mode.1": "Wire Current",
+
+  "powergrid.tooltip.multimeter.voltage": "Voltage: ",
+  "powergrid.tooltip.multimeter.current": "Current: ",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
   "powergrid.generic.control_terminal": "Control",
   "powergrid.generic.common": "Common",
+  "powergrid.generic.tap": "Tap",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
 
-  "powergrid.variac.tap": "Tap",
   "powergrid.variac.primary": "Primary",
 
-  "powergrid.devices.coil.aggregate_type": "Coil merge connection type",
   "powergrid.devices.creative.voltage": "Output voltage",
   "powergrid.devices.creative.current": "Output current",
-  "powergrid.devices.creative.resistance": "Resistance",
+  "powergrid.devices.resistor.resistance": "Resistance",
   "powergrid.devices.fuse.setting": "Max current",
   "powergrid.devices.spark_gap.voltage": "Breakdown Voltage",
+  "powergrid.devices.gauge.voltage": "Maximum voltage",
+  "powergrid.devices.gauge.current": "Maximum current",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",
-
-  "create.aggregate_type.series": "Series",
-  "create.aggregate_type.parallel": "Parallel",
 
   "powergrid.gui.circuit_designer.edit": "Edit circuit",
   "powergrid.gui.circuit_designer.save": "Save changes",
@@ -82,6 +106,22 @@
   "powergrid.gui.circuit_designer.saving": "Saving...",
   "powergrid.gui.circuit_designer.placeable": "Placeable",
   "powergrid.gui.circuit_designer.not_saved": "You have unsaved changes!",
+
+  "powergrid.gui.circuit_designer.no_name": "Please enter a valid name",
+  "powergrid.gui.circuit_designer.confirm_overwrite": "File already exists, click again to overwrite",
+  "powergrid.gui.circuit_designer.doesnt_exist": "Specified file doesn't exist",
+  "powergrid.gui.circuit_designer.invalid_file": "Invalid or corrupted schematic file",
+  "powergrid.gui.circuit_designer.file_dialog": "File dialog",
+  "powergrid.gui.circuit_designer.cancel": "Cancel",
+  "powergrid.gui.circuit_designer.file_load": "Load from file",
+  "powergrid.gui.circuit_designer.file_save": "Save to file",
+  "powergrid.gui.circuit_designer.files": "Available Schematics",
+  "powergrid.gui.circuit_designer.file_scroll": "Scroll to Select or Type in a Name",
+
+  "powergrid.component.property.power": "Power",
+  "powergrid.component.property.power.summary": "Maximum power that this component can handle for prolonged periods of time",
+  "powergrid.component.property.current": "Current",
+  "powergrid.component.property.current.summary": "Maximum current that this component can handle for prolonged periods of time",
 
   "powergrid.component.property.tube_gain": "Gain",
   "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
@@ -110,9 +150,16 @@
   "powergrid.component.property.led_red": "Red",
   "powergrid.component.property.led_green": "Green",
   "powergrid.component.property.led_blue": "Blue",
+  "powergrid.component.property.led_vf": "Forward Voltage",
+  "powergrid.component.property.led_if": "Forward Current",
 
   "powergrid.component.property.potentiometer_resistance": "Resistance",
   "powergrid.component.property.potentiometer_value": "Setting",
+
+  "powergrid.component.property.bjt_beta": "Beta",
+  "powergrid.component.property.bjt_beta.summary": "Transistor forward current gain value",
+  "powergrid.component.property.bjt_bias": "Bias Voltage",
+  "powergrid.component.property.bjt_bias.summary": "Base-emitter junction bias voltage",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
@@ -121,5 +168,22 @@
   "powergrid.keyinfo.pick_component": "Pick Component",
   "powergrid.keyinfo.place_trace": "Place Trace",
   "powergrid.keyinfo.rotate_component": "Rotate Component",
-  "powergrid.keyinfo.switch_layer": "Switch Layer"
+  "powergrid.keyinfo.switch_layer": "Switch Layer",
+
+  "powergrid.display_source.display_information": "Displayed information",
+
+  "powergrid.display_source.electric_gauge": "Electric Gauge",
+  "powergrid.display_source.electric_gauge.progress_bar": "Progress bar",
+  "powergrid.display_source.electric_gauge.absolute": "Absolute value",
+  "powergrid.display_source.electric_gauge.polarized": "Polarized value",
+
+  "powergrid.display_source.generator_clutch": "Generator Clutch",
+  "powergrid.display_source.generator_clutch.load_bar": "Load progress bar",
+  "powergrid.display_source.generator_clutch.load_value": "Load percent",
+  "powergrid.display_source.generator_clutch.rpm": "Speed",
+
+  "powergrid.display_source.battery": "Battery",
+  "powergrid.display_source.battery.bar": "Progress Bar",
+  "powergrid.display_source.battery.value": "Value",
+  "powergrid.display_source.battery.mode": "Display mode"
 }

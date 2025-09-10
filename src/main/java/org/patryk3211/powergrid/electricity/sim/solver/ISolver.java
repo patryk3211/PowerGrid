@@ -21,11 +21,14 @@ import java.util.Collection;
 
 public interface ISolver {
     void setStateSize(int size);
-    DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b);
+    DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll);
     void zero();
 
     void addHook(ISolverHook hook);
     void removeHook(ISolverHook hook);
 
     Collection<ISolverHook> getHooks();
+
+    double getInitialGuessDistance();
+    double getFinalGuessDistance();
 }

@@ -41,7 +41,7 @@ public class RedstoneRelayComponent extends EdgeComponent implements IRedstoneCo
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(POWERED);
+        properties.add(POWERED, current(32));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class RedstoneRelayComponent extends EdgeComponent implements IRedstoneCo
         var wire = builder.connectSwitch(RESISTANCE, builder.terminalNode(0), builder.terminalNode(1), placed.get(POWERED));
         placed.add(wire);
         thermals.builder()
-                .setMaxPower(100, 125f)
+                .setMaxCurrent(32, RESISTANCE, 125f)
                 .setThermalMass(0.075f)
                 .addHeatSource(wire);
     }

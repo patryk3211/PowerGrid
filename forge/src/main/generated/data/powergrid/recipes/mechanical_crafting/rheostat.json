@@ -1,0 +1,26 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "C": {
+      "tag": "minecraft:coals"
+    },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
+    "S": {
+      "item": "create:shaft"
+    },
+    "W": {
+      "item": "powergrid:resistive_coil"
+    }
+  },
+  "pattern": [
+    "CS ",
+    "WWW",
+    "WEW"
+  ],
+  "result": {
+    "item": "powergrid:rheostat"
+  }
+}

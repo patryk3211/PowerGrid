@@ -44,8 +44,18 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
     }
 
     @Override
+    public double coreAl() {
+        return 10.0;
+    }
+
+    @Override
+    public double couplingFactor() {
+        return 0.99999;
+    }
+
+    @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        var b = ThermalBehaviour.forMaxPower(this, 8.0f, 2500f);
+        var b = super.specifyThermalBehaviour();
         if(b != null) {
             if (isMain()) {
                 b.overheatCallback(() -> {

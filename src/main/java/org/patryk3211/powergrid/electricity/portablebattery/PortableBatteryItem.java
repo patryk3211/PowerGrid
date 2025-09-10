@@ -32,6 +32,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 
 import java.util.List;
@@ -88,5 +89,6 @@ public class PortableBatteryItem extends BaseArmorItem implements CapacityEnchan
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(ModdedBlocks.PORTABLE_BATTERY.get().resistance(), player, tooltip);
+        Power.max(ModdedBlocks.PORTABLE_BATTERY.asStack(), player, tooltip);
     }
 }

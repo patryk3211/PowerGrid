@@ -23,11 +23,12 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.List;
 
@@ -47,16 +48,17 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     @Override
     public void initialize() {
         super.initialize();
+        updateBehaviour();
         sendData();
     }
 
     @Override
     public void updateParameters() {
-        if(energy <= 0 || sourceNode == null)
+        if(energy <= 0 || sourceCoupling == null)
             return;
         float chargeLevel = (float) (energy / capacity);
-        sourceNode.setVoltage(spec.calculateVoltage(chargeLevel));
-        coupling.setResistance(spec.calculateResistance(chargeLevel) / getSize());
+        sourceCoupling.setVoltage(spec.calculateVoltage(chargeLevel));
+        sourceCoupling.setResistance(spec.calculateResistance(chargeLevel) / getSize());
     }
 
     private void overheated() {
@@ -89,7 +91,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     protected void updateConnectivity() {
         updateConnectivity = false;
-        if (level.isClientSide)
+        if (level.isClientSide && !isVirtual())
             return;
         if (!isController())
             return;
@@ -99,14 +101,13 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     @Override
     public void updateBehaviour() {
         // This also finds wires connected through device connectors/proxy behaviours
-        List<WireEntity> wires = null;
+        List<TransmissionLinePart> wires = null;
         if(level != null)
             wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
         if(isController()) {
             if(electricBehaviour instanceof ProxyElectricBehaviour proxy) {
                 electricBehaviour = new ElectricBehaviour(this);
                 electricBehaviour.inheritConnections(proxy);
-                removeBehaviour(ElectricBehaviour.TYPE);
                 attachBehaviourLate(electricBehaviour);
             }
             updateThermals();
@@ -117,19 +118,17 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 var old = electricBehaviour;
                 electricBehaviour = new ProxyElectricBehaviour(this, this::getController);
                 electricBehaviour.inheritConnections(old);
-                removeBehaviour(ElectricBehaviour.TYPE);
+                old.pause();
                 attachBehaviourLate(electricBehaviour);
-                sourceNode = null;
-                coupling = null;
+                sourceCoupling = null;
             }
             var controller = getControllerBE();
             if(controller != null && thermalBehaviour != null)
-                thermalBehaviour.track(getControllerBE().thermalBehaviour);
+                thermalBehaviour.track(controller.thermalBehaviour);
         }
         if(wires != null) {
             // Rewire connected wires.
-            wires.forEach(WireEntity::dropWire);
-            wires.forEach(WireEntity::makeWire);
+            wires.forEach(TransmissionLinePart::refreshEndpointNodes);
         }
         updateParameters();
     }
@@ -144,7 +143,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         super.tick();
         if (lastKnownPos == null)
             lastKnownPos = getBlockPos();
-        else if (!lastKnownPos.equals(worldPosition) && worldPosition != null) {
+        else if (!lastKnownPos.equals(worldPosition)) {
             onPositionChanged();
             return;
         }
@@ -204,7 +203,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     @Override
     public void removeController(boolean keepContents) {
-        if (level.isClientSide)
+        if (level.isClientSide && !isVirtual())
             return;
         updateConnectivity = true;
         if (!keepContents) {
@@ -322,8 +321,10 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
     private void updateThermals() {
         if(thermalBehaviour != null) {
-            thermalBehaviour.setDissipationFactor(spec.getDissipationFactor() * getSize());
-            thermalBehaviour.setThermalMass(spec.getThermalMass() * getSize());
+            var block = getBlockState().getBlock();
+            var factor = ThermalBehaviour.dissipationFactor(ThermalValues.getPower(block), 175f);
+            thermalBehaviour.setDissipationFactor(factor * getSize());
+            thermalBehaviour.setThermalMass(ThermalValues.getMass(block) * getSize());
         }
     }
 

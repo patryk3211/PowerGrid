@@ -16,8 +16,12 @@
 package org.patryk3211.powergrid.utility;
 
 import net.createmod.catnip.lang.LangBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.patryk3211.powergrid.PowerGrid;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Lang extends net.createmod.catnip.lang.Lang {
     public static MutableComponent translateDirect(String key, Object... args) {
@@ -45,6 +49,17 @@ public class Lang extends net.createmod.catnip.lang.Lang {
     }
 
     public static LangBuilder number(double n) {
-        return builder().text(PreciseNumberFormat.format(n));
+        return builder().text(NumberFormats.formatPrecise(n));
+    }
+
+    public static LangBuilder numberConstant(double n) {
+        return builder().text(NumberFormats.formatConstant(n));
+    }
+
+    public static List<Component> translatedOptions(String prefix, String... keys) {
+        List<Component> result = new ArrayList<>(keys.length);
+        for (String key : keys)
+            result.add(translate((prefix != null ? prefix + "." : "") + key).component());
+        return result;
     }
 }

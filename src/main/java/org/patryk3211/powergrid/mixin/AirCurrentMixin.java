@@ -19,6 +19,7 @@ import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import com.simibubi.create.content.kinetics.fan.IAirCurrentSource;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.Direction;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.spongepowered.asm.mixin.Final;
@@ -39,16 +40,20 @@ public abstract class AirCurrentMixin {
     @Shadow public Direction direction;
 
     @Unique
-    private final List<ThermalBehaviour> affectedThermals = new ArrayList<>();
+    private final List<ThermalBehaviour> powerGrid$affectedThermals = new ArrayList<>();
+    @Unique
+    private final List<CircuitBoardBlockEntity> powerGrid$affectedCircuits = new ArrayList<>();
 
     @Inject(method = "rebuild()V", at = @At("HEAD"))
-    private void rebuildHead(CallbackInfo ci) {
-        affectedThermals.forEach(ThermalBehaviour::noCooling);
-        affectedThermals.clear();
+    private void powerGrid$rebuildHead(CallbackInfo ci) {
+        powerGrid$affectedThermals.forEach(ThermalBehaviour::noCooling);
+        powerGrid$affectedThermals.clear();
+        powerGrid$affectedCircuits.forEach(CircuitBoardBlockEntity::noCooling);
+        powerGrid$affectedCircuits.clear();
     }
 
     @Inject(method = "rebuild()V", at = @At("TAIL"))
-    private void rebuildTail(CallbackInfo ci) {
+    private void powerGrid$rebuildTail(CallbackInfo ci) {
         var world = source.getAirCurrentWorld();
         var start = source.getAirCurrentPos();
 
@@ -59,11 +64,15 @@ public abstract class AirCurrentMixin {
         for(int i = 1; i <= limit; ++i) {
             var pos = start.relative(direction, i);
             var thermal = BlockEntityBehaviour.get(world, pos, ThermalBehaviour.TYPE);
-            if(thermal == null)
-                continue;
-
             float factor = 1.0f - (float) (i - 1) / limit;
-            thermal.setCoolingMultiplier((AirCurrent) (Object) this, factor * initialStrength + 1f);
+            if(thermal != null) {
+                thermal.setCoolingMultiplier((AirCurrent) (Object) this, factor * initialStrength + 1f);
+                powerGrid$affectedThermals.add(thermal);
+            }
+            if(world.getBlockEntity(pos) instanceof CircuitBoardBlockEntity circuit) {
+                circuit.setCoolingMultiplier((AirCurrent) (Object) this, factor * initialStrength + 1f);
+                powerGrid$affectedCircuits.add(circuit);
+            }
         }
     }
 }

@@ -16,7 +16,9 @@
 package org.patryk3211.powergrid.base;
 
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 public class CustomProperties {
     public static final BooleanProperty ALONG_FIRST_AXIS = BooleanProperty.create("axis_along_first");
+    public static final IntegerProperty ROTATION_4 = IntegerProperty.create("rotation", 0, 3);
 }

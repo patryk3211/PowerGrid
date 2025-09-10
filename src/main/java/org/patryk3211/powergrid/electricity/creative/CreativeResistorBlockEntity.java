@@ -16,61 +16,36 @@
 package org.patryk3211.powergrid.electricity.creative;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
-import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
-import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
-import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
+import org.patryk3211.powergrid.electricity.resistor.ResistorBoxTransform;
+import org.patryk3211.powergrid.electricity.resistor.ResistorValueBehaviour;
 import org.patryk3211.powergrid.utility.Lang;
-import org.patryk3211.powergrid.utility.PreciseNumberFormat;
+import org.patryk3211.powergrid.utility.NumberFormats;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
-public class CreativeResistorBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
-    private ScrollValueBehaviour value;
-
-    private ElectricWire wire;
-
+public class CreativeResistorBlockEntity extends ResistorBlockEntity implements IHaveGoggleInformation {
     public CreativeResistorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        super.addBehaviours(behaviours);
-        value = new CreativeResistorValueBehaviour(Lang.translateDirect("devices.creative.resistance"), this, new BoxTransform());
-        value.value = 45;
-        value.withCallback(i -> wire.setResistance(CreativeResistorValueBehaviour.exponentialValue(i)));
-        behaviours.add(value);
+    protected ResistorValueBehaviour makeScroll() {
+        return new ResistorValueBehaviour(Lang.translateDirect("devices.resistor.resistance"),
+                this, new ResistorBoxTransform(), 3, 72);
     }
 
     @Override
-    public void buildCircuit(CircuitBuilder builder) {
-        var terminal1 = builder.addExternalNode();
-        var terminal2 = builder.addExternalNode();
-        wire = builder.connect(100f, terminal1, terminal2);
-    }
-
-    @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
-        wire.setResistance(tag.getFloat("Resistance"));
-    }
-
-    @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
-        tag.putFloat("Resistance", (float) wire.getResistance());
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return null;
     }
 
     @Override
@@ -81,7 +56,7 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
                 .forGoggles(tooltip);
 
         var resistance = wire.getResistance();
-        var resistanceText = PreciseNumberFormat.format(resistance);
+        var resistanceText = NumberFormats.formatPrecise(resistance);
         Lang.builder()
                 .text(resistanceText)
                 .add(Component.nullToEmpty(" "))
@@ -94,7 +69,7 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
                 .forGoggles(tooltip);
 
         float current = wire.current();
-        var currentText = PreciseNumberFormat.format(current);
+        var currentText = NumberFormats.formatPrecise(current);
         Lang.builder()
                 .text(currentText)
                 .add(Component.nullToEmpty(" "))
@@ -106,7 +81,7 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        var power = PreciseNumberFormat.format(current * current * resistance);
+        var power = NumberFormats.formatPrecise(current * current * resistance);
         Lang.builder()
                 .text(power)
                 .add(Component.nullToEmpty(" "))
@@ -116,21 +91,4 @@ public class CreativeResistorBlockEntity extends ElectricBlockEntity implements 
         return true;
     }
 
-    public static class BoxTransform extends CenteredSideValueBoxTransform {
-        public BoxTransform() {
-            super((state, dir) -> {
-                if(dir.getAxis() == state.getValue(CreativeResistorBlock.HORIZONTAL_AXIS))
-                    return false;
-                return dir != Direction.DOWN;
-            });
-        }
-
-        @Override
-        protected Vec3 getSouthLocation() {
-            if(direction != Direction.UP)
-                return VecHelper.voxelSpace(8.0f, 6.0f, 10.5f);
-            else
-                return VecHelper.voxelSpace(8.0f, 8.0f, 8.5f);
-        }
-    }
 }

@@ -15,12 +15,12 @@
  */
 package org.patryk3211.powergrid.electricity.portablebattery.forge;
 
-import com.simibubi.create.content.equipment.armor.BacktankArmorLayer;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.world.entity.player.Player;
+import org.patryk3211.powergrid.electricity.portablebattery.BatteryArmorLayer;
 
 public class BatteryArmorLayerImpl {
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -29,8 +29,8 @@ public class BatteryArmorLayerImpl {
             return;
         if (!(livingRenderer.getModel() instanceof HumanoidModel))
             return;
-        BacktankArmorLayer<?, ?> layer = new BacktankArmorLayer<>(livingRenderer);
-        livingRenderer.addLayer((BacktankArmorLayer) layer);
+        BatteryArmorLayer<?, ?> layer = new BatteryArmorLayer<>(livingRenderer);
+        livingRenderer.addLayer((BatteryArmorLayer) layer);
     }
 
     public static void registerOnAll(EntityRenderDispatcher dispatcher) {

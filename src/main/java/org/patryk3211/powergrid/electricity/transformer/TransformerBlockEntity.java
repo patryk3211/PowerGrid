@@ -27,7 +27,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -37,11 +39,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     protected TransformerCoilParameters primaryCoil;
     protected TransformerCoilParameters secondaryCoil;
 
-    protected float couplingFactor;
-    protected float coreAl;
-
     protected ElectricWire primaryStray;
-    protected ElectricWire secondaryStray;
     protected ElectricWire mutualInductance;
 
     public float lastCurrent;
@@ -52,9 +50,15 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return ThermalBehaviour.fromConfig(this);
+    }
 
+    public abstract double coreAl();
+    public abstract double couplingFactor();
+
+    @Override
+    public void tick() {
         float power = 0;
         lastCurrent = 0;
         if(primaryStray != null) {
@@ -63,12 +67,6 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             power += P1;
             lastCurrent += Math.abs(I1);
         }
-        if(secondaryStray != null) {
-            var I2 = secondaryStray.current();
-            var P2 = I2 * I2 * secondaryStray.getResistance();
-            power += P2;
-            lastCurrent += Math.abs(I2);
-        }
         if(mutualInductance != null) {
             var I3 = mutualInductance.current();
             var P3 = I3 * I3 * mutualInductance.getResistance();
@@ -76,6 +74,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             lastCurrent += Math.abs(I3);
         }
         applyLostPower(power);
+        super.tick();
         if(level.isClientSide) {
             tickAudio();
         }
@@ -205,18 +204,18 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             updateCoilBlockState();
         }
 
-        coreAl = 1.5f;
-        couplingFactor = 0.9999f;
+        var coreAl = coreAl();
+        var couplingFactor = couplingFactor();
         var primaryTurns = primaryCoil.getTurns();
         var secondaryTurns = secondaryCoil.getTurns();
 
         builder.setTerminalCount(4);
 
-        float primaryInductance = primaryTurns * primaryTurns * coreAl;
-        float secondaryInductance = secondaryTurns * secondaryTurns * coreAl;
+        double primaryInductance = primaryTurns * primaryTurns * coreAl;
+        double secondaryInductance = secondaryTurns * secondaryTurns * coreAl;
 
         if(primaryCoil.isDefined() && secondaryCoil.isDefined()) {
-            boolean flipped = primaryTurns > secondaryInductance;
+            boolean flipped = primaryTurns > secondaryTurns;
             var primaryCoil = flipped ? this.secondaryCoil : this.primaryCoil;
             var secondaryCoil = flipped ? this.primaryCoil : this.secondaryCoil;
             if(flipped) {
@@ -230,28 +229,25 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             }
 
             float ratio = (float) secondaryTurns / primaryTurns;
-            float mutualInductance = couplingFactor * primaryInductance;
+            double mutualInductance = couplingFactor * primaryInductance;
 
-            float primaryStray = primaryInductance - mutualInductance;
-            float secondaryStray = secondaryInductance - ratio * ratio * mutualInductance;
+            float primaryStray = (float) (primaryInductance - mutualInductance);
+            float secondaryStray = (float) (secondaryInductance - ratio * ratio * mutualInductance);
 
             var Tnode = builder.addInternalNode();
-            var Pnode = builder.addInternalNode();
 
             var P1 = builder.terminalNode(primaryCoil.getTerminal1());
             var P2 = builder.terminalNode(primaryCoil.getTerminal2());
 
             this.primaryStray = builder.connect(primaryStray, P1, Tnode);
-            this.secondaryStray = builder.connect(secondaryStray, Tnode, Pnode);
-            this.mutualInductance = builder.connect(mutualInductance, Tnode, P2);
-            builder.couple(ratio, Pnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
+            // TODO: Make the mutual inductance to resistance conversion ratio a configurable values (or maybe a per core property)
+            this.mutualInductance = builder.connect((float) mutualInductance * 10, Tnode, P2);
+            builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
         } else if(primaryCoil.isDefined()) {
-            this.primaryStray = builder.connect(primaryInductance, builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));
-            this.secondaryStray = null;
+            this.primaryStray = builder.connect((float) primaryInductance * 10, builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));
             this.mutualInductance = null;
         } else if(secondaryCoil.isDefined()) {
-            this.secondaryStray = builder.connect(secondaryInductance, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
-            this.primaryStray = null;
+            this.primaryStray = builder.connect((float) secondaryInductance * 10, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
             this.mutualInductance = null;
         }
     }

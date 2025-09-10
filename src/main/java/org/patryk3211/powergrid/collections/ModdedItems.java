@@ -31,12 +31,16 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
+import org.patryk3211.powergrid.electricity.light.bulb.LvLightBulb;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
+import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
+import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
+import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
 
 import java.util.function.Supplier;
@@ -49,17 +53,17 @@ import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParen
 
 public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
-            .transform(WireProperties.setAll(0.005f, 16))
+            .transform(WireProperties.setAll(0.0015f, 16, 1.0f, 0.064f))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
             .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
-            .transform(WireProperties.setAll(0.015f, 32))
+            .transform(WireProperties.setAll(0.005f, 32, 2.0f, 0.12f))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.FUSE_RESETTING.tag)
             .register();
     public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
-            .transform(WireProperties.setAll(0.007f, 8))
+            .transform(WireProperties.setAll(0.003f, 8, 0.8f, 0.288f))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
@@ -70,15 +74,28 @@ public class ModdedItems {
     public static final ItemEntry<Item> EMPTY_CIRCUIT = REGISTRATE.item("empty_circuit", Item::new)
             .register();
 
-//    public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
+    public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
+
+    public static final ItemEntry<LvLightBulb> LV_LIGHT_BULB = REGISTRATE.item("lv_light_bulb", LvLightBulb::new)
+            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
+                case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
+                case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
+                case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
+                case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
+            }))
+            .transform(LightBulb.setProperties(3, 12, 20, 0.001f))
+            .model(itemWithParent("block/lamps/light_bulb"))
+            .lang("LV Light Bulb")
+            .register();
 
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
             .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
                 case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
                 case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
                 case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
+                case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
             }))
-            .transform(LightBulb.setProperties(30, 60, 30, 1450, 0.005f))
+            .transform(LightBulb.setProperties(30, 120, 120, 0.005f))
             .model(itemWithParent("block/lamps/light_bulb"))
             .register();
 
@@ -87,8 +104,9 @@ public class ModdedItems {
                 case OFF -> ModdedPartialModels.GROWTH_LAMP_OFF;
                 case LOW_POWER, ON -> ModdedPartialModels.GROWTH_LAMP_ON;
                 case BROKEN -> ModdedPartialModels.GROWTH_LAMP_BROKEN;
+                case LIGHT -> ModdedPartialModels.GROWTH_LAMP_LIGHT;
             }))
-            .transform(LightBulb.setProperties(120, 90, 40, 1600, 0.01f))
+            .transform(LightBulb.setProperties(120, 240, 120, 0.01f))
             .model(itemWithParent("block/lamps/growth_lamp"))
             .register();
 
@@ -111,6 +129,9 @@ public class ModdedItems {
             .lang("LED")
             .register();
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
+    public static final ItemEntry<Item> BJT_TRANSISTOR = REGISTRATE.item("bjt_transistor", Item::new)
+            .lang("BJT Transistor")
+            .register();
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
@@ -149,6 +170,11 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<Item> UNETCHED_CIRCUIT = ingredient("unetched_circuit", ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag);
+
+    public static final ItemEntry<MultimeterItem> MULTIMETER = REGISTRATE.item("multimeter", MultimeterItem::new)
+            .model(itemWithParent("item/multimeter/base"))
+            .transform(customRenderer(() -> MultimeterItemRenderer::new))
+            .register();
 
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }

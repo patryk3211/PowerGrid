@@ -22,6 +22,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
+@SuppressWarnings("unused")
 public class Components {
     public static final RegistryEntry<ViaComponent> VIA = REGISTRATE.component("via", ViaComponent::new)
             .footprint(1, 1, b -> b.addPad(0, 0))
@@ -56,13 +57,12 @@ public class Components {
             .register();
 
     public static final RegistryEntry<RelayComponent> RELAY = REGISTRATE.component("relay", RelayComponent::new)
-            .footprint(5, 4, b -> b
+            .footprint(4, 3, b -> b
                     .addPad(0, 0, 0, "Coil")
-                    .addPad(0, 3, 1, "Coil")
-                    .addPad(3, 0, 2, "Normally Closed")
-                    .addPad(4, 1, 3, "Common")
-                    .addPad(4, 2, 3, "Common")
-                    .addPad(3, 3, 4, "Normally Open")
+                    .addPad(0, 2, 1, "Coil")
+                    .addPad(2, 0, 2, "Normally Closed")
+                    .addPad(3, 1, 3, "Common")
+                    .addPad(2, 2, 4, "Normally Open")
                     .withItem(ModdedItems.RELAY)
                     .withOutline()
             )
@@ -70,9 +70,9 @@ public class Components {
             .register();
 
     public static final RegistryEntry<ResistorComponent> RESISTOR = REGISTRATE.component("resistor", ResistorComponent::new)
-            .footprint(6, 3, b -> b
+            .footprint(5, 3, b -> b
                     .addPad(0, 1, 0)
-                    .addPad(5, 1, 1)
+                    .addPad(4, 1, 1)
                     .withItem(ModdedItems.RESISTOR)
                     .withOutline()
             )
@@ -94,17 +94,17 @@ public class Components {
             .footprint(3, 5, b -> b
                     .addPad(1, 0, 0)
                     .addPad(1, 4, 1)
-                    .withItem(ModdedBlocks.ANDESITE_VOLTAGE_METER::asItem)
+                    .withItem(ModdedBlocks.VOLTAGE_METER::asItem)
                     .withArrow()
                     .withOutline()
             )
-            .item(ModdedBlocks.ANDESITE_VOLTAGE_METER)
+            .item(ModdedBlocks.VOLTAGE_METER)
             .register();
 
     public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
-            .footprint(6, 3, b -> b
+            .footprint(5, 3, b -> b
                     .addPad(0, 1, 0, "Anode")
-                    .addPad(5, 1, 1, "Cathode")
+                    .addPad(4, 1, 1, "Cathode")
                     .withItem(ModdedItems.DIODE)
                     .withOutline()
             )
@@ -150,6 +150,16 @@ public class Components {
                     .withOutline()
             )
             .item(ModdedItems.POTENTIOMETER)
+            .register();
+
+    public static final RegistryEntry<BJTComponent> BJT = REGISTRATE.component("bjt", BJTComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 0, 0, "Collector")
+                    .addPad(1, 2, 1, "Base")
+                    .addPad(2, 0, 2, "Emitter")
+                    .withItem(ModdedItems.BJT_TRANSISTOR)
+                    .withOutline())
+            .item(ModdedItems.BJT_TRANSISTOR)
             .register();
 
     @SuppressWarnings("EmptyMethod")

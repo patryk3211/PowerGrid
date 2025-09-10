@@ -26,7 +26,7 @@ import org.joml.Math;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
-import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.ArrayList;
@@ -101,8 +101,7 @@ public class ZapProjectileS2CPacket implements SimplePacket {
     @Environment(EnvType.CLIENT)
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         context.get().queue(() -> {
-            // TODO: That looks stupid, why does ClientWorld try to load on server if the method is marked as client-side?
-            var world = ClientBoundPackets.world();
+            var world = ClientSideAccess.world();
             switch(type) {
                 case BLOCK_HIT -> SparkParticleData.explodeParticles(world, pos.x, pos.y, pos.z, dir, 20);
                 case ENTITY_HIT -> {

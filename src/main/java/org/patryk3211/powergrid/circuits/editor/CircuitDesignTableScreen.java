@@ -51,6 +51,7 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
     private IconButton confirmButton;
     private IconButton loadButton;
     private CircuitEditButton editButton;
+    private IconButton openButton;
 
     private final CircuitSchematic schematic;
     private List<Line> linesFg;
@@ -71,26 +72,26 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
 
         super.init();
 
-        confirmButton = new IconButton(leftPos + 116 - 11, topPos + 66, AllIcons.I_CONFIRM);
-        loadButton = new IconButton(leftPos + 15 - 11, topPos + 65, ModIcons.I_RIGHT);
-        editButton = new CircuitEditButton(leftPos + 42 - 11, topPos + 18, 68, 68);
+        confirmButton = new IconButton(leftPos + 116 - windowXOffset, topPos + 66, AllIcons.I_CONFIRM);
+        loadButton = new IconButton(leftPos + 15 - windowXOffset, topPos + 65, ModIcons.I_RIGHT);
+        openButton = new IconButton(leftPos + 15 - windowXOffset, topPos + 21, AllIcons.I_OPEN_FOLDER);
+        editButton = new CircuitEditButton(leftPos + 42 - windowXOffset, topPos + 18, 68, 68);
 
-        confirmButton.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, false));
-        });
+        confirmButton.withCallback(() ->
+                ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, false)));
+        loadButton.withCallback(() ->
+                ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, true)));
 
-        loadButton.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, true));
-        });
-
+        openButton.withCallback(() ->
+                ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 2)));
+        editButton.withCallback(() ->
+                ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 1)));
         editButton.setTooltip(Tooltip.create(TOOLTIP_EDIT));
-        editButton.withCallback(() -> {
-            ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 1));
-        });
 
         addRenderableWidget(confirmButton);
         addRenderableWidget(loadButton);
         addRenderableWidget(editButton);
+        addRenderableWidget(openButton);
     }
 
     @Override

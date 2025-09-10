@@ -21,8 +21,6 @@ public class SimpleBatterySpec implements BatterySpec {
     public static final SimpleBatterySpec ACID_BATTERY = new SimpleBatterySpec(
             7200, // This should amount to 1A for 1 minute at 12V
             6480, // Initial charge level is 90%
-            2.0f,
-            0.75f,
             e -> 1.2f * e + 11.5f,
             // This resistance makes the battery effectively dead after a deep discharge
             e -> Math.min(10000, (float) Math.exp(-21.18323 * e + 10.58157) + 0.1f)
@@ -30,16 +28,12 @@ public class SimpleBatterySpec implements BatterySpec {
 
     private final float maxCharge;
     private final float initialCharge;
-    private final float thermalMass;
-    private final float dissipationFactor;
     private final Function<Float, Float> voltageFunction;
     private final Function<Float, Float> resistanceFunction;
 
-    public SimpleBatterySpec(float maxCharge, float initialCharge, float thermalMass, float dissipationFactor, Function<Float, Float> voltageFunction, Function<Float, Float> resistanceFunction) {
+    public SimpleBatterySpec(float maxCharge, float initialCharge, Function<Float, Float> voltageFunction, Function<Float, Float> resistanceFunction) {
         this.maxCharge = maxCharge;
         this.initialCharge = initialCharge;
-        this.thermalMass = thermalMass;
-        this.dissipationFactor = dissipationFactor;
         this.voltageFunction = voltageFunction;
         this.resistanceFunction = resistanceFunction;
     }
@@ -52,16 +46,6 @@ public class SimpleBatterySpec implements BatterySpec {
     @Override
     public float getInitialCharge() {
         return initialCharge;
-    }
-
-    @Override
-    public float getThermalMass() {
-        return thermalMass;
-    }
-
-    @Override
-    public float getDissipationFactor() {
-        return dissipationFactor;
     }
 
     @Override

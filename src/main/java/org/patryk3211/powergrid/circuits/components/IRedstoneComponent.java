@@ -41,7 +41,7 @@ public interface IRedstoneComponent {
         var state = component.getWorld().getBlockState(component.getPos());
         var circuit = (CircuitBoardBlock) state.getBlock();
         if(component.has(Orientation.PROPERTY)) {
-            var updateDir = circuit.getDirection(state, component.get(Orientation.PROPERTY));
+            var updateDir = CircuitBoardBlock.getDirection(state, component.get(Orientation.PROPERTY));
             var updatePos = component.getPos().relative(updateDir);
             component.getWorld().neighborChanged(updatePos, circuit, component.getPos());
         } else {

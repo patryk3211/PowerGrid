@@ -27,11 +27,13 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 import java.util.List;
 
-public class GeneratorClutchBlockEntity extends KineticBlockEntity {
+public class GeneratorClutchBlockEntity extends KineticBlockEntity implements RotorBehaviour.IForceSource {
     protected RotorBehaviour rotorBehaviour;
     private float currentImpact;
 
     private int currentRedstonePower;
+
+    public float load;
 
     public GeneratorClutchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -42,9 +44,63 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        rotorBehaviour = new RotorBehaviour(this);
+        rotorBehaviour = new RotorBehaviour(this, ModdedConfigs.server().kinetics.generatorClutchInertia.getF());
+        rotorBehaviour.forceSource(this);
         rotorBehaviour.noField();
         behaviours.add(rotorBehaviour);
+    }
+
+    @Override
+    public float sourceForce() {
+        if(getTheoreticalSpeed() == 0 || isOverStressed())
+            return 0;
+
+//        var angularVelocity = rotorBehaviour.getAngularVelocity();
+        float couplingStrength = (15 - currentRedstonePower) / 15f;
+        int segmentCount = rotorBehaviour.getSegmentCount();
+
+//        float delta = getTheoreticalSpeed() - angularVelocity;
+//        if(getTheoreticalSpeed() < 0)
+//            delta = -delta;
+//        delta = Math.max(0, delta);
+
+        float maxForce = ModdedConfigs.server().kinetics.generatorClutchForcePerSegment.getF() * segmentCount;
+        final var defaultImpact = (float) BlockStressValues.getImpact(getBlockState().getBlock());
+        if(hasNetwork()) {
+            var network = getOrCreateNetwork();
+            var newImpact = defaultImpact * segmentCount;
+            if(newImpact != currentImpact) {
+                currentImpact = newImpact;
+                if(!level.isClientSide) {
+                    network.remove(this);
+                    network.add(this);
+                }
+            }
+        }
+
+        return maxForce * couplingStrength;
+//        float force = delta * 20f * rotorBehaviour.getInertia();
+//        force = Math.min(Math.abs(force), maxForce) * Math.signum(getSpeed()) * couplingStrength;
+//        load = force / maxForce;
+//        return force;
+
+//        float force = 0;
+//        if(delta > 0 && !isOverStressed()) {
+//            force = delta * 20f * rotorBehaviour.getInertia();
+//            force = Math.min(Math.abs(force), maxForce) * Math.signum(getSpeed()) * couplingStrength;
+//            rotorBehaviour.applyTickForce(force);
+//        }
+//        return force;
+    }
+
+    @Override
+    public float forceSpeed() {
+        return getTheoreticalSpeed();
+    }
+
+    @Override
+    public void receiveUsedForce(float percent) {
+        load = percent;
     }
 
     public void updateStrength(int receivedRedstonePower) {
@@ -57,45 +113,6 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if(getTheoreticalSpeed() == 0)
-            return;
-
-        var angularVelocity = rotorBehaviour.getAngularVelocity();
-        float couplingStrength = (15 - currentRedstonePower) / 15f;
-        int segmentCount = rotorBehaviour.getSegmentCount();
-
-        float delta = getTheoreticalSpeed() - angularVelocity;
-        if(getTheoreticalSpeed() < 0)
-            delta = -delta;
-        delta = Math.max(0, delta);
-        float theoreticalForce = delta * 20f * rotorBehaviour.getInertia();
-
-        float maxForce = ModdedConfigs.server().kinetics.generatorClutchForcePerSegment.getF() * segmentCount;
-        if(theoreticalForce > maxForce)
-            theoreticalForce = maxForce;
-        theoreticalForce *= couplingStrength;
-        if(hasNetwork()) {
-            var network = getOrCreateNetwork();
-            var newImpact = currentImpact;
-            if(theoreticalForce <= maxForce / 4) {
-                newImpact = 2f * segmentCount;
-            } else if(theoreticalForce <= maxForce / 2) {
-                newImpact = 4f * segmentCount;
-            } else {
-                newImpact = 8f * segmentCount;
-            }
-            if(newImpact != currentImpact) {
-                if(!level.isClientSide)
-                    network.updateStressFor(this, newImpact);
-                currentImpact = newImpact;
-            }
-        }
-
-        if(delta > 0 && !isOverStressed()) {
-            var force = delta * 20f * rotorBehaviour.getInertia();
-            force = Math.min(Math.abs(force), maxForce) * Math.signum(getSpeed()) * couplingStrength;
-            rotorBehaviour.applyTickForce(force);
-        }
     }
 
     @Override

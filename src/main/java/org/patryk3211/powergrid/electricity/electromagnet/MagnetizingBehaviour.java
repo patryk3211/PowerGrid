@@ -21,6 +21,7 @@ import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.createmod.catnip.math.VecHelper;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -153,9 +154,8 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
 
             var particleChance = specifics.getFieldStrength() / 8f;
             if(runningTicks < COLLAPSE_TIME - 10 && r.nextFloat() < particleChance) {
-                var facing = blockEntity.getBlockState().getValue(ElectromagnetBlock.FACING);
-                var pos0 = pos.getCenter().relative(facing, 0.5f);
-                var pos1 = target != null ? target.relative(facing, -0.1f) : pos0.relative(facing, 1.0f);
+                var pos0 = pos.getCenter().relative(Direction.DOWN, 1.1f);
+                var pos1 = target != null ? target.relative(Direction.DOWN, -0.1f) : pos0.relative(Direction.DOWN, 1.0f);
                 var particlePos = VecHelper.lerp(r.nextFloat(), pos0, pos1).add(
                         (r.nextFloat() - 0.5f) * 0.2f,
                         (r.nextFloat() - 0.5f) * 0.2f,

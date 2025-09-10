@@ -35,16 +35,20 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
+import org.patryk3211.powergrid.config.ThermalValues;
 
 public class ThermalBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<ThermalBehaviour> TYPE = new BehaviourType<>("thermal");
     public static final float BASE_TEMPERATURE = 22.0f;
+    public static final int OVERHEAT_TICKS = 2;
 
     public static final int OVERHEAT_PARTICLES = 1;
     public static final int OVERHEAT_EXPLOSION = 2;
     public static final int IGNORE_EXTRA_COOLING = 4;
 
     private float temperature;
+    private float prevTemperature;
+    private int overheatTicks;
 
     // thermalMass = ΔE/ΔT
     private float thermalMass;
@@ -96,6 +100,18 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     @Nullable
     public static ThermalBehaviour forMaxPower(SmartBlockEntity be, float thermalMass, float power) {
         return forMaxPower(be, thermalMass, power, 175.0f);
+    }
+
+    @Nullable
+    public static ThermalBehaviour fromConfig(SmartBlockEntity be) {
+        var block = be.getBlockState().getBlock();
+        return forMaxPower(be, ThermalValues.getMass(block), ThermalValues.getPower(block));
+    }
+
+    @Nullable
+    public static ThermalBehaviour fromConfig(SmartBlockEntity be, float overheatTemperature) {
+        var block = be.getBlockState().getBlock();
+        return forMaxPower(be, ThermalValues.getMass(block), ThermalValues.getPower(block), overheatTemperature);
     }
 
     public static float dissipationFactor(float power, float temperature) {
@@ -200,6 +216,13 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             if(dissipatedPower != 0)
                 blockEntity.setChanged();
         }
+        if(!Float.isFinite(temperature)) {
+            // Reset if something went wrong.
+            temperature = BASE_TEMPERATURE;
+            prevTemperature = BASE_TEMPERATURE;
+        }
+        var temperatureDelta = temperature - prevTemperature;
+        prevTemperature = temperature;
 
         var world = getWorld();
         var pos = getPos();
@@ -216,10 +239,21 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         }
 
         if(isOverheated() && !world.isClientSide) {
-            if(overheatCallback != null)
-                overheatCallback.run();
-            if((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
-                explode(world, pos, blockEntity.getBlockState(), 1.0f);
+            if(temperatureDelta > 0 && overheatTicks++ >= OVERHEAT_TICKS) {
+                // Overheated for 3 ticks and temperature keeps rising,
+                // no more excuses, this device is exploding.
+                if (overheatCallback != null)
+                    overheatCallback.run();
+                if ((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
+                    explode(world, pos, blockEntity.getBlockState(), 1.0f);
+                }
+            } else if(temperatureDelta <= 0) {
+                // Overheated but temperature is falling, the device is safe this time.
+                overheatTicks = 0;
+                if(temperature > overheatTemperature + 10) {
+                    temperature = overheatTemperature + 10;
+                    blockEntity.sendData();
+                }
             }
         }
     }
@@ -242,8 +276,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     }
 
     public void applyTickPower(float power) {
-        var energy = power / 20f;
-        temperature += energy / thermalMass;
+        if(Float.isFinite(power)) {
+            var energy = power / 20f;
+            temperature += energy / thermalMass;
+        }
     }
 
     @Override

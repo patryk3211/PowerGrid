@@ -15,22 +15,31 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.utility.Lang;
 
-public class SwitchBlockEntity extends ElectricBlockEntity {
+import java.util.List;
+
+public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     private SwitchedWire wire;
     private float maxVoltage;
     private boolean switchState;
     private Float overvoltResistance;
     private boolean isButton;
     private int buttonTimeout = 0;
+    private boolean playEffect = false;
 
     public SwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -39,18 +48,27 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.simple(this, 0.5f, 0.1f);
+        return ThermalBehaviour.fromConfig(this);
+    }
+
+    private void overvoltEffect() {
+        var pos = worldPosition.getCenter();
+        var face = getBlockState().getValue(SurfaceSwitchBlock.FACING);
+        SparkParticleData.explodeParticles(level, (float) pos.x, (float) pos.y, (float) pos.z, face, 7);
+        ModdedSoundEvents.COMPONENT_EXPLODE.playAt(level, pos, 1, 1, true);
     }
 
     @Override
     public void tick() {
-        super.tick();
         applyLostPower(wire.power());
-        if(wire.potentialDifference() > maxVoltage && overvoltResistance == null) {
+        super.tick();
+        if(wire.potentialDifference() > maxVoltage && overvoltResistance == null && !level.isClientSide) {
             wire.setState(true);
             // Pick a random resistance for failed switches to spice things up.
             overvoltResistance = level.random.nextFloat() * 1000f;
             wire.setResistance(overvoltResistance);
+            playEffect = true;
+            sendData();
         }
         if(isButton && buttonTimeout > 0) {
             --buttonTimeout;
@@ -83,6 +101,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
             overvoltResistance = tag.getFloat("Overvolted");
             wire.setResistance(overvoltResistance);
             wire.setState(true);
+            if(tag.getBoolean("Effect"))
+                overvoltEffect();
         }
         if(isButton)
             buttonTimeout = tag.getByte("Timeout");
@@ -96,6 +116,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
         }
         if(overvoltResistance != null) {
             tag.putFloat("Overvolted", overvoltResistance);
+            if(playEffect)
+                tag.putBoolean("Effect", true);
         }
         if(isButton)
             tag.putByte("Timeout", (byte) buttonTimeout);
@@ -103,17 +125,27 @@ public class SwitchBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        var node1 = builder.addExternalNode();
-        var node2 = builder.addExternalNode();
-
+        builder.setTerminalCount(2);
         if(!(getBlockState().getBlock() instanceof SwitchBlock block))
             throw new IllegalArgumentException("Blocks with SwitchBlockEntity must inherit from SwitchBlock");
         maxVoltage = block.getMaxVoltage();
         switchState = !getBlockState().getValue(SwitchBlock.OPEN);
-        wire = builder.connectSwitch(resistance(), node1, node2, switchState);
+        wire = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), switchState);
         if(overvoltResistance != null) {
             wire.setResistance(overvoltResistance);
             wire.setState(true);
         }
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        if(overvoltResistance == null)
+            return false;
+        Lang.translate("gui.damage_header")
+                .forGoggles(tooltip);
+        Lang.translate("gui.switch.overvolted")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+        return true;
     }
 }

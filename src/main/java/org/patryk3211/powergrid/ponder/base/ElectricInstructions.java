@@ -21,6 +21,7 @@ import net.createmod.ponder.foundation.element.ElementLinkImpl;
 import net.createmod.ponder.foundation.instruction.FadeOutOfSceneInstruction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 
 public class ElectricInstructions {
     public static final float DEFAULT_RESISTANCE = 0.005f;
@@ -40,7 +41,6 @@ public class ElectricInstructions {
     }
 
     public ElementLink<WireElement> connect(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
-
         var link = new ElementLinkImpl<>(WireElement.class);
         var element = new WireElement(pos1, terminal1, pos2, terminal2, resistance);
         builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
@@ -62,6 +62,11 @@ public class ElectricInstructions {
 
     public ElementLink<WireElement> connectInvisible(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2) {
         return connectInvisible(pos1, terminal1, pos2, terminal2, DEFAULT_RESISTANCE);
+    }
+
+    public void addSource(BlockPos pos, int terminal, float voltage) {
+        var element = new VoltageSource(new BlockWireEndpoint(pos, terminal), voltage);
+        builder.addInstruction(scene -> scene.addElement(element));
     }
 
     public void removeWire(ElementLink<WireElement> wire) {

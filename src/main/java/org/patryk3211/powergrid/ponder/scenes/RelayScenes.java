@@ -23,6 +23,7 @@ import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.patryk3211.powergrid.base.CustomProperties;
+import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.SurfaceSwitchBlock;
@@ -30,6 +31,7 @@ import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
+import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
@@ -258,6 +260,109 @@ public class RelayScenes {
         scene.idle(40);
         scene.world().setKineticSpeed(util.select().fromTo(target, target.above()), 0);
         scene.world().modifyBlockEntity(target, VariacBlockEntity.class, be -> be.onSpeedChanged(16));
+
+        scene.markAsFinished();
+    }
+
+    public static void rheostat(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+
+        scene.title("rheostat", "Variable resistor");
+        scene.configureBasePlate(0, 0, 5);
+
+        var source = util.grid().at(3, 1, 2);
+        var meter1 = util.grid().at(3, 1, 1);
+        var meter2 = util.grid().at(1, 1, 1);
+        var target = util.grid().at(2, 2, 2);
+
+        scene.showBasePlate();
+        scene.world().showSection(util.select().position(2, 1, 2), Direction.UP);
+        scene.idle(10);
+
+        scene.world().showSection(util.select().position(meter1), Direction.DOWN);
+        scene.world().showSection(util.select().position(meter2), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(target, target.above()), Direction.DOWN);
+        scene.idle(10);
+
+        scene.electric().connectInvisible(source, 0, meter1, 0);
+        scene.electric().connectInvisible(source, 1, meter1, 1);
+        scene.electric().connect(meter1, 0, target, 0);
+        scene.electric().connect(meter1, 1, target, 1);
+        scene.electric().connect(meter2, 0, target, 1);
+        scene.electric().connect(meter2, 1, target, 2);
+        scene.electric().setSource(source, 160);
+        scene.electric().tickFor(10);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("A rheostat can be used to vary electrical resistance using a kinetic input")
+                .pointAt(util.vector().blockSurface(target, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world().setKineticSpeed(util.select().fromTo(target, target.above()), -16);
+        scene.world().modifyBlockEntity(target, RheostatBlockEntity.class, be -> be.onSpeedChanged(0));
+        scene.effects().rotationSpeedIndicator(target.above());
+        scene.electric().tickFor(40);
+        scene.idle(40);
+        scene.world().setKineticSpeed(util.select().fromTo(target, target.above()), 0);
+        scene.world().modifyBlockEntity(target, RheostatBlockEntity.class, be -> be.onSpeedChanged(-16));
+
+        scene.markAsFinished();
+    }
+
+    public static void powerResistor(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+
+        scene.title("power_resistor", "High-power resistor");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.idle(5);
+
+        var target = util.grid().at(2, 2, 2);
+
+        scene.world().showSection(util.select().fromTo(target.below(), target), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("The Power Resistor is a simple device which lets you limit the current flow in a circuit.")
+                .pointAt(util.vector().blockSurface(target, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(60)
+                .text("You can change the resistance by clicking on its top")
+                .pointAt(util.vector().topOf(target))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        var connector1 = util.grid().at(0, 2, 2);
+        var connector2 = util.grid().at(4, 2, 2);
+        var gauge = util.grid().at(1, 1, 1);
+        scene.world().showSection(util.select().fromTo(connector1.below(), connector1), Direction.EAST);
+        scene.world().showSection(util.select().fromTo(connector2.below(), connector2), Direction.WEST);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(gauge), Direction.DOWN);
+        scene.idle(5);
+
+        scene.electric().connect(connector1, 0, gauge, 1);
+        scene.electric().connect(gauge, 0, target, 1);
+        scene.electric().connect(connector2, 0, target, 0);
+        scene.idle(5);
+
+        scene.electric().addSource(connector1, 0, 1);
+        scene.electric().addSource(connector2, 0, 0);
+        scene.electric().tickFor(20);
+
+        scene.overlay().showText(80)
+                .text("The current flow is equal to the voltage across the resistor divided by its resistance (I = V / R)")
+                .pointAt(util.vector().blockSurface(gauge, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
 
         scene.markAsFinished();
     }

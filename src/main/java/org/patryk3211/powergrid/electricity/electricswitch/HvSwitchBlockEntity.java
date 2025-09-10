@@ -70,10 +70,10 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
 
     @Override
     public void tick() {
+        applyLostPower(wire.power());
+
         super.tick();
         rod.tickChaser();
-
-        applyLostPower(wire.power());
 
         if(!rod.settled()) {
             // Setting switch to false is needed to prevent imprecision

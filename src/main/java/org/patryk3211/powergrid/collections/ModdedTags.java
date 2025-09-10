@@ -50,7 +50,8 @@ public class ModdedTags {
 
     public enum Block {
         SILVER_ORES(FORGE_NAMESPACE, "silver_ores"),
-        AFFECTED_BY_LAMP("affected_by_lamp")
+        AFFECTED_BY_LAMP("affected_by_lamp"),
+        IGNORE_IN_ROTOR_ASSEMBLY_SIZE("ignore_in_rotor_assembly_size")
         ;
 
         public final TagKey<net.minecraft.world.level.block.Block> tag;

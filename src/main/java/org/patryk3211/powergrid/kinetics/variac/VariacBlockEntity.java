@@ -15,12 +15,16 @@
  */
 package org.patryk3211.powergrid.kinetics.variac;
 
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,18 +35,18 @@ import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSoundInstance;
 import org.patryk3211.powergrid.electricity.transformer.TransformerVolumeProvider;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
+import org.patryk3211.powergrid.kinetics.base.TunedBlockEntity;
+import org.patryk3211.powergrid.utility.Lang;
 
-public class VariacBlockEntity extends ElectricKineticBlockEntity implements TransformerVolumeProvider {
+import java.util.List;
+
+public class VariacBlockEntity extends TunedBlockEntity implements TransformerVolumeProvider, IHaveGoggleInformation {
     public static final float PRIMARY_TURNS = 25;
     public static final float CORE_AL = 1.5f;
     public static final float COUPLING_FACTOR = 0.9999f;
     public static final float PRIMARY_INDUCTANCE = PRIMARY_TURNS * PRIMARY_TURNS * CORE_AL;
 
-//    protected ModelData assembly;
-    protected LerpedFloat arm;
-
     protected ElectricWire primaryStray;
-    protected ElectricWire secondaryStray;
     protected ElectricWire mutualInductance;
     protected TransformerCoupling coupling;
 
@@ -51,43 +55,17 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
 
     public VariacBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        arm = LerpedFloat.linear().chase(0, 0, LerpedFloat.Chaser.LINEAR);
-        arm.setValue(1);
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-        arm.forceNextSync();
-        sendData();
-    }
-
-    private float getChaseSpeed() {
-        return Mth.clamp(Math.abs(getSpeed()) / 60.0f * 0.05f, 0, 1);
     }
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.simple(this, 2.0f, 0.5f);
+        return ThermalBehaviour.fromConfig(this);
     }
 
     @Override
     public float getVolume() {
         var volume = lastCurrent / 80;
         return Mth.clamp(volume * volume, 0, 0.5f);
-    }
-
-    @Override
-    public void onSpeedChanged(float previousSpeed) {
-        super.onSpeedChanged(previousSpeed);
-        float speed = getSpeed();
-        if(speed == 0) {
-            arm.chase(arm.getValue(), 0, LerpedFloat.Chaser.LINEAR);
-            arm.forceNextSync();
-            return;
-        }
-        arm.chase(speed > 0 ? 1 : 0, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
-        sendData();
     }
 
     public float getRatio() {
@@ -110,16 +88,14 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         float secondaryStray = secondaryInductance - ratio * ratio * mutualInductance;
 
         var Tnode = builder.addInternalNode();
-        var Pnode = builder.addInternalNode();
 
         this.primaryStray = builder.connect(primaryStray, builder.terminalNode(0), Tnode);
         this.mutualInductance = builder.connect(mutualInductance, Tnode, builder.terminalNode(1));
-        // TODO: Find out if this can be replaced with the transformer coupling's resistance.
-        this.secondaryStray = builder.connect(secondaryStray, Tnode, Pnode);
-        this.coupling = builder.couple(ratio, Pnode, builder.terminalNode(1),
+        this.coupling = builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, builder.terminalNode(1),
                 builder.terminalNode(2), builder.terminalNode(1));
     }
 
+    @Override
     public void refreshParameters() {
         var secondaryTurns = getRatio() * PRIMARY_TURNS;
         float secondaryInductance = secondaryTurns * secondaryTurns * CORE_AL;
@@ -130,15 +106,12 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
         float secondaryStray = secondaryInductance - ratio * ratio * mutualInductance;
         this.primaryStray.setResistance(primaryStray);
         this.mutualInductance.setResistance(mutualInductance);
-        this.secondaryStray.setResistance(secondaryStray);
         this.coupling.setRatio(ratio);
+        this.coupling.setResistance(secondaryStray * ratio * ratio);
     }
 
     @Override
     public void tick() {
-        super.tick();
-        arm.tickChaser();
-
         float power = 0;
         lastCurrent = 0;
         if(primaryStray != null) {
@@ -146,25 +119,13 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
             power += (float) (I1 * I1 * primaryStray.getResistance());
             lastCurrent += Math.abs(I1);
         }
-        if(secondaryStray != null) {
-            var I2 = secondaryStray.current();
-            power += (float) (I2 * I2 * secondaryStray.getResistance());
-            lastCurrent += Math.abs(I2);
-        }
         if(mutualInductance != null) {
             var I3 = mutualInductance.current();
             power += (float) (I3 * I3 * mutualInductance.getResistance());
             lastCurrent += Math.abs(I3);
         }
         applyLostPower(power);
-
-        if(!arm.settled()) {
-            if(getSpeed() == 0) {
-                arm.updateChaseTarget(arm.getValue());
-            }
-            refreshParameters();
-            setChanged();
-        }
+        super.tick();
     }
 
     @Override
@@ -180,17 +141,17 @@ public class VariacBlockEntity extends ElectricKineticBlockEntity implements Tra
     }
 
     @Override
-    protected void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
-        if(clientPacket)
-            arm.forceNextSync();
-        compound.put("Arm", arm.writeNBT());
-    }
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        if(!isPlayerSneaking)
+            return false;
 
-    @Override
-    protected void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
-        arm.readNBT(compound.getCompound("Arm"), clientPacket);
-        refreshParameters();
+        Lang.builder().translate("gui.transformer.info_header").forGoggles(tooltip);
+        Lang.builder().translate("gui.transformer.ratio")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        var ratio = Lang.number(1 / getRatio()).add(Component.literal(":1"));
+        ratio.style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+        return true;
     }
 }

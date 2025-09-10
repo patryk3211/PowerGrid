@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -47,7 +48,7 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.forMaxPower(this, 2.0f, 2000f);
+        return ThermalBehaviour.fromConfig(this);
     }
 
     private void checkPos(BlockPos pos, boolean newState, List<BlockPos> checkQueue) {
@@ -119,16 +120,16 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
-        super.tick();
-
         applyLostPower(switch1.power());
         applyLostPower(switch2.power());
         applyLostPower(coil.power());
 
+        super.tick();
+
         var I = Math.abs(coil.current());
         if (I > 2.0f) {
             setState(true);
-        } else if (I < 1.9f) {
+        } else if (I < 2.0f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
             setState(false);
         }
     }

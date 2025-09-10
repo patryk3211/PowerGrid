@@ -41,6 +41,8 @@ import java.util.ArrayList;
 public class WireItem extends Item implements IWire {
     protected float resistance;
     protected float maxLength;
+    protected float dissipationFactor;
+    protected float thermalMass;
 
     protected ResourceLocation wireTexture;
     protected float horizontalCoefficient = 1.01f;
@@ -51,6 +53,8 @@ public class WireItem extends Item implements IWire {
         super(settings);
         resistance = 0.1f;
         maxLength = 16f;
+        dissipationFactor = 0.2f;
+        thermalMass = 1.0f;
     }
 
     @Override
@@ -290,6 +294,16 @@ public class WireItem extends Item implements IWire {
     @Override
     public float getMaximumLength() {
         return maxLength;
+    }
+
+    @Override
+    public float getDissipationFactor() {
+        return dissipationFactor;
+    }
+
+    @Override
+    public float getThermalMass() {
+        return thermalMass;
     }
 
     @Environment(EnvType.CLIENT)

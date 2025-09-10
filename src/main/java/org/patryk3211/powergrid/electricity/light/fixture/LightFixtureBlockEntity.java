@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.light.fixture;
 
+import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
@@ -31,6 +32,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public class LightFixtureBlockEntity extends ElectricBlockEntity {
     private SwitchedWire filament;
+    @Nullable
     private LightBulbState bulbState;
 
     public LightFixtureBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -91,9 +93,8 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        var node1 = builder.addExternalNode();
-        var node2 = builder.addExternalNode();
-        filament = builder.connectSwitch(1, node1, node2, false);
+        builder.setTerminalCount(2);
+        filament = builder.connectSwitch(1, builder.terminalNode(0), builder.terminalNode(1), false);
     }
 
     public boolean replaceBulb(Player player, InteractionHand hand, ItemStack usedStack) {
@@ -148,5 +149,12 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
 
     public AABB getRenderBoundingBox() {
         return new AABB(worldPosition);
+    }
+
+    @Override
+    public ItemRequirement getRequiredItems(BlockState state) {
+        if(bulbState != null)
+            return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, bulbState.getItem());
+        return super.getRequiredItems(state);
     }
 }

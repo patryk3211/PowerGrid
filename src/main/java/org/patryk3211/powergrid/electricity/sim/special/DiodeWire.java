@@ -16,56 +16,46 @@
 package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.ejml.data.DMatrixRMaj;
-import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class DiodeWire extends AbstractElectricWire implements ISolverHook {
-    private static final float I_LEAK = 1e-6f;
-
+public class DiodeWire extends DynamicConductanceWire {
     private final float resistance;
     private final float biasVoltage;
-    private double currentConductance;
-    private double prevConductance;
+    private double prevPotential;
 
-    private double prevCurrent;
+    private double In;
 
     public DiodeWire(float resistance, float biasVoltage, IElectricNode cathode, IElectricNode anode) {
         super(anode, cathode);
         this.resistance = resistance;
         this.biasVoltage = biasVoltage;
-        prevConductance = 0;
-        prevCurrent = 0;
-    }
-
-    private double diodeCurrent(double V) {
-        var Ilin = V / resistance * 0.5;
-        var Ia = (Math.tanh((V - biasVoltage) / 0.2) + 1) * Ilin;
-        return Ia;
     }
 
     @Override
-    public double conductance() {
+    public float current() {
+        return (float) (super.current() - Math.min(biasVoltage, potentialDifference()) * currentConductance);
+    }
+
+    @Override
+    public float power() {
+        return potentialDifference() * current();
+    }
+
+    @Override
+    public double calculateConductance() {
+        double V = super.potentialDifference();
+        V = PNJunction.pnlim(V, prevPotential);
+        prevPotential = V;
+
+        var currentConductance = PNJunction.gm(V, 1 / resistance, biasVoltage);
+        In = -Math.min(biasVoltage, V) * currentConductance * 0.995;
+
         return currentConductance;
     }
 
     @Override
-    public void preSolve(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b) {
-        var V = potentialDifference();
-        var Ia = diodeCurrent(V);
-
-        // Why does this help? Idk, but it does so it stays.
-        prevCurrent = prevCurrent * 0.99 + Ia;
-        if(prevCurrent < 0)
-            prevCurrent = 0;
-        Ia = Ia * 0.9f + prevCurrent * 0.1f;
-
-        if(V + biasVoltage == 0) {
-            currentConductance = I_LEAK;
-        } else {
-            currentConductance = Ia / (V + biasVoltage) + I_LEAK;
-        }
-        network.updateConductance(this, currentConductance - prevConductance);
-        prevConductance = currentConductance;
+    public void addResidual(DMatrixRMaj residual) {
+        residual.add(node1.getIndex(), 0, -In);
+        residual.add(node2.getIndex(), 0,  In);
     }
 }

@@ -42,6 +42,6 @@ public class VoltageGaugeBlock extends GaugeBlock<VoltageGaugeBlockEntity> imple
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Voltage.max(maxValue, player, tooltip);
+        Voltage.max(2000, player, tooltip);
     }
 }

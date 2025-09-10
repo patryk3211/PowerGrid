@@ -33,12 +33,22 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
-    private static final int MAX_ITERATIONS = 200;
+    private static final boolean PERFORMANCE_LOGGING = false;
+    private static final int MAX_ITERATIONS = 500;
+    private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
+
+    private static long solveMicros;
+    private static long solveMin;
+    private static long solveMax;
+    private static long solveCount;
 
     private final Random random;
+    private double initialDistance;
+    private double finalDistance;
 
     // Solved vector
     private DMatrixRMaj guess;
+    private DMatrixRMaj prevGuess;
 
     // Intermediate vectors used in the solver
     private DMatrixRMaj residual;
@@ -54,7 +64,7 @@ public class BiCGSTABSolver implements ISolver {
 
     private final double targetPrecision;
 
-    private Set<ISolverHook> hooks = new HashSet<>();
+    private final Set<ISolverHook> hooks = new HashSet<>();
 
     public BiCGSTABSolver(double targetPrecision) {
         this.targetPrecision = targetPrecision;
@@ -65,6 +75,7 @@ public class BiCGSTABSolver implements ISolver {
     public void setStateSize(int newSize) {
         if(guess == null || guess.getNumRows() != newSize) {
             guess = new DMatrixRMaj(newSize, 1);
+            prevGuess = new DMatrixRMaj(newSize, 1);
             residual = new DMatrixRMaj(newSize, 1);
             hatResidual = new DMatrixRMaj(newSize, 1);
             p = new DMatrixRMaj(newSize, 1);
@@ -82,6 +93,7 @@ public class BiCGSTABSolver implements ISolver {
     public void zero() {
         if(guess != null) {
             guess.zero();
+            prevGuess.zero();
             residual.zero();
             hatResidual.zero();
             p.zero();
@@ -92,7 +104,7 @@ public class BiCGSTABSolver implements ISolver {
         }
     }
 
-    private void preconditioned(DMatrixRMaj K, DMatrixRMaj input, DMatrixRMaj output) {
+    private void preconditioned(DynamicallyTypedMatrix K, DMatrixRMaj input, DMatrixRMaj output) {
         for(int i = 0; i < input.getNumRows(); ++i) {
             var k = K.get(i, i);
             if(k == 0) {
@@ -103,51 +115,60 @@ public class BiCGSTABSolver implements ISolver {
         }
     }
 
-    @Override
-    public DMatrixRMaj solve(DMatrixRMaj A, DMatrixRMaj b) {
-        if(b.getNumRows() == 0)
-            return guess;
-
-        for(var hook : hooks) {
-            hook.preSolve(A, guess, b);
-        }
-
-        // r = b - A * x
-        CommonOps_DDRM.mult(A, guess, v);
-        CommonOps_DDRM.subtract(b, v, residual);
-
-        for(var hook : hooks) {
-            hook.addResidual(A, guess, b, residual);
-        }
-
-        // Check if result is already good enough.
-        double norm = NormOps_DDRM.normP2(residual);
-        if(norm <= targetPrecision) {
-            return guess;
-        }
-
+    private double pickHatResidual() {
         if(USE_RANDOM_HAT_RESIDUAL) {
             RandomMatrices_DDRM.fillUniform(hatResidual, random);
         } else {
             hatResidual.setTo(residual);
+            return 1;
         }
         double dot = CommonOps_DDRM.dot(hatResidual, residual);
         if(USE_RANDOM_HAT_RESIDUAL) {
-            if(dot == 0)
+            if(dot == 0) {
                 hatResidual.setTo(residual);
+                return 1;
+            }
         }
+        return dot;
+    }
+
+    @Override
+    public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll) {
+        if(b.getNumRows() == 0)
+            return guess;
+
+        var start = System.nanoTime();
+
+        prevGuess.setTo(guess);
+        for(var hook : hooks) {
+            hook.preSolve();
+        }
+
+        // r = b - A * x
+        A.mult(guess, v);
+        CommonOps_DDRM.subtract(b, v, residual);
+
+        for(var hook : hooks) {
+            hook.addResidual(residual);
+        }
+
+        // Check if result is already good enough.
+        double norm = NormOps_DDRM.normP2(residual);
+        initialDistance = norm;
+        finalDistance = norm;
+        if(norm <= targetPrecision) {
+            return guess;
+        }
+
+        double dot = pickHatResidual();
         p.setTo(residual);
 
         int iters = 0;
         while(iters++ < MAX_ITERATIONS) {
-            for(var hook : hooks) {
-                hook.iteration(A, guess, residual, p);
-            }
-
             preconditioned(A, p, y);
 
             // v = A * y
-            CommonOps_DDRM.mult(A, y, v);
+            A.mult(y, v);
 
             double alpha = dot / CommonOps_DDRM.dot(hatResidual, v);
             // h = x + alpha * y
@@ -164,7 +185,7 @@ public class BiCGSTABSolver implements ISolver {
             preconditioned(A, s, z);
 
             // t = A * z
-            CommonOps_DDRM.mult(A, z, t);
+            A.mult(z, t);
             double omega = CommonOps_DDRM.dot(t, s) / CommonOps_DDRM.dot(t, t);
 
             // x = h + omega * z
@@ -185,10 +206,61 @@ public class BiCGSTABSolver implements ISolver {
             CommonOps_DDRM.add(residual, beta, t, p);
         }
 
-        if(iters >= MAX_ITERATIONS && LOGGER != null) {
-            LOGGER.warn("Solver iteration limit, final precision: {}", norm);
+        if(PERFORMANCE_LOGGING) {
+            var end = System.nanoTime();
+            var dur = end - start;
+            solveMicros += dur / 1000;
+            if (solveMin == 0) {
+                solveMin = dur;
+            } else if (solveMin > dur) {
+                solveMin = dur;
+            }
+            if (solveMax < dur) {
+                solveMax = dur;
+            }
+            if (++solveCount >= 1000) {
+                if (LOGGER != null) {
+                    LOGGER.info("Average time of previous {} solver runs = {}µs, min = {}µs, max = {}µs",
+                            solveCount, (double) solveMicros / solveCount, (double) solveMin / 1000, (double) solveMax / 1000);
+                }
+                solveMicros = 0;
+                solveCount = 0;
+                solveMax = 0;
+                solveMin = 0;
+            }
         }
 
+        if(!acceptAll) {
+            if (iters >= MAX_ITERATIONS) {
+                if (LOGGER != null) {
+                    LOGGER.warn("Solver iteration limit, final precision: {}", norm);
+                } else {
+                    System.out.printf("Solver iteration limit, final precision: %g", norm);
+                }
+                if (norm > MAXIMUM_ALLOWED_IMPRECISION && (initialDistance / norm) < 10) {
+                    if (LOGGER != null) {
+                        LOGGER.warn("Large imprecision, dropping result");
+                    }
+                    guess.setTo(prevGuess);
+                }
+            }
+        } else {
+            if (iters >= MAX_ITERATIONS) {
+                if (LOGGER != null) {
+                    LOGGER.warn("(AcceptAll) Solver iteration limit, final precision: {}", norm);
+                } else {
+                    System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
+                }
+                if(norm > MAXIMUM_ALLOWED_IMPRECISION && initialDistance / norm < 1) {
+                    if (LOGGER != null) {
+                        LOGGER.warn("(AcceptAll) Large imprecision, dropping result");
+                    }
+                    guess.setTo(prevGuess);
+                }
+            }
+        }
+
+        finalDistance = norm;
         return guess;
     }
 
@@ -205,5 +277,15 @@ public class BiCGSTABSolver implements ISolver {
     @Override
     public Collection<ISolverHook> getHooks() {
         return hooks;
+    }
+
+    @Override
+    public double getInitialGuessDistance() {
+        return initialDistance;
+    }
+
+    @Override
+    public double getFinalGuessDistance() {
+        return finalDistance;
     }
 }

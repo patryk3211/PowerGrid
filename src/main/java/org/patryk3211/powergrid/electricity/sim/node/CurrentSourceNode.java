@@ -32,7 +32,7 @@ public class CurrentSourceNode extends ElectricNode {
         var old = this.current;
         super.setCurrent(current);
         if(network != null)
-            network.updateCurrent(this, old);
+            network.updateCurrentMatrix(this, this.current - old);
     }
     @Override
     public void receiveResult(float value) {

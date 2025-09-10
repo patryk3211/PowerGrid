@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
@@ -40,6 +41,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.config.CResistance;
 import org.patryk3211.powergrid.config.CStress;
+import org.patryk3211.powergrid.config.CThermal;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
@@ -58,24 +60,30 @@ import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
-import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
+import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
@@ -90,6 +98,8 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(BatteryBlock.setSpec(SimpleBatterySpec.ACID_BATTERY))
+            .transform(CThermal.maxPower(100, 1.5f))
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.BATTERY))
             .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
             .simpleItem()
             .register();
@@ -144,7 +154,8 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/heating_coil"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(10))
+            .transform(CResistance.setResistance(25))
+            .transform(CThermal.maxPower(60, 1.0f))
             .defaultLoot()
             .simpleItem()
             .register();
@@ -158,51 +169,27 @@ public class ModdedBlocks {
             .simpleItem()
             .register();
 
-    public static final BlockEntry<VoltageGaugeBlock> ANDESITE_VOLTAGE_METER = REGISTRATE.block("andesite_voltage_gauge", VoltageGaugeBlock::new)
-            .blockstate(horizontalBlock("block/gauge/andesite/base"))
+    public static final BlockEntry<VoltageGaugeBlock> VOLTAGE_METER = REGISTRATE.block("voltage_gauge", VoltageGaugeBlock::new)
+            .blockstate(horizontalBlock("block/gauge/conductive/base"))
             .initialProperties(SharedProperties::wooden)
-            .transform(GaugeBlock.setMaxValue(20))
-            .transform(GaugeBlock.setMaterial(GaugeBlock.Material.ANDESITE))
             .transform(axeOrPickaxe())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .defaultLoot()
             .item()
-                .model(gauge("block/gauge/item_voltage", "block/andesite_gauge"))
-                .build()
-            .register();
-    public static final BlockEntry<VoltageGaugeBlock> BRASS_VOLTAGE_METER = REGISTRATE.block("brass_voltage_gauge", VoltageGaugeBlock::new)
-            .blockstate(horizontalBlock("block/gauge/brass/base"))
-            .initialProperties(SharedProperties::wooden)
-            .transform(GaugeBlock.setMaxValue(200))
-            .transform(GaugeBlock.setMaterial(GaugeBlock.Material.BRASS))
-            .transform(axeOrPickaxe())
-            .defaultLoot()
-            .item()
-                .model(gauge("block/gauge/item_voltage", "block/brass_gauge"))
+                .model(gauge("block/gauge/item_voltage", "block/conductive_gauge"))
                 .build()
             .register();
 
-    public static final BlockEntry<CurrentGaugeBlock> ANDESITE_CURRENT_METER = REGISTRATE.block("andesite_current_gauge", CurrentGaugeBlock::new)
-            .blockstate(horizontalBlock("block/gauge/andesite/base"))
+    public static final BlockEntry<CurrentGaugeBlock> CURRENT_METER = REGISTRATE.block("current_gauge", CurrentGaugeBlock::new)
+            .blockstate(horizontalBlock("block/gauge/conductive/base"))
             .initialProperties(SharedProperties::wooden)
-            .transform(GaugeBlock.setMaxValue(5))
-            .transform(GaugeBlock.setMaterial(GaugeBlock.Material.ANDESITE))
-            .transform(CResistance.setResistance(0.25f))
-            .transform(axeOrPickaxe())
-            .defaultLoot()
-            .item()
-                .model(gauge("block/gauge/item_current", "block/andesite_gauge"))
-                .build()
-            .register();
-    public static final BlockEntry<CurrentGaugeBlock> BRASS_CURRENT_METER = REGISTRATE.block("brass_current_gauge", CurrentGaugeBlock::new)
-            .blockstate(horizontalBlock("block/gauge/brass/base"))
-            .initialProperties(SharedProperties::wooden)
-            .transform(GaugeBlock.setMaxValue(25))
-            .transform(GaugeBlock.setMaterial(GaugeBlock.Material.BRASS))
             .transform(CResistance.setResistance(0.05f))
+            .transform(CThermal.maxPower(35, 2.0f))
             .transform(axeOrPickaxe())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .defaultLoot()
             .item()
-                .model(gauge("block/gauge/item_current", "block/brass_gauge"))
+                .model(gauge("block/gauge/item_current", "block/conductive_gauge"))
                 .build()
             .register();
 
@@ -231,7 +218,7 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CommutatorBlock> GENERATOR_COMMUTATOR = REGISTRATE.block("generator_commutator", CommutatorBlock::new)
-            .blockstate(rotorModel("block/generator/commutator_base_horizontal"))
+            .blockstate(horizontalBlock("block/generator/commutator_base_horizontal"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .defaultLoot()
@@ -240,11 +227,24 @@ public class ModdedBlocks {
                 .build()
             .register();
 
+    public static final BlockEntry<VerticalCommutatorBlock> GENERATOR_VERTICAL_COMMUTATOR = REGISTRATE.block("generator_vertical_commutator", VerticalCommutatorBlock::new)
+            .blockstate(verticalCommutator("block/generator/commutator_base_vertical"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .lang("Vertical Generator Commutator")
+            .item()
+            .model(itemWithParent("block/generator/vertical_commutator"))
+            .build()
+            .register();
+
     public static final BlockEntry<GeneratorClutchBlock> GENERATOR_CLUTCH = REGISTRATE.block("generator_clutch", GeneratorClutchBlock::new)
             .blockstate(alternateDirectionalBlock(state -> state.getValue(POWERED) ? "block/generator/clutch_on" : "block/generator/clutch"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
-            .transform(CStress.setImpact(4))
+            .transform(CStress.setImpact(16))
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.CLUTCH))
+            .tag(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag)
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/generator/clutch_item"))
@@ -254,6 +254,7 @@ public class ModdedBlocks {
     public static final BlockEntry<GeneratorHousing> GENERATOR_HOUSING = REGISTRATE.block("generator_housing", GeneratorHousing::new)
             .blockstate(housing("block/generator/housing"))
             .initialProperties(SharedProperties::softMetal)
+            .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
             .addLayer(() -> RenderType::cutoutMipped)
             .defaultLoot()
@@ -262,11 +263,24 @@ public class ModdedBlocks {
                 .build()
             .register();
 
+    public static final BlockEntry<VerticalGeneratorHousing> VERTICAL_GENERATOR_HOUSING = REGISTRATE.block("vertical_generator_housing", VerticalGeneratorHousing::new)
+            .blockstate(horizontalBlock("block/generator/housing_vertical"))
+            .initialProperties(SharedProperties::softMetal)
+            .properties(BlockBehaviour.Properties::noOcclusion)
+            .transform(pickaxeOnly())
+            .addLayer(() -> RenderType::cutoutMipped)
+            .defaultLoot()
+            .item()
+                .model(itemWithParent("block/generator/housing_vertical"))
+                .build()
+            .register();
+
     public static final BlockEntry<LvSwitchBlock> LV_SWITCH = REGISTRATE.block("lv_switch", LvSwitchBlock::new)
             .blockstate(surfaceSwitch("block/switches/lv_switch"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CResistance.setResistance(0.15))
+            .transform(CThermal.maxPower(38.4, 0.5f))
             .lang("LV Switch")
             .item()
                 .model(itemWithParent("block/switches/lv_switch_off_v"))
@@ -278,6 +292,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CResistance.setResistance(0.15))
+            .transform(CThermal.maxPower(38.4, 0.5f))
             .lang("LV Button")
             .item()
                 .model(itemWithParent("block/switches/lv_button_off_v"))
@@ -290,6 +305,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CResistance.setResistance(0.05))
+            .transform(CThermal.maxPower(51.2, 1.0f))
             .item()
                 .model(itemWithParent("block/switches/mv_switch_off_v"))
                 .build()
@@ -301,6 +317,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(2))
             .transform(CResistance.setResistance(0.1))
+            .transform(CThermal.maxPower(102.4, 2.0f))
             .loot((tables, block) ->
                     tables.add(block, b -> LootTable.lootTable()
                             .withPool(LootPool.lootPool()
@@ -329,6 +346,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistances("coil", 12, "switch", 0.05))
+            .transform(CThermal.maxPower(252.8, 2.0f))
             .simpleItem()
             .register();
 
@@ -347,11 +365,23 @@ public class ModdedBlocks {
             .simpleItem()
             .register();
     public static final BlockEntry<CreativeResistorBlock> CREATIVE_RESISTOR = REGISTRATE.block("creative_resistor", CreativeResistorBlock::new)
-            .blockstate(horizontalAxisBlock("block/creative_resistor"))
+            .blockstate(surfaceBlock("block/creative_resistor"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
-            .simpleItem()
+            .item()
+                .model(itemWithParent("block/creative_resistor_v"))
+                .build()
+            .register();
+
+    public static final BlockEntry<ResistorBlock> RESISTOR = REGISTRATE.block("power_resistor", ResistorBlock::new)
+            .blockstate(surfaceBlock("block/resistor"))
+            .initialProperties(SharedProperties::stone)
+            .transform(pickaxeOnly())
+            .transform(CThermal.maxPower(1000, 2.0f))
+            .item()
+                .model(itemWithParent("block/resistor_v"))
+                .build()
             .register();
 
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
@@ -379,6 +409,7 @@ public class ModdedBlocks {
             .loot((tables, block) -> tables.dropOther(block, TRANSFORMER_CORE.get()))
             .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
             .transform(pickaxeOnly())
+            .transform(CThermal.maxPower(1000, 4.0f))
             .register();
     public static final BlockEntry<TransformerMediumBlock> TRANSFORMER_MEDIUM = REGISTRATE.block("transformer_medium", TransformerMediumBlock::new)
             .initialProperties(TRANSFORMER_CORE)
@@ -389,6 +420,7 @@ public class ModdedBlocks {
                     ))
             .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
             .transform(pickaxeOnly())
+            .transform(CThermal.maxPower(4000, 16.0f))
             .register();
 
     public static final BlockEntry<VariacBlock> VARIAC = REGISTRATE.block("variac", VariacBlock::new)
@@ -396,6 +428,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/variac/block"))
             .transform(pickaxeOnly())
             .transform(CStress.setNoImpact())
+            .transform(CThermal.maxPower(1000, 4.0f))
             .item()
                 .model(itemWithParent("block/variac/item"))
                 .build()
@@ -408,7 +441,7 @@ public class ModdedBlocks {
                     }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(CStress.setCapacity(64))
-            .transform(CResistance.setResistance(2))
+            .transform(CResistance.setResistance(6.4))
             .transform(pickaxeOnly())
             .onRegister(BlockStressValues.setGeneratorSpeed(256, true))
             .defaultLoot()
@@ -434,10 +467,11 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<ElectromagnetBlock> ELECTROMAGNET = REGISTRATE.block("electromagnet", ElectromagnetBlock::new)
-            .blockstate(downFacing("block/electromagnet"))
+            .blockstate(simple("block/electromagnet"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(15))
+            .transform(CThermal.maxPower(1500, 4.0f))
             .defaultLoot()
             .item(AssemblyOperatorBlockItem::new)
             .build()
@@ -460,6 +494,7 @@ public class ModdedBlocks {
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(25))
+            .transform(CThermal.maxPower(100, 1.0f))
             .loot((tables, block) -> tables.add(block, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .when(ExplosionCondition.survivesExplosion())
@@ -500,7 +535,8 @@ public class ModdedBlocks {
             .blockstate(windingModel())
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(0.1))
+            .transform(CResistance.setResistance(0.3))
+            .transform(CThermal.maxPower(15, 1.5f))
             .addLayer(() -> RenderType::cutoutMipped)
             .loot((tables, block) -> tables.dropOther(block, ModdedItems.COPPER_COIL))
             .register();
@@ -525,8 +561,31 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("alarm_bell"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(10))
+            .transform(CResistance.setResistance(20))
+            .transform(CThermal.maxPower(50, 1.5f))
             .simpleItem()
+            .register();
+
+    public static final BlockEntry<ThermometerBlock> THERMOMETER = REGISTRATE.block("thermometer", ThermometerBlock::new)
+            .blockstate(northFacing("block/thermometer/base"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .item(ThermometerItem::new)
+                .model(itemWithParent("block/thermometer/base"))
+                .transform(ModdedItems.customRenderer(() -> ThermometerItemRenderer::new))
+                .build()
+            .register();
+
+    public static final BlockEntry<RheostatBlock> RHEOSTAT = REGISTRATE.block("rheostat", RheostatBlock::new)
+            .initialProperties(CONDUCTIVE_CASING)
+            .blockstate(horizontalBlock("block/rheostat/block"))
+            .transform(pickaxeOnly())
+            .transform(CStress.setNoImpact())
+            .transform(CResistance.setResistance(100))
+            .transform(CThermal.maxPower(1000, 4.0f))
+            .item()
+                .model(itemWithParent("block/rheostat/item"))
+                .build()
             .register();
 
     @SuppressWarnings("EmptyMethod")

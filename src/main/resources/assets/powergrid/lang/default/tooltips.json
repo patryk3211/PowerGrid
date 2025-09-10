@@ -1,4 +1,6 @@
 {
+  "powergrid.tooltip.holdForDescription": "Hold [%1$s] for Properties",
+
   "item.powergrid.electrozapper.tooltip.summary": "Fires a lightning bolt that bounces off of nearby enemies, splitting the damage between them. Can be powered with _Forge Energy_ from a _Portable Battery_",
   "item.powergrid.electrozapper.tooltip.condition1": "When R-Clicked",
   "item.powergrid.electrozapper.tooltip.behaviour1": "_Shoots_ a lightning bolt",
@@ -18,6 +20,16 @@
   "item.powergrid.electrobaton.tooltip.summary": "Pushes back and stuns enemies (if they aren't too strong) when powered with _Forge Energy_ from a _Portable Battery_",
   "item.powergrid.electrobaton.tooltip.condition1": "While wearing a Portable Battery",
   "item.powergrid.electrobaton.tooltip.behaviour1": "Attacked enemies will be _stunned_ and _no durability_ will be used. Instead, _Forge Energy_ is drained from the Battery",
+
+  "block.powergrid.thermometer.tooltip.summary": "A simple device which measures the temperature of things",
+  "block.powergrid.thermometer.tooltip.condition1": "When Held",
+  "block.powergrid.thermometer.tooltip.behaviour1": "Measures the temperature of the device it is pointed at",
+  "block.powergrid.thermometer.tooltip.condition2": "When Placed",
+  "block.powergrid.thermometer.tooltip.behaviour2": "Measures current and maximum temperature of the device it is placed on over time",
+
+  "item.powergrid.multimeter.tooltip.summary": "A multi-purpose tool, handful to anyone who wants to play with electricity",
+  "item.powergrid.multimeter.tooltip.condition1": "When Held",
+  "item.powergrid.multimeter.tooltip.behaviour1": "Can be used to probe voltage between terminals and current flowing through wires",
 
   "item.powergrid.incomplete_circuit.tooltip.summary": "Use _Mechanical Arms_ to insert used components and complete the circuit",
   "item.powergrid.circuit_schematic.empty": "Empty Schematic",

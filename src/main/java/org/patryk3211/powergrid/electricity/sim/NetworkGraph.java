@@ -17,8 +17,10 @@ package org.patryk3211.powergrid.electricity.sim;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 
 import java.util.*;
 
@@ -26,12 +28,14 @@ public class NetworkGraph {
     private static class Node {
         public final IElectricNode node;
         public final Map<Node, List<AbstractElectricWire>> connections;
+        public final Set<TransmissionLine> connectedLines;
         public final Set<ICouplingNode> couplings;
         public boolean isKept;
 
         public Node(IElectricNode node) {
             this.node = node;
             this.connections = new HashMap<>();
+            this.connectedLines = new HashSet<>();
             this.couplings = new HashSet<>();
             isKept = false;
         }
@@ -80,6 +84,13 @@ public class NetworkGraph {
         if(!conns2.contains(wire)) conns2.add(wire);
         if(hooks != null)
             hooks.addWire(wire);
+
+        if(wire instanceof TransmissionLine line) {
+            object1.connectedLines.add(line);
+            object2.connectedLines.add(line);
+            if(hooks != null)
+                hooks.lineConnected(line);
+        }
     }
 
     public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
@@ -103,6 +114,13 @@ public class NetworkGraph {
         }
         if(hooks != null)
             hooks.removeWire(wire);
+
+        if(wire instanceof TransmissionLine line) {
+            object1.connectedLines.remove(line);
+            object2.connectedLines.remove(line);
+            if(hooks != null)
+                hooks.lineDisconnected(line);
+        }
     }
 
     public void couple(ICouplingNode coupling) {
@@ -180,10 +198,44 @@ public class NetworkGraph {
         return size;
     }
 
+    @NotNull
+    public Collection<TransmissionLine> getConnectedLines(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return List.of();
+        return nodes.get(node).connectedLines;
+    }
+
+    @NotNull
+    public Collection<IElectricNode> getTransmissionLineConnectedNodes(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return List.of();
+        var object = nodes.get(node);
+        var connected = new HashSet<IElectricNode>();
+        for(var line : object.connectedLines) {
+            if(line.getNode1() == node) {
+                connected.add(line.getNode2());
+            } else if(line.getNode2() == node) {
+                connected.add(line.getNode1());
+            } else {
+                PowerGrid.LOGGER.warn("Neither end of line {} is connected to node {}", line, node);
+            }
+        }
+        return connected;
+    }
+
+    public int transmissionLineCount(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return 0;
+        var object = nodes.get(node);
+        return object.connectedLines.size();
+    }
+
     public interface IGraphModifyHooks {
         default void addNode(IElectricNode node) { }
         default void removeNode(IElectricNode node) { }
         default void addWire(AbstractElectricWire wire) { }
         default void removeWire(AbstractElectricWire wire) { }
+        default void lineConnected(TransmissionLine line) { }
+        default void lineDisconnected(TransmissionLine line) { }
     }
 }

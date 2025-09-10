@@ -131,6 +131,16 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine("WTW")
                     .patternLine("WEW")),
 
+    RHEOSTAT = create(ModdedBlocks.RHEOSTAT::get)
+            .recipe(b -> b
+                    .key('C', RecipeTags.coal())
+                    .key('W', RecipeTags.resistiveCoil())
+                    .key('E', RecipeTags.conductiveCasing())
+                    .key('S', RecipeTags.shaft())
+                    .patternLine("CS ")
+                    .patternLine("WWW")
+                    .patternLine("WEW")),
+
     BASIN_HEATER = create(ModdedBlocks.BASIN_HEATER::get)
             .recipe(b -> b
                     .key('R', RecipeTags.resistiveCoil())

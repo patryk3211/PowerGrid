@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
+import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -23,15 +24,16 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class BatteryBlockEntity extends ElectricBlockEntity {
-    protected VoltageSourceNode sourceNode;
-    protected TransformerCoupling coupling;
+    protected VoltageSourceCoupling sourceCoupling;
 
     protected final BatterySpec spec;
     protected double capacity;
     protected double energy;
+    protected boolean refreshLinks;
 
     public BatteryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -44,16 +46,15 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        var spec = ((AbstractBatteryBlock<?>) getBlockState().getBlock()).getSpec();
-        return ThermalBehaviour.simple(this, spec.getThermalMass(), spec.getDissipationFactor());
+        return ThermalBehaviour.fromConfig(this);
     }
 
     public void updateParameters() {
         if(energy <= 0)
             return;
         float chargeLevel = (float) (energy / capacity);
-        sourceNode.setVoltage(spec.calculateVoltage(chargeLevel));
-        coupling.setResistance(spec.calculateResistance(chargeLevel));
+        sourceCoupling.setVoltage(spec.calculateVoltage(chargeLevel));
+        sourceCoupling.setResistance(spec.calculateResistance(chargeLevel));
     }
 
     /**
@@ -61,28 +62,32 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
      * @return Positive power draws energy, negative power recharges
      */
     public float calculatePower() {
-        return sourceNode.getCurrent() * sourceNode.getVoltage();
+        return -sourceCoupling.getCurrent() * sourceCoupling.getVoltage();
     }
 
     @Override
     public void tick() {
+        if(sourceCoupling != null) {
+            // Internal resistive losses
+            var I = sourceCoupling.getCurrent();
+            applyLostPower(I * I * sourceCoupling.getResistance());
+        }
         super.tick();
 
-        if(sourceNode == null)
+        if(sourceCoupling == null)
             return;
-
-        // Internal resistive losses
-        var I = sourceNode.getCurrent();
-        applyLostPower(I * I * coupling.getResistance());
 
         // Extracted energy
         var power = calculatePower();
+        if(Math.abs(power) > 0.05f) {
+            refreshLinks = true;
+        }
         energy -= power * 0.05f;
         if(energy <= 0) {
             // If a battery reaches zero volts it is probably dead.
             // This should be simulated with a high resistance.
             energy = 0;
-            sourceNode.setVoltage(0);
+            sourceCoupling.setVoltage(0);
             return;
         } else if(energy >= capacity) {
             energy = capacity;
@@ -98,6 +103,10 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     public void lazyTick() {
         super.lazyTick();
         sendData();
+        if(refreshLinks) {
+            refreshLinks = false;
+            DisplayLinkBlock.notifyGatherers(level, worldPosition);
+        }
     }
 
     @Override
@@ -116,8 +125,7 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        sourceNode = builder.addInternalNode(VoltageSourceNode.class);
-        coupling = builder.couple(1, 0.5f, sourceNode, builder.terminalNode(0), builder.terminalNode(1));
+        sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class, builder.terminalNode(0), builder.terminalNode(1), 0.5f);
     }
 
     public void setEnergy(double energy) {

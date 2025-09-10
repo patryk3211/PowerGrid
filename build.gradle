@@ -1,7 +1,7 @@
 plugins {
 	id 'maven-publish'
 	id 'architectury-plugin' version '3.4-SNAPSHOT'
-	id 'dev.architectury.loom' version '1.9+' apply false
+	id 'dev.architectury.loom' version '1.11+' apply false
 	id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
@@ -9,7 +9,7 @@ architectury {
 	minecraft = minecraft_version
 }
 
-var logConfig = file('log4j-dev.xml')
+var logConfig = files('log4j2.xml')
 allprojects {
 	apply plugin: "java"
 	apply plugin: "architectury-plugin"
@@ -56,15 +56,7 @@ allprojects {
 	}
 
 	loom {
-//		mods {
-//			"powergrid" {
-//				sourceSet sourceSets.main
-//	//			sourceSet sourceSets.client
-//			}
-//		}
-//		remapArchives = true
-
-		log4jConfigs.from(logConfig)
+		setLog4jConfigs(logConfig)
 	}
 
 	configurations {
@@ -83,6 +75,7 @@ allprojects {
 		implementation(include("org.ejml:ejml-core:0.44.0"))
 		implementation(include("org.ejml:ejml-simple:0.44.0"))
 		implementation(include("org.ejml:ejml-ddense:0.44.0"))
+		implementation(include("org.ejml:ejml-dsparse:0.44.0"))
 //		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	}
 
@@ -189,12 +182,6 @@ subprojects {
 	}
 }
 
-//fabricApi {
-//	configureDataGeneration {
-//		client = true
-//	}
-//}
-
 // configure the maven publication
 //publishing {
 //	publications {
@@ -239,16 +226,16 @@ dependencies {
 //	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}") { transitive false }
 
 	// Support for unit tests
-//	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 
 	modApi "dev.architectury:architectury:${project.architectury_api_version}"
 
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 }
 
-//test {
-//	useJUnitPlatform()
-//}
+test {
+	useJUnitPlatform()
+}
 
 sourceSets.main {
 	resources {

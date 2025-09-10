@@ -35,6 +35,8 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerBlock;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
+import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
+import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.mixin.client.BlueprintOverlayRendererAccessor;
 
 import java.util.ArrayList;
@@ -51,7 +53,10 @@ public class PlacementOverlay {
 
     public static void init() {
         overlayProviders.add(PlacementOverlay::getTransformerText);
+        overlayProviders.add(MultimeterItem::multimeterOverlayText);
         overlayProviders.add(TerminalHandler::overlayText);
+        overlayProviders.add(WirePreview::distanceOverlay);
+        overlayProviders.add(ThermometerItemRenderer::overlayText);
     }
 
     public static void setItemRequirement(Item item, int count, boolean hasItems) {

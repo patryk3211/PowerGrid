@@ -717,7 +717,7 @@ public class DeviceScenes {
         scene.idle(90);
 
         scene.overlay().showText(80)
-                .text("As the battery discharges, its electrical parameters will begin to change")
+                .text("As the battery discharges, its voltage and resistance will begin to change")
                 .placeNearTarget()
                 .attachKeyFrame();
 

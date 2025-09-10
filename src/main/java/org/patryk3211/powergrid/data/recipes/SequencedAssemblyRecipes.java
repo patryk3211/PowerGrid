@@ -24,9 +24,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
-import org.patryk3211.powergrid.collections.ModdedFluids;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.data.FluidConstants;
 
 @SuppressWarnings("unused")
 public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {

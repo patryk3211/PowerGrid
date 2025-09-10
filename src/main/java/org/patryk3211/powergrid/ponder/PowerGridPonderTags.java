@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.ponder;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
@@ -26,7 +27,8 @@ public class PowerGridPonderTags {
     public static final ResourceLocation
             GENERATOR_ASSEMBLY = id("generator_assembly"),
             ELECTRIC_RELAYS = id("electric_relays"),
-            ELECTRIC_DEVICES = id("electric_devices");
+            ELECTRIC_DEVICES = id("electric_devices"),
+            CIRCUIT_COMPONENTS = id("circuit_components");
 
     private static ResourceLocation id(String name) {
         return PowerGrid.asResource(name);
@@ -40,8 +42,10 @@ public class PowerGridPonderTags {
                 .item(ModdedBlocks.GENERATOR_CLUTCH)
                 .item(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
                 .item(ModdedBlocks.GENERATOR_COMMUTATOR)
+                .item(ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
                 .item(ModdedItems.COPPER_COIL)
                 .item(ModdedBlocks.GENERATOR_HOUSING)
+                .item(ModdedBlocks.VERTICAL_GENERATOR_HOUSING)
                 .addToIndex()
                 .register();
 
@@ -57,6 +61,8 @@ public class PowerGridPonderTags {
                 .item(ModdedBlocks.FUSE_HOLDER)
                 .item(ModdedBlocks.TRANSFORMER_CORE)
                 .item(ModdedBlocks.VARIAC)
+                .item(ModdedBlocks.RHEOSTAT)
+                .item(ModdedBlocks.RESISTOR)
                 .item(ModdedBlocks.WIRE_CONNECTOR)
                 .item(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
                 .item(ModdedBlocks.DEVICE_CONNECTOR)
@@ -71,8 +77,29 @@ public class PowerGridPonderTags {
                 .item(ModdedBlocks.HEATING_COIL)
                 .item(ModdedBlocks.ELECTRIC_FAN)
                 .item(ModdedBlocks.BASIN_HEATER)
+                .item(ModdedItems.LV_LIGHT_BULB)
                 .item(ModdedItems.LIGHT_BULB)
                 .item(ModdedItems.GROWTH_LAMP)
+                .addToIndex()
+                .register();
+
+        helper.registerTag(CIRCUIT_COMPONENTS)
+                .title("Circuit Components")
+                .description("Components which can be placed on a circuit")
+                .item(ModdedBlocks.WIRE_CONNECTOR)
+                .item(AllItems.COPPER_NUGGET)
+                .item(ModdedItems.RESISTOR)
+                .item(ModdedItems.DIODE)
+                .item(ModdedItems.CAPACITOR)
+                .item(ModdedItems.RELAY)
+                .item(ModdedItems.REDSTONE_RELAY)
+                .item(AllItems.ELECTRON_TUBE)
+                .item(ModdedItems.LED)
+                .item(ModdedBlocks.LV_SWITCH)
+                .item(ModdedBlocks.LV_BUTTON)
+                .item(ModdedItems.POTENTIOMETER)
+                .item(ModdedItems.BJT_TRANSISTOR)
+                .item(ModdedBlocks.VOLTAGE_METER)
                 .addToIndex()
                 .register();
 
@@ -82,5 +109,11 @@ public class PowerGridPonderTags {
         helper.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR.getId())
                 .add(ModdedBlocks.SERVO.getId());
+
+        helper.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
+                .add(ModdedBlocks.VOLTAGE_METER.getId())
+                .add(ModdedBlocks.CURRENT_METER.getId())
+                .add(ModdedBlocks.GENERATOR_CLUTCH.getId())
+                .add(ModdedBlocks.BATTERY.getId());
     }
 }

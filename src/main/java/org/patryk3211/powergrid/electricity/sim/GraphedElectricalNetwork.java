@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
@@ -27,6 +28,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     }
 
     public GraphedElectricalNetwork(NetworkGraph graph) {
+        super();
         this.graph = graph;
     }
 
@@ -45,22 +47,25 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     @Override
     public void removeNode(INode node) {
         super.removeNode(node);
-        if(node instanceof IElectricNode enode)
+        if(node instanceof IElectricNode enode) {
+            if(!graph.getConnectedLines(enode).isEmpty())
+                PowerGrid.LOGGER.warn("Removed a node which had connections", new Throwable());
             graph.removeNode(enode);
+        }
         if(node instanceof ICouplingNode cnode)
             graph.decouple(cnode);
     }
 
     @Override
     public void addWire(AbstractElectricWire wire) {
-        super.addWire(wire);
         graph.connect(wire.node1, wire.node2, wire);
+        super.addWire(wire);
     }
 
     @Override
     public void removeWire(AbstractElectricWire wire) {
-        super.removeWire(wire);
         graph.disconnect(wire.node1, wire.node2, wire);
+        super.removeWire(wire);
     }
 
     public NetworkGraph getGraph() {

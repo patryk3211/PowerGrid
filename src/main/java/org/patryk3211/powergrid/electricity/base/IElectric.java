@@ -211,8 +211,7 @@ public interface IElectric extends IWrenchable {
 
         // The amount of used items dictates the resistance of a connection,
         // to make sure everything is fair.
-        var R = item.getResistance() * requiredItemCount;
-        var entity = HangingWireEntity.create(serverWorld, endpoint1, endpoint2, new ItemStack(stack.getItemHolder(), requiredItemCount), R);
+        var entity = HangingWireEntity.create(serverWorld, endpoint1, endpoint2, new ItemStack(stack.getItemHolder(), requiredItemCount), null);
 
         if(!serverWorld.tryAddFreshEntityWithPassengers(entity)) {
             PowerGrid.LOGGER.error("Failed to spawn new connection wire entity.");

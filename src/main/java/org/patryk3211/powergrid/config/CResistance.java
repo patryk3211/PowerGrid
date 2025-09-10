@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 public class CResistance extends ConfigBase implements ResistanceValues.Provider {
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     private static final Object2DoubleMap<ResourceLocation> DEFAULT_RESISTANCES = new Object2DoubleOpenHashMap<>();
 
@@ -41,14 +41,14 @@ public class CResistance extends ConfigBase implements ResistanceValues.Provider
     @Override
     public void registerAll(ForgeConfigSpec.Builder builder) {
         builder.comment(".", Comments.ohm, Comments.resistance)
-                .push("impact");
+                .push("resistance");
         DEFAULT_RESISTANCES.forEach((id, value) -> this.resistances.put(id, builder.define(id.getPath(), value)));
         builder.pop();
     }
 
     @Override
     public String getName() {
-        return "resistance.v" + VERSION;
+        return "resistance-v" + VERSION;
     }
 
     @Nullable

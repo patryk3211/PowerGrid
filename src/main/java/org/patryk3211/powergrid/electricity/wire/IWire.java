@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.wire;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Range;
 import org.patryk3211.powergrid.electricity.info.Resistance;
@@ -28,9 +29,13 @@ public interface IWire extends IHaveElectricProperties {
     float getResistance();
     float getMaximumLength();
 
+    float getDissipationFactor();
+    float getThermalMass();
+
     @Override
     default void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(getResistance(), player, tooltip);
+        Current.max(getResistance(), getDissipationFactor() * 150, player, tooltip);
         Range.max((int) getMaximumLength(), tooltip);
     }
 

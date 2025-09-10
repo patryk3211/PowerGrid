@@ -17,35 +17,36 @@ package org.patryk3211.powergrid.compat.jei;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.compat.jei.CreateJEI;
-import com.simibubi.create.compat.jei.DoubleItemIcon;
-import com.simibubi.create.compat.jei.EmptyBackground;
-import com.simibubi.create.compat.jei.ItemIcon;
+import com.simibubi.create.Create;
+import com.simibubi.create.compat.jei.*;
 import com.simibubi.create.compat.jei.category.CreateRecipeCategory;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.config.CRecipes;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.drawable.IDrawable;
-import mezz.jei.api.registration.IRecipeCatalystRegistration;
-import mezz.jei.api.registration.IRecipeCategoryRegistration;
-import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
+import mezz.jei.api.ingredients.ITypedIngredient;
+import mezz.jei.api.registration.*;
 import net.createmod.catnip.config.ConfigBase;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.utility.Lang;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -62,6 +63,37 @@ public class PowerGridJEI implements IModPlugin {
     @Override
     public ResourceLocation getPluginUid() {
         return UID;
+    }
+
+    @Override
+    public void registerGuiHandlers(IGuiHandlerRegistration registration) {
+        registration.addGhostIngredientHandler(CircuitDesignTableEditScreen.class, new IGhostIngredientHandler<>() {
+            @Override
+            public <I> List<Target<I>> getTargetsTyped(CircuitDesignTableEditScreen gui, ITypedIngredient<I> ingredient, boolean doStart) {
+                if(ingredient.getType() != VanillaTypes.ITEM_STACK)
+                    return List.of();
+                if(!ingredient.getItemStack().get().is(ModdedTags.Item.CIRCUIT_COMPONENT.tag))
+                    return List.of();
+                return List.of(new Target<>() {
+                    @Override
+                    public Rect2i getArea() {
+                        return gui.ghostTarget();
+                    }
+
+                    @Override
+                    public void accept(I ingredient) {
+                        if(ingredient instanceof ItemStack stack) {
+                            gui.toolSelect(stack.getItem());
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
     }
 
     @Override
@@ -95,6 +127,11 @@ public class PowerGridJEI implements IModPlugin {
         registration.addRecipes(CircuitAssemblyCategory.TYPE, List.of(new Object()));
 
         magnetizing.registerRecipes(registration);
+
+        var conversionType = new mezz.jei.api.recipe.RecipeType<>(Create.asResource("mystery_conversion"), ConversionRecipe.class);
+        registration.addRecipes(conversionType, List.of(ConversionRecipe.create(
+                new ItemStack(Items.IRON_INGOT), ModdedItems.MAGNET.asStack()
+        )));
     }
 
     private static class CategoryBuilder<T extends Recipe<?>> {

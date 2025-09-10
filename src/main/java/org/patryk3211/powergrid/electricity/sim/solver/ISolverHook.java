@@ -20,27 +20,17 @@ import org.ejml.data.DMatrixRMaj;
 public interface ISolverHook {
     /**
      * Called before iterative solving loop is started
-     * @param A Admittance matrix
-     * @param x Previous solution
-     * @param b Current matrix
      */
-    default void preSolve(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b) { }
-
-    /**
-     * Called at the start of every iteration
-     * @param A Admittance matrix
-     * @param x Current best guess solution
-     * @param residual Residual matrix
-     * @param p Direction matrix
-     */
-    default void iteration(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj residual, DMatrixRMaj p) { }
+    default void preSolve() { }
 
     /**
      * Called after the initial residual has been calculated (r = b - A * x)
-     * @param A Admittance matrix
-     * @param x Previous solution
-     * @param b Current matrix
      * @param residual Residual matrix
      */
-    default void addResidual(DMatrixRMaj A, DMatrixRMaj x, DMatrixRMaj b, DMatrixRMaj residual) { }
+    default void addResidual(DMatrixRMaj residual) { }
+
+    /**
+     * Called once the whole process of solving (including repeats) is complete
+     */
+    default void postUpperSolve() { }
 }

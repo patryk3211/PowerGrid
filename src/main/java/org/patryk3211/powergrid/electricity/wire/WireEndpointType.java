@@ -25,7 +25,10 @@ public enum WireEndpointType {
     JUNCTION(JunctionWireEndpoint::new, true),
     BLOCK_WIRE(BlockWireEntityEndpoint::new, false),
     IMAGINARY(ImaginaryWireEndpoint::new, false),
-    DEFERRED_JUNCTION(DeferredJunctionWireEndpoint::new, true)
+    DEFERRED_JUNCTION(DeferredJunctionWireEndpoint::new, true),
+
+    // Special endpoint type used by the multimeter
+    CIRCUIT_BOARD(CircuitBoardEndpoint::new, false)
     ;
 
     private final Supplier<IWireEndpoint> factory;

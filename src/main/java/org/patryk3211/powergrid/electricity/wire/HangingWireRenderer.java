@@ -27,6 +27,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -99,6 +100,23 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                         x2 + x, y2 + y, z2 + z,
                         curve.cross1, curve.cross2, light, color,
                         curve.thickness, 0, length, offset));
+    }
+
+    public static void renderFromPositions(PoseStack matrices, VertexConsumer buffer, Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness, BlockAndTintGetter lightProvider, int color) {
+        float x = (float) (t1.x + t2.x) * 0.5f;
+        float y = (float) t1.y;
+        float z = (float) (t1.z + t2.z) * 0.5f;
+        var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
+        curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
+                var blockPos = BlockPos.containing((x1 + x2) * 0.5 + x, (y1 + y2) * 0.5 + y, (z1 + z2) * 0.5 + z);
+                var sky = lightProvider.getBrightness(LightLayer.SKY, blockPos);
+                var block = lightProvider.getBrightness(LightLayer.BLOCK, blockPos);
+                renderSegment(matrices, buffer,
+                        x1 + x, y1 + y, z1 + z,
+                        x2 + x, y2 + y, z2 + z,
+                        curve.cross1, curve.cross2, LightTexture.pack(block, sky), color,
+                        curve.thickness, 0, length, offset);
+        });
     }
 
     public static void renderSegment(PoseStack ms, VertexConsumer buffer,

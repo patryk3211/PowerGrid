@@ -21,10 +21,11 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -38,12 +39,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     // Order of these lists should be the same on server and client.
     private final List<INode> internalNodes = new ArrayList<>();
-    private final List<IElectricNode> externalNodes = new ArrayList<>();
+    private final List<OwnedFloatingNode> externalNodes = new ArrayList<>();
     private final List<AbstractElectricWire> internalWires = new ArrayList<>();
 
     private final Map<BlockWireEndpoint, Set<WireEntity>> connections = new HashMap<>();
     private boolean destroying = false;
     private boolean rebuildOnClient = false;
+    private boolean removed = false;
+    private boolean paused = true;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
         this(be, true);
@@ -60,8 +63,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     @Nullable
     public ElectricalNetwork getNetwork() {
-        if(externalNodes.isEmpty())
-            return null;
+        if(externalNodes.isEmpty()) {
+            if(internalNodes.isEmpty())
+                return null;
+            // Same as below, only the first node really matters.
+            for(var node : internalNodes) {
+                return node.getNetwork();
+            }
+        }
         // Since every node has to have the same network we can
         // just take the network of the first external node and
         // assume that every other node belongs to it.
@@ -74,21 +83,41 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     public void joinNetwork(ElectricalNetwork network) {
-        if(externalNodes.isEmpty())
-            throw new IllegalStateException("Cannot join a network if no external nodes are defined");
+        if(externalNodes.isEmpty() && internalNodes.isEmpty())
+            throw new IllegalStateException("Cannot join a network if no nodes are defined");
         if(getNetwork() == null) {
             externalNodes.forEach(node -> {
                 if(node != null)
                     network.addNode(node);
             });
-            internalNodes.forEach(network::addNode);
-            internalWires.forEach(network::addWire);
+            if(!paused) {
+                internalNodes.forEach(network::addNode);
+                internalWires.forEach(network::addWire);
+            }
+        } else {
+            externalNodes.forEach(node -> {
+                if(node != null && node.getNetwork() == null) {
+                    network.addNode(node);
+                }
+            });
+            if(!paused) {
+                internalNodes.forEach(node -> {
+                    if (node.getNetwork() == null)
+                        network.addNode(node);
+                });
+                internalWires.forEach(wire -> {
+                    if (wire.getNetwork() == null)
+                        network.addWire(wire);
+                });
+            }
         }
     }
 
     public void rebuildCircuit() {
         var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         builder.with(getNetwork());
+        if(paused)
+            builder.paused();
         builder.clear();
         element.buildCircuit(builder);
 
@@ -109,6 +138,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             }
             iter.remove();
         }
+        if(getWorld() != null)
+            GlobalElectricNetworks.nodeHolderAdded(this);
 
         var world = getWorld();
         if(world != null && !world.isClientSide)
@@ -119,12 +150,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return internalNodes;
     }
 
-    public List<IElectricNode> getExternalNodes() {
+    public List<OwnedFloatingNode> getExternalNodes() {
         return externalNodes;
-    }
-
-    public boolean needsRebuild() {
-        return rebuildOnClient;
     }
 
     @Override
@@ -132,25 +159,53 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return true;
     }
 
-    @Override
-    public void unload() {
-        for(var terminalConnections : connections.values()) {
-            for(var entity : terminalConnections) {
-                entity.dropWire();
+    public void pause() {
+        if(!paused) {
+            paused = true;
+            element.paused();
+            internalWires.forEach(AbstractElectricWire::remove);
+            var network = getNetwork();
+            if(network != null) {
+                // Remove nodes in reverse order.
+                for(int i = internalNodes.size() - 1; i >= 0; --i) {
+                    var node = internalNodes.get(i);
+                    network.removeNode(node);
+                }
             }
         }
-        internalWires.forEach(AbstractElectricWire::remove);
-        if(externalNodes.isEmpty())
-            return;
+    }
 
-        var network = getNetwork();
-        if(network != null) {
-            internalNodes.forEach(network::removeNode);
-            externalNodes.forEach(node -> {
-                if(node != null)
-                    network.removeNode(node);
-            });
+    public void unpause() {
+        if(paused) {
+            paused = false;
+            var network = getNetwork();
+            if (network == null)
+                return;
+            // External nodes weren't removed so they don't have to be added.
+            if(hasInternals()) {
+                GlobalElectricNetworks.prepareUnpaused(this);
+                internalNodes.forEach(network::addNode);
+                internalWires.forEach(network::addWire);
+                element.unpaused();
+            }
         }
+    }
+
+    @Override
+    public void unload() {
+        if(!removed) {
+            pause();
+            // Unload doesn't remove external nodes since they might be utilized by transmission lines.
+            // Wires are not dropped either since they could be forming an important transmission line junction.
+            GlobalElectricNetworks.nodeHolderUnloaded(this);
+        }
+    }
+
+    public void remove() {
+        breakConnections();
+        pause();
+        GlobalElectricNetworks.nodeHolderRemoved(this);
+        removed = true;
     }
 
     public void refreshConnectionEntities() {
@@ -165,6 +220,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     @Override
     public void initialize() {
         super.initialize();
+        GlobalElectricNetworks.nodeHolderAdded(this);
+        unpause();
     }
 
     public void addConnection(BlockWireEndpoint endpoint, WireEntity wire) {
@@ -172,7 +229,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         // Check for stale wires here
         sourceConnections.removeIf(Entity::isRemoved);
         sourceConnections.add(wire);
-        blockEntity.notifyUpdate();
     }
 
     public void removeConnection(BlockWireEndpoint endpoint, WireEntity wire) {
@@ -190,7 +246,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     }
 
     @Nullable
-    public IElectricNode getTerminal(int index) {
+    public OwnedFloatingNode getTerminal(int index) {
         if(index >= externalNodes.size())
             return null;
         return externalNodes.get(index);
@@ -211,7 +267,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return connections;
     }
 
-
     public boolean hasTerminal(int terminal) {
         return terminal >= 0 && terminal < externalNodes.size() && externalNodes.get(terminal) != null;
     }
@@ -230,7 +285,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             }
             connections.clear();
         }
-        blockEntity.notifyUpdate();
         destroying = false;
     }
 
@@ -260,5 +314,13 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             thisList.addAll(entry.getValue());
         }
         otherBehaviour.connections.clear();
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public boolean hasInternals() {
+        return !internalNodes.isEmpty() || !internalWires.isEmpty();
     }
 }

@@ -19,17 +19,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 import java.util.Objects;
-
-;
 
 public class BlockWireEndpoint implements IWireEndpoint {
     private BlockPos pos;
@@ -71,10 +71,14 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     public IElectric getElectricBlock(Level world) {
+        if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
+            return null;
         return IElectric.getAt(world, pos);
     }
 
     public ElectricBehaviour getElectricBehaviour(Level world) {
+        if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
+            return null;
         var electric = getElectricBlock(world);
         if(electric == null)
             return null;
@@ -89,18 +93,32 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public IElectricNode getNode(Level world) {
+    public OwnedFloatingNode getNode(Level world) {
         var behaviour = getElectricBehaviour(world);
-        if(behaviour == null)
-            return null;
-        return behaviour.getTerminal(terminal);
+//        if(global == null) {
+//            // Used during reading of persistent parts from NBT
+//            return null;
+//        }
+        if(behaviour == null) {
+            var global = GlobalElectricNetworks.getWorldNetworks(world);
+            // Try grabbing a node from the global map.
+            return global.globalExternalNodes.get(this);
+        }
+        var newNode = behaviour.getTerminal(terminal);
+//        if(existingNode != newNode && newNode != null && existingNode != null)
+//            global.addAndMigrateNode(newNode);
+        return newNode;
     }
 
     @Override
     public void joinNetwork(Level world, ElectricalNetwork network) {
         var behaviour = getElectricBehaviour(world);
-        if(behaviour == null)
+        if(behaviour == null) {
+            var node = GlobalElectricNetworks.getWorldNetworks(world).globalExternalNodes.get(this);
+            if(node != null)
+                network.addNode(node);
             return;
+        }
         behaviour.joinNetwork(network);
     }
 

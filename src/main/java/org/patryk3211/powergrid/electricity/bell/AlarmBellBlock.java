@@ -76,6 +76,6 @@ public class AlarmBellBlock extends HorizontalElectricBlock implements IBE<Alarm
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
-        Voltage.rated(10, player, tooltip);
+        Voltage.rated(resistance() * 1, player, tooltip);
     }
 }

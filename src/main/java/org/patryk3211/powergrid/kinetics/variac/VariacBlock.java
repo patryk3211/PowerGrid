@@ -48,11 +48,6 @@ public class VariacBlock extends ElectricKineticBlock implements IBE<VariacBlock
             box(5, 10, 5, 11, 16, 11)
     );
 
-    private static final Component TAP = Lang.builder()
-            .translate("variac.tap")
-            .style(ChatFormatting.GRAY)
-            .component();
-
     private static final Component PRIMARY = Lang.builder()
             .translate("variac.primary")
             .style(ChatFormatting.GRAY)
@@ -62,7 +57,7 @@ public class VariacBlock extends ElectricKineticBlock implements IBE<VariacBlock
             new TerminalBoundingBox(PRIMARY, 10, 2, 0, 12, 4, 1),
             new TerminalBoundingBox(IDecoratedTerminal.COMMON, 7, 2, 0, 9, 4, 1)
                     .withColor(IDecoratedTerminal.BLUE),
-            new TerminalBoundingBox(TAP, 4, 2, 0, 6, 4, 1)
+            new TerminalBoundingBox(IDecoratedTerminal.TAP, 4, 2, 0, 6, 4, 1)
     };
 
     public VariacBlock(Properties properties) {

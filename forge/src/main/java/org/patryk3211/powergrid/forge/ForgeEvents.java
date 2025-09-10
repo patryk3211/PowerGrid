@@ -15,9 +15,14 @@
  */
 package org.patryk3211.powergrid.forge;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.level.ChunkTicketLevelUpdatedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 public class ForgeEvents {
@@ -26,5 +31,47 @@ public class ForgeEvents {
         if(event.getLevel() instanceof ServerLevel world) {
             WireEntity.entityUnload(event.getEntity(), world);
         }
+    }
+
+    @SubscribeEvent
+    public static void chunkTicketUpdate(ChunkTicketLevelUpdatedEvent event) {
+        if(event.getChunkHolder() == null)
+            return;
+        var chunk = event.getChunkHolder().getTickingChunk();
+        if(chunk == null)
+            return;
+        if(event.getNewTicketLevel() >= 33 && event.getOldTicketLevel() <= 32) {
+            // Block entities no longer ticking.
+            // Above level 33 the entities get completely unloaded so no need to pause them.
+            for(var be : chunk.getBlockEntities().values()) {
+                if(be instanceof SmartBlockEntity smart) {
+                    var electric = smart.getBehaviour(ElectricBehaviour.TYPE);
+                    if(electric == null)
+                        continue;
+                    electric.pause();
+                }
+            }
+        } else if(event.getNewTicketLevel() <= 32) {
+            // Block entities ticking again.
+            for(var be : chunk.getBlockEntities().values()) {
+                if(be instanceof SmartBlockEntity smart) {
+                    var electric = smart.getBehaviour(ElectricBehaviour.TYPE);
+                    if(electric == null)
+                        continue;
+                   electric.unpause();
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void chunkLoad(ChunkEvent.Load event) {
+        var level = event.getLevel();
+        if(level.isClientSide())
+            return;
+        var global = GlobalElectricNetworks.getWorldNetworks(level);
+        if(global == null)
+            return;
+        global.chunkLoaded(event.getChunk().getPos());
     }
 }

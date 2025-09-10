@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.circuits.thermal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
 import java.util.Collection;
@@ -40,6 +41,7 @@ public class ThermalUnit {
     private final Runnable overheatCallback;
 
     private float temperature = 22f;
+    private int overheatTicks;
     private Vec3 position;
 
     public ThermalUnit(UUID componentUUID, int index, float thermalMass, float dissipationFactor, float overheatTemperature, Collection<AbstractElectricWire> heatSources, @Nullable Consumer<Float> temperatureCallback, @Nullable Runnable overheatCallback) {
@@ -65,19 +67,26 @@ public class ThermalUnit {
     }
 
     public boolean hasOverheated() {
-        return temperature >= overheatTemperature;
+        return temperature >= overheatTemperature && overheatTicks >= ThermalBehaviour.OVERHEAT_TICKS;
     }
 
-    public void tick() {
+    public void tick(float dissipationMultiplier) {
         if(hasOverheated())
             return;
-        float power = -dissipationFactor * (temperature - BASE_TEMPERATURE);
+        float power = -dissipationFactor * (temperature - BASE_TEMPERATURE) * dissipationMultiplier;
         for(var source : heatSources) {
             power += source.power();
         }
         temperature += power / 20f / thermalMass;
         if(power < 0 && temperature < 22f)
             temperature = 22f;
+        if(temperature >= overheatTemperature && power > 0) {
+            ++overheatTicks;
+        } else if(power < 0) {
+            overheatTicks = 0;
+            if(temperature > overheatTemperature + 10)
+                temperature = overheatTemperature + 10;
+        }
         temperatureChanged();
     }
 

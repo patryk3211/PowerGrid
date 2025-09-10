@@ -45,6 +45,7 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 
@@ -246,5 +247,6 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(ResistanceValues.get(this), player, tooltip);
+        Current.max(stack, player, tooltip);
     }
 }

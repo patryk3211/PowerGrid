@@ -27,6 +27,6 @@ public class ConnectorBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        builder.addExternalNode();
+        builder.setTerminalCount(1);
     }
 }

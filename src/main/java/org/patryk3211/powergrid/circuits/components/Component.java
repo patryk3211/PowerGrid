@@ -25,12 +25,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
+import org.patryk3211.powergrid.circuits.components.properties.ConstantProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,6 +57,22 @@ public abstract class Component {
         this.properties = properties.build();
     }
 
+    static ConstantProperty c(String name, net.minecraft.network.chat.Component value) {
+        return new ConstantProperty(PowerGrid.MOD_ID, name, value);
+    }
+
+    public static ConstantProperty power(float value) {
+        return new ConstantProperty(PowerGrid.MOD_ID, "power", Unit.POWER.formatWithPrefixes(value).component());
+    }
+
+    public static ConstantProperty current(float resistance, float power) {
+        return current((float) Math.sqrt(power / resistance));
+    }
+
+    public static ConstantProperty current(float value) {
+        return new ConstantProperty(PowerGrid.MOD_ID, "current", Unit.CURRENT.formatWithPrefixes(value).component());
+    }
+
     @Environment(EnvType.CLIENT)
     public static void modelChanged(BlockPos pos) {
         var renderer = Minecraft.getInstance().levelRenderer;
@@ -65,7 +84,7 @@ public abstract class Component {
     }
 
     public float getPadResistance(int padIndex) {
-        return 0.01f;
+        return 0.002f;
     }
 
     public boolean emitExternalTerminals() {

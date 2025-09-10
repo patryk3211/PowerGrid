@@ -18,9 +18,7 @@ package org.patryk3211.powergrid.kinetics.generator.housing;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,23 +29,22 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.kinetics.generator.winding.IWindingConnectable;
 
-public class GeneratorHousing extends Block implements IWrenchable {
+public class GeneratorHousing extends Block implements IWrenchable, IWindingConnectable {
     public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty UP = BlockStateProperties.UP;
 
-    private static final VoxelShape SHAPE_SOUTH_DOWN = box(0, 0, 2, 16, 14, 16);
-    private static final VoxelShape SHAPE_SOUTH_UP = box(0, 2, 2, 16, 16, 16);
-    private static final VoxelShape SHAPE_NORTH_DOWN = box(0, 0, 0, 16, 14, 14);
-    private static final VoxelShape SHAPE_NORTH_UP = box(0, 2, 0, 16, 16, 14);
-
-    private static final VoxelShape SHAPE_EAST_DOWN = box(2, 0, 0, 16, 14, 16);
-    private static final VoxelShape SHAPE_EAST_UP = box(2, 2, 0, 16, 16, 16);
-    private static final VoxelShape SHAPE_WEST_DOWN = box(0, 0, 0, 14, 14, 16);
-    private static final VoxelShape SHAPE_WEST_UP = box(0, 2, 0, 14, 16, 16);
+    private static final VoxelShape SHAPE = box(1, 1, 1, 15, 15, 15);
 
     public GeneratorHousing(Properties settings) {
         super(settings);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override
@@ -57,25 +54,19 @@ public class GeneratorHousing extends Block implements IWrenchable {
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        boolean up = state.getValue(UP);
-        return switch(state.getValue(HORIZONTAL_FACING)) {
-            case SOUTH -> up ? SHAPE_SOUTH_UP : SHAPE_SOUTH_DOWN;
-            case NORTH -> up ? SHAPE_NORTH_UP : SHAPE_NORTH_DOWN;
-            case EAST -> up ? SHAPE_EAST_UP : SHAPE_EAST_DOWN;
-            case WEST -> up ? SHAPE_WEST_UP : SHAPE_WEST_DOWN;
-            default -> null;
-        };
-    }
-
-    @Override
-    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+    public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
         BlockState newState = null;
         var facing = state.getValue(HORIZONTAL_FACING);
-        if(context.getClickedFace().getAxis() == Direction.Axis.Y) {
+        if(targetedFace.getAxis() == Direction.Axis.Y) {
             newState = state.setValue(HORIZONTAL_FACING, facing.getClockWise());
-        } else if(context.getClickedFace().getAxis() == facing.getAxis()) {
-            newState = state.setValue(UP, !state.getValue(UP));
+        } else if(targetedFace.getAxis() == facing.getAxis()) {
+            if(state.getValue(UP)) {
+                newState = ModdedBlocks.VERTICAL_GENERATOR_HOUSING.getDefaultState()
+                        .setValue(HORIZONTAL_FACING, facing.getClockWise());
+            } else {
+                newState = ModdedBlocks.VERTICAL_GENERATOR_HOUSING.getDefaultState()
+                        .setValue(HORIZONTAL_FACING, facing);
+            }
         } else {
             var up = state.getValue(UP);
             if(up) {
@@ -92,12 +83,7 @@ public class GeneratorHousing extends Block implements IWrenchable {
                 }
             }
         }
-
-        var world = context.getLevel();
-        world.setBlockAndUpdate(context.getClickedPos(), newState);
-        IWrenchable.playRotateSound(world, context.getClickedPos());
-
-        return InteractionResult.SUCCESS;
+        return newState;
     }
 
     @Override
@@ -105,5 +91,25 @@ public class GeneratorHousing extends Block implements IWrenchable {
         var facing = ctx.getHorizontalDirection();
         var up = (ctx.getClickLocation().y - ctx.getClickedPos().getY()) > 0.5f;
         return defaultBlockState().setValue(HORIZONTAL_FACING, facing).setValue(UP, up);
+    }
+
+    @Override
+    public boolean canConnect(BlockState state, Direction side) {
+        if(side.getAxis() == Direction.Axis.Y) {
+            var up = state.getValue(UP);
+            return (up && side == Direction.UP) ||
+                   (!up && side == Direction.DOWN);
+        } else {
+            return side == state.getValue(HORIZONTAL_FACING);
+        }
+    }
+
+    @Override
+    public Direction getOtherSide(BlockState state, Direction sideIn) {
+        if(sideIn.getAxis() == Direction.Axis.Y) {
+            return state.getValue(HORIZONTAL_FACING);
+        } else {
+            return state.getValue(UP) ? Direction.UP : Direction.DOWN;
+        }
     }
 }

@@ -36,7 +36,7 @@ public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
     }
 
     public static CircuitDesignTableMenu create(int id, Inventory inv, CircuitDesignTableBlockEntity be) {
-        return new CircuitDesignTableMenu(ModdedMenus.CIRCUIT_DESIGN_BENCH.get(), id, inv, be);
+        return new CircuitDesignTableMenu(ModdedMenus.CIRCUIT_DESIGN_TABLE.get(), id, inv, be);
     }
 
     @Override

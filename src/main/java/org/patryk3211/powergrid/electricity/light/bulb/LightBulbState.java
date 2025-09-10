@@ -22,8 +22,10 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
@@ -40,6 +42,7 @@ public abstract class LightBulbState {
     protected final float overheatTemperature;
     protected float temperature;
     protected boolean burned;
+    private int overheatTicks;
 
     public <T extends Item&ILightBulb> LightBulbState(T bulb, LightFixtureBlockEntity fixture) {
         this.item = bulb;
@@ -59,6 +62,8 @@ public abstract class LightBulbState {
             return;
         var energy = power / 20f;
         temperature += energy / thermalMass;
+        if(energy < 0 && temperature < BASE_TEMPERATURE)
+            temperature = BASE_TEMPERATURE;
     }
 
     protected void updatePowerLevel(int newLevel) {
@@ -83,7 +88,7 @@ public abstract class LightBulbState {
         filament.setResistance(bulb.resistanceFunction(temperature));
 
         var world = fixture.getLevel();
-        if(isOverheated()) {
+        if(isOverheated() && overheatTicks++ >= 4) {
             burned = true;
             filament.setState(false);
             if(world.isClientSide) {
@@ -92,6 +97,8 @@ public abstract class LightBulbState {
             }
             updatePowerLevel(0);
             return;
+        } else if(!isOverheated()) {
+            overheatTicks = 0;
         }
 
         if(!world.isClientSide) {
@@ -127,6 +134,14 @@ public abstract class LightBulbState {
 
     @Environment(EnvType.CLIENT)
     public abstract PartialModel getModel();
+    @NotNull
+    @Environment(EnvType.CLIENT)
+    public abstract PartialModel getLightModel();
+
+    public float getAlpha() {
+        var x = Mth.clamp((temperature - 600f) / (1400f - 600f), 0, 1);
+        return x * x;
+    }
 
     public void write(CompoundTag nbt) {
         nbt.putString("Bulb", BuiltInRegistries.ITEM.getKey(item).toString());
