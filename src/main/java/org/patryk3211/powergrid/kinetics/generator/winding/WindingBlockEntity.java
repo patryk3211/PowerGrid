@@ -646,27 +646,19 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return -be.sourceCoupling.getCurrent() / be.totalCoilCount;
     }
 
-    public float adjustedCurrent() {
-        var be = getSourceHolder();
-        if(be == null)
-            return 0;
-        var U =  be.sourceCoupling.getVoltage();
-        var I = -be.sourceCoupling.getCurrent();
-        if(U == 0 || I == 0)
-            return 0;
-        // This might be inefficient.
-        var voltageDeviation = be.outputVoltage() - be.sourceCoupling.getVoltage();
-        var loadResistance = U / I;
-        var adjustCurrent = voltageDeviation / loadResistance;
-        return (I + adjustCurrent) / be.totalCoilCount;
-    }
-
     @Override
     public void remove() {
-        super.remove();
         // Always break connections when the winding is modified.
-        if(mainBE != null)
+        if(mainBE != null) {
+            for(var part : mainBE.wires()) {
+                if(part.owner != null) {
+                    part.owner.kill();
+                } else {
+                    part.remove();
+                }
+            }
             mainBE.electricBehaviour.breakConnections();
+        }
         if(mainBE == this) {
             if(parallelPositions != null) {
                 // This is the owner
@@ -685,13 +677,13 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 var be = level.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get());
                 be.ifPresentOrElse(WindingBlockEntity::rebuildParallels, this::rebuildParallels);
             }
-//            collectedBEs.forEach(be -> be.mainBE = null);
         } else if(mainBE != null) {
             // Segment of a winding
             mainBE.collectedBEs.remove(this);
             mainBE.calculateElectricalParameters();
             mainBE.safeRebuildParallels();
         }
+        super.remove();
     }
 
     @Override
@@ -715,15 +707,15 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             var torque2 = -Pe / rotorP.getAngularVelocityRadians();
             if(rotorP.getAngularVelocityRadians() != 0)
                 torque = torque2;
-            if (Pe > 0) {
+            if (Pe >= 0) {
                 // Generator is sourcing power
                 torque *= 1.0f;
-                torque = rotorP.limitForce(torque);
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
-                torque *= 0.9f;
+                torque *= 0.5f;
             }
+            torque = rotorP.limitForce(torque);
             rotorP.applyTickForce(torque);
         }
         if(rotorN != null) {
@@ -733,15 +725,15 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             var torque2 = -Pe / rotorN.getAngularVelocityRadians();
             if(rotorN.getAngularVelocityRadians() != 0)
                 torque = torque2;
-            if (Pe > 0) {
+            if (Pe >= 0) {
                 // Generator is sourcing power
                 torque *= 1.0f;
-                torque = rotorN.limitForce(torque);
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
-                torque *= 0.9f;
+                torque *= 0.5f;
             }
+            torque = rotorN.limitForce(torque);
             rotorN.applyTickForce(torque);
         }
 

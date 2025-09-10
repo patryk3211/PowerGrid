@@ -237,7 +237,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         return fieldStrength;
     }
 
-    public int getMaxRotationSpeed() {
+    public static int getMaxRotationSpeed() {
         return ModdedConfigs.server().kinetics.rotorRPMMax.get();
     }
 
@@ -280,9 +280,16 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             if(!getWorld().isClientSide) {
                 var V = Math.abs(angularVelocity);
                 var Vmax = getMaxRotationSpeed();
-                if(V > Vmax && overspeedTicks++ >= OVERSPEED_TICKS) {
-                    getWorld().destroyBlock(getPos(), false);
-                    checkConnectivity(this);
+                if(V > Vmax) {
+                    if(overspeedTicks++ >= OVERSPEED_TICKS) {
+                        // Overspeed for too long
+                        getWorld().destroyBlock(getPos(), false);
+                        checkConnectivity(this);
+                    } else {
+                        // Clamp to max speed, if something is still accelerating it, the rotor will be destroyed
+                        angularVelocity = Vmax * Math.signum(angularVelocity);
+                        blockEntity.sendData();
+                    }
                 } else if(V <= Vmax) {
                     overspeedTicks = 0;
                 }

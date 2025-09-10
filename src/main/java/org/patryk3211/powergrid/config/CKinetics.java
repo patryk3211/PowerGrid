@@ -29,10 +29,10 @@ public class CKinetics extends ConfigBase {
 
     public final ConfigInt rotorAssemblyMaxSize = i(8, 3, "rotorAssemblyMaxSize", Comments.rotorAssemblyMaxSize);
 
-    public final ConfigFloat generatorRotorInertia = f(0.1f, 0, "generatorRotorInertia");
-    public final ConfigFloat generatorInductionRotorInertia = f(0.1f, 0, "generatorInductionRotorInertia");
-    public final ConfigFloat generatorCommutatorInertia = f(0.05f, 0, "generatorCommutatorInertia");
-    public final ConfigFloat generatorClutchInertia = f(0.05f, 0, "generatorClutchInertia");
+    public final ConfigFloat generatorRotorInertia = f(0.25f, 0, "generatorRotorInertia");
+    public final ConfigFloat generatorInductionRotorInertia = f(0.25f, 0, "generatorInductionRotorInertia");
+    public final ConfigFloat generatorCommutatorInertia = f(0.1f, 0, "generatorCommutatorInertia");
+    public final ConfigFloat generatorClutchInertia = f(0.1f, 0, "generatorClutchInertia");
 
     public final ConfigFloat motorRPMPerVolt = f(1.5f, 0, "motorRPMPerVolt", Comments.motorRPMPerVolt);
 

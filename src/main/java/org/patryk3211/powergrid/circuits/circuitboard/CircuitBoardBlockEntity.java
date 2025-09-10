@@ -323,7 +323,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         if(baked == null || !baked.isDamaged())
             return false;
 
-        Lang.translate("gui.circuit_board.damage_header")
+        Lang.translate("gui.damage_header")
                 .forGoggles(tooltip);
         Lang.translate("gui.circuit_board.damage_body")
                 .style(ChatFormatting.GRAY)

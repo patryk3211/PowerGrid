@@ -30,8 +30,9 @@
 
   "powergrid.gui.potentiometer.setting": "Setting",
 
-  "powergrid.gui.circuit_board.damage_header": "Damaged",
+  "powergrid.gui.damage_header": "Damaged",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
+  "powergrid.gui.switch.overvolted": "This switch has been overvolted",
 
   "powergrid.gui.thermometer.temperature": "Temperature: ",
 

@@ -51,10 +51,14 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
 
     @Override
     public void joinNetwork(ElectricalNetwork network) {
-        getMainBehaviour().ifPresentOrElse(
-                b -> b.joinNetwork(network),
-                () -> super.joinNetwork(network)
-        );
+        if(hasInternals()) {
+            getMainBehaviour().ifPresentOrElse(
+                    b -> b.joinNetwork(network),
+                    () -> super.joinNetwork(network)
+            );
+        } else {
+            getMainBehaviour().ifPresent(b -> b.joinNetwork(network));
+        }
     }
 
     @Override

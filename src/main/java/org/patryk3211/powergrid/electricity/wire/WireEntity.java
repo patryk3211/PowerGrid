@@ -54,6 +54,7 @@ import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TE
 
 public abstract class WireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
     protected static final EntityDataAccessor<Float> TEMPERATURE = SynchedEntityData.defineId(WireEntity.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Byte> OVERHEAT_TICKS = SynchedEntityData.defineId(WireEntity.class, EntityDataSerializers.BYTE);
 
     // TODO: Transmission line flipping might mess with this. Make sure it is safe.
     private IWireEndpoint endpoint1;
@@ -72,7 +73,6 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     private float dissipationFactor;
     private float thermalMass;
-    private int overheatTicks;
 
     protected Float resistanceOverride = null;
 
@@ -91,6 +91,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @Override
     protected void defineSynchedData() {
         entityData.define(TEMPERATURE, BASE_TEMPERATURE);
+        entityData.define(OVERHEAT_TICKS, (byte) 0);
     }
 
     private void temperatureUpdate() {
@@ -117,10 +118,10 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
             if(temperature > overheatTemperature && energy > 0) {
                 // Temperature is high and keeps rising.
-                ++overheatTicks;
+                entityData.set(OVERHEAT_TICKS, (byte) (entityData.get(OVERHEAT_TICKS) + 1));
             } else if(energy <= 0) {
                 // Cooling down so it's fine.
-                overheatTicks = 0;
+                entityData.set(OVERHEAT_TICKS, (byte) 0);
                 if(temperature > overheatTemperature + 10)
                     temperature = overheatTemperature + 10;
             }
@@ -130,7 +131,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     }
 
     public boolean isOverheated() {
-        return entityData.get(TEMPERATURE) >= overheatTemperature && overheatTicks >= ThermalBehaviour.OVERHEAT_TICKS;
+        return entityData.get(TEMPERATURE) >= overheatTemperature && entityData.get(OVERHEAT_TICKS) >= ThermalBehaviour.OVERHEAT_TICKS;
     }
 
     public float getTemperature() {
