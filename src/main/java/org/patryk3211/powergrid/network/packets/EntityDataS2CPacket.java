@@ -19,7 +19,7 @@ import dev.architectury.networking.NetworkManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.HashMap;
@@ -50,7 +50,7 @@ public class EntityDataS2CPacket implements SimplePacket {
     @Override
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         context.get().queue(() -> {
-            var world = ClientBoundPackets.world();
+            var world = ClientSideAccess.world();
             var entity = world.getEntity(entityId);
             if(entity == null) {
                 DEFERRED_DATA.put(entityId, data);

@@ -22,7 +22,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.FriendlyByteBuf;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
-import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.function.Supplier;
@@ -47,7 +47,7 @@ public class LightningSyncS2CPacket implements SimplePacket {
     @Environment(EnvType.CLIENT)
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         context.get().queue(() -> {
-            var world = ClientBoundPackets.world();
+            var world = ClientSideAccess.world();
             if(world.getEntity(entityId) instanceof AbstractContraptionEntity entity) {
                 entity.getContraption().forEachActor(world, (behaviour, movementContext) -> {
                     if(!(behaviour instanceof LightningRodMovementBehaviour lightningBehaviour))

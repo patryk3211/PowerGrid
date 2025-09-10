@@ -29,6 +29,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class CircuitSchematicItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
-        var player = EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
+        var player = EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(Player::isCreative)
                 .orElse(false);
         if(context.isCreative() || player) {

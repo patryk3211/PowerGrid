@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.network;
+package org.patryk3211.powergrid.utility;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 @Environment(EnvType.CLIENT)
-public class ClientBoundPackets {
+public class ClientSideAccess {
     public static Level world() {
         return Minecraft.getInstance().level;
+    }
+
+    public static Player player() {
+        return Minecraft.getInstance().player;
     }
 }

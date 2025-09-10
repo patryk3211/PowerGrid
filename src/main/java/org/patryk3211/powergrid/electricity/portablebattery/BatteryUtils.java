@@ -18,13 +18,13 @@ package org.patryk3211.powergrid.electricity.portablebattery;
 import com.simibubi.create.AllEnchantments;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 public class BatteryUtils {
     public static int getMaxCharge(ItemStack stack) {
@@ -66,7 +66,7 @@ public class BatteryUtils {
     public static boolean isBarVisible(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return false;
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
                     if(battery != null && getCurrentCharge(battery) >= fePerUse)
@@ -78,7 +78,7 @@ public class BatteryUtils {
     public static int getBarWidth(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return 13;
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
                     if(battery == null || getCurrentCharge(battery) < fePerUse)
@@ -90,7 +90,7 @@ public class BatteryUtils {
     public static int getBarColor(ItemStack stack, int fePerUse) {
         if(fePerUse == 0)
             return 0;
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> Minecraft.getInstance().player)
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
                     if(battery == null || getCurrentCharge(battery) < fePerUse)

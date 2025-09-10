@@ -26,7 +26,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.network.ClientBoundPackets;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.HashMap;
@@ -108,7 +108,7 @@ public class SolverStateS2CPacket implements SimplePacket {
     @Override
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         context.get().queue(() -> {
-            var world = ClientBoundPackets.world();
+            var world = ClientSideAccess.world();
             for(var entry : solverValues.entrySet()) {
                 var pos = entry.getKey();
                 if(!world.hasChunkAt(pos))
