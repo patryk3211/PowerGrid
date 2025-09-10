@@ -288,7 +288,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         be.removeElectricBehaviour();
                     }
                     // Move collected segments
-                    be.collectedBEs.forEach(other -> other.mainBE = this);
+                    be.collectedBEs.forEach(other -> {
+                        other.mainBE = this;
+                        collectedBEs.add(other);
+                    });
                     be.collectedBEs = null;
                     be.mainBE = this;
                     if(be.electricBehaviour != null) {
@@ -630,8 +633,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             var opt = level.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
             if(opt.isPresent()) {
                 var be = opt.get();
-                if(be.sourceCoupling == null || be.totalCoilCount == 0)
-                    return null;
+                return be.getSourceHolder();
             }
         }
         if(mainBE.sourceCoupling == null || mainBE.totalCoilCount == 0)
