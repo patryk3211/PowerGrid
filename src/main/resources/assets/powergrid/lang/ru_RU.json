@@ -1,12 +1,8 @@
 {
   "block.powergrid.acid": "Кислота",
   "block.powergrid.alarm_bell": "Сигнальный звонок",
-  "block.powergrid.andesite_current_gauge": "Андезитовый амперметр",
-  "block.powergrid.andesite_voltage_gauge": "Андезитовый вольтметр",
   "block.powergrid.basin_heater": "Нагреватель чаши",
   "block.powergrid.battery": "Аккумулятор",
-  "block.powergrid.brass_current_gauge": "Латунный амперметр",
-  "block.powergrid.brass_voltage_gauge": "Латунный вольтметр",
   "block.powergrid.circuit_board": "Печатная плата",
   "block.powergrid.circuit_design_table": "Стол для проектирования печатных плат",
   "block.powergrid.circuit_design_table.tooltip.behaviour1": "Записывает начерченную электрическую схему в схематику",
@@ -54,8 +50,6 @@
   "component.powergrid.relay.2": "Нормально замкнутый",
   "component.powergrid.relay.3": "Общий",
   "component.powergrid.relay.4": "Нормально разомкнутый",
-  "create.aggregate_type.parallel": "Параллельное соединение",
-  "create.aggregate_type.series": "Последовательное соединение",
   "death.attack.overloaded_machine": "%s погиб от перегрузки %s",
   "death.attack.overloaded_machine.player": "%s погиб от перегрузки %s, пытаясь сбежать от %s",
   "entity.powergrid.block_wire": "Провод",
@@ -127,7 +121,6 @@
   "powergrid.contactor.switch1": "Переключатель 1",
   "powergrid.contactor.switch2": "Переключатель 2",
   "powergrid.devices.creative.current": "Выходной ток",
-  "powergrid.devices.creative.resistance": "Сопротивление",
   "powergrid.devices.creative.voltage": "Выходное напряжение",
   "powergrid.devices.fuse.setting": "Максимальный ток",
   "powergrid.devices.spark_gap.voltage": "Напряжение пробоя",
@@ -137,7 +130,6 @@
   "powergrid.generic.positive_terminal": "Плюс",
   "powergrid.generic.unit.amp": "А",
   "powergrid.gui.circuit_board.damage_body": "У этой платы есть поврежденные компоненты",
-  "powergrid.gui.circuit_board.damage_header": "Повреждено",
   "powergrid.gui.circuit_designer.discard": "Сбросить изменения",
   "powergrid.gui.circuit_designer.saving": "Сохранение..."
 }
