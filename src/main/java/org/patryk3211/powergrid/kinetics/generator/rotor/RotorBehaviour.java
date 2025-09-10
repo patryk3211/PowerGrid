@@ -34,6 +34,7 @@ import java.util.List;
 
 public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("generator_rotor");
+    private static final int OVERSPEED_TICKS = 5;
 
     // Energy values get loaded from NBT.
     protected float totalForce = 0;
@@ -47,6 +48,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
     // Angle is only for rendering and doesn't have to be saved.
     private float angle = 0;
+    private int overspeedTicks = 0;
 
     private boolean emitsField = true;
     private boolean hasSoundSource = false;
@@ -262,7 +264,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             forEachSegment(segment -> {
                 if(segment.forceSupplier != null) {
                     var target = segment.forceSupplier.forceSpeed();
-                    float delta = (target - angularVelocity) * 0.9f;
+                    float delta = (target - angularVelocity) * 0.75f;
                     if(target < 0)
                         delta = -delta;
                     delta = Math.max(0, delta);
@@ -275,9 +277,15 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                 }
             });
 
-            if(Math.abs(angularVelocity) > getMaxRotationSpeed() && !getWorld().isClientSide) {
-                getWorld().destroyBlock(getPos(), false);
-                checkConnectivity(this);
+            if(!getWorld().isClientSide) {
+                var V = Math.abs(angularVelocity);
+                var Vmax = getMaxRotationSpeed();
+                if(V > Vmax && overspeedTicks++ >= OVERSPEED_TICKS) {
+                    getWorld().destroyBlock(getPos(), false);
+                    checkConnectivity(this);
+                } else if(V <= Vmax) {
+                    overspeedTicks = 0;
+                }
             }
 
             angle = (angle + velocity * 0.3f) % 360;

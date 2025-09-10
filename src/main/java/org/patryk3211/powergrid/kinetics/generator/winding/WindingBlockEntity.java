@@ -627,9 +627,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 // This is an invalid state that can be caused if the client doesn't receive all data on time.
                 return null;
             }
-            var be = level.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
-            if(be.isPresent()) {
-                return be.get();
+            var opt = level.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
+            if(opt.isPresent()) {
+                var be = opt.get();
+                if(be.sourceCoupling == null || be.totalCoilCount == 0)
+                    return null;
             }
         }
         if(mainBE.sourceCoupling == null || mainBE.totalCoilCount == 0)

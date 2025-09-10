@@ -49,7 +49,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         super.removeNode(node);
         if(node instanceof IElectricNode enode) {
             if(!graph.getConnectedLines(enode).isEmpty())
-                PowerGrid.LOGGER.warn("Removed a node which had connections");
+                PowerGrid.LOGGER.warn("Removed a node which had connections", new Throwable());
             graph.removeNode(enode);
         }
         if(node instanceof ICouplingNode cnode)
