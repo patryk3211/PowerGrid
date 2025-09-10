@@ -59,6 +59,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                 segment -> !segment.blockEntity.getBlockState()
                         .is(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag));
         this.individualInertia = inertia;
+        setLazyTickRate(100);
     }
 
     public void noField() {
@@ -244,6 +245,12 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public void setFieldStrength(float value) {
         fieldStrength = value;
         blockEntity.setChanged();
+    }
+
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        blockEntity.sendData();
     }
 
     @Override
