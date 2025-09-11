@@ -39,12 +39,15 @@ public class CKinetics extends ConfigBase {
     public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
 
     public final CStress stressValues = nested(1, CStress::new, Comments.stress);
-
+	/* These are for my own purposes. Don't worry about them, you can delete
+	when I'm done */
+	public final ConfigFloat RotorKp = f(0, 0.75f, "rotorKp", Comments.rotorKp);
+	public final ConfigFloat RotorKd = f(-10f, 10f, "rotorKd", Comments.rotorKd);
     @Override
     public String getName() {
         return "kinetics";
     }
-
+	
     private static class Comments {
         public static final String encasedFanCoolingStrength = "Cooling multiplier applied to devices in the air stream (multiplied by rotational speed)";
         public static final String generatorClutchForcePerSegment = "Maximum force applied by clutch for each segment of a rotating assembly";
@@ -56,5 +59,9 @@ public class CKinetics extends ConfigBase {
         public static final String rotorRPMMax = "Maximum rotation speed of a rotor";
 
         public static final String stress = "Fine tune the kinetic stats of individual components";
+		/* These are for my own purposes. Don't worry about them, you can delete
+		when I'm done */
+		public static final String rotorKp = "Factor to scale the Proportional factor of the Rotor's force calculation";
+		public static final String rotorKd = "Factor to scale the Differential factor of the Rotor's force calculation";
     }
 }
