@@ -38,11 +38,9 @@ public class CKinetics extends ConfigBase {
 
     public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
 
+    public final CPD pdcontroller = nested(1, CPD::new, Comments.pdcontroller);
     public final CStress stressValues = nested(1, CStress::new, Comments.stress);
-	/* These are for my own purposes. Don't worry about them, you can delete
-	when I'm done */
-	public final ConfigFloat rotorKp = f(0, 0.75f, "rotorKp", Comments.rotorKp);
-	public final ConfigFloat rotorKd = f(-10f, 10f, "rotorKd", Comments.rotorKd);
+	
     @Override
     public String getName() {
         return "kinetics";
@@ -57,11 +55,8 @@ public class CKinetics extends ConfigBase {
         public static final String rotorAssemblyMaxSize = "Maximum length of a rotor assembly";
         public static final String motorRPMPerVolt = "Rotation speed of the electric motor for every volt across it";
         public static final String rotorRPMMax = "Maximum rotation speed of a rotor";
-
         public static final String stress = "Fine tune the kinetic stats of individual components";
-		/* These are for my own purposes. Don't worry about them, you can delete
-		when I'm done */
-		public static final String rotorKp = "Factor to scale the Proportional factor of the Rotor's force calculation";
-		public static final String rotorKd = "Factor to scale the Differential factor of the Rotor's force calculation";
+		public static final String pdcontroller = "Rotor Force factors";
+
     }
 }
