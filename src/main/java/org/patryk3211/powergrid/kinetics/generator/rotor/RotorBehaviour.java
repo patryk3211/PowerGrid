@@ -248,11 +248,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     }
 	/* Get the Proportional constant for calculations */
 	public static float getRotorKp() {
-		return ModdedConfigs.server().kinetics.rotorKp.get();
+		return ModdedConfigs.server().kinetics.rotorKp.getF();
 	}
 	/* And the Derivative, for good measure */
 	public static float getRotorKd() {
-		return ModdedConfigs.server().kinetics.rotorKd.get();
+		return ModdedConfigs.server().kinetics.rotorKd.getF();
 	}
 
     public void setFieldStrength(float value) {

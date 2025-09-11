@@ -41,8 +41,8 @@ public class CKinetics extends ConfigBase {
     public final CStress stressValues = nested(1, CStress::new, Comments.stress);
 	/* These are for my own purposes. Don't worry about them, you can delete
 	when I'm done */
-	public final ConfigFloat RotorKp = f(0, 0.75f, "rotorKp", Comments.rotorKp);
-	public final ConfigFloat RotorKd = f(-10f, 10f, "rotorKd", Comments.rotorKd);
+	public final ConfigFloat rotorKp = f(0, 0.75f, "rotorKp", Comments.rotorKp);
+	public final ConfigFloat rotorKd = f(-10f, 10f, "rotorKd", Comments.rotorKd);
     @Override
     public String getName() {
         return "kinetics";
