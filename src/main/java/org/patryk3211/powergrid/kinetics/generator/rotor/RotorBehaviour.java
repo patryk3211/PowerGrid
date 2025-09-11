@@ -157,14 +157,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     }
 
     @Override
-    public void readController(CompoundTag compound, boolean clientPacket) {
-    }
-
-    @Override
-    public void writeController(CompoundTag compound, boolean clientPacket) {
-    }
-
-    @Override
     public void segmentAdded(RotorBehaviour segment) {
         super.segmentAdded(segment);
         var momentum = angularVelocity * inertia + segment.angularVelocity * segment.individualInertia;
@@ -188,9 +180,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         }
         if(Math.abs(force) > 0.001f) {
             controller.totalForce += force;
-//            controller.angularVelocity += force / controller.inertia / 20f;
-//            if(Float.isNaN(controller.angularVelocity))
-//                controller.angularVelocity = 0;
         }
     }
 
@@ -271,7 +260,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             forEachSegment(segment -> {
                 if(segment.forceSupplier != null) {
                     var target = segment.forceSupplier.forceSpeed();
-                    float delta = (target - angularVelocity) * 0.75f;
+                    float delta = (target - angularVelocity) * 0.5f;
                     if(target < 0)
                         delta = -delta;
                     delta = Math.max(0, delta);
@@ -280,7 +269,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                     float force = delta * 20f * inertia;
                     force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
                     angularVelocity += force / 20f / inertia;
-                    segment.forceSupplier.receiveUsedForce(force / maxForce);
+                    segment.forceSupplier.receiveUsedForce(Math.abs(force / maxForce));
                 }
             });
 

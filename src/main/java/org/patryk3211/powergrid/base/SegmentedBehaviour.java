@@ -39,6 +39,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     protected final int maxSize;
 
     protected Predicate<T> countToSize;
+    private boolean rebuildClient = true;
 
     public SegmentedBehaviour(SmartBlockEntity be, int maxSize, Predicate<T> countToSize) {
         super(be);
@@ -60,6 +61,13 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             makeController();
             super.initialize();
             checkConnectivity(null);
+        }
+    }
+
+    private void sync() {
+        if(!getWorld().isClientSide) {
+            rebuildClient = true;
+            blockEntity.notifyUpdate();
         }
     }
 
@@ -97,7 +105,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         controllerPos = null;
         segments = new HashSet<>();
 
-        blockEntity.notifyUpdate();
+        sync();
     }
 
     protected void makePeripheral(T controller) {
@@ -117,7 +125,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         controller.segments.add((T) this);
         controller.segmentAdded((T) this);
 
-        blockEntity.notifyUpdate();
+        sync();
     }
 
     public boolean isController() {
@@ -144,12 +152,15 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         return getController().orElse((T) this);
     }
 
-    public abstract void readController(CompoundTag compound, boolean clientPacket);
-    public abstract void writeController(CompoundTag compound, boolean clientPacket);
-
     @Override
     public void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
+        if(compound.contains("LastKnownPos")) {
+            var posArray = compound.getIntArray("LastKnownPos");
+            lastKnownPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
+        }
+        if(clientPacket && !compound.getBoolean("SegmentedRebuild"))
+            return;
         if(compound.contains("Controller")) {
             var posArray = compound.getIntArray("Controller");
             controllerPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
@@ -162,24 +173,23 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
                 makeController();
                 checkConnectivity(null);
             }
-            readController(compound, clientPacket);
-        }
-        if(compound.contains("LastKnownPos")) {
-            var posArray = compound.getIntArray("LastKnownPos");
-            lastKnownPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
         }
     }
 
     @Override
     public void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
-        if(isController()) {
-            writeController(compound, clientPacket);
-        } else {
-            compound.putIntArray("Controller", new int[] { controllerPos.getX(), controllerPos.getY(), controllerPos.getZ() });
-        }
         if(lastKnownPos != null) {
             compound.putIntArray("LastKnownPos", new int[]{lastKnownPos.getX(), lastKnownPos.getY(), lastKnownPos.getZ()});
+        }
+        if(clientPacket) {
+            if(!rebuildClient)
+                return;
+            rebuildClient = false;
+            compound.putBoolean("SegmentedRebuild", true);
+        }
+        if (!isController()) {
+            compound.putIntArray("Controller", new int[] { controllerPos.getX(), controllerPos.getY(), controllerPos.getZ() });
         }
     }
 
@@ -278,7 +288,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             segment.makePeripheral((T) this);
         }
 
-        blockEntity.notifyUpdate();
+        sync();
     }
 
     public void remove() {
@@ -287,7 +297,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     }
 
     protected void onChange() {
-        blockEntity.notifyUpdate();
+        sync();
         if(changeCallback != null)
             changeCallback.run();
     }
