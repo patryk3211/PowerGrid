@@ -222,7 +222,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     /**
      * Get the rotor angular velocity
      * @return Angular velocity in radians per second.
-     */
+     */   
     public float getAngularVelocityRadians() {
         return 2f * getAngularVelocity() * (float) Math.PI / 60f;
     }
