@@ -45,6 +45,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     // Segment count and inertia get calculated from added segments every time.
     private float inertia = 0;
     private int segmentCount = 0;
+	
+	/* oldDelta is the last delta the system experienced; this is to provide a 
+	derivative of the generator's behavior to quiet down massive fluxes.
+	Should probably be given to the controller (working on it) */
+	private float oldDelta = 0;
 
     // Angle is only for rendering and doesn't have to be saved.
     private float angle = 0;
@@ -122,6 +127,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         super.makeController();
         inertia = individualInertia;
         segmentCount = 1;
+		oldDelta = 0;
     }
 
     @Environment(EnvType.CLIENT)
@@ -246,19 +252,33 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         fieldStrength = value;
         blockEntity.setChanged();
     }
+	
+	/* Sets the old delta. Not sure if that blockEntity.setChanged is what 
+	I need, though. */
+	public void setOldDelta(float value) {
+		oldDelta = value;
+		blockEntity.setChanged();
+	}
+	
+	/* Of course, we'll need to get the old delta, too, if we want to do
+	derivative calculations, so */
+	public float getOldDelta() {
+		var controller = getControllerOrThis();
+		return controller.oldDelta;
+	}
 
     @Override
     public void lazyTick() {
         super.lazyTick();
         blockEntity.sendData();
     }
-
+	
     @Override
     public void tick() {
         super.tick();
         if(isController()) {
             var velocity = getAngularVelocity();
-
+			//calculates the friction and then total force
             float friction = Math.abs(velocity * 20f * inertia);
             friction = Math.min(friction, segmentCount * 1f);
             totalForce -= Math.signum(velocity) * friction;
@@ -271,7 +291,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             forEachSegment(segment -> {
                 if(segment.forceSupplier != null) {
                     var target = segment.forceSupplier.forceSpeed();
-                    float delta = (target - angularVelocity) * 0.75f;
+                    float delta = (target - angularVelocity) * 0.25f;
                     if(target < 0)
                         delta = -delta;
                     delta = Math.max(0, delta);
