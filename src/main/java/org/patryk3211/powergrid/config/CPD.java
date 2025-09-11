@@ -19,13 +19,13 @@ import net.createmod.catnip.config.ConfigBase;
 
 public class CPD extends ConfigBase {
 	/* Will you show up or will you just die? */
-	public final ConfigFloat rotorKp = f(0, 0.75f, "rotorKp", Comments.rotorKp);
+	public final ConfigFloat rotorKp = f(0.75f, 0.75f, "rotorKp", Comments.rotorKp);
 	
-	public final ConfigFloat rotorKd = f(0f, 10f, "rotorKd", Comments.rotorKd);
+	public final ConfigFloat rotorKd = f(10f, 0.25f, "rotorKd", Comments.rotorKd);
 
     @Override
     public String getName() {
-        return "pdcontroller";
+        return "pdc";
     }
 
 	private static class Comments {
