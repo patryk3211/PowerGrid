@@ -46,10 +46,9 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     private float inertia = 0;
     private int segmentCount = 0;
 	
-	/* oldDelta is the last delta the system experienced; this is to provide a 
-	derivative of the generator's behavior to quiet down massive fluxes.
-	Should probably be given to the controller (working on it) */
-	private float oldDelta = 0;
+	/* This is the OLD Angular Velocity; by keeping track of its value over 
+	time, we might be able to perform derivative calculations */
+	private float oldAngVel = 0;
 
     // Angle is only for rendering and doesn't have to be saved.
     private float angle = 0;
@@ -127,7 +126,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         super.makeController();
         inertia = individualInertia;
         segmentCount = 1;
-		oldDelta = 0;
+		oldAngVel = 0;
     }
 
     @Environment(EnvType.CLIENT)
@@ -247,24 +246,32 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public static int getMaxRotationSpeed() {
         return ModdedConfigs.server().kinetics.rotorRPMMax.get();
     }
+	/* Get the Proportional constant for calculations */
+	public static float getRotorKp() {
+		return ModdedConfigs.server().kinetics.rotorKp.get();
+	}
+	/* And the Derivative, for good measure */
+	public static float getRotorKd() {
+		return ModdedConfigs.server().kinetics.rotorKd.get();
+	}
 
     public void setFieldStrength(float value) {
         fieldStrength = value;
         blockEntity.setChanged();
     }
 	
-	/* Sets the old delta. Not sure if that blockEntity.setChanged is what 
+	/* Sets the old AngVel. Not sure if that blockEntity.setChanged is what 
 	I need, though. */
-	public void setOldDelta(float value) {
-		oldDelta = value;
+	public void setOldAngVel(float value) {
+		oldAngVel = value;
 		blockEntity.setChanged();
 	}
 	
-	/* Of course, we'll need to get the old delta, too, if we want to do
+	/* Of course, we'll need to get the old AngVel, too, if we want to do
 	derivative calculations, so */
-	public float getOldDelta() {
+	public float getOldAngVel() {
 		var controller = getControllerOrThis();
-		return controller.oldDelta;
+		return controller.oldAngVel;
 	}
 
     @Override
@@ -277,8 +284,10 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public void tick() {
         super.tick();
         if(isController()) {
+			/* Get the old and current Angular Velocity */
+			var oldAV = getOldAngVel();
             var velocity = getAngularVelocity();
-			//calculates the friction and then total force
+
             float friction = Math.abs(velocity * 20f * inertia);
             friction = Math.min(friction, segmentCount * 1f);
             totalForce -= Math.signum(velocity) * friction;
@@ -291,14 +300,24 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             forEachSegment(segment -> {
                 if(segment.forceSupplier != null) {
                     var target = segment.forceSupplier.forceSpeed();
-                    float delta = (target - angularVelocity) * 0.25f;
+					/* Get the Kp and Kd factors for the equation coming up */
+					float Kp = getRotorKp();
+					float Kd = getRotorKd();
+					/* Delta T is the diff between Target and AngVel 
+					(Analogous to Proportional control in PID) */
+                    float deltaT = (target - angularVelocity);
                     if(target < 0)
-                        delta = -delta;
-                    delta = Math.max(0, delta);
-
+                        deltaT = -deltaT;
+                    deltaT = Math.max(0, deltaT);
+					/* Delta A.V. is the change in AngVel since last tick 
+					(Analogous to Derivative/Differential in PID) */
+					float deltaAV = oldAV - angularVelocity;
+					
                     float maxForce = segment.forceSupplier.sourceForce();
-                    float force = delta * 20f * inertia;
-                    force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
+                    //float force = deltaT * 20f * inertia;
+					/* Calculate with PD instead of simply P */
+                    float force = ((Kp * deltaT) + (Kd * deltaAV)) * 20f * inertia;
+					force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
                     angularVelocity += force / 20f / inertia;
                     segment.forceSupplier.receiveUsedForce(force / maxForce);
                 }
@@ -328,6 +347,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
             if(getWorld() != null && getWorld().isClientSide)
                 tickAudio();
+			/* Set today's AngVel to be tomorrow's oldAngVel */
+			setOldAngVel(angularVelocity);
         } else {
             // Fetch values from controller
             angularVelocity = getAngularVelocity();
