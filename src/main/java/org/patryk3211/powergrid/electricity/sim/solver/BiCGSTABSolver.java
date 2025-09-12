@@ -19,6 +19,7 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
+import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,10 +38,7 @@ public class BiCGSTABSolver implements ISolver {
     private static final int MAX_ITERATIONS = 500;
     private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
 
-    private static long solveMicros;
-    private static long solveMin;
-    private static long solveMax;
-    private static long solveCount;
+    private static final PerformanceCounter PERF = new PerformanceCounter("BiCGStab");
 
     private final Random random;
     private double initialDistance;
@@ -137,9 +135,7 @@ public class BiCGSTABSolver implements ISolver {
         if(b.getNumRows() == 0)
             return guess;
 
-        var start = System.nanoTime();
-
-        prevGuess.setTo(guess);
+        PERF.start();
         for(var hook : hooks) {
             hook.preSolve();
         }
@@ -206,30 +202,7 @@ public class BiCGSTABSolver implements ISolver {
             CommonOps_DDRM.add(residual, beta, t, p);
         }
 
-        if(PERFORMANCE_LOGGING) {
-            var end = System.nanoTime();
-            var dur = end - start;
-            solveMicros += dur / 1000;
-            if (solveMin == 0) {
-                solveMin = dur;
-            } else if (solveMin > dur) {
-                solveMin = dur;
-            }
-            if (solveMax < dur) {
-                solveMax = dur;
-            }
-            if (++solveCount >= 1000) {
-                if (LOGGER != null) {
-                    LOGGER.info("Average time of previous {} solver runs = {}µs, min = {}µs, max = {}µs",
-                            solveCount, (double) solveMicros / solveCount, (double) solveMin / 1000, (double) solveMax / 1000);
-                }
-                solveMicros = 0;
-                solveCount = 0;
-                solveMax = 0;
-                solveMin = 0;
-            }
-        }
-
+        PERF.end();
         if(!acceptAll) {
             if (iters >= MAX_ITERATIONS) {
                 if (LOGGER != null) {

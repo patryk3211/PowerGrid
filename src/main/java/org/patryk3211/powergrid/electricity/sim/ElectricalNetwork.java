@@ -28,6 +28,7 @@ import java.util.*;
 
 public class ElectricalNetwork {
     private static final double PRECISION = 1e-7;
+    private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
 
     private final Set<AbstractElectricWire> wires = new HashSet<>();
     private final Set<ICouplingNode> couplings = new HashSet<>();
@@ -425,6 +426,7 @@ public class ElectricalNetwork {
         }
 
         int maxAttempts = hasHooks() ? 5 : 3;
+        PERF.start();
         for(int i = 0; i < maxAttempts; ++i) {
             var canRepeat = i < maxAttempts - 1;
             var result = solver.solve(AMatrix, currentMatrix, canRepeat);
@@ -446,6 +448,7 @@ public class ElectricalNetwork {
                     break;
             }
         }
+        PERF.end();
         for(var hook : solver.getHooks()) {
             hook.postUpperSolve();
         }
