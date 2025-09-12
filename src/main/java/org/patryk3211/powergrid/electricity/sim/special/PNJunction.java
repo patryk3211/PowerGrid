@@ -40,7 +40,7 @@ class PNJunction extends AbstractElectricWire {
         }
         if(step == 0)
             return V;
-        V = (float) (Vprev + step * Math.log(1 + diff / step));
+        V = (float) (Vprev + step * Math.log10(1 + diff / step));
         return V;
     }
 

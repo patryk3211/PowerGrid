@@ -34,7 +34,7 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
-    private static final int MAX_ITERATIONS = 500;
+    private static final int MAX_ITERATIONS = 400;
     private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
 
     private static final PerformanceCounter PERF = new PerformanceCounter("BiCGStab");

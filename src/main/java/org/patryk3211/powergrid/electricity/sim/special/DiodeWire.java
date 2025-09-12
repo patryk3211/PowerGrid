@@ -48,14 +48,13 @@ public class DiodeWire extends DynamicConductanceWire {
         prevPotential = V;
 
         var currentConductance = PNJunction.gm(V, 1 / resistance, biasVoltage);
-        In = -Math.min(biasVoltage, V) * currentConductance * 0.995;
-
+        In = biasVoltage * currentConductance * 0.995;
         return currentConductance;
     }
 
     @Override
     public void addResidual(DMatrixRMaj residual) {
-        residual.add(node1.getIndex(), 0, -In);
-        residual.add(node2.getIndex(), 0,  In);
+        residual.add(node1.getIndex(), 0,  In);
+        residual.add(node2.getIndex(), 0, -In);
     }
 }

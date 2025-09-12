@@ -427,7 +427,7 @@ public class ElectricalNetwork {
 
         PERF.start();
         solver.saveGuess();
-        int maxAttempts = hasHooks() ? 10 : 5;
+        int maxAttempts = hasHooks() ? 6 : 3;
         for(int i = 0; i < maxAttempts; ++i) {
             var canRepeat = i < maxAttempts - 1;
             var result = solver.solve(AMatrix, currentMatrix, canRepeat);

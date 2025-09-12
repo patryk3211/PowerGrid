@@ -54,29 +54,29 @@ public class TransistorNPN extends DynamicConductanceWire {
         double V_BE = beJunction.getLimitedPotential();
         double V_CE = potentialDifference();
 
-        if(V_CE > 0) {
+//        if(V_CE > 0) {
             // Removing Early effect for g_m makes the simulation potentially faster
-            var gm = gm(V_BE, (1 + V_CE / earlyVoltage) * 10, bias);
+            var gm = gm(V_BE, 10, bias) * gm(V_CE, 1, 0.2f);
             var I_C = gm * V_BE;
 
             var gpi = gm / beta;
             beJunction.updateConductance(gpi);
 
             var go = I_C / earlyVoltage;
-            Ice = I_C - gm * V_BE - go * V_CE;
+            Ice = I_C - gm * bias - go * V_CE;
             Ibe = I_C / beta - gpi * V_BE;
             return go;
-        } else {
-            // No reverse active
-            var gm = gm(V_BE, 10, bias);
-            var I_C = gm * V_BE;
-
-            var gpi = gm / beta;
-            beJunction.updateConductance(gpi);
-            Ice = 0;
-            Ibe = I_C / beta - gpi * V_BE;
-            return 0;
-        }
+//        } else {
+//            // No reverse active
+//            var gm = gm(V_BE, 10, bias);
+//            var I_C = gm * V_BE;
+//
+//            var gpi = gm / beta;
+//            beJunction.updateConductance(gpi);
+//            Ice = 0;
+//            Ibe = I_C / beta - gpi * bias;
+//            return 0;
+//        }
     }
 
     @Override
