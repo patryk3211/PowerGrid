@@ -248,11 +248,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     }
 	/* Get the Proportional constant for calculations */
 	public static float getRotorKp() {
-		return ModdedConfigs.server().kinetics.pdc.rotorKp.getF();
+		return ModdedConfigs.server().kinetics.propDiffControl.rotorKp.getF();
 	}
 	/* And the Derivative, for good measure */
 	public static float getRotorKd() {
-		return ModdedConfigs.server().kinetics.pdc.rotorKd.getF();
+		return ModdedConfigs.server().kinetics.propDiffControl.rotorKd.getF();
 	}
 
     public void setFieldStrength(float value) {
@@ -302,6 +302,9 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 					/* Get the Kp and Kd factors for the equation coming up */
 					float Kp = getRotorKp();
 					float Kd = getRotorKd();
+					/* Get the current field strength, so we can scale things
+					properly */
+					float fieldStrength = getFieldStrength();
 					/* Delta T is the diff between Target and AngVel 
 					(Analogous to Proportional control in PID) */
                     float deltaT = (target - angularVelocity);
@@ -311,11 +314,12 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 					/* Delta A.V. is the change in AngVel since last tick 
 					(Analogous to Derivative/Differential in PID) */
 					float deltaAV = oldAV - angularVelocity;
-					
+					/* Maybe we can scale Kp by the field strength? */
+					float Kds = fieldStrength * Kd;
                     float maxForce = segment.forceSupplier.sourceForce();
                     //float force = deltaT * 20f * inertia;
 					/* Calculate with PD instead of simply P */
-                    float force = ((Kp * deltaT) + (Kd * deltaAV)) * 20f * inertia;
+                    float force = ((Kp * deltaT) + (Kds * deltaAV)) * 20f * inertia;
 					force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
                     angularVelocity += force / 20f / inertia;
                     segment.forceSupplier.receiveUsedForce(force / maxForce);
