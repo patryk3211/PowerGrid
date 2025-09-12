@@ -17,7 +17,7 @@ package org.patryk3211.powergrid.config;
 
 import net.createmod.catnip.config.ConfigBase;
 
-public class CPD extends ConfigBase {
+public class CGenerator extends ConfigBase {
 	/* Gud Nuff values for the Kp and Kd terms. Tune these to your liking. */
 	public final ConfigFloat rotorKp = f(0.75f, 0f, "rotorKp", Comments.rotorKp);
 	
@@ -25,7 +25,7 @@ public class CPD extends ConfigBase {
 
     @Override
     public String getName() {
-        return "pdc";
+        return "propDiffControl";
     }
 
 	private static class Comments {

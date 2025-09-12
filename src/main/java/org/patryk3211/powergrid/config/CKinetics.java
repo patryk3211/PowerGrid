@@ -38,7 +38,7 @@ public class CKinetics extends ConfigBase {
 
     public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
 
-    public final CPD pdc = nested(1, CPD::new, Comments.pdc);
+    public final CGenerator propDiffControl = nested(1, CGenerator::new, Comments.propDiffControl);
     public final CStress stressValues = nested(1, CStress::new, Comments.stress);
 	
     @Override
@@ -56,7 +56,7 @@ public class CKinetics extends ConfigBase {
         public static final String motorRPMPerVolt = "Rotation speed of the electric motor for every volt across it";
         public static final String rotorRPMMax = "Maximum rotation speed of a rotor";
         public static final String stress = "Fine tune the kinetic stats of individual components";
-		public static final String pdc = "Rotor Force factors";
+		public static final String propDiffControl = "Rotor Force factors";
 
     }
 }
