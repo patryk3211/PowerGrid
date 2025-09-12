@@ -33,6 +33,7 @@ import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
@@ -56,14 +57,14 @@ import java.util.function.BiConsumer;
 
 @Mod(PowerGrid.MOD_ID)
 public class PowerGridImpl {
-    public static FMLJavaModLoadingContext context;
+    public static ModLoadingContext context;
     public static IEventBus bus;
 
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, PowerGrid.MOD_ID);
 
     public PowerGridImpl() {
-        context = FMLJavaModLoadingContext.get();
-        bus = context.getModEventBus();
+        context = ModLoadingContext.get();
+        bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.register(PowerGridImpl.class);
         EventBuses.registerModEventBus(PowerGrid.MOD_ID, bus);
 
