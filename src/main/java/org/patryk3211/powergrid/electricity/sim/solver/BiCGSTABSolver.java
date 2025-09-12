@@ -131,6 +131,16 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
+    public void saveGuess() {
+        prevGuess.setTo(guess);
+    }
+
+    @Override
+    public void restoreGuess() {
+        guess.setTo(prevGuess);
+    }
+
+    @Override
     public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll) {
         if(b.getNumRows() == 0)
             return guess;
@@ -224,7 +234,8 @@ public class BiCGSTABSolver implements ISolver {
                 } else {
                     System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
                 }
-                if(norm > MAXIMUM_ALLOWED_IMPRECISION && initialDistance / norm < 1) {
+                // Drop if guess is less precise then the previous guess.
+                if(initialDistance / norm < 1) {
                     if (LOGGER != null) {
                         LOGGER.warn("(AcceptAll) Large imprecision, dropping result");
                     }

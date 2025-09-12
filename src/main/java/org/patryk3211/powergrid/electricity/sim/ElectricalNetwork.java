@@ -425,8 +425,9 @@ public class ElectricalNetwork {
             System.out.println(currentMatrix);
         }
 
-        int maxAttempts = hasHooks() ? 5 : 3;
         PERF.start();
+        solver.saveGuess();
+        int maxAttempts = hasHooks() ? 10 : 5;
         for(int i = 0; i < maxAttempts; ++i) {
             var canRepeat = i < maxAttempts - 1;
             var result = solver.solve(AMatrix, currentMatrix, canRepeat);
@@ -470,6 +471,7 @@ public class ElectricalNetwork {
 
         int maxAttempts = 4;
         for(int i = 0; i < maxAttempts; ++i) {
+            solver.saveGuess();
             var result = solver.solve(AMatrix, currentMatrix, true);
             lastGuess = result;
             if(solver.getInitialGuessDistance() < PRECISION) {
