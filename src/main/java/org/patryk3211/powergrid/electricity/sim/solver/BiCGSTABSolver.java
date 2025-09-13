@@ -21,10 +21,7 @@ import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
 import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
@@ -65,8 +62,6 @@ public class BiCGSTABSolver implements ISolver {
     private boolean shouldCalculateLU;
 
     private final double targetPrecision;
-
-    private final Set<ISolverHook> hooks = new HashSet<>();
 
     public BiCGSTABSolver(double targetPrecision) {
         this.targetPrecision = targetPrecision;
@@ -197,9 +192,6 @@ public class BiCGSTABSolver implements ISolver {
             return guess;
 
         PERF.start();
-        for(var hook : hooks) {
-            hook.preSolve();
-        }
 
         if(solveCount++ >= 20)
             shouldCalculateLU = true;
@@ -209,10 +201,6 @@ public class BiCGSTABSolver implements ISolver {
         // r = b - A * x
         A.mult(guess, v);
         CommonOps_DDRM.subtract(b, v, residual);
-
-        for(var hook : hooks) {
-            hook.addResidual(residual);
-        }
 
         // Check if result is already good enough.
         double norm = NormOps_DDRM.normP2(residual);
@@ -280,7 +268,8 @@ public class BiCGSTABSolver implements ISolver {
                     if (LOGGER != null) {
                         LOGGER.warn("Large imprecision, dropping result");
                     }
-                    guess.setTo(prevGuess);
+                    return null;
+//                    guess.setTo(prevGuess);
                 }
             }
         } else {
@@ -295,28 +284,14 @@ public class BiCGSTABSolver implements ISolver {
                     if (LOGGER != null) {
                         LOGGER.info("(AcceptAll) Large imprecision, dropping result");
                     }
-                    guess.setTo(prevGuess);
+                    return null;
+//                    guess.setTo(prevGuess);
                 }
             }
         }
 
         finalDistance = norm;
         return guess;
-    }
-
-    @Override
-    public void addHook(ISolverHook hook) {
-        hooks.add(hook);
-    }
-
-    @Override
-    public void removeHook(ISolverHook hook) {
-        hooks.remove(hook);
-    }
-
-    @Override
-    public Collection<ISolverHook> getHooks() {
-        return hooks;
     }
 
     @Override

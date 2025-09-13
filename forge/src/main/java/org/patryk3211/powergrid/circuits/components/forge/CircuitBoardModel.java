@@ -129,7 +129,7 @@ public class CircuitBoardModel implements BakedModel {
             return ModelData.builder()
                     .with(FRONT_LAYER, schematic.calculateAreas(CircuitSchematic.Layer.FRONT))
                     .with(PADS, schematic.pads().calculatePoints())
-                    .with(COMPONENTS, schematic.components())
+                    .with(COMPONENTS, List.copyOf(schematic.components()))
                     .build();
         }
         return modelData;

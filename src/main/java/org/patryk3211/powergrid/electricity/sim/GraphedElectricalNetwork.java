@@ -33,15 +33,12 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
-    public void addNode(IElectricNode node) {
+    public void addNode(INode node) {
         super.addNode(node);
-        graph.addNode(node);
-    }
-
-    @Override
-    public void addNode(ICouplingNode coupling) {
-        super.addNode(coupling);
-        graph.couple(coupling);
+        if(node instanceof IElectricNode enode)
+            graph.addNode(enode);
+        if(node instanceof ICouplingNode coupling)
+            graph.couple(coupling);
     }
 
     @Override

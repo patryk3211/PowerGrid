@@ -223,7 +223,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Synchronize solver state with clients
             if(syncTicks++ >= 20) {
                 for(var network : subnetworks) {
-                    if(network.getLastGuess() == null)
+                    if(network.getStateMatrix() == null)
                         continue;
                     var tracking = new HashSet<ServerPlayer>();
                     var packet = new SolverStateS2CPacket(world, network);

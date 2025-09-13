@@ -414,7 +414,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private void calculateElectricalParameters() {
         // This makes sure that ownership (which could change if collection method is called) is correct.
         totalCoilCount = getCoilCount();
-        if(ownerPosition != null) {
+        if(ownerPosition != null && !ownerPosition.equals(worldPosition)) {
             // If non-owner calls this method then its structure (and possibly resistance) has changed
             level.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get())
                     .ifPresent(WindingBlockEntity::calculateElectricalParameters);

@@ -35,7 +35,7 @@ public class TransistorTest {
 
         Net.W(1.0f, V1, Collector);
         Net.W(1.0f, VB, Base);
-        Net.W(0.01f, GND, Emitter);
+        Net.W(1.0f, GND, Emitter);
         Net.network.addWire(T);
 
         for(int i = 0; i < 10; ++i) {

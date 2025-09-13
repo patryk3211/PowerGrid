@@ -24,11 +24,6 @@ public interface ISolver {
     DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll);
     void zero();
 
-    void addHook(ISolverHook hook);
-    void removeHook(ISolverHook hook);
-
-    Collection<ISolverHook> getHooks();
-
     void saveGuess();
     void restoreGuess();
 

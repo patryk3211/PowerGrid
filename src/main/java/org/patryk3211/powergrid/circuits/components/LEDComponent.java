@@ -79,6 +79,8 @@ public class LEDComponent extends OrientableComponent implements IRenderedCompon
         if(!placed.wires.isEmpty()) {
             var wire = placed.wires.get(0);
             var I = wire.current();
+            if(wire.getNetwork() == null)
+                I = 0;
             var intensity = Mth.clamp(I / placed.get(FORWARD_CURRENT), 0, 1.1f);
             if(intensity > 1) {
                 color.mixWith(Color.WHITE, intensity - 1);
