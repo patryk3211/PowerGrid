@@ -93,12 +93,12 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
         var gridPotential = grid.getVoltage() - cathodeVoltage;
         var anodePotential = node2.getVoltage() - cathodeVoltage;
 
-        double Ia = I_LEAK;
+        double Ia = 0;
         if(anodePotential > 0 && saturationCurrent > 0) {
             // Somewhat realistic triode current equation:
             var x = gridPotential + anodePotential / gain;
             if(x > 0) {
-                Ia = perveance * /*Math.sqrt(x * x * x)*/ x + I_LEAK;
+                Ia = perveance * /*Math.sqrt(x * x * x)*/ x;
                 Ia = Math.min(Ia, saturationCurrent);
             }
         }

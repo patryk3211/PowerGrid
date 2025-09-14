@@ -22,6 +22,8 @@ import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.ops.DConvertMatrixStruct;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 
+import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
+
 public class DynamicallyTypedMatrix {
     // This will need to be tuned, probably.
     private static final int SPARSE_THRESHOLD = 6;
@@ -71,9 +73,9 @@ public class DynamicallyTypedMatrix {
     public void setTo(DMatrixRMaj matrix) {
         if(matrix.getNumRows() > SPARSE_THRESHOLD) {
             if(sparse) {
-                DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) this.matrix, 1e-6);
+                DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) this.matrix, G_MIN);
             } else {
-                this.matrix = DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) null, 1e-6);
+                this.matrix = DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) null, G_MIN);
             }
             sparse = true;
         } else {
@@ -93,7 +95,7 @@ public class DynamicallyTypedMatrix {
     public void optimize() {
         if(matrix.getNumRows() > SPARSE_THRESHOLD) {
             if (!sparse) {
-                this.matrix = DConvertMatrixStruct.convert((DMatrixRMaj) matrix, (DMatrixSparseCSC) null, 1e-6);
+                this.matrix = DConvertMatrixStruct.convert((DMatrixRMaj) matrix, (DMatrixSparseCSC) null, G_MIN);
             }
             sparse = true;
         } else {

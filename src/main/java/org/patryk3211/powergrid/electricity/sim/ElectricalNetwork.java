@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import java.util.*;
 
 public class ElectricalNetwork {
+    public static final double G_MIN = 1e-7;
     private static final double PRECISION = 1e-7;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
 
@@ -49,6 +50,7 @@ public class ElectricalNetwork {
     private DMatrixRMaj stateMatrix;
 
     private boolean dirty;
+    private boolean warmUp;
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
 
@@ -150,10 +152,6 @@ public class ElectricalNetwork {
         return dirty;
     }
 
-    public ConductanceMatrixAccess conductanceAccess() {
-        return new ConductanceMatrixAccess();
-    }
-
     public void addWire(AbstractElectricWire wire) {
         if(wire.node1 != null && !nodes.contains(wire.node1)) {
             // If node of a wire is not null it must be in the network's node set.
@@ -173,6 +171,7 @@ public class ElectricalNetwork {
         updateConductance(wire, wire.conductance());
         if(wire instanceof ISolverHook hook)
             hooks.add(hook);
+        warmUp = true;
     }
 
     public void updateConductance(AbstractElectricWire wire, double change) {
@@ -239,6 +238,7 @@ public class ElectricalNetwork {
         updateConductance(wire, -wire.conductance());
         if(wire instanceof ISolverHook hook)
             hooks.remove(hook);
+        warmUp = true;
     }
 
     public void updateResistance(AbstractElectricWire wire, double oldResistance) {
@@ -282,6 +282,8 @@ public class ElectricalNetwork {
         var size = conductanceMatrix.getNumRows();
         for(var wire : wires) {
             var G = wire.conductance();
+            if(!Double.isFinite(G))
+                continue;
             if(wire.node1 != null && wire.node2 != null) {
                 var index1 = wire.node1.getIndex();
                 var index2 = wire.node2.getIndex();
@@ -353,6 +355,10 @@ public class ElectricalNetwork {
                 // This only applies to single terminal voltage sources
                 voltageSources[nodeIndex] = false;
             } else {
+                if(node instanceof FloatingNode) {
+                    conductanceMatrix.add(node.getIndex(), node.getIndex(), G_MIN);
+                    AMatrix.add(node.getIndex(), node.getIndex(), G_MIN);
+                }
                 if(anchor == null && node instanceof FloatingNode floating && AMatrix.get(nodeIndex, nodeIndex) != 0) {
                     anchor = floating;
                 }
@@ -363,8 +369,8 @@ public class ElectricalNetwork {
         // This ensures that the simulation is anchored to a 0V reference somewhere
         // and should improve performance and stability when there are only 2 port sources.
         if(shouldAnchor && anchor != null) {
-            conductanceMatrix.add(anchor.getIndex(), anchor.getIndex(), 1e4);
-            AMatrix.add(anchor.getIndex(), anchor.getIndex(), 1e4);
+            conductanceMatrix.add(anchor.getIndex(), anchor.getIndex(), 1000);
+            AMatrix.add(anchor.getIndex(), anchor.getIndex(), 1000);
         }
     }
 
@@ -397,6 +403,7 @@ public class ElectricalNetwork {
     private void prepareMatrices() {
         var nodeCount = nodes.size();
         if(conductanceMatrix == null || dirty || conductanceMatrix.getNumRows() != nodeCount) {
+            var prevState = stateMatrix;
             conductanceMatrix = new DMatrixRMaj(nodeCount, nodeCount);
             AMatrix = new DynamicallyTypedMatrix(nodeCount, nodeCount);
             currentMatrix = new DMatrixRMaj(nodeCount, 1);
@@ -405,12 +412,21 @@ public class ElectricalNetwork {
             voltageSources = new boolean[nodeCount];
             solver.setStateSize(nodeCount);
             dirty = false;
+            warmUp = true;
+
+            // Use previous state matrix to accelerate warm up
+            if(prevState != null) {
+                for(var node : nodes) {
+                    if(node.getIndex() >= prevState.getNumRows())
+                        continue;
+                    stateMatrix.set(node.getIndex(), 0, prevState.get(node.getIndex(), 0));
+                }
+            }
 
             // Conductance and coupling matrices need to be fully rebuild only after a state size change,
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix();
             populateCurrentMatrix();
-            // TODO: Maybe try to populate the initial guess matrix from old node values.
         } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
@@ -441,6 +457,11 @@ public class ElectricalNetwork {
         if(printState) {
             System.out.println(AMatrix);
             System.out.println(currentMatrix);
+        }
+
+        if(warmUp) {
+            warmUp = false;
+            warmUp();
         }
 
         PERF.start();
@@ -508,20 +529,16 @@ public class ElectricalNetwork {
 
         solver.zero();
         int maxAttempts = 4;
+        solver.saveGuess();
+        solver.setInitialGuess(stateMatrix);
         for(int i = 0; i < maxAttempts; ++i) {
-            solver.saveGuess();
             var result = solver.solve(AMatrix, currentMatrix, true);
-            if(solver.getInitialGuessDistance() < PRECISION) {
+            if(result != null && solver.getInitialGuessDistance() < PRECISION) {
+                stateMatrix.setTo(result);
                 acceptResults(result);
                 break;
             }
         }
-    }
-
-    public class ConductanceMatrixAccess {
-        public void add(int row, int column, double value) {
-            var current = conductanceMatrix.get(row, column);
-            conductanceMatrix.set(row, column, current + value);
-        }
+        solver.invalidatePreconditioner();
     }
 }

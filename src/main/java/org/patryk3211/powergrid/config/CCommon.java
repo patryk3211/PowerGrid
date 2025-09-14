@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.sim.solver;
+package org.patryk3211.powergrid.config;
 
-import org.ejml.data.DMatrixRMaj;
-import org.jetbrains.annotations.Nullable;
+import net.createmod.catnip.config.ConfigBase;
 
-import java.util.Collection;
+public class CCommon extends ConfigBase {
+    public final ConfigBool lotsOfLogs = b(false, "lotsOfLogs", Comments.lotsOfLogs);
 
-public interface ISolver {
-    void setStateSize(int size);
-    @Nullable
-    DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll);
-    void zero();
+    @Override
+    public String getName() {
+        return "common";
+    }
 
-    void saveGuess();
-    void restoreGuess();
-
-    double getInitialGuessDistance();
-    double getFinalGuessDistance();
-
-    void setInitialGuess(DMatrixRMaj state);
-    void invalidatePreconditioner();
+    private static class Comments {
+        public static final String lotsOfLogs = "Enables extensive logging in different segments of the mod (can cause larger log files and log spam)";
+    }
 }

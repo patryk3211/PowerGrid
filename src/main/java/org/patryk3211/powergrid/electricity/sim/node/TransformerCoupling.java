@@ -21,6 +21,8 @@ import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import java.util.Collection;
 import java.util.List;
 
+import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
+
 public abstract class TransformerCoupling extends CouplingNode {
     protected float ratio;
     protected float resistance;
@@ -171,6 +173,12 @@ public abstract class TransformerCoupling extends CouplingNode {
             conductance.add(secondary2.getIndex(), this.index, -1.0);
             conductance.add(primary1.getIndex(), this.index, -ratio);
             conductance.add(primary2.getIndex(), this.index,  ratio);
+
+            // Put a tiny connection between the sides to stabilize the simulation
+            conductance.add(primary2.getIndex(),   primary2.getIndex(),    G_MIN);
+            conductance.add(secondary2.getIndex(), secondary2.getIndex(),  G_MIN);
+            conductance.add(primary2.getIndex(),   secondary2.getIndex(), -G_MIN);
+            conductance.add(secondary2.getIndex(), primary2.getIndex(),   -G_MIN);
         }
 
         @Override

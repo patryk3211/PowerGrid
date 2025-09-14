@@ -19,6 +19,8 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 
 import java.util.Random;
@@ -106,6 +108,17 @@ public class BiCGSTABSolver implements ISolver {
         }
     }
 
+    @Override
+    public void setInitialGuess(DMatrixRMaj state) {
+        guess.setTo(state);
+        shouldCalculateLU = true;
+    }
+
+    @Override
+    public void invalidatePreconditioner() {
+        shouldCalculateLU = true;
+    }
+
     private void prepareILU(DynamicallyTypedMatrix A) {
         shouldCalculateLU = false;
         L.zero();
@@ -187,16 +200,17 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
+    @Nullable
     public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll) {
         if(b.getNumRows() == 0)
             return guess;
 
         PERF.start();
 
-        if(solveCount++ >= 20)
-            shouldCalculateLU = true;
-        if(shouldCalculateLU)
+        if(shouldCalculateLU || solveCount++ >= 20) {
             prepareILU(A);
+            solveCount = 0;
+        }
 
         // r = b - A * x
         A.mult(guess, v);
@@ -259,33 +273,41 @@ public class BiCGSTABSolver implements ISolver {
         PERF.end();
         if(!acceptAll) {
             if (iters >= MAX_ITERATIONS) {
-                if (LOGGER != null) {
-                    LOGGER.warn("Solver iteration limit, final precision: {}", norm);
-                } else {
-                    System.out.printf("Solver iteration limit, final precision: %g", norm);
+                if(ModdedConfigs.logsEnabled()) {
+                    if (LOGGER != null) {
+                        LOGGER.warn("Solver iteration limit, final precision: {}", norm);
+                    } else {
+                        System.out.printf("Solver iteration limit, final precision: %g", norm);
+                    }
                 }
                 if (norm > MAXIMUM_ALLOWED_IMPRECISION && (initialDistance / norm) < 10) {
-                    if (LOGGER != null) {
-                        LOGGER.warn("Large imprecision, dropping result");
+                    if(ModdedConfigs.logsEnabled()) {
+                        if (LOGGER != null) {
+                            LOGGER.warn("Large imprecision, dropping result");
+                        }
                     }
+                    guess.setTo(prevGuess);
                     return null;
-//                    guess.setTo(prevGuess);
                 }
             }
         } else {
             if (iters >= MAX_ITERATIONS) {
-                if (LOGGER != null) {
-                    LOGGER.info("(AcceptAll) Solver iteration limit, final precision: {}", norm);
-                } else {
-                    System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
+                if(ModdedConfigs.logsEnabled()) {
+                    if (LOGGER != null) {
+                        LOGGER.info("(AcceptAll) Solver iteration limit, final precision: {}", norm);
+                    } else {
+                        System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
+                    }
                 }
                 // Drop if guess is less precise then the previous guess.
                 if(initialDistance / norm < 1) {
-                    if (LOGGER != null) {
-                        LOGGER.info("(AcceptAll) Large imprecision, dropping result");
+                    if(ModdedConfigs.logsEnabled()) {
+                        if (LOGGER != null) {
+                            LOGGER.info("(AcceptAll) Large imprecision, dropping result");
+                        }
                     }
+                    guess.setTo(prevGuess);
                     return null;
-//                    guess.setTo(prevGuess);
                 }
             }
         }

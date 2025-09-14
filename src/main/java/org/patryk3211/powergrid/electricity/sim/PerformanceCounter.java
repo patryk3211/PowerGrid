@@ -27,7 +27,7 @@ public class PerformanceCounter {
     private static final DateFormat FORMAT = DateFormat.getDateTimeInstance();
     public static final List<PerformanceCounter> COUNTERS = new ArrayList<>();
 
-    private final String name;
+    private String name;
 
     private long microsTotal;
     private long minTime;
@@ -43,6 +43,10 @@ public class PerformanceCounter {
     public PerformanceCounter(String name) {
         this.name = name;
         COUNTERS.add(this);
+    }
+
+    public void rename(String name) {
+        this.name = name;
     }
 
     public void start() {

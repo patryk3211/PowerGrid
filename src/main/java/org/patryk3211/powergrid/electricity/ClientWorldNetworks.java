@@ -47,6 +47,7 @@ public class ClientWorldNetworks extends WorldNetworks {
 
     public ClientWorldNetworks(Level world) {
         super(world);
+        perf.rename("ClientWorld");
     }
 
     @Override
