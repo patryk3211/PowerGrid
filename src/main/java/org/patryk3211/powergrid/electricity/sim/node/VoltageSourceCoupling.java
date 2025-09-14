@@ -52,7 +52,7 @@ public class VoltageSourceCoupling extends CouplingNode {
 
     public void setResistance(float resistance) {
         if(network != null)
-            network.alterConductanceMatrix(this.index, this.index, resistance - this.resistance);
+            network.alterConductanceMatrix(this.index, this.index, -(resistance - this.resistance));
         this.resistance = resistance;
     }
 
