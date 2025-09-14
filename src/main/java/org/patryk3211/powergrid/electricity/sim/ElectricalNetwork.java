@@ -33,6 +33,7 @@ public class ElectricalNetwork {
     private static final double PRECISION = 1e-7;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
 
+    private final boolean addGMin;
     private final Set<AbstractElectricWire> wires = new HashSet<>();
     private final Set<ICouplingNode> couplings = new HashSet<>();
     private final List<INode> nodes = new ArrayList<>();
@@ -56,10 +57,11 @@ public class ElectricalNetwork {
 
     public static Logger LOGGER = null;
 
-    public ElectricalNetwork() {
-        solver = new BiCGSTABSolver(PRECISION);
+    public ElectricalNetwork(boolean addGMin) {
+        solver = new BiCGSTABSolver(0.00001, 0.01);
         dirty = true;
         sourceCount = 0;
+        this.addGMin = addGMin;
     }
 
     // Make sure all variables are completely rebuilt and repopulated.
@@ -355,7 +357,7 @@ public class ElectricalNetwork {
                 // This only applies to single terminal voltage sources
                 voltageSources[nodeIndex] = false;
             } else {
-                if(node instanceof FloatingNode) {
+                if(addGMin && node instanceof FloatingNode) {
                     conductanceMatrix.add(node.getIndex(), node.getIndex(), G_MIN);
                     AMatrix.add(node.getIndex(), node.getIndex(), G_MIN);
                 }

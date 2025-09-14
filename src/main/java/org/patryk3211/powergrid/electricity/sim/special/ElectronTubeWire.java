@@ -102,8 +102,8 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
                 Ia = Math.min(Ia, saturationCurrent);
             }
         }
-        residual.add(node1.getIndex(), 0, Ia);
-        residual.add(node2.getIndex(), 0, -Ia);
+        residual.add(node1.getIndex(), 0, -Ia);
+        residual.add(node2.getIndex(), 0,  Ia);
     }
 
     @Override

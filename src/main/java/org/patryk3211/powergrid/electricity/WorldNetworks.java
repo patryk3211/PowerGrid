@@ -234,7 +234,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph);
+        var network = new GraphedElectricalNetwork(globalGraph, true);
         subnetworks.add(network);
         return network;
     }

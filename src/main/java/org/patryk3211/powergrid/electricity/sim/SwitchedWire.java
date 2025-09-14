@@ -17,8 +17,9 @@ package org.patryk3211.powergrid.electricity.sim;
 
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
+import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
+
 public class SwitchedWire extends ElectricWire {
-    public static final double OFF_CONDUCTANCE = 1e-5;
     private boolean state;
 
     public SwitchedWire(float resistance, IElectricNode node1, IElectricNode node2) {
@@ -37,10 +38,10 @@ public class SwitchedWire extends ElectricWire {
             if(network != null) {
                 if(state) {
                     // Switch is now on, add its conductance
-                    network.updateConductance(this, super.conductance() - OFF_CONDUCTANCE);
+                    network.updateConductance(this, super.conductance() - G_MIN);
                 } else {
                     // Switch is now off, remove its conductance
-                    network.updateConductance(this, -super.conductance() + OFF_CONDUCTANCE);
+                    network.updateConductance(this, -super.conductance() + G_MIN);
                 }
             }
         }
@@ -67,6 +68,6 @@ public class SwitchedWire extends ElectricWire {
 
     @Override
     public double conductance() {
-        return state ? super.conductance() : OFF_CONDUCTANCE;
+        return state ? super.conductance() : G_MIN;
     }
 }

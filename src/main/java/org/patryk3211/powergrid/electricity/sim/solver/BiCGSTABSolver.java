@@ -33,8 +33,7 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
-    private static final int MAX_ITERATIONS = 400;
-    private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
+    private static final int MAX_ITERATIONS = 300;
 
     private static final PerformanceCounter PERF = new PerformanceCounter("BiCGStab");
 
@@ -64,9 +63,11 @@ public class BiCGSTABSolver implements ISolver {
     private boolean shouldCalculateLU;
 
     private final double targetPrecision;
+    private final double maxAllowed;
 
-    public BiCGSTABSolver(double targetPrecision) {
+    public BiCGSTABSolver(double targetPrecision, double maxAllowed) {
         this.targetPrecision = targetPrecision;
+        this.maxAllowed = maxAllowed;
         this.random = new Random();
     }
 
@@ -271,43 +272,36 @@ public class BiCGSTABSolver implements ISolver {
         }
 
         PERF.end();
-        if(!acceptAll) {
-            if (iters >= MAX_ITERATIONS) {
-                if(ModdedConfigs.logsEnabled()) {
-                    if (LOGGER != null) {
-                        LOGGER.warn("Solver iteration limit, final precision: {}", norm);
-                    } else {
-                        System.out.printf("Solver iteration limit, final precision: %g", norm);
-                    }
-                }
-                if (norm > MAXIMUM_ALLOWED_IMPRECISION && (initialDistance / norm) < 10) {
-                    if(ModdedConfigs.logsEnabled()) {
-                        if (LOGGER != null) {
-                            LOGGER.warn("Large imprecision, dropping result");
-                        }
-                    }
-                    guess.setTo(prevGuess);
-                    return null;
+        if(iters >= MAX_ITERATIONS) {
+            var prefix = acceptAll ? "(AcceptAll) " : "";
+            if(ModdedConfigs.logsEnabled()) {
+                if (LOGGER != null) {
+                    LOGGER.warn("{}Solver iteration limit, final precision: {}", prefix, norm);
+                } else {
+                    System.out.printf("%sSolver iteration limit, final precision: %g", prefix, norm);
                 }
             }
-        } else {
-            if (iters >= MAX_ITERATIONS) {
-                if(ModdedConfigs.logsEnabled()) {
-                    if (LOGGER != null) {
-                        LOGGER.info("(AcceptAll) Solver iteration limit, final precision: {}", norm);
-                    } else {
-                        System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
+
+            if(!acceptAll) {
+                if (norm > maxAllowed && (initialDistance / norm) < 10) {
+                    if(ModdedConfigs.logsEnabled()) {
+                        if (LOGGER != null) {
+                            LOGGER.warn("Large imprecision, dropping iterative result");
+                        }
                     }
+                    A.solve(b, guess);
+                    return guess;
                 }
+            } else {
                 // Drop if guess is less precise then the previous guess.
                 if(initialDistance / norm < 1) {
                     if(ModdedConfigs.logsEnabled()) {
                         if (LOGGER != null) {
-                            LOGGER.info("(AcceptAll) Large imprecision, dropping result");
+                            LOGGER.info("(AcceptAll) Large imprecision, dropping iterative result");
                         }
                     }
-                    guess.setTo(prevGuess);
-                    return null;
+                    A.solve(b, guess);
+                    return guess;
                 }
             }
         }
