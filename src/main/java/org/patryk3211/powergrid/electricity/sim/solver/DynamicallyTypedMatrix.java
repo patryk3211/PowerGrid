@@ -23,12 +23,24 @@ import org.ejml.ops.DConvertMatrixStruct;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 
 public class DynamicallyTypedMatrix {
+    // This will need to be tuned, probably.
+    private static final int SPARSE_THRESHOLD = 6;
+
     private DMatrix matrix;
     private boolean sparse;
 
     public DynamicallyTypedMatrix(int rows, int cols) {
         matrix = new DMatrixRMaj(rows, cols);
         sparse = false;
+    }
+
+    public void denseZero() {
+        if(sparse) {
+            matrix = new DMatrixRMaj(matrix.getNumRows(), matrix.getNumCols());
+            sparse = false;
+        } else {
+            matrix.zero();
+        }
     }
 
     public void mult(DMatrixRMaj in, DMatrixRMaj out) {
@@ -57,8 +69,7 @@ public class DynamicallyTypedMatrix {
     }
 
     public void setTo(DMatrixRMaj matrix) {
-        // This will need to be tuned, probably.
-        if(matrix.getNumRows() > 6) {
+        if(matrix.getNumRows() > SPARSE_THRESHOLD) {
             if(sparse) {
                 DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) this.matrix, 1e-6);
             } else {
@@ -69,6 +80,24 @@ public class DynamicallyTypedMatrix {
             if(!sparse) {
                 this.matrix.setTo(matrix);
             } else {
+                this.matrix = new DMatrixRMaj(matrix);
+            }
+            sparse = false;
+        }
+    }
+
+    public int getNumRows() {
+        return matrix.getNumRows();
+    }
+
+    public void optimize() {
+        if(matrix.getNumRows() > SPARSE_THRESHOLD) {
+            if (!sparse) {
+                this.matrix = DConvertMatrixStruct.convert((DMatrixRMaj) matrix, (DMatrixSparseCSC) null, 1e-6);
+            }
+            sparse = true;
+        } else {
+            if (sparse) {
                 this.matrix = new DMatrixRMaj(matrix);
             }
             sparse = false;

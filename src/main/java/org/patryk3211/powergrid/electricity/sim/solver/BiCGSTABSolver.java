@@ -19,6 +19,7 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
+import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,14 +34,10 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
-    private static final boolean PERFORMANCE_LOGGING = false;
     private static final int MAX_ITERATIONS = 500;
     private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
 
-    private static long solveMicros;
-    private static long solveMin;
-    private static long solveMax;
-    private static long solveCount;
+    private static final PerformanceCounter PERF = new PerformanceCounter("BiCGStab");
 
     private final Random random;
     private double initialDistance;
@@ -61,6 +58,11 @@ public class BiCGSTABSolver implements ISolver {
 
     private DMatrixRMaj y;
     private DMatrixRMaj z;
+
+    private int solveCount = 0;
+    private DMatrixRMaj L;
+    private DMatrixRMaj U;
+    private boolean shouldCalculateLU;
 
     private final double targetPrecision;
 
@@ -86,6 +88,10 @@ public class BiCGSTABSolver implements ISolver {
 
             y = new DMatrixRMaj(newSize, 1);
             z = new DMatrixRMaj(newSize, 1);
+
+            shouldCalculateLU = true;
+            L = new DMatrixRMaj(newSize, newSize);
+            U = new DMatrixRMaj(newSize, newSize);
         }
     }
 
@@ -101,17 +107,60 @@ public class BiCGSTABSolver implements ISolver {
             h.zero();
             s.zero();
             t.zero();
+            shouldCalculateLU = true;
         }
     }
 
-    private void preconditioned(DynamicallyTypedMatrix K, DMatrixRMaj input, DMatrixRMaj output) {
-        for(int i = 0; i < input.getNumRows(); ++i) {
-            var k = K.get(i, i);
-            if(k == 0) {
-                output.set(i, 0, input.get(i, 0));
-            } else {
-                output.set(i, 0, input.get(i, 0) / k);
+    private void prepareILU(DynamicallyTypedMatrix A) {
+        shouldCalculateLU = false;
+        L.zero();
+        U.zero();
+        int n = A.getNumRows();
+        for(int j = 0; j < n; ++j) {
+            U.set(0, j, A.get(0, j));
+        }
+        for(int i = 1; i < n; ++i) {
+            for(int k = 0; k < i - 1; ++k) {
+                var Ukk = U.get(k, k);
+                if(Ukk == 0)
+                    continue;
+                var Lik = A.get(i, k) / Ukk;
+                L.set(i, k, Lik);
+                for(int j = k + 1; j < i - 1; ++j) {
+                    var Aij = A.get(i, j);
+                    if(Aij == 0)
+                        continue;
+                    L.set(i, j, Aij - Lik * U.get(k, j));
+                }
+                for(int j = i; j < n; ++j) {
+                    var Aij = A.get(i, j);
+                    if(Aij == 0)
+                        continue;
+                    U.set(i, j, Aij - Lik * U.get(k, j));
+                }
             }
+        }
+//        L.optimize();
+//        U.optimize();
+    }
+
+    private void preconditioned(DynamicallyTypedMatrix K, DMatrixRMaj input, DMatrixRMaj output) {
+        // Forward solve using L matrix, we assume that diagonal is identity so we don't have to divide by it.
+        for(int i = 0; i < input.getNumRows(); ++i) {
+            var b = input.get(i, 0);
+            for(int j = 0; j < i; ++j) {
+                b -= L.get(i, j) * output.get(j);
+            }
+            output.set(i, 0, b);
+        }
+        // Back solve using U matrix.
+        for(int i = input.getNumRows() - 1; i >= 0; --i) {
+            var b = output.get(i, 0);
+            for(int j = i + 1; j < input.getNumRows(); ++j) {
+                b -= U.get(i, j) * output.get(j);
+            }
+            if(U.get(i, i) != 0)
+                output.set(i, 0, b / U.get(i, i));
         }
     }
 
@@ -133,16 +182,29 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
+    public void saveGuess() {
+        prevGuess.setTo(guess);
+    }
+
+    @Override
+    public void restoreGuess() {
+        guess.setTo(prevGuess);
+    }
+
+    @Override
     public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll) {
         if(b.getNumRows() == 0)
             return guess;
 
-        var start = System.nanoTime();
-
-        prevGuess.setTo(guess);
+        PERF.start();
         for(var hook : hooks) {
             hook.preSolve();
         }
+
+        if(solveCount++ >= 20)
+            shouldCalculateLU = true;
+        if(shouldCalculateLU)
+            prepareILU(A);
 
         // r = b - A * x
         A.mult(guess, v);
@@ -206,30 +268,7 @@ public class BiCGSTABSolver implements ISolver {
             CommonOps_DDRM.add(residual, beta, t, p);
         }
 
-        if(PERFORMANCE_LOGGING) {
-            var end = System.nanoTime();
-            var dur = end - start;
-            solveMicros += dur / 1000;
-            if (solveMin == 0) {
-                solveMin = dur;
-            } else if (solveMin > dur) {
-                solveMin = dur;
-            }
-            if (solveMax < dur) {
-                solveMax = dur;
-            }
-            if (++solveCount >= 1000) {
-                if (LOGGER != null) {
-                    LOGGER.info("Average time of previous {} solver runs = {}µs, min = {}µs, max = {}µs",
-                            solveCount, (double) solveMicros / solveCount, (double) solveMin / 1000, (double) solveMax / 1000);
-                }
-                solveMicros = 0;
-                solveCount = 0;
-                solveMax = 0;
-                solveMin = 0;
-            }
-        }
-
+        PERF.end();
         if(!acceptAll) {
             if (iters >= MAX_ITERATIONS) {
                 if (LOGGER != null) {
@@ -247,13 +286,14 @@ public class BiCGSTABSolver implements ISolver {
         } else {
             if (iters >= MAX_ITERATIONS) {
                 if (LOGGER != null) {
-                    LOGGER.warn("(AcceptAll) Solver iteration limit, final precision: {}", norm);
+                    LOGGER.info("(AcceptAll) Solver iteration limit, final precision: {}", norm);
                 } else {
                     System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
                 }
-                if(norm > MAXIMUM_ALLOWED_IMPRECISION && initialDistance / norm < 1) {
+                // Drop if guess is less precise then the previous guess.
+                if(initialDistance / norm < 1) {
                     if (LOGGER != null) {
-                        LOGGER.warn("(AcceptAll) Large imprecision, dropping result");
+                        LOGGER.info("(AcceptAll) Large imprecision, dropping result");
                     }
                     guess.setTo(prevGuess);
                 }

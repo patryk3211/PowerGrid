@@ -29,7 +29,6 @@ import java.util.List;
 
 public class GeneratorClutchBlockEntity extends KineticBlockEntity implements RotorBehaviour.IForceSource {
     protected RotorBehaviour rotorBehaviour;
-    private float currentImpact;
 
     private int currentRedstonePower;
 
@@ -37,7 +36,6 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
 
     public GeneratorClutchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        currentImpact = (float) BlockStressValues.getImpact(state.getBlock());
         currentRedstonePower = 0;
     }
 
@@ -47,7 +45,16 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
         rotorBehaviour = new RotorBehaviour(this, ModdedConfigs.server().kinetics.generatorClutchInertia.getF());
         rotorBehaviour.forceSource(this);
         rotorBehaviour.noField();
+        rotorBehaviour.setChangeCallback(this::assemblyChanged);
         behaviours.add(rotorBehaviour);
+    }
+
+    private void assemblyChanged() {
+        if(hasNetwork() && !level.isClientSide) {
+            var network = getOrCreateNetwork();
+            network.remove(this);
+            network.add(this);
+        }
     }
 
     @Override
@@ -55,42 +62,11 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
         if(getTheoreticalSpeed() == 0 || isOverStressed())
             return 0;
 
-//        var angularVelocity = rotorBehaviour.getAngularVelocity();
         float couplingStrength = (15 - currentRedstonePower) / 15f;
         int segmentCount = rotorBehaviour.getSegmentCount();
 
-//        float delta = getTheoreticalSpeed() - angularVelocity;
-//        if(getTheoreticalSpeed() < 0)
-//            delta = -delta;
-//        delta = Math.max(0, delta);
-
         float maxForce = ModdedConfigs.server().kinetics.generatorClutchForcePerSegment.getF() * segmentCount;
-        final var defaultImpact = (float) BlockStressValues.getImpact(getBlockState().getBlock());
-        if(hasNetwork()) {
-            var network = getOrCreateNetwork();
-            var newImpact = defaultImpact * segmentCount;
-            if(newImpact != currentImpact) {
-                currentImpact = newImpact;
-                if(!level.isClientSide) {
-                    network.remove(this);
-                    network.add(this);
-                }
-            }
-        }
-
         return maxForce * couplingStrength;
-//        float force = delta * 20f * rotorBehaviour.getInertia();
-//        force = Math.min(Math.abs(force), maxForce) * Math.signum(getSpeed()) * couplingStrength;
-//        load = force / maxForce;
-//        return force;
-
-//        float force = 0;
-//        if(delta > 0 && !isOverStressed()) {
-//            force = delta * 20f * rotorBehaviour.getInertia();
-//            force = Math.min(Math.abs(force), maxForce) * Math.signum(getSpeed()) * couplingStrength;
-//            rotorBehaviour.applyTickForce(force);
-//        }
-//        return force;
     }
 
     @Override
@@ -129,7 +105,10 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
 
     @Override
     public float calculateStressApplied() {
-        this.lastStressApplied = currentImpact;
-        return currentImpact;
+        final var defaultImpact = (float) BlockStressValues.getImpact(getBlockState().getBlock());
+        int segmentCount = rotorBehaviour.getSegmentCount();
+        var impact = defaultImpact * segmentCount;
+        this.lastStressApplied = impact;
+        return impact;
     }
 }

@@ -162,14 +162,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     }
 
     @Override
-    public void readController(CompoundTag compound, boolean clientPacket) {
-    }
-
-    @Override
-    public void writeController(CompoundTag compound, boolean clientPacket) {
-    }
-
-    @Override
     public void segmentAdded(RotorBehaviour segment) {
         super.segmentAdded(segment);
         var momentum = angularVelocity * inertia + segment.angularVelocity * segment.individualInertia;
@@ -193,9 +185,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         }
         if(Math.abs(force) > 0.001f) {
             controller.totalForce += force;
-//            controller.angularVelocity += force / controller.inertia / 20f;
-//            if(Float.isNaN(controller.angularVelocity))
-//                controller.angularVelocity = 0;
         }
     }
 
@@ -283,8 +272,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     public void tick() {
         super.tick();
         if(isController()) {
-			/* Get the old and current Angular Velocity */
-			var oldAV = getOldAngVel();
+            /* Get the old and current Angular Velocity */
+            var oldAV = getOldAngVel();
             var velocity = getAngularVelocity();
 
             float friction = Math.abs(velocity * 20f * inertia);
@@ -299,30 +288,30 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             forEachSegment(segment -> {
                 if(segment.forceSupplier != null) {
                     var target = segment.forceSupplier.forceSpeed();
-					/* Get the Kp and Kd factors for the equation coming up */
-					float Kp = getRotorKp();
-					float Kd = getRotorKd();
-					/* Get the current field strength, so we can scale things
-					properly */
-					float fieldStrength = getFieldStrength();
-					/* Delta T is the diff between Target and AngVel 
-					(Analogous to Proportional control in PID) */
+                    /* Get the Kp and Kd factors for the equation coming up */
+                    float Kp = getRotorKp();
+                    float Kd = getRotorKd();
+                    /* Get the current field strength, so we can scale things
+                    properly */
+                    float fieldStrength = getFieldStrength();
+                    /* Delta T is the diff between Target and AngVel 
+                    (Analogous to Proportional control in PID) */
                     float deltaT = (target - angularVelocity);
                     if(target < 0)
                         deltaT = -deltaT;
                     deltaT = Math.max(0, deltaT);
-					/* Delta A.V. is the change in AngVel since last tick 
-					(Analogous to Derivative/Differential in PID) */
-					float deltaAV = oldAV - angularVelocity;
-					/* Maybe we can scale Kp by the field strength? */
-					float Kds = fieldStrength * Kd;
+                    /* Delta A.V. is the change in AngVel since last tick 
+                    (Analogous to Derivative/Differential in PID) */
+                    float deltaAV = oldAV - angularVelocity;
+                    /* Maybe we can scale Kp by the field strength? */
+                    float Kds = fieldStrength * Kd;
                     float maxForce = segment.forceSupplier.sourceForce();
                     //float force = deltaT * 20f * inertia;
-					/* Calculate with PD instead of simply P */
+                    /* Calculate with PD instead of simply P */
                     float force = ((Kp * deltaT) + (Kds * deltaAV)) * 20f * inertia;
-					force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
+                    force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
                     angularVelocity += force / 20f / inertia;
-                    segment.forceSupplier.receiveUsedForce(force / maxForce);
+                    segment.forceSupplier.receiveUsedForce(Math.abs(force / maxForce));
                 }
             });
 
@@ -350,8 +339,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 
             if(getWorld() != null && getWorld().isClientSide)
                 tickAudio();
-			/* Set today's AngVel to be tomorrow's oldAngVel */
-			setOldAngVel(angularVelocity);
+            /* Set today's AngVel to be tomorrow's oldAngVel */
+            setOldAngVel(angularVelocity);
         } else {
             // Fetch values from controller
             angularVelocity = getAngularVelocity();

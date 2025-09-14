@@ -29,6 +29,9 @@ public interface ISolver {
 
     Collection<ISolverHook> getHooks();
 
+    void saveGuess();
+    void restoreGuess();
+
     double getInitialGuessDistance();
     double getFinalGuessDistance();
 }

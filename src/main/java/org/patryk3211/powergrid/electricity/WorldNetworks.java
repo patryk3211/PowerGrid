@@ -31,7 +31,6 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.*;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
@@ -50,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
     public final Level world;
     public final NetworkGraph globalGraph = new NetworkGraph();
+    private final PerformanceCounter perf;
 
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<Integer, TransmissionLine> transmissionLines = new IntObjectHashMap<>();
@@ -70,19 +70,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public WorldNetworks(Level world) {
         this.world = world;
         this.globalGraph.hooks = this;
+        this.perf = new PerformanceCounter(world.dimensionTypeId().location().toString());
     }
 
     public WorldNetworks(Level world, CompoundTag nbt) {
         this(world);
         readNbt(nbt);
     }
-
-//    @Override
-//    public void removeNode(IElectricNode node) {
-//        if(node instanceof OwnedFloatingNode owned) {
-//            assignTransmissionLine(owned, null);
-//        }
-//    }
 
     @Override
     public void lineConnected(TransmissionLine line) {
@@ -113,28 +107,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         setDirty();
     }
 
-//    @Override
-//    public void addWire(AbstractElectricWire wire) {
-//        if(wire.getNode1() instanceof OwnedFloatingNode owned) {
-//            var line1 = findLineMiddle(owned);
-//            if(line1 != null)
-//                line1.splitAt(owned);
-//        }
-//        if(wire.getNode2() instanceof OwnedFloatingNode owned) {
-//            var line2 = findLineMiddle(owned);
-//            if(line2 != null)
-//                line2.splitAt(owned);
-//        }
-//    }
-
-    @Override
-    public void addNode(IElectricNode node) {
-        if(node instanceof OwnedFloatingNode owned) {
-            // Make sure nodes are always up to date
-//            addAndMigrateNode(owned.endpoint);
-        }
-    }
-
     private void traceIsland(OwnedFloatingNode first) {
 
     }
@@ -152,10 +124,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public void tick() {
         deferredRewireEntities.removeIf(part -> {
-//            if(entity.isRemoved())
-//                return true;
-//            entity.makeWire();
-//            return entity.getWire() != null;
             part.refreshEndpointNodes();
             return true;
         });
@@ -166,6 +134,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
         islandDiscoveryQueue.clear();
 
+        perf.start();
         var iter = subnetworks.iterator();
         while(iter.hasNext()) {
             var network = iter.next();
@@ -178,6 +147,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
             network.calculate();
         }
+        perf.end();
         if(world instanceof ServerLevel serverWorld) {
             // Check for line parts existence
             var checkIter = checkForExistence.entrySet().iterator();
@@ -301,13 +271,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     @Deprecated
     public void assignTransmissionLine(OwnedFloatingNode node, @Nullable TransmissionLine line) {
-//        if(node == null)
-//            return;
-//        if (line != null) {
-//            transmissionLineNodes.put(node, line);
-//        } else {
-//            transmissionLineNodes.remove(node);
-//        }
         // TODO: This is probably redundant
         updatedEndpoints.add(node.endpoint);
     }
