@@ -1,0 +1,15 @@
+{
+  "type": "create:cutting",
+  "ingredients": [
+    {
+      "item": "create:belt_connector"
+    }
+  ],
+  "processingTime": 50,
+  "results": [
+    {
+      "count": 4,
+      "item": "powergrid:decorative_wire"
+    }
+  ]
+}
