@@ -64,16 +64,9 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
             .transform(WireProperties.setAll(0.003f, 8, 0.8f, 0.288f))
-            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.625f))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
-
-	/* My decorative wire, a placeholder for now */
-	public static final ItemEntry<WireItem> DECORATIVE_WIRE = REGISTRATE.item("decorative_wire", WireItem::new)
-			.transform(WireProperties.setAll(1.2f, 120, 0.2f, 1.0f))
-			.transform(WireProperties.setRenderingParams(PowerGrid.texture("special/decorative_wire"), 1.001f, 1.01f, 0.200f))
-			.tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
-			.register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
             .register();

@@ -5,7 +5,11 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
+<<<<<<< HEAD
  *	 http://www.apache.org/licenses/LICENSE-2.0
+=======
+ *     http://www.apache.org/licenses/LICENSE-2.0
+>>>>>>> parent of b6761279 (Added decorative wire)
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,10 +27,17 @@ public class CGenerator extends ConfigBase {
 	
 	public final ConfigFloat rotorKd = f(0.2f, 0f, "rotorKd", Comments.rotorKd);
 
+<<<<<<< HEAD
 	@Override
 	public String getName() {
 		return "propDiffControl";
 	}
+=======
+    @Override
+    public String getName() {
+        return "propDiffControl";
+    }
+>>>>>>> parent of b6761279 (Added decorative wire)
 
 	private static class Comments {
 		/* bla bla bla bla bla they do the thing. */

@@ -45,8 +45,13 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     // Segment count and inertia get calculated from added segments every time.
     private float inertia = 0;
     private int segmentCount = 0;
+<<<<<<< HEAD
 
 	/* This is the OLD Angular Velocity; by keeping track of its value over
+=======
+	
+	/* This is the OLD Angular Velocity; by keeping track of its value over 
+>>>>>>> parent of b6761279 (Added decorative wire)
 	time, we might be able to perform derivative calculations */
 	private float oldAngVel = 0;
 
@@ -222,7 +227,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     /**
      * Get the rotor angular velocity
      * @return Angular velocity in radians per second.
+<<<<<<< HEAD
      */
+=======
+     */   
+>>>>>>> parent of b6761279 (Added decorative wire)
     public float getAngularVelocityRadians() {
         return 2f * getAngularVelocity() * (float) Math.PI / 60f;
     }
@@ -259,13 +268,21 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         fieldStrength = value;
         blockEntity.setChanged();
     }
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> parent of b6761279 (Added decorative wire)
 	/* Sets the old AngVel amd sends the change to the block entity */
 	public void setOldAngVel(float value) {
 		oldAngVel = value;
 		blockEntity.setChanged();
 	}
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> parent of b6761279 (Added decorative wire)
 	/* Of course, we'll need to get the old AngVel, too, if we want to do
 	derivative calculations. */
 	public float getOldAngVel() {
@@ -278,7 +295,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         super.lazyTick();
         blockEntity.sendData();
     }
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> parent of b6761279 (Added decorative wire)
     @Override
     public void tick() {
         super.tick();
@@ -305,13 +326,21 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 					/* Get the current field strength, so we can scale things
 					properly */
 					float fieldStrength = getFieldStrength();
+<<<<<<< HEAD
 					/* Delta T is the diff between Target and AngVel
+=======
+					/* Delta T is the diff between Target and AngVel 
+>>>>>>> parent of b6761279 (Added decorative wire)
 					(Analogous to Proportional control in PID) */
                     float deltaT = (target - angularVelocity);
                     if(target < 0)
                         deltaT = -deltaT;
                     deltaT = Math.max(0, deltaT);
+<<<<<<< HEAD
 					/* Delta A.V. is the change in AngVel since last tick
+=======
+					/* Delta A.V. is the change in AngVel since last tick 
+>>>>>>> parent of b6761279 (Added decorative wire)
 					(Analogous to Derivative/Differential in PID) */
 					float deltaAV = oldAV - angularVelocity;
 					/* Maybe we can scale Kp by the field strength? */

@@ -99,7 +99,6 @@
   "item.powergrid.electrozapper.tooltip.summary": "Fires a lightning bolt that bounces off of nearby enemies, splitting the damage between them. Can be powered with _Forge Energy_ from a _Portable Battery_",
   "item.powergrid.empty_circuit": "Empty Circuit",
   "item.powergrid.golden_wire": "Golden Wire",
-  "item.powergrid.decorative_wire": "Decorative Wire",
   "item.powergrid.growth_lamp": "Growth Lamp",
   "item.powergrid.incomplete_battery": "Incomplete Battery",
   "item.powergrid.incomplete_circuit": "Incomplete Circuit",
