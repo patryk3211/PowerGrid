@@ -15,6 +15,9 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.api.connectivity.ConnectivityHandler;
+import com.simibubi.create.api.contraption.BlockMovementChecks;
+import com.simibubi.create.api.contraption.BlockMovementChecks.CheckResult;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
@@ -24,6 +27,8 @@ import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
@@ -37,6 +42,8 @@ import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.config.CResistance;
@@ -588,8 +595,12 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    @SuppressWarnings("EmptyMethod")
-    public static void register() { /* Initialize static fields. */ }
+    public static void register() {
+        BlockMovementChecks.registerAttachedCheck((BlockState state, Level world, BlockPos pos, Direction direction) -> {
+            if (state.getBlock() instanceof BatteryBlock && ConnectivityHandler.isConnected(world, pos, pos.relative(direction)))
+                return CheckResult.SUCCESS;
 
-
+            return CheckResult.PASS;
+        });
+    }
 }
