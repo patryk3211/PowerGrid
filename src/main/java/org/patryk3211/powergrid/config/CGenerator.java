@@ -19,9 +19,9 @@ import net.createmod.catnip.config.ConfigBase;
 
 public class CGenerator extends ConfigBase {
 	/* Gud Nuff values for the Kp and Kd terms. Tune these to your liking. */
-	public final ConfigFloat rotorKp = f(0.75f, 0f, "rotorKp", Comments.rotorKp);
+	public final ConfigFloat rotorKp = f(0.85f, 0f, "rotorKp", Comments.rotorKp);
 	
-	public final ConfigFloat rotorKd = f(0.2f, 0f, "rotorKd", Comments.rotorKd);
+	public final ConfigFloat rotorKd = f(0.002f, 0f, "rotorKd", Comments.rotorKd);
 
 	public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
 
