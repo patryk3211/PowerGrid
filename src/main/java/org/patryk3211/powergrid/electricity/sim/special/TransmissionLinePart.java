@@ -20,6 +20,7 @@ import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -192,7 +193,8 @@ public class TransmissionLinePart extends ElectricWire {
 
     public void unload() {
         assert owner != null : "Node already unloaded";
-        PowerGrid.LOGGER.debug("{}: Unloading part, UUID={}, chunk={}", line, persistentOwnerId, lastKnownChunk);
+        if(ModdedConfigs.logsEnabled())
+            PowerGrid.LOGGER.debug("{}: Unloading part, UUID={}, chunk={}", line, persistentOwnerId, lastKnownChunk);
         lastKnownChunk = new ChunkPos(owner.blockPosition());
         global.bounty(persistentOwnerId, lastKnownChunk);
         owner = null;
@@ -216,7 +218,8 @@ public class TransmissionLinePart extends ElectricWire {
 
     @Override
     public void remove() {
-        PowerGrid.LOGGER.debug("Removing {}", this);
+        if(ModdedConfigs.logsEnabled())
+            PowerGrid.LOGGER.debug("Removing {}", this);
         if(line != null)
             line.remove(this);
         global.unregisterPart(persistentOwnerId, this);

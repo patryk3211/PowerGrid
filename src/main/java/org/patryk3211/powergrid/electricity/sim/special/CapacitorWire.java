@@ -51,9 +51,9 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook {
         // Calculate current with a bit of leakage
         var current = conductance() * storedPotential * 0.9999f;
         if(node1 != null)
-            residual.add(node1.getIndex(), 0, current);
+            residual.add(node1.getIndex(), 0, -current);
         if(node2 != null)
-            residual.add(node2.getIndex(), 0, -current);
+            residual.add(node2.getIndex(), 0, current);
     }
 
     @Override

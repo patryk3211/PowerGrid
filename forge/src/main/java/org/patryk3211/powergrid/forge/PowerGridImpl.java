@@ -25,6 +25,9 @@ import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.lang.FontHelper;
 import net.createmod.ponder.foundation.PonderIndex;
+import net.minecraft.commands.synchronization.ArgumentTypeInfo;
+import net.minecraft.commands.synchronization.ArgumentTypeInfos;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -46,6 +49,7 @@ import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
+import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
@@ -61,6 +65,7 @@ public class PowerGridImpl {
     public static IEventBus bus;
 
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, PowerGrid.MOD_ID);
+    public static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, PowerGrid.MOD_ID);
 
     public PowerGridImpl() {
         context = ModLoadingContext.get();
@@ -75,8 +80,13 @@ public class PowerGridImpl {
                 .displayItems(new ItemDisplay.BaseItemDisplay(true))
                 .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
                 .build());
+        COMMAND_ARGUMENT_TYPES.register("performance_counter", () -> ArgumentTypeInfos
+                .registerByClass(PerformanceCommand.PerformanceCounterArgument.class,
+                        SingletonArgumentInfo.contextFree(PerformanceCommand.PerformanceCounterArgument::new)));
+
         PowerGrid.REGISTRATE.addLang("itemGroup", PowerGrid.asResource("main"), "Power Grid");
         TABS.register(bus);
+        COMMAND_ARGUMENT_TYPES.register(bus);
 
         MinecraftForge.EVENT_BUS.register(ForgeEvents.class);
 

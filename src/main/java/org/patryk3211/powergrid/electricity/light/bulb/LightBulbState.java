@@ -43,6 +43,7 @@ public abstract class LightBulbState {
     protected float temperature;
     protected boolean burned;
     private int overheatTicks;
+    private boolean playEffect;
 
     public <T extends Item&ILightBulb> LightBulbState(T bulb, LightFixtureBlockEntity fixture) {
         this.item = bulb;
@@ -78,9 +79,19 @@ public abstract class LightBulbState {
         return fixture.getBlockState().getValue(POWER);
     }
 
+    private void burnEffect() {
+        var world = fixture.getLevel();
+        if(world.isClientSide) {
+            var pos = fixture.getBlockPos().getCenter();
+            world.addParticle(ParticleTypes.FLASH, pos.x, pos.y, pos.z, 0, 0, 0);
+        }
+    }
+
     public void tick() {
         if(burned)
             return;
+        if(!Float.isFinite(temperature))
+            temperature = BASE_TEMPERATURE;
 
         var filament = fixture.getFilament();
         float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
@@ -88,20 +99,17 @@ public abstract class LightBulbState {
         filament.setResistance(bulb.resistanceFunction(temperature));
 
         var world = fixture.getLevel();
-        if(isOverheated() && overheatTicks++ >= 4) {
-            burned = true;
-            filament.setState(false);
-            if(world.isClientSide) {
-                var pos = fixture.getBlockPos().getCenter();
-                world.addParticle(ParticleTypes.FLASH, pos.x, pos.y, pos.z, 0, 0, 0);
-            }
-            updatePowerLevel(0);
-            return;
-        } else if(!isOverheated()) {
-            overheatTicks = 0;
-        }
-
         if(!world.isClientSide) {
+            if (isOverheated() && overheatTicks++ >= 4) {
+                burned = true;
+                playEffect = true;
+                filament.setState(false);
+                updatePowerLevel(0);
+                fixture.notifyUpdate();
+                return;
+            } else if (!isOverheated()) {
+                overheatTicks = 0;
+            }
             int powerLevel = 0;
             if(temperature > 1400f) {
                 powerLevel = 2;
@@ -148,6 +156,10 @@ public abstract class LightBulbState {
         nbt.putFloat("Temperature", temperature);
         if(burned)
             nbt.putBoolean("Burned", true);
+        if(playEffect) {
+            nbt.putBoolean("Effect", true);
+            playEffect = false;
+        }
     }
 
     public void read(CompoundTag nbt) {
@@ -158,6 +170,10 @@ public abstract class LightBulbState {
         }
         temperature = nbt.getFloat("Temperature");
         burned = nbt.getBoolean("Burned");
+        fixture.getFilament().setState(!burned);
+        if(nbt.getBoolean("Effect")) {
+            burnEffect();
+        }
     }
 
     public static Item getBulbItem(CompoundTag nbt) {

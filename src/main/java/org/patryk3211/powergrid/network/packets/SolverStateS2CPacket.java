@@ -43,7 +43,7 @@ public class SolverStateS2CPacket implements SimplePacket {
 
     public SolverStateS2CPacket(Level world, ElectricalNetwork network) {
         // Read values straight from the solver guess vector
-        var vector = network.getLastGuess();
+        var vector = network.getStateMatrix();
         if(vector == null)
             return;
 
@@ -126,7 +126,7 @@ public class SolverStateS2CPacket implements SimplePacket {
                 int index = 0;
                 // This assumes that the solver guess vector is not reallocated before every solve,
                 // which is true for the current implementation.
-                var vector = network.getLastGuess();
+                var vector = network.getStateMatrix();
                 if(vector == null)
                     continue;
                 for(var eNode : external) {

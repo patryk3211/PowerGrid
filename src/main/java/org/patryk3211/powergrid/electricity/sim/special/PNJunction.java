@@ -22,6 +22,7 @@ class PNJunction extends AbstractElectricWire {
     public static final double V_T = 0.05;
     private double currentConductance;
     private double prevV;
+    public double dV;
 
     public PNJunction(IElectricNode p, IElectricNode n) {
         super(p, n);
@@ -30,17 +31,17 @@ class PNJunction extends AbstractElectricWire {
     public static double pnlim(double V, double Vprev) {
         double step;
         var diff = V - Vprev;
-        if(Math.abs(diff) > 0.2) {
-            step = 0.05f;
+        if(Math.abs(diff) > 0.8) {
+            step = 0.02f;
             if(V < Vprev)
                 step *= -1;
         } else {
-            step = diff * 0.1f;
+            step = diff * 0.02f;
             //0.01f;
         }
         if(step == 0)
             return V;
-        V = (float) (Vprev + step * Math.log(1 + diff / step));
+        V = (float) (Vprev + step * Math.log10(1 + diff / step));
         return V;
     }
 
@@ -61,6 +62,7 @@ class PNJunction extends AbstractElectricWire {
     // This should be called once per iteration for correct smoothing.
     public double getLimitedPotential() {
         var V = pnlim(potentialDifference(), prevV);
+        dV = V - prevV;
         prevV = V;
         return V;
     }

@@ -19,12 +19,11 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
@@ -34,8 +33,7 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
  */
 public class BiCGSTABSolver implements ISolver {
     private static final boolean USE_RANDOM_HAT_RESIDUAL = true;
-    private static final int MAX_ITERATIONS = 500;
-    private static final double MAXIMUM_ALLOWED_IMPRECISION = 0.01;
+    private static final int MAX_ITERATIONS = 300;
 
     private static final PerformanceCounter PERF = new PerformanceCounter("BiCGStab");
 
@@ -65,11 +63,11 @@ public class BiCGSTABSolver implements ISolver {
     private boolean shouldCalculateLU;
 
     private final double targetPrecision;
+    private final double maxAllowed;
 
-    private final Set<ISolverHook> hooks = new HashSet<>();
-
-    public BiCGSTABSolver(double targetPrecision) {
+    public BiCGSTABSolver(double targetPrecision, double maxAllowed) {
         this.targetPrecision = targetPrecision;
+        this.maxAllowed = maxAllowed;
         this.random = new Random();
     }
 
@@ -109,6 +107,17 @@ public class BiCGSTABSolver implements ISolver {
             t.zero();
             shouldCalculateLU = true;
         }
+    }
+
+    @Override
+    public void setInitialGuess(DMatrixRMaj state) {
+        guess.setTo(state);
+        shouldCalculateLU = true;
+    }
+
+    @Override
+    public void invalidatePreconditioner() {
+        shouldCalculateLU = true;
     }
 
     private void prepareILU(DynamicallyTypedMatrix A) {
@@ -192,27 +201,21 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
+    @Nullable
     public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll) {
         if(b.getNumRows() == 0)
             return guess;
 
         PERF.start();
-        for(var hook : hooks) {
-            hook.preSolve();
-        }
 
-        if(solveCount++ >= 20)
-            shouldCalculateLU = true;
-        if(shouldCalculateLU)
+        if(shouldCalculateLU || solveCount++ >= 20) {
             prepareILU(A);
+            solveCount = 0;
+        }
 
         // r = b - A * x
         A.mult(guess, v);
         CommonOps_DDRM.subtract(b, v, residual);
-
-        for(var hook : hooks) {
-            hook.addResidual(residual);
-        }
 
         // Check if result is already good enough.
         double norm = NormOps_DDRM.normP2(residual);
@@ -269,54 +272,42 @@ public class BiCGSTABSolver implements ISolver {
         }
 
         PERF.end();
-        if(!acceptAll) {
-            if (iters >= MAX_ITERATIONS) {
+        if(iters >= MAX_ITERATIONS) {
+            var prefix = acceptAll ? "(AcceptAll) " : "";
+            if(ModdedConfigs.logsEnabled()) {
                 if (LOGGER != null) {
-                    LOGGER.warn("Solver iteration limit, final precision: {}", norm);
+                    LOGGER.warn("{}Solver iteration limit, final precision: {}", prefix, norm);
                 } else {
-                    System.out.printf("Solver iteration limit, final precision: %g", norm);
-                }
-                if (norm > MAXIMUM_ALLOWED_IMPRECISION && (initialDistance / norm) < 10) {
-                    if (LOGGER != null) {
-                        LOGGER.warn("Large imprecision, dropping result");
-                    }
-                    guess.setTo(prevGuess);
+                    System.out.printf("%sSolver iteration limit, final precision: %g", prefix, norm);
                 }
             }
-        } else {
-            if (iters >= MAX_ITERATIONS) {
-                if (LOGGER != null) {
-                    LOGGER.info("(AcceptAll) Solver iteration limit, final precision: {}", norm);
-                } else {
-                    System.out.printf("(AcceptAll) Solver iteration limit, final precision: %g", norm);
+
+            if(!acceptAll) {
+                if (norm > maxAllowed && (initialDistance / norm) < 10) {
+                    if(ModdedConfigs.logsEnabled()) {
+                        if (LOGGER != null) {
+                            LOGGER.warn("Large imprecision, dropping iterative result");
+                        }
+                    }
+                    A.solve(b, guess);
+                    return guess;
                 }
+            } else {
                 // Drop if guess is less precise then the previous guess.
                 if(initialDistance / norm < 1) {
-                    if (LOGGER != null) {
-                        LOGGER.info("(AcceptAll) Large imprecision, dropping result");
+                    if(ModdedConfigs.logsEnabled()) {
+                        if (LOGGER != null) {
+                            LOGGER.info("(AcceptAll) Large imprecision, dropping iterative result");
+                        }
                     }
-                    guess.setTo(prevGuess);
+                    A.solve(b, guess);
+                    return guess;
                 }
             }
         }
 
         finalDistance = norm;
         return guess;
-    }
-
-    @Override
-    public void addHook(ISolverHook hook) {
-        hooks.add(hook);
-    }
-
-    @Override
-    public void removeHook(ISolverHook hook) {
-        hooks.remove(hook);
-    }
-
-    @Override
-    public Collection<ISolverHook> getHooks() {
-        return hooks;
     }
 
     @Override

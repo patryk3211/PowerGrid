@@ -22,6 +22,7 @@ public class DiodeWire extends DynamicConductanceWire {
     private final float resistance;
     private final float biasVoltage;
     private double prevPotential;
+    private double prevCurrent;
 
     private double In;
 
@@ -33,7 +34,7 @@ public class DiodeWire extends DynamicConductanceWire {
 
     @Override
     public float current() {
-        return (float) (super.current() - Math.min(biasVoltage, potentialDifference()) * currentConductance);
+        return (float) (super.current() - In);
     }
 
     @Override
@@ -45,12 +46,26 @@ public class DiodeWire extends DynamicConductanceWire {
     public double calculateConductance() {
         double V = super.potentialDifference();
         V = PNJunction.pnlim(V, prevPotential);
+
+        var I = PNJunction.gm(V, 1, biasVoltage);// * (V - biasVoltage);
+        var dV = V - prevPotential;
+        double G;
+        if(Math.abs(dV) > 1e-5) {
+            G = (I - prevCurrent) / dV;
+        } else {
+            G = currentConductance;
+        }
+        In = I - G * biasVoltage;
+        prevCurrent = I;
         prevPotential = V;
+        return G + 1e-6;
+    }
 
-        var currentConductance = PNJunction.gm(V, 1 / resistance, biasVoltage);
-        In = -Math.min(biasVoltage, V) * currentConductance * 0.995;
-
-        return currentConductance;
+    @Override
+    public void postUpperSolve() {
+//        In = 0;
+//        prevCurrent = 0;
+//        prevPotential = 0;
     }
 
     @Override

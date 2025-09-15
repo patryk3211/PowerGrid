@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -68,21 +69,41 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
 
     @Override
     public double conductance() {
+        return 1e-6;
+//        var cathodeVoltage = node1.getVoltage();
+//        var gridPotential = grid.getVoltage() - cathodeVoltage;
+//        var anodePotential = node2.getVoltage() - cathodeVoltage;
+//
+//        if(anodePotential > 0 && saturationCurrent > 0) {
+//            // Somewhat realistic triode current equation:
+//            var x = gridPotential + anodePotential / gain;
+//            if(x <= 0)
+//                return I_LEAK;
+//            var Ia = perveance * /*Math.sqrt(x * x * x)*/ x + I_LEAK;
+//            Ia = Math.min(Ia, saturationCurrent);
+//            return Ia / anodePotential;
+//        } else {
+//            return 0;
+//        }
+    }
+
+    @Override
+    public void addResidual(DMatrixRMaj residual) {
         var cathodeVoltage = node1.getVoltage();
         var gridPotential = grid.getVoltage() - cathodeVoltage;
         var anodePotential = node2.getVoltage() - cathodeVoltage;
 
+        double Ia = 0;
         if(anodePotential > 0 && saturationCurrent > 0) {
             // Somewhat realistic triode current equation:
             var x = gridPotential + anodePotential / gain;
-            if(x <= 0)
-                return I_LEAK;
-            var Ia = perveance * /*Math.sqrt(x * x * x)*/ x + I_LEAK;
-            Ia = Math.min(Ia, saturationCurrent);
-            return Ia / anodePotential;
-        } else {
-            return 0;
+            if(x > 0) {
+                Ia = perveance * /*Math.sqrt(x * x * x)*/ x;
+                Ia = Math.min(Ia, saturationCurrent);
+            }
         }
+        residual.add(node1.getIndex(), 0, -Ia);
+        residual.add(node2.getIndex(), 0,  Ia);
     }
 
     @Override

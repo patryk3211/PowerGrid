@@ -23,19 +23,27 @@ import static org.patryk3211.powergrid.electricity.sim.special.PNJunction.gm;
 
 public class TransistorNPN extends DynamicConductanceWire {
     private final PNJunction beJunction;
+    private final PNJunction bcJunction;
     private final float bias;
+    private final float alpha;
     private final float beta;
     private final float earlyVoltage;
 
     private double Ice;
     private double Ibe;
+    private double Ibc;
+
+    private double prevIe;
+    private double prevIc;
 
     public TransistorNPN(IElectricNode collector, IElectricNode emitter, IElectricNode base, float bias, float beta, float earlyVoltage) {
         super(collector, emitter);
         this.bias = bias;
-        this.beta = beta;
+        this.alpha = beta / (1 + beta);
+        this.beta = beta * 2;
         this.earlyVoltage = earlyVoltage;
         this.beJunction = new PNJunction(base, emitter);
+        this.bcJunction = new PNJunction(base, collector);
     }
 
     @Override
@@ -43,56 +51,65 @@ public class TransistorNPN extends DynamicConductanceWire {
         super.setNetwork(network);
         if(network != null) {
             network.addWire(beJunction);
+            network.addWire(bcJunction);
         } else {
             beJunction.remove();
             beJunction.setNetwork(null);
+            bcJunction.remove();
+            bcJunction.setNetwork(null);
         }
     }
 
     @Override
     protected double calculateConductance() {
+        // Forward mode
         double V_BE = beJunction.getLimitedPotential();
-        double V_CE = potentialDifference();
-
-        if(V_CE > 0) {
-            // Removing Early effect for g_m makes the simulation potentially faster
-            var gm = gm(V_BE, (1 + V_CE / earlyVoltage) * 10, bias);
-            var I_C = gm * V_BE;
-
-            var gpi = gm / beta;
-            beJunction.updateConductance(gpi);
-
-            var go = I_C / earlyVoltage;
-            Ice = I_C - gm * V_BE - go * V_CE;
-            Ibe = I_C / beta - gpi * V_BE;
-            return go;
+        var Ie = PNJunction.gm(V_BE, 1, bias);
+        double Ge;
+        if(Math.abs(beJunction.dV) > 1e-5) {
+            Ge = (Ie - prevIe) / beJunction.dV;
         } else {
-            // No reverse active
-            var gm = gm(V_BE, 10, bias);
-            var I_C = gm * V_BE;
-
-            var gpi = gm / beta;
-            beJunction.updateConductance(gpi);
-            Ice = 0;
-            Ibe = I_C / beta - gpi * V_BE;
-            return 0;
+            Ge = beJunction.conductance();
         }
+        Ibe = Ie - Ge * V_BE;
+        prevIe = Ie;
+        beJunction.updateConductance(Ge + 1e-6);
+
+        // Reverse mode
+        double V_BC = bcJunction.getLimitedPotential();
+        var Ic = PNJunction.gm(V_BC, 1, bias);
+        double Gc;
+        if(Math.abs(bcJunction.dV) > 1e-5) {
+            Gc = (Ic - prevIc) / bcJunction.dV;
+        } else {
+            Gc = bcJunction.conductance();
+        }
+        Ibc = Ic - Gc * V_BC;
+        prevIc = Ic;
+        bcJunction.updateConductance(Gc + 1e-6);
+
+        Ice = Ibe * beta - Ibc * beta;
+        return 1e-6;
     }
 
     @Override
     public void addResidual(DMatrixRMaj residual) {
-        residual.add(node1.getIndex(), 0, Ice);
-        residual.add(beJunction.getNode1().getIndex(), 0, Ibe);
-        residual.add(node2.getIndex(), 0, -Ibe - Ice);
+        residual.add(node1.getIndex(), 0, -Ice + Ibc);
+        residual.add(beJunction.getNode1().getIndex(), 0, -Ibe - Ibc);
+        residual.add(node2.getIndex(), 0, Ibe + Ice);
     }
 
     @Override
     public float current() {
-        return (float) (super.current() - Ice + beJunction.current());
+        return (float) (-Ice + super.current()
+                + beJunction.current() - Ibe
+                - bcJunction.current() + Ibc);
     }
 
     @Override
     public float power() {
-        return (float) (potentialDifference() * (super.current() - Ice) + beJunction.power());
+        return (float) (-Ice * potentialDifference()
+                + (beJunction.current() - Ibe) * beJunction.potentialDifference()
+                + (bcJunction.current() - Ibc) * bcJunction.potentialDifference());
     }
 }

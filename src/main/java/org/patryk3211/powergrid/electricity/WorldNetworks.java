@@ -28,6 +28,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.*;
@@ -37,10 +38,8 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
-import org.patryk3211.powergrid.network.packets.SolverStateS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
-import org.patryk3211.powergrid.utility.PlayerLookup;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.*;
@@ -49,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
     public final Level world;
     public final NetworkGraph globalGraph = new NetworkGraph();
-    private final PerformanceCounter perf;
+    protected final PerformanceCounter perf;
 
     public final List<ElectricalNetwork> subnetworks = new ArrayList<>();
     public final Map<Integer, TransmissionLine> transmissionLines = new IntObjectHashMap<>();
@@ -142,9 +141,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 iter.remove();
                 continue;
             }
-            if(network.isDirty()) {
-                network.warmUp();
-            }
             network.calculate();
         }
         perf.end();
@@ -221,24 +217,24 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
             removed.forEach(TransmissionLine::remove);
             // Synchronize solver state with clients
-            if(syncTicks++ >= 20) {
-                for(var network : subnetworks) {
-                    if(network.getLastGuess() == null)
-                        continue;
-                    var tracking = new HashSet<ServerPlayer>();
-                    var packet = new SolverStateS2CPacket(world, network);
-                    for(var chunk : packet.chunks) {
-                        tracking.addAll(PlayerLookup.tracking(serverWorld, chunk));
-                    }
-                    ModdedPackets.sendToClients(packet, tracking);
-                }
-                syncTicks = 0;
-            }
+//            if(syncTicks++ >= 20) {
+//                for(var network : subnetworks) {
+//                    if(network.getStateMatrix() == null)
+//                        continue;
+//                    var tracking = new HashSet<ServerPlayer>();
+//                    var packet = new SolverStateS2CPacket(world, network);
+//                    for(var chunk : packet.chunks) {
+//                        tracking.addAll(PlayerLookup.tracking(serverWorld, chunk));
+//                    }
+//                    ModdedPackets.sendToClients(packet, tracking);
+//                }
+//                syncTicks = 0;
+//            }
         }
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph);
+        var network = new GraphedElectricalNetwork(globalGraph, true);
         subnetworks.add(network);
         return network;
     }
@@ -402,7 +398,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(network == null)
             return false;
 
-        PowerGrid.LOGGER.debug("Creating a transmission line for {}", linePart);
+        if(ModdedConfigs.logsEnabled())
+            PowerGrid.LOGGER.debug("Creating a transmission line for {}", linePart);
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);
 
@@ -434,12 +431,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     if(line1 != line2) {
                         linePart.setLine(line1);
                         // We can extend the first line by the second node.
-                        PowerGrid.LOGGER.debug("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
+                        if(ModdedConfigs.logsEnabled())
+                            PowerGrid.LOGGER.debug("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
                         if(line1.getNode2() != node1)
                             line1.flip();
                         line1.addLastSegment(linePart);
                         // We need to merge lines.
-                        PowerGrid.LOGGER.debug("{}: Merging transmission lines between {} and {}", line1, node1, node2);
+                        if(ModdedConfigs.logsEnabled())
+                            PowerGrid.LOGGER.debug("{}: Merging transmission lines between {} and {}", line1, node1, node2);
                         if (curLine.getNode1() != line1.getNode2())
                             curLine.flip();
                         line1.merge(curLine);
@@ -450,7 +449,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     line1 = null;
                 } else {
                     linePart.setLine(line2);
-                    PowerGrid.LOGGER.debug("{}: Extending line at beginning by wire {}, starting node is now {}", line2, linePart, node1);
+                    if(ModdedConfigs.logsEnabled())
+                        PowerGrid.LOGGER.debug("{}: Extending line at beginning by wire {}, starting node is now {}", line2, linePart, node1);
                     // We can extend this line by the first node.
                     if(line2.getNode1() != node2)
                         line2.flip();
@@ -461,7 +461,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(line1 != null) {
             linePart.setLine(line1);
             // We can extend this line by the second node.
-            PowerGrid.LOGGER.debug("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
+            if(ModdedConfigs.logsEnabled())
+                PowerGrid.LOGGER.debug("{}: Extending line at end by wire {}, terminating node is now {}", line1, linePart, node2);
             if(line1.getNode2() != node1)
                 line1.flip();
             line1.addLastSegment(linePart);
@@ -471,7 +472,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             linePart.setLine(line);
             line.segments.add(linePart);
             network.addWire(line);
-            PowerGrid.LOGGER.debug("{}: New transmission line between {} and {}", line, node1, node2);
+            if(ModdedConfigs.logsEnabled())
+                PowerGrid.LOGGER.debug("{}: New transmission line between {} and {}", line, node1, node2);
         }
 
         setDirty();
@@ -596,7 +598,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 continueResolving = true;
             }
             if(parts.size() == 1) {
-                PowerGrid.LOGGER.debug("Found edge line at {}", endpoint);
+                if(ModdedConfigs.logsEnabled())
+                    PowerGrid.LOGGER.debug("Found edge line at {}", endpoint);
                 if(part.getEndpoint1().equals(endpoint)) {
                     // Check endpoint2
                     if(part.getEndpoint2().isValid(world)) {
@@ -615,7 +618,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
                 break;
             }
-            PowerGrid.LOGGER.debug("Continuing line trace through {}", endpoint);
+            if(ModdedConfigs.logsEnabled())
+                PowerGrid.LOGGER.debug("Continuing line trace through {}", endpoint);
             if(part.getEndpoint1().equals(endpoint)) {
                 if(traceTree(part.getEndpoint2(), visited)) {
                     makeTransmissionLine(part);
@@ -639,7 +643,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         // We need to trace the graph to all terminating nodes and see if any are loaded,
         // if so, we need to resolve all lines between them to ensure correct unloaded chunk behaviour.
         var visited = new HashSet<IWireEndpoint>();
-        PowerGrid.LOGGER.debug("Starting line trace at {}", endpoint);
+        if(ModdedConfigs.logsEnabled())
+            PowerGrid.LOGGER.debug("Starting line trace at {}", endpoint);
         traceTree(endpoint, visited);
     }
 
@@ -674,32 +679,38 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(oldNode != null && oldNode != newNode) {
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
-            PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
+            if(ModdedConfigs.logsEnabled())
+                PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
             var parts = partNodeMap.remove(oldNode);
             if(parts != null) {
                 for(TransmissionLinePart part : parts) {
-                    PowerGrid.LOGGER.debug("Migrating node for part {}", part);
+                    if(ModdedConfigs.logsEnabled())
+                        PowerGrid.LOGGER.debug("Migrating node for part {}", part);
                     if(part.getEndpoint1().equals(endpoint) || part.getNode1() == oldNode) {
                         part.setNode1(newNode);
-                        PowerGrid.LOGGER.debug("Part {} has had its node migrated", part);
+                        if(ModdedConfigs.logsEnabled())
+                            PowerGrid.LOGGER.debug("Part {} has had its node migrated", part);
                         var line = part.getLine();
                         if(line != null) {
                             if(line.getNode1() == oldNode) {
                                 inNetwork(line.getNetwork(), newNode);
                                 line.setNode1(newNode);
-                                PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                                if(ModdedConfigs.logsEnabled())
+                                    PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                             }
                         }
                     }
                     if(part.getEndpoint2().equals(endpoint) || part.getNode2() == oldNode) {
                         part.setNode2(newNode);
-                        PowerGrid.LOGGER.debug("Part {} has had its node migrated", part);
+                        if(ModdedConfigs.logsEnabled())
+                            PowerGrid.LOGGER.debug("Part {} has had its node migrated", part);
                         var line = part.getLine();
                         if(line != null) {
                             if(line.getNode2() == oldNode) {
                                 inNetwork(line.getNetwork(), newNode);
                                 line.setNode2(newNode);
-                                PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                                if(ModdedConfigs.logsEnabled())
+                                    PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                             }
                         }
                     }
@@ -713,10 +724,12 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 for (var line : lines) {
                     if (line.getNode1() == oldNode) {
                         line.setNode1(newNode);
-                        PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                        if(ModdedConfigs.logsEnabled())
+                            PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                     } else if (line.getNode2() == oldNode) {
                         line.setNode2(newNode);
-                        PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                        if(ModdedConfigs.logsEnabled())
+                            PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
                     }
                 }
                 unified.removeNode(oldNode);
@@ -728,11 +741,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         if (segment.getNode1() == oldNode || segment.getEndpoint1().equals(endpoint)) {
                             movePartMap(segment.getNode1(), newNode, segment);
                             segment.setNode1(newNode);
-                            PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
+                            if(ModdedConfigs.logsEnabled())
+                                PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
                         } else if (segment.getNode2() == oldNode || segment.getEndpoint2().equals(endpoint)) {
                             movePartMap(segment.getNode2(), newNode, segment);
                             segment.setNode2(newNode);
-                            PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
+                            if(ModdedConfigs.logsEnabled())
+                                PowerGrid.LOGGER.debug("Line {} has had its internal node migrated", line);
                         }
                     }
                 }
@@ -741,7 +756,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode, boolean hasInternals) {
-        PowerGrid.LOGGER.debug("Node holder added, {}", ownedNode);
+        if(ModdedConfigs.logsEnabled())
+            PowerGrid.LOGGER.debug("Node holder added, {}", ownedNode);
         addAndMigrateNode(ownedNode.endpoint);
         // Try to resolve an end of a transmission line
         resolveTree(ownedNode.endpoint);
@@ -755,7 +771,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     // TODO: When pausing we can simplify transmission lines.
     public void prepareUnpaused(OwnedFloatingNode node) {
-        PowerGrid.LOGGER.debug("Preparing node for unpaused internal connections");
+        if(ModdedConfigs.logsEnabled())
+            PowerGrid.LOGGER.debug("Preparing node for unpaused internal connections");
         var line = findLineMiddle(node);
         if(line != null)
             line.splitAt(node);

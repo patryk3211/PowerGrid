@@ -23,25 +23,22 @@ import org.patryk3211.powergrid.electricity.sim.node.INode;
 public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
 
-    public GraphedElectricalNetwork() {
-        this(new NetworkGraph());
+    public GraphedElectricalNetwork(boolean addGMin) {
+        this(new NetworkGraph(), addGMin);
     }
 
-    public GraphedElectricalNetwork(NetworkGraph graph) {
-        super();
+    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin) {
+        super(addGMin);
         this.graph = graph;
     }
 
     @Override
-    public void addNode(IElectricNode node) {
+    public void addNode(INode node) {
         super.addNode(node);
-        graph.addNode(node);
-    }
-
-    @Override
-    public void addNode(ICouplingNode coupling) {
-        super.addNode(coupling);
-        graph.couple(coupling);
+        if(node instanceof IElectricNode enode)
+            graph.addNode(enode);
+        if(node instanceof ICouplingNode coupling)
+            graph.couple(coupling);
     }
 
     @Override

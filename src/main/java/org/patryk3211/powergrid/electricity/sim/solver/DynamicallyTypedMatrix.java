@@ -19,25 +19,37 @@ import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
+import org.ejml.interfaces.linsol.LinearSolver;
+import org.ejml.interfaces.linsol.LinearSolverDense;
+import org.ejml.interfaces.linsol.LinearSolverSparse;
 import org.ejml.ops.DConvertMatrixStruct;
+import org.ejml.sparse.FillReducing;
 import org.ejml.sparse.csc.CommonOps_DSCC;
+import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
+
+import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
 
 public class DynamicallyTypedMatrix {
     // This will need to be tuned, probably.
     private static final int SPARSE_THRESHOLD = 6;
+    private static final double G_THRESHOLD = G_MIN / 1000;
 
+    private LinearSolver<? extends DMatrix, DMatrixRMaj> solver;
     private DMatrix matrix;
     private boolean sparse;
 
     public DynamicallyTypedMatrix(int rows, int cols) {
         matrix = new DMatrixRMaj(rows, cols);
         sparse = false;
+        solver = null;
     }
 
     public void denseZero() {
         if(sparse) {
             matrix = new DMatrixRMaj(matrix.getNumRows(), matrix.getNumCols());
             sparse = false;
+            solver = null;
         } else {
             matrix.zero();
         }
@@ -71,9 +83,10 @@ public class DynamicallyTypedMatrix {
     public void setTo(DMatrixRMaj matrix) {
         if(matrix.getNumRows() > SPARSE_THRESHOLD) {
             if(sparse) {
-                DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) this.matrix, 1e-6);
+                DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) this.matrix, G_THRESHOLD);
             } else {
-                this.matrix = DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) null, 1e-6);
+                this.matrix = DConvertMatrixStruct.convert(matrix, (DMatrixSparseCSC) null, G_THRESHOLD);
+                solver = null;
             }
             sparse = true;
         } else {
@@ -81,6 +94,7 @@ public class DynamicallyTypedMatrix {
                 this.matrix.setTo(matrix);
             } else {
                 this.matrix = new DMatrixRMaj(matrix);
+                solver = null;
             }
             sparse = false;
         }
@@ -93,14 +107,32 @@ public class DynamicallyTypedMatrix {
     public void optimize() {
         if(matrix.getNumRows() > SPARSE_THRESHOLD) {
             if (!sparse) {
-                this.matrix = DConvertMatrixStruct.convert((DMatrixRMaj) matrix, (DMatrixSparseCSC) null, 1e-6);
+                this.matrix = DConvertMatrixStruct.convert((DMatrixRMaj) matrix, (DMatrixSparseCSC) null, G_THRESHOLD);
+                solver = null;
             }
             sparse = true;
         } else {
             if (sparse) {
                 this.matrix = new DMatrixRMaj(matrix);
+                solver = null;
             }
             sparse = false;
         }
+    }
+
+    public void solve(DMatrixRMaj b, DMatrixRMaj x) {
+        if(solver == null) {
+            if(sparse) {
+                solver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
+            } else {
+                solver = LinearSolverFactory_DDRM.lu(getNumRows());
+            }
+        }
+        if(sparse) {
+            ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA((DMatrixSparseCSC) matrix);
+        } else {
+            ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA((DMatrixRMaj) matrix);
+        }
+        solver.solve(b, x);
     }
 }

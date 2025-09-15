@@ -54,7 +54,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     private void overvoltEffect() {
         var pos = worldPosition.getCenter();
         var face = getBlockState().getValue(SurfaceSwitchBlock.FACING);
-        SparkParticleData.explodeParticles(level, (float) pos.x, (float) pos.y, (float) pos.z, face, 7);
+        SparkParticleData.explodeParticles(level, (float) pos.x, (float) pos.y, (float) pos.z, face.getOpposite(), 7);
         ModdedSoundEvents.COMPONENT_EXPLODE.playAt(level, pos, 1, 1, true);
     }
 
@@ -68,7 +68,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
             overvoltResistance = level.random.nextFloat() * 1000f;
             wire.setResistance(overvoltResistance);
             playEffect = true;
-            sendData();
+            notifyUpdate();
         }
         if(isButton && buttonTimeout > 0) {
             --buttonTimeout;
@@ -116,8 +116,10 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         }
         if(overvoltResistance != null) {
             tag.putFloat("Overvolted", overvoltResistance);
-            if(playEffect)
+            if(playEffect) {
                 tag.putBoolean("Effect", true);
+                playEffect = false;
+            }
         }
         if(isButton)
             tag.putByte("Timeout", (byte) buttonTimeout);

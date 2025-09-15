@@ -17,13 +17,17 @@ package org.patryk3211.powergrid.electricity.sim;
 
 import org.patryk3211.powergrid.PowerGrid;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class PerformanceCounter {
+    private static final DateFormat FORMAT = DateFormat.getDateTimeInstance();
     public static final List<PerformanceCounter> COUNTERS = new ArrayList<>();
 
-    private final String name;
+    private String name;
 
     private long microsTotal;
     private long minTime;
@@ -32,9 +36,17 @@ public class PerformanceCounter {
 
     private long start;
 
+    private double prevAvg;
+
+    private Date lastMeasurement;
+
     public PerformanceCounter(String name) {
         this.name = name;
         COUNTERS.add(this);
+    }
+
+    public void rename(String name) {
+        this.name = name;
     }
 
     public void start() {
@@ -52,10 +64,11 @@ public class PerformanceCounter {
             maxTime = duration;
         }
         ++epochCount;
-        microsTotal += duration / epochCount;
+        microsTotal += duration / 1000;
 
+        lastMeasurement = new Date();
         if(epochCount >= 1000) {
-//            log();
+            prevAvg = (double) microsTotal / epochCount;
             reset();
         }
     }
@@ -71,5 +84,26 @@ public class PerformanceCounter {
         PowerGrid.LOGGER.info("Performance counter '{}':", name);
         PowerGrid.LOGGER.info("  Min / Max / Avg");
         PowerGrid.LOGGER.info("  {}µs / {}µs / {}µs", minTime / 1000f, maxTime / 1000f, (float) microsTotal / epochCount);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getMin() {
+        return minTime / 1000.0;
+    }
+
+    public double getMax() {
+        return maxTime / 1000.0;
+    }
+
+    public double getAvg() {
+        var weight = epochCount / 1000.0;
+        return prevAvg * 1 / (1 + weight) + ((double) microsTotal / epochCount) * weight / (1 + weight);
+    }
+
+    public String getTimestamp() {
+        return FORMAT.format(lastMeasurement);
     }
 }

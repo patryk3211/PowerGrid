@@ -35,9 +35,14 @@ public class ModdedConfigs {
     public static final Map<ModConfig.Type, ConfigBase> CONFIGS = new EnumMap<>(ModConfig.Type.class);
 
     private static CServer server;
+    private static CCommon common;
 
     public static CServer server() {
         return server;
+    }
+
+    public static CCommon common() {
+        return common;
     }
 
     public static ConfigBase byType(ModConfig.Type type) {
@@ -64,6 +69,7 @@ public class ModdedConfigs {
 
     public static void register() {
         server = register(CServer::new, ModConfig.Type.SERVER);
+        common = register(CCommon::new, ModConfig.Type.COMMON);
 
         registerPlatform();
 
@@ -87,5 +93,9 @@ public class ModdedConfigs {
                 config.onReload();
         if(modConfig.getType() == ModConfig.Type.SERVER)
             PowerGrid.LOGGER.warn("Server config reloaded, this can cause unexpected behaviour if done during gameplay!");
+    }
+
+    public static boolean logsEnabled() {
+        return common.lotsOfLogs.get();
     }
 }
