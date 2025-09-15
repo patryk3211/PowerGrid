@@ -3,6 +3,7 @@ plugins {
 	id 'architectury-plugin' version '3.4-SNAPSHOT'
 	id 'dev.architectury.loom' version '1.11+' apply false
 	id "com.github.johnrengelman.shadow" version "7.1.2"
+	id 'me.modmuss50.mod-publish-plugin' version '1.0.0' apply false
 }
 
 architectury {
@@ -96,8 +97,10 @@ def getGitHash = { ->
 	return stdout.toString().trim()
 }
 
+var changelogFile = file('changelog.md')
 subprojects {
 	apply plugin: "com.github.johnrengelman.shadow"
+	apply plugin: "me.modmuss50.mod-publish-plugin"
 
 	configurations.configureEach {
 		resolutionStrategy {
@@ -173,6 +176,31 @@ subprojects {
 		def commonSources = rootProject.sourcesJar
 		dependsOn commonSources
 		from commonSources.archiveFile.map { zipTree(it) }
+	}
+
+	publishMods {
+		file = tasks.remapJar.archiveFile
+		version.set(project.version.toString())
+		changelog = changelogFile.text
+		type = STABLE
+		modLoaders.add('forge')
+
+		curseforge {
+			projectId = curseforgeId
+			accessToken = System.getenv('CURSEFORGE_TOKEN')
+			minecraftVersions.add(minecraft_version)
+
+			requires('create')
+			requires('architectury-api')
+		}
+		modrinth {
+			projectId = modrinthId
+			accessToken = System.getenv('MODRINTH_TOKEN')
+			minecraftVersions.add(minecraft_version)
+
+			requires('create')
+			requires('architectury-api')
+		}
 	}
 
 	components.named("java") {
