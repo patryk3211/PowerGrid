@@ -38,10 +38,10 @@ public class SwitchedWire extends ElectricWire {
             if(network != null) {
                 if(state) {
                     // Switch is now on, add its conductance
-                    network.updateConductance(this, super.conductance() - G_MIN);
+                    network.updateConductance(this, super.conductance() - G_MIN/2);
                 } else {
                     // Switch is now off, remove its conductance
-                    network.updateConductance(this, -super.conductance() + G_MIN);
+                    network.updateConductance(this, -super.conductance() + G_MIN/2);
                 }
             }
         }
@@ -68,6 +68,6 @@ public class SwitchedWire extends ElectricWire {
 
     @Override
     public double conductance() {
-        return state ? super.conductance() : G_MIN;
+        return state ? super.conductance() : G_MIN/2;
     }
 }

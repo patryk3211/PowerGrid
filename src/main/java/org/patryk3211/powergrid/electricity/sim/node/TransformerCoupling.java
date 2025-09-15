@@ -175,10 +175,15 @@ public abstract class TransformerCoupling extends CouplingNode {
             conductance.add(primary2.getIndex(), this.index,  ratio);
 
             // Put a tiny connection between the sides to stabilize the simulation
-            conductance.add(primary2.getIndex(),   primary2.getIndex(),    G_MIN);
-            conductance.add(secondary2.getIndex(), secondary2.getIndex(),  G_MIN);
-            conductance.add(primary2.getIndex(),   secondary2.getIndex(), -G_MIN);
-            conductance.add(secondary2.getIndex(), primary2.getIndex(),   -G_MIN);
+            conductance.add(primary2.getIndex(),   primary2.getIndex(),    G_MIN/2);
+            conductance.add(secondary2.getIndex(), secondary2.getIndex(),  G_MIN/2);
+            conductance.add(primary2.getIndex(),   secondary2.getIndex(), -G_MIN/2);
+            conductance.add(secondary2.getIndex(), primary2.getIndex(),   -G_MIN/2);
+
+            conductance.add(primary1.getIndex(),   primary1.getIndex(),    G_MIN/2);
+            conductance.add(secondary1.getIndex(), secondary1.getIndex(),  G_MIN/2);
+            conductance.add(primary1.getIndex(),   secondary1.getIndex(), -G_MIN/2);
+            conductance.add(secondary1.getIndex(), primary1.getIndex(),   -G_MIN/2);
         }
 
         @Override

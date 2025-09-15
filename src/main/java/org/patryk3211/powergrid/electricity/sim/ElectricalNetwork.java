@@ -333,7 +333,7 @@ public class ElectricalNetwork {
 
     private void populateCurrentMatrix() {
         currentMatrix.zero();
-        boolean shouldAnchor = true;
+        boolean shouldAnchor = addGMin;
         FloatingNode anchor = null;
         for(int nodeIndex = 0; nodeIndex < nodes.size(); ++nodeIndex) {
             final var node = nodes.get(nodeIndex);
