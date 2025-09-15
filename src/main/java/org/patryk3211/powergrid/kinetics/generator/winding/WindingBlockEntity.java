@@ -707,36 +707,30 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             float torque = coilConstant() * rotorP.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
-            var torque2 = -Pe / rotorP.getAngularVelocityRadians();
-            if(rotorP.getAngularVelocityRadians() != 0)
-                torque = torque2;
-            if (Pe >= 0) {
+            if (Pe > 0) {
                 // Generator is sourcing power
-                torque *= 1.0f;
+//                torque *= 1.0f;
+                torque = rotorP.limitForce(torque);
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
                 torque *= 0.5f;
             }
-            torque = rotorP.limitForce(torque);
             rotorP.applyTickForce(torque);
         }
         if(rotorN != null) {
             float torque = coilConstant() * rotorN.getFieldStrength() * current;
 
             float Pe = current * emfVoltage();
-            var torque2 = -Pe / rotorN.getAngularVelocityRadians();
-            if(rotorN.getAngularVelocityRadians() != 0)
-                torque = torque2;
-            if (Pe >= 0) {
+            if (Pe > 0) {
                 // Generator is sourcing power
-                torque *= 1.0f;
+//                torque *= 1.0f;
+                torque = rotorN.limitForce(torque);
             } else {
                 // Generator is sinking power
                 // Reduce torque to account for losses
                 torque *= 0.5f;
             }
-            torque = rotorN.limitForce(torque);
             rotorN.applyTickForce(torque);
         }
 
