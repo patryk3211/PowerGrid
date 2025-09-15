@@ -308,7 +308,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.NEGATIVE, parallelCheckAxis), false);
                 }
             });
-            calculateElectricalParameters();
         } else {
             var opt = block.getMainBlockEntity(level, worldPosition);
             if(opt.isEmpty()) {
@@ -392,6 +391,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             parallelPositions.forEach(pos -> level.getBlockEntity(pos, ModdedBlockEntities.WINDING.get())
                     .ifPresent(WindingBlockEntity::rewire));
         }
+        if(isMain() && ownerPosition == null)
+            calculateElectricalParameters();
         super.initialize();
         grabRotors();
     }

@@ -42,7 +42,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        rotorBehaviour = new RotorBehaviour(this, ModdedConfigs.server().kinetics.generatorClutchInertia.getF());
+        rotorBehaviour = new RotorBehaviour(this, ModdedConfigs.server().kinetics.generatorControls.generatorClutchInertia.getF());
         rotorBehaviour.forceSource(this);
         rotorBehaviour.noField();
         rotorBehaviour.setChangeCallback(this::assemblyChanged);
@@ -57,15 +57,19 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
         }
     }
 
+    public float torque() {
+        return (float) (BlockStressValues.getImpact(getBlockState().getBlock()) * ModdedConfigs.server().kinetics.torqueForStress.getF());
+    }
+
     @Override
-    public float sourceForce() {
+    public float sourceForce(float velocity) {
         if(getTheoreticalSpeed() == 0 || isOverStressed())
             return 0;
 
         float couplingStrength = (15 - currentRedstonePower) / 15f;
         int segmentCount = rotorBehaviour.getSegmentCount();
 
-        float maxForce = ModdedConfigs.server().kinetics.generatorClutchForcePerSegment.getF() * segmentCount;
+        float maxForce = (float) (torque() * segmentCount / 30 * Math.PI);
         return maxForce * couplingStrength;
     }
 

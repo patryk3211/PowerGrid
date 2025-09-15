@@ -37,7 +37,7 @@ import java.util.function.DoubleSupplier;
  */
 public class CStress extends ConfigBase {
     // bump this version to reset configured values.
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
 
     // IDs need to be used since configs load before registration
 

@@ -59,7 +59,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     private IForceSource forceSupplier = null;
 
     public RotorBehaviour(SmartBlockEntity be, float inertia) {
-        super(be, ModdedConfigs.server().kinetics.rotorAssemblyMaxSize.get(),
+        super(be, ModdedConfigs.server().kinetics.generatorControls.rotorAssemblyMaxSize.get(),
                 segment -> !segment.blockEntity.getBlockState()
                         .is(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag));
         this.individualInertia = inertia;
@@ -233,15 +233,15 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     }
 
     public static int getMaxRotationSpeed() {
-        return ModdedConfigs.server().kinetics.rotorRPMMax.get();
+        return ModdedConfigs.server().kinetics.generatorControls.rotorRPMMax.get();
     }
 	/* Get the Proportional constant for calculations */
 	public static float getRotorKp() {
-		return ModdedConfigs.server().kinetics.propDiffControl.rotorKp.getF();
+		return ModdedConfigs.server().kinetics.generatorControls.rotorKp.getF();
 	}
 	/* And the Derivative, for good measure */
 	public static float getRotorKd() {
-		return ModdedConfigs.server().kinetics.propDiffControl.rotorKd.getF();
+		return ModdedConfigs.server().kinetics.generatorControls.rotorKd.getF();
 	}
 
     public void setFieldStrength(float value) {
@@ -277,7 +277,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             var velocity = getAngularVelocity();
 
             float friction = Math.abs(velocity * 20f * inertia);
-            friction = Math.min(friction, segmentCount * 1f);
+            friction = Math.min(friction, segmentCount * ModdedConfigs.server().kinetics.generatorControls.rotorSegmentFriction.getF());
             totalForce -= Math.signum(velocity) * friction;
 
             angularVelocity += totalForce / 20f / inertia;
@@ -305,8 +305,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                     float deltaAV = oldAV - angularVelocity;
                     /* Maybe we can scale Kp by the field strength? */
                     float Kds = fieldStrength * Kd;
-                    float maxForce = segment.forceSupplier.sourceForce();
-                    //float force = deltaT * 20f * inertia;
+                    float maxForce = segment.forceSupplier.sourceForce(angularVelocity);
                     /* Calculate with PD instead of simply P */
                     float force = ((Kp * deltaT) + (Kds * deltaAV)) * 20f * inertia;
                     force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
@@ -350,7 +349,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     }
 
     public interface IForceSource {
-        float sourceForce();
+        float sourceForce(float velocity);
         float forceSpeed();
         default void receiveUsedForce(float percent) { }
     }

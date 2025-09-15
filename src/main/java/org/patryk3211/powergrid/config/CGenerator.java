@@ -23,14 +23,27 @@ public class CGenerator extends ConfigBase {
 	
 	public final ConfigFloat rotorKd = f(0.2f, 0f, "rotorKd", Comments.rotorKd);
 
+	public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
+
+	public final ConfigInt rotorAssemblyMaxSize = i(8, 3, "rotorAssemblyMaxSize", Comments.rotorAssemblyMaxSize);
+	public final ConfigFloat rotorSegmentFriction = f(0.25f, 0, "rotorSegmentFriction", Comments.rotorSegmentFriction);
+
+	public final ConfigFloat generatorRotorInertia = f(0.15f, 0, "generatorRotorInertia");
+	public final ConfigFloat generatorInductionRotorInertia = f(0.15f, 0, "generatorInductionRotorInertia");
+	public final ConfigFloat generatorCommutatorInertia = f(0.05f, 0, "generatorCommutatorInertia");
+	public final ConfigFloat generatorClutchInertia = f(0.05f, 0, "generatorClutchInertia");
+
     @Override
     public String getName() {
-        return "propDiffControl";
+        return "generatorControl";
     }
 
 	private static class Comments {
 		/* bla bla bla bla bla they do the thing. */
 		public static final String rotorKp = "Factor to scale the Proportional factorof the Rotor's force calculation";
 		public static final String rotorKd = "Factor to scale the Differential factor of the Rotor's force calculation";
+		public static final String rotorRPMMax = "Maximum rotation speed of a rotor";
+		public static final String rotorAssemblyMaxSize = "Maximum length of a rotor assembly";
+		public static final String rotorSegmentFriction = "Force of friction applied for each segment of the rotor assembly";
 	}
 }

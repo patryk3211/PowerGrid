@@ -36,7 +36,7 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
 
     @Override
     public float inertia() {
-        return ModdedConfigs.server().kinetics.generatorInductionRotorInertia.getF();
+        return ModdedConfigs.server().kinetics.generatorControls.generatorInductionRotorInertia.getF();
     }
 
     private void assemblyChanged() {

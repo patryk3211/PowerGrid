@@ -21,26 +21,15 @@ import net.createmod.catnip.config.ConfigBase;
 public class CKinetics extends ConfigBase {
     public final ConfigFloat encasedFanCoolingStrength = f(0.01f, 0, "encasedFanCooling", Comments.encasedFanCoolingStrength);
 
-    public final ConfigFloat generatorClutchForcePerSegment = f(10f, 0, "generatorSegmentForce", Comments.generatorClutchForcePerSegment);
+    public final ConfigFloat torqueForStress = f(0.625f, 0, "torqueForStress", Comments.torqueForStress);
 
     public final ConfigFloat lightningAttractorSpeedFactor = f(1 / 20f, 0, "lightningAttractorSpeedFactor", Comments.lightningAttractorSpeedFactor);
     public final ConfigFloat lightningAttractorSailFactor = f(1 / 8f, 0, "lightningAttractorSailFactor", Comments.lightningAttractorSailFactor);
     public final ConfigFloat lightningAttractorMaxFrequency = f(1 / 20f, 0, "lightningAttractorMaxFrequency", Comments.lightningAttractorMaxFrequency);
 
-    public final ConfigInt rotorAssemblyMaxSize = i(8, 3, "rotorAssemblyMaxSize", Comments.rotorAssemblyMaxSize);
-
-    public final ConfigFloat generatorRotorInertia = f(0.25f, 0, "generatorRotorInertia");
-    public final ConfigFloat generatorInductionRotorInertia = f(0.25f, 0, "generatorInductionRotorInertia");
-    public final ConfigFloat generatorCommutatorInertia = f(0.1f, 0, "generatorCommutatorInertia");
-    public final ConfigFloat generatorClutchInertia = f(0.1f, 0, "generatorClutchInertia");
-
-    public final ConfigFloat motorRPMPerVolt = f(1.5f, 0, "motorRPMPerVolt", Comments.motorRPMPerVolt);
-
-    public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
-
-    public final CGenerator propDiffControl = nested(1, CGenerator::new, Comments.propDiffControl);
+    public final CGenerator generatorControls = nested(1, CGenerator::new, Comments.generatorControls);
     public final CStress stressValues = nested(1, CStress::new, Comments.stress);
-	
+
     @Override
     public String getName() {
         return "kinetics";
@@ -48,15 +37,11 @@ public class CKinetics extends ConfigBase {
 	
     private static class Comments {
         public static final String encasedFanCoolingStrength = "Cooling multiplier applied to devices in the air stream (multiplied by rotational speed)";
-        public static final String generatorClutchForcePerSegment = "Maximum force applied by clutch for each segment of a rotating assembly";
+        public static final String torqueForStress = "Controls the torque force calculated from stress impact of machines (used by generators and motors)";
         public static final String lightningAttractorSpeedFactor = "How much lightning rod linear velocity is needed to reach the maximum lightning attractor firing rate";
         public static final String lightningAttractorSailFactor = "How many sail blocks are needed to reach the maximum lightning attractor firing rate";
         public static final String lightningAttractorMaxFrequency = "How often can the lightning attractor fire";
-        public static final String rotorAssemblyMaxSize = "Maximum length of a rotor assembly";
-        public static final String motorRPMPerVolt = "Rotation speed of the electric motor for every volt across it";
-        public static final String rotorRPMMax = "Maximum rotation speed of a rotor";
         public static final String stress = "Fine tune the kinetic stats of individual components";
-		public static final String propDiffControl = "Rotor Force factors";
-
+		public static final String generatorControls = "Rotor control factors";
     }
 }

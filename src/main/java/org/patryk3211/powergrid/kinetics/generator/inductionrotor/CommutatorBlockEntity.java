@@ -43,7 +43,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
 
     @Override
     public float inertia() {
-        return ModdedConfigs.server().kinetics.generatorCommutatorInertia.getF();
+        return ModdedConfigs.server().kinetics.generatorControls.generatorCommutatorInertia.getF();
     }
 
     @Override
