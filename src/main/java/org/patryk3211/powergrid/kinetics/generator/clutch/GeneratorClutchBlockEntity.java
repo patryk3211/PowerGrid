@@ -115,4 +115,10 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
         this.lastStressApplied = impact;
         return impact;
     }
+
+    @Override
+    public void remove() {
+        super.remove();
+        rotorBehaviour.remove();
+    }
 }
