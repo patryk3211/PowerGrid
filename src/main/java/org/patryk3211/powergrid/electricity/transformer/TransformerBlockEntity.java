@@ -31,7 +31,9 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
@@ -41,6 +43,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     protected ElectricWire primaryStray;
     protected ElectricWire mutualInductance;
+    protected TransformerCoupling coupling;
 
     public float lastCurrent;
     private boolean hasSoundSource;
@@ -242,13 +245,15 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             this.primaryStray = builder.connect(primaryStray, P1, Tnode);
             // TODO: Make the mutual inductance to resistance conversion ratio a configurable values (or maybe a per core property)
             this.mutualInductance = builder.connect((float) mutualInductance * 10, Tnode, P2);
-            builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
+            this.coupling = builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
         } else if(primaryCoil.isDefined()) {
             this.primaryStray = builder.connect((float) primaryInductance * 10, builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));
             this.mutualInductance = null;
+            this.coupling = null;
         } else if(secondaryCoil.isDefined()) {
             this.primaryStray = builder.connect((float) secondaryInductance * 10, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
             this.mutualInductance = null;
+            this.coupling = null;
         }
     }
 
@@ -276,6 +281,40 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         var n2 = Lang.number(secondaryTurns / largestCommonDenominator);
         var ratio = n1.add(Component.nullToEmpty(":")).add(n2);
         ratio.style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
+        if(primaryStray != null && mutualInductance != null) {
+            float primary = (float) primaryStray.getResistance();
+            float secondary = coupling.getResistance();
+            if(primaryTurns > secondaryTurns) {
+                var r = primary;
+                primary = secondary;
+                secondary = r;
+            }
+            Lang.builder().translate("gui.transformer.primary_stray")
+                    .style(ChatFormatting.GRAY)
+                    .forGoggles(tooltip);
+            Unit.RESISTANCE.formatWithPrefixes(primary)
+                    .style(ChatFormatting.AQUA)
+                    .forGoggles(tooltip, 1);
+            Lang.builder().translate("gui.transformer.secondary_stray")
+                    .style(ChatFormatting.GRAY)
+                    .forGoggles(tooltip);
+            Unit.RESISTANCE.formatWithPrefixes(secondary)
+                    .style(ChatFormatting.AQUA)
+                    .forGoggles(tooltip, 1);
+            Lang.builder().translate("gui.transformer.parallel_resistance")
+                    .style(ChatFormatting.GRAY)
+                    .forGoggles(tooltip);
+            Unit.RESISTANCE.formatWithPrefixes(mutualInductance.getResistance())
+                    .style(ChatFormatting.AQUA)
+                    .forGoggles(tooltip, 1);
+        } else if(primaryStray != null) {
+            Lang.builder().translate("gui.transformer.parallel_resistance")
+                    .style(ChatFormatting.GRAY)
+                    .forGoggles(tooltip);
+            Unit.RESISTANCE.formatWithPrefixes(primaryStray.getResistance())
+                    .style(ChatFormatting.AQUA)
+                    .forGoggles(tooltip, 1);
+        }
         return true;
     }
 }
