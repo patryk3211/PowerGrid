@@ -78,6 +78,8 @@ public class ThermalUnit {
             power += source.power();
         }
         temperature += power / 20f / thermalMass;
+        if(!Float.isFinite(temperature))
+            temperature = BASE_TEMPERATURE;
         if(power < 0 && temperature < 22f)
             temperature = 22f;
         if(temperature >= overheatTemperature && power > 0) {
