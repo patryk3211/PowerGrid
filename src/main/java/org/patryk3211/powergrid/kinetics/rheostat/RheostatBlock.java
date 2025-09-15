@@ -18,6 +18,9 @@ package org.patryk3211.powergrid.kinetics.rheostat;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -34,9 +37,13 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
-public class RheostatBlock extends ElectricKineticBlock implements IBE<RheostatBlockEntity> {
+import java.util.List;
+
+public class RheostatBlock extends ElectricKineticBlock implements IBE<RheostatBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private static final VoxelShape SHAPE_NORTH = Shapes.or(
@@ -98,5 +105,10 @@ public class RheostatBlock extends ElectricKineticBlock implements IBE<RheostatB
     @Override
     public BlockEntityType<? extends RheostatBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.RHEOSTAT.get();
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Power.max(stack, player, tooltip);
     }
 }

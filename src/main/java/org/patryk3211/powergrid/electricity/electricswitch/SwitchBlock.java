@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 
 import java.util.List;
@@ -104,5 +105,6 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
         Current.max(stack, player, tooltip);
+        Voltage.max(maxVoltage, player, tooltip);
     }
 }
