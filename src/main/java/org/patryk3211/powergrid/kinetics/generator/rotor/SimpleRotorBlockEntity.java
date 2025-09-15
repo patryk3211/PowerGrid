@@ -27,6 +27,6 @@ public class SimpleRotorBlockEntity extends RotorBlockEntity {
 
     @Override
     public float inertia() {
-        return ModdedConfigs.server().kinetics.generatorRotorInertia.getF();
+        return ModdedConfigs.server().kinetics.generatorControls.generatorRotorInertia.getF();
     }
 }

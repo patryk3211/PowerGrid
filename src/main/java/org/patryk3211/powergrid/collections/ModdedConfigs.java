@@ -85,6 +85,7 @@ public class ModdedConfigs {
         for(ConfigBase config : CONFIGS.values())
             if(config.specification == modConfig.getSpec())
                 config.onReload();
-        PowerGrid.LOGGER.warn("Config reloaded, this can cause unexpected behaviour!");
+        if(modConfig.getType() == ModConfig.Type.SERVER)
+            PowerGrid.LOGGER.warn("Server config reloaded, this can cause unexpected behaviour if done during gameplay!");
     }
 }

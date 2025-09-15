@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.kinetics.motor;
 
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
@@ -22,6 +23,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -31,6 +33,8 @@ import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
 import java.util.List;
 
 public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
+    private static final int AVERAGING_TICKS = 5;
+
     protected ElectricBehaviour electricBehaviour;
     @Nullable
     protected ThermalBehaviour thermalBehaviour;
@@ -39,10 +43,15 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     private float generatedSpeed = 0;
 
-    private float baseFactor, factorPerSpeed;
+    private float avgSpeed;
 
     public ElectricMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+        setLazyTickRate(AVERAGING_TICKS);
+    }
+
+    public float torque() {
+        return (float) (BlockStressValues.getCapacity(getBlockState().getBlock()) * ModdedConfigs.server().kinetics.torqueForStress.getF());
     }
 
     @Override
@@ -51,9 +60,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxVoltage = 256 / ElectricMotorBlock.rpmPerVolt();
-        baseFactor = ThermalBehaviour.dissipationFactor(120 * 120 / resistance(), 125);
-        factorPerSpeed = (ThermalBehaviour.dissipationFactor(maxVoltage * maxVoltage / resistance(), 150) - baseFactor) / 256;
+        var maxPower = 256 * torque() * Math.PI / 30;
+        var baseFactor = ThermalBehaviour.dissipationFactor((float) maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
@@ -77,7 +85,6 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         super.read(compound, clientPacket);
         generatedSpeed = compound.getFloat("GeneratedSpeed");
         updateGeneratedRotation();
-        updateDissipation();
     }
 
     @Override
@@ -87,28 +94,34 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     }
 
     @Override
-    public void tick() {
-        applyLostPower(coil.power());
-        super.tick();
-
-        var voltage = coil.potentialDifference();
+    public void lazyTick() {
+        super.lazyTick();
+        var newSpeed = (int) (avgSpeed / AVERAGING_TICKS);
+        avgSpeed = 0;
         if(!level.isClientSide || isVirtual()) {
-            var newSpeed = (int) (voltage * ElectricMotorBlock.rpmPerVolt());
             // Max speed constraints.
             if(newSpeed > 256)
                 newSpeed = 256;
             if(newSpeed < -256)
                 newSpeed = -256;
 
-            // Update speed from average applied voltage.
-            var diffPercentage = Math.abs((newSpeed - generatedSpeed) / generatedSpeed);
-            if(diffPercentage >= 0.02) {
-                // Update if speed difference larger than 2%.
-                // This should make the motor easier to control and prevent excessive updates.
+            // Update speed from average power.
+            if(newSpeed != generatedSpeed) {
                 generatedSpeed = newSpeed;
                 updateGeneratedRotation();
             }
         }
+    }
+
+    @Override
+    public void tick() {
+        applyLostPower(coil.power());
+
+        if(!level.isClientSide || isVirtual()) {
+            var speedFromPower = (coil.power() / torque()) * 30 / Math.PI;
+            avgSpeed += (float) speedFromPower;
+        }
+        super.tick();
     }
 
     @Override
@@ -121,18 +134,6 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
                 ((KineticBlockEntityAccessor) entry).setFlickerTally(Math.max(entry.getFlickerScore() - 5, 0));
             }
         }
-    }
-
-    @Override
-    public void onSpeedChanged(float previousSpeed) {
-        super.onSpeedChanged(previousSpeed);
-        updateDissipation();
-    }
-
-    public void updateDissipation() {
-        // Simulate a fan moving more air and providing more cooling
-        if(thermalBehaviour != null)
-            thermalBehaviour.setDissipationFactor(baseFactor + Math.abs(getSpeed()) * factorPerSpeed);
     }
 
     @Override

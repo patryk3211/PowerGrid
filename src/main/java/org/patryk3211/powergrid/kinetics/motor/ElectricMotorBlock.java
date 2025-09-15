@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.kinetics.motor;
 
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.data.Iterate;
@@ -35,7 +36,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
@@ -121,14 +124,12 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
         return ModdedBlockEntities.ELECTRIC_MOTOR.get();
     }
 
-    public static float rpmPerVolt() {
-        return ModdedConfigs.server().kinetics.motorRPMPerVolt.getF();
-    }
-
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
-        Voltage.rpm(rpmPerVolt(), player, tooltip);
+        var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
+        var maxPower = 256 * torque * Math.PI / 30;
+        Voltage.max((int) Math.sqrt(maxPower * resistance()), player, tooltip);
     }
 
     @Override
