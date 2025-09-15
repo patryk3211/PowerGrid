@@ -64,10 +64,10 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
                     start.x, start.y, start.z, 0, 0, 0);
         }
 
-        if(!plasmaChannel.getState() && plasmaChannel.potentialDifference() > setting.getVoltage()) {
+        if(!plasmaChannel.getState() && Math.abs(plasmaChannel.potentialDifference()) > setting.getVoltage()) {
             plasmaChannel.setState(true);
             notifyUpdate();
-        } else if(plasmaChannel.getState() && plasmaChannel.current() < setting.getCurrent()) {
+        } else if(plasmaChannel.getState() && Math.abs(plasmaChannel.current()) < setting.getCurrent()) {
             plasmaChannel.setState(false);
             notifyUpdate();
         }
