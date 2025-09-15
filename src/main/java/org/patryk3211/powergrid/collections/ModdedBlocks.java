@@ -249,7 +249,7 @@ public class ModdedBlocks {
             .blockstate(alternateDirectionalBlock(state -> state.getValue(POWERED) ? "block/generator/clutch_on" : "block/generator/clutch"))
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
-            .transform(CStress.setImpact(64))
+            .transform(CStress.setImpact(32))
             .transform(DisplaySource.displaySource(ModdedDisplaySources.CLUTCH))
             .tag(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag)
             .defaultLoot()
