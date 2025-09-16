@@ -24,7 +24,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.network.PacketDistributor;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.deviceconnector.BridgeElectricBehaviour;
@@ -34,7 +33,8 @@ import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock
 public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEntity implements IElectric {
     public ElectricBlockValues data = new ElectricBlockValues(getPos());
     private int voltage;
-    private int power;
+    private boolean powerRefresh = false;
+    private boolean firstUpdate = false;
 
     public TFMGCompatDeviceConnectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -50,25 +50,36 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     @Override
     public void lazyTick() {
         super.lazyTick();
+        var newVoltage = (int) Math.abs(converterWire.potentialDifference());
+        if(newVoltage != voltage) {
+            if(firstUpdate) {
+                firstUpdate = false;
+            } else {
+                voltage = newVoltage;
+                updateNetwork();
+                refreshPower();
+            }
+        }
         lazyTickElectricity();
+    }
+
+    private void refreshPower() {
+        powerRefresh = false;
+        float power = getGeneratorLoad();
+        var resistance = voltage * voltage / power;
+        if(resistance > 0) {
+            converterWire.setResistance(resistance);
+            converterWire.setState(true);
+        } else {
+            converterWire.setState(false);
+        }
     }
 
     @Override
     public void tick() {
         super.tick();
-        var newVoltage = (int) Math.abs(converterWire.potentialDifference());
-        if(newVoltage != voltage) {
-            voltage = newVoltage;
-            updateNetwork();
-            float power = getGeneratorLoad();
-            var resistance = voltage * voltage / power;
-            if(resistance > 0) {
-                converterWire.setResistance(resistance);
-                converterWire.setState(true);
-            } else {
-                converterWire.setState(false);
-            }
-        }
+        if(powerRefresh)
+            refreshPower();
         tickElectricity();
     }
 
@@ -119,9 +130,7 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
 
     @Override
     public void onNetworkChanged(int oldVoltage, int oldPower) {
-        if(!level.isClientSide) {
-           var R = getNetworkResistance();
-        }
+        powerRefresh = true;
     }
 
     @Override
@@ -202,6 +211,7 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
         super.write(compound, clientPacket);
         compound.putInt("GroupId", data.group.id);
         compound.putFloat("GroupResistance", data.group.resistance);
+        compound.putInt("PrevVoltage", voltage);
     }
 
     @Override
@@ -209,8 +219,10 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
         super.read(compound, clientPacket);
         data.group = new ElectricalGroup(compound.getInt("GroupId"));
         data.group.resistance = compound.getFloat("GroupResistance");
-        if (!clientPacket)
+        if (!clientPacket) {
             data.connectNextTick = true;
+            voltage = compound.getInt("PrevVoltage");
+        }
     }
 
     @Override
