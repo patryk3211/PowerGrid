@@ -33,6 +33,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
     private int currentRedstonePower;
 
     public float load;
+    private boolean recalculateStress = false;
 
     public GeneratorClutchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -50,11 +51,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
     }
 
     private void assemblyChanged() {
-        if(hasNetwork() && !level.isClientSide) {
-            var network = getOrCreateNetwork();
-            network.remove(this);
-            network.add(this);
-        }
+        recalculateStress = true;
     }
 
     public float torque() {
@@ -93,6 +90,14 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
     @Override
     public void tick() {
         super.tick();
+        if(recalculateStress) {
+            if (hasNetwork() && !level.isClientSide) {
+                var network = getOrCreateNetwork();
+                network.remove(this);
+                network.add(this);
+            }
+            recalculateStress = false;
+        }
     }
 
     @Override
