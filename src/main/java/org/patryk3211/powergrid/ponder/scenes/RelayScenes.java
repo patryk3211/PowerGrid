@@ -399,7 +399,7 @@ public class RelayScenes {
         scene.idle(90);
 
         scene.overlay().showText(80)
-                .text("The Device Connector can also be used to power Forge Energy devices")
+                .text("The Device Connector can also be used to power Forge Energy and Create: The Factory Must Grow devices (if installed)")
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
