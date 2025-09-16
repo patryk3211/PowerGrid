@@ -52,6 +52,11 @@ allprojects {
 		maven { url = "https://maven.shedaniel.me" } // Cloth Config, REI
 		maven { url = "https://maven.blamejared.com" } // JEI
 
+		maven { // TFMG
+			url = "https://api.modrinth.com/maven"
+			content { includeGroup("maven.modrinth") }
+		}
+
 		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
 		maven { url = "$rootDir/local-maven" } // Create Fabric v6
 	}
@@ -183,6 +188,11 @@ subprojects {
 		version.set(project.version.toString())
 		changelog = changelogFile.text
 		type = STABLE
+		if(version.toString().contains('beta')) {
+			type = BETA
+		} else if(version.toString().contains('alpha')) {
+			type = ALPHA
+		}
 		modLoaders.add('forge')
 
 		curseforge {

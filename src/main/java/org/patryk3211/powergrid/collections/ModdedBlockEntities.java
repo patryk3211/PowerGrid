@@ -70,6 +70,7 @@ import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
+import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -246,7 +247,7 @@ public class ModdedBlockEntities {
                     .register();
 
     public static final BlockEntityEntry<DeviceConnectorBlockEntity> DEVICE_CONNECTOR =
-            REGISTRATE.blockEntity("device_connector", DeviceConnectorBlockEntity::new)
+            REGISTRATE.blockEntity("device_connector", SubstituteBlockEntityProvider.INSTANCE.get(DeviceConnectorBlockEntity.class))
                     .validBlock(ModdedBlocks.DEVICE_CONNECTOR)
                     .register();
 

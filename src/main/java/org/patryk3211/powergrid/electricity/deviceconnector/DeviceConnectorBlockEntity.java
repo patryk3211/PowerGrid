@@ -30,17 +30,20 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class DeviceConnectorBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
-    private BridgeElectricBehaviour proxyBehaviour;
-    private SwitchedWire converterWire;
+    protected BridgeElectricBehaviour proxyBehaviour;
+    protected SwitchedWire converterWire;
 
     public DeviceConnectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
+    protected BridgeElectricBehaviour makeBridge() {
+        return new BridgeElectricBehaviour(this, worldPosition.relative(getBlockState().getValue(DeviceConnectorBlock.FACING)), () -> converterWire);
+    }
+
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        var state = getBlockState();
-        proxyBehaviour = new BridgeElectricBehaviour(this, worldPosition.relative(state.getValue(DeviceConnectorBlock.FACING)), () -> converterWire);
+        proxyBehaviour = makeBridge();
         electricBehaviour = proxyBehaviour;
         behaviours.add(electricBehaviour);
     }

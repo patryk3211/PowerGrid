@@ -36,22 +36,23 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
     public long currentRate;
     private boolean fetched = false;
     private final Supplier<SwitchedWire> converterWire;
+    private boolean isProxy = false;
 
     public <T extends SmartBlockEntity & IElectricEntity> BridgeElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<SwitchedWire> converterWire) {
         super(be, true, () -> behaviourPosition);
         this.converterWire = converterWire;
     }
 
-    private void constructBehaviours() {
-        fetched = true;
+    protected void constructBehaviours() {
         var world = getWorld();
-        if(!world.isLoaded(behaviourPosition.get())) {
-            fetched = false;
+        if(!world.isLoaded(behaviourPosition.get()))
+            return;
+        fetched = true;
+        var mainBehaviour = get(world, behaviourPosition.get(), TYPE);
+        if(mainBehaviour != null) {
+            isProxy = true;
             return;
         }
-        var mainBehaviour = get(world, behaviourPosition.get(), TYPE);
-        if(mainBehaviour != null)
-            return;
         bridgeBehaviour = makeFEHandler(blockEntity);
         if(bridgeBehaviour == null) {
             world.destroyBlock(getPos(), true);
@@ -74,28 +75,34 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
         return bridgeBehaviour;
     }
 
+    protected boolean isProxy() {
+        if(!fetched)
+            constructBehaviours();
+        return isProxy;
+    }
+
     @Override
     public void initialize() {
-        if(getBridgeBehaviour() != null) {
-            super.baseInitialize();
-        } else {
+        if(isProxy()) {
             super.initialize();
+        } else {
+            super.baseInitialize();
         }
     }
 
     @Override
     public void unload() {
-        if(getBridgeBehaviour() != null)
+        if(!isProxy())
             super.baseUnload();
     }
 
     @Override
     public void remove() {
-        if(getBridgeBehaviour() != null) {
-            super.baseRemove();
-        } else {
+        if (isProxy()) {
             // Node holder might not be removed.
             super.remove();
+        } else {
+            super.baseRemove();
         }
     }
 

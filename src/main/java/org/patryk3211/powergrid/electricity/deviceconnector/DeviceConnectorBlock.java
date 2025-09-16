@@ -42,6 +42,8 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
+import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
 
 public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
@@ -160,6 +162,11 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
         if(world instanceof Level world1) {
             if(hasEnergyStorage(world1, neighborPos, facing.getOpposite()))
                 return canSupport(world, neighborPos, neighbor, facing.getOpposite());
+        }
+        if(ProxyProvider.get(TFMGProxy.class)
+                .map(proxy -> proxy.canConnect(world, neighborPos, facing.getOpposite()))
+                .orElse(false)) {
+            return true;
         }
         if(!(neighbor.getBlock() instanceof IAcceptConnector acceptor))
             return false;
