@@ -578,6 +578,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
         // Connections should already be broken by endpoint removal stuff.
+        var parts = partNodeMap.remove(ownedNode);
+        if(parts != null && !parts.isEmpty()) {
+            // But just in case, remove any part that still exists.
+            for(var part : parts) {
+                if(part.owner != null) {
+                    part.owner.kill();
+                } else {
+                    part.remove();
+                }
+            }
+        }
         if(ownedNode.getNetwork() != null) {
             ownedNode.getNetwork().removeNode(ownedNode);
         }
