@@ -105,7 +105,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         controllerPos = null;
         segments = new HashSet<>();
 
-        sync();
+        onChange();
     }
 
     protected void makePeripheral(T controller) {
@@ -236,7 +236,6 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             toCheck.addAll(connected);
         }
 
-        var kept = new HashSet<T>();
         var removed = new ArrayList<T>();
         if(without == this) {
             // All removed, none kept
@@ -249,7 +248,6 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
                 if(segment == without)
                     continue;
                 if(allConnected.contains(segment)) {
-                    kept.add(segment);
                     continue;
                 }
                 iter.remove();
@@ -283,7 +281,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         // Add newly connected segments
         segments.clear();
         for(var segment : allConnected) {
-            if(kept.contains(segment) || segment == this)
+            if(segment == this)
                 continue;
             segment.makePeripheral((T) this);
         }
@@ -326,8 +324,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     }
 
     public int getLimitedSize() {
-        int count = isCounted() ? 1 : 0;
         var controller = getControllerOrThis();
+        int count = controller.isCounted() ? 1 : 0;
         if(controller.segments == null)
             return count;
         for(var segment : controller.segments) {
