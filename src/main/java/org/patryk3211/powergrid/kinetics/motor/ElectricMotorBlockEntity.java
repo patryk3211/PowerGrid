@@ -119,7 +119,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
         if(!level.isClientSide || isVirtual()) {
             var speedFromPower = (coil.power() / torque()) * 30 / Math.PI;
-            avgSpeed += (float) speedFromPower;
+            avgSpeed += (float) speedFromPower * Math.signum(coil.current());
         }
         super.tick();
     }
