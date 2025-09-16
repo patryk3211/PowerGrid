@@ -186,14 +186,15 @@ subprojects {
 
 	publishMods {
 		file = tasks.remapJar.archiveFile
-		version.set(project.version.toString())
+		version.set(mod_version.toString())
 		changelog = changelogFile.text
-		type = STABLE
-		if(version.toString().contains('beta')) {
-			type = BETA
-		} else if(version.toString().contains('alpha')) {
-			type = ALPHA
+		var releaseType = STABLE
+		if(mod_version.toString().contains('beta')) {
+			releaseType = BETA
+		} else if(mod_version.toString().contains('alpha')) {
+			releaseType = ALPHA
 		}
+		type = releaseType;
 		modLoaders.add('forge')
 
 		curseforge {
@@ -201,8 +202,10 @@ subprojects {
 			accessToken = System.getenv('CURSEFORGE_TOKEN')
 			minecraftVersions.add(minecraft_version)
 
-			requires('create')
-			requires('architectury-api')
+			clientRequired = true
+			serverRequired = true
+
+			requires('create', 'architectury-api')
 		}
 		modrinth {
 			projectId = modrinthId
