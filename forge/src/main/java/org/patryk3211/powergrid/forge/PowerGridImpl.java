@@ -20,6 +20,7 @@ import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import com.simibubi.create.foundation.utility.FilesHelper;
 import com.tterrag.registrate.providers.ProviderType;
+import dev.architectury.platform.Platform;
 import dev.architectury.platform.forge.EventBuses;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -50,11 +51,15 @@ import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
+import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
+import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
+import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
+import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -72,6 +77,11 @@ public class PowerGridImpl {
         bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.register(PowerGridImpl.class);
         EventBuses.registerModEventBus(PowerGrid.MOD_ID, bus);
+
+        if(Platform.isModLoaded("tfmg")) {
+            TFMGBridge.init();
+            ProxyProvider.add(TFMGProxy.class, new TFMGProxyImpl());
+        }
 
         PowerGrid.init();
 

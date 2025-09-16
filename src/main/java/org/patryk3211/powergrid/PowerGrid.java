@@ -31,14 +31,16 @@ import net.minecraft.world.level.block.Blocks;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
+import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PowerGrid  {
+public class PowerGrid {
 	public static final String MOD_ID = "powergrid";
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(PowerGrid.class);
@@ -73,6 +75,9 @@ public class PowerGrid  {
 	private static void register() {
 		registerRecipes();
 		HeaterFanProcessingTypes.register();
+
+		SubstituteBlockEntityProvider.INSTANCE.registerDefault(DeviceConnectorBlockEntity.class, DeviceConnectorBlockEntity::new);
+		SubstituteBlockEntityProvider.INSTANCE.lock();
 
 		ModdedDisplaySources.register();
 		ModdedBlocks.register();

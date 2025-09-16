@@ -35,6 +35,9 @@ dependencies {
     // Roughly Enough Items - Forge
     modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
 
+    // Create: The Factory Must Grow
+    modCompileOnly "maven.modrinth:create-tfmg:1.0.2c"
+
     compileOnly("io.github.llamalad7:mixinextras-common:${mixin_extras_version}")
     annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")))
 
@@ -47,6 +50,7 @@ dependencies {
 
     modLocalRuntime("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}")
     modLocalRuntime("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    modLocalRuntime("maven.modrinth:create-tfmg:1.0.2c")
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
 }
 
