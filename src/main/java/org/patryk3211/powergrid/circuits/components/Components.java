@@ -31,10 +31,10 @@ public class Components {
 
     public static final RegistryEntry<ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(0, 0, 2, "Anode")
-                    .addPad(0, 2, 0, "Cathode")
-                    .addPad(2, 0, 1, "Grid")
-                    .addPad(2, 2, 3, "Heater")
+                    .addPad(0, 0, 2, "Anode", "A")
+                    .addPad(0, 2, 0, "Cathode", "C")
+                    .addPad(2, 0, 1, "Grid", "G")
+                    .addPad(2, 2, 3, "Heater", "H")
                     .withItem(AllItems.ELECTRON_TUBE)
                     .withOutline())
             .item(AllItems.ELECTRON_TUBE)
@@ -58,11 +58,11 @@ public class Components {
 
     public static final RegistryEntry<RelayComponent> RELAY = REGISTRATE.component("relay", RelayComponent::new)
             .footprint(4, 3, b -> b
-                    .addPad(0, 0, 0, "Coil")
-                    .addPad(0, 2, 1, "Coil")
-                    .addPad(2, 0, 2, "Normally Closed")
-                    .addPad(3, 1, 3, "Common")
-                    .addPad(2, 2, 4, "Normally Open")
+                    .addPad(0, 0, 0, "Coil", null)
+                    .addPad(0, 2, 1, "Coil", null)
+                    .addPad(2, 0, 2, "Normally Closed", "NC")
+                    .addPad(3, 1, 3, "Common", "CC")
+                    .addPad(2, 2, 4, "Normally Open", "NO")
                     .withItem(ModdedItems.RELAY)
                     .withOutline()
             )
@@ -114,8 +114,8 @@ public class Components {
 
     public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
             .footprint(5, 3, b -> b
-                    .addPad(0, 1, 0, "Anode")
-                    .addPad(4, 1, 1, "Cathode")
+                    .addPad(0, 1, 0, "Anode", "+")
+                    .addPad(4, 1, 1, "Cathode", "-")
                     .withItem(ModdedItems.DIODE)
                     .withOutline()
             )
@@ -134,8 +134,8 @@ public class Components {
 
     public static final RegistryEntry<LEDComponent> LED = REGISTRATE.component("led", LEDComponent::new)
             .footprint(2, 2, b -> b
-                    .addPad(0, 0, 0, "Anode")
-                    .addPad(1, 1, 1, "Cathode")
+                    .addPad(0, 0, 0, "Anode", "+")
+                    .addPad(1, 1, 1, "Cathode", "-")
                     .withItem(ModdedItems.LED)
                     .withOutline()
             )
@@ -165,9 +165,9 @@ public class Components {
 
     public static final RegistryEntry<BJTComponent> BJT = REGISTRATE.component("bjt", BJTComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(0, 0, 0, "Collector")
-                    .addPad(1, 2, 1, "Base")
-                    .addPad(2, 0, 2, "Emitter")
+                    .addPad(0, 0, 0, "Collector", "C")
+                    .addPad(1, 2, 1, "Base", "B")
+                    .addPad(2, 0, 2, "Emitter", "E")
                     .withItem(ModdedItems.BJT_TRANSISTOR)
                     .withOutline())
             .item(ModdedItems.BJT_TRANSISTOR)
