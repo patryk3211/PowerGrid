@@ -84,7 +84,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private List<Line> fgLines;
     private List<Line> bgLines;
 
-    private Tool currentTool = Tool.NONE;
+    private Tool currentTool = Tool.SELECT;
     private PlacedComponent currentComponent = null;
     private Slot selectedSlot = null;
     private PlacedComponent selectedComponent = null;
@@ -156,7 +156,6 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         nameField.setMaxLength(35);
         nameField.setEditable(true);
 
-        currentTool = Tool.NONE;
         selectedComponent = null;
         currentComponent = null;
         selectedSlot = null;
@@ -180,16 +179,17 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         cancelBtn.withCallback(this::discard);
 
-        connectBtn.withCallback(toolCallback(this, Tool.CONNECT));
-        deleteBtn.withCallback(toolCallback(this, Tool.DELETE));
-        selectBtn.withCallback(toolCallback(this, Tool.SELECT));
+        connectBtn.withCallback(() -> toolSelect(Tool.CONNECT)); //toolCallback(this, Tool.CONNECT));
+        deleteBtn.withCallback(() -> toolSelect(Tool.DELETE));//toolCallback(this, Tool.DELETE));
+        selectBtn.withCallback(() -> toolSelect(Tool.SELECT));//toolCallback(this, Tool.SELECT));
 
         layerBtn.withCallback(() -> {
             backLayer = !backLayer;
             layerBtn.setIcon(backLayer ? ModIcons.I_LAYER_BACK : ModIcons.I_LAYER_FRONT);
         });
 
-        editWidget.setSelectionCancelledCallback(() -> currentTool = Tool.NONE);
+        editWidget.setSelectionCancelledCallback(() -> toolSelect(Tool.SELECT));
+        toolSelect(Tool.SELECT);
 
         addRenderableWidget(nameField);
         addRenderableWidget(editWidget);
@@ -297,7 +297,6 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         } else {
             fgLines = layer.calculateLines();
         }
-        schematic.removeComponents(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
         playSound(ModdedSoundEvents.UI_DELETE_AREA);
         changed = true;
         return CircuitEditWidget.SelectionResult.BEGIN_NEW;
@@ -312,10 +311,9 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
         selectedComponent = placed;
         propertiesWidget.setComponent(selectedComponent);
-        currentTool = Tool.NONE;
         playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
         changed = true;
-        return CircuitEditWidget.SelectionResult.END;
+        return CircuitEditWidget.SelectionResult.BEGIN_NEW;
     }
 
     public void placeComponent(int x, int y) {
@@ -508,11 +506,11 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if(button == 1) {
-            if(currentComponent == null && currentTool == Tool.NONE) {
+            if(currentComponent == null && currentTool == Tool.SELECT) {
                 int gridX = (int) ((mouseX - editWidget.getX()) / CIRCUIT_SCALE);
                 int gridY = (int) ((mouseY - editWidget.getY()) / CIRCUIT_SCALE);
                 if(gridX >= 0 && gridY >= 0 && gridX < GRID_SIZE && gridY < GRID_SIZE) {
-                    deleteArea(gridX, gridY, gridX, gridY, gridX, gridY);
+                    schematic.removeComponents(gridX, gridY, 1, 1);
                 }
             }
             if(currentComponent != null) {
@@ -530,15 +528,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    private static Runnable toolCallback(CircuitDesignTableEditScreen screen, Tool tool) {
-        return () -> {
-            screen.currentTool = tool;
-            screen.toolSelect(tool);
-        };
-    }
-
     private enum Tool {
-        NONE(0),
         CONNECT(83),
         DELETE(101),
         SELECT(119);
