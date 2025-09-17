@@ -38,11 +38,6 @@ public class DiodeWire extends DynamicConductanceWire {
     }
 
     @Override
-    public float power() {
-        return potentialDifference() * current();
-    }
-
-    @Override
     public double calculateConductance() {
         double V = super.potentialDifference();
         V = PNJunction.pnlim(V, prevPotential);

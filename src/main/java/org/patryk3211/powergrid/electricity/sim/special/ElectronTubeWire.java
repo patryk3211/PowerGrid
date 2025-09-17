@@ -31,6 +31,7 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
     private final float gain;
     private final float perveance;
     private float saturationCurrent;
+    private double Ia;
 
     private double prevConductance;
 
@@ -69,22 +70,7 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
 
     @Override
     public double conductance() {
-        return 1e-6;
-//        var cathodeVoltage = node1.getVoltage();
-//        var gridPotential = grid.getVoltage() - cathodeVoltage;
-//        var anodePotential = node2.getVoltage() - cathodeVoltage;
-//
-//        if(anodePotential > 0 && saturationCurrent > 0) {
-//            // Somewhat realistic triode current equation:
-//            var x = gridPotential + anodePotential / gain;
-//            if(x <= 0)
-//                return I_LEAK;
-//            var Ia = perveance * /*Math.sqrt(x * x * x)*/ x + I_LEAK;
-//            Ia = Math.min(Ia, saturationCurrent);
-//            return Ia / anodePotential;
-//        } else {
-//            return 0;
-//        }
+        return ElectricalNetwork.G_MIN;
     }
 
     @Override
@@ -93,7 +79,7 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
         var gridPotential = grid.getVoltage() - cathodeVoltage;
         var anodePotential = node2.getVoltage() - cathodeVoltage;
 
-        double Ia = 0;
+        Ia = 0;
         if(anodePotential > 0 && saturationCurrent > 0) {
             // Somewhat realistic triode current equation:
             var x = gridPotential + anodePotential / gain;
@@ -104,6 +90,11 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
         }
         residual.add(node1.getIndex(), 0, -Ia);
         residual.add(node2.getIndex(), 0,  Ia);
+    }
+
+    @Override
+    public float current() {
+        return (float) (Ia - super.current());
     }
 
     @Override

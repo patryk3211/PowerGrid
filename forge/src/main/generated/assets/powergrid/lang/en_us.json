@@ -71,6 +71,8 @@
   "component.powergrid.electron_tube.2.short": "A",
   "component.powergrid.electron_tube.3": "Heater",
   "component.powergrid.electron_tube.3.short": "H",
+  "component.powergrid.electron_tube.4": "Heater",
+  "component.powergrid.electron_tube.4.short": "H",
   "component.powergrid.led.0": "Anode",
   "component.powergrid.led.0.short": "+",
   "component.powergrid.led.1": "Cathode",

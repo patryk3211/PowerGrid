@@ -50,6 +50,7 @@ public class ElectronTubeTest extends TestHelper {
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("V2 current: %f\n", V2.getCurrent());
             System.out.printf("GND current %f\n\n", GND.getCurrent());
+            System.out.printf("Tube current: %f\n", Tube.current());
         }
     }
 
@@ -104,6 +105,7 @@ public class ElectronTubeTest extends TestHelper {
 
         Assertions.assertEquals(0.005f, V1.getCurrent(), 1e-3f, "Anode current is incorrect");
         Assertions.assertEquals(49.95f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
+        Assertions.assertEquals(V1.getCurrent(), Tube.current(), 1e-6f, "Tube current is incorrect");
     }
 
     @Test

@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import java.util.*;
 
 public class ElectricalNetwork {
-    public static final double G_MIN = 1e-7;
+    public static final double G_MIN = 1e-8;
     private static final double PRECISION = 1e-7;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
 

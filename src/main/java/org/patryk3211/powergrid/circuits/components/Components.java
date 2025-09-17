@@ -32,9 +32,10 @@ public class Components {
     public static final RegistryEntry<ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 0, 2, "Anode", "A")
-                    .addPad(0, 2, 0, "Cathode", "C")
+                    .addPad(1, 1, 0, "Cathode", "C")
                     .addPad(2, 0, 1, "Grid", "G")
-                    .addPad(2, 2, 3, "Heater", "H")
+                    .addPad(0, 2, 3, "Heater", "H")
+                    .addPad(2, 2, 4, "Heater", "H")
                     .withItem(AllItems.ELECTRON_TUBE)
                     .withOutline())
             .item(AllItems.ELECTRON_TUBE)
