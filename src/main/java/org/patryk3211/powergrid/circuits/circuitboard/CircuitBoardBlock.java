@@ -309,7 +309,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
             var dir = Direction.fromDelta(dirVec.getX(), dirVec.getY(), dirVec.getZ());
             if(dir == null)
                 return;
-            var power = world.getSignal(sourcePos, dir.getOpposite());
+            var power = world.getSignal(sourcePos, dir);
             for(var placed : be.getComponents(IRedstoneComponent.class)) {
                 var redstone = (IRedstoneComponent) placed.component;
                 if(!redstone.isReceiver())
