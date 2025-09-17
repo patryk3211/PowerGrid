@@ -63,11 +63,15 @@ public class ComponentFootprint {
 
     @Environment(EnvType.CLIENT)
     protected void renderPads(@NotNull GuiGraphics ctx, int x, int y) {
-        for(var point : pads.keySet()) {
-            int x1 = point.x() + x;
-            int y1 = point.y() + y;
-            ctx.fill(x1, y1, x1 + 1, y1 + 1, COLOR_TERMINAL);
+        var ms = ctx.pose();
+        ms.pushPose();
+        ms.scale(0.25f, 0.25f, 0.25f);
+        for (var point : pads.keySet()) {
+            int x1 = (point.x() + x) * 4;
+            int y1 = (point.y() + y) * 4;
+            ctx.fill(x1 + 1, y1 + 1, x1 + 3, y1 + 3, COLOR_TERMINAL);
         }
+        ms.popPose();
     }
 
     @Environment(EnvType.CLIENT)

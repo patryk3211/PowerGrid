@@ -192,7 +192,7 @@ public class CircuitSchematic {
     }
 
     private boolean getAreaState(CircuitLayer layer, int x, int y) {
-        return layer.get(x, y) && !isPad(x, y);
+        return layer.get(x, y);
     }
 
     public List<Area> calculateAreas(Layer forLayer) {
@@ -294,7 +294,7 @@ public class CircuitSchematic {
             return false;
         if(!visitMap.canVisit(layer, x, y))
             return false;
-        return getLayer(layer, x, y) || isPad(x, y);
+        return getLayer(layer, x, y);
     }
 
     @NotNull
