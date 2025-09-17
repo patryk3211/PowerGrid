@@ -55,6 +55,7 @@ public class ModdedPartialModels {
     public static final PartialModel THERMOMETER_NEEDLE_RED = block("thermometer/needle_red");
 
     public static final PartialModel MULTIMETER_NEEDLE = model("item/multimeter/indicator");
+    public static final PartialModel COMPONENT_GAUGE_NEEDLE = model("component/gauge_needle");
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));

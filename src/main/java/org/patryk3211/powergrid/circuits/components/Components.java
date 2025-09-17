@@ -90,15 +90,26 @@ public class Components {
             .item(ModdedItems.REDSTONE_RELAY)
             .register();
 
-    public static final RegistryEntry<RedstoneEmitterComponent> REDSTONE_EMITTER = REGISTRATE.component("redstone_emitter", RedstoneEmitterComponent::new)
-            .footprint(3, 5, b -> b
-                    .addPad(1, 0, 0)
-                    .addPad(1, 4, 1)
+    public static final RegistryEntry<VoltageGaugeComponent> VOLTAGE_GAUGE = REGISTRATE.component("voltage_gauge", VoltageGaugeComponent::new)
+            .footprint(5, 5, b -> b
+                    .addPad(2, 0, 0)
+                    .addPad(2, 4, 1)
                     .withItem(ModdedBlocks.VOLTAGE_METER::asItem)
                     .withArrow()
                     .withOutline()
             )
             .item(ModdedBlocks.VOLTAGE_METER)
+            .register();
+
+    public static final RegistryEntry<CurrentGaugeComponent> CURRENT_GAUGE = REGISTRATE.component("current_gauge", CurrentGaugeComponent::new)
+            .footprint(5, 5, b -> b
+                    .addPad(2, 0, 0)
+                    .addPad(2, 4, 1)
+                    .withItem(ModdedBlocks.CURRENT_METER::asItem)
+                    .withArrow()
+                    .withOutline()
+            )
+            .item(ModdedBlocks.CURRENT_METER)
             .register();
 
     public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)

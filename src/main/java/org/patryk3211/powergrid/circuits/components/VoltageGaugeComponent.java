@@ -20,61 +20,36 @@ import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
-import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
-import org.patryk3211.powergrid.circuits.components.properties.IntProperty;
+import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
-public class RedstoneEmitterComponent extends EdgeComponent implements IRedstoneComponent {
-    public static final IntProperty LEVEL = (IntProperty) new IntProperty(PowerGrid.MOD_ID, "redstone_emitter_level", 0, 0, 15).hidden();
-    public static final BooleanProperty DIGITAL = new BooleanProperty(PowerGrid.MOD_ID, "redstone_emitter_digital");
+public class VoltageGaugeComponent extends GaugeComponent {
+    public static final FloatProperty MAX_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "voltage_gauge_max", 10.0f, 1.0f, 100.0f);
 
-    public RedstoneEmitterComponent(ComponentFootprint footprint) {
+    public VoltageGaugeComponent(ComponentFootprint footprint) {
         super(footprint);
     }
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(LEVEL, DIGITAL);
+        properties.add(MAX_VOLTAGE);
     }
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var wire = builder.connect(1000f, builder.terminalNode(0), builder.terminalNode(1));
+        var wire = builder.connect(5000f, builder.terminalNode(0), builder.terminalNode(1));
         placed.add(wire);
     }
 
     @Override
-    public boolean isEmitter() {
-        return true;
-    }
-
-    @Override
-    public int getEmittedLevel(@NotNull PlacedComponent component) {
-        return component.get(LEVEL);
-    }
-
-    @Override
-    public boolean tick(@NotNull PlacedComponent placed) {
+    public float getTarget(PlacedComponent placed) {
         if(placed.wires.isEmpty())
-            return true;
+            return 0;
         var wire = placed.wires.get(0);
-        // TODO: Right now polarity doesn't matter but this might change.
-        int redstoneLevel;
-        if(placed.get(DIGITAL)) {
-            redstoneLevel = Math.abs(wire.potentialDifference()) > 3.3f ? 15 : 0;
-        } else {
-            redstoneLevel = Mth.clamp((int) Math.floor(Math.abs(wire.potentialDifference() * 15 / 5)), 0, 15);
-        }
-
-        if(redstoneLevel != placed.get(LEVEL)) {
-            placed.set(LEVEL, redstoneLevel);
-            IRedstoneComponent.notifyNeighbours(placed);
-        }
-
-        return true;
+        return Mth.clamp(Math.abs(wire.potentialDifference()) / placed.get(MAX_VOLTAGE), 0, 1.125f);
     }
 }

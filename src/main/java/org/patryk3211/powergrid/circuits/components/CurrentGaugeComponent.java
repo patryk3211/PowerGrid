@@ -16,32 +16,40 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
-import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
-import org.patryk3211.powergrid.circuits.components.properties.Orientation;
+import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
+import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
-public abstract class OrientableComponent extends Component {
-    public static final EnumProperty<Orientation> ORIENTATION = Orientation.PROPERTY;
+public class CurrentGaugeComponent extends GaugeComponent {
+    public static final FloatProperty MAX_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "current_gauge_max", 0.1f, 0.01f, 1.0f);
 
-    public OrientableComponent(ComponentFootprint footprint) {
+    public CurrentGaugeComponent(ComponentFootprint footprint) {
         super(footprint);
     }
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(ORIENTATION);
+        properties.add(MAX_CURRENT);
     }
 
     @Override
-    public ComponentFootprint footprint(@Nullable PlacedComponent placed) {
-        var footprint = super.footprint(placed);
-        if(placed == null)
-            return footprint;
-        return footprint.rotated(placed.get(ORIENTATION));
+    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
+        var wire = builder.connect(0.05f, builder.terminalNode(0), builder.terminalNode(1));
+        placed.add(wire);
+    }
+
+    @Override
+    public float getTarget(PlacedComponent placed) {
+        if(placed.wires.isEmpty())
+            return 0;
+        var wire = placed.wires.get(0);
+        return Mth.clamp(Math.abs(wire.current()) / placed.get(MAX_CURRENT), 0, 1.125f);
     }
 }

@@ -50,6 +50,8 @@ public class PlacedComponent {
     public final List<INode> nodes = new ArrayList<>();
     public final List<AbstractElectricWire> wires = new ArrayList<>();
 
+    public Object customData;
+
     public PlacedComponent(CompoundTag tag) {
         this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUUID("UUID"));
         var propertyMap = tag.getCompound("Properties");
