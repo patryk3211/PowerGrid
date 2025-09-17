@@ -79,6 +79,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             lastKnownPos = pos;
         else if (!lastKnownPos.equals(pos) && pos != null) {
             onPositionChanged();
+            lastKnownPos = pos;
         }
     }
 

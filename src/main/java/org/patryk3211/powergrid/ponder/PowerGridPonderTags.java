@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.createmod.ponder.api.registration.PonderTagRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.PowerGrid;
@@ -38,7 +39,7 @@ public class PowerGridPonderTags {
         helper.registerTag(GENERATOR_ASSEMBLY)
                 .title("Generator Parts")
                 .description("Components which can be used to build a generator")
-                .item(ModdedBlocks.GENERATOR_ROTOR)
+                .item(ModdedBlocks.GENERATOR_ROTOR, true, false)
                 .item(ModdedBlocks.GENERATOR_CLUTCH)
                 .item(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
                 .item(ModdedBlocks.GENERATOR_COMMUTATOR)
@@ -52,68 +53,89 @@ public class PowerGridPonderTags {
         helper.registerTag(ELECTRIC_RELAYS)
                 .title("Electricity Relays")
                 .description("Components which help guide electricity in the right direction")
-                .item(ModdedBlocks.LV_SWITCH)
-                .item(ModdedBlocks.LV_BUTTON)
-                .item(ModdedBlocks.MV_SWITCH)
-                .item(ModdedBlocks.HV_SWITCH)
-                .item(ModdedBlocks.CONTACTOR)
-                .item(ModdedBlocks.SPARK_GAP)
-                .item(ModdedBlocks.FUSE_HOLDER)
-                .item(ModdedBlocks.TRANSFORMER_CORE)
-                .item(ModdedBlocks.VARIAC)
-                .item(ModdedBlocks.RHEOSTAT)
-                .item(ModdedBlocks.RESISTOR)
-                .item(ModdedBlocks.WIRE_CONNECTOR)
-                .item(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
-                .item(ModdedBlocks.DEVICE_CONNECTOR)
+                .item(ModdedBlocks.MV_SWITCH, true, false)
                 .addToIndex()
                 .register();
 
         helper.registerTag(ELECTRIC_DEVICES)
                 .title("Electric Devices")
                 .description("Components which use electricity to do something")
-                .item(ModdedBlocks.ELECTRIC_MOTOR)
-                .item(ModdedBlocks.SERVO)
-                .item(ModdedBlocks.HEATING_COIL)
-                .item(ModdedBlocks.ELECTRIC_FAN)
-                .item(ModdedBlocks.BASIN_HEATER)
-                .item(ModdedItems.LV_LIGHT_BULB)
-                .item(ModdedItems.LIGHT_BULB)
-                .item(ModdedItems.GROWTH_LAMP)
+                .item(ModdedBlocks.ELECTRIC_MOTOR, true, false)
                 .addToIndex()
                 .register();
 
         helper.registerTag(CIRCUIT_COMPONENTS)
                 .title("Circuit Components")
                 .description("Components which can be placed on a circuit")
-                .item(ModdedBlocks.WIRE_CONNECTOR)
-                .item(AllItems.COPPER_NUGGET)
-                .item(ModdedItems.RESISTOR)
-                .item(ModdedItems.DIODE)
-                .item(ModdedItems.CAPACITOR)
-                .item(ModdedItems.RELAY)
-                .item(ModdedItems.REDSTONE_RELAY)
-                .item(AllItems.ELECTRON_TUBE)
-                .item(ModdedItems.LED)
-                .item(ModdedBlocks.LV_SWITCH)
-                .item(ModdedBlocks.LV_BUTTON)
-                .item(ModdedItems.POTENTIOMETER)
-                .item(ModdedItems.BJT_TRANSISTOR)
-                .item(ModdedBlocks.VOLTAGE_METER)
+                .item(ModdedBlocks.CIRCUIT_BOARD, true, true)
                 .addToIndex()
                 .register();
 
-        helper.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)
-                .add(ModdedBlocks.GENERATOR_CLUTCH.getId());
+        PonderTagRegistrationHelper<RegistryEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+        HELPER.addToTag(GENERATOR_ASSEMBLY)
+                .add(ModdedBlocks.GENERATOR_ROTOR)
+                .add(ModdedBlocks.GENERATOR_CLUTCH)
+                .add(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
+                .add(ModdedBlocks.GENERATOR_COMMUTATOR)
+                .add(ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
+                .add(ModdedItems.COPPER_COIL)
+                .add(ModdedBlocks.GENERATOR_HOUSING)
+                .add(ModdedBlocks.VERTICAL_GENERATOR_HOUSING);
 
-        helper.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
-                .add(ModdedBlocks.ELECTRIC_MOTOR.getId())
-                .add(ModdedBlocks.SERVO.getId());
+        HELPER.addToTag(ELECTRIC_RELAYS)
+                .add(ModdedBlocks.LV_SWITCH)
+                .add(ModdedBlocks.LV_BUTTON)
+                .add(ModdedBlocks.MV_SWITCH)
+                .add(ModdedBlocks.HV_SWITCH)
+                .add(ModdedBlocks.CONTACTOR)
+                .add(ModdedBlocks.SPARK_GAP)
+                .add(ModdedBlocks.FUSE_HOLDER)
+                .add(ModdedBlocks.TRANSFORMER_CORE)
+                .add(ModdedBlocks.VARIAC)
+                .add(ModdedBlocks.RHEOSTAT)
+                .add(ModdedBlocks.RESISTOR)
+                .add(ModdedBlocks.WIRE_CONNECTOR)
+                .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
+                .add(ModdedBlocks.DEVICE_CONNECTOR);
 
-        helper.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
-                .add(ModdedBlocks.VOLTAGE_METER.getId())
-                .add(ModdedBlocks.CURRENT_METER.getId())
-                .add(ModdedBlocks.GENERATOR_CLUTCH.getId())
-                .add(ModdedBlocks.BATTERY.getId());
+        HELPER.addToTag(ELECTRIC_DEVICES)
+                .add(ModdedBlocks.ELECTRIC_MOTOR)
+                .add(ModdedBlocks.SERVO)
+                .add(ModdedBlocks.HEATING_COIL)
+                .add(ModdedBlocks.ELECTRIC_FAN)
+                .add(ModdedBlocks.BASIN_HEATER)
+                .add(ModdedItems.LV_LIGHT_BULB)
+                .add(ModdedItems.LIGHT_BULB)
+                .add(ModdedItems.GROWTH_LAMP);
+
+        HELPER.addToTag(CIRCUIT_COMPONENTS)
+                .add(ModdedBlocks.WIRE_CONNECTOR)
+                .add(AllItems.COPPER_NUGGET)
+                .add(ModdedItems.RESISTOR)
+                .add(ModdedItems.DIODE)
+                .add(ModdedItems.CAPACITOR)
+                .add(ModdedItems.RELAY)
+                .add(ModdedItems.REDSTONE_RELAY)
+                .add(AllItems.ELECTRON_TUBE)
+                .add(ModdedItems.LED)
+                .add(ModdedBlocks.LV_SWITCH)
+                .add(ModdedBlocks.LV_BUTTON)
+                .add(ModdedItems.POTENTIOMETER)
+                .add(ModdedItems.BJT_TRANSISTOR)
+                .add(ModdedBlocks.VOLTAGE_METER)
+                .add(ModdedBlocks.CURRENT_METER);
+
+        HELPER.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)
+                .add(ModdedBlocks.GENERATOR_CLUTCH);
+
+        HELPER.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
+                .add(ModdedBlocks.ELECTRIC_MOTOR)
+                .add(ModdedBlocks.SERVO);
+
+        HELPER.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
+                .add(ModdedBlocks.VOLTAGE_METER)
+                .add(ModdedBlocks.CURRENT_METER)
+                .add(ModdedBlocks.GENERATOR_CLUTCH)
+                .add(ModdedBlocks.BATTERY);
     }
 }

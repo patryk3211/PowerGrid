@@ -78,7 +78,8 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.SERVO, "servo", DeviceScenes::servo, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
 
         HELPER.forComponents(ModdedItems.MAGNET)
-                .addStoryBoard("magnet", MagnetScenes::magnet);
+                .addStoryBoard("magnet", MagnetScenes::magnet)
+                .addStoryBoard("lightning_attractor", MagnetScenes::lightningAttractor);
         helper.addStoryBoard(new ResourceLocation("lightning_rod"), "lightning_attractor", MagnetScenes::lightningAttractor);
 
         HELPER.addStoryBoard(ModdedBlocks.BASIN_HEATER, "basin_heater", DeviceScenes::basinHeater, PowerGridPonderTags.ELECTRIC_DEVICES);

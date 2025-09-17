@@ -287,10 +287,10 @@ public class RelayScenes {
         scene.electric().connectInvisible(source, 0, meter1, 0);
         scene.electric().connectInvisible(source, 1, meter1, 1);
         scene.electric().connect(meter1, 0, target, 0);
-        scene.electric().connect(meter1, 1, target, 1);
+        scene.electric().connect(meter1, 1, target, 2);
         scene.electric().connect(meter2, 0, target, 1);
         scene.electric().connect(meter2, 1, target, 2);
-        scene.electric().setSource(source, 160);
+        scene.electric().setSource(source, 20);
         scene.electric().tickFor(10);
         scene.idle(10);
 
