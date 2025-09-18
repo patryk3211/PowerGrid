@@ -131,10 +131,14 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     }
 
     public static int getAngleX(BlockState state) {
+        if(!(state.getBlock() instanceof CircuitBoardBlock))
+            return 0;
         return state.getValue(ROTATION) * 90;
     }
 
     public static int getAngleY(BlockState state) {
+        if(!(state.getBlock() instanceof CircuitBoardBlock))
+            return 0;
         int angle = switch(state.getValue(HORIZONTAL_FACING)) {
             case NORTH -> 0;
             case EAST -> -90;
