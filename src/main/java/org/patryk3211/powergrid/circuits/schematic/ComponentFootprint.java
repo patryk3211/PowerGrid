@@ -104,7 +104,7 @@ public class ComponentFootprint {
             }
             ms.scale(scale, scale, scale);
             if(hovering)
-                ctx.setColor(1, 1, 1, 0.25f);
+                ctx.setColor(1, 1, 1, 0.125f);
             ctx.renderItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
             ctx.setColor(1, 1, 1, 1.0f);
             ms.popPose();

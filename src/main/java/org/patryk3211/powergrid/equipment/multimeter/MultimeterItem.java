@@ -245,6 +245,20 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
             setMode(stack, 0);
         }
         var data = getModeData(stack);
+        if(data.contains("Pos")) {
+            var current = WireEndpointType.deserialize(data.getCompound("Pos"));
+            if(endpoint.equals(current)) {
+                data.remove("Pos");
+                return InteractionResult.SUCCESS;
+            }
+        }
+        if(data.contains("Neg")) {
+            var current = WireEndpointType.deserialize(data.getCompound("Neg"));
+            if(endpoint.equals(current)) {
+                data.remove("Neg");
+                return InteractionResult.SUCCESS;
+            }
+        }
         if(data.contains("Pos") && data.contains("Neg"))
             return InteractionResult.PASS;
         if(data.contains("Pos")) {

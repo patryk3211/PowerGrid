@@ -45,6 +45,7 @@ public class ModdedPartialModels {
 
     public static final PartialModel SPARK_GAP_ARM = block("spark_gap/arm");
 
+    public static final PartialModel ELECTRON_TUBE_GLOW = model("component/electron_tube_glow");
     public static final PartialModel GLOW_TUBE_GLOW = model("component/glow_tube_glow");
     public static final PartialModel POTENTIOMETER_KNOB = model("component/potentiometer_knob");
 

@@ -29,7 +29,7 @@ public class ColdCathodeTubeTests extends TestHelper {
         var Anode = Net.N();
         var Cathode = Net.N();
 
-        var Tube = new ColdCathodeTubeWire(90, 60, 0.001f, 0.001f, Anode, Cathode);
+        var Tube = new ColdCathodeTubeWire(90, 60, 0.001f, 0.0025f, Anode, Cathode);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;

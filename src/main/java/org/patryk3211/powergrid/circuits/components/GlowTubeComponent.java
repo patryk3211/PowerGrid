@@ -22,7 +22,6 @@ import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -38,7 +37,7 @@ import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.sim.special.ColdCathodeTubeWire;
 import org.patryk3211.powergrid.utility.Unit;
 
-public class GlowTubeComponent extends OrientableComponent implements IRenderedComponent, IGlow {
+public class GlowTubeComponent extends OrientableComponent implements IRenderedComponent {
     public static final FloatProperty HOLDING_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "glow_tube_vh", 60, 30, 500);
     public static final CalculatedProperty<Float> BREAKDOWN_VOLTAGE = new CalculatedProperty<>(PowerGrid.MOD_ID, "glow_tube_vb",
             placed -> placed.get(HOLDING_VOLTAGE) * 1.4f,
@@ -62,8 +61,9 @@ public class GlowTubeComponent extends OrientableComponent implements IRenderedC
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var wire = new ColdCathodeTubeWire(
                 placed.get(BREAKDOWN_VOLTAGE), placed.get(HOLDING_VOLTAGE), placed.get(HOLDING_CURRENT),
-                0.0025f, builder.terminalNode(0), builder.terminalNode(1)
+                0.005f, builder.terminalNode(0), builder.terminalNode(1)
         );
+        wire.lit = placed.get(LIT);
         builder.add(wire);
         placed.add(wire);
     }
@@ -93,14 +93,6 @@ public class GlowTubeComponent extends OrientableComponent implements IRenderedC
             placed.set(LIT, wire.lit);
         }
         return true;
-    }
-
-    @Override
-    public boolean shouldGlow(PlacedComponent placed) {
-        if(placed.customData instanceof LerpedFloat current) {
-            return current.getValue() > 0.5f;
-        }
-        return false;
     }
 
     @Override

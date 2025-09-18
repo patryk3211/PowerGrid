@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import net.minecraft.util.Mth;
 import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
