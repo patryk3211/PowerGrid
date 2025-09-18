@@ -252,19 +252,14 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('C', RecipeTags.copperSheet())
                     .define('I', RecipeTags.ironSheet())),
 
-    DIODE = create(ModdedItems.DIODE)
-            .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
-            .viaShaped(b -> b
-                    .pattern("RC")
-                    .define('R', AllItems.POLISHED_ROSE_QUARTZ)
-                    .define('C', RecipeTags.copperSheet())),
-
-    LED = create(ModdedItems.LED)
+    LED = create(ModdedItems.GLOW_TUBE)
             .unlockedBy(() -> Items.AMETHYST_SHARD)
             .viaShaped(b -> b
                     .pattern("A")
+                    .pattern("G")
                     .pattern("I")
-                    .define('A', Items.AMETHYST_SHARD)
+                    .define('A', RecipeTags.amethystShard())
+                    .define('G', RecipeTags.glowstoneDust())
                     .define('I', RecipeTags.ironSheet())),
 
     POTENTIOMETER = create(ModdedItems.POTENTIOMETER)
@@ -376,17 +371,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('R', Items.COMPASS)
                     .define('C', RecipeTags.copperSheet())
                     .define('S', RecipeTags.resistiveCoil())
-                    .define('I', RecipeTags.ironSheet())),
-
-    TRANSISTOR = create(ModdedItems.BJT_TRANSISTOR)
-            .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
-            .viaShaped(b -> b
-                    .pattern("I")
-                    .pattern("R")
-                    .pattern("C")
-                    .define('I', RecipeTags.ironSheet())
-                    .define('R', RecipeTags.polishedRoseQuartz())
-                    .define('C', RecipeTags.copperSheet()))
+                    .define('I', RecipeTags.ironSheet()))
             ;
 
     public CraftingRecipes(PackOutput output) {

@@ -318,8 +318,10 @@ public class CircuitSchematic {
                     componentNode.ifPresent(nodes::add);
 
                     // Flood opposite layer.
-                    var componentNodes = flood(layer.opposite(), nX, nY, visitMap);
-                    nodes.addAll(componentNodes);
+                    if(getLayer(layer.opposite(), nX, nY)) {
+                        var componentNodes = flood(layer.opposite(), nX, nY, visitMap);
+                        nodes.addAll(componentNodes);
+                    }
                 }
 
                 // Add neighbors that haven't been visited.

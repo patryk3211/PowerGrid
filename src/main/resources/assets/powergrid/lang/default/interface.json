@@ -147,28 +147,24 @@
   "powergrid.component.property.relay_state": "State",
 
   "powergrid.component.property.resistor_value": "Resistance [Ω]",
-  "powergrid.component.property.capacitor_value": "Capacitance [F]",
+  "powergrid.component.property.capacitor_value": "Capacitance [mF]",
 
   "powergrid.component.property.redstone_emitter_digital": "Digital",
 
   "powergrid.component.property.orientation": "Orientation",
 
-  "powergrid.component.property.led_red": "Red",
-  "powergrid.component.property.led_green": "Green",
-  "powergrid.component.property.led_blue": "Blue",
-  "powergrid.component.property.led_vf": "Forward Voltage",
-  "powergrid.component.property.led_if": "Forward Current",
-
   "powergrid.component.property.potentiometer_resistance": "Resistance",
   "powergrid.component.property.potentiometer_value": "Setting",
 
-  "powergrid.component.property.bjt_beta": "Beta",
-  "powergrid.component.property.bjt_beta.summary": "Transistor forward current gain value",
-  "powergrid.component.property.bjt_bias": "Bias Voltage",
-  "powergrid.component.property.bjt_bias.summary": "Base-emitter junction bias voltage",
-
   "powergrid.component.property.current_gauge_max": "Max Current",
   "powergrid.component.property.voltage_gauge_max": "Max Voltage",
+
+  "powergrid.component.property.glow_tube_vh": "Holding Voltage",
+  "powergrid.component.property.glow_tube_vh.summary": "Regulated voltage held by the glow tube when it is lit and current is steady",
+  "powergrid.component.property.glow_tube_vb": "Breakdown Voltage",
+  "powergrid.component.property.glow_tube_vb.summary": "Voltage needed to light up a glow tube",
+  "powergrid.component.property.glow_tube_ih": "Holding Current",
+  "powergrid.component.property.glow_tube_ih.summary": "Minimum current needed to keep the glow tube lit",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",

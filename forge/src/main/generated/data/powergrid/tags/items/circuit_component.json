@@ -2,6 +2,7 @@
   "values": [
     "create:copper_nugget",
     "create:electron_tube",
+    "powergrid:glow_tube",
     "powergrid:wire_connector",
     "powergrid:lv_switch",
     "powergrid:relay",
@@ -9,11 +10,8 @@
     "powergrid:redstone_relay",
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
-    "powergrid:diode",
     "powergrid:capacitor",
-    "powergrid:led",
     "powergrid:lv_button",
-    "powergrid:potentiometer",
-    "powergrid:bjt_transistor"
+    "powergrid:potentiometer"
   ]
 }

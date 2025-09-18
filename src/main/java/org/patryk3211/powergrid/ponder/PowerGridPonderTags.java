@@ -112,16 +112,14 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.WIRE_CONNECTOR)
                 .add(AllItems.COPPER_NUGGET)
                 .add(ModdedItems.RESISTOR)
-                .add(ModdedItems.DIODE)
                 .add(ModdedItems.CAPACITOR)
                 .add(ModdedItems.RELAY)
                 .add(ModdedItems.REDSTONE_RELAY)
                 .add(AllItems.ELECTRON_TUBE)
-                .add(ModdedItems.LED)
+                .add(ModdedItems.GLOW_TUBE)
                 .add(ModdedBlocks.LV_SWITCH)
                 .add(ModdedBlocks.LV_BUTTON)
                 .add(ModdedItems.POTENTIOMETER)
-                .add(ModdedItems.BJT_TRANSISTOR)
                 .add(ModdedBlocks.VOLTAGE_METER)
                 .add(ModdedBlocks.CURRENT_METER);
 

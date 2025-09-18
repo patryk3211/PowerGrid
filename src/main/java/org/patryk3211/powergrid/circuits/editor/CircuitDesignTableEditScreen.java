@@ -356,7 +356,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
             CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_FRONT);
         }
 
-        CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE);
+        CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE, mouseX, mouseY);
 
         if(currentTool.y > 0) {
             ctx.blit(BACKGROUND, leftPos + 173 - 11, topPos + currentTool.y, 250, 0, 6, 18);

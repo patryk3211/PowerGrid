@@ -74,7 +74,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             gridY /= GRID_TO_GRID_SCALE;
             int offsetX = footprint.getWidth() / 2;
             int offsetY = footprint.getHeight() / 2;
-            footprint.render(ctx, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
+            footprint.render(ctx, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE, true);
             footprint.renderPadIndices(ctx, textRenderer, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
 
             ms.pushPose();

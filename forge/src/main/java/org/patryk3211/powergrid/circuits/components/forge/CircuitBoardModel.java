@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.circuits.components.forge;
 
 import com.mojang.math.Transformation;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.*;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.*;
 import net.minecraft.core.BlockPos;
@@ -42,6 +42,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
+import org.patryk3211.powergrid.circuits.components.IGlow;
 import org.patryk3211.powergrid.circuits.components.IRenderedComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.Area;
@@ -171,6 +172,13 @@ public class CircuitBoardModel implements BakedModel {
                             new Transformation(new Vector3f(placed.x / 16f - 0.5f, 2 / 16f - 0.5f, placed.y / 16f - 0.5f),
                                     null, null, null)
                     );
+                }
+                if(placed.component instanceof IGlow glow) {
+                    if(glow.shouldGlow(placed)) {
+                        transformer = transformer
+                                .andThen(QuadTransformers.settingEmissivity(7))
+                                .andThen(QuadTransformers.applyingLightmap(LightTexture.FULL_BRIGHT));
+                    }
                 }
                 var componentQuads = model.getQuads(state, side, rand, data, renderType);
                 quads.addAll(transformer.process(componentQuads));

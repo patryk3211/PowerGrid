@@ -123,15 +123,9 @@ public class ModdedItems {
     public static final ItemEntry<Item> RELAY = ingredient("relay");
     public static final ItemEntry<Item> RESISTOR = ingredient("resistor");
     public static final ItemEntry<Item> REDSTONE_RELAY = ingredient("redstone_relay");
-    public static final ItemEntry<Item> DIODE = ingredient("diode");
     public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
-    public static final ItemEntry<Item> LED = REGISTRATE.item("led", Item::new)
-            .lang("LED")
-            .register();
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
-    public static final ItemEntry<Item> BJT_TRANSISTOR = REGISTRATE.item("bjt_transistor", Item::new)
-            .lang("BJT Transistor")
-            .register();
+    public static final ItemEntry<Item> GLOW_TUBE = ingredient("glow_tube");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");

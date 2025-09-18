@@ -6,7 +6,7 @@
         "items": [
           {
             "items": [
-              "create:polished_rose_quartz"
+              "minecraft:amethyst_shard"
             ]
           }
         ]
@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "powergrid:crafting//bjt_transistor"
+        "recipe": "powergrid:crafting//glow_tube"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "powergrid:crafting//bjt_transistor"
+      "powergrid:crafting//glow_tube"
     ]
   },
   "sends_telemetry_event": false

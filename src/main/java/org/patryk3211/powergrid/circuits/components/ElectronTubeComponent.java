@@ -77,7 +77,7 @@ public class ElectronTubeComponent extends OrientableComponent {
         thermals.builder()
                 .addHeatSource(heater)
                 .setThermalMass(0.001f)
-                .setOverheatTemperature(1500f)
+                .setOverheatTemperature(1600f)
                 .setDissipationFactor(dissipationFactor)
                 .withTemperatureCallback(temperature -> tube.setSaturationCurrent(
                         Mth.clamp(temperature - 1300f, 0, 150) * saturationCurrent / 100

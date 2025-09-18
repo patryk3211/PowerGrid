@@ -5,16 +5,20 @@
     "A": {
       "item": "minecraft:amethyst_shard"
     },
+    "G": {
+      "item": "minecraft:glowstone_dust"
+    },
     "I": {
       "tag": "forge:plates/iron"
     }
   },
   "pattern": [
     "A",
+    "G",
     "I"
   ],
   "result": {
-    "item": "powergrid:led"
+    "item": "powergrid:glow_tube"
   },
   "show_notification": true
 }

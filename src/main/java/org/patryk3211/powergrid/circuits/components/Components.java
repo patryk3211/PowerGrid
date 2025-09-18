@@ -41,6 +41,15 @@ public class Components {
             .item(AllItems.ELECTRON_TUBE)
             .register();
 
+    public static final RegistryEntry<GlowTubeComponent> GLOW_TUBE = REGISTRATE.component("glow_tube", GlowTubeComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 1, 0, "Anode", "+")
+                    .addPad(2, 1, 1, "Cathode", "-")
+                    .withItem(ModdedItems.GLOW_TUBE)
+                    .withOutline())
+            .item(ModdedItems.GLOW_TUBE)
+            .register();
+
     public static final RegistryEntry<ConnectorComponent> CONNECTOR = REGISTRATE.component("connector", ConnectorComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(1, 1, 0)
@@ -113,16 +122,6 @@ public class Components {
             .item(ModdedBlocks.CURRENT_METER)
             .register();
 
-    public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
-            .footprint(5, 3, b -> b
-                    .addPad(0, 1, 0, "Anode", "+")
-                    .addPad(4, 1, 1, "Cathode", "-")
-                    .withItem(ModdedItems.DIODE)
-                    .withOutline()
-            )
-            .item(ModdedItems.DIODE)
-            .register();
-
     public static final RegistryEntry<CapacitorComponent> CAPACITOR = REGISTRATE.component("capacitor", CapacitorComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
@@ -131,16 +130,6 @@ public class Components {
                     .withOutline()
             )
             .item(ModdedItems.CAPACITOR)
-            .register();
-
-    public static final RegistryEntry<LEDComponent> LED = REGISTRATE.component("led", LEDComponent::new)
-            .footprint(2, 2, b -> b
-                    .addPad(0, 0, 0, "Anode", "+")
-                    .addPad(1, 1, 1, "Cathode", "-")
-                    .withItem(ModdedItems.LED)
-                    .withOutline()
-            )
-            .item(ModdedItems.LED)
             .register();
 
     public static final RegistryEntry<ButtonComponent> BUTTON = REGISTRATE.component("button", ButtonComponent::new)
@@ -162,16 +151,6 @@ public class Components {
                     .withOutline()
             )
             .item(ModdedItems.POTENTIOMETER)
-            .register();
-
-    public static final RegistryEntry<BJTComponent> BJT = REGISTRATE.component("bjt", BJTComponent::new)
-            .footprint(3, 3, b -> b
-                    .addPad(0, 0, 0, "Collector", "C")
-                    .addPad(1, 2, 1, "Base", "B")
-                    .addPad(2, 0, 2, "Emitter", "E")
-                    .withItem(ModdedItems.BJT_TRANSISTOR)
-                    .withOutline())
-            .item(ModdedItems.BJT_TRANSISTOR)
             .register();
 
     @SuppressWarnings("EmptyMethod")

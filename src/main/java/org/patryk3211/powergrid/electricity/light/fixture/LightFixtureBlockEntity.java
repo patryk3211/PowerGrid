@@ -147,7 +147,8 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         return filament;
     }
 
-    public AABB getRenderBoundingBox() {
+    @Override
+    protected AABB createRenderBoundingBox() {
         return new AABB(worldPosition);
     }
 

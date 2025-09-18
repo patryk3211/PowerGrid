@@ -115,4 +115,12 @@ public class RecipeTags {
     public static ItemLike polishedRoseQuartz() {
         return AllItems.POLISHED_ROSE_QUARTZ;
     }
+
+    public static ItemLike glowstoneDust() {
+        return Items.GLOWSTONE_DUST;
+    }
+
+    public static ItemLike amethystShard() {
+        return Items.AMETHYST_SHARD;
+    }
 }

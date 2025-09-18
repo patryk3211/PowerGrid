@@ -75,7 +75,7 @@ public class ComponentFootprint {
     }
 
     @Environment(EnvType.CLIENT)
-    public void render(@NotNull GuiGraphics ctx, int x, int y) {
+    public void render(@NotNull GuiGraphics ctx, int x, int y, boolean hovering) {
         var ms = ctx.pose();
         if(outline) {
             ms.pushPose();
@@ -103,7 +103,10 @@ public class ComponentFootprint {
                 ms.translate(0, offset, 0);
             }
             ms.scale(scale, scale, scale);
+            if(hovering)
+                ctx.setColor(1, 1, 1, 0.25f);
             ctx.renderItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
+            ctx.setColor(1, 1, 1, 1.0f);
             ms.popPose();
         }
         if(arrow != null) {

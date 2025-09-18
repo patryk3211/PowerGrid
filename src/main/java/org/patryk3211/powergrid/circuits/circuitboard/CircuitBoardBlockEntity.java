@@ -23,6 +23,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -343,5 +344,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public void noCooling() {
         coolingFactorMultiplier = 1;
         coolingAir = null;
+    }
+
+    @Override
+    protected AABB createRenderBoundingBox() {
+        return new AABB(worldPosition);
     }
 }

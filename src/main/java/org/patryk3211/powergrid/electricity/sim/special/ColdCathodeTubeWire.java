@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.minecraft.util.Mth;
 import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -28,8 +29,8 @@ public class ColdCathodeTubeWire extends DynamicConductanceWire {
     public boolean lit = false;
     private double I;
 
-    public ColdCathodeTubeWire(float breakdownVoltage, float holdingVoltage, float holdingCurrent, float dischargeConductance, IElectricNode node1, IElectricNode node2) {
-        super(node1, node2);
+    public ColdCathodeTubeWire(float breakdownVoltage, float holdingVoltage, float holdingCurrent, float dischargeConductance, IElectricNode anode, IElectricNode cathode) {
+        super(anode, cathode);
         this.breakdownVoltage = breakdownVoltage;
         this.holdingVoltage = holdingVoltage;
         this.holdingCurrent = holdingCurrent;

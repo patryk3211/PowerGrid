@@ -468,7 +468,7 @@ public class ElectricalNetwork {
 
         PERF.start();
         solver.saveGuess();
-        int maxAttempts = hasHooks() ? 15 : 3;
+        int maxAttempts = hasHooks() ? 20 : 3;
         for(int i = 0; i < maxAttempts; ++i) {
             for(var hook : hooks) {
                 hook.preSolve();

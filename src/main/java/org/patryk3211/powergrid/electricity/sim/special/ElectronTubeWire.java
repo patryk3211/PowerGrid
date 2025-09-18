@@ -38,7 +38,7 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
     public ElectronTubeWire(float gain, float perveance, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
         super(cathode, anode);
         this.grid = grid;
-        this.gridWire = new ElectricWire(1e5f, grid, cathode);
+        this.gridWire = new ElectricWire(1e7f, grid, cathode);
 
         this.gain = gain;
         this.perveance = perveance;
@@ -82,9 +82,9 @@ public class ElectronTubeWire extends AbstractElectricWire implements ISolverHoo
         Ia = 0;
         if(anodePotential > 0 && saturationCurrent > 0) {
             // Somewhat realistic triode current equation:
-            var x = gridPotential + anodePotential / gain;
+            var x = Math.min(gridPotential, 0) + anodePotential / gain;
             if(x > 0) {
-                Ia = perveance * /*Math.sqrt(x * x * x)*/ x;
+                Ia = perveance * Math.sqrt(x * x * x);//*/ x;
                 Ia = Math.min(Ia, saturationCurrent);
             }
         }

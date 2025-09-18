@@ -207,6 +207,11 @@ public class BiCGSTABSolver implements ISolver {
             return guess;
 
         PERF.start();
+        if(true) {
+            A.solve(b, guess);
+            PERF.end();
+            return guess;
+        }
 
         if(shouldCalculateLU || solveCount++ >= 20) {
             prepareILU(A);
