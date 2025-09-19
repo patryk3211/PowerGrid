@@ -67,4 +67,8 @@ public enum Orientation {
             default -> throw new IllegalStateException();
         }
     }
+
+    public boolean positive() {
+        return this == RIGHT || this == DOWN;
+    }
 }
