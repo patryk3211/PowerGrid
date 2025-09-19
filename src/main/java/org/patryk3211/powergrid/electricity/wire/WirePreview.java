@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllSpecialTextures;
@@ -66,6 +65,8 @@ public class WirePreview {
     }
 
     public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target) {
+        if(target.getType() == HitResult.Type.MISS)
+            return;
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return;

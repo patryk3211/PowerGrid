@@ -149,7 +149,7 @@ public class BlockTrace {
                 continue;
             if(cell.position.equals(state.target))
                 return Pair.of(state, new TraceResult(state.traceResult(cell), true));
-            if(state.states.size() > 300)
+            if(state.states.size() > 150)
                 break;
 
             Direction prevDirection = cell.cellDirection();
