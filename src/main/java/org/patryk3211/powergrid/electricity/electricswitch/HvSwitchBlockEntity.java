@@ -120,6 +120,12 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        tag.put("Rod", rod.writeNBT());
+    }
+
+    @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         rod.readNBT(compound.getCompound("Rod"), clientPacket);

@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -25,9 +26,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -35,6 +38,7 @@ import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, TransformerVolumeProvider {
@@ -138,6 +142,38 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             secondaryCoil.writeNbt(secondary);
             tag.put("Secondary", secondary);
         }
+    }
+
+    @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+
+        if(primaryCoil != null && primaryCoil.isDefined()) {
+            var primary = new CompoundTag();
+            primaryCoil.writeNbt(primary);
+            tag.put("Primary", primary);
+        }
+
+        if(secondaryCoil != null && secondaryCoil.isDefined()) {
+            var secondary = new CompoundTag();
+            secondaryCoil.writeNbt(secondary);
+            tag.put("Secondary", secondary);
+        }
+    }
+
+    @Override
+    public ItemRequirement getRequiredItems(BlockState state) {
+        var count = 0;
+        if(primaryCoil != null)
+            count += primaryCoil.getTurns();
+        if(secondaryCoil != null)
+            count += secondaryCoil.getTurns();
+        var stacks = new ArrayList<ItemStack>();
+        while(count > 0) {
+            stacks.add(ModdedItems.WIRE.asStack(Math.min(count, 64)));
+            count -= 64;
+        }
+        return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, stacks);
     }
 
     public boolean isTerminalUsed(int index) {
