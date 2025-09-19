@@ -22,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.mutable.MutableFloat;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
@@ -54,8 +55,8 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
         recalculateStress = true;
     }
 
-    public float torque() {
-        return (float) (BlockStressValues.getImpact(getBlockState().getBlock()) * ModdedConfigs.server().kinetics.torqueForStress.getF());
+    public float torqueForStress() {
+        return ModdedConfigs.server().kinetics.torqueForStress.getF();
     }
 
     @Override
@@ -64,9 +65,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
             return 0;
 
         float couplingStrength = (15 - currentRedstonePower) / 15f;
-        int segmentCount = rotorBehaviour.getSegmentCount();
-
-        float maxForce = (float) (torque() * segmentCount / 30 * Math.PI);
+        float maxForce = (float) (torqueForStress() * lastStressApplied / 30 * Math.PI);
         return maxForce * couplingStrength;
     }
 
@@ -114,11 +113,12 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
 
     @Override
     public float calculateStressApplied() {
-        final var defaultImpact = (float) BlockStressValues.getImpact(getBlockState().getBlock());
-        int segmentCount = rotorBehaviour.getSegmentCount();
-        var impact = defaultImpact * segmentCount;
-        this.lastStressApplied = impact;
-        return impact;
+        var totalImpact = new MutableFloat(0.0f);
+        rotorBehaviour.forEachSegment(segment -> {
+            totalImpact.add(BlockStressValues.getImpact(segment.blockEntity.getBlockState().getBlock()));
+        });
+        this.lastStressApplied = totalImpact.getValue();
+        return lastStressApplied;
     }
 
     @Override

@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.kinetics.generator.rotor;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,7 +34,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
-public abstract class AbstractRotorBlock extends Block implements IRotorAssemblyPart, IWrenchable {
+public abstract class AbstractRotorBlock extends Block implements IRotorAssemblyPart, IWrenchable, IRotate {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
 
     public AbstractRotorBlock(Properties properties) {
@@ -48,7 +49,7 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
         var world = context.getLevel();
-        InteractionResult result = IWrenchable.super.onWrenched(state, context);
+        InteractionResult result = IRotate.super.onWrenched(state, context);
         if(!result.consumesAction())
             return result;
 
@@ -115,5 +116,16 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
     @NotNull
     public Direction.Axis getAssemblyRotationAxis(BlockState state) {
         return state.getValue(AXIS);
+    }
+
+    // This is only for the stress impact tooltip
+    @Override
+    public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
+        return false;
+    }
+
+    @Override
+    public Direction.Axis getRotationAxis(BlockState state) {
+        return null;
     }
 }
