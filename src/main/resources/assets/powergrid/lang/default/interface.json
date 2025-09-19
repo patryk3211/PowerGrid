@@ -36,6 +36,7 @@
 
   "powergrid.gui.damage_header": "Damaged",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
+  "powergrid.gui.circuit_board.damage_creative_repair": "Sneak-right-click to repair",
   "powergrid.gui.switch.overvolted": "This switch has been overvolted",
 
   "powergrid.gui.thermometer.temperature": "Temperature: ",

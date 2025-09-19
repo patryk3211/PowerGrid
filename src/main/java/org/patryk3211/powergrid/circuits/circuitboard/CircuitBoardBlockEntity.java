@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,6 +43,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.*;
@@ -329,6 +332,14 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         Lang.translate("gui.circuit_board.damage_body")
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+            var player = ClientSideAccess.player();
+            if(!player.isCreative())
+                return;
+            Lang.translate("gui.circuit_board.damage_creative_repair")
+                    .style(ChatFormatting.DARK_GRAY)
+                    .forGoggles(tooltip);
+        });
         return true;
     }
 
@@ -349,5 +360,13 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Override
     protected AABB createRenderBoundingBox() {
         return new AABB(worldPosition);
+    }
+
+    public void repairBroken() {
+        if(baked != null && baked.isDamaged()) {
+            // This repairs all components
+            bakeCircuit();
+            notifyUpdate();
+        }
     }
 }

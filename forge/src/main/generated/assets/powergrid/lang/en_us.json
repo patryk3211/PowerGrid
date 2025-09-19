@@ -210,6 +210,7 @@
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.watt": "W",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
+  "powergrid.gui.circuit_board.damage_creative_repair": "Sneak-right-click to repair",
   "powergrid.gui.circuit_designer.cancel": "Cancel",
   "powergrid.gui.circuit_designer.confirm_overwrite": "File already exists, click again to overwrite",
   "powergrid.gui.circuit_designer.connect": "Place trace",

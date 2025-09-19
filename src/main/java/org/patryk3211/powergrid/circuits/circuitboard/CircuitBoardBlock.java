@@ -342,6 +342,8 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                     continue;
                 return dynamic.use(be, placed, player);
             }
+            if(player.isCreative())
+                be.repairBroken();
             return InteractionResult.PASS;
         });
         if(beResult != InteractionResult.PASS)
