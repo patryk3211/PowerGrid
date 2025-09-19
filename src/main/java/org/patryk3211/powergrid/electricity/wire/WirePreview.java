@@ -65,7 +65,7 @@ public class WirePreview {
     }
 
     public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target) {
-        if(target.getType() == HitResult.Type.MISS)
+        if(target.getType() != HitResult.Type.BLOCK)
             return;
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
