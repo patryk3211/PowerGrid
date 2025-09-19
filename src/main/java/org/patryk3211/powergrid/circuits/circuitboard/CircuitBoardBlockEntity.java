@@ -128,9 +128,11 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     private ElectricWire makeWire(ElectricBehaviour eb2, IElectricNode node1, IElectricNode node2) {
-        var network = unifyNetwork(eb2);
         var wire = new ElectricWire(0.002f, node1, node2);
-        network.addWire(wire);
+        if(!electricBehaviour.isPaused() && !eb2.isPaused()) {
+            var network = unifyNetwork(eb2);
+            network.addWire(wire);
+        }
         return wire;
     }
 
