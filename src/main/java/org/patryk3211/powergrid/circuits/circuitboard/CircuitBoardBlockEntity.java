@@ -84,12 +84,15 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     @Nullable
-    private FloatingNode getViaAt(Direction sideIn, int edgePosition) {
+    private FloatingNode getViaAt(Direction sideIn, int edgePosition, Orientation edgeOut) {
         if(baked == null)
             return null;
         var orientation = CircuitBoardBlock.getOrientation(getBlockState(), sideIn);
         if(orientation == null)
             return null;
+        if(edgeOut.positive() == orientation.positive()) {
+            edgePosition = 15 - edgePosition;
+        }
         for(var placed : getComponents(ViaComponent.class)) {
             var match = switch(orientation) {
                 case UP -> placed.x == edgePosition && placed.y == 0;
@@ -132,9 +135,11 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     private ElectricWire makeWire(ElectricBehaviour eb2, IElectricNode node1, IElectricNode node2) {
-        var network = unifyNetwork(eb2);
         var wire = new ElectricWire(0.002f, node1, node2);
-        network.addWire(wire);
+        if(!electricBehaviour.isPaused() && !eb2.isPaused()) {
+            var network = unifyNetwork(eb2);
+            network.addWire(wire);
+        }
         return wire;
     }
 
@@ -162,7 +167,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             if(edge != expectedOrientation)
                 continue;
             var dir = CircuitBoardBlock.getDirection(getBlockState(), edge);
-            var viaNode = be.getViaAt(dir.getOpposite(), position);
+            var viaNode = be.getViaAt(dir.getOpposite(), position, edge);
             var thisViaNode = baked.getNode(new CircuitSchematic.Node(placed, 0));
 
             var wire = makeWire(be.electricBehaviour, viaNode, thisViaNode);
