@@ -85,7 +85,7 @@ public class ComponentFootprint {
         }
         renderPads(ctx, x, y);
 
-        if(renderedItem != null) {
+        if(renderedItem != null && !hovering) {
             ms.pushPose();
             final int maxSize = 2;
             var scale = Math.min(Math.min(width, height), maxSize) / 16f * GRID_TO_GRID_SCALE;
@@ -103,10 +103,7 @@ public class ComponentFootprint {
                 ms.translate(0, offset, 0);
             }
             ms.scale(scale, scale, scale);
-            if(hovering)
-                ctx.setColor(1, 1, 1, 0.125f);
             ctx.renderItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
-            ctx.setColor(1, 1, 1, 1.0f);
             ms.popPose();
         }
         if(arrow != null) {
