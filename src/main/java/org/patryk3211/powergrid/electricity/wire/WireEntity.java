@@ -19,6 +19,7 @@ import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -299,17 +300,37 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
             throw new IllegalStateException("WireEntity must have an item");
         }
 
+        BlockPos lastPos = null;
+        if(nbt.contains("LastKnownPos")) {
+            lastPos = NbtUtils.readBlockPos(nbt.getCompound("LastKnownPos"));
+        }
+
+        IWireEndpoint endpoint1 = null, endpoint2 = null;
         if(nbt.contains("Endpoint1")) {
-            setEndpoint1(WireEndpointType.deserialize(nbt.getCompound("Endpoint1")));
-        } else {
-            setEndpoint1(null);
+            endpoint1 = WireEndpointType.deserialize(nbt.getCompound("Endpoint1"));
         }
 
         if(nbt.contains("Endpoint2")) {
-            setEndpoint2(WireEndpointType.deserialize(nbt.getCompound("Endpoint2")));
-        } else {
-            setEndpoint2(null);
+            endpoint2 = WireEndpointType.deserialize(nbt.getCompound("Endpoint2"));
         }
+
+        var currentPos = blockPosition();
+        if(lastPos != null && !lastPos.equals(currentPos)) {
+            var diff = currentPos.subtract(lastPos);
+            if(endpoint1 instanceof BlockWireEndpoint bwe) {
+                endpoint1 = new BlockWireEndpoint(bwe.getPos().offset(diff), bwe.getTerminal());
+            } else {
+                endpoint1 = null;
+            }
+            if(endpoint2 instanceof BlockWireEndpoint bwe) {
+                endpoint2 = new BlockWireEndpoint(bwe.getPos().offset(diff), bwe.getTerminal());
+            } else {
+                endpoint2 = null;
+            }
+        }
+
+        setEndpoint1(endpoint1);
+        setEndpoint2(endpoint2);
 
         entityData.set(TEMPERATURE, nbt.getFloat("Temperature"));
     }
@@ -381,6 +402,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         itemTag.putString("Id", BuiltInRegistries.ITEM.getKey(item).toString());
         itemTag.putInt("Count", itemCount);
         nbt.put("Item", itemTag);
+
+        nbt.put("LastKnownPos", NbtUtils.writeBlockPos(blockPosition()));
 
         nbt.putFloat("Temperature", entityData.get(TEMPERATURE));
     }
