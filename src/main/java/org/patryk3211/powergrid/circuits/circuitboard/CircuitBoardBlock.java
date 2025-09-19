@@ -16,16 +16,21 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.foundation.block.IBE;
+import dev.architectury.registry.menu.MenuRegistry;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -49,6 +54,8 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.IInteractableComponent;
 import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
+import org.patryk3211.powergrid.circuits.editor.CircuitBoardEditMenu;
+import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditMenu;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
@@ -92,7 +99,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         withBlockEntityDo(world, pos, be -> {
-            be.withSchematic(CircuitSchematic.fromStack(stack));
+            be.setSchematic(CircuitSchematic.fromStack(stack));
             be.setAdditionalData(stack.getTag());
         });
         super.setPlacedBy(world, pos, state, placer, stack);
@@ -342,8 +349,26 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                     continue;
                 return dynamic.use(be, placed, player);
             }
-            if(player.isCreative())
+            if(player.isCreative() && player.isShiftKeyDown()) {
                 be.repairBroken();
+                return InteractionResult.SUCCESS;
+            } else if(player.isCreative() && player instanceof ServerPlayer sp
+                    && player.getMainHandItem().isEmpty() && player.getOffhandItem().isEmpty()) {
+                MenuRegistry.openExtendedMenu(sp, new MenuProvider() {
+                    @Override
+                    public Component getDisplayName() {
+                        return Component.literal("Circuit");
+                    }
+
+                    @Override
+                    public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
+                        if(!player.isCreative())
+                            return null;
+                        return CircuitBoardEditMenu.create(i, inventory, be);
+                    }
+                }, be::sendToMenu);
+                return InteractionResult.SUCCESS;
+            }
             return InteractionResult.PASS;
         });
         if(beResult != InteractionResult.PASS)

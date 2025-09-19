@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
@@ -22,22 +23,24 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 
-public abstract class AbstractCircuitDesignTableMenu extends MenuBase<CircuitDesignTableBlockEntity> {
+public abstract class AbstractCircuitDesignTableMenu<T extends SmartBlockEntity> extends MenuBase<T> {
     protected AbstractCircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
-    protected AbstractCircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, CircuitDesignTableBlockEntity contentHolder) {
+    protected AbstractCircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, T contentHolder) {
         super(type, id, inv, contentHolder);
     }
 
+    protected abstract Class<T> clazz();
+
     @Override
-    protected CircuitDesignTableBlockEntity createOnClient(FriendlyByteBuf extraData) {
+    protected T createOnClient(FriendlyByteBuf extraData) {
         var world = Minecraft.getInstance().level;
         var be = world.getBlockEntity(extraData.readBlockPos());
-        if(be instanceof CircuitDesignTableBlockEntity bench) {
-            bench.readClient(extraData.readNbt());
-            return bench;
+        if(clazz().isInstance(be)) {
+            ((T) be).readClient(extraData.readNbt());
+            return (T) be;
         }
         return null;
     }
@@ -57,12 +60,12 @@ public abstract class AbstractCircuitDesignTableMenu extends MenuBase<CircuitDes
     }
 
     @Override
-    protected void initAndReadInventory(CircuitDesignTableBlockEntity contentHolder) {
+    protected void initAndReadInventory(T contentHolder) {
 
     }
 
     @Override
-    protected void saveData(CircuitDesignTableBlockEntity contentHolder) {
+    protected void saveData(T contentHolder) {
 
     }
 }

@@ -15,28 +15,31 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 
-public class CircuitDesignTableEditMenu extends CircuitEditMenu<CircuitDesignTableBlockEntity> {
-    public CircuitDesignTableEditMenu(MenuType<?> type, int id, Inventory inv, CircuitDesignTableBlockEntity contentHolder) {
-        super(type, id, inv, contentHolder);
-    }
-
-    public CircuitDesignTableEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+public abstract class CircuitEditMenu<T extends SmartBlockEntity & ISchematicHolder> extends AbstractCircuitDesignTableMenu<T> {
+    protected CircuitEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
-    @Override
-    protected Class<CircuitDesignTableBlockEntity> clazz() {
-        return CircuitDesignTableBlockEntity.class;
+    protected CircuitEditMenu(MenuType<?> type, int id, Inventory inv, T contentHolder) {
+        super(type, id, inv, contentHolder);
     }
 
-    public static CircuitDesignTableEditMenu create(int id, Inventory inv, CircuitDesignTableBlockEntity be) {
-        return new CircuitDesignTableEditMenu(ModdedMenus.CIRCUIT_DESIGN_TABLE_EDIT.get(), id, inv, be);
+    @Override
+    protected void addSlots() {
+        addPlayerSlots(3, 182);
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int slot) {
+        return ItemStack.EMPTY;
     }
 }

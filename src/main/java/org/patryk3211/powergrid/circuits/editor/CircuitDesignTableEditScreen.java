@@ -60,7 +60,7 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.*;
 
-public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<CircuitDesignTableEditMenu> {
+public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends AbstractSimiContainerScreen<T> {
     private static final ResourceLocation BACKGROUND = PowerGrid.texture("gui/circuit_design_table_edit");
     private static final int WIDTH = 182;
     private static final int HEIGHT = 160;
@@ -108,7 +108,7 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
     private boolean saving = false;
     private int unsavedPopupTimeout = 0;
 
-    public CircuitDesignTableEditScreen(CircuitDesignTableEditMenu container, Inventory inv, net.minecraft.network.chat.Component title) {
+    public CircuitDesignTableEditScreen(T container, Inventory inv, net.minecraft.network.chat.Component title) {
         super(container, inv, title);
 
         // For the editor we take a copy since the underlying circuit can change
@@ -129,12 +129,20 @@ public class CircuitDesignTableEditScreen extends AbstractSimiContainerScreen<Ci
 
     public void save() {
         ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, nameField.getValue(), schematic));
-        menu.contentHolder.schematic = schematic;
-        saving = true;
+        if(menu.contentHolder instanceof CircuitDesignTableBlockEntity table) {
+            menu.contentHolder.setSchematic(schematic);
+            saving = true;
+        } else {
+            onClose();
+        }
     }
 
     public void discard() {
-        ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 0));
+        if(menu.contentHolder instanceof CircuitDesignTableBlockEntity table) {
+            ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(table, 0));
+        } else {
+            onClose();
+        }
     }
 
     @Override

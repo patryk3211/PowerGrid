@@ -26,7 +26,7 @@ import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 
-public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
+public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu<CircuitDesignTableBlockEntity> {
     public CircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
@@ -37,6 +37,11 @@ public class CircuitDesignTableMenu extends AbstractCircuitDesignTableMenu {
 
     public static CircuitDesignTableMenu create(int id, Inventory inv, CircuitDesignTableBlockEntity be) {
         return new CircuitDesignTableMenu(ModdedMenus.CIRCUIT_DESIGN_TABLE.get(), id, inv, be);
+    }
+
+    @Override
+    protected Class<CircuitDesignTableBlockEntity> clazz() {
+        return CircuitDesignTableBlockEntity.class;
     }
 
     @Override

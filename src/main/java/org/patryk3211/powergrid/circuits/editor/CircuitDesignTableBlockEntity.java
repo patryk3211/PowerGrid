@@ -33,11 +33,12 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.List;
 
-public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements IMultiScreenHandlerFactory {
+public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements IMultiScreenHandlerFactory, ISchematicHolder {
     private final Container inventory = new SimpleContainer(3);
 
     CircuitSchematic schematic = new CircuitSchematic();
@@ -111,12 +112,14 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         return Component.nullToEmpty("Circuit Designer");
     }
 
+    @Override
     @NotNull
     public String getSchematicName() {
         var name = schematic.getName();
         return name != null ? name : Component.translatable("item.powergrid.circuit_schematic.empty").getString();
     }
 
+    @Override
     public void setSchematicName(String name) {
         schematic.setName(name);
         if(!level.isClientSide)
@@ -127,7 +130,15 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         return inventory;
     }
 
+    @Override
     public CircuitSchematic getSchematic() {
         return schematic;
+    }
+
+    @Override
+    public void setSchematic(CircuitSchematic schematic) {
+        this.schematic = schematic;
+        if(!level.isClientSide)
+            notifyUpdate();
     }
 }

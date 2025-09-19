@@ -28,9 +28,12 @@ public class ModdedMenus {
     public static final MenuEntry<CircuitDesignTableMenu> CIRCUIT_DESIGN_TABLE =
             register("circuit_design_table", CircuitDesignTableMenu::new, () -> CircuitDesignTableScreen::new);
     public static final MenuEntry<CircuitDesignTableEditMenu> CIRCUIT_DESIGN_TABLE_EDIT =
-            register("circuit_design_table_edit", CircuitDesignTableEditMenu::new, () -> CircuitDesignTableEditScreen::new);
+            register("circuit_design_table_edit", CircuitDesignTableEditMenu::new, () -> CircuitDesignTableEditScreen<CircuitDesignTableEditMenu>::new);
     public static final MenuEntry<CircuitDesignTableLoadMenu> CIRCUIT_DESIGN_TABLE_LOAD =
             register("circuit_design_table_load", CircuitDesignTableLoadMenu::new, () -> CircuitDesignTableLoadScreen::new);
+
+    public static final MenuEntry<CircuitBoardEditMenu> CIRCUIT_BOARD_EDIT =
+            register("circuit_board_edit", CircuitBoardEditMenu::new, () -> CircuitDesignTableEditScreen<CircuitBoardEditMenu>::new);
 
     private static <C extends AbstractContainerMenu, S extends Screen & MenuAccess<C>> MenuEntry<C> register(String name, MenuBuilder.ForgeMenuFactory<C> factory, NonNullSupplier<MenuBuilder.ScreenFactory<C, S>> screenFactory) {
         return PowerGrid.REGISTRATE.menu(name, factory, screenFactory).register();

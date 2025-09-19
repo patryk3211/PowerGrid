@@ -676,6 +676,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var endpoint = newNode.endpoint;
         var oldNode = globalExternalNodes.put(endpoint, newNode);
         addAndMigrateNode(oldNode, newNode);
+        updatedEndpoints.add(oldEndpoint);
         var oldNode2 = globalExternalNodes.remove(oldEndpoint);
         addAndMigrateNode(oldNode2, newNode);
 
@@ -687,6 +688,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public void addAndMigrateNode(OwnedFloatingNode oldNode, OwnedFloatingNode newNode) {
         var endpoint = newNode.endpoint;
+        updatedEndpoints.add(endpoint);
         if(oldNode != null && oldNode != newNode) {
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.

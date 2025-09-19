@@ -17,26 +17,25 @@ package org.patryk3211.powergrid.circuits.editor;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ItemStack;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 
-public class CircuitDesignTableEditMenu extends CircuitEditMenu<CircuitDesignTableBlockEntity> {
-    public CircuitDesignTableEditMenu(MenuType<?> type, int id, Inventory inv, CircuitDesignTableBlockEntity contentHolder) {
+public class CircuitBoardEditMenu extends CircuitEditMenu<CircuitBoardBlockEntity> {
+    public CircuitBoardEditMenu(MenuType<?> type, int id, Inventory inv, CircuitBoardBlockEntity contentHolder) {
         super(type, id, inv, contentHolder);
     }
 
-    public CircuitDesignTableEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public CircuitBoardEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
     @Override
-    protected Class<CircuitDesignTableBlockEntity> clazz() {
-        return CircuitDesignTableBlockEntity.class;
+    protected Class<CircuitBoardBlockEntity> clazz() {
+        return CircuitBoardBlockEntity.class;
     }
 
-    public static CircuitDesignTableEditMenu create(int id, Inventory inv, CircuitDesignTableBlockEntity be) {
-        return new CircuitDesignTableEditMenu(ModdedMenus.CIRCUIT_DESIGN_TABLE_EDIT.get(), id, inv, be);
+    public static CircuitBoardEditMenu create(int id, Inventory inv, CircuitBoardBlockEntity be) {
+        return new CircuitBoardEditMenu(ModdedMenus.CIRCUIT_BOARD_EDIT.get(), id, inv, be);
     }
 }

@@ -32,6 +32,7 @@ import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -51,7 +52,7 @@ import java.util.*;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.HORIZONTAL_FACING;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.ROTATION;
 
-public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation {
+public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation, ISchematicHolder {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
     private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
@@ -64,7 +65,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         super(type, pos, state);
     }
 
-    public void withSchematic(CircuitSchematic schematic) {
+    @Override
+    public void setSchematic(CircuitSchematic schematic) {
         if(level.isClientSide)
             return;
         if(schematic == null) {
@@ -305,8 +307,21 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
                 .rotateAroundY(-CircuitBoardBlock.getAngleY(state));
     }
 
+    @Override
     public CircuitSchematic getSchematic() {
         return schematic;
+    }
+
+    @Override
+    public @NotNull String getSchematicName() {
+        var name = schematic.getName();
+        return name == null ? "missing" : name;
+    }
+
+    @Override
+    public void setSchematicName(String name) {
+        schematic.setName(name);
+        notifyUpdate();
     }
 
     public <T> Collection<PlacedComponent> getComponents(Class<T> ofClass) {
