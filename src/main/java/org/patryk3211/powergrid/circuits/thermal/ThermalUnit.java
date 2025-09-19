@@ -80,14 +80,14 @@ public class ThermalUnit {
         temperature += power / 20f / thermalMass;
         if(!Float.isFinite(temperature))
             temperature = BASE_TEMPERATURE;
+        if(temperature > overheatTemperature + 10)
+            temperature = overheatTemperature + 10;
         if(power < 0 && temperature < 22f)
             temperature = 22f;
         if(temperature >= overheatTemperature && power > 0) {
             ++overheatTicks;
         } else if(power < 0) {
             overheatTicks = 0;
-            if(temperature > overheatTemperature + 10)
-                temperature = overheatTemperature + 10;
         }
         temperatureChanged();
     }
