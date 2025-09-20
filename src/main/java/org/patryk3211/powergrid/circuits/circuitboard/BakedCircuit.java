@@ -49,6 +49,7 @@ public class BakedCircuit {
 
     private boolean isDamaged = false;
     private final CircuitBoardBlockEntity be;
+    private boolean firstTick = true;
 
     protected BakedCircuit(CircuitBoardBlockEntity be) {
         this.be = be;
@@ -182,6 +183,10 @@ public class BakedCircuit {
     }
 
     public void tick() {
+        if(firstTick) {
+            firstTick = false;
+            return;
+        }
         var client = be.getLevel().isClientSide;
         if(ThermalBehaviour.shouldOverheat()) {
             for (var unit : thermalUnits) {
