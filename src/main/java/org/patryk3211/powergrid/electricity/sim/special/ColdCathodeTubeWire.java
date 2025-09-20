@@ -24,6 +24,7 @@ public class ColdCathodeTubeWire extends DynamicConductanceWire {
     private final float holdingVoltage;
     private final float holdingCurrent;
     private final float dischargeConductance;
+    private final float abnormalCurrent;
 
     public boolean lit = false;
     private double I;
@@ -34,6 +35,7 @@ public class ColdCathodeTubeWire extends DynamicConductanceWire {
         this.holdingVoltage = holdingVoltage;
         this.holdingCurrent = holdingCurrent;
         this.dischargeConductance = dischargeConductance;
+        this.abnormalCurrent = holdingCurrent * 3;
     }
 
     @Override
@@ -43,8 +45,9 @@ public class ColdCathodeTubeWire extends DynamicConductanceWire {
             return ElectricalNetwork.G_MIN;
         }
 
-        this.I = holdingVoltage * dischargeConductance;
-        return dischargeConductance;
+        var G = Math.max(dischargeConductance, dischargeConductance * (Math.min(current(), abnormalCurrent) / holdingCurrent) * 0.5 + currentConductance * 0.5);
+        this.I = holdingVoltage * G;
+        return G;
     }
 
     @Override
