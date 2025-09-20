@@ -165,6 +165,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             var dir = CircuitBoardBlock.getDirection(getBlockState(), edge);
             var viaNode = be.getViaAt(dir.getOpposite(), position, edge);
             var thisViaNode = baked.getNode(new CircuitSchematic.Node(placed, 0));
+            if(viaNode == null)
+                continue;
+            if(thisViaNode == null)
+                continue;
 
             var wire = makeWire(be.electricBehaviour, viaNode, thisViaNode);
             edgeViadWires.computeIfAbsent(be, $ -> new ArrayList<>()).add(wire);
