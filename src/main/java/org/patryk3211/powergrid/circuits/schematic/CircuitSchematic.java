@@ -336,17 +336,6 @@ public class CircuitSchematic {
         return nodes;
     }
 
-    @NotNull
-    public Collection<Node> flood(int x, int y, VisitMap visitMap) {
-        if(getLayer(Layer.FRONT, x, y)) {
-            return flood(Layer.FRONT, x, y, visitMap);
-        } else if(getLayer(Layer.BACK, x, y)) {
-            return flood(Layer.BACK, x, y, visitMap);
-        } else {
-            return List.of();
-        }
-    }
-
     public Collection<Collection<Node>> findNodeBundles() {
         var visitMap = new VisitMap();
         var bundles = new ArrayList<Collection<Node>>();
@@ -354,7 +343,7 @@ public class CircuitSchematic {
             for(var pad : placed.footprint().getPads().keySet()) {
                 var x = placed.x * GRID_TO_GRID_SCALE + pad.x();
                 var y = placed.y * GRID_TO_GRID_SCALE + pad.y();
-                var nodes = flood(x, y, visitMap);
+                var nodes = flood(Layer.FRONT, x, y, visitMap);
                 if(nodes.size() >= 2)
                     bundles.add(nodes);
             }
