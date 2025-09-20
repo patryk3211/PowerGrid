@@ -42,7 +42,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.simple(this, 0.7f, 0.2f);
+        return ThermalBehaviour.fromConfig(this);
     }
 
     @Override
@@ -81,6 +81,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
             wire.setState(false);
             wire.setResistance(getResistance());
             wire.setState(isClosed());
+            setChanged();
         }
     }
 
@@ -123,6 +124,11 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         rod.readNBT(compound.getCompound("Rod"), clientPacket);
+        if(wire != null) {
+            wire.setState(false);
+            wire.setResistance(getResistance());
+            wire.setState(isClosed());
+        }
     }
 
     @Override
