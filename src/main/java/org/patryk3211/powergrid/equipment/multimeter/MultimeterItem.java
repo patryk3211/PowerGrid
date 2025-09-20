@@ -37,6 +37,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
+import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
@@ -86,6 +87,8 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     if(hitLocalPos.y >= 2 / 16f && hitLocalPos.y <= 3 / 16f) {
                         int x = (int) (hitLocalPos.x * 16);
                         int y = (int) (hitLocalPos.z * 16);
+                        if(!be.getSchematic().getLayer(CircuitSchematic.Layer.FRONT, x, y))
+                            return InteractionResult.FAIL;
                         return onTerminal(context.getLevel(), new CircuitBoardEndpoint(pos, x, y), context.getItemInHand());
                     }
                     return InteractionResult.PASS;
