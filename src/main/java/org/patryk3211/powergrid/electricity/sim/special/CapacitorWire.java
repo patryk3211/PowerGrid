@@ -21,43 +21,52 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
 public class CapacitorWire extends AbstractElectricWire implements ISolverHook {
-    private float capacitance;
-    private float storedPotential;
+    private double capacitance;
+    private double prevPotential;
+    private double prevCurrent;
+    private double Ieq;
 
-    public CapacitorWire(float capacitance, IElectricNode node1, IElectricNode node2) {
+    public CapacitorWire(double capacitance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
         this.capacitance = capacitance;
-        this.storedPotential = 0;
     }
 
     @Override
     public double conductance() {
         // dt = 50ms (1 tick)
-        return capacitance / 0.05f;
+        return 2 * capacitance / 0.05f;
     }
 
     public void setVoltage(float voltage) {
-        storedPotential = voltage;
+        prevPotential = voltage;
+        prevCurrent = 0;
     }
 
     @Override
     public float current() {
-        // TODO: Current calculation needs to be handled differently for capacitors.
-        return 0;
+        return (float) prevCurrent;
+    }
+
+    @Override
+    public void preSolve() {
+        var G = conductance();
+        // Calculate current with a bit of leakage
+        Ieq = (-G * prevPotential - prevCurrent) * 0.99999;
     }
 
     @Override
     public void addResidual(DMatrixRMaj residual) {
-        // Calculate current with a bit of leakage
-        var current = conductance() * storedPotential * 0.9999f;
         if(node1 != null)
-            residual.add(node1.getIndex(), 0, -current);
+            residual.add(node1.getIndex(), 0, Ieq);
         if(node2 != null)
-            residual.add(node2.getIndex(), 0, current);
+            residual.add(node2.getIndex(), 0, -Ieq);
     }
 
     @Override
     public void postUpperSolve() {
-        storedPotential = potentialDifference();
+        var G = conductance();
+        var V = potentialDifference();
+        prevCurrent = G * V + Ieq;
+        prevPotential = V;
     }
 }
