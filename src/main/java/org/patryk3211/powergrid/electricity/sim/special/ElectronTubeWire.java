@@ -88,6 +88,8 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
             ids = vAnode * Gds;
         } else {
             ids = Math.sqrt(ival * ival * ival) * perveance;
+            if(ids > saturationCurrent)
+                ids = saturationCurrent;
             double q = 1.5 * Math.sqrt(ival) * perveance;
             Gds = q;
             gm = q / gain;
