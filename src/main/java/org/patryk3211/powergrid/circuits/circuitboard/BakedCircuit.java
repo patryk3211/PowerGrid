@@ -20,6 +20,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
@@ -96,9 +97,10 @@ public class BakedCircuit {
                 thermalBuilders.add(thermalBuilder);
                 return thermalBuilder;
             };
+            placed.destroyed = false;
             placed.component.bake(placed, builder, thermalEmitter);
             var footprint = placed.footprint();
-            var localPos = //Vec3.atLowerCornerOf(pos)
+            var localPos =
                     new Vec3((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f)
                             .subtract(0.5, 0, 0.5)
                             .xRot((float) Math.PI * CircuitBoardBlock.getAngleX(be.getBlockState()) / 180f)
@@ -165,6 +167,15 @@ public class BakedCircuit {
             var thermalTag = tag.getCompound("Thermal");
             for(var unit : thermalUnits) {
                 unit.read(thermalTag);
+                if(unit.hasOverheated()) {
+                    // Mark component as destroyed for rendering purposes
+                    for(var placed : padNodeProviderMap.keySet()) {
+                        if(placed.uuid.equals(unit.getId())) {
+                            placed.destroyed = true;
+                            Component.modelChanged(be.getBlockPos());
+                        }
+                    }
+                }
             }
         }
         isDamaged = false;
@@ -209,6 +220,13 @@ public class BakedCircuit {
                         // Spawn a spark explosion
                         SparkParticleData.explodeParticles(world, x, y, z, Direction.UP, 10);
                         ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
+                        // Mark component as destroyed for rendering purposes
+                        for(var placed : padNodeProviderMap.keySet()) {
+                            if(placed.uuid.equals(unit.getId())) {
+                                placed.destroyed = true;
+                                Component.modelChanged(be.getBlockPos());
+                            }
+                        }
                     }
                 }
             }

@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.circuits.components;
 
 import com.simibubi.create.AllItems;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import org.apache.commons.lang3.RandomUtils;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -41,13 +42,13 @@ public class Components {
             .item(AllItems.ELECTRON_TUBE)
             .register();
 
-    public static final RegistryEntry<GlowTubeComponent> GLOW_TUBE = REGISTRATE.component("glow_tube", GlowTubeComponent::new)
+    public static final RegistryEntry<RegulatorTubeComponent> REGULATOR_TUBE = REGISTRATE.component("regulator_tube", RegulatorTubeComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0, "Anode", "+")
                     .addPad(2, 1, 1, "Cathode", "-")
-                    .withItem(ModdedItems.GLOW_TUBE)
+                    .withItem(ModdedItems.REGULATOR_TUBE)
                     .withOutline())
-            .item(ModdedItems.GLOW_TUBE)
+            .item(ModdedItems.REGULATOR_TUBE)
             .register();
 
     public static final RegistryEntry<ConnectorComponent> CONNECTOR = REGISTRATE.component("connector", ConnectorComponent::new)

@@ -62,8 +62,8 @@ loom {
     runs {
         named("client") {
 //            vmArg("-enableassertions")
-//            vmArg("-XX:+AllowEnhancedClassRedefinition")
-            vmArg("-XX:HotswapAgent=core")
+            vmArg("-XX:+AllowEnhancedClassRedefinition")
+//            vmArg("-XX:HotswapAgent=core")
         }
 
         create("data") {

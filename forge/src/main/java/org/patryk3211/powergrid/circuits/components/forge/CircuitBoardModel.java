@@ -172,6 +172,9 @@ public class CircuitBoardModel implements BakedModel {
                                     null, null, null)
                     );
                 }
+                if(placed.destroyed) {
+                    transformer = transformer.andThen(QuadTransformers.applyingColor(64, 64, 64));
+                }
                 var componentQuads = model.getQuads(state, side, rand, data, renderType);
                 quads.addAll(transformer.process(componentQuads));
             }

@@ -3,8 +3,8 @@
 	"credit": "Made with Blockbench",
 	"parent": "block/block",
 	"textures": {
-		"0": "powergrid:block/component/glow_tube",
-		"particle": "powergrid:block/component/glow_tube"
+		"0": "powergrid:block/component/regulator_tube",
+		"particle": "powergrid:block/component/regulator_tube"
 	},
 	"elements": [
 		{

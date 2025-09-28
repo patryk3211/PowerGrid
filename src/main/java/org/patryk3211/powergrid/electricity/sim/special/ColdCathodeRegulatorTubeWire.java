@@ -19,7 +19,7 @@ import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
-public class ColdCathodeTubeWire extends DynamicConductanceWire {
+public class ColdCathodeRegulatorTubeWire extends DynamicConductanceWire {
     private final float breakdownVoltage;
     private final float holdingVoltage;
     private final float holdingCurrent;
@@ -29,13 +29,13 @@ public class ColdCathodeTubeWire extends DynamicConductanceWire {
     public boolean lit = false;
     private double I;
 
-    public ColdCathodeTubeWire(float breakdownVoltage, float holdingVoltage, float holdingCurrent, float dischargeConductance, IElectricNode anode, IElectricNode cathode) {
+    public ColdCathodeRegulatorTubeWire(float breakdownVoltage, float holdingVoltage, float holdingCurrent, float dischargeConductance, float abnormalCurrent, IElectricNode anode, IElectricNode cathode) {
         super(anode, cathode);
         this.breakdownVoltage = breakdownVoltage;
         this.holdingVoltage = holdingVoltage;
         this.holdingCurrent = holdingCurrent;
         this.dischargeConductance = dischargeConductance;
-        this.abnormalCurrent = holdingCurrent * 3;
+        this.abnormalCurrent = abnormalCurrent;
     }
 
     @Override
@@ -45,7 +45,12 @@ public class ColdCathodeTubeWire extends DynamicConductanceWire {
             return ElectricalNetwork.G_MIN;
         }
 
-        var G = Math.max(dischargeConductance, dischargeConductance * (Math.min(current(), abnormalCurrent) / holdingCurrent) * 0.5 + currentConductance * 0.5);
+        double G = Math.max(
+                dischargeConductance,
+                dischargeConductance
+                        * (Math.min(current(), abnormalCurrent) / holdingCurrent) * 0.5
+                        + currentConductance * 0.5
+        );
         this.I = holdingVoltage * G;
         return G;
     }
@@ -62,16 +67,12 @@ public class ColdCathodeTubeWire extends DynamicConductanceWire {
     }
 
     @Override
-    public float power() {
-        return current() * potentialDifference();
-    }
-
-    @Override
     public void postUpperSolve() {
         // Update discharge state
-        if(!lit && potentialDifference() > breakdownVoltage) {
+        double I = current(), V = potentialDifference();
+        if(!lit && V > breakdownVoltage) {
             lit = true;
-        } else if(lit && current() < holdingCurrent) {
+        } else if(lit && I < holdingCurrent) {
             lit = false;
         }
     }

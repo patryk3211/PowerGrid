@@ -121,4 +121,8 @@ public class ThermalUnit {
     public void write(CompoundTag nbt) {
         nbt.putFloat(getKey(), temperature);
     }
+
+    public UUID getId() {
+        return componentUUID;
+    }
 }

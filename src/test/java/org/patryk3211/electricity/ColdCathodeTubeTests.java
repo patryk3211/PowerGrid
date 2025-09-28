@@ -17,7 +17,7 @@ package org.patryk3211.electricity;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.patryk3211.powergrid.electricity.sim.special.ColdCathodeTubeWire;
+import org.patryk3211.powergrid.electricity.sim.special.ColdCathodeRegulatorTubeWire;
 
 public class ColdCathodeTubeTests extends TestHelper {
     public static void main(String[] args) {
@@ -29,7 +29,7 @@ public class ColdCathodeTubeTests extends TestHelper {
         var Anode = Net.N();
         var Cathode = Net.N();
 
-        var Tube = new ColdCathodeTubeWire(90, 60, 0.001f, 0.0025f, Anode, Cathode);
+        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.0025f, 0.003f, Anode, Cathode);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;
@@ -63,7 +63,7 @@ public class ColdCathodeTubeTests extends TestHelper {
         var Anode = Net.N();
         var Cathode = Net.N();
 
-        var Tube = new ColdCathodeTubeWire(90, 60, 0.001f, 0.001f, Anode, Cathode);
+        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.001f, 0.003f, Anode, Cathode);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;
@@ -88,7 +88,7 @@ public class ColdCathodeTubeTests extends TestHelper {
         var Anode = Net.N();
         var Cathode = Net.N();
 
-        var Tube = new ColdCathodeTubeWire(90, 60, 0.001f, 0.001f, Anode, Cathode);
+        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.001f, 0.003f, Anode, Cathode);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;

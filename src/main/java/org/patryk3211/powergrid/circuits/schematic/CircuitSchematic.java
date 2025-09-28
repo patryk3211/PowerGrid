@@ -106,7 +106,11 @@ public class CircuitSchematic {
             components.clear();
             var list = tag.getList("Components", Tag.TAG_COMPOUND);
             for (var element : list) {
-                components.add(new PlacedComponent((CompoundTag) element));
+                try {
+                    components.add(new PlacedComponent((CompoundTag) element));
+                } catch (RuntimeException e) {
+                    PowerGrid.LOGGER.error("Failed to deserialize circuit component NBT", e);
+                }
             }
             rebuildPads();
         } catch(RuntimeException e) {

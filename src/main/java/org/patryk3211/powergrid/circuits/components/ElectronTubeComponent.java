@@ -87,7 +87,7 @@ public class ElectronTubeComponent extends OrientableComponent implements IRende
         final var dissipationFactor = targetPower / (operatingTemperature - BASE_TEMPERATURE);
         thermals.builder()
                 .addHeatSource(heater)
-                .setThermalMass(0.001f)
+                .setThermalMass(0.001f * targetPower / 5f)
                 .setOverheatTemperature(1600f)
                 .setDissipationFactor(dissipationFactor)
                 .withTemperatureCallback(temperature -> {

@@ -43,7 +43,7 @@ public class ResistorComponent extends OrientableComponent {
         var wire = builder.connect(placed.get(RESISTANCE), builder.terminalNode(0), builder.terminalNode(1));
         // 1 watt of dissipation power, these are not high power resistors.
         thermals.builder()
-                .setThermalMass(0.01f)
+                .setThermalMass(0.05f)
                 .setMaxPower(25, 125f)
                 .addHeatSource(wire);
     }

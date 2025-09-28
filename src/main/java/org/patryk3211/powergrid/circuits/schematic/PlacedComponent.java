@@ -51,6 +51,7 @@ public class PlacedComponent {
     public final List<AbstractElectricWire> wires = new ArrayList<>();
 
     public Object customData;
+    public boolean destroyed;
 
     public PlacedComponent(CompoundTag tag) {
         this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUUID("UUID"));
@@ -64,6 +65,8 @@ public class PlacedComponent {
         this(placed.component, placed.x, placed.y, placed.uuid);
         this.worldSupplier = placed.worldSupplier;
         this.pos = placed.pos;
+        this.destroyed = placed.destroyed;
+        this.customData = placed.customData;
         for(var property : properties) {
             property.setValueRaw(placed.get(property.property));
         }

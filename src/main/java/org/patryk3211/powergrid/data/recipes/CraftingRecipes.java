@@ -252,7 +252,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('C', RecipeTags.copperSheet())
                     .define('I', RecipeTags.ironSheet())),
 
-    LED = create(ModdedItems.GLOW_TUBE)
+    REGULATOR_TUBE = create(ModdedItems.REGULATOR_TUBE)
             .unlockedBy(() -> Items.AMETHYST_SHARD)
             .viaShaped(b -> b
                     .pattern("A")

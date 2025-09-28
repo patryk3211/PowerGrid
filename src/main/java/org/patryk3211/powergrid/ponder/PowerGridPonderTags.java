@@ -116,7 +116,7 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.RELAY)
                 .add(ModdedItems.REDSTONE_RELAY)
                 .add(AllItems.ELECTRON_TUBE)
-                .add(ModdedItems.GLOW_TUBE)
+                .add(ModdedItems.REGULATOR_TUBE)
                 .add(ModdedBlocks.LV_SWITCH)
                 .add(ModdedBlocks.LV_BUTTON)
                 .add(ModdedItems.POTENTIOMETER)

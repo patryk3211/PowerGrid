@@ -305,6 +305,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public ITerminalPlacement terminal(BlockState state, int index) {
         if(baked == null)
             return null;
+        if(index < 0 || index >= baked.terminals.size())
+            return null;
         var terminal = baked.terminals.get(index);
         return terminal
                 .rotateAroundX(-CircuitBoardBlock.getAngleX(state))

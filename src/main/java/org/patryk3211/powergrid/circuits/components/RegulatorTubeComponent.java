@@ -34,20 +34,20 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.electricity.sim.special.ColdCathodeTubeWire;
+import org.patryk3211.powergrid.electricity.sim.special.ColdCathodeRegulatorTubeWire;
 import org.patryk3211.powergrid.utility.Unit;
 
-public class GlowTubeComponent extends OrientableComponent implements IRenderedComponent {
-    public static final FloatProperty HOLDING_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "glow_tube_vh", 60, 30, 500);
-    public static final CalculatedProperty<Float> BREAKDOWN_VOLTAGE = new CalculatedProperty<>(PowerGrid.MOD_ID, "glow_tube_vb",
+public class RegulatorTubeComponent extends OrientableComponent implements IRenderedComponent {
+    public static final FloatProperty HOLDING_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "regulator_tube_vh", 60, 30, 500);
+    public static final CalculatedProperty<Float> BREAKDOWN_VOLTAGE = new CalculatedProperty<>(PowerGrid.MOD_ID, "neon_tube_vb",
             placed -> placed.get(HOLDING_VOLTAGE) * 1.4f,
             v -> Unit.VOLTAGE.format(v).getString());
-    public static final CalculatedProperty<Float> HOLDING_CURRENT = new CalculatedProperty<>(PowerGrid.MOD_ID, "glow_tube_ih",
+    public static final CalculatedProperty<Float> HOLDING_CURRENT = new CalculatedProperty<>(PowerGrid.MOD_ID, "neon_tube_ih",
             placed -> 0.2f / placed.get(HOLDING_VOLTAGE),
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
-    public static final BooleanProperty LIT = (BooleanProperty) new BooleanProperty(PowerGrid.MOD_ID, "glow_tube_lit").hidden();
+    public static final BooleanProperty LIT = (BooleanProperty) new BooleanProperty(PowerGrid.MOD_ID, "lit").hidden();
 
-    public GlowTubeComponent(ComponentFootprint footprint) {
+    public RegulatorTubeComponent(ComponentFootprint footprint) {
         super(footprint);
     }
 
@@ -59,9 +59,10 @@ public class GlowTubeComponent extends OrientableComponent implements IRenderedC
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var wire = new ColdCathodeTubeWire(
-                placed.get(BREAKDOWN_VOLTAGE), placed.get(HOLDING_VOLTAGE), placed.get(HOLDING_CURRENT),
-                0.005f, builder.terminalNode(0), builder.terminalNode(1)
+        var ih = placed.get(HOLDING_CURRENT);
+        var wire = new ColdCathodeRegulatorTubeWire(
+                placed.get(BREAKDOWN_VOLTAGE), placed.get(HOLDING_VOLTAGE), ih, 0.005f, ih * 3,
+                builder.terminalNode(0), builder.terminalNode(1)
         );
         wire.lit = placed.get(LIT);
         builder.add(wire);
@@ -72,7 +73,7 @@ public class GlowTubeComponent extends OrientableComponent implements IRenderedC
     public boolean tick(@NotNull PlacedComponent placed) {
         if(placed.wires.isEmpty())
             return true;
-        var wire = (ColdCathodeTubeWire) placed.wires.get(0);
+        var wire = (ColdCathodeRegulatorTubeWire) placed.wires.get(0);
         placed.onClientWorld(() -> world -> {
             LerpedFloat state;
             if(placed.customData instanceof LerpedFloat current) {
@@ -103,7 +104,7 @@ public class GlowTubeComponent extends OrientableComponent implements IRenderedC
         }
         if(a == 0)
             return;
-        var buffer = CachedBuffers.partial(ModdedPartialModels.GLOW_TUBE_GLOW, be.getBlockState());
+        var buffer = CachedBuffers.partial(ModdedPartialModels.REGULATOR_TUBE_GLOW, be.getBlockState());
         buffer
                 .disableDiffuse()
                 .color(a, a, a, 255)

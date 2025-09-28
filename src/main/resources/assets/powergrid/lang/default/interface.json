@@ -160,12 +160,12 @@
   "powergrid.component.property.current_gauge_max": "Max Current",
   "powergrid.component.property.voltage_gauge_max": "Max Voltage",
 
-  "powergrid.component.property.glow_tube_vh": "Holding Voltage",
-  "powergrid.component.property.glow_tube_vh.summary": "Regulated voltage held by the glow tube when it is lit and current is steady",
-  "powergrid.component.property.glow_tube_vb": "Breakdown Voltage",
-  "powergrid.component.property.glow_tube_vb.summary": "Voltage needed to light up a glow tube",
-  "powergrid.component.property.glow_tube_ih": "Holding Current",
-  "powergrid.component.property.glow_tube_ih.summary": "Minimum current needed to keep the glow tube lit",
+  "powergrid.component.property.regulator_tube_vh": "Holding Voltage",
+  "powergrid.component.property.regulator_tube_vh.summary": "Regulated voltage held by the glow tube when it is lit and current is steady",
+  "powergrid.component.property.neon_tube_vb": "Breakdown Voltage",
+  "powergrid.component.property.neon_tube_vb.summary": "Voltage needed to light up the tube",
+  "powergrid.component.property.neon_tube_ih": "Holding Current",
+  "powergrid.component.property.neon_tube_ih.summary": "Minimum current needed to keep the tube lit",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",

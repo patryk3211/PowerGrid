@@ -4,8 +4,8 @@
 	"parent": "block/block",
 	"ambientocclusion": false,
 	"textures": {
-		"0": "powergrid:block/component/glow_tube",
-		"particle": "powergrid:block/component/glow_tube"
+		"0": "powergrid:block/component/regulator_tube",
+		"particle": "powergrid:block/component/regulator_tube"
 	},
 	"elements": [
 		{
