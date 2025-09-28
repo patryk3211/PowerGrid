@@ -86,4 +86,12 @@ public class VoltageSourceCoupling extends CouplingNode {
     public float getResistance() {
         return resistance;
     }
+
+    public IElectricNode getPositive() {
+        return positive;
+    }
+
+    public IElectricNode getNegative() {
+        return negative;
+    }
 }

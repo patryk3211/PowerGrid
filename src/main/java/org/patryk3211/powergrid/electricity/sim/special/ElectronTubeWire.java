@@ -37,6 +37,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private float Itube;
     private float Ptube;
 
+//    private final CapacitorWire anodeCathodeCap;
     private final ConductanceWire gridCathode;
     private final GMStamp gmStamp;
 
@@ -47,6 +48,8 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         gmStamp = addInternalWire(new GMStamp(cathode, anode, grid));
 //        addInternalCapacitor(1e-9, anode, grid);
 //        addInternalCapacitor(1e-8, grid, cathode);
+//        anodeCathodeCap = addInternalCapacitor(1e-8, anode, cathode);
+
 //        addInternalCapacitor(1e-9, anode, null);
 //        addInternalCapacitor(1e-9, cathode, null);
 
@@ -114,7 +117,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
     @Override
     public float current() {
-        return Itube;
+        return Itube;// + anodeCathodeCap.current();
     }
 
     @Override

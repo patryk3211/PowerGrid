@@ -27,6 +27,7 @@ import org.ejml.ops.DConvertMatrixStruct;
 import org.ejml.sparse.FillReducing;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
+import org.jetbrains.annotations.Nullable;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
 
@@ -137,5 +138,51 @@ public class DynamicallyTypedMatrix {
         }
         if(valid)
             solver.solve(b, x);
+    }
+
+    public void reshapeTo(DynamicallyTypedMatrix target) {
+        var n = target.getNumRows();
+        if(target.sparse == sparse && n == getNumRows()) {
+            // Correct shape
+            return;
+        }
+        if(target.sparse) {
+            matrix = new DMatrixSparseCSC(n, n);
+        } else {
+            matrix = new DMatrixRMaj(n, n);
+        }
+        sparse = target.sparse;
+        solver = null;
+    }
+
+    public void setTo(DynamicallyTypedMatrix target) {
+        reshapeTo(target);
+        matrix.setTo(target.matrix);
+    }
+
+    public void multColumns(double[] values, @Nullable DynamicallyTypedMatrix output) {
+        if(output != null) {
+            output.setTo(this);
+        } else {
+            output = this;
+        }
+        if(sparse) {
+            CommonOps_DSCC.multColumns((DMatrixSparseCSC) output.matrix, values, 0);
+        } else {
+            CommonOps_DDRM.multCols((DMatrixRMaj) output.matrix, values);
+        }
+    }
+
+    public void multRows(double[] values, @Nullable DynamicallyTypedMatrix output) {
+        if(output != null) {
+            output.setTo(this);
+        } else {
+            output = this;
+        }
+        if(sparse) {
+            CommonOps_DSCC.multRows(values, 0, (DMatrixSparseCSC) output.matrix);
+        } else {
+            CommonOps_DDRM.multRows(values, (DMatrixRMaj) output.matrix);
+        }
     }
 }

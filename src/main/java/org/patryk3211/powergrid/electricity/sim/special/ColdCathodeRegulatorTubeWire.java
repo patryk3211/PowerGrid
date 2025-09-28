@@ -45,10 +45,11 @@ public class ColdCathodeRegulatorTubeWire extends DynamicConductanceWire {
             return ElectricalNetwork.G_MIN;
         }
 
+        var prevI = (potentialDifference() - holdingVoltage) * currentConductance;
         double G = Math.max(
                 dischargeConductance,
                 dischargeConductance
-                        * (Math.min(current(), abnormalCurrent) / holdingCurrent) * 0.5
+                        * (Math.min(prevI, abnormalCurrent) / holdingCurrent) * 0.5
                         + currentConductance * 0.5
         );
         this.I = holdingVoltage * G;

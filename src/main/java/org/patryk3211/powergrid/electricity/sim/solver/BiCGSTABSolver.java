@@ -62,13 +62,18 @@ public class BiCGSTABSolver implements ISolver {
     private DMatrixRMaj U;
     private boolean shouldCalculateLU;
 
-    private final double targetPrecision;
+    private double targetPrecision;
     private final double maxAllowed;
 
     public BiCGSTABSolver(double targetPrecision, double maxAllowed) {
         this.targetPrecision = targetPrecision;
         this.maxAllowed = maxAllowed;
         this.random = new Random();
+    }
+
+    @Override
+    public void setTargetPrecision(double targetPrecision) {
+        this.targetPrecision = targetPrecision;
     }
 
     @Override
@@ -207,12 +212,6 @@ public class BiCGSTABSolver implements ISolver {
             return guess;
 
         PERF.start();
-        if(true) {
-            A.solve(b, guess);
-            PERF.end();
-            return guess;
-        }
-
         if(shouldCalculateLU || solveCount++ >= 20) {
             prepareILU(A);
             solveCount = 0;
@@ -279,20 +278,18 @@ public class BiCGSTABSolver implements ISolver {
         PERF.end();
         if(iters >= MAX_ITERATIONS) {
             var prefix = acceptAll ? "(AcceptAll) " : "";
-            if(ModdedConfigs.logsEnabled()) {
-                if (LOGGER != null) {
+            if (LOGGER != null) {
+                if(ModdedConfigs.logsEnabled()) {
                     LOGGER.warn("{}Solver iteration limit, final precision: {}", prefix, norm);
-                } else {
-                    System.out.printf("%sSolver iteration limit, final precision: %g", prefix, norm);
                 }
+            } else {
+                System.out.printf("%sSolver iteration limit, final precision: %g", prefix, norm);
             }
 
             if(!acceptAll) {
                 if (norm > maxAllowed && (initialDistance / norm) < 10) {
-                    if(ModdedConfigs.logsEnabled()) {
-                        if (LOGGER != null) {
-                            LOGGER.warn("Large imprecision, dropping iterative result");
-                        }
+                    if(LOGGER != null && ModdedConfigs.logsEnabled()) {
+                        LOGGER.warn("Large imprecision, dropping iterative result");
                     }
                     A.solve(b, guess);
                     return guess;
@@ -300,10 +297,8 @@ public class BiCGSTABSolver implements ISolver {
             } else {
                 // Drop if guess is less precise then the previous guess.
                 if(initialDistance / norm < 1) {
-                    if(ModdedConfigs.logsEnabled()) {
-                        if (LOGGER != null) {
-                            LOGGER.info("(AcceptAll) Large imprecision, dropping iterative result");
-                        }
+                    if (LOGGER != null && ModdedConfigs.logsEnabled()) {
+                        LOGGER.info("(AcceptAll) Large imprecision, dropping iterative result");
                     }
                     A.solve(b, guess);
                     return guess;

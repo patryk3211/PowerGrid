@@ -21,6 +21,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 
 public interface ISolver {
+    void setTargetPrecision(double targetPrecision);
+
     void setStateSize(int size);
     @Nullable
     DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll);

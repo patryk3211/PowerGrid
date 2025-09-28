@@ -99,6 +99,8 @@ public class PerformanceCounter {
     }
 
     public double getAvg() {
+        if(epochCount == 0)
+            return prevAvg;
         var weight = epochCount / 1000.0;
         return prevAvg * 1 / (1 + weight) + ((double) microsTotal / epochCount) * weight / (1 + weight);
     }
