@@ -135,6 +135,11 @@ public abstract class TransformerCoupling extends CouplingNode {
             conductance.add(secondary1.getIndex(), this.index,  1.0);
             conductance.add(secondary2.getIndex(), this.index, -1.0);
             conductance.add(primary.getIndex(), this.index, -ratio);
+
+            conductance.add(primary.getIndex(),   primary.getIndex(),    G_MIN/2);
+            conductance.add(secondary1.getIndex(), secondary1.getIndex(),  G_MIN/2);
+            conductance.add(primary.getIndex(),   secondary1.getIndex(), -G_MIN/2);
+            conductance.add(secondary1.getIndex(), primary.getIndex(),   -G_MIN/2);
         }
 
         @Override

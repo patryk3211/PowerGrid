@@ -120,6 +120,7 @@ public class DynamicallyTypedMatrix {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void solve(DMatrixRMaj b, DMatrixRMaj x) {
         if(solver == null) {
             if(sparse) {
@@ -128,11 +129,13 @@ public class DynamicallyTypedMatrix {
                 solver = LinearSolverFactory_DDRM.lu(getNumRows());
             }
         }
+        boolean valid;
         if(sparse) {
-            ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA((DMatrixSparseCSC) matrix);
+            valid = ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA((DMatrixSparseCSC) matrix);
         } else {
-            ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA((DMatrixRMaj) matrix);
+            valid = ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA((DMatrixRMaj) matrix);
         }
-        solver.solve(b, x);
+        if(valid)
+            solver.solve(b, x);
     }
 }

@@ -59,7 +59,8 @@ public class SolverTests extends TestHelper {
 
     @Test
     void testTwoTerminalSource() {
-        var Net = new Network();
+        // Needs anchoring to converge
+        var Net = new Network(true);
 
         var N1 = Net.N();
         var N2 = Net.N();
@@ -75,7 +76,8 @@ public class SolverTests extends TestHelper {
 
     @Test
     void testTwoTerminalSourceWithResistance() {
-        var Net = new Network();
+        // Needs anchoring to converge
+        var Net = new Network(true);
 
         var N1 = Net.N();
         var N2 = Net.N();

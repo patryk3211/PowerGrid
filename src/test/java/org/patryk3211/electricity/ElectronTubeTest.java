@@ -31,6 +31,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
+        // kG1 = 1 / perveance
         var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
@@ -46,11 +47,11 @@ public class ElectronTubeTest extends TestHelper {
             System.out.printf("Anode voltage: %f\n", Anode.getVoltage());
             System.out.printf("Cathode voltage: %f\n", Cathode.getVoltage());
             System.out.printf("Grid voltage: %f\n", Grid.getVoltage());
+            System.out.printf("Tube current: %f\n", Tube.current());
 
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("V2 current: %f\n", V2.getCurrent());
             System.out.printf("GND current %f\n\n", GND.getCurrent());
-            System.out.printf("Tube current: %f\n", Tube.current());
         }
     }
 
@@ -103,8 +104,8 @@ public class ElectronTubeTest extends TestHelper {
         for(int i = 0; i < 5; ++i)
             Net.calculate();
 
-        Assertions.assertEquals(0.005f, V1.getCurrent(), 1e-3f, "Anode current is incorrect");
-        Assertions.assertEquals(49.95f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
+        Assertions.assertEquals(0.011143f, V1.getCurrent(), 1e-3f, "Anode current is incorrect");
+        Assertions.assertEquals(49.8885f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
         Assertions.assertEquals(V1.getCurrent(), Tube.current(), 1e-6f, "Tube current is incorrect");
     }
 

@@ -17,7 +17,10 @@ package org.patryk3211.powergrid.electricity.sim;
 
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.MatrixFeatures_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
+import org.ejml.dense.row.RandomMatrices_DDRM;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.BiCGSTABSolver;
 import org.patryk3211.powergrid.electricity.sim.solver.DynamicallyTypedMatrix;
@@ -176,45 +179,56 @@ public class ElectricalNetwork {
         warmUp = true;
     }
 
+    private void complexAdd(int row, int column, double value) {
+        conductanceMatrix.add(row, column, value);
+        if(!voltageSources[column]) {
+            AMatrix.add(row, column, value);
+        } else {
+            var U = ((VoltageSourceNode) nodes.get(column)).getVoltage();
+            currentMatrix.add(row, 0, U * -value);
+        }
+    }
+
     public void updateConductance(AbstractElectricWire wire, double change) {
         if(conductanceMatrix == null || dirty || change == 0)
             return;
 
         conductanceDelta += Math.abs(change);
         ++conductanceUpdates;
-        if(wire.node1 != null && wire.node2 != null) {
-            var index1 = wire.node1.getIndex();
-            var index2 = wire.node2.getIndex();
-            conductanceMatrix.add(index1, index1, change);
-            conductanceMatrix.add(index2, index2, change);
-            conductanceMatrix.add(index1, index2, -change);
-            conductanceMatrix.add(index2, index1, -change);
-            if(!voltageSources[index1]) {
-                AMatrix.add(index1, index1, change);
-                AMatrix.add(index2, index1, -change);
-            } else {
-                var U = ((VoltageSourceNode) nodes.get(index1)).getVoltage();
-                currentMatrix.add(index1, 0, U * -change);
-                currentMatrix.add(index2, 0, U * change);
-            }
-            if(!voltageSources[index2]) {
-                AMatrix.add(index2, index2, change);
-                AMatrix.add(index1, index2, -change);
-            } else {
-                var U = ((VoltageSourceNode) nodes.get(index2)).getVoltage();
-                currentMatrix.add(index2, 0, U * -change);
-                currentMatrix.add(index1, 0, U * change);
-            }
-        } else {
-            var index = wire.node1 != null ? wire.node1.getIndex() : wire.node2.getIndex();
-            conductanceMatrix.add(index, index, change);
-            if(!voltageSources[index]) {
-                AMatrix.add(index, index, change);
-            } else {
-                var U = ((VoltageSourceNode) nodes.get(index)).getVoltage();
-                currentMatrix.add(index, 0, U * change);
-            }
-        }
+        wire.stamp(this::complexAdd, change);
+//        if(wire.node1 != null && wire.node2 != null) {
+//            var index1 = wire.node1.getIndex();
+//            var index2 = wire.node2.getIndex();
+//            conductanceMatrix.add(index1, index1, change);
+//            conductanceMatrix.add(index2, index2, change);
+//            conductanceMatrix.add(index1, index2, -change);
+//            conductanceMatrix.add(index2, index1, -change);
+//            if(!voltageSources[index1]) {
+//                AMatrix.add(index1, index1, change);
+//                AMatrix.add(index2, index1, -change);
+//            } else {
+//                var U = ((VoltageSourceNode) nodes.get(index1)).getVoltage();
+//                currentMatrix.add(index1, 0, U * -change);
+//                currentMatrix.add(index2, 0, U * change);
+//            }
+//            if(!voltageSources[index2]) {
+//                AMatrix.add(index2, index2, change);
+//                AMatrix.add(index1, index2, -change);
+//            } else {
+//                var U = ((VoltageSourceNode) nodes.get(index2)).getVoltage();
+//                currentMatrix.add(index2, 0, U * -change);
+//                currentMatrix.add(index1, 0, U * change);
+//            }
+//        } else {
+//            var index = wire.node1 != null ? wire.node1.getIndex() : wire.node2.getIndex();
+//            conductanceMatrix.add(index, index, change);
+//            if(!voltageSources[index]) {
+//                AMatrix.add(index, index, change);
+//            } else {
+//                var U = ((VoltageSourceNode) nodes.get(index)).getVoltage();
+//                currentMatrix.add(index, 0, U * change);
+//            }
+//        }
     }
 
     public void alterConductanceMatrix(int row, int column, double change) {
@@ -286,33 +300,36 @@ public class ElectricalNetwork {
             var G = wire.conductance();
             if(!Double.isFinite(G))
                 continue;
-            if(wire.node1 != null && wire.node2 != null) {
-                var index1 = wire.node1.getIndex();
-                var index2 = wire.node2.getIndex();
-                if(!nodes.contains(wire.node1) || !nodes.contains(wire.node2)) {
+            if(wire.node1 != null) {
+                if(!nodes.contains(wire.node1)) {
                     if(LOGGER != null) {
                         LOGGER.warn("Dropped a stale wire (wire nodes not part of this network) between {} and {}.", wire.node1, wire.node2);
                     }
                     staleWires.add(wire);
                     continue;
                 }
-                if(index1 >= size || index2 >= size) {
-                    if(LOGGER != null) {
-                        if(index1 >= size)
-                            LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node1);
-                        if(index2 >= size)
-                            LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node2);
-                    }
+                if(wire.node1.getIndex() >= size) {
+                    if(LOGGER != null)
+                        LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node1);
                     continue;
                 }
-                conductanceMatrix.add(index1, index1, G);
-                conductanceMatrix.add(index2, index2, G);
-                conductanceMatrix.add(index1, index2, -G);
-                conductanceMatrix.add(index2, index1, -G);
-            } else {
-                var index = wire.node1 != null ? wire.node1.getIndex() : wire.node2.getIndex();
-                conductanceMatrix.add(index, index, G);
             }
+            if(wire.node2 != null) {
+                if(!nodes.contains(wire.node2)) {
+                    if(LOGGER != null) {
+                        LOGGER.warn("Dropped a stale wire (wire nodes not part of this network) between {} and {}.", wire.node1, wire.node2);
+                    }
+                    staleWires.add(wire);
+                    continue;
+                }
+                if(wire.node2.getIndex() >= size) {
+                    if(LOGGER != null)
+                        LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node2);
+                    continue;
+                }
+            }
+
+            wire.stamp(conductanceMatrix::add, G);
         }
 
         staleWires.forEach(wire -> {
@@ -402,6 +419,28 @@ public class ElectricalNetwork {
         }
     }
 
+    private void validateJacobian() {
+        var n = nodes.size();
+        var v = new DMatrixRMaj(n, 1);
+        RandomMatrices_DDRM.fillUniform(v, new Random());
+
+        var epsilon = Math.sqrt(Math.ulp(1)) * (1 + NormOps_DDRM.normP1(stateMatrix));
+        var left = new DMatrixRMaj(n, 1);
+        AMatrix.mult(v, left);
+
+        computeResidual();
+        var residualBase = new DMatrixRMaj(residualMatrix);
+        CommonOps_DDRM.add(stateMatrix, epsilon, v, stateMatrix);
+        computeResidual();
+        var right = new DMatrixRMaj(n, 1);
+        CommonOps_DDRM.subtract(residualMatrix, residualBase, right);
+
+        CommonOps_DDRM.scale(1 / epsilon, right);
+
+        CommonOps_DDRM.subtract(left, right, left);
+        PowerGrid.LOGGER.warn("Jacobian validation: {}", NormOps_DDRM.normP1(left));
+    }
+
     private void prepareMatrices() {
         var nodeCount = nodes.size();
         if(conductanceMatrix == null || dirty || conductanceMatrix.getNumRows() != nodeCount) {
@@ -468,13 +507,15 @@ public class ElectricalNetwork {
 
         PERF.start();
         solver.saveGuess();
-        int maxAttempts = hasHooks() ? 20 : 3;
-        for(int i = 0; i < maxAttempts; ++i) {
+        int maxAttempts = hasHooks() ? 50 : 3;
+        int i;
+        double norm = 0;
+        for(i = 0; i < maxAttempts; ++i) {
             for(var hook : hooks) {
                 hook.preSolve();
             }
             computeResidual();
-            double norm = NormOps_DDRM.normP2(residualMatrix);
+            norm = NormOps_DDRM.normP1(residualMatrix);
             if(norm < PRECISION)
                 break;
 
@@ -482,28 +523,32 @@ public class ElectricalNetwork {
             if(deltaX == null)
                 continue;
 
-            var valid = true;
-            for(int j = 0; j < deltaX.getNumRows(); ++j) {
-                if(!Double.isFinite(deltaX.get(j, 0))) {
-                    valid = false;
-                    break;
-                }
-            }
+            var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if(valid) {
                 double alpha = 1.0;
-                while(alpha > 0.001) {
-                    CommonOps_DDRM.add(stateMatrix, -alpha, deltaX, stateMatrix);
+                var applied = false;
+                CommonOps_DDRM.add(stateMatrix, -alpha, deltaX, stateMatrix);
+                while(alpha > 0.0001) {
                     acceptResults(stateMatrix);
                     computeResidual();
-                    if(NormOps_DDRM.normP2(residualMatrix) < norm)
+                    if(NormOps_DDRM.normP1(residualMatrix) < norm) {
+                        applied = true;
                         break;
-                    // Undo (this might introduce floating point imprecision, it would be better to allocate a separate vector)
-                    CommonOps_DDRM.add(stateMatrix, alpha, deltaX, stateMatrix);
+                    }
                     alpha *= 0.5;
+                    CommonOps_DDRM.add(stateMatrix, alpha, deltaX, stateMatrix);
+                }
+                if(!applied) {
+                    CommonOps_DDRM.add(stateMatrix, alpha, deltaX, stateMatrix);
+                    break;
                 }
             } else {
                 solver.zero();
             }
+        }
+        if(norm > PRECISION) {
+            if(LOGGER != null)
+                LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
         }
         if(printResult) {
             System.out.println(stateMatrix);
@@ -520,6 +565,7 @@ public class ElectricalNetwork {
 
     public void warmUp() {
         // Calculate initial state.
+        stateMatrix.zero();
         if(sourceCount == 0) {
             for(var node : nodes) {
                 node.receiveResult(0);
@@ -528,19 +574,43 @@ public class ElectricalNetwork {
         }
 
         prepareMatrices();
-
-        solver.zero();
-        int maxAttempts = 4;
         solver.saveGuess();
-        solver.setInitialGuess(stateMatrix);
-        for(int i = 0; i < maxAttempts; ++i) {
-            var result = solver.solve(AMatrix, currentMatrix, true);
-            if(result != null && solver.getInitialGuessDistance() < PRECISION) {
-                stateMatrix.setTo(result);
-                acceptResults(result);
+        int maxAttempts = 20;
+        int i;
+        for(i = 0; i < maxAttempts; ++i) {
+            AMatrix.mult(stateMatrix, residualMatrix);
+            CommonOps_DDRM.subtract(residualMatrix, currentMatrix, residualMatrix);
+            double norm = NormOps_DDRM.normP1(residualMatrix);
+            if(norm < PRECISION)
                 break;
+
+            var deltaX = solver.solve(AMatrix, residualMatrix, false);
+            if(deltaX == null)
+                continue;
+
+            var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
+            if(valid) {
+                double alpha = 1.0;
+                var applied = false;
+                CommonOps_DDRM.add(stateMatrix, -alpha, deltaX, stateMatrix);
+                while(alpha > 0.0001) {
+                    AMatrix.mult(stateMatrix, residualMatrix);
+                    CommonOps_DDRM.subtract(residualMatrix, currentMatrix, residualMatrix);
+                    if(NormOps_DDRM.normP1(residualMatrix) < norm) {
+                        applied = true;
+                        break;
+                    }
+                    alpha *= 0.5;
+                    CommonOps_DDRM.add(stateMatrix, alpha, deltaX, stateMatrix);
+                }
+                if(!applied) {
+                    CommonOps_DDRM.add(stateMatrix, alpha, deltaX, stateMatrix);
+                    break;
+                }
+            } else {
+                solver.zero();
             }
         }
-        solver.invalidatePreconditioner();
+        acceptResults(stateMatrix);
     }
 }

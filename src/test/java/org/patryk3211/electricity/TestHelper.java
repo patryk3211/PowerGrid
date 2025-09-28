@@ -28,6 +28,10 @@ public abstract class TestHelper {
             network = new ElectricalNetwork(false);
         }
 
+        public Network(boolean addGMin) {
+            network = new ElectricalNetwork(addGMin);
+        }
+
         public FloatingNode N() {
             var node = new FloatingNode();
             network.addNode(node);
