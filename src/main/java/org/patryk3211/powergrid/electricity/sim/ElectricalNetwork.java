@@ -545,7 +545,7 @@ public class ElectricalNetwork {
 
         PERF.start();
         solver.saveGuess();
-        int maxAttempts = hasHooks() ? 150 : 10;
+        int maxAttempts = hasHooks() ? 200 : 10;
         int i;
         double norm = 0;
         boolean enteredNewton = false;

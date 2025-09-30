@@ -65,18 +65,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     @Override
     public void preSolve() {
         // Implementation adapted from Falstad https://www.falstad.com/circuit-java/
-        final var limit = 0.5f;
         double vCathode = node1.getVoltage();
         double vGrid = grid.getVoltage();
         double vAnode = node2.getVoltage();
-        if(vCathode > prevCathode + limit)
-            vCathode = prevCathode + limit;
-        if(vCathode < prevCathode - limit)
-            vCathode = prevCathode - limit;
-        if(vGrid > prevGrid + limit)
-            vGrid = prevGrid + limit;
-        if(vGrid < prevGrid - limit)
-            vGrid = prevGrid - limit;
+        vCathode = vCathode * 0.9 + prevCathode * 0.1;
+        vGrid = vGrid * 0.9 + prevGrid * 0.1;
         prevCathode = vCathode;
         prevGrid = vGrid;
         vGrid -= vCathode;
@@ -86,13 +79,13 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         double ival = vGrid + vAnode / gain;
         gridCathode.setConductance(vGrid > 0.01 ? GRID_CONDUCTANCE : 0);
 
-        if (ival < 0) {
+        if (ival < 0 || saturationCurrent == 0) {
             Gds = ElectricalNetwork.G_MIN;
             ids = vAnode * Gds;
         } else {
             ids = Math.sqrt(ival * ival * ival) * perveance;
-            if(ids > saturationCurrent)
-                ids = saturationCurrent;
+            var x = ids / saturationCurrent;
+            ids = ids / Math.sqrt(Math.sqrt(1 + x * x * x * x));
             double q = 1.5 * Math.sqrt(ival) * perveance;
             Gds = q;
             gm = q / gain;
