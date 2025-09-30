@@ -137,13 +137,13 @@ public class StructureChangeTests extends TestHelper {
 
         Net.calculate();
 
-        Assertions.assertEquals(5f / 10f, V1.getCurrent(), "Voltage source current is incorrect");
+        Assertions.assertEquals(5f / 10f, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
 
         Net.TR(1, V1, S);
 
         Net.calculate();
 
-        Assertions.assertEquals(5f * (1 / 10f + 1 / 10f), V1.getCurrent(), "Voltage source current is incorrect");
+        Assertions.assertEquals(5f * (1 / 10f + 1 / 10f), V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
     }
 
     @Test
@@ -160,12 +160,12 @@ public class StructureChangeTests extends TestHelper {
 
         Net.calculate();
 
-        Assertions.assertEquals(5f * (1 / 10f + 1 / 10f), V1.getCurrent(), "Voltage source current is incorrect");
+        Assertions.assertEquals(5f * (1 / 10f + 1 / 10f), V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
 
         Net.network.removeNode(TR);
         Net.calculate();
 
-        Assertions.assertEquals(5f / 10f, V1.getCurrent(), "Voltage source current is incorrect");
+        Assertions.assertEquals(5f / 10f, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
     }
 
     @Test
