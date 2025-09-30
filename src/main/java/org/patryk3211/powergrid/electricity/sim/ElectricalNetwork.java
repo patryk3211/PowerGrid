@@ -51,15 +51,14 @@ public class ElectricalNetwork {
     private DMatrixRMaj currentMatrix;
     private DMatrixRMaj stateMatrix;
     private DMatrixRMaj bufferMatrix;
-    private DMatrixRMaj auxMatrix;
 
     private double[] columnScale;
     private double[] rowScale;
 
     private boolean dirty;
-    private boolean warmUp;
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
+    private int scalesAge = 0;
 
     public static Logger LOGGER = null;
 
@@ -183,7 +182,6 @@ public class ElectricalNetwork {
         updateConductance(wire, wire.conductance());
         if(wire instanceof ISolverHook hook)
             hooks.add(hook);
-        warmUp = true;
     }
 
     private void complexAdd(int row, int column, double value) {
@@ -228,7 +226,6 @@ public class ElectricalNetwork {
         updateConductance(wire, -wire.conductance());
         if(wire instanceof ISolverHook hook)
             hooks.remove(hook);
-        warmUp = true;
     }
 
     public void updateResistance(AbstractElectricWire wire, double oldResistance) {
@@ -420,6 +417,7 @@ public class ElectricalNetwork {
     }
 
     private void prepareMatrices() {
+        ++scalesAge;
         var nodeCount = nodes.size();
         if(conductanceMatrix == null || dirty || conductanceMatrix.getNumRows() != nodeCount) {
             var prevState = stateMatrix;
@@ -429,14 +427,12 @@ public class ElectricalNetwork {
             currentMatrix = new DMatrixRMaj(nodeCount, 1);
             residualMatrix = new DMatrixRMaj(nodeCount, 1);
             stateMatrix = new DMatrixRMaj(nodeCount, 1);
-            auxMatrix = new DMatrixRMaj(nodeCount, 1);
             bufferMatrix = new DMatrixRMaj(nodeCount, 1);
             columnScale = new double[nodeCount];
             rowScale = new double[nodeCount];
             voltageSources = new boolean[nodeCount];
             solver.setStateSize(nodeCount);
             dirty = false;
-            warmUp = true;
 
             // Use previous state matrix to accelerate warm up
             if(prevState != null) {
@@ -451,13 +447,17 @@ public class ElectricalNetwork {
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix();
             populateCurrentMatrix();
+            computeScales();
         } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
-//            if(LOGGER != null && ModdedConfigs.logsEnabled())
-//                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
-//            populateConductanceMatrix();
-//            populateCurrentMatrix();
+            if(LOGGER != null && ModdedConfigs.logsEnabled())
+                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
+            populateConductanceMatrix();
+            populateCurrentMatrix();
+        }
+        if(scalesAge >= 20) {
+            computeScales();
         }
     }
 
@@ -476,7 +476,6 @@ public class ElectricalNetwork {
             for(int j = 0; j < n; ++j) {
                 var v = Math.abs(matrix.get(j, i));
                 max += v * v;
-//                if(v > max) max = v;
             }
             if(max == 0) {
                 columnScale[i] = 1;
@@ -493,7 +492,6 @@ public class ElectricalNetwork {
             for(int j = 0; j < n; ++j)  {
                 var v = Math.abs(matrix.get(i, j));
                 max += v * v;
-//                if(v > max) max = v;
             }
             if(max == 0 || nodes.get(i) instanceof ICouplingNode) {
                 rowScale[i] = 1;
@@ -504,16 +502,13 @@ public class ElectricalNetwork {
     }
 
     private void computeScales() {
-//        for(int i = 0; i < nodes.size(); ++i) {
-//            columnScale[i] = 1;
-//            rowScale[i] = 1;
-//        }
         columnScales(AMatrix);
         AMatrix.multColumns(columnScale, ScaledJ);
         rowScales(ScaledJ);
+        scalesAge = 0;
     }
 
-    public void calculate(boolean printResult, boolean printState) {
+    public void calculate() {
         if(sourceCount == 0) {
             for(var node : nodes) {
                 node.receiveResult(0);
@@ -522,33 +517,11 @@ public class ElectricalNetwork {
         }
 
         prepareMatrices();
-        if(printState) {
-            System.out.println(AMatrix);
-            System.out.println(currentMatrix);
-        }
-
-//        if(warmUp) {
-//            warmUp = false;
-//            warmUp();
-//        }
-
-        // Randomize the state slightly to prevent stagnation
-//        for(int i = 0; i < nodes.size(); ++i) {
-//            if(nodes.get(i) instanceof FloatingNode) {
-//                var v = stateMatrix.get(i, 0);
-//                v *= 0.95 + (random.nextDouble() * 0.1);
-//                stateMatrix.set(i, 0, v);
-//            }
-//        }
-
-        computeScales();
 
         PERF.start();
-        solver.saveGuess();
         int maxAttempts = hasHooks() ? 200 : 10;
         int i;
         double norm = 0;
-        boolean enteredNewton = false;
         for(i = 0; i < maxAttempts; ++i) {
             for(var hook : hooks) {
                 hook.preSolve();
@@ -560,58 +533,37 @@ public class ElectricalNetwork {
             AMatrix.multColumns(columnScale, ScaledJ);
             ScaledJ.multRows(rowScale, null);
 
-            if(norm > 0.1 && !enteredNewton) {
-                // Directly solve the system
-                residualMatrix.setTo(currentMatrix);
-                CommonOps_DDRM.changeSign(residualMatrix);
-                for (var hook : hooks) {
-                    hook.addResidual(residualMatrix);
-                }
-                CommonOps_DDRM.changeSign(residualMatrix);
+            // Perform Newton iterations
+            bufferMatrix.setTo(residualMatrix);
+            CommonOps_DDRM.multRows(rowScale, bufferMatrix);
 
-                bufferMatrix.setTo(residualMatrix);
-                CommonOps_DDRM.multRows(rowScale, bufferMatrix);
+            var deltaX = solver.solve(ScaledJ, bufferMatrix, false);
+            if (deltaX == null)
+                continue;
 
-                var newState = solver.solve(ScaledJ, bufferMatrix, false);
-                if (newState == null)
-                    continue;
-                CommonOps_DDRM.multRows(columnScale, newState);
-                CommonOps_DDRM.add(0.1, stateMatrix, 0.9, newState, stateMatrix);
-                acceptResults(stateMatrix);
-            } else {
-                // Perform Newton iterations
-                enteredNewton = true;
-                bufferMatrix.setTo(residualMatrix);
-                CommonOps_DDRM.multRows(rowScale, bufferMatrix);
-
-                var deltaX = solver.solve(ScaledJ, bufferMatrix, false);
-                if (deltaX == null)
-                    continue;
-
-                var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
-                if(valid) {
-                    double alpha = hasHooks() && i < 5 ? 0.5 : 1.0;
-                    var applied = false;
-                    ScaledJ.mult(deltaX, bufferMatrix);
-                    CommonOps_DDRM.add(residualMatrix, -alpha, bufferMatrix, residualMatrix);
-                    while(alpha > 0.0001) {
-                        var newNorm = NormOps_DDRM.normP1(residualMatrix);
-                        if(newNorm < norm) {
-                            applied = true;
-                            CommonOps_DDRM.multRows(columnScale, deltaX);
-                            CommonOps_DDRM.add(stateMatrix, -alpha * 0.995, deltaX, stateMatrix);
-                            acceptResults(stateMatrix);
-                            break;
-                        }
-                        alpha *= 0.5;
-                        CommonOps_DDRM.add(residualMatrix, alpha, bufferMatrix, residualMatrix);
-                    }
-                    if(!applied) {
+            var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
+            if(valid) {
+                double alpha = hasHooks() && i < 5 ? 0.5 : 1.0;
+                var applied = false;
+                ScaledJ.mult(deltaX, bufferMatrix);
+                CommonOps_DDRM.add(residualMatrix, -alpha, bufferMatrix, residualMatrix);
+                while(alpha > 0.0001) {
+                    var newNorm = NormOps_DDRM.normP1(residualMatrix);
+                    if(newNorm < norm) {
+                        applied = true;
+                        CommonOps_DDRM.multRows(columnScale, deltaX);
+                        CommonOps_DDRM.add(stateMatrix, -alpha * 0.995, deltaX, stateMatrix);
+                        acceptResults(stateMatrix);
                         break;
                     }
-                } else {
-                    solver.zero();
+                    alpha *= 0.5;
+                    CommonOps_DDRM.add(residualMatrix, alpha, bufferMatrix, residualMatrix);
                 }
+                if(!applied) {
+                    break;
+                }
+            } else {
+                solver.zero();
             }
         }
         if(norm > PRECISION) {
@@ -622,77 +574,10 @@ public class ElectricalNetwork {
             } else {
                 System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
             }
-//            if(norm > 0.1) {
-//                acceptResults(savedState);
-//                stateMatrix.setTo(savedState);
-//                warmUp = true;
-//            }
-        }
-        if(printResult) {
-            System.out.println(stateMatrix);
         }
         PERF.end();
         for(var hook : hooks) {
             hook.postUpperSolve();
         }
-    }
-
-    public void calculate() {
-        calculate(false, false);
-    }
-
-    public void warmUp() {
-        // Calculate initial state.
-        stateMatrix.zero();
-        for(var node : nodes) {
-            node.receiveResult(0);
-        }
-        if(sourceCount == 0)
-            return;
-        // Zeroes things out
-        for(var hook : hooks) {
-            hook.preSolve();
-        }
-
-        solver.saveGuess();
-        int maxAttempts = 20;
-        int i;
-        for(i = 0; i < maxAttempts; ++i) {
-            AMatrix.mult(stateMatrix, residualMatrix);
-            CommonOps_DDRM.subtract(residualMatrix, currentMatrix, residualMatrix);
-            double norm = NormOps_DDRM.normP1(residualMatrix);
-            if(norm < PRECISION)
-                break;
-
-            var deltaX = auxMatrix;
-            AMatrix.solve(residualMatrix, deltaX);
-//            var deltaX = solver.solve(AMatrix, residualMatrix, false);
-//            if(deltaX == null)
-//                continue;
-
-            var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
-            if(valid) {
-                double alpha = 0.5;
-                var applied = false;
-                AMatrix.mult(deltaX, bufferMatrix);
-                CommonOps_DDRM.add(residualMatrix, alpha, bufferMatrix, residualMatrix);
-                while(alpha > 0.0001) {
-                    var newNorm = NormOps_DDRM.normP1(residualMatrix);
-                    if(newNorm < norm) {
-                        applied = true;
-                        CommonOps_DDRM.add(stateMatrix, alpha * 0.995, deltaX, stateMatrix);
-                        break;
-                    }
-                    alpha *= 0.5;
-                    CommonOps_DDRM.add(residualMatrix, -alpha, bufferMatrix, residualMatrix);
-                }
-                if(!applied) {
-                    break;
-                }
-            } else {
-                solver.zero();
-            }
-        }
-        acceptResults(stateMatrix);
     }
 }

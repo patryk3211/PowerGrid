@@ -40,40 +40,15 @@ public class DirectSolver implements ISolver {
     }
 
     @Override
+    public DMatrixRMaj getLastGuess() {
+        return x;
+    }
+
+    @Override
     public void zero() {
         if(x != null) {
             x.zero();
         }
-    }
-
-    @Override
-    public void saveGuess() {
-
-    }
-
-    @Override
-    public void restoreGuess() {
-
-    }
-
-    @Override
-    public double getInitialGuessDistance() {
-        return 0;
-    }
-
-    @Override
-    public double getFinalGuessDistance() {
-        return 0;
-    }
-
-    @Override
-    public void setInitialGuess(DMatrixRMaj state) {
-
-    }
-
-    @Override
-    public void invalidatePreconditioner() {
-
     }
 
     @Override

@@ -38,6 +38,8 @@ public class CircuitBoardRenderer extends SafeBlockEntityRenderer<CircuitBoardBl
         var state = be.getBlockState();
         var stack = TransformStack.of(ms);
         for(var placed : components) {
+            if(placed.destroyed)
+                continue;
             var rendered = (IRenderedComponent) placed.component;
             stack.pushPose()
                     .center()

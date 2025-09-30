@@ -38,12 +38,9 @@ public class BiCGSTABSolver implements ISolver {
     private static final PerformanceCounter PERF = new PerformanceCounter("BiCGStab");
 
     private final Random random;
-    private double initialDistance;
-    private double finalDistance;
 
     // Solved vector
     private DMatrixRMaj guess;
-    private DMatrixRMaj prevGuess;
 
     // Intermediate vectors used in the solver
     private DMatrixRMaj residual;
@@ -80,7 +77,6 @@ public class BiCGSTABSolver implements ISolver {
     public void setStateSize(int newSize) {
         if(guess == null || guess.getNumRows() != newSize) {
             guess = new DMatrixRMaj(newSize, 1);
-            prevGuess = new DMatrixRMaj(newSize, 1);
             residual = new DMatrixRMaj(newSize, 1);
             hatResidual = new DMatrixRMaj(newSize, 1);
             p = new DMatrixRMaj(newSize, 1);
@@ -102,7 +98,6 @@ public class BiCGSTABSolver implements ISolver {
     public void zero() {
         if(guess != null) {
             guess.zero();
-            prevGuess.zero();
             residual.zero();
             hatResidual.zero();
             p.zero();
@@ -112,17 +107,6 @@ public class BiCGSTABSolver implements ISolver {
             t.zero();
             shouldCalculateLU = true;
         }
-    }
-
-    @Override
-    public void setInitialGuess(DMatrixRMaj state) {
-        guess.setTo(state);
-        shouldCalculateLU = true;
-    }
-
-    @Override
-    public void invalidatePreconditioner() {
-        shouldCalculateLU = true;
     }
 
     private void prepareILU(DynamicallyTypedMatrix A) {
@@ -196,16 +180,6 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
-    public void saveGuess() {
-        prevGuess.setTo(guess);
-    }
-
-    @Override
-    public void restoreGuess() {
-        guess.setTo(prevGuess);
-    }
-
-    @Override
     @Nullable
     public DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll) {
         if(b.getNumRows() == 0)
@@ -223,8 +197,7 @@ public class BiCGSTABSolver implements ISolver {
 
         // Check if result is already good enough.
         double norm = NormOps_DDRM.normP2(residual);
-        initialDistance = norm;
-        finalDistance = norm;
+        double initialDistance = norm;
         if(norm <= targetPrecision) {
             return guess;
         }
@@ -306,17 +279,11 @@ public class BiCGSTABSolver implements ISolver {
             }
         }
 
-        finalDistance = norm;
         return guess;
     }
 
     @Override
-    public double getInitialGuessDistance() {
-        return initialDistance;
-    }
-
-    @Override
-    public double getFinalGuessDistance() {
-        return finalDistance;
+    public DMatrixRMaj getLastGuess() {
+        return guess;
     }
 }
