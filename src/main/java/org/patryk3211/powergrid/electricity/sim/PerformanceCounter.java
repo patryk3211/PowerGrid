@@ -29,6 +29,7 @@ public class PerformanceCounter {
 
     private String name;
 
+    private int measurementTime = 5000;
     private long microsTotal;
     private long minTime;
     private long maxTime;
@@ -38,6 +39,7 @@ public class PerformanceCounter {
 
     private double prevAvg;
 
+    private long stamp = new Date().getTime();
     private Date lastMeasurement;
 
     public PerformanceCounter(String name) {
@@ -47,6 +49,10 @@ public class PerformanceCounter {
 
     public void rename(String name) {
         this.name = name;
+    }
+
+    public void setMeasurementTime(int measurementTime) {
+        this.measurementTime = measurementTime;
     }
 
     public void start() {
@@ -66,11 +72,14 @@ public class PerformanceCounter {
         ++epochCount;
         microsTotal += duration / 1000;
 
-        lastMeasurement = new Date();
-        if(epochCount >= 1000) {
+        var currentTime = new Date();
+        var stampDuration = currentTime.getTime() - stamp;
+        if(stampDuration >= measurementTime) {
             prevAvg = (double) microsTotal / epochCount;
+            stamp = currentTime.getTime();
             reset();
         }
+        lastMeasurement = currentTime;
     }
 
     public void reset() {
