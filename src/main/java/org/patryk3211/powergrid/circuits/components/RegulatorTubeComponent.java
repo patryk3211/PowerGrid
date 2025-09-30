@@ -67,6 +67,11 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
         wire.lit = placed.get(LIT);
         builder.add(wire);
         placed.add(wire);
+
+        thermals.builder()
+                .addHeatSource(wire)
+                .setThermalMass(0.01f)
+                .setMaxPower(1.5f, 125f);
     }
 
     @Override
