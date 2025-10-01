@@ -16,29 +16,32 @@
 package org.patryk3211.powergrid.electricity.sim.node;
 
 import org.ejml.data.DMatrixRMaj;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 
 import java.util.Collection;
 import java.util.List;
 
 public class VoltageSourceCoupling extends CouplingNode {
     private final IElectricNode positive;
+    @Nullable
     private final IElectricNode negative;
     private float voltage;
     private float resistance;
 
-    public VoltageSourceCoupling(IElectricNode positive, IElectricNode negative, float resistance) {
+    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, float resistance) {
         this.positive = positive;
         this.negative = negative;
         this.resistance = resistance;
     }
 
-    public VoltageSourceCoupling(IElectricNode positive, IElectricNode negative, Float resistance) {
+    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, Float resistance) {
         this.positive = positive;
         this.negative = negative;
         this.resistance = resistance;
     }
 
-    public VoltageSourceCoupling(IElectricNode positive, IElectricNode negative, float resistance, float voltage) {
+    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, float resistance, float voltage) {
         this(positive, negative, resistance);
         setVoltage(voltage);
     }
@@ -56,16 +59,20 @@ public class VoltageSourceCoupling extends CouplingNode {
     }
 
     @Override
-    public void couple(DMatrixRMaj conductance) {
-        conductance.add(this.index, positive.getIndex(),  1);
-        conductance.add(this.index, negative.getIndex(), -1);
-        conductance.add(positive.getIndex(), this.index,  1);
-        conductance.add(negative.getIndex(), this.index, -1);
-        conductance.add(this.index, this.index, -resistance);
+    public void couple(ElectricalNetwork.IAdmittanceAdder admittanceAdder) {
+        admittanceAdder.add(this.index, positive.getIndex(),  1);
+        admittanceAdder.add(positive.getIndex(), this.index,  1);
+        admittanceAdder.add(this.index, this.index, -resistance);
+        if(negative != null) {
+            admittanceAdder.add(this.index, negative.getIndex(), -1);
+            admittanceAdder.add(negative.getIndex(), this.index, -1);
+        }
     }
 
     @Override
     public Collection<IElectricNode> coupledNodes() {
+        if(negative == null)
+            return List.of(positive);
         return List.of(positive, negative);
     }
 
@@ -85,6 +92,7 @@ public class VoltageSourceCoupling extends CouplingNode {
         return positive;
     }
 
+    @Nullable
     public IElectricNode getNegative() {
         return negative;
     }

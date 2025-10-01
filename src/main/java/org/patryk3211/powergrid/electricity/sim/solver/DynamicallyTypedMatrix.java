@@ -185,4 +185,10 @@ public class DynamicallyTypedMatrix {
             CommonOps_DDRM.multRows(values, (DMatrixRMaj) output.matrix);
         }
     }
+
+    public DMatrixRMaj getDense() {
+        if(sparse)
+            throw new IllegalStateException("Matrix is currently sparse");
+        return (DMatrixRMaj) matrix;
+    }
 }

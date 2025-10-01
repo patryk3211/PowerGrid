@@ -21,6 +21,25 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 
 public abstract class TestHelper {
+    public static class VoltageSourceNodePair extends FloatingNode {
+        public VoltageSourceCoupling coupling;
+
+        @Override
+        public void setVoltage(float voltage) {
+            coupling.setVoltage(voltage);
+        }
+
+        @Override
+        public float getVoltage() {
+            return coupling.getVoltage();
+        }
+
+        @Override
+        public float getCurrent() {
+            return -coupling.getCurrent();
+        }
+    }
+
     protected static class Network {
         public ElectricalNetwork network;
 
@@ -38,9 +57,12 @@ public abstract class TestHelper {
             return node;
         }
 
-        public VoltageSourceNode V(float voltage) {
-            var node = new VoltageSourceNode(voltage);
+        public VoltageSourceNodePair V(float voltage) {
+            var node = new VoltageSourceNodePair();
+            var coupling = new VoltageSourceCoupling(node, null, 0, voltage);
+            node.coupling = coupling;
             network.addNode(node);
+            network.addNode(coupling);
             return node;
         }
 

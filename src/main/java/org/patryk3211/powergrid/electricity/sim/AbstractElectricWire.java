@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
-import org.apache.logging.log4j.util.TriConsumer;
-import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 public abstract class AbstractElectricWire {
@@ -100,17 +98,17 @@ public abstract class AbstractElectricWire {
 
     public abstract double conductance();
 
-    public void stamp(TriConsumer<Integer, Integer, Double> matrixAdd, double change) {
+    public void stamp(ElectricalNetwork.IAdmittanceAdder admittance, double change) {
         if(node1 != null && node2 != null) {
             var index1 = node1.getIndex();
             var index2 = node2.getIndex();
-            matrixAdd.accept(index1, index1, change);
-            matrixAdd.accept(index2, index2, change);
-            matrixAdd.accept(index1, index2, -change);
-            matrixAdd.accept(index2, index1, -change);
+            admittance.add(index1, index1, change);
+            admittance.add(index2, index2, change);
+            admittance.add(index1, index2, -change);
+            admittance.add(index2, index1, -change);
         } else {
             var index = node1 != null ? node1.getIndex() : node2.getIndex();
-            matrixAdd.accept(index, index, change);
+            admittance.add(index, index, change);
         }
     }
 }

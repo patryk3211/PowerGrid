@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
@@ -119,8 +119,8 @@ public class ClientWorldNetworks extends WorldNetworks {
         }
         var line = phantomLines.computeIfAbsent(new PhantomLine(endpoint1, endpoint2),
                 key -> new PhantomLineData(targetNode, resistance));
-        if(line.wire.getResistance() != resistance)
-            line.wire.setResistance(resistance);
+        if(line.source.getResistance() != resistance)
+            line.source.setResistance(resistance);
         line.age = 0;
         line.lineId = lineId;
         return line;
@@ -333,8 +333,7 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     private static class PhantomLineData {
-        public final VoltageSourceNode source;
-        public final ElectricWire wire;
+        public final VoltageSourceCoupling source;
         public final IElectricNode node;
         public int age;
         public int lineId;
@@ -342,18 +341,15 @@ public class ClientWorldNetworks extends WorldNetworks {
         public PhantomLineData(IElectricNode node, float resistance) {
             assert node.getNetwork() != null;
             this.node = node;
-            this.source = new VoltageSourceNode();
-            this.wire = new ElectricWire(resistance, node, source);
+            this.source = new VoltageSourceCoupling(node, null, resistance);
             this.age = 0;
 
             var network = node.getNetwork();
             network.addNode(source);
-            network.addWire(wire);
         }
 
         public void remove() {
             source.getNetwork().removeNode(source);
-            wire.remove();
         }
     }
 }

@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import org.apache.logging.log4j.util.TriConsumer;
 import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -131,15 +130,15 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         }
 
         @Override
-        public void stamp(TriConsumer<Integer, Integer, Double> matrixAdd, double change) {
+        public void stamp(ElectricalNetwork.IAdmittanceAdder admittance, double change) {
             // Anode-Cathode
-            matrixAdd.accept(node2.getIndex(), node1.getIndex(), -change);
+            admittance.add(node2.getIndex(), node1.getIndex(), -change);
             // Anode-Grid
-            matrixAdd.accept(node2.getIndex(), node3.getIndex(), change);
+            admittance.add(node2.getIndex(), node3.getIndex(), change);
             // Cathode-Cathode
-            matrixAdd.accept(node1.getIndex(), node1.getIndex(), change);
+            admittance.add(node1.getIndex(), node1.getIndex(), change);
             // Cathode-Grid
-            matrixAdd.accept(node1.getIndex(), node3.getIndex(), -change);
+            admittance.add(node1.getIndex(), node3.getIndex(), -change);
         }
     }
 }

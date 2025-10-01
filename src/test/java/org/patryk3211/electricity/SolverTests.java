@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class SolverTests extends TestHelper {
     @Test
@@ -42,7 +41,7 @@ public class SolverTests extends TestHelper {
     void testTwoTransformedSources() {
         var Net = new Network();
 
-        VoltageSourceNode V1 = Net.V(5), V2 = Net.V(4);
+        VoltageSourceNodePair V1 = Net.V(5), V2 = Net.V(4);
         FloatingNode V1P = Net.N(), V1N = Net.N(), V2P = Net.N(), V2N = Net.N();
 
         Net.TR(1, V1, V1P, V1N);
