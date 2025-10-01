@@ -129,6 +129,8 @@ public class ElectronTubeTest extends TestHelper {
         Net.W(R, V2, Grid);
         Net.W(R, GND, Cathode);
 
+        Net.calculate();
+
         Assertions.assertEquals(0, V1.getCurrent(), 1e-3f, "Anode is conducting at reverse voltage");
     }
 

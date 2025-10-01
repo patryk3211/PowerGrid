@@ -24,7 +24,6 @@ public class VoltageSourceCoupling extends CouplingNode {
     private final IElectricNode positive;
     private final IElectricNode negative;
     private float voltage;
-    private float current;
     private float resistance;
 
     public VoltageSourceCoupling(IElectricNode positive, IElectricNode negative, float resistance) {
@@ -70,13 +69,8 @@ public class VoltageSourceCoupling extends CouplingNode {
         return List.of(positive, negative);
     }
 
-    @Override
-    public void receiveResult(float value) {
-        this.current = value;
-    }
-
     public float getCurrent() {
-        return current;
+        return (float) getStateValue();
     }
 
     public float getVoltage() {

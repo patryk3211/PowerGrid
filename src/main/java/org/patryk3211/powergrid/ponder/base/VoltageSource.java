@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.ponder.base;
 
 import net.createmod.ponder.foundation.PonderScene;
 import net.createmod.ponder.foundation.element.PonderElementBase;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
@@ -38,8 +39,10 @@ public class VoltageSource extends PonderElementBase {
         super.tick(scene);
         if(wire == null) {
             var node = target.getNode(scene.getWorld());
-            if(node.getNetwork() == null)
-                return;
+            if(node.getNetwork() == null) {
+                var global = GlobalElectricNetworks.getWorldNetworks(scene.getWorld());
+                target.joinNetwork(scene.getWorld(), global.newNetwork());
+            }
             source = new VoltageSourceNode(voltage);
             var network = node.getNetwork();
             network.addNode(source);

@@ -32,7 +32,7 @@ public class VoltageSourceNode extends ElectricNode {
     }
 
     @Override
-    public void receiveResult(float value) {
-        this.current = value;
+    public float getCurrent() {
+        return (float) getStateValue();
     }
 }

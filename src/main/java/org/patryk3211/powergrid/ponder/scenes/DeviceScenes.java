@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
@@ -548,12 +549,12 @@ public class DeviceScenes {
         var magnetPos = util.grid().at(2, 3, 2);
         var depotPos = util.grid().at(2, 1, 1);
 
-        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be -> {
-            var nodes = be.getElectricBehaviour().getExternalNodes();
-            // Override node voltage
-            nodes.get(0).receiveResult(200f);
-            nodes.get(1).receiveResult(0f);
-        });
+        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be ->
+                be.getBehaviour(ThermalBehaviour.TYPE).behaviourFlags(0));
+        scene.electric().addSource(magnetPos, 0, 200);
+        scene.electric().addSource(magnetPos, 1, 0);
+        scene.electric().tickFor(5);
+
         scene.world().showSection(magnet, Direction.DOWN);
         scene.idle(10);
 

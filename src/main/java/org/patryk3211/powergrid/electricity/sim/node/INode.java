@@ -24,5 +24,9 @@ public interface INode {
     void setNetwork(ElectricalNetwork network);
     ElectricalNetwork getNetwork();
 
-    void receiveResult(float value);
+    default double getStateValue() {
+        if(getNetwork() != null)
+            return getNetwork().getValue(this);
+        return 0;
+    }
 }

@@ -23,9 +23,4 @@ public interface ICouplingNode extends INode {
     void couple(DMatrixRMaj conductance);
 
     Collection<IElectricNode> coupledNodes();
-
-    @Override
-    default void receiveResult(float value) {
-
-    }
 }

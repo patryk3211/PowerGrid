@@ -34,8 +34,9 @@ public class CurrentSourceNode extends ElectricNode {
         if(network != null)
             network.updateCurrentMatrix(this, this.current - old);
     }
+
     @Override
-    public void receiveResult(float value) {
-        this.voltage = value;
+    public float getVoltage() {
+        return (float) getStateValue();
     }
 }

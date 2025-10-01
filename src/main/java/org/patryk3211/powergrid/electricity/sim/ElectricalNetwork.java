@@ -373,21 +373,13 @@ public class ElectricalNetwork {
         other.couplings.clear();
     }
 
-    private void acceptResults(DMatrixRMaj result) {
-        for(var node : nodes) {
-            if(node.getIndex() >= result.getNumRows()) {
-                // Why is it here???
-                continue;
-            }
-            float value = (float) result.get(node.getIndex(), 0);
-            if(!Float.isFinite(value)) {
-                solver.zero();
-                StateVector.zero();
-                break;
-            } else {
-                node.receiveResult(value);
-            }
-        }
+    public double getValue(INode node) {
+        if(StateVector == null)
+            return 0;
+        if(node.getIndex() < 0 || node.getIndex() >= StateVector.getNumRows())
+            return 0;
+        var value = StateVector.get(node.getIndex());
+        return Double.isFinite(value) ? value : 0;
     }
 
     private void validateJacobian() {
@@ -511,9 +503,8 @@ public class ElectricalNetwork {
 
     public void calculate() {
         if(sourceCount == 0) {
-            for(var node : nodes) {
-                node.receiveResult(0);
-            }
+            if(StateVector != null)
+                StateVector.zero();
             return;
         }
 
@@ -554,7 +545,6 @@ public class ElectricalNetwork {
                         applied = true;
                         CommonOps_DDRM.multRows(columnScales, deltaX);
                         CommonOps_DDRM.add(StateVector, -alpha * 0.995, deltaX, StateVector);
-                        acceptResults(StateVector);
                         break;
                     }
                     alpha *= 0.5;
