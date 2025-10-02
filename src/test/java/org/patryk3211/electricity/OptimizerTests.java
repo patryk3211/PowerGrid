@@ -178,6 +178,11 @@ public class OptimizerTests extends TestHelper {
         Net2.W(0.1f, V2, nodes2[0]);
         Net2.W(0.1f, GND2, nodes2[SIZE * SIZE - 1]);
 
+        Net2.network.optimizeNode(nodes2[5]);
+        Net2.network.optimizeNode(nodes2[6]);
+        Net2.network.optimizeNode(nodes2[9]);
+        Net2.network.optimizeNode(nodes2[10]);
+
         Net2.calculate();
         wires2.get(0).setResistance(10);
         wires2.get(3).setResistance(10);
@@ -212,5 +217,41 @@ public class OptimizerTests extends TestHelper {
         Assertions.assertEquals(2.5, Tie.getVoltage(), 1e-6, "Tie node voltage is incorrect");
         Assertions.assertEquals(4.5, S1.getVoltage(), 1e-6, "Secondary 1 node voltage is incorrect");
         Assertions.assertEquals(0.5, S2.getVoltage(), 1e-6, "Secondary 2 node voltage is incorrect");
+    }
+
+    @Test
+    void unoptimizingNodeTest() {
+        final int SIZE = 4;
+        var Net = new Network();
+        var nodes = buildGrid(Net, SIZE, null);
+
+        var V1 = Net.V(5);
+        var GND = Net.V(0);
+        Net.W(0.1f, V1, nodes[0]);
+        Net.W(0.1f, GND, nodes[SIZE * SIZE - 1]);
+
+        Net.calculate();
+
+        var Net2 = new Network();
+        var nodes2 = buildGrid(Net2, SIZE, null);
+
+        var V2 = Net2.V(5);
+        var GND2 = Net2.V(0);
+        Net2.W(0.1f, V2, nodes2[0]);
+        Net2.W(0.1f, GND2, nodes2[SIZE * SIZE - 1]);
+
+        Net2.network.optimizeNode(nodes2[5]);
+        Net2.network.optimizeNode(nodes2[6]);
+        Net2.network.optimizeNode(nodes2[9]);
+        Net2.network.optimizeNode(nodes2[10]);
+        Net2.calculate();
+
+        Net2.network.unoptimizeNode(nodes2[6]);
+        Net2.network.unoptimizeNode(nodes2[9]);
+        Net2.calculate();
+
+        for(int i = 0; i < SIZE * SIZE; ++i) {
+            Assertions.assertEquals(nodes[i].getVoltage(), nodes2[i].getVoltage(), 1e-6, "Optimized network solves with different results");
+        }
     }
 }

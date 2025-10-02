@@ -375,6 +375,7 @@ public class ElectricalNetwork {
             WMatrix.convert(ReducedCorrection.getState());
 
             // Prepare reduced jacobian correction matrix.
+            JacobianEliminated.refactorize();
             JacobianEliminated.solve(JacobianBottom, WMatrix);
             JacobianRight.mult(WMatrix, ReducedCorrection);
 
