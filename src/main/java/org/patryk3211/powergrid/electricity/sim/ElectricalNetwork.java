@@ -32,6 +32,7 @@ public class ElectricalNetwork {
     public static final double G_MIN = 1e-8;
     private static final double PRECISION = 1e-7;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
+    private static final int MAX_SCALE_REUSE_COUNT = 20;
 
     private final boolean addGMin;
     private final Set<AbstractElectricWire> wires = new HashSet<>();
@@ -51,8 +52,15 @@ public class ElectricalNetwork {
     private DynamicallyTypedMatrix JacobianRight;
     private DynamicallyTypedMatrix JacobianBottom;
 
-    private DynamicallyTypedMatrix ScaledJ;
     private DMatrixRMaj RHSVector;
+
+    // W = J_e ^ -1 * J_b
+    // J_e * W = J_b
+    private DynamicallyTypedMatrix WMatrix;
+    private DynamicallyTypedMatrix ReducedCorrection;
+    private DynamicallyTypedMatrix ReducedJacobian;
+
+    private DynamicallyTypedMatrix ScaledJ;
     private DMatrixRMaj StateVector;
     private DMatrixRMaj AuxiliaryVector;
 
@@ -63,6 +71,9 @@ public class ElectricalNetwork {
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
     private int scalesAge = 0;
+
+    private boolean recalculateReduced;
+    private boolean eliminatedChanged;
 
     public static Logger LOGGER = null;
 
@@ -196,13 +207,13 @@ public class ElectricalNetwork {
 
         conductanceDelta += Math.abs(change);
         ++conductanceUpdates;
-        wire.stamp(JacobianKept::add, change);
+        wire.stamp(this::jacobianAdd, change);
     }
 
     public void alterConductanceMatrix(int row, int column, double change) {
         if(JacobianKept == null || dirty)
             return;
-        JacobianKept.add(row, column, change);
+        jacobianAdd(row, column, change);
     }
 
     public void removeWire(AbstractElectricWire wire) {
@@ -240,14 +251,18 @@ public class ElectricalNetwork {
     }
 
     private void jacobianAdd(int row, int column, double value) {
+        recalculateReduced = true;
         if(row < eliminatedStart && column < eliminatedStart) {
             JacobianKept.add(row, column, value);
         } else if(row < eliminatedStart) {
             JacobianRight.add(row, column - eliminatedStart, value);
+            eliminatedChanged = true;
         } else if(column < eliminatedStart) {
             JacobianBottom.add(row - eliminatedStart, column, value);
+            eliminatedChanged = true;
         } else {
             JacobianEliminated.add(row - eliminatedStart, column - eliminatedStart, value);
+            eliminatedChanged = true;
         }
     }
 
@@ -263,7 +278,6 @@ public class ElectricalNetwork {
         }
 
         List<AbstractElectricWire> staleWires = new ArrayList<>();
-        var size = JacobianKept.getNumRows();
         for(var wire : wires) {
             var G = wire.conductance();
             if(!Double.isFinite(G))
@@ -276,7 +290,7 @@ public class ElectricalNetwork {
                     staleWires.add(wire);
                     continue;
                 }
-                if(wire.node1.getIndex() >= size) {
+                if(wire.node1.getIndex() >= nodes.size()) {
                     if(LOGGER != null)
                         LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node1);
                     continue;
@@ -290,7 +304,7 @@ public class ElectricalNetwork {
                     staleWires.add(wire);
                     continue;
                 }
-                if(wire.node2.getIndex() >= size) {
+                if(wire.node2.getIndex() >= nodes.size()) {
                     if(LOGGER != null)
                         LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node2);
                     continue;
@@ -346,6 +360,27 @@ public class ElectricalNetwork {
         if(shouldAnchor && anchor != null) {
             JacobianKept.add(anchor.getIndex(), anchor.getIndex(), 1000);
         }
+
+        calculateEliminatedMatrices();
+        recalculateReduced = true;
+    }
+
+    private void calculateEliminatedMatrices() {
+        if(JacobianEliminated != null) {
+            // Match sparsity state for all matrices
+            ReducedCorrection.optimize();
+            JacobianEliminated.convert(ReducedCorrection.getState());
+            JacobianBottom.convert(ReducedCorrection.getState());
+            JacobianRight.convert(ReducedCorrection.getState());
+            WMatrix.convert(ReducedCorrection.getState());
+
+            // Prepare reduced jacobian correction matrix.
+            JacobianEliminated.solve(JacobianBottom, WMatrix);
+            JacobianRight.mult(WMatrix, ReducedCorrection);
+
+            eliminatedChanged = false;
+            recalculateReduced = true;
+        }
     }
 
     public void merge(ElectricalNetwork other) {
@@ -360,9 +395,19 @@ public class ElectricalNetwork {
     public double getValue(INode node) {
         if(StateVector == null)
             return 0;
-        if(node.getIndex() < 0 || node.getIndex() >= StateVector.getNumRows())
+        var index = node.getIndex();
+        if(index < 0 || index >= nodes.size())
             return 0;
-        var value = StateVector.get(node.getIndex());
+        if(index >= eliminatedStart) {
+            double value = 0;
+            for(int i = 0; i < StateVector.getNumRows(); ++i) {
+                value -= WMatrix.get(index - eliminatedStart, i) * StateVector.get(i, 0);
+            }
+            return value;
+        }
+        if(index >= StateVector.getNumRows())
+            return 0;
+        var value = StateVector.get(index);
         return Double.isFinite(value) ? value : 0;
     }
 
@@ -375,10 +420,10 @@ public class ElectricalNetwork {
         var left = new DMatrixRMaj(n, 1);
         JacobianKept.mult(v, left);
 
-        computeResidual();
+        computeResidual(JacobianKept);
         var residualBase = new DMatrixRMaj(ResidualVector);
         CommonOps_DDRM.add(StateVector, epsilon, v, StateVector);
-        computeResidual();
+        computeResidual(JacobianKept);
         var right = new DMatrixRMaj(n, 1);
         CommonOps_DDRM.subtract(ResidualVector, residualBase, right);
 
@@ -460,7 +505,7 @@ public class ElectricalNetwork {
         ++scalesAge;
         var nodeCount = nodes.size();
         var eliminatedCount = eliminatedNodeCount();
-        var reducedCount = nodes.size() - eliminatedCount;
+        var reducedCount = nodeCount - eliminatedCount;
         var shouldReallocate =
                 JacobianKept == null
                 || dirty
@@ -469,7 +514,7 @@ public class ElectricalNetwork {
                         && (JacobianEliminated == null || JacobianEliminated.getNumRows() != eliminatedCount));
         if(shouldReallocate) {
             var prevState = StateVector;
-            // Reduced Jacobian
+            // Kept Jacobian
             JacobianKept = new DynamicallyTypedMatrix(reducedCount, reducedCount);
             if(eliminatedCount != 0) {
                 // Eliminated Jacobian
@@ -478,9 +523,20 @@ public class ElectricalNetwork {
                 JacobianBottom = new DynamicallyTypedMatrix(eliminatedCount, reducedCount);
                 // Reduced x Eliminated Jacobian
                 JacobianRight = new DynamicallyTypedMatrix(reducedCount, eliminatedCount);
+
+                WMatrix = new DynamicallyTypedMatrix(eliminatedCount, reducedCount);
+                ReducedCorrection = new DynamicallyTypedMatrix(reducedCount, reducedCount);
+                ReducedJacobian = new DynamicallyTypedMatrix(reducedCount, reducedCount);
+            } else {
+                // Drop matrices
+                JacobianEliminated = null;
+                JacobianBottom = null;
+                JacobianRight = null;
+                WMatrix = null;
+                ReducedCorrection = null;
             }
 
-            RHSVector = new DMatrixRMaj(nodeCount, 1);
+            RHSVector = new DMatrixRMaj(reducedCount, 1);
 
             ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount);
             ResidualVector = new DMatrixRMaj(reducedCount, 1);
@@ -505,7 +561,7 @@ public class ElectricalNetwork {
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix();
             populateCurrentMatrix();
-            computeScales();
+            scalesAge = MAX_SCALE_REUSE_COUNT + 1;
         } else if(conductanceUpdates >= 20 || conductanceDelta > 1000) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
@@ -514,13 +570,39 @@ public class ElectricalNetwork {
             populateConductanceMatrix();
             populateCurrentMatrix();
         }
+    }
+
+    private DynamicallyTypedMatrix getWorkMatrix() {
+        DynamicallyTypedMatrix workMatrix;
+        if(ReducedJacobian != null) {
+            workMatrix = ReducedJacobian;
+            if(eliminatedChanged) {
+                calculateEliminatedMatrices();
+                recalculateReduced = true;
+            }
+            if(recalculateReduced)
+                JacobianKept.subtract(ReducedCorrection, ReducedJacobian);
+        } else {
+            workMatrix = JacobianKept;
+        }
+        return workMatrix;
+    }
+
+    private void prepareScaled(DynamicallyTypedMatrix workMatrix) {
+        var computeScaled = recalculateReduced;
         if(scalesAge >= 20) {
-            computeScales();
+            computeScales(workMatrix);
+            computeScaled = true;
+        }
+        if(computeScaled) {
+            workMatrix.multColumns(columnScales, ScaledJ);
+            ScaledJ.multRows(rowScales, null);
+            ScaledJ.refactorize();
         }
     }
 
-    public void computeResidual() {
-        JacobianKept.mult(StateVector, ResidualVector);
+    public void computeResidual(DynamicallyTypedMatrix workMatrix) {
+        workMatrix.mult(StateVector, ResidualVector);
         CommonOps_DDRM.subtract(ResidualVector, RHSVector, ResidualVector);
         for(var hook : hooks) {
             hook.addResidual(ResidualVector);
@@ -528,7 +610,7 @@ public class ElectricalNetwork {
     }
 
     private void columnScales(DynamicallyTypedMatrix matrix) {
-        int n = nodes.size();
+        int n = matrix.getNumRows();
         for(int i = 0; i < n; ++i) {
             double max = 0;
             for(int j = 0; j < n; ++j) {
@@ -544,7 +626,7 @@ public class ElectricalNetwork {
     }
 
     private void rowScales(DynamicallyTypedMatrix matrix) {
-        int n = nodes.size();
+        int n = matrix.getNumRows();
         for(int i = 0; i < n; ++i) {
             double max = 0;
             for(int j = 0; j < n; ++j)  {
@@ -559,9 +641,9 @@ public class ElectricalNetwork {
         }
     }
 
-    private void computeScales() {
-        columnScales(JacobianKept);
-        JacobianKept.multColumns(columnScales, ScaledJ);
+    private void computeScales(DynamicallyTypedMatrix workMatrix) {
+        columnScales(workMatrix);
+        workMatrix.multColumns(columnScales, ScaledJ);
         rowScales(ScaledJ);
         scalesAge = 0;
     }
@@ -583,12 +665,13 @@ public class ElectricalNetwork {
             for(var hook : hooks) {
                 hook.preSolve();
             }
-            computeResidual();
+            var workMatrix = getWorkMatrix();
+            computeResidual(workMatrix);
             norm = NormOps_DDRM.normP1(ResidualVector);
             if(norm < PRECISION)
                 break;
-            JacobianKept.multColumns(columnScales, ScaledJ);
-            ScaledJ.multRows(rowScales, null);
+            prepareScaled(workMatrix);
+            recalculateReduced = false;
 
             // Perform Newton iterations
             AuxiliaryVector.setTo(ResidualVector);

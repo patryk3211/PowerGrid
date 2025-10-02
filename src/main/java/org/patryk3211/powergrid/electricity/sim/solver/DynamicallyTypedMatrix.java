@@ -64,6 +64,20 @@ public class DynamicallyTypedMatrix {
         }
     }
 
+    public void mult(DynamicallyTypedMatrix in, DynamicallyTypedMatrix out) {
+        if((sparse && in.sparse != out.sparse) || (!sparse && (in.sparse || out.sparse)))
+            throw new IllegalStateException("Sparsity of matrices doesn't match");
+        if(sparse) {
+            if(in.sparse) {
+                CommonOps_DSCC.mult((DMatrixSparseCSC) matrix, (DMatrixSparseCSC) in.matrix, (DMatrixSparseCSC) out.matrix);
+            } else {
+                CommonOps_DSCC.mult((DMatrixSparseCSC) matrix, (DMatrixRMaj) in.matrix, (DMatrixRMaj) out.matrix);
+            }
+        } else {
+            CommonOps_DDRM.mult((DMatrixRMaj) matrix, (DMatrixRMaj) in.matrix, (DMatrixRMaj) out.matrix);
+        }
+    }
+
     public void set(int row, int col, double value) {
         matrix.set(row, col, value);
     }
@@ -106,38 +120,68 @@ public class DynamicallyTypedMatrix {
     }
 
     public void optimize() {
-        if(matrix.getNumRows() > SPARSE_THRESHOLD) {
-            if (!sparse) {
-                this.matrix = DConvertMatrixStruct.convert((DMatrixRMaj) matrix, (DMatrixSparseCSC) null, G_THRESHOLD);
-                solver = null;
-            }
-            sparse = true;
+        if(matrix.getNumRows() > SPARSE_THRESHOLD || matrix.getNumCols() > SPARSE_THRESHOLD) {
+            convert(State.SPARSE);
         } else {
-            if (sparse) {
-                this.matrix = new DMatrixRMaj(matrix);
-                solver = null;
-            }
+            convert(State.DENSE);
+        }
+    }
+
+    public void convert(State to) {
+        if(!sparse && to == State.SPARSE) {
+            this.matrix = DConvertMatrixStruct.convert((DMatrixRMaj) matrix, (DMatrixSparseCSC) null, G_THRESHOLD);
+            solver = null;
+            sparse = true;
+        } else if(sparse && to == State.DENSE) {
+            this.matrix = new DMatrixRMaj(matrix);
+            solver = null;
             sparse = false;
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public void solve(DMatrixRMaj b, DMatrixRMaj x) {
-        if(solver == null) {
-            if(sparse) {
-                solver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
-            } else {
-                solver = LinearSolverFactory_DDRM.lu(getNumRows());
-            }
-        }
-        boolean valid;
+    private void makeSolver() {
         if(sparse) {
-            valid = ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA((DMatrixSparseCSC) matrix);
+            var solver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
+            solver.setA((DMatrixSparseCSC) matrix);
+            this.solver = solver;
         } else {
-            valid = ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA((DMatrixRMaj) matrix);
+            var solver = LinearSolverFactory_DDRM.lu(getNumRows());
+            solver.setA((DMatrixRMaj) matrix);
+            this.solver = solver;
         }
-        if(valid)
-            solver.solve(b, x);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void refactorize() {
+        if(solver != null) {
+            if (sparse) {
+                ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA((DMatrixSparseCSC) matrix);
+            } else {
+                ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA((DMatrixRMaj) matrix);
+            }
+        } else {
+            makeSolver();
+        }
+    }
+
+    public void solve(DMatrixRMaj b, DMatrixRMaj x) {
+        if(solver == null)
+            makeSolver();
+        solver.solve(b, x);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void solve(DynamicallyTypedMatrix b, DynamicallyTypedMatrix x) {
+        if((sparse && b.sparse != x.sparse) || (!sparse && (b.sparse || x.sparse)))
+            throw new IllegalStateException("Sparsity of matrices doesn't match");
+        if(solver == null)
+            makeSolver();
+        if(sparse && b.sparse) {
+            var solver = ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) this.solver);
+            solver.solveSparse((DMatrixSparseCSC) b.matrix, (DMatrixSparseCSC) x.matrix);
+        } else {
+            solver.solve((DMatrixRMaj) b.matrix, (DMatrixRMaj) x.matrix);
+        }
     }
 
     public void reshapeTo(DynamicallyTypedMatrix target) {
@@ -186,9 +230,29 @@ public class DynamicallyTypedMatrix {
         }
     }
 
+    public void subtract(DynamicallyTypedMatrix in, DynamicallyTypedMatrix out) {
+        if(out.sparse != sparse)
+            out.reshapeTo(this);
+        if(in.sparse != sparse || out.sparse != sparse)
+            throw new IllegalStateException("Sparsity of matrices doesn't match");
+        if(sparse) {
+            CommonOps_DSCC.add(1.0, (DMatrixSparseCSC) matrix, -1.0, (DMatrixSparseCSC) in.matrix, (DMatrixSparseCSC) out.matrix, null, null);
+        } else {
+            CommonOps_DDRM.subtract((DMatrixRMaj) matrix, (DMatrixRMaj) in.matrix, (DMatrixRMaj) out.matrix);
+        }
+    }
+
     public DMatrixRMaj getDense() {
         if(sparse)
             throw new IllegalStateException("Matrix is currently sparse");
         return (DMatrixRMaj) matrix;
+    }
+
+    public State getState() {
+        return sparse ? State.SPARSE : State.DENSE;
+    }
+
+    public enum State {
+        DENSE, SPARSE
     }
 }

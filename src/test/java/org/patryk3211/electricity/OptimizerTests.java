@@ -69,6 +69,18 @@ public class OptimizerTests extends TestHelper {
             System.out.printf("Solve took %.3fµs\n", duration / 1000.0);
         }
 
+        {
+            var start = System.nanoTime();
+            for (int y = 0; y < SIZE; ++y) {
+                for (int x = 0; x < SIZE; ++x) {
+                    nodes[x + y * SIZE].getVoltage();
+                }
+            }
+            var end = System.nanoTime();
+            System.out.printf("Result fetch took %.3fµs\n", (end - start) / 1000.0);
+        }
+
+
         System.out.println("Unoptimized result:");
         for(int y = 0; y < SIZE; ++y) {
             for(int x = 0; x < SIZE; ++x) {
@@ -88,7 +100,31 @@ public class OptimizerTests extends TestHelper {
         Net2.W(0.1f, V2, nodes2[0]);
         Net2.W(0.1f, GND2, nodes2[SIZE * SIZE - 1]);
 
-        Net2.calculate();
+        // Optimize 4 inner nodes.
+        Net2.network.optimizeNode(nodes2[5]);
+        Net2.network.optimizeNode(nodes2[6]);
+        Net2.network.optimizeNode(nodes2[9]);
+        Net2.network.optimizeNode(nodes2[10]);
+
+        for(int i = 0; i < 10; ++i) {
+            V2.setVoltage(-V2.getVoltage());
+            var start = System.nanoTime();
+            Net2.calculate();
+            var end = System.nanoTime();
+            var duration = end - start;
+            System.out.printf("Solve took %.3fµs\n", duration / 1000.0);
+        }
+
+        {
+            var start = System.nanoTime();
+            for (int y = 0; y < SIZE; ++y) {
+                for (int x = 0; x < SIZE; ++x) {
+                    nodes2[x + y * SIZE].getVoltage();
+                }
+            }
+            var end = System.nanoTime();
+            System.out.printf("Result fetch took %.3fµs\n", (end - start) / 1000.0);
+        }
 
         System.out.println("Optimized result:");
         for(int y = 0; y < SIZE; ++y) {
