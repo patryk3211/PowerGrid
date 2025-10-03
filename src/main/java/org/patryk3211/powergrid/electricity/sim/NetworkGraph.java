@@ -198,6 +198,21 @@ public class NetworkGraph {
         return size;
     }
 
+    public boolean hasComplexConnections(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return false;
+        var object = nodes.get(node);
+        if(!object.couplings.isEmpty())
+            return true;
+        for(var wires : object.connections.values()) {
+            for(var wire : wires) {
+                if(!(wire instanceof ElectricWire))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     @NotNull
     public Collection<TransmissionLine> getConnectedLines(IElectricNode node) {
         if(!nodes.containsKey(node))

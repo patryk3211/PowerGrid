@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 
 public abstract class AbstractElectricWire {
     protected IElectricNode node1;
@@ -98,7 +99,7 @@ public abstract class AbstractElectricWire {
 
     public abstract double conductance();
 
-    public void stamp(ElectricalNetwork.IAdmittanceAdder admittance, double change) {
+    public void stamp(IAdmittanceAdder admittance, double change) {
         if(node1 != null && node2 != null) {
             var index1 = node1.getIndex();
             var index2 = node2.getIndex();

@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 
 public class ColdCathodeRegulatorTubeWire extends DynamicConductanceWire {
     private final float breakdownVoltage;
@@ -57,9 +57,9 @@ public class ColdCathodeRegulatorTubeWire extends DynamicConductanceWire {
     }
 
     @Override
-    public void addResidual(DMatrixRMaj residual) {
-        residual.add(node1.getIndex(), 0, -I);
-        residual.add(node2.getIndex(), 0,  I);
+    public void addResidual(IResidualAdder residual) {
+        residual.add(node1.getIndex(), -I);
+        residual.add(node2.getIndex(),  I);
     }
 
     @Override

@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.sim.node;
 
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,9 +37,9 @@ public abstract class TransformerCoupling extends CouplingNode {
     }
 
     @Override
-    public void couple(ElectricalNetwork.IAdmittanceAdder admittanceAdder) {
+    public void couple(IAdmittanceAdder admittance) {
         // Unlike other fields, this one holds resistance instead of conductance.
-        admittanceAdder.add(this.index, this.index, (double) resistance);
+        admittance.add(this.index, this.index, resistance);
     }
 
     @Override
@@ -94,12 +95,12 @@ public abstract class TransformerCoupling extends CouplingNode {
         }
 
         @Override
-        public void couple(ElectricalNetwork.IAdmittanceAdder admittanceAdder) {
-            super.couple(admittanceAdder);
-            admittanceAdder.add(this.index, primary.getIndex(), ratio);
-            admittanceAdder.add(this.index, secondary.getIndex(), -1);
-            admittanceAdder.add(secondary.getIndex(), this.index, 1);
-            admittanceAdder.add(primary.getIndex(), this.index, -ratio);
+        public void couple(IAdmittanceAdder admittance) {
+            super.couple(admittance);
+            admittance.add(this.index, primary.getIndex(), ratio);
+            admittance.add(this.index, secondary.getIndex(), -1);
+            admittance.add(secondary.getIndex(), this.index, 1);
+            admittance.add(primary.getIndex(), this.index, -ratio);
         }
 
         @Override
@@ -126,19 +127,19 @@ public abstract class TransformerCoupling extends CouplingNode {
         }
 
         @Override
-        public void couple(ElectricalNetwork.IAdmittanceAdder admittanceAdder) {
-            super.couple(admittanceAdder);
-            admittanceAdder.add(this.index, primary.getIndex(), ratio);
-            admittanceAdder.add(this.index, secondary1.getIndex(), -1.0);
-            admittanceAdder.add(this.index, secondary2.getIndex(),  1.0);
-            admittanceAdder.add(secondary1.getIndex(), this.index,  1.0);
-            admittanceAdder.add(secondary2.getIndex(), this.index, -1.0);
-            admittanceAdder.add(primary.getIndex(), this.index, -ratio);
+        public void couple(IAdmittanceAdder admittance) {
+            super.couple(admittance);
+            admittance.add(this.index, primary.getIndex(), ratio);
+            admittance.add(this.index, secondary1.getIndex(), -1.0);
+            admittance.add(this.index, secondary2.getIndex(),  1.0);
+            admittance.add(secondary1.getIndex(), this.index,  1.0);
+            admittance.add(secondary2.getIndex(), this.index, -1.0);
+            admittance.add(primary.getIndex(), this.index, -ratio);
 
-            admittanceAdder.add(primary.getIndex(),   primary.getIndex(),    G_MIN/2);
-            admittanceAdder.add(secondary1.getIndex(), secondary1.getIndex(),  G_MIN/2);
-            admittanceAdder.add(primary.getIndex(),   secondary1.getIndex(), -G_MIN/2);
-            admittanceAdder.add(secondary1.getIndex(), primary.getIndex(),   -G_MIN/2);
+            admittance.add(primary.getIndex(),   primary.getIndex(),    G_MIN/2);
+            admittance.add(secondary1.getIndex(), secondary1.getIndex(),  G_MIN/2);
+            admittance.add(primary.getIndex(),   secondary1.getIndex(), -G_MIN/2);
+            admittance.add(secondary1.getIndex(), primary.getIndex(),   -G_MIN/2);
         }
 
         @Override
@@ -167,27 +168,27 @@ public abstract class TransformerCoupling extends CouplingNode {
         }
 
         @Override
-        public void couple(ElectricalNetwork.IAdmittanceAdder admittanceAdder) {
-            super.couple(admittanceAdder);
-            admittanceAdder.add(this.index, primary1.getIndex(),  ratio);
-            admittanceAdder.add(this.index, primary2.getIndex(), -ratio);
-            admittanceAdder.add(this.index, secondary1.getIndex(), -1.0);
-            admittanceAdder.add(this.index, secondary2.getIndex(),  1.0);
-            admittanceAdder.add(secondary1.getIndex(), this.index,  1.0);
-            admittanceAdder.add(secondary2.getIndex(), this.index, -1.0);
-            admittanceAdder.add(primary1.getIndex(), this.index, -ratio);
-            admittanceAdder.add(primary2.getIndex(), this.index,  ratio);
+        public void couple(IAdmittanceAdder admittance) {
+            super.couple(admittance);
+            admittance.add(this.index, primary1.getIndex(),  ratio);
+            admittance.add(this.index, primary2.getIndex(), -ratio);
+            admittance.add(this.index, secondary1.getIndex(), -1.0);
+            admittance.add(this.index, secondary2.getIndex(),  1.0);
+            admittance.add(secondary1.getIndex(), this.index,  1.0);
+            admittance.add(secondary2.getIndex(), this.index, -1.0);
+            admittance.add(primary1.getIndex(), this.index, -ratio);
+            admittance.add(primary2.getIndex(), this.index,  ratio);
 
             // Put a tiny connection between the sides to stabilize the simulation
-            admittanceAdder.add(primary2.getIndex(),   primary2.getIndex(),    G_MIN/2);
-            admittanceAdder.add(secondary2.getIndex(), secondary2.getIndex(),  G_MIN/2);
-            admittanceAdder.add(primary2.getIndex(),   secondary2.getIndex(), -G_MIN/2);
-            admittanceAdder.add(secondary2.getIndex(), primary2.getIndex(),   -G_MIN/2);
+            admittance.add(primary2.getIndex(),   primary2.getIndex(),    G_MIN/2);
+            admittance.add(secondary2.getIndex(), secondary2.getIndex(),  G_MIN/2);
+            admittance.add(primary2.getIndex(),   secondary2.getIndex(), -G_MIN/2);
+            admittance.add(secondary2.getIndex(), primary2.getIndex(),   -G_MIN/2);
 
-            admittanceAdder.add(primary1.getIndex(),   primary1.getIndex(),    G_MIN/2);
-            admittanceAdder.add(secondary1.getIndex(), secondary1.getIndex(),  G_MIN/2);
-            admittanceAdder.add(primary1.getIndex(),   secondary1.getIndex(), -G_MIN/2);
-            admittanceAdder.add(secondary1.getIndex(), primary1.getIndex(),   -G_MIN/2);
+            admittance.add(primary1.getIndex(),   primary1.getIndex(),    G_MIN/2);
+            admittance.add(secondary1.getIndex(), secondary1.getIndex(),  G_MIN/2);
+            admittance.add(primary1.getIndex(),   secondary1.getIndex(), -G_MIN/2);
+            admittance.add(secondary1.getIndex(), primary1.getIndex(),   -G_MIN/2);
         }
 
         @Override

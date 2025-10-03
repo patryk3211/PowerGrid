@@ -29,6 +29,8 @@ import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
+
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
 
 public class DynamicallyTypedMatrix {
@@ -39,11 +41,18 @@ public class DynamicallyTypedMatrix {
     private LinearSolver<? extends DMatrix, DMatrixRMaj> solver;
     private DMatrix matrix;
     private boolean sparse;
+    private boolean solverValid;
+    private Solver solverType;
 
     public DynamicallyTypedMatrix(int rows, int cols) {
+        this(rows, cols, Solver.CHOLESKY);
+    }
+
+    public DynamicallyTypedMatrix(int rows, int cols, Solver solverType) {
         matrix = new DMatrixRMaj(rows, cols);
         sparse = false;
         solver = null;
+        this.solverType = solverType;
     }
 
     public void denseZero() {
@@ -141,12 +150,12 @@ public class DynamicallyTypedMatrix {
 
     private void makeSolver() {
         if(sparse) {
-            var solver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
-            solver.setA((DMatrixSparseCSC) matrix);
+            var solver = solverType.sparseFactory.apply(FillReducing.NONE);
+            solverValid = solver.setA((DMatrixSparseCSC) matrix);
             this.solver = solver;
         } else {
-            var solver = LinearSolverFactory_DDRM.lu(getNumRows());
-            solver.setA((DMatrixRMaj) matrix);
+            var solver = solverType.denseFactory.apply(getNumRows());
+            solverValid = solver.setA((DMatrixRMaj) matrix);
             this.solver = solver;
         }
     }
@@ -155,18 +164,27 @@ public class DynamicallyTypedMatrix {
     public void refactorize() {
         if(solver != null) {
             if (sparse) {
-                ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA((DMatrixSparseCSC) matrix);
+                solverValid = ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA((DMatrixSparseCSC) matrix);
             } else {
-                ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA((DMatrixRMaj) matrix);
+                solverValid = ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA((DMatrixRMaj) matrix);
             }
         } else {
+            makeSolver();
+        }
+        if(!solverValid && solverType == Solver.CHOLESKY) {
+            // Switch to LU since matrix might not be SPD
+            solverType = Solver.LU;
             makeSolver();
         }
     }
 
     public void solve(DMatrixRMaj b, DMatrixRMaj x) {
         if(solver == null)
-            makeSolver();
+            refactorize();
+        if(!solverValid) {
+            x.zero();
+            return;
+        }
         solver.solve(b, x);
     }
 
@@ -175,7 +193,11 @@ public class DynamicallyTypedMatrix {
         if((sparse && b.sparse != x.sparse) || (!sparse && (b.sparse || x.sparse)))
             throw new IllegalStateException("Sparsity of matrices doesn't match");
         if(solver == null)
-            makeSolver();
+            refactorize();
+        if(!solverValid) {
+            x.matrix.zero();
+            return;
+        }
         if(sparse && b.sparse) {
             var solver = ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) this.solver);
             solver.solveSparse((DMatrixSparseCSC) b.matrix, (DMatrixSparseCSC) x.matrix);
@@ -254,5 +276,18 @@ public class DynamicallyTypedMatrix {
 
     public enum State {
         DENSE, SPARSE
+    }
+
+    public enum Solver {
+        LU(LinearSolverFactory_DSCC::lu, LinearSolverFactory_DDRM::lu),
+        CHOLESKY(LinearSolverFactory_DSCC::cholesky, LinearSolverFactory_DDRM::chol);
+
+        public final Function<FillReducing, LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>> sparseFactory;
+        public final Function<Integer, LinearSolverDense<DMatrixRMaj>> denseFactory;
+
+        Solver(Function<FillReducing, LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>> sparseFactory, Function<Integer, LinearSolverDense<DMatrixRMaj>> denseFactory) {
+            this.sparseFactory = sparseFactory;
+            this.denseFactory = denseFactory;
+        }
     }
 }

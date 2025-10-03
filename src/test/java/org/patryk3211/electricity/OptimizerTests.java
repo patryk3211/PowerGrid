@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
+import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -252,6 +253,39 @@ public class OptimizerTests extends TestHelper {
 
         for(int i = 0; i < SIZE * SIZE; ++i) {
             Assertions.assertEquals(nodes[i].getVoltage(), nodes2[i].getVoltage(), 1e-6, "Optimized network solves with different results");
+        }
+    }
+
+    @Test
+    void optimizeRHSTest() {
+        var Net = new Network();
+
+        var V1 = Net.V(5);
+        var GND1 = Net.V(0);
+        var N1 = Net.N();
+
+        Net.W(1f, V1, N1);
+        var C1 = new CapacitorWire(1, N1, GND1);
+        Net.network.addWire(C1);
+
+        var Net2 = new Network();
+
+        var V2 = Net2.V(5);
+        var GND2 = Net2.V(0);
+        var N2 = Net2.N();
+
+        Net2.W(1f, V2, N2);
+        var C2 = new CapacitorWire(1, N2, GND2);
+        Net2.network.addWire(C2);
+
+        Net2.network.optimizeNode(N2);
+
+        for(int i = 0; i < 10; ++i) {
+            Net.calculate();
+            Net2.calculate();
+
+            Assertions.assertEquals(N1.getVoltage(), N2.getVoltage(), 1e-6, "Optimized network has invalid capacitor voltage");
+            Assertions.assertEquals(V1.getCurrent(), V2.getCurrent(), 1e-6, "Optimized network has invalid source current");
         }
     }
 }

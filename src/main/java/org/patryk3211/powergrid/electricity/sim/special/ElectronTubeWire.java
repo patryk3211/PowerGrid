@@ -15,9 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import org.ejml.data.DMatrixRMaj;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
 public class ElectronTubeWire extends CompoundWire implements ISolverHook {
@@ -76,7 +77,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
         double ids, Gds, gm = 0;
         double ival = vGrid + vAnode / gain;
-        gridCathode.setConductance(vGrid > 0.01 ? GRID_CONDUCTANCE : 0);
+        gridCathode.setConductance(vGrid > 0.01 ? GRID_CONDUCTANCE : ElectricalNetwork.G_MIN);
 
         if (ival < 0 || saturationCurrent == 0) {
             Gds = ElectricalNetwork.G_MIN;
@@ -102,9 +103,9 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     }
 
     @Override
-    public void addResidual(DMatrixRMaj residual) {
-        residual.add(node1.getIndex(), 0,  Ia);
-        residual.add(node2.getIndex(), 0, -Ia);
+    public void addResidual(IResidualAdder residual) {
+        residual.add(node1.getIndex(),  Ia);
+        residual.add(node2.getIndex(), -Ia);
     }
 
     @Override
@@ -130,7 +131,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         }
 
         @Override
-        public void stamp(ElectricalNetwork.IAdmittanceAdder admittance, double change) {
+        public void stamp(IAdmittanceAdder admittance, double change) {
             // Anode-Cathode
             admittance.add(node2.getIndex(), node1.getIndex(), -change);
             // Anode-Grid

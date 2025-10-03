@@ -29,7 +29,7 @@ public interface ISolverHook {
      * Here, you should only apply changes to the provided residual.
      * @param residual Residual matrix
      */
-    default void addResidual(DMatrixRMaj residual) { }
+    default void addResidual(IResidualAdder residual) { }
 
     /**
      * Called once the whole process of solving (including repeats) is complete.

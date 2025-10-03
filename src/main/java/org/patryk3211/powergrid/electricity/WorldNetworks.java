@@ -618,8 +618,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         makeTransmissionLine(part);
                         return true;
                     }
-                } else {
-                    assert part.getEndpoint2().equals(endpoint);
+                } else if(part.getEndpoint2().equals(endpoint)) {
+//                    assert part.getEndpoint2().equals(endpoint);
                     // Check endpoint1
                     if(part.getEndpoint1().isValid(world)) {
                         // Resolve segment
@@ -636,8 +636,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     makeTransmissionLine(part);
                     continueResolving = true;
                 }
-            } else {
-                assert part.getEndpoint2().equals(endpoint);
+            } else if(part.getEndpoint2().equals(endpoint)) {
+//                assert part.getEndpoint2().equals(endpoint);
                 if(traceTree(part.getEndpoint1(), visited)) {
                     makeTransmissionLine(part);
                     continueResolving = true;

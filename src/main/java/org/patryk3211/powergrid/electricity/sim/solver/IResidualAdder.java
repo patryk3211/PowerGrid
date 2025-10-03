@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.sim.node;
+package org.patryk3211.powergrid.electricity.sim.solver;
 
-import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
-
-import java.util.Collection;
-
-public interface ICouplingNode extends INode {
-    void couple(IAdmittanceAdder admittance);
-
-    Collection<IElectricNode> coupledNodes();
+public interface IResidualAdder {
+    void add(int row, double value);
 }

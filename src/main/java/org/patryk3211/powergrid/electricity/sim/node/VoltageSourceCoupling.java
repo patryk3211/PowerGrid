@@ -15,14 +15,15 @@
  */
 package org.patryk3211.powergrid.electricity.sim.node;
 
-import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
 
 import java.util.Collection;
 import java.util.List;
 
-public class VoltageSourceCoupling extends CouplingNode {
+public class VoltageSourceCoupling extends CouplingNode implements IStaticResidual {
     private final IElectricNode positive;
     @Nullable
     private final IElectricNode negative;
@@ -47,8 +48,6 @@ public class VoltageSourceCoupling extends CouplingNode {
     }
 
     public void setVoltage(float voltage) {
-        if(network != null)
-            network.updateCurrentMatrix(this, voltage - this.voltage);
         this.voltage = voltage;
     }
 
@@ -59,13 +58,13 @@ public class VoltageSourceCoupling extends CouplingNode {
     }
 
     @Override
-    public void couple(ElectricalNetwork.IAdmittanceAdder admittanceAdder) {
-        admittanceAdder.add(this.index, positive.getIndex(),  1);
-        admittanceAdder.add(positive.getIndex(), this.index,  1);
-        admittanceAdder.add(this.index, this.index, -resistance);
+    public void couple(IAdmittanceAdder admittance) {
+        admittance.add(this.index, positive.getIndex(),  1);
+        admittance.add(positive.getIndex(), this.index,  1);
+        admittance.add(this.index, this.index, -resistance);
         if(negative != null) {
-            admittanceAdder.add(this.index, negative.getIndex(), -1);
-            admittanceAdder.add(negative.getIndex(), this.index, -1);
+            admittance.add(this.index, negative.getIndex(), -1);
+            admittance.add(negative.getIndex(), this.index, -1);
         }
     }
 
@@ -95,5 +94,10 @@ public class VoltageSourceCoupling extends CouplingNode {
     @Nullable
     public IElectricNode getNegative() {
         return negative;
+    }
+
+    @Override
+    public void addResidual(IResidualAdder residual) {
+        residual.add(index, voltage);
     }
 }
