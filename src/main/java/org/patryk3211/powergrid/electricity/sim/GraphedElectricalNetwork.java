@@ -20,11 +20,8 @@ import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 
-import java.util.ArrayList;
-
-public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
+public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
-    private boolean wiresAltered = false;
 
     public GraphedElectricalNetwork(boolean addGMin) {
         this(new NetworkGraph(), addGMin);
@@ -56,42 +53,16 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
             graph.decouple(cnode);
     }
 
-    private void optimization(IElectricNode node) {
-        if(!graph.hasComplexConnections(node)) {
-            optimizeNode(node);
-        } else {
-            unoptimizeNode(node);
-        }
-    }
-
     @Override
     public void addWire(AbstractElectricWire wire) {
         graph.connect(wire.node1, wire.node2, wire);
         super.addWire(wire);
-        wiresAltered = true;
     }
 
     @Override
     public void removeWire(AbstractElectricWire wire) {
         graph.disconnect(wire.node1, wire.node2, wire);
         super.removeWire(wire);
-        wiresAltered = true;
-    }
-
-    @Override
-    public void calculate() {
-//        if(wiresAltered) {
-//            var optimize = new ArrayList<IElectricNode>();
-//            for (var node : nodes) {
-//                if(node instanceof IElectricNode enode) {
-//                    optimize.add(enode);
-//                }
-//            }
-//            for(var node : optimize)
-//                optimization(node);
-//            wiresAltered = false;
-//        }
-        super.calculate();
     }
 
     public NetworkGraph getGraph() {

@@ -451,10 +451,10 @@ public class ElectricalNetwork {
         var left = new DMatrixRMaj(n, 1);
         JacobianKept.mult(v, left);
 
-        computeResidual(JacobianKept);
+        computeResidual(JacobianKept, StateVector);
         var residualBase = new DMatrixRMaj(ResidualVector);
         CommonOps_DDRM.add(StateVector, epsilon, v, StateVector);
-        computeResidual(JacobianKept);
+        computeResidual(JacobianKept, StateVector);
         var right = new DMatrixRMaj(n, 1);
         CommonOps_DDRM.subtract(ResidualVector, residualBase, right);
 
@@ -525,6 +525,13 @@ public class ElectricalNetwork {
             // Swap nodes and move eliminated pointer
             var other = nodes.get(++eliminatedStart);
             swapNodes(node, other);
+        }
+    }
+
+    public void unoptimizeAll() {
+        if(eliminatedStart != nodes.size()) {
+            eliminatedStart = nodes.size();
+            dirty = true;
         }
     }
 
@@ -662,8 +669,8 @@ public class ElectricalNetwork {
         ResidualVector.add(row, 0, value);
     }
 
-    public void computeResidual(DynamicallyTypedMatrix workMatrix) {
-        workMatrix.mult(StateVector, ResidualVector);
+    public void computeResidual(DynamicallyTypedMatrix workMatrix, DMatrixRMaj state) {
+        workMatrix.mult(state, ResidualVector);
         CommonOps_DDRM.subtract(ResidualVector, ReducedRHSVector, ResidualVector);
         for(var hook : hooks) {
             hook.addResidual(this::residualAdd);
@@ -734,7 +741,7 @@ public class ElectricalNetwork {
             }
             countUpdates = true;
             var workMatrix = getWorkMatrix();
-            computeResidual(workMatrix);
+            computeResidual(workMatrix, StateVector);
             norm = NormOps_DDRM.normP1(ResidualVector);
             if(norm < PRECISION)
                 break;
