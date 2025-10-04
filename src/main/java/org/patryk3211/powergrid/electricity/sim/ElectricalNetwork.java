@@ -735,11 +735,13 @@ public class ElectricalNetwork {
         int i;
         double norm = 0;
         for(i = 0; i < maxAttempts; ++i) {
-            countUpdates = false;
-            for(var hook : hooks) {
-                hook.preSolve();
+            if(hasHooks() && i < maxAttempts - 20 && i % 2 == 0) {
+                countUpdates = false;
+                for(var hook : hooks) {
+                    hook.preSolve();
+                }
+                countUpdates = true;
             }
-            countUpdates = true;
             var workMatrix = getWorkMatrix();
             computeResidual(workMatrix, StateVector);
             norm = NormOps_DDRM.normP1(ResidualVector);
