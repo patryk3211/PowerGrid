@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.electricity.sim;
 import org.patryk3211.powergrid.PowerGrid;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,6 +55,8 @@ public class PerformanceCounter {
     }
 
     public void start() {
+        // Removes stale counters
+        COUNTERS.removeIf(other -> other != this && other.name.equals(name));
         start = System.nanoTime();
     }
 

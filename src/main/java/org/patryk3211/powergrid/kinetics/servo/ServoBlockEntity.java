@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.kinetics.servo;
 
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
@@ -23,6 +24,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -32,6 +34,8 @@ import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.AVERAGING_TICKS;
+
 public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     public static final float MAX_SPEED = 32.0f;
 
@@ -40,13 +44,19 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     protected ThermalBehaviour thermalBehaviour;
     private float generatedSpeed;
     private float currentAngle;
-    private float prevTarget;
+//    private float prevTarget;
+    private float maxSpeed;
+    private float currentTarget;
 
     private ElectricWire coil;
     private ElectricWire control;
 
+    private float avgSpeed;
+    private float avgTarget;
+
     public ServoBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        setLazyTickRate(AVERAGING_TICKS);
     }
 
     @Override
@@ -55,47 +65,69 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        thermalBehaviour = ThermalBehaviour.forVoltageAtResistance(this, 20, resistance("on"), 3.5f);
+        var maxPower = MAX_SPEED * torque() * Math.PI / 30;
+        var baseFactor = ThermalBehaviour.dissipationFactor((float) maxPower, 150);
+        thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
+    }
+
+    public float torque() {
+        return (float) (BlockStressValues.getCapacity(getBlockState().getBlock()) * ModdedConfigs.server().kinetics.torqueForStress.getF());
+    }
+
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        if(level.isClientSide)
+            return;
+
+        // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
+        float newTarget = Mth.clamp((avgTarget / AVERAGING_TICKS) / 5.0f * 360.0f, -360f, 360f);
+//        newTarget = prevTarget * 0.5f + newTarget * 0.5f;
+        currentTarget = newTarget;
+        avgTarget = 0;
+
+        maxSpeed = Math.min(avgSpeed / AVERAGING_TICKS, MAX_SPEED);
+        avgSpeed = 0;
+        if(maxSpeed == 0 && generatedSpeed != 0) {
+            generatedSpeed = 0;
+            updateGeneratedRotation();
+            notifyUpdate();
+        }
     }
 
     @Override
     public void tick() {
         applyLostPower(coil.power());
+        if(!level.isClientSide || isVirtual()) {
+            var speedFromPower = (coil.power() / torque()) * 30 / Math.PI;
+            avgSpeed += (float) speedFromPower;
+            avgTarget += control.potentialDifference();
+        }
         super.tick();
-        // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
-        float newTarget = Mth.clamp(control.potentialDifference() / 5.0f * 360.0f, -360f, 360f);
-        newTarget = prevTarget * 0.5f + newTarget * 0.5f;
-        prevTarget = newTarget;
 
-        // Target coil voltage is 20V
-        float maxSpeed = Math.min(Math.abs(coil.potentialDifference()) * 0.05f, 1.0f) * MAX_SPEED;
-        if(maxSpeed == 0 && generatedSpeed != 0) {
-            generatedSpeed = 0;
-            updateGeneratedRotation();
-            notifyUpdate();
-            return;
+        if(!level.isClientSide || isVirtual()) {
+            float rotation = (currentTarget - currentAngle) / 360.0f;
+            if (Math.abs(rotation) < 0.01f)
+                rotation = 0;
+
+            var dT = 0.05f;
+            var speed = Mth.clamp(rotation / dT * 60.0f, -maxSpeed, maxSpeed);
+            if (speed != generatedSpeed) {
+                generatedSpeed = speed;
+                updateGeneratedRotation();
+                notifyUpdate();
+            }
+
+            if (generatedSpeed != 0) {
+                coil.setResistance(resistance("on"));
+            } else {
+                coil.setResistance(resistance("idle"));
+            }
+
+            currentAngle += generatedSpeed / 60.0f * dT * 360f;
         }
-
-        float rotation = (newTarget - currentAngle) / 360.0f;
-        if(Math.abs(rotation) < 0.01f)
-            rotation = 0;
-
-        var speed = Mth.clamp(rotation / 0.05f * 60.0f, -maxSpeed, maxSpeed);
-        if(speed != generatedSpeed) {
-            generatedSpeed = speed;
-            updateGeneratedRotation();
-            notifyUpdate();
-        }
-
-        if(generatedSpeed != 0) {
-            coil.setResistance(resistance("on"));
-        } else {
-            coil.setResistance(resistance("idle"));
-        }
-
-        currentAngle += generatedSpeed / 60.0f * 0.05f * 360f;
     }
 
     protected void applyLostPower(float power) {
@@ -123,6 +155,11 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         super.read(compound, clientPacket);
         generatedSpeed = compound.getFloat("GeneratedSpeed");
         currentAngle = compound.getFloat("Angle");
+        if(generatedSpeed != 0) {
+            coil.setResistance(resistance("on"));
+        } else {
+            coil.setResistance(resistance("idle"));
+        }
         updateGeneratedRotation();
     }
 

@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.kinetics.servo;
 
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.data.Iterate;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
@@ -123,6 +125,8 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance("on"), player, tooltip);
-        Voltage.max(20, player, tooltip);
+        var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
+        var maxPower = ServoBlockEntity.MAX_SPEED * torque * Math.PI / 30;
+        Voltage.max((int) Math.sqrt(maxPower * resistance("on")), player, tooltip);
     }
 }

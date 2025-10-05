@@ -31,7 +31,7 @@ public class ResistanceValues {
             if(v != null)
                 return (float) v.getAsDouble();
         }
-        throw new IllegalArgumentException("Block not found in any resistance providers");
+        throw new IllegalArgumentException("Block '" + block + "' not found in any resistance providers");
     }
 
     public static float get(Block block, String suffix) {
@@ -40,7 +40,7 @@ public class ResistanceValues {
             if(v != null)
                 return (float) v.getAsDouble();
         }
-        throw new IllegalArgumentException("Block with suffix '" + suffix + "' not found in any resistance providers");
+        throw new IllegalArgumentException("Block '" + block + "' with suffix '" + suffix + "' not found in any resistance providers");
     }
 
     public static void register(Provider provider) {

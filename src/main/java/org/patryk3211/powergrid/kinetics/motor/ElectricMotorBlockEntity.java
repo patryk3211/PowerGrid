@@ -33,7 +33,7 @@ import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
 import java.util.List;
 
 public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
-    private static final int AVERAGING_TICKS = 5;
+    public static final int AVERAGING_TICKS = 5;
 
     protected ElectricBehaviour electricBehaviour;
     @Nullable

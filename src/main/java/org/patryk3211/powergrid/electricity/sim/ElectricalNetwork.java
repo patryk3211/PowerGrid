@@ -407,9 +407,9 @@ public class ElectricalNetwork {
             JacobianEliminated.solve(JacobianBottom, WMatrix);
             JacobianRight.mult(WMatrix, ReducedCorrection);
 
-            eliminatedChanged = false;
             recalculateReduced = true;
         }
+        eliminatedChanged = false;
     }
 
     public void merge(ElectricalNetwork other) {
@@ -619,8 +619,9 @@ public class ElectricalNetwork {
         if(ReducedJacobian != null) {
             workMatrix = ReducedJacobian;
             if(eliminatedChanged) {
+                // This is not efficient at all, if a node has dynamic conductance it should not be eliminated
                 calculateEliminatedMatrices();
-                recalculateReduced = true;
+                computeRHS();
             }
             if(recalculateReduced) {
                 JacobianKept.subtract(ReducedCorrection, ReducedJacobian);

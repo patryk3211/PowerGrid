@@ -468,7 +468,7 @@ public class ModdedBlocks {
             }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(CStress.setCapacity(32))
-            .transform(CResistance.setResistances("on", 2, "idle", 20))
+            .transform(CResistance.setResistances("on", 6.4, "idle", 64))
             .transform(pickaxeOnly())
             .onRegister(BlockStressValues.setGeneratorSpeed(32, true))
             .defaultLoot()
