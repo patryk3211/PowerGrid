@@ -206,7 +206,7 @@ public class OptimizerTests extends TestHelper {
         var S2 = Net.N();
         var Tie = Net.N();
 
-        var TR = Net.TR(1, 1, V, GND, S2, S1);
+        var TR = Net.TR(1, 1, V, GND, S1, S2);
         Net.W(2, S1, Tie);
         Net.W(2, S2, Tie);
 

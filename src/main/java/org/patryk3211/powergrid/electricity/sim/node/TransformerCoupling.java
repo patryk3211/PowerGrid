@@ -173,10 +173,10 @@ public abstract class TransformerCoupling extends CouplingNode {
 
             admittance.add(this.index, primary1.getIndex(),  ratio);
             admittance.add(this.index, primary2.getIndex(), -ratio);
-            admittance.add(this.index, secondary1.getIndex(),  1.0);
-            admittance.add(this.index, secondary2.getIndex(), -1.0);
-            admittance.add(secondary1.getIndex(), this.index,  1.0);
-            admittance.add(secondary2.getIndex(), this.index, -1.0);
+            admittance.add(this.index, secondary2.getIndex(),  1.0);
+            admittance.add(this.index, secondary1.getIndex(), -1.0);
+            admittance.add(secondary2.getIndex(), this.index,  1.0);
+            admittance.add(secondary1.getIndex(), this.index, -1.0);
             admittance.add(primary1.getIndex(), this.index,  ratio);
             admittance.add(primary2.getIndex(), this.index, -ratio);
 
