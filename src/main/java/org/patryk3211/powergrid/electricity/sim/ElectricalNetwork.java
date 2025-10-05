@@ -589,7 +589,7 @@ public class ElectricalNetwork {
 
             ReducedRHSVector = new DMatrixRMaj(reducedCount, 1);
 
-            ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount);
+            ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
             ResidualVector = new DMatrixRMaj(reducedCount, 1);
             StateVector = new DMatrixRMaj(reducedCount, 1);
             AuxiliaryVector = new DMatrixRMaj(reducedCount, 1);
@@ -704,12 +704,16 @@ public class ElectricalNetwork {
     private void rowScales(DynamicallyTypedMatrix matrix) {
         int n = matrix.getNumRows();
         for(int i = 0; i < n; ++i) {
+            if(nodes.get(i) instanceof ICouplingNode) {
+                rowScales[i] = 1;
+                continue;
+            }
             double max = 0;
             for(int j = 0; j < n; ++j)  {
                 var v = Math.abs(matrix.get(i, j));
                 max += v * v;
             }
-            if(max == 0 || nodes.get(i) instanceof ICouplingNode) {
+            if(max == 0) {
                 rowScales[i] = 1;
                 continue;
             }
