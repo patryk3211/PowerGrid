@@ -45,6 +45,7 @@ public class ElectricalNetwork {
 
     private final ISolver solver;
     private int sourceCount;
+    private int groundReferenceCount;
 
     private DMatrixRMaj ResidualVector;
 
@@ -210,6 +211,8 @@ public class ElectricalNetwork {
         wires.add(wire);
         if(wire instanceof CapacitorWire)
             ++sourceCount;
+        if(wire.node1 == null || wire.node2 == null)
+            ++groundReferenceCount;
 
         updateConductance(wire, wire.conductance());
         if(wire instanceof ISolverHook hook)
@@ -241,6 +244,8 @@ public class ElectricalNetwork {
         wire.setNetwork(null);
         if(wire instanceof CapacitorWire)
             --sourceCount;
+        if(wire.node1 == null || wire.node2 == null)
+            --groundReferenceCount;
 
         updateConductance(wire, -wire.conductance());
         if(wire instanceof ISolverHook hook)
@@ -379,11 +384,13 @@ public class ElectricalNetwork {
                     }
                 }
             }
-            // Add a shunt to ground to the first floating node.
-            // This ensures that the simulation is anchored to a 0V reference somewhere
-            // and should improve performance and stability when there are only 2 port sources.
-            if (shouldAnchor && anchor != null) {
-                JacobianKept.add(anchor.getIndex(), anchor.getIndex(), 1000);
+            if(groundReferenceCount == 0) {
+                // Add a shunt to ground to the first floating node.
+                // This ensures that the simulation is anchored to a 0V reference somewhere
+                // and should improve performance and stability when there are only 2 port sources.
+                if (shouldAnchor && anchor != null) {
+                    JacobianKept.add(anchor.getIndex(), anchor.getIndex(), 1000);
+                }
             }
         }
 

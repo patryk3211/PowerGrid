@@ -58,6 +58,10 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("wire/simple", WireScenes::simple)
                 .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
 
+        HELPER.forComponents(ModdedBlocks.GROUNDING_ROD)
+                .addStoryBoard("ground1", WireScenes::grounding, PowerGridPonderTags.ELECTRIC_RELAYS)
+                .addStoryBoard("ground2", WireScenes::improvedGround, PowerGridPonderTags.ELECTRIC_RELAYS);
+
         HELPER.forComponents(ModdedBlocks.TRANSFORMER_CORE)
                 .addStoryBoard("transformer/sizes", DeviceScenes::transformerSizes, PowerGridPonderTags.ELECTRIC_RELAYS)
                 .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding, PowerGridPonderTags.ELECTRIC_RELAYS);

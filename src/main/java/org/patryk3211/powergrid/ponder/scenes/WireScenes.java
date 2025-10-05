@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.ponder.scenes;
 
+import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.BlockPos;
@@ -23,6 +24,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
+import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 ;
 
@@ -182,5 +184,74 @@ public class WireScenes {
 
         scene.markAsFinished();
         electric.unload();
+    }
+
+    public static void grounding(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("grounding", "Ground reference");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(2, 1, 2), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(60)
+                .text("The grounding rod provides a 0V ground reference to your grid")
+                .pointAt(util.vector().of(2.5, 1.125, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay().showText(60)
+                .text("You can use it to transfer power but you must be careful...")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay().showText(90)
+                .text("High potential and bad ground conditions will cause the ground to become electrified and cause damage to nearby entities.")
+                .colored(PonderPalette.RED)
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(100);
+
+        scene.markAsFinished();
+    }
+
+    public static void improvedGround(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("improved_grounding", "Better ground reference");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        var grass = scene.world().showIndependentSection(util.select().fromTo(1, 2, 1, 3, 3, 3), Direction.DOWN);
+        scene.world().moveSection(grass, util.vector().of(0, -1, 0), 0);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("Regular blocks are not that conductive and will cause your grounding rod to have a high impedance")
+                .pointAt(util.vector().topOf(1, 1, 1))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world().hideIndependentSection(grass, Direction.UP);
+        scene.idle(20);
+        scene.world().showSection(util.select().fromTo(1, 1, 1, 3, 1, 3), Direction.DOWN);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("You can improve the ground conditions by adding conductive blocks close to the grounding rod")
+                .pointAt(util.vector().topOf(2, 1, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world().showSection(util.select().fromTo(1, 2, 1, 3, 3, 3), Direction.DOWN);
+        scene.idle(20);
+
+        scene.markAsFinished();
     }
 }

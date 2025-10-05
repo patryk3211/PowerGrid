@@ -38,6 +38,7 @@ import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
+import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
@@ -272,6 +273,11 @@ public class ModdedBlockEntities {
                     .visual(() -> TunedBlockVisual::new)
                     .validBlock(ModdedBlocks.RHEOSTAT)
                     .renderer(() -> TunedBlockRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<GroundingRodBlockEntity> GROUNDING_ROD =
+            REGISTRATE.blockEntity("grounding_rod", GroundingRodBlockEntity::new)
+                    .validBlock(ModdedBlocks.GROUNDING_ROD)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

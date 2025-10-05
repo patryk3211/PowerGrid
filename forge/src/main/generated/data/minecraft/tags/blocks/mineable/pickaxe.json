@@ -41,6 +41,7 @@
     "powergrid:fuse_holder",
     "powergrid:alarm_bell",
     "powergrid:thermometer",
-    "powergrid:rheostat"
+    "powergrid:rheostat",
+    "powergrid:grounding_rod"
   ]
 }

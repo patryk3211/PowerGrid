@@ -47,6 +47,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('T', Items.TERRACOTTA)
             ),
 
+    GROUNDING_ROD = create(ModdedBlocks.GROUNDING_ROD)
+            .unlockedBy(() -> AllItems.COPPER_SHEET)
+            .viaShaped(b -> b
+                    .pattern("P")
+                    .pattern("I")
+                    .pattern("I")
+                    .define('P', RecipeTags.copperSheet())
+                    .define('I', RecipeTags.copperIngot())
+            ),
+
     LV_LIGHT_BULB = create(ModdedItems.LV_LIGHT_BULB)
             .unlockedBy(ModdedBlocks.LIGHT_FIXTURE::get)
             .viaShaped(b -> b

@@ -96,7 +96,8 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.RESISTOR)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
                 .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
-                .add(ModdedBlocks.DEVICE_CONNECTOR);
+                .add(ModdedBlocks.DEVICE_CONNECTOR)
+                .add(ModdedBlocks.GROUNDING_ROD);
 
         HELPER.addToTag(ELECTRIC_DEVICES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR)

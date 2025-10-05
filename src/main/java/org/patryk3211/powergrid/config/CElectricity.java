@@ -44,6 +44,11 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigFloat holdingCurrentPercent = f(0.9f, 0.01f, 0.99f, "holdingCurrentPercent", Comments.holdingCurrentPercent);
 
+    public final ConfigInt groundingMinimumBlocks = i(10, 0, "groundingMinimumBlocks", Comments.groundingMinimumBlocks);
+    public final ConfigInt groundingMaximumBlocks = i(64, 0, "groundingMaximumBlocks", Comments.groundingMaximumBlocks);
+    public final ConfigFloat groundingHighestResistance = f(5000, 0.001f, "groundingHighestResistance", Comments.groundingHighestResistance);
+    public final ConfigFloat groundingLowestResistance = f(1, 0.001f, "groundingLowestResistance", Comments.groundingLowestResistance);
+
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
 
@@ -81,5 +86,10 @@ public class CElectricity extends ConfigBase {
         public static final String transformerMutualInductanceMultiplier = "Multiplies the mutual inductance of transformers to get a resistance. Bigger values make transformers use less electricity.";
 
         public static final String holdingCurrentPercent = "Percent of the turn-on current required for on state to be kept by relays and conductors";
+
+        public static final String groundingMinimumBlocks = "Minimum blocks needed for a grounding rod to work";
+        public static final String groundingMaximumBlocks = "Maximum conductive blocks needed for a grounding rod to reach its lowest resistance";
+        public static final String groundingHighestResistance = "Highest resistance of the grounding rod";
+        public static final String groundingLowestResistance = "Lowest resistance of the grounding rod";
     }
 }

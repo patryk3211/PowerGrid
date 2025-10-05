@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/copper"
+    },
+    "P": {
+      "tag": "forge:plates/copper"
+    }
+  },
+  "pattern": [
+    "P",
+    "I",
+    "I"
+  ],
+  "result": {
+    "item": "powergrid:grounding_rod"
+  },
+  "show_notification": true
+}

@@ -68,6 +68,7 @@ import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
+import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
@@ -597,6 +598,13 @@ public class ModdedBlocks {
             .item()
                 .model(itemWithParent("block/rheostat/item"))
                 .build()
+            .register();
+
+    public static final BlockEntry<GroundingRodBlock> GROUNDING_ROD = REGISTRATE.block("grounding_rod", GroundingRodBlock::new)
+            .initialProperties(() -> Blocks.LIGHTNING_ROD)
+            .blockstate(simple("block/grounding_rod"))
+            .transform(pickaxeOnly())
+            .simpleItem()
             .register();
 
     public static void register() {

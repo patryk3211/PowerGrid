@@ -40,6 +40,10 @@ public class RecipeTags {
         return nuggets("copper");
     }
 
+    public static TagKey<Item> copperIngot() {
+        return ingots("copper");
+    }
+
     public static TagKey<Item> ironNugget() {
         return nuggets("iron");
     }
