@@ -169,15 +169,16 @@ public abstract class TransformerCoupling extends CouplingNode {
 
         @Override
         public void couple(IAdmittanceAdder admittance) {
-            super.couple(admittance);
+            admittance.add(this.index, this.index, -resistance);
+
             admittance.add(this.index, primary1.getIndex(),  ratio);
             admittance.add(this.index, primary2.getIndex(), -ratio);
-            admittance.add(this.index, secondary1.getIndex(), -1.0);
-            admittance.add(this.index, secondary2.getIndex(),  1.0);
+            admittance.add(this.index, secondary1.getIndex(),  1.0);
+            admittance.add(this.index, secondary2.getIndex(), -1.0);
             admittance.add(secondary1.getIndex(), this.index,  1.0);
             admittance.add(secondary2.getIndex(), this.index, -1.0);
-            admittance.add(primary1.getIndex(), this.index, -ratio);
-            admittance.add(primary2.getIndex(), this.index,  ratio);
+            admittance.add(primary1.getIndex(), this.index,  ratio);
+            admittance.add(primary2.getIndex(), this.index, -ratio);
 
             // Put a tiny connection between the sides to stabilize the simulation
             admittance.add(primary2.getIndex(),   primary2.getIndex(),    G_MIN/2);
