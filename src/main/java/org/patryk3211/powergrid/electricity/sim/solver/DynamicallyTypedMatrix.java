@@ -151,11 +151,19 @@ public class DynamicallyTypedMatrix {
     private void makeSolver() {
         if(sparse) {
             var solver = solverType.sparseFactory.apply(FillReducing.NONE);
-            solverValid = solver.setA((DMatrixSparseCSC) matrix);
+            var a = (DMatrixSparseCSC) matrix;
+            if(solver.modifiesA()) {
+                a = new DMatrixSparseCSC(a);
+            }
+            solverValid = solver.setA(a);
             this.solver = solver;
         } else {
             var solver = solverType.denseFactory.apply(getNumRows());
-            solverValid = solver.setA((DMatrixRMaj) matrix);
+            var a = (DMatrixRMaj) matrix;
+            if(solver.modifiesA()) {
+                a = new DMatrixRMaj(a);
+            }
+            solverValid = solver.setA(a);
             this.solver = solver;
         }
     }
@@ -164,9 +172,17 @@ public class DynamicallyTypedMatrix {
     public void refactorize() {
         if(solver != null) {
             if (sparse) {
-                solverValid = ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA((DMatrixSparseCSC) matrix);
+                var a = (DMatrixSparseCSC) matrix;
+                if(solver.modifiesA()) {
+                    a = new DMatrixSparseCSC(a);
+                }
+                solverValid = ((LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj>) (Object) solver).setA(a);
             } else {
-                solverValid = ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA((DMatrixRMaj) matrix);
+                var a = (DMatrixRMaj) matrix;
+                if(solver.modifiesA()) {
+                    a = new DMatrixRMaj(a);
+                }
+                solverValid = ((LinearSolverDense<DMatrixRMaj>) (Object) solver).setA(a);
             }
         } else {
             makeSolver();

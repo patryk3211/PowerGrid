@@ -77,7 +77,7 @@ public class ElectricalNetwork {
     private int scalesAge = 0;
     private boolean countUpdates = true;
 
-    private boolean recalculateReduced;
+    private boolean recalculateScales;
     private boolean eliminatedChanged;
     private boolean eliminatedRHSZero;
     private boolean eliminatedSolved;
@@ -272,9 +272,11 @@ public class ElectricalNetwork {
     protected void jacobianAdd(int row, int column, double value) {
         if(value == 0)
             return;
-        recalculateReduced = true;
+        recalculateScales = true;
         if(row < eliminatedStart && column < eliminatedStart) {
             JacobianKept.add(row, column, value);
+            if(ReducedJacobian != null)
+                ReducedJacobian.add(row, column, value);
         } else if(row < eliminatedStart) {
             JacobianRight.add(row, column - eliminatedStart, value);
             eliminatedChanged = true;
@@ -394,10 +396,10 @@ public class ElectricalNetwork {
             }
         }
 
-        calculateEliminatedMatrices();
-        recalculateReduced = true;
-
         JacobianKept.optimize();
+
+        calculateEliminatedMatrices();
+        recalculateScales = true;
     }
 
     private void calculateEliminatedMatrices() {
@@ -414,7 +416,10 @@ public class ElectricalNetwork {
             JacobianEliminated.solve(JacobianBottom, WMatrix);
             JacobianRight.mult(WMatrix, ReducedCorrection);
 
-            recalculateReduced = true;
+            JacobianKept.subtract(ReducedCorrection, ReducedJacobian);
+            ReducedJacobian.optimize();
+
+            recalculateScales = true;
         }
         eliminatedChanged = false;
     }
@@ -630,10 +635,6 @@ public class ElectricalNetwork {
                 calculateEliminatedMatrices();
                 computeRHS();
             }
-            if(recalculateReduced) {
-                JacobianKept.subtract(ReducedCorrection, ReducedJacobian);
-                ReducedJacobian.optimize();
-            }
         } else {
             workMatrix = JacobianKept;
         }
@@ -641,15 +642,15 @@ public class ElectricalNetwork {
     }
 
     private void prepareScaled(DynamicallyTypedMatrix workMatrix) {
-        var computeScaled = recalculateReduced;
         if(scalesAge >= 20) {
             computeScales(workMatrix);
-            computeScaled = true;
+            recalculateScales = true;
         }
-        if(computeScaled) {
+        if(recalculateScales) {
             workMatrix.multColumns(columnScales, ScaledJ);
             ScaledJ.multRows(rowScales, null);
             ScaledJ.refactorize();
+            recalculateScales = false;
         }
     }
 
@@ -760,7 +761,6 @@ public class ElectricalNetwork {
             if(norm < PRECISION)
                 break;
             prepareScaled(workMatrix);
-            recalculateReduced = false;
 
             // Perform Newton iterations
             AuxiliaryVector.setTo(ResidualVector);
