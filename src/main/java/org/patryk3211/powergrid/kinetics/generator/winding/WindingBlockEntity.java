@@ -160,7 +160,16 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        return ThermalBehaviour.fromConfig(this);
+        var thermal = ThermalBehaviour.fromConfig(this);
+        if(thermal != null) {
+            thermal.overheatCallback(() -> {
+                var block = (WindingBlock) getBlockState().getBlock();
+                block.walk(level, worldPosition, (pos1, state) -> {
+                    level.destroyBlock(pos1, false);
+                });
+            });
+        }
+        return thermal;
     }
 
     private void checkParallelPosition(BlockPos thisPos, Direction side, boolean thisIsOwner) {
