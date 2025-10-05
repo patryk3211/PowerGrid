@@ -17,11 +17,13 @@ package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.Create;
 import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
@@ -34,8 +36,11 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
+import org.patryk3211.powergrid.utility.Lang;
 
-public abstract class GaugeComponent extends OrientableComponent implements IRedstoneComponent, IRenderedComponent {
+import java.util.List;
+
+public abstract class GaugeComponent extends OrientableComponent implements IRedstoneComponent, IRenderedComponent, IComponentGoggleInformation {
     public static final IntProperty LEVEL = (IntProperty) new IntProperty(PowerGrid.MOD_ID, "redstone_level", 0, 0, 15).hidden();
 
     public GaugeComponent(ComponentFootprint footprint) {
@@ -111,5 +116,11 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
                     .light(light)
                     .renderInto(ms, bufferSource.getBuffer(RenderType.solid()));
         }
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(PlacedComponent component, List<Component> tooltip, boolean isPlayerSneaking) {
+        Lang.builder(Create.ID).translate("gui.gauge.info_header").forGoggles(tooltip);
+        return true;
     }
 }

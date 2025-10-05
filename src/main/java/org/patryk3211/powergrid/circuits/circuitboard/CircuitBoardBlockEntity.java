@@ -19,6 +19,7 @@ import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,9 +27,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.IComponentGoggleInformation;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -350,23 +353,43 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     @Override
     public boolean addToGoggleTooltip(List<net.minecraft.network.chat.Component> tooltip, boolean isPlayerSneaking) {
-        if(baked == null || !baked.isDamaged())
+        if(baked == null)
             return false;
 
-        Lang.translate("gui.damage_header")
-                .forGoggles(tooltip);
-        Lang.translate("gui.circuit_board.damage_body")
-                .style(ChatFormatting.GRAY)
-                .forGoggles(tooltip);
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-            var player = ClientSideAccess.player();
-            if(!player.isCreative())
-                return;
-            Lang.translate("gui.circuit_board.damage_creative_repair")
-                    .style(ChatFormatting.DARK_GRAY)
+        var hasInfo = new MutableBoolean(false);
+        if(baked.isDamaged()) {
+            Lang.translate("gui.damage_header")
                     .forGoggles(tooltip);
+            Lang.translate("gui.circuit_board.damage_body")
+                    .style(ChatFormatting.GRAY)
+                    .forGoggles(tooltip);
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+                var player = ClientSideAccess.player();
+                if (!player.isCreative())
+                    return;
+                Lang.translate("gui.circuit_board.damage_creative_repair")
+                        .style(ChatFormatting.DARK_GRAY)
+                        .forGoggles(tooltip);
+            });
+            hasInfo.setTrue();
+        }
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+            var hit = ClientSideAccess.getHitResult();
+            var hitLocalPos = hit.getLocation().subtract(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
+            hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -CircuitBoardBlock.getAngleY(getBlockState()), Direction.Axis.Y);
+            hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -CircuitBoardBlock.getAngleX(getBlockState()), Direction.Axis.X);
+            for(var placed : getComponents(IComponentGoggleInformation.class)) {
+                if(hitLocalPos.x * 16 >= placed.x && hitLocalPos.z * 16 >= placed.y &&
+                    hitLocalPos.x * 16 < placed.x + placed.footprint().getWidth() &&
+                    hitLocalPos.z * 16 < placed.y + placed.footprint().getHeight()) {
+                    var info = (IComponentGoggleInformation) placed.component;
+                    if (info.addToGoggleTooltip(placed, tooltip, isPlayerSneaking)) {
+                        hasInfo.setTrue();
+                    }
+                }
+            }
         });
-        return true;
+        return hasInfo.getValue();
     }
 
     public BakedCircuit getBaked() {

@@ -86,7 +86,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
         return Unit.VOLTAGE;
     }
 
-    protected ChatFormatting measurementColor(float value) {
+    public static ChatFormatting measurementColor(float value, float maxValue) {
         if(value < maxValue * 0.01)
             return ChatFormatting.DARK_GRAY;
         else if(value < maxValue * 0.5)
@@ -97,15 +97,11 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
             return ChatFormatting.LIGHT_PURPLE;
     }
 
-    @Override
-    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-
+    public static void addTooltip(List<Component> tooltip, float potential, float maxValue) {
         Lang.builder().translate("gui.voltage_meter.title")
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        var potential = getValue();
         potential = Math.round(potential * 100f) / 100f;
         var voltageText = String.format("%.2f", potential);
         if(Math.abs(potential) > maxValue) {
@@ -119,9 +115,14 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
                 .text(voltageText)
                 .add(Component.nullToEmpty(" "))
                 .add(Unit.VOLTAGE.get())
-                .style(measurementColor(Math.abs(potential)))
+                .style(measurementColor(Math.abs(potential), maxValue))
                 .forGoggles(tooltip, 1);
+    }
 
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
+        addTooltip(tooltip, getValue(), maxValue);
         return true;
     }
 }

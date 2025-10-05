@@ -91,7 +91,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
         return Unit.CURRENT;
     }
 
-    protected ChatFormatting measurementColor(float value) {
+    public static ChatFormatting measurementColor(float value, float maxValue) {
         if(value < maxValue * 0.01)
             return ChatFormatting.DARK_GRAY;
         else if(value < maxValue * 0.5)
@@ -102,18 +102,13 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
             return ChatFormatting.RED;
     }
 
-    @Override
-    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-
+    public static void addTooltip(List<Component> tooltip, float current, float maxValue, boolean useMillis) {
         Lang.builder().translate("gui.current_meter.title")
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        var current = getValue();
         String currentText;
-        var milli = false;
-        if(gaugeValue.getValue() > 1) {
+        if(!useMillis) {
             current = Math.round(current * 100f) / 100f;
             currentText = String.format("%.2f", current);
             if(Math.abs(current) > maxValue) {
@@ -123,7 +118,6 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
                     currentText = String.format("< %.2f", -maxValue);
             }
         } else {
-            milli = true;
             current = Math.round(current * 100000f) / 100f;
             currentText = String.format("%.1f", current);
             if(Math.abs(current / 1000) > maxValue) {
@@ -132,15 +126,21 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
                 else
                     currentText = String.format("< %.1f", -maxValue * 1000);
             }
+            current /= 1000;
         }
 
         Lang.builder()
                 .text(currentText)
-                .add(Component.nullToEmpty(milli ? " m" : " "))
+                .add(Component.nullToEmpty(useMillis ? " m" : " "))
                 .add(Unit.CURRENT.get())
-                .style(measurementColor(Math.abs(current / 1000)))
+                .style(measurementColor(Math.abs(current), maxValue))
                 .forGoggles(tooltip, 1);
+    }
 
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
+        addTooltip(tooltip, getValue(), maxValue, gaugeValue.getValue() <= 1);
         return true;
     }
 }
