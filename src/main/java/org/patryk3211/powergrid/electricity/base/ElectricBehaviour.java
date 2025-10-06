@@ -308,6 +308,13 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
     }
 
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        if(paused)
+            unpause();
+    }
+
     public void inheritConnections(ElectricBehaviour otherBehaviour) {
         for(var entry : otherBehaviour.connections.entrySet()) {
             var thisList = connections.computeIfAbsent(entry.getKey(), key -> new HashSet<>());
