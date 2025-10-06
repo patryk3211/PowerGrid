@@ -38,6 +38,10 @@ public class InductorCoupling extends CouplingNode implements IStaticResidual {
         this.inductance = inductance;
     }
 
+    public InductorCoupling(Number inductance, IElectricNode node1, IElectricNode node2) {
+        this(inductance.doubleValue(), node1, node2);
+    }
+
     public double resistance() {
         // dt = 50ms (1 tick)
         return 2 * inductance / 0.05f;
@@ -60,6 +64,8 @@ public class InductorCoupling extends CouplingNode implements IStaticResidual {
         currentInject = 0;
 
         // Calculate voltage with a bit of leakage
+        if(Math.signum(prevCurrent) != Math.signum(prevPotential))
+            prevPotential = 0;
         Veq = (-R * prevCurrent - prevPotential) * 0.99999;
 
         residual.add(index, Veq);
@@ -77,5 +83,12 @@ public class InductorCoupling extends CouplingNode implements IStaticResidual {
     @Override
     public Collection<IElectricNode> coupledNodes() {
         return List.of();
+    }
+
+    public void setInductance(double inductance) {
+        var old = resistance();
+        this.inductance = inductance;
+        if(network != null)
+            network.alterConductanceMatrix(index, index, -(resistance() - old));
     }
 }
