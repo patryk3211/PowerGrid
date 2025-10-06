@@ -70,7 +70,7 @@ public class ColdCathodeRegulatorTubeWire extends DynamicConductanceWire {
     @Override
     public void postUpperSolve() {
         // Update discharge state
-        double I = current(), V = potentialDifference();
+        double V = potentialDifference(), I = (V - holdingVoltage) * dischargeConductance;
         if(!lit && V > breakdownVoltage) {
             lit = true;
         } else if(lit && I < holdingCurrent) {

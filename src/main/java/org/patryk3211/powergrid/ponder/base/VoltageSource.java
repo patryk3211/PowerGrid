@@ -42,7 +42,7 @@ public class VoltageSource extends PonderElementBase {
                 target.joinNetwork(scene.getWorld(), global.newNetwork());
             }
             var network = node.getNetwork();
-            source = new VoltageSourceCoupling(node, null, voltage);
+            source = new VoltageSourceCoupling(node, null, 0, voltage);
             network.addNode(source);
         }
     }
@@ -52,6 +52,12 @@ public class VoltageSource extends PonderElementBase {
         if(source != null) {
             source.getNetwork().removeNode(source);
             source = null;
+        }
+    }
+
+    public void setValue(float value) {
+        if(source != null) {
+            source.setVoltage(value);
         }
     }
 }

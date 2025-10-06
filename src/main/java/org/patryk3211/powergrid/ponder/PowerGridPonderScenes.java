@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.ponder;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -22,6 +23,7 @@ import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.bell.AlarmBellSoundInstance;
 import org.patryk3211.powergrid.ponder.scenes.*;
 
 public class PowerGridPonderScenes {
@@ -104,5 +106,16 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.ELECTROMAGNET, "electromagnet", DeviceScenes::electromagnet, PowerGridPonderTags.ELECTRIC_DEVICES);
 
         HELPER.addStoryBoard(ModdedBlocks.BATTERY, "battery", DeviceScenes::battery);
+
+        HELPER.addStoryBoard(ModdedItems.RESISTOR, "circuit/resistor", CircuitScenes::resistor, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "circuit/voltage", CircuitScenes::voltageGauge, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "circuit/current", CircuitScenes::currentGauge, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.CAPACITOR, "circuit/capacitor", CircuitScenes::capacitor, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.RELAY, "circuit/relay", CircuitScenes::relay, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(AllItems.ELECTRON_TUBE, "circuit/electron_tube", CircuitScenes::electronTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.REDSTONE_RELAY, "circuit/redstone_relay", CircuitScenes::redstoneRelay, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(AllItems.COPPER_NUGGET, "circuit/via", CircuitScenes::via, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.POTENTIOMETER, "circuit/potentiometer", CircuitScenes::potentiometer, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.REGULATOR_TUBE, "circuit/regulator_tube", CircuitScenes::regulatorTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
     }
 }

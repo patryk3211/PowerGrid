@@ -64,9 +64,22 @@ public class ElectricInstructions {
         return connectInvisible(pos1, terminal1, pos2, terminal2, DEFAULT_RESISTANCE);
     }
 
-    public void addSource(BlockPos pos, int terminal, float voltage) {
+    public ElementLink<VoltageSource> addSource(BlockPos pos, int terminal, float voltage) {
+        var link = new ElementLinkImpl<>(VoltageSource.class);
         var element = new VoltageSource(new BlockWireEndpoint(pos, terminal), voltage);
-        builder.addInstruction(scene -> scene.addElement(element));
+        builder.addInstruction(scene -> {
+            scene.addElement(element);
+            scene.linkElement(element, link);
+        });
+        return link;
+    }
+
+    public void setSource(ElementLink<VoltageSource> source, float value) {
+        builder.addInstruction(scene -> {
+            var element = scene.resolve(source);
+            if(element != null)
+                element.setValue(value);
+        });
     }
 
     public void removeWire(ElementLink<WireElement> wire) {

@@ -46,7 +46,7 @@ public class VoltageGaugeComponent extends GaugeComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var wire = builder.connect(5000f, builder.terminalNode(0), builder.terminalNode(1));
+        var wire = builder.connect(10000f, builder.terminalNode(0), builder.terminalNode(1));
         placed.add(wire);
     }
 
