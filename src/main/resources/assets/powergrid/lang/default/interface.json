@@ -149,6 +149,7 @@
 
   "powergrid.component.property.resistor_value": "Resistance [Ω]",
   "powergrid.component.property.capacitor_value": "Capacitance [mF]",
+  "powergrid.component.property.inductor_value": "Inductance [mH]",
 
   "powergrid.component.property.redstone_emitter_digital": "Digital",
 

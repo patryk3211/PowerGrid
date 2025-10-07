@@ -17,7 +17,7 @@ package org.patryk3211.electricity;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.patryk3211.powergrid.electricity.sim.special.InductorCoupling;
+import org.patryk3211.powergrid.electricity.sim.special.InductorWire;
 
 public class InductorTest {
     @Test
@@ -32,8 +32,8 @@ public class InductorTest {
 
         Net.W(0.5f, V1, N1);
         Net.W(0.5f, V2, N2);
-        var L = new InductorCoupling(1f, N1, N2);
-        Net.network.addNode(L);
+        var L = new InductorWire(1f, N1, N2);
+        Net.network.addWire(L);
 
         Net.calculate();
         Assertions.assertEquals(0, V1.getCurrent(), 0.01f, "First voltage source current is incorrect");
@@ -46,8 +46,8 @@ public class InductorTest {
             Net.calculate();
         }
 
-//        Assertions.assertEquals(0.632f, I.potentialDifference(), 0.01f, "Capacitor voltage is incorrect");
         Assertions.assertEquals( 0.632, V1.getCurrent(), 0.01f, "First voltage source current is incorrect");
         Assertions.assertEquals(-0.632, V2.getCurrent(), 0.01f, "Second voltage source current is incorrect");
+        Assertions.assertEquals(V1.getCurrent(), L.current(), 1e-6f, "Inductor current is incorrect");
     }
 }

@@ -11,6 +11,7 @@
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
     "powergrid:capacitor",
+    "powergrid:copper_coil",
     "powergrid:lv_button",
     "powergrid:potentiometer"
   ]

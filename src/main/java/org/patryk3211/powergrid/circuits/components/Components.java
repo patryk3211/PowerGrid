@@ -133,6 +133,15 @@ public class Components {
             .item(ModdedItems.CAPACITOR)
             .register();
 
+    public static final RegistryEntry<InductorComponent> INDUCTOR = REGISTRATE.component("inductor", InductorComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 1, 0)
+                    .addPad(2, 1, 1)
+                    .withItem(ModdedItems.COPPER_COIL::get)
+                    .withOutline())
+            .item(ModdedItems.COPPER_COIL)
+            .register();
+
     public static final RegistryEntry<ButtonComponent> BUTTON = REGISTRATE.component("button", ButtonComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
