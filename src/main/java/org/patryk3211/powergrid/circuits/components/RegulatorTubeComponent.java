@@ -89,9 +89,7 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
             }
             var prevValue = state.getValue();
             state.tickChaser();
-            if(wire.lit != placed.get(LIT)) {
-                state.chase(wire.lit ? 1 : 0, 1 / 10f, LerpedFloat.Chaser.LINEAR);
-            }
+            state.chase(wire.lit ? 1 : 0, 1 / 10f, LerpedFloat.Chaser.LINEAR);
             if(prevValue > 0.5f != state.getValue() > 0.5f)
                 modelChanged(placed.getPos());
         });
