@@ -33,7 +33,7 @@ public class InductorWire extends AbstractElectricWire implements IStaticResidua
 
     @Override
     public double conductance() {
-        return 0.05 / 2 * inductance;
+        return 0.05 / (2 * inductance);
     }
 
     @Override
