@@ -46,6 +46,8 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
         var buffer = vertexConsumers.getBuffer(RenderType.entitySolid(getTextureLocation(entity)));
         var pos = entity.position();
 
+        int color = entity.getColor() | 0xFF000000;
+
         boolean first = true;
         for(var segment : entity.segments) {
             var length = segment.length();
@@ -75,7 +77,7 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
                     calcLight = newLight;
             }
 
-            renderSegment(matrices, buffer, calcLight, 0xFFFFFFFF, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
+            renderSegment(matrices, buffer, calcLight, color, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
             currentPos = newPos;
         }
     }

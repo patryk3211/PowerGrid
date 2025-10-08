@@ -57,4 +57,17 @@ public class WireProperties {
             return b;
         };
     }
+
+    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setRenderingParams(ResourceLocation texture, float horizontalCoefficient, float verticalCoefficient, float thickness, boolean colored) {
+        return b -> {
+            b.onRegister(item -> {
+                item.wireTexture = texture;
+                item.horizontalCoefficient = horizontalCoefficient;
+                item.verticalCoefficient = verticalCoefficient;
+                item.wireThickness = thickness;
+                item.colored = colored;
+            });
+            return b;
+        };
+    }
 }

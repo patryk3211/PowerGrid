@@ -381,7 +381,13 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('R', Items.COMPASS)
                     .define('C', RecipeTags.copperSheet())
                     .define('S', RecipeTags.resistiveCoil())
-                    .define('I', RecipeTags.ironSheet()))
+                    .define('I', RecipeTags.ironSheet())),
+
+    INSULATED_COPPER_WIRE = create(ModdedItems.INSULATED_COPPER_WIRE)
+            .unlockedBy(() -> ModdedItems.WIRE)
+            .viaShapeless(b -> b
+                    .requires(ModdedItems.WIRE)
+                    .requires(Items.DRIED_KELP))
             ;
 
     public CraftingRecipes(PackOutput output) {

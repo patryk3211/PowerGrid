@@ -63,16 +63,12 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         // To introduce some subtle variety into the wires.
         var thicknessOffset = entity.getId() / 16f;
 
-        int color;
+        int color = entity.getColor() | 0xFF000000;
         if(RAINBOW_WIRES) {
             var line = GlobalElectricNetworks.getLine(entity);
             if(line != null) {
                 color = line.hashCode() | 0xFF000000;
-            } else {
-                color = -1;
             }
-        } else {
-            color = -1;
         }
 
         var pos = entity.position();

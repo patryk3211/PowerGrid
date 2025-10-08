@@ -67,6 +67,11 @@ public class ModdedItems {
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
+    public static final ItemEntry<WireItem> INSULATED_COPPER_WIRE = REGISTRATE.item("insulated_copper_wire", WireItem::new)
+            .transform(WireProperties.setAll(0.0015f, 16, 1.2f, 0.064f))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.01f, 1.2f, 0.0625f, true))
+            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
+            .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
             .register();

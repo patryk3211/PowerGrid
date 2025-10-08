@@ -108,6 +108,9 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         entity.setOldPosAndRot();
         entity.reapplyPosition();
 
+        if(entity.getWireItem().canBeColored())
+            entity.setColor(0x413c31);
+
         return entity;
     }
 

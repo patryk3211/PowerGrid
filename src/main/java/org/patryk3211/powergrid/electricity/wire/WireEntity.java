@@ -34,6 +34,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
@@ -66,6 +68,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
     @NotNull
     private WireItem item;
     private int itemCount;
+    private int color;
 
     private ElectricWire wire;
     protected float overheatTemperature = 175f;
@@ -293,9 +296,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         if(nbt.contains("Item")) {
             var itemTag = nbt.getCompound("Item");
             var readItem = BuiltInRegistries.ITEM.get(new ResourceLocation(itemTag.getString("Id")));
-            if(!(readItem instanceof WireItem))
+            if(!(readItem instanceof WireItem wireItem))
                 throw new IllegalStateException("WireEntity item must be a WireItem");
-            setItem((WireItem) readItem, itemTag.getInt("Count"));
+            setItem(wireItem, itemTag.getInt("Count"));
+            if(wireItem.canBeColored())
+                color = nbt.getInt("Color");
         } else {
             throw new IllegalStateException("WireEntity must have an item");
         }
@@ -333,6 +338,15 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         setEndpoint2(endpoint2);
 
         entityData.set(TEMPERATURE, nbt.getFloat("Temperature"));
+    }
+
+    public void setColor(int color) {
+        this.color = color;
+    }
+
+    public void setColor(DyeColor color) {
+        var rgb = color.getTextureDiffuseColors();
+        this.color = ((int) (rgb[0] * 255) << 16) | ((int) (rgb[1] * 255) << 8) | (int) (rgb[2] * 255);
     }
 
     public void setItem(WireItem item, int count) {
@@ -402,6 +416,8 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         itemTag.putString("Id", BuiltInRegistries.ITEM.getKey(item).toString());
         itemTag.putInt("Count", itemCount);
         nbt.put("Item", itemTag);
+        if(item.canBeColored())
+            nbt.putInt("Color", color);
 
         nbt.put("LastKnownPos", NbtUtils.writeBlockPos(blockPosition()));
 
@@ -444,12 +460,18 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
-        if(player.getItemInHand(hand).getItem() == ModdedItems.WIRE_CUTTER.get()) {
+        var stack = player.getItemInHand(hand);
+        if(stack.getItem() == ModdedItems.WIRE_CUTTER.get()) {
             ModdedSoundEvents.WIRE_CUT.playAt(level(), position(), 0.75f, 1.25f, false);
             kill();
             return InteractionResult.SUCCESS;
-        } else if(player.getItemInHand(hand).getItem() instanceof MultimeterItem multimeter) {
-            return multimeter.useOnWire(player, player.getItemInHand(hand), hand, this);
+        } else if(stack.getItem() instanceof MultimeterItem multimeter) {
+            return multimeter.useOnWire(player, stack, hand, this);
+        } else if(stack.getItem() instanceof DyeItem dye) {
+            if(item.canBeColored()) {
+                setColor(dye.getDyeColor());
+                return InteractionResult.SUCCESS;
+            }
         }
         return super.interact(player, hand);
     }
@@ -508,5 +530,11 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
         var global = GlobalElectricNetworks.getWorldNetworks(level());
         global.addAndMigrateNode(endpoint1);
         global.addAndMigrateNode(endpoint2);
+    }
+
+    public int getColor() {
+        if(item.canBeColored())
+            return color;
+        return -1;
     }
 }
