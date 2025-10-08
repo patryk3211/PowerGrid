@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
@@ -41,6 +42,8 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private final ConductanceWire gridCathode;
     private final GMStamp gmStamp;
 
+    private final float alpha;
+
     public ElectronTubeWire(float gain, float perveance, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
         super(cathode, anode);
         this.grid = grid;
@@ -56,6 +59,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         this.gain = gain;
         this.perveance = perveance;
         this.saturationCurrent = saturationCurrent;
+        alpha = Mth.clamp(10 / gain, 0.4f, 0.9f);
     }
 
     public void setSaturationCurrent(float saturationCurrent) {
@@ -68,8 +72,8 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         double vCathode = node1.getVoltage();
         double vGrid = grid.getVoltage();
         double vAnode = node2.getVoltage();
-        vCathode = vCathode * 0.9 + prevCathode * 0.1;
-        vGrid = vGrid * 0.9 + prevGrid * 0.1;
+        vCathode = vCathode * alpha + prevCathode * (1 - alpha);
+        vGrid = vGrid * alpha + prevGrid * (1 - alpha);
         prevCathode = vCathode;
         prevGrid = vGrid;
         vGrid -= vCathode;
