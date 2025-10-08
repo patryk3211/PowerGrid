@@ -20,7 +20,7 @@ import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 
-public class GraphedElectricalNetwork extends ElectricalNetwork {
+public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
     private final NetworkGraph graph;
 
     public GraphedElectricalNetwork(boolean addGMin) {

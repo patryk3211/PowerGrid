@@ -74,8 +74,10 @@ public class ElectricalNetwork {
     private boolean dirty;
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
+    private int eliminatedUpdates = 0;
     private int scalesAge = 0;
     private boolean countUpdates = true;
+    private boolean lockEliminated = false;
 
     private boolean recalculateScales;
     private boolean eliminatedChanged;
@@ -226,8 +228,11 @@ public class ElectricalNetwork {
             return;
 
         conductanceDelta += Math.abs(change);
-        if(countUpdates)
+        if(countUpdates) {
             ++conductanceUpdates;
+            if(wire.node1.getIndex() >= eliminatedStart && wire.node2.getIndex() >= eliminatedStart)
+                ++eliminatedUpdates;
+        }
         wire.stamp(this::jacobianAdd, change);
     }
 
@@ -277,15 +282,17 @@ public class ElectricalNetwork {
             JacobianKept.add(row, column, value);
             if(ReducedJacobian != null)
                 ReducedJacobian.add(row, column, value);
-        } else if(row < eliminatedStart) {
-            JacobianRight.add(row, column - eliminatedStart, value);
-            eliminatedChanged = true;
-        } else if(column < eliminatedStart) {
-            JacobianBottom.add(row - eliminatedStart, column, value);
-            eliminatedChanged = true;
-        } else {
-            JacobianEliminated.add(row - eliminatedStart, column - eliminatedStart, value);
-            eliminatedChanged = true;
+        } else if(!lockEliminated) {
+            if(row < eliminatedStart) {
+                JacobianRight.add(row, column - eliminatedStart, value);
+                eliminatedChanged = true;
+            } else if(column < eliminatedStart) {
+                JacobianBottom.add(row - eliminatedStart, column, value);
+                eliminatedChanged = true;
+            } else {
+                JacobianEliminated.add(row - eliminatedStart, column - eliminatedStart, value);
+                eliminatedChanged = true;
+            }
         }
     }
 
@@ -300,17 +307,18 @@ public class ElectricalNetwork {
         }
     }
 
-    protected void populateConductanceMatrix() {
+    protected void populateConductanceMatrix(boolean withEliminated) {
         conductanceDelta = 0;
         conductanceUpdates = 0;
 
         JacobianKept.denseZero();
-        if(JacobianEliminated != null) {
+        if(JacobianEliminated != null && withEliminated) {
             JacobianEliminated.denseZero();
             JacobianBottom.denseZero();
             JacobianRight.denseZero();
         }
 
+        lockEliminated = !withEliminated;
         List<AbstractElectricWire> staleWires = new ArrayList<>();
         for(var wire : wires) {
             var G = wire.conductance();
@@ -367,6 +375,7 @@ public class ElectricalNetwork {
             }
         }
         badCouplings.forEach(this::removeNode);
+        lockEliminated = false;
 
         if(addGMin) {
             boolean shouldAnchor = true;
@@ -381,7 +390,7 @@ public class ElectricalNetwork {
                 } else if (node instanceof FloatingNode) {
                     if(node.getIndex() < eliminatedStart) {
                         JacobianKept.add(node.getIndex(), node.getIndex(), G_MIN);
-                    } else {
+                    } else if(withEliminated) {
                         JacobianEliminated.add(node.getIndex() - eliminatedStart, node.getIndex() - eliminatedStart, G_MIN);
                     }
                 }
@@ -398,7 +407,14 @@ public class ElectricalNetwork {
 
         JacobianKept.optimize();
 
-        calculateEliminatedMatrices();
+        if(withEliminated) {
+            eliminatedUpdates = 0;
+            calculateEliminatedMatrices();
+        } else if(ReducedCorrection != null) {
+            // Subtract the already calculated correction matrix
+            JacobianKept.subtract(ReducedCorrection, ReducedJacobian);
+            ReducedJacobian.optimize();
+        }
         recalculateScales = true;
     }
 
@@ -615,14 +631,14 @@ public class ElectricalNetwork {
 
             // Conductance and coupling matrices need to be fully rebuild only after a state size change,
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
-            populateConductanceMatrix();
+            populateConductanceMatrix(true);
             scalesAge = MAX_SCALE_REUSE_COUNT + 1;
-        } else if(conductanceUpdates >= 500 || conductanceDelta > 1000) {
+        } else if(conductanceUpdates >= 500 || conductanceDelta > 1000 || eliminatedUpdates >= 100) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
             if(LOGGER != null && ModdedConfigs.logsEnabled())
                 LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
-            populateConductanceMatrix();
+            populateConductanceMatrix(eliminatedUpdates >= 100);
         }
     }
 

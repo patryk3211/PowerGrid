@@ -88,9 +88,9 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
-    protected void populateConductanceMatrix() {
+    protected void populateConductanceMatrix(boolean withEliminated) {
         lockScores = true;
-        super.populateConductanceMatrix();
+        super.populateConductanceMatrix(withEliminated);
         lockScores = false;
     }
 
