@@ -6,6 +6,7 @@
   "mixins": [
     "AirCurrentMixin",
     "ArmBlockEntityMixin",
+    "BeltDeployerMixin",
     "EntityMixin",
     "FanProcessingMixin",
     "KineticBlockEntityAccessor",

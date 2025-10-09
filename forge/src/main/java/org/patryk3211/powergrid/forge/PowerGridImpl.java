@@ -169,6 +169,7 @@ public class PowerGridImpl {
         generator.addProvider(true, new PressingRecipes(output));
         generator.addProvider(true, new SequencedAssemblyRecipes(output));
         generator.addProvider(true, new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(output));
+        generator.addProvider(true, new DeployerApplicationRecipes(output));
 
         generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
         generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));
