@@ -15,8 +15,10 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
+import com.google.common.collect.ImmutableCollection;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
+import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
@@ -35,13 +37,35 @@ public class ConnectorComponent extends Component {
     }
 
     @Override
+    protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
+        super.addProperties(properties);
+        properties.add(LABEL);
+    }
+
+    @Override
     public boolean emitExternalTerminals() {
         return true;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<TerminalBoundingBox> terminals(@NotNull PlacedComponent placed) {
-        return TERMINALS;
+        if(placed.customData instanceof List) {
+            return (List<TerminalBoundingBox>) placed.customData;
+        } else {
+            var label = placed.get(LABEL);
+            if(label.isEmpty()) {
+                placed.customData = TERMINALS;
+                return TERMINALS;
+            } else {
+                var list = List.of(new TerminalBoundingBox(
+                        net.minecraft.network.chat.Component.literal(label),
+                        1, 1, 1, 2, 2, 2
+                ));
+                placed.customData = list;
+                return list;
+            }
+        }
     }
 
     @Override

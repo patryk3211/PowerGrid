@@ -35,7 +35,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import java.util.Collection;
 import java.util.List;
 
-public class SwitchComponent extends OrientableComponent implements IInteractableComponent {
+public class SwitchComponent extends OrientableComponent implements IInteractableComponent, IGoggleLabel {
     public static final BooleanProperty STATE = new BooleanProperty(PowerGrid.MOD_ID, "switch_state");
 
     public SwitchComponent(ComponentFootprint footprint) {
@@ -45,7 +45,7 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(STATE, current(16));
+        properties.add(STATE, LABEL, current(16));
     }
 
     @Override

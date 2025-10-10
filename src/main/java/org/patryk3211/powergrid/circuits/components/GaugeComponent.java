@@ -50,7 +50,7 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(LEVEL);
+        properties.add(LEVEL, LABEL);
     }
 
     @Override
@@ -120,7 +120,16 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
 
     @Override
     public boolean addToGoggleTooltip(PlacedComponent component, List<Component> tooltip, boolean isPlayerSneaking) {
-        Lang.builder(Create.ID).translate("gui.gauge.info_header").forGoggles(tooltip);
+        if(component.has(LABEL)) {
+            var label = component.get(LABEL);
+            if(label.isEmpty()) {
+                Lang.builder(Create.ID).translate("gui.gauge.info_header").forGoggles(tooltip);
+            } else {
+                Lang.text(label).forGoggles(tooltip);
+            }
+        } else {
+            Lang.builder(Create.ID).translate("gui.gauge.info_header").forGoggles(tooltip);
+        }
         return true;
     }
 }

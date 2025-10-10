@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ConstantProperty;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
+import org.patryk3211.powergrid.circuits.components.properties.StringProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
@@ -43,6 +44,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class Component {
+    public static final StringProperty LABEL = new StringProperty(PowerGrid.MOD_ID, "label");
+
     private static final Map<Item, Component> COMPONENT_MAP = new HashMap<>();
     public static final float BASE_Y = 2 / 16f;
 
