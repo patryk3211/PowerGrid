@@ -49,6 +49,9 @@ public class ModdedPartialModels {
     public static final PartialModel REGULATOR_TUBE_GLOW = model("component/regulator_tube_glow");
     public static final PartialModel POTENTIOMETER_KNOB = model("component/potentiometer_knob");
 
+    public static final PartialModel NEON_TUBE_BULB = model("component/neon_bulb_bulb");
+    public static final PartialModel NEON_TUBE_GLOW = model("component/neon_bulb_glow");
+
     public static final PartialModel ROTOR = block("generator/rotor");
     public static final PartialModel INDUCTION_ROTOR = block("generator/induction_rotor");
 

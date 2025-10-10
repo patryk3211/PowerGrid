@@ -51,6 +51,15 @@ public class Components {
             .item(ModdedItems.REGULATOR_TUBE)
             .register();
 
+    public static final RegistryEntry<NeonBulbComponent> NEON_BULB = REGISTRATE.component("neon_bulb", NeonBulbComponent::new)
+            .footprint(2, 2, b -> b
+                    .addPad(0, 0, 0)
+                    .addPad(1, 1, 1)
+                    .withItem(ModdedItems.NEON_BULB)
+                    .withOutline())
+            .item(ModdedItems.NEON_BULB)
+            .register();
+
     public static final RegistryEntry<ConnectorComponent> CONNECTOR = REGISTRATE.component("connector", ConnectorComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(1, 1, 0)

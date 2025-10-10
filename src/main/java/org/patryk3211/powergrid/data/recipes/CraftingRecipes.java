@@ -262,6 +262,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('C', RecipeTags.copperSheet())
                     .define('I', RecipeTags.ironSheet())),
 
+    NEON_BULB = create(ModdedItems.NEON_BULB)
+            .unlockedBy(() -> Items.AMETHYST_SHARD)
+            .viaShaped(b -> b
+                    .pattern("B")
+                    .pattern("G")
+                    .pattern("I")
+                    .define('B', RecipeTags.glass())
+                    .define('G', RecipeTags.glowstoneDust())
+                    .define('I', RecipeTags.ironSheet())),
+
     REGULATOR_TUBE = create(ModdedItems.REGULATOR_TUBE)
             .unlockedBy(() -> Items.AMETHYST_SHARD)
             .viaShaped(b -> b

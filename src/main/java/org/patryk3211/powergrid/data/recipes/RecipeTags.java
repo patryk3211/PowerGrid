@@ -127,4 +127,8 @@ public class RecipeTags {
     public static ItemLike amethystShard() {
         return Items.AMETHYST_SHARD;
     }
+
+    public static ItemLike glass() {
+        return Items.GLASS;
+    }
 }

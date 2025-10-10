@@ -3,6 +3,7 @@
     "create:copper_nugget",
     "create:electron_tube",
     "powergrid:regulator_tube",
+    "powergrid:neon_bulb",
     "powergrid:wire_connector",
     "powergrid:lv_switch",
     "powergrid:relay",

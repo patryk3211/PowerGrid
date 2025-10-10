@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
-import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
 import org.patryk3211.powergrid.circuits.components.properties.CalculatedProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
@@ -37,6 +36,8 @@ import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.sim.special.ColdCathodeRegulatorTubeWire;
 import org.patryk3211.powergrid.utility.Unit;
 
+import static org.patryk3211.powergrid.circuits.components.NeonBulbComponent.LIT;
+
 public class RegulatorTubeComponent extends OrientableComponent implements IRenderedComponent {
     public static final FloatProperty HOLDING_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "regulator_tube_vh", 60, 30, 500);
     public static final CalculatedProperty<Float> BREAKDOWN_VOLTAGE = new CalculatedProperty<>(PowerGrid.MOD_ID, "neon_tube_vb",
@@ -45,7 +46,6 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
     public static final CalculatedProperty<Float> HOLDING_CURRENT = new CalculatedProperty<>(PowerGrid.MOD_ID, "neon_tube_ih",
             placed -> 0.2f / placed.get(HOLDING_VOLTAGE),
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
-    public static final BooleanProperty LIT = (BooleanProperty) new BooleanProperty(PowerGrid.MOD_ID, "lit").hidden();
 
     public RegulatorTubeComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -84,14 +84,12 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
             if(placed.customData instanceof LerpedFloat current) {
                 state = current;
             } else {
-                state = LerpedFloat.linear();
+                state = LerpedFloat.linear()
+                        .chase(0, 1 / 10f, LerpedFloat.Chaser.LINEAR);
                 placed.customData = state;
             }
-            var prevValue = state.getValue();
             state.tickChaser();
-            state.chase(wire.lit ? 1 : 0, 1 / 10f, LerpedFloat.Chaser.LINEAR);
-            if(prevValue > 0.5f != state.getValue() > 0.5f)
-                modelChanged(placed.getPos());
+            state.updateChaseTarget(wire.lit ? 1 : 0);
         });
         if(wire.lit != placed.get(LIT)) {
             placed.set(LIT, wire.lit);
