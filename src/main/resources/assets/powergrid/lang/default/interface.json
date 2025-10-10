@@ -52,6 +52,7 @@
   "powergrid.generic.unit.watt": "W",
   "powergrid.generic.unit.temperature": "°C",
   "powergrid.generic.unit.block": "blocks",
+  "powergrid.generic.unit.charge": "Wh",
 
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
@@ -66,6 +67,8 @@
   "powergrid.tooltip.power.rated": "Rated power:",
 
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
+
+  "powergrid.tooltip.charge.current": "Current charge:",
 
   "powergrid.tooltip.circuit_assembly": "Circuit Assembly",
   "powergrid.tooltip.circuit_assembly.progress": "Progress",

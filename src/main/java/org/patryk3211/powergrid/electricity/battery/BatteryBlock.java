@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.battery;
 
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -33,6 +34,7 @@ import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
@@ -114,5 +116,17 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Voltage.max(spec.calculateVoltage(1), player, tooltip);
         Power.max(stack, player, tooltip);
+        float charge;
+        if(!stack.hasTag() || !stack.getTag().contains("Energy")) {
+            charge = getSpec().getInitialCharge() / getSpec().getMaxCharge();
+        } else {
+            charge = (float) (stack.getTag().getDouble("Energy") / getSpec().getMaxCharge());
+        }
+        Lang.translate("tooltip.charge.current")
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+        Lang.builder()
+                .add(Component.literal(" ")).add(Lang.numberConstant(charge * 100))
+                .add(Component.literal("%"))
+                .style(ChatFormatting.RED).addTo(tooltip);
     }
 }
