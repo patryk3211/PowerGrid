@@ -15,23 +15,33 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
+import org.patryk3211.powergrid.collections.ModdedConfigs;
+
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class SimpleBatterySpec implements BatterySpec {
     public static final SimpleBatterySpec ACID_BATTERY = new SimpleBatterySpec(
             7200, // This should amount to 1A for 1 minute at 12V
-            6480, // Initial charge level is 90%
+            () -> 7200 * ModdedConfigs.server().electricity.acidBatteryInitialCharge.getF(),
             e -> 1.2f * e + 11.5f,
             // This resistance makes the battery effectively dead after a deep discharge
             e -> Math.min(10000, (float) Math.exp(-21.18323 * e + 10.58157) + 0.1f)
     );
 
     private final float maxCharge;
-    private final float initialCharge;
+    private final Supplier<Float> initialCharge;
     private final Function<Float, Float> voltageFunction;
     private final Function<Float, Float> resistanceFunction;
 
     public SimpleBatterySpec(float maxCharge, float initialCharge, Function<Float, Float> voltageFunction, Function<Float, Float> resistanceFunction) {
+        this.maxCharge = maxCharge;
+        this.initialCharge = () -> initialCharge;
+        this.voltageFunction = voltageFunction;
+        this.resistanceFunction = resistanceFunction;
+    }
+
+    public SimpleBatterySpec(float maxCharge, Supplier<Float> initialCharge, Function<Float, Float> voltageFunction, Function<Float, Float> resistanceFunction) {
         this.maxCharge = maxCharge;
         this.initialCharge = initialCharge;
         this.voltageFunction = voltageFunction;
@@ -45,7 +55,7 @@ public class SimpleBatterySpec implements BatterySpec {
 
     @Override
     public float getInitialCharge() {
-        return initialCharge;
+        return initialCharge.get();
     }
 
     @Override

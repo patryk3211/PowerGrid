@@ -36,6 +36,8 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt portableBatteryBaseCapacity = i(10000, 1, "portableBatteryBaseCapacity", Comments.portableBatteryBaseCapacity);
     public final ConfigInt portableBatteryEnchantCapacity = i(10000, 1, "portableBatteryEnchantCapacity", Comments.portableBatteryEnchantCapacity);
 
+    public final ConfigFloat acidBatteryInitialCharge = f(0.9f, 0, 1.0f, "acidBatteryInitialCharge", Comments.acidBatteryInitialCharge);
+
     public final ConfigFloat basinHeaterCurrent = f(10, 1, "basinHeaterCurrent", Comments.basinHeaterCurrent);
 
     public final ConfigFloat windingCoilConstant = f(5, 0.1f, "windingCoilConstant", Comments.windingCoilConstant);
@@ -78,6 +80,8 @@ public class CElectricity extends ConfigBase {
 
         public static final String portableBatteryBaseCapacity = "Portable Battery Forge Energy capacity before enchants";
         public static final String portableBatteryEnchantCapacity = "Portable Battery Forge Energy capacity increase per level of Capacity enchant";
+
+        public static final String acidBatteryInitialCharge = "Initial charge of the acid battery";
 
         public static final String basinHeaterCurrent = "Current required for normal level of heating with the basin heater";
 
