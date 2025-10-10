@@ -83,6 +83,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     private final CircuitSchematic schematic;
     private List<Line> fgLines;
     private List<Line> bgLines;
+    private boolean tracesChanged = false;
 
     private Tool currentTool = Tool.SELECT;
     private PlacedComponent currentComponent = null;
@@ -145,6 +146,19 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         }
     }
 
+    protected void flipLayer() {
+        if(tracesChanged) {
+            if(backLayer) {
+                bgLines = schematic.back().calculateLines();
+            } else {
+                fgLines = schematic.front().calculateLines();
+            }
+            tracesChanged = false;
+        }
+        backLayer = !backLayer;
+        layerBtn.setIcon(backLayer ? ModIcons.I_LAYER_BACK : ModIcons.I_LAYER_FRONT);
+    }
+
     @Override
     protected void init() {
         setWindowSize(WIDTH, HEIGHT + 4 + PLAYER_INVENTORY.getHeight());
@@ -191,10 +205,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         deleteBtn.withCallback(() -> toolSelect(Tool.DELETE));//toolCallback(this, Tool.DELETE));
         selectBtn.withCallback(() -> toolSelect(Tool.SELECT));//toolCallback(this, Tool.SELECT));
 
-        layerBtn.withCallback(() -> {
-            backLayer = !backLayer;
-            layerBtn.setIcon(backLayer ? ModIcons.I_LAYER_BACK : ModIcons.I_LAYER_FRONT);
-        });
+        layerBtn.withCallback(this::flipLayer);
 
         editWidget.setSelectionCancelledCallback(() -> toolSelect(Tool.SELECT));
         toolSelect(Tool.SELECT);
@@ -284,6 +295,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
             // Horizontal
             line = new Line(false, y1, x1, x2 + 1);
         }
+        tracesChanged = true;
         if(backLayer) {
             bgLines.add(line);
         } else {
@@ -477,8 +489,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
             playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
             return true;
         } else if(ModdedKeys.SWITCH_LAYER.matchesKey(keyCode, scanCode)) {
-            backLayer = !backLayer;
-            layerBtn.setIcon(backLayer ? ModIcons.I_LAYER_BACK : ModIcons.I_LAYER_FRONT);
+            flipLayer();
             playSound(ModdedSoundEvents.UI_CLICK);
             return true;
         }
