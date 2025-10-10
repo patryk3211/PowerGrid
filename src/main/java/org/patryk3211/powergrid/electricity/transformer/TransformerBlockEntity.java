@@ -30,6 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -37,11 +38,14 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, TransformerVolumeProvider {
+    private static final Logger log = LoggerFactory.getLogger(TransformerBlockEntity.class);
     protected TransformerCoilParameters primaryCoil;
     protected TransformerCoilParameters secondaryCoil;
 
@@ -232,6 +236,10 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     }
 
+    public static float mutualMultiplier() {
+        return ModdedConfigs.server().electricity.transformerMutualInductanceMultiplier.getF();
+    }
+
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         if(primaryCoil == null) {
@@ -279,15 +287,14 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             var P2 = builder.terminalNode(primaryCoil.getTerminal2());
 
             this.primaryStray = builder.connect(primaryStray, P1, Tnode);
-            // TODO: Make the mutual inductance to resistance conversion ratio a configurable values (or maybe a per core property)
-            this.mutualInductance = builder.connect((float) mutualInductance * 10, Tnode, P2);
+            this.mutualInductance = builder.connect((float) mutualInductance * mutualMultiplier(), Tnode, P2);
             this.coupling = builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
         } else if(primaryCoil.isDefined()) {
-            this.primaryStray = builder.connect((float) primaryInductance * 10, builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));
+            this.primaryStray = builder.connect((float) primaryInductance * mutualMultiplier(), builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));
             this.mutualInductance = null;
             this.coupling = null;
         } else if(secondaryCoil.isDefined()) {
-            this.primaryStray = builder.connect((float) secondaryInductance * 10, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
+            this.primaryStray = builder.connect((float) secondaryInductance * mutualMultiplier(), builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
             this.mutualInductance = null;
             this.coupling = null;
         }
