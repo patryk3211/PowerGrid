@@ -127,6 +127,6 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         Lang.builder()
                 .add(Component.literal(" ")).add(Lang.numberConstant(charge * 100))
                 .add(Component.literal("%"))
-                .style(ChatFormatting.RED).addTo(tooltip);
+                .style(ChatFormatting.AQUA).addTo(tooltip);
     }
 }
