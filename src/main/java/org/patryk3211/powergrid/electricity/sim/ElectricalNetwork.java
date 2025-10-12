@@ -278,6 +278,8 @@ public class ElectricalNetwork {
     protected void jacobianAdd(int row, int column, double value) {
         if(value == 0)
             return;
+        if(row >= nodes.size() || column >= nodes.size())
+            throw new IllegalArgumentException("Provided entry lays outside of the allocated matrices.");
         recalculateScales = true;
         if(row < eliminatedStart && column < eliminatedStart) {
             JacobianKept.add(row, column, value);
@@ -370,7 +372,7 @@ public class ElectricalNetwork {
                 // This is using the same method as wires but coupling nodes,
                 // probably shouldn't target eliminated nodes.
                 node.couple(this::jacobianAdd);
-            } catch(IllegalArgumentException e) {
+            } catch(IllegalArgumentException | NullPointerException e) {
                 LOGGER.error("Failed to couple {}:", node, e);
                 badCouplings.add(node);
             }
