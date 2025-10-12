@@ -19,7 +19,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -133,19 +132,24 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void assignWireEntity(WireEntity entity) {
-        var behaviour = getElectricBehaviour(entity.level());
-        if(behaviour == null)
-            return;
-        behaviour.addConnection(this, entity);
+    public <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
+        return WireEntity.class.isAssignableFrom(clazz);
     }
 
     @Override
-    public void removeWireEntity(WireEntity entity) {
+    public void assignWireEntity(BaseWireEntity entity) {
         var behaviour = getElectricBehaviour(entity.level());
         if(behaviour == null)
             return;
-        behaviour.removeConnection(this, entity);
+        behaviour.addConnection(this, (WireEntity) entity);
+    }
+
+    @Override
+    public void removeWireEntity(BaseWireEntity entity) {
+        var behaviour = getElectricBehaviour(entity.level());
+        if(behaviour == null)
+            return;
+        behaviour.removeConnection(this, (WireEntity) entity);
     }
 
     @Override

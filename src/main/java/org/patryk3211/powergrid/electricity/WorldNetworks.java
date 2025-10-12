@@ -35,9 +35,9 @@ import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
@@ -372,7 +372,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Nullable
-    protected TransmissionLinePart tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    protected TransmissionLinePart tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity) {
         // Try to resolve trees for correct merging of lines
         resolveTree(endpoint1);
         resolveTree(endpoint2);
@@ -481,7 +481,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Nullable
-    public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity) {
         add(endpoint1);
         add(endpoint2);
 
@@ -504,23 +504,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(parts == null)
                 continue;
             wires.addAll(parts);
-//            var nodes = globalGraph.getConnectedNodes(node);
-//            nodes.stream()
-//                    .flatMap(connected -> globalGraph.getWires(node, connected).stream())
-//                    .filter(wire -> wire instanceof TransmissionLine)
-//                    .map(wire -> {
-//                        var line = (TransmissionLine) wire;
-//                        if(line.segments.isEmpty())
-//                            return null;
-//                        if(line.getNode1() == node)
-//                            return line.segments.get(0);
-//                        else if(line.getNode2() == node)
-//                            return line.segments.get(line.segments.size() - 1);
-//                        else
-//                            return null;
-//                    })
-//                    .filter(segment -> segment != null && segment.owner != null)
-//                    .forEach(segment -> wires.add(segment.owner));
         }
         return wires;
     }

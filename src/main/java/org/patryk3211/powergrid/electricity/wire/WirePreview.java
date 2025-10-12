@@ -42,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
@@ -64,6 +65,10 @@ public class WirePreview {
         }
     }
 
+    private static void renderCord(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target, ItemStack wireStack) {
+
+    }
+
     public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target) {
         if(target.getType() != HitResult.Type.BLOCK)
             return;
@@ -72,6 +77,10 @@ public class WirePreview {
             return;
         if(!(wireStack.getItem() instanceof WireItem wireItem))
             return;
+        if(wireStack.getItem() instanceof CordItem) {
+            renderCord(buffer, matrixStack, world, player, target, wireStack);
+            return;
+        }
 
         var tag = wireStack.getTag();
         var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));

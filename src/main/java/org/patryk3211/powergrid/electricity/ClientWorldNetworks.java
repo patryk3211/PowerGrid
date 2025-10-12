@@ -30,8 +30,8 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
@@ -64,7 +64,7 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     @Override
-    public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity) {
         throw new IllegalCallerException("Not on the client");
     }
 

@@ -36,6 +36,7 @@ import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
@@ -71,6 +72,10 @@ public class ModdedItems {
             .transform(WireProperties.setAll(0.0015f, 16, 1.2f, 0.064f))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.01f, 1.2f, 0.0625f, true))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
+            .register();
+    public static final ItemEntry<CordItem> CORD = REGISTRATE.item("copper_cord", CordItem::new)
+            .transform(WireProperties.setAll(0.0015f, 8, 2.0f, 0.064f))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.005f, 1.1f, 0.125f, true))
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)

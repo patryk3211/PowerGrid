@@ -26,9 +26,9 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -40,7 +40,7 @@ public class TransmissionLinePart extends ElectricWire {
     private final WorldNetworks global;
 
     @Nullable
-    public WireEntity owner;
+    public BaseWireEntity owner;
     public final UUID persistentOwnerId;
     public ChunkPos lastKnownChunk;
 
@@ -59,7 +59,7 @@ public class TransmissionLinePart extends ElectricWire {
         global.registerPart(persistentOwnerId, this);
     }
 
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull WorldNetworks global) {
+    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull BaseWireEntity owner, @NotNull WorldNetworks global) {
         super(resistance, global.holderOrPlaceholderNode(endpoint1), global.holderOrPlaceholderNode(endpoint2));
         this.global = global;
         this.owner = owner;
@@ -70,7 +70,7 @@ public class TransmissionLinePart extends ElectricWire {
         global.registerPart(persistentOwnerId, this);
     }
 
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull TransmissionLine line) {
+    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull BaseWireEntity owner, @NotNull TransmissionLine line) {
         super(resistance, line.global().holderOrPlaceholderNode(endpoint1), line.global().holderOrPlaceholderNode(endpoint2));
         this.line = line;
         this.global = line.global();
@@ -109,7 +109,7 @@ public class TransmissionLinePart extends ElectricWire {
         return part;
     }
 
-    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, WireEntity owner, @NotNull WorldNetworks global) {
+    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, BaseWireEntity owner, @NotNull WorldNetworks global) {
         var part = global.getPart(owner.getUUID());
         if(part == null)
             return new TransmissionLinePart(resistance, endpoint1, endpoint2, owner, global);
@@ -131,7 +131,7 @@ public class TransmissionLinePart extends ElectricWire {
         return part;
     }
 
-    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull TransmissionLine line) {
+    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull BaseWireEntity owner, @NotNull TransmissionLine line) {
         var part = line.global().getPart(owner.getUUID());
         if(part == null)
             return new TransmissionLinePart(resistance, endpoint1, endpoint2, owner, line);
@@ -200,7 +200,7 @@ public class TransmissionLinePart extends ElectricWire {
         owner = null;
     }
 
-    public void grab(WireEntity forEntity) {
+    public void grab(BaseWireEntity forEntity) {
         if(persistentOwnerId.equals(forEntity.getUUID())) {
             owner = forEntity;
             if (line != null)

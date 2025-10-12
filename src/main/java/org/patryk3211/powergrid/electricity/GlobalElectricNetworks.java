@@ -32,6 +32,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.utility.NumberFormats;
@@ -102,7 +103,7 @@ public class GlobalElectricNetworks {
         return null;
     }
 
-    public static ElectricWire makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public static ElectricWire makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity) {
         return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity);
     }
 

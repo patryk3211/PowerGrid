@@ -19,8 +19,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 public class ImaginaryWireEndpoint implements IWireEndpoint {
@@ -66,20 +64,5 @@ public class ImaginaryWireEndpoint implements IWireEndpoint {
     @Override
     public OwnedFloatingNode getNode(Level world) {
         return null;
-    }
-
-    @Override
-    public void joinNetwork(Level world, ElectricalNetwork network) {
-        throw new IllegalStateException("Cannot join network");
-    }
-
-    @Override
-    public void assignWireEntity(WireEntity entity) {
-        throw new IllegalStateException("Cannot join network");
-    }
-
-    @Override
-    public void removeWireEntity(WireEntity entity) {
-        throw new IllegalStateException("Cannot join network");
     }
 }

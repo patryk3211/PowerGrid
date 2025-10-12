@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Contract;
+import org.patryk3211.powergrid.electricity.wire.powercord.SocketEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.SplitCordEndpoint;
 
 import java.util.function.Supplier;
 
@@ -28,7 +30,11 @@ public enum WireEndpointType {
     DEFERRED_JUNCTION(DeferredJunctionWireEndpoint::new, true),
 
     // Special endpoint type used by the multimeter
-    CIRCUIT_BOARD(CircuitBoardEndpoint::new, false)
+    CIRCUIT_BOARD(CircuitBoardEndpoint::new, false),
+
+    // Cord endpoint types
+    SOCKET(SocketEndpoint::new, true),
+    SPLIT_CORD(SplitCordEndpoint::new, false)
     ;
 
     private final Supplier<IWireEndpoint> factory;

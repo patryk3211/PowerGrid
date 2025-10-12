@@ -25,9 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 public class CircuitBoardEndpoint implements IWireEndpoint {
     private BlockPos pos;
@@ -92,25 +90,5 @@ public class CircuitBoardEndpoint implements IWireEndpoint {
             var node = bundle.iterator().next();
             return baked.getNode(node);
         }).orElse(null);
-    }
-
-    @Override
-    public OwnedFloatingNode getNode(Level world) {
-        throw new IllegalCallerException();
-    }
-
-    @Override
-    public void joinNetwork(Level world, ElectricalNetwork network) {
-        throw new IllegalCallerException();
-    }
-
-    @Override
-    public void assignWireEntity(WireEntity entity) {
-        throw new IllegalCallerException();
-    }
-
-    @Override
-    public void removeWireEntity(WireEntity entity) {
-        throw new IllegalCallerException();
     }
 }
