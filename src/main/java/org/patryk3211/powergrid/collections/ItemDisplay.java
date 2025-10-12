@@ -68,7 +68,9 @@ public class ItemDisplay {
                     ModdedItems.INCOMPLETE_ELECTRICAL_GIZMO,
                     ModdedItems.INCOMPLETE_UNETCHED_CIRCUIT,
                     ModdedItems.PORTABLE_BATTERY_PLACEABLE,
-                    ModdedItems.CIRCUIT_SCHEMATIC
+                    ModdedItems.CIRCUIT_SCHEMATIC,
+                    ModdedItems.UNETCHED_CIRCUIT,
+                    ModdedBlocks.CIRCUIT_BOARD
 //                    AllItems.INCOMPLETE_PRECISION_MECHANISM,
 //                    AllItems.INCOMPLETE_REINFORCED_SHEET,
 //                    AllItems.INCOMPLETE_TRACK,
