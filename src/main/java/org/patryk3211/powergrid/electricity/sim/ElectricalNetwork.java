@@ -748,8 +748,14 @@ public class ElectricalNetwork {
 
     public void calculate() {
         if(sourceCount == 0) {
+            for(var hook : hooks) {
+                hook.preSolve();
+            }
             if(StateVector != null)
                 StateVector.zero();
+            for(var hook : hooks) {
+                hook.postUpperSolve();
+            }
             return;
         }
 
