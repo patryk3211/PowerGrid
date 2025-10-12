@@ -64,7 +64,7 @@ public class NeonBulbWire extends DynamicConductanceWire {
         double V = Math.abs(potentialDifference()), I = Math.abs(current());
         if(!lit && V > breakdownVoltage) {
             lit = true;
-        } else if(lit && I < holdingCurrent) {
+        } else if(lit && (I < holdingCurrent || V < holdingVoltage)) {
             lit = false;
         }
     }
