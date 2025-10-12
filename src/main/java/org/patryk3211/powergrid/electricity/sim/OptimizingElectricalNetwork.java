@@ -57,8 +57,10 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
     @Override
     public void addWire(AbstractElectricWire wire) {
         super.addWire(wire);
-        unoptimizeNode(wire.getNode1());
-        unoptimizeNode(wire.getNode2());
+        if(wire.getNode1() != null)
+            unoptimizeNode(wire.getNode1());
+        if(wire.getNode2() != null)
+            unoptimizeNode(wire.getNode2());
     }
 
     @Override

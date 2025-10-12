@@ -20,6 +20,7 @@ import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.MatrixFeatures_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.*;
@@ -230,7 +231,7 @@ public class ElectricalNetwork {
         conductanceDelta += Math.abs(change);
         if(countUpdates) {
             ++conductanceUpdates;
-            if(wire.node1.getIndex() >= eliminatedStart && wire.node2.getIndex() >= eliminatedStart)
+            if((wire.node1 != null && wire.node1.getIndex() >= eliminatedStart) || (wire.node2 != null && wire.node2.getIndex() >= eliminatedStart))
                 ++eliminatedUpdates;
         }
         wire.stamp(this::jacobianAdd, change);
@@ -524,7 +525,7 @@ public class ElectricalNetwork {
         dirty = true;
     }
 
-    public void optimizeNode(INode node) {
+    public void optimizeNode(@NotNull INode node) {
         assert node.getNetwork() == this : "Node is not part of this network";
         if(node.getIndex() >= eliminatedStart) {
             // Already in the correct spot.
@@ -540,7 +541,7 @@ public class ElectricalNetwork {
         }
     }
 
-    public void unoptimizeNode(INode node) {
+    public void unoptimizeNode(@NotNull INode node) {
         assert node.getNetwork() == this : "Node is not part of this network";
         if(node.getIndex() < eliminatedStart) {
             // Already in the correct spot.
