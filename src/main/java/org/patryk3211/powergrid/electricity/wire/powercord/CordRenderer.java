@@ -78,47 +78,65 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
             if(first) {
                 var endpoint = entity.getEndpoint1();
                 if(endpoint instanceof SplitCordEndpoint split) {
-                    var smallCross1 = rp.cross1.scale(0.5f);
-                    var smallCross2 = rp.cross2.scale(0.5f);
                     var p1 = split.getEndpoint1().getExactPosition(world);
                     var p2 = split.getEndpoint2().getExactPosition(world);
+                    var normal = rp.getNormal();
+
+                    var direction = new Vec3(x2 - p1.x + pos.x, y2 - p1.y + pos.y, z2 - p1.z + pos.z);
+                    var v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
+                    var smallCross1 = v1.cross(direction).normalize().scale(rp.thickness * 0.25);
+                    var smallCross2 = smallCross1.cross(direction).normalize().scale(rp.thickness * 0.25);
                     renderSegment(matrices, buffer,
                             (float) (p1.x - pos.x), (float) (p1.y - pos.y), (float) (p1.z - pos.z),
-                            (float) (x2 - (smallCross1.x + smallCross2.x) * 0.5f),
-                            (float) (y2 - (smallCross1.y + smallCross2.y) * 0.5f),
-                            (float) (z2 - (smallCross1.z + smallCross2.z) * 0.5f),
+                            (float) (x2 - (smallCross1.x + smallCross2.x) * 0.5f + normal.x / 32f),
+                            (float) (y2 - (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
+                            (float) (z2 - (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
                             smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFFB02E26,
-                            rp.thickness * 0.5f, thicknessOffset, length, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+
+                    direction = new Vec3(x2 - p2.x + pos.x, y2 - p2.y + pos.y, z2 - p2.z + pos.z);
+                    v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
+                    smallCross1 = v1.cross(direction).normalize().scale(rp.thickness * 0.25);
+                    smallCross2 = smallCross1.cross(direction).normalize().scale(rp.thickness * 0.25);
                     renderSegment(matrices, buffer,
                             (float) (p2.x - pos.x), (float) (p2.y - pos.y), (float) (p2.z - pos.z),
-                            (float) (x2 + (smallCross1.x + smallCross2.x) * 0.5f),
-                            (float) (y2 + (smallCross1.y + smallCross2.y) * 0.5f),
-                            (float) (z2 + (smallCross1.z + smallCross2.z) * 0.5f),
+                            (float) (x2 + (smallCross1.x + smallCross2.x) * 0.5f + normal.x / 32f),
+                            (float) (y2 + (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
+                            (float) (z2 + (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
                             smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFF3C44AA,
-                            rp.thickness * 0.5f, thicknessOffset, length, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
                     return;
                 }
             } else if(last) {
                 var endpoint = entity.getEndpoint2();
                 if(endpoint instanceof SplitCordEndpoint split) {
-                    var smallCross1 = rp.cross1.scale(0.5f);
-                    var smallCross2 = rp.cross2.scale(0.5f);
                     var p1 = split.getEndpoint1().getExactPosition(world);
                     var p2 = split.getEndpoint2().getExactPosition(world);
+                    var normal = rp.getNormal();
+
+                    var direction = new Vec3(x1 - p1.x + pos.x, y1 - p1.y + pos.y, z1 - p1.z + pos.z);
+                    var v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
+                    var smallCross1 = v1.cross(direction).normalize().scale(rp.thickness * 0.25);
+                    var smallCross2 = smallCross1.cross(direction).normalize().scale(rp.thickness * 0.25);
                     renderSegment(matrices, buffer,
-                            (float) (x1 - (smallCross1.x + smallCross2.x) * 0.5f),
-                            (float) (y1 - (smallCross1.y + smallCross2.y) * 0.5f),
-                            (float) (z1 - (smallCross1.z + smallCross2.z) * 0.5f),
+                            (float) (x1 - (smallCross1.x + smallCross2.x) * 0.5f - normal.x / 32f),
+                            (float) (y1 - (smallCross1.y + smallCross2.y) * 0.5f - normal.y / 32f),
+                            (float) (z1 - (smallCross1.z + smallCross2.z) * 0.5f - normal.z / 32f),
                             (float) (p1.x - pos.x), (float) (p1.y - pos.y), (float) (p1.z - pos.z),
                             smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFFB02E26,
-                            rp.thickness * 0.5f, thicknessOffset, length, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+
+                    direction = new Vec3(x1 - p2.x + pos.x, y1 - p2.y + pos.y, z1 - p2.z + pos.z);
+                    v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
+                    smallCross1 = v1.cross(direction).normalize().scale(rp.thickness * 0.25);
+                    smallCross2 = smallCross1.cross(direction).normalize().scale(rp.thickness * 0.25);
                     renderSegment(matrices, buffer,
-                            (float) (x1 + (smallCross1.x + smallCross2.x) * 0.5f),
-                            (float) (y1 + (smallCross1.y + smallCross2.y) * 0.5f),
-                            (float) (z1 + (smallCross1.z + smallCross2.z) * 0.5f),
+                            (float) (x1 + (smallCross1.x + smallCross2.x) * 0.5f - normal.x / 32f),
+                            (float) (y1 + (smallCross1.y + smallCross2.y) * 0.5f - normal.y / 32f),
+                            (float) (z1 + (smallCross1.z + smallCross2.z) * 0.5f - normal.z / 32f),
                             (float) (p2.x - pos.x), (float) (p2.y - pos.y), (float) (p2.z - pos.z),
                             smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFF3C44AA,
-                            rp.thickness * 0.5f, thicknessOffset, length, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
                     return;
                 }
             }
@@ -169,70 +187,79 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                 x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
                 x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
                 x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                cross1.x - cross2.x, cross1.y - cross2.y, cross1.z - cross2.z,
                 thickness, thicknessOffset, uvLength, lengthOffset);
         quad(ms.last(), buffer, light, color,
                 x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
                 x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
                 x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
                 x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                cross2.x - cross1.x, cross2.y - cross1.y, cross2.z - cross1.z,
                 thickness, thicknessOffset, uvLength, lengthOffset);
         quad(ms.last(), buffer, light, color,
                 x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
                 x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
                 x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
                 x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                cross1.x + cross2.x, cross1.y + cross2.y, cross1.z + cross2.z,
                 thickness, thicknessOffset, uvLength, lengthOffset);
         quad(ms.last(), buffer, light, color,
                 x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
                 x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
                 x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
                 x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                -cross1.x - cross2.x, -cross1.y - cross2.y, -cross1.z - cross2.z,
                 thickness, thicknessOffset, uvLength, lengthOffset);
         quad(ms.last(), buffer, light, color,
                 x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
                 x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
                 x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
                 x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
-                thickness, thicknessOffset, uvLength, lengthOffset);
+                x1 - x2, y1 - y2, z1 - z2,
+                thickness, thicknessOffset, thickness, thicknessOffset);
         quad(ms.last(), buffer, light, color,
                 x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
                 x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
                 x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
                 x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
-                thickness, thicknessOffset, uvLength, lengthOffset);
+                x2 - x1, y2 - y1, z2 - z1,
+                thickness, thicknessOffset, thickness, thicknessOffset);
     }
 
     public static void quad(PoseStack.Pose matrix, VertexConsumer buffer, int light, int color,
                             double x1, double y1, double z1, double x2, double y2, double z2,
                             double x3, double y3, double z3, double x4, double y4, double z4,
+                            double nX, double nY, double nZ,
                             float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
+        var nLen = Math.sqrt(nX * nX + nY * nY + nZ * nZ);
+        nX /= nLen; nY /= nLen; nZ /= nLen;
         buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
                 .color(color)
                 .uv(lengthOffset, thicknessOffset)
                 .overlayCoords(OverlayTexture.NO_OVERLAY)
                 .uv2(light)
-                .normal(matrix.normal(), 0, 1, 0)
+                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
                 .endVertex();
         buffer.vertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
                 .color(color)
                 .uv(lengthOffset, thicknessOffset + thickness)
                 .overlayCoords(OverlayTexture.NO_OVERLAY)
                 .uv2(light)
-                .normal(matrix.normal(), 0, 1, 0)
+                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
                 .endVertex();
         buffer.vertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
                 .color(color)
                 .uv(lengthOffset + uvLength, thicknessOffset + thickness)
                 .overlayCoords(OverlayTexture.NO_OVERLAY)
                 .uv2(light)
-                .normal(matrix.normal(), 0, 1, 0)
+                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
                 .endVertex();
         buffer.vertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
                 .color(color)
                 .uv(lengthOffset + uvLength, thicknessOffset)
                 .overlayCoords(OverlayTexture.NO_OVERLAY)
                 .uv2(light)
-                .normal(matrix.normal(), 0, 1, 0)
+                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
                 .endVertex();
     }
 }
