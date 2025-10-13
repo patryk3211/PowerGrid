@@ -67,6 +67,11 @@ public class CurveParameters {
     }
 
     public void runForSegments(ISegmentConsumer consumer) {
+        runForSegments(((x1, y1, z1, x2, y2, z2, offset, length, first, last) ->
+                consumer.apply(x1, y1, z1, x2, y2, z2, offset, length)));
+    }
+
+    public void runForSegments(IMarkedSegmentConsumer consumer) {
         int segmentCount = Math.max((int) Math.round(L / HangingWireRenderer.SEGMENT_SIZE), 5);
 
         float prevX = -dx / 2;
@@ -82,7 +87,7 @@ public class CurveParameters {
             consumer.apply(
                     (float) normal.x * prevX, prevY, (float) normal.z * prevX,
                     (float) normal.x * x, y, (float) normal.z * x,
-                    offset, length
+                    offset, length, i == 1, i == segmentCount
             );
 
             offset += length;
@@ -150,5 +155,9 @@ public class CurveParameters {
 
     public interface ISegmentConsumer {
         void apply(float x1, float y1, float z1, float x2, float y2, float z2, float offset, float length);
+    }
+
+    public interface IMarkedSegmentConsumer {
+        void apply(float x1, float y1, float z1, float x2, float y2, float z2, float offset, float length, boolean first, boolean last);
     }
 }

@@ -71,10 +71,57 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
 
         var pos = entity.position();
         var world = entity.level();
-        rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
+        rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length, first, last) -> {
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
             var sky = world.getBrightness(LightLayer.SKY, blockPos);
             var block = world.getBrightness(LightLayer.BLOCK, blockPos);
+            if(first) {
+                var endpoint = entity.getEndpoint1();
+                if(endpoint instanceof SplitCordEndpoint split) {
+                    var smallCross1 = rp.cross1.scale(0.5f);
+                    var smallCross2 = rp.cross2.scale(0.5f);
+                    var p1 = split.getEndpoint1().getExactPosition(world);
+                    var p2 = split.getEndpoint2().getExactPosition(world);
+                    renderSegment(matrices, buffer,
+                            (float) (p1.x - pos.x), (float) (p1.y - pos.y), (float) (p1.z - pos.z),
+                            (float) (x2 - (smallCross1.x + smallCross2.x) * 0.5f),
+                            (float) (y2 - (smallCross1.y + smallCross2.y) * 0.5f),
+                            (float) (z2 - (smallCross1.z + smallCross2.z) * 0.5f),
+                            smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFFB02E26,
+                            rp.thickness * 0.5f, thicknessOffset, length, offset);
+                    renderSegment(matrices, buffer,
+                            (float) (p2.x - pos.x), (float) (p2.y - pos.y), (float) (p2.z - pos.z),
+                            (float) (x2 + (smallCross1.x + smallCross2.x) * 0.5f),
+                            (float) (y2 + (smallCross1.y + smallCross2.y) * 0.5f),
+                            (float) (z2 + (smallCross1.z + smallCross2.z) * 0.5f),
+                            smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFF3C44AA,
+                            rp.thickness * 0.5f, thicknessOffset, length, offset);
+                    return;
+                }
+            } else if(last) {
+                var endpoint = entity.getEndpoint2();
+                if(endpoint instanceof SplitCordEndpoint split) {
+                    var smallCross1 = rp.cross1.scale(0.5f);
+                    var smallCross2 = rp.cross2.scale(0.5f);
+                    var p1 = split.getEndpoint1().getExactPosition(world);
+                    var p2 = split.getEndpoint2().getExactPosition(world);
+                    renderSegment(matrices, buffer,
+                            (float) (x1 - (smallCross1.x + smallCross2.x) * 0.5f),
+                            (float) (y1 - (smallCross1.y + smallCross2.y) * 0.5f),
+                            (float) (z1 - (smallCross1.z + smallCross2.z) * 0.5f),
+                            (float) (p1.x - pos.x), (float) (p1.y - pos.y), (float) (p1.z - pos.z),
+                            smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFFB02E26,
+                            rp.thickness * 0.5f, thicknessOffset, length, offset);
+                    renderSegment(matrices, buffer,
+                            (float) (x1 + (smallCross1.x + smallCross2.x) * 0.5f),
+                            (float) (y1 + (smallCross1.y + smallCross2.y) * 0.5f),
+                            (float) (z1 + (smallCross1.z + smallCross2.z) * 0.5f),
+                            (float) (p2.x - pos.x), (float) (p2.y - pos.y), (float) (p2.z - pos.z),
+                            smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFF3C44AA,
+                            rp.thickness * 0.5f, thicknessOffset, length, offset);
+                    return;
+                }
+            }
             renderSegment(matrices, buffer,
                     x1, y1, z1,
                     x2, y2, z2,
@@ -119,15 +166,39 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                                      float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
         quad(ms.last(), buffer, light, color,
                 x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
-                x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
+                x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
                 x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
-                x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
                 thickness, thicknessOffset, uvLength, lengthOffset);
         quad(ms.last(), buffer, light, color,
                 x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
+                x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
+                x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                thickness, thicknessOffset, uvLength, lengthOffset);
+        quad(ms.last(), buffer, light, color,
+                x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
+                x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
+                x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
+                x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                thickness, thicknessOffset, uvLength, lengthOffset);
+        quad(ms.last(), buffer, light, color,
+                x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
                 x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
+                x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                thickness, thicknessOffset, uvLength, lengthOffset);
+        quad(ms.last(), buffer, light, color,
+                x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
+                x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
+                x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
+                x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
+                thickness, thicknessOffset, uvLength, lengthOffset);
+        quad(ms.last(), buffer, light, color,
+                x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
                 x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
                 x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
                 thickness, thicknessOffset, uvLength, lengthOffset);
     }
 
