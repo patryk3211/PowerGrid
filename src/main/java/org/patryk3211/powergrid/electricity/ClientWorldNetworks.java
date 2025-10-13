@@ -155,7 +155,10 @@ public class ClientWorldNetworks extends WorldNetworks {
     @Override
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
         var lines = Set.copyOf(globalGraph.getConnectedLines(ownedNode));
-        lines.forEach(TransmissionLine::remove);
+        lines.forEach(line -> {
+            removePhantomLines(line);
+            line.remove();
+        });
 
         super.nodeHolderRemoved(ownedNode);
         ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, true));
@@ -349,7 +352,8 @@ public class ClientWorldNetworks extends WorldNetworks {
         }
 
         public void remove() {
-            source.getNetwork().removeNode(source);
+            if(source.getNetwork() != null)
+                source.getNetwork().removeNode(source);
         }
     }
 }
