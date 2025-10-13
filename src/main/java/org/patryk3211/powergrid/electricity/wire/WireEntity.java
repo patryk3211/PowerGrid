@@ -22,6 +22,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
@@ -46,26 +47,6 @@ public abstract class WireEntity extends BaseWireEntity {
     }
 
     @Override
-    public void tick() {
-        super.tick();
-
-        if((deferEndpointResolution & 1) != 0) {
-            if(endpoint1 != null && endpoint1.isValid(level())) {
-                endpoint1.assignWireEntity(this);
-                deferEndpointResolution &= ~1;
-                makeWire();
-            }
-        }
-        if((deferEndpointResolution & 2) != 0) {
-            if(endpoint2 != null && endpoint2.isValid(level())) {
-                endpoint2.assignWireEntity(this);
-                deferEndpointResolution &= ~2;
-                makeWire();
-            }
-        }
-    }
-
-    @Override
     public void makeWire() {
         // Client doesn't make a wire, connections are handled differently.
         var world = level();
@@ -82,7 +63,7 @@ public abstract class WireEntity extends BaseWireEntity {
             return;
 
         try {
-            wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this);
+            wire = GlobalElectricNetworks.makeConnection(world, endpoint1, endpoint2, this, new WorldNetworks.SimpleId(getUUID()));
         } catch(RuntimeException e) {
             PowerGrid.LOGGER.error("Failed to create wire for entity", e);
             kill();

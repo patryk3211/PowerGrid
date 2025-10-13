@@ -141,7 +141,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.level());
         if(behaviour == null)
             return;
-        behaviour.addConnection(this, (WireEntity) entity);
+        behaviour.addConnection(this, entity);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var behaviour = getElectricBehaviour(entity.level());
         if(behaviour == null)
             return;
-        behaviour.removeConnection(this, (WireEntity) entity);
+        behaviour.removeConnection(this, entity);
     }
 
     @Override

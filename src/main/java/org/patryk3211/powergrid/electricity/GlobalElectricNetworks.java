@@ -103,8 +103,8 @@ public class GlobalElectricNetworks {
         return null;
     }
 
-    public static ElectricWire makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity) {
-        return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity);
+    public static ElectricWire makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, WorldNetworks.PartId id) {
+        return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity, id);
     }
 
     private static Component display(IElectricNode node) {

@@ -44,6 +44,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntit
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
+import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
@@ -278,6 +279,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<GroundingRodBlockEntity> GROUNDING_ROD =
             REGISTRATE.blockEntity("grounding_rod", GroundingRodBlockEntity::new)
                     .validBlock(ModdedBlocks.GROUNDING_ROD)
+                    .register();
+
+    public static final BlockEntityEntry<SocketBlockEntity> SOCKET =
+            REGISTRATE.blockEntity("socket", SocketBlockEntity::new)
+                    .validBlock(ModdedBlocks.SOCKET)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

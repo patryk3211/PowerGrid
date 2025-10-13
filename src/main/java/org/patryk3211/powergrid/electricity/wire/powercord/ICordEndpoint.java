@@ -23,7 +23,19 @@ public interface ICordEndpoint extends IWireEndpoint {
     IWireEndpoint getEndpoint2();
 
     @Override
-    default  <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
+    default <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
         return CordEntity.class.isAssignableFrom(clazz);
+    }
+
+    @Override
+    default void assignWireEntity(BaseWireEntity entity) {
+        getEndpoint1().assignWireEntity(entity);
+        getEndpoint2().assignWireEntity(entity);
+    }
+
+    @Override
+    default void removeWireEntity(BaseWireEntity entity) {
+        getEndpoint1().removeWireEntity(entity);
+        getEndpoint2().removeWireEntity(entity);
     }
 }

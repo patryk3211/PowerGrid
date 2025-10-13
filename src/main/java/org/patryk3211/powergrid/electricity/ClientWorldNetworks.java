@@ -64,7 +64,7 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     @Override
-    public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity) {
+    public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, PartId id) {
         throw new IllegalCallerException("Not on the client");
     }
 

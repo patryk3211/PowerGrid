@@ -26,9 +26,9 @@ import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.*;
 
@@ -42,7 +42,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     private final List<OwnedFloatingNode> externalNodes = new ArrayList<>();
     private final List<AbstractElectricWire> internalWires = new ArrayList<>();
 
-    private final Map<BlockWireEndpoint, Set<WireEntity>> connections = new HashMap<>();
+    private final Map<BlockWireEndpoint, Set<BaseWireEntity>> connections = new HashMap<>();
     private boolean destroying = false;
     private boolean rebuildOnClient = false;
     private boolean removed = false;
@@ -133,7 +133,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 continue;
             }
             var connCopy = List.copyOf(entry.getValue());
-            for(WireEntity entity : connCopy) {
+            for(BaseWireEntity entity : connCopy) {
                 entity.endpointRemoved(endpoint);
             }
             iter.remove();
@@ -224,14 +224,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         unpause();
     }
 
-    public void addConnection(BlockWireEndpoint endpoint, WireEntity wire) {
+    public void addConnection(BlockWireEndpoint endpoint, BaseWireEntity wire) {
         var sourceConnections = connections.computeIfAbsent(endpoint, key -> new HashSet<>());
         // Check for stale wires here
         sourceConnections.removeIf(Entity::isRemoved);
         sourceConnections.add(wire);
     }
 
-    public void removeConnection(BlockWireEndpoint endpoint, WireEntity wire) {
+    public void removeConnection(BlockWireEndpoint endpoint, BaseWireEntity wire) {
         if(!destroying && connections.containsKey(endpoint)) {
             var list = connections.get(endpoint);
             list.remove(wire);
@@ -261,10 +261,6 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 return true;
         }
         return false;
-    }
-
-    public Map<BlockWireEndpoint, Set<WireEntity>> getConnections() {
-        return connections;
     }
 
     public boolean hasTerminal(int terminal) {

@@ -73,6 +73,7 @@ import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
+import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
@@ -558,6 +559,14 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .item()
                 .model(itemWithParent("block/device_connector_v"))
+                .build()
+            .register();
+
+    public static final BlockEntry<SocketBlock> SOCKET = REGISTRATE.block("socket", SocketBlock::new)
+            .blockstate(surfaceBlock("block/power_plug"))
+            .transform(pickaxeOnly())
+            .item()
+                .model(itemWithParent("block/power_plug_v"))
                 .build()
             .register();
 
