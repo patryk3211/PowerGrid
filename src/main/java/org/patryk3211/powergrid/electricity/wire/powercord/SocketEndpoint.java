@@ -15,65 +15,83 @@
  */
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.IElectric;
-import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
+import org.patryk3211.powergrid.electricity.base.ISocketElectric;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 public class SocketEndpoint implements ICordEndpoint {
     private BlockPos pos;
-    private int terminal;
+
+    public SocketEndpoint() {
+        this(null);
+    }
+
+    public SocketEndpoint(BlockPos pos) {
+        this.pos = pos;
+    }
 
     @Override
     public WireEndpointType type() {
         return WireEndpointType.SOCKET;
     }
 
-    public IElectric getElectricBlock(Level world) {
+    public ISocketElectric getSocketBlock(Level world) {
         if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
             return null;
-        return IElectric.getAt(world, pos);
+        return ISocketElectric.getAt(world, pos);
     }
 
     public ElectricBehaviour getElectricBehaviour(Level world) {
         if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
             return null;
-        var electric = getElectricBlock(world);
-        if(electric == null)
-            return null;
-        var state = world.getBlockState(pos);
-        return electric.getBehaviour(world, pos, state);
+        return BlockEntityBehaviour.get(world, pos, ElectricBehaviour.TYPE);
     }
 
     @Override
     public void read(CompoundTag nbt) {
-
+        pos = NbtUtils.readBlockPos(nbt.getCompound("Pos"));
     }
 
     @Override
     public void write(CompoundTag nbt) {
-
+        nbt.put("Pos", NbtUtils.writeBlockPos(pos));
     }
 
     @Override
     public @NotNull Vec3 getExactPosition(Level world) {
-        return null;
+        var socketed = getSocketBlock(world);
+        var placement = socketed.socket(world.getBlockState(pos));
+        var origin = placement.getOrigin();
+        return new Vec3(pos.getX() + origin.x, pos.getY() + origin.y, pos.getZ() + origin.z);
     }
 
     @Override
     public IWireEndpoint getEndpoint1() {
-        return null;
+        return new BlockWireEndpoint(pos, 0);
     }
 
     @Override
     public IWireEndpoint getEndpoint2() {
-        return null;
+        return new BlockWireEndpoint(pos, 1);
+    }
+
+    @Override
+    public boolean isValid(Level world) {
+        if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
+            return false;
+        var behaviour = getElectricBehaviour(world);
+        if(behaviour == null)
+            return false;
+        return behaviour.hasTerminal(0) && behaviour.hasTerminal(1);
     }
 }

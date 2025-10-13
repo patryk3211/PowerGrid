@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
@@ -36,10 +37,7 @@ import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.CurveParameters;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireItem;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
@@ -54,6 +52,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     private ElectricWire wire2;
 
     public Object renderParams;
+    private boolean particlesSpawned;
 
     public static CordEntity create(Level world, ICordEndpoint endpoint1, ICordEndpoint endpoint2, ItemStack item, @Nullable Float resistance) {
         if(!(item.getItem() instanceof CordItem))
@@ -124,6 +123,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
     @Override
     public float current() {
+        if(wire1 == null || wire2 == null)
+            return 0;
         return Math.abs(wire1.current()) + Math.abs(wire2.current());
     }
 
@@ -212,6 +213,44 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                 var packet = new EntityDataS2CPacket(this, tag);
                 ModdedPackets.sendToClientsTracking(packet, this);
             }
+        }
+    }
+
+    @Override
+    public void tick() {
+        var beginFlags = deferEndpointResolution;
+        super.tick();
+        var world = level();
+        if(beginFlags != deferEndpointResolution) {
+            terminalPos1 = getEndpoint1().getExactPosition(world);
+            terminalPos2 = getEndpoint2().getExactPosition(world);
+            updateRenderParams();
+        }
+
+        var temperature = getTemperature();
+
+        var pos = position();
+        if(isOverheated()) {
+            if(world.isClientSide && !particlesSpawned) {
+                var curveParams = (CurveParameters) renderParams;
+                var dx = curveParams.getCurveSpan();
+                var normal = curveParams.getNormal();
+                int pointCount = Math.round(dx / 0.25f);
+                for(int i = 0; i < pointCount; ++i) {
+                    float localX = ((float) i / pointCount - 0.5f) * dx;
+                    var x = pos.x + localX * normal.x;
+                    var y = pos.y + curveParams.apply(localX);
+                    var z = pos.z + localX * normal.z;
+                    world.addParticle(ParticleTypes.FLAME, x, y, z, 0.0f, 0.00f, 0.0f);
+                }
+                particlesSpawned = true;
+            }
+        } else if(temperature >= overheatTemperature - 50 && world.isClientSide && renderParams != null) {
+            var curvePoint = ((CurveParameters) renderParams).getRandomPoint(random);
+            double x = curvePoint.x + pos.x;
+            double y = curvePoint.y + pos.y;
+            double z = curvePoint.z + pos.z;
+            world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
         }
     }
 

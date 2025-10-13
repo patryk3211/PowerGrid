@@ -209,6 +209,7 @@
   "powergrid.generic.control_terminal": "Control",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.positive_terminal": "Positive",
+  "powergrid.generic.socket": "Socket",
   "powergrid.generic.tap": "Tap",
   "powergrid.generic.terminal": "Connector",
   "powergrid.generic.unit.amp": "A",

@@ -15,32 +15,17 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
 public interface ISocketElectric {
-    default int socketIndexAt(BlockState state, Vec3 pos) {
-        for(int i = 0; i < socketCount(); ++i) {
-            var terminal = socket(state, i);
-            if(terminal == null)
-                continue;
-            if(terminal.check(pos))
-                return i;
-        }
-        return -1;
-    }
-
-    default ITerminalPlacement socketAt(BlockState state, Vec3 pos) {
-        for(int i = 0; i < socketCount(); ++i) {
-            var terminal = socket(state, i);
-            if(terminal == null)
-                continue;
-            if(terminal.check(pos))
-                return terminal;
-        }
+    static ISocketElectric getAt(Level world, BlockPos pos) {
+        var state = world.getBlockState(pos);
+        if(state.getBlock() instanceof ISocketElectric electric)
+            return electric;
         return null;
     }
 
-    int socketCount();
-    ITerminalPlacement socket(BlockState state, int index);
+    ITerminalPlacement socket(BlockState state);
 }

@@ -27,6 +27,8 @@ import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.ISocketElectric;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 
 public class TerminalHandler {
@@ -48,14 +50,21 @@ public class TerminalHandler {
             return;
 
         if(target instanceof BlockHitResult blockHit) {
-            var electric = IElectric.getAt(world, blockHit.getBlockPos());
-            if(electric == null)
-                return;
+            ITerminalPlacement terminal = null;
             var blockPos = blockHit.getBlockPos();
             var state = world.getBlockState(blockPos);
-            var terminal = electric.terminalAt(state, blockHit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
-            if(terminal == null)
-                return;
+            var electric = IElectric.getAt(world, blockPos);
+            if(electric != null) {
+                terminal = electric.terminalAt(state, blockHit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+            }
+            if(terminal == null) {
+                var socket = ISocketElectric.getAt(world, blockPos);
+                if(socket != null) {
+                    terminal = socket.socket(state);
+                    if(!terminal.check(blockPos, blockHit.getLocation()))
+                        return;
+                }
+            }
 
             if(!(terminal instanceof IDecoratedTerminal decorated))
                 return;

@@ -34,19 +34,26 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
-import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
-public class SocketBlock extends ElectricBlock implements IBE<SocketBlockEntity> {
+public class SocketBlock extends ElectricBlock implements IBE<SocketBlockEntity>, ISocketElectric {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;
 
     private final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 3, 10, 2, 4),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 3, 10, 2, 4)
+                    .withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 12, 10, 2, 13)
+                    .withColor(IDecoratedTerminal.BLUE)
     };
+
+    private final TerminalBoundingBox SOCKET_DOWN = new TerminalBoundingBox(IDecoratedTerminal.SOCKET, 6, 3, 6, 10, 5, 10);
+    private final TerminalBoundingBox SOCKET_UP = SOCKET_DOWN.rotateAroundX(180);
+    private final TerminalBoundingBox SOCKET_NORTH = SOCKET_DOWN.rotateAroundX(-90);
+    private final TerminalBoundingBox SOCKET_SOUTH = SOCKET_DOWN.rotateAroundX(90);
+    private final TerminalBoundingBox SOCKET_EAST = SOCKET_DOWN.rotateAroundX(90).rotateAroundY(-90);
+    private final TerminalBoundingBox SOCKET_WEST = SOCKET_DOWN.rotateAroundX(90).rotateAroundY(90);
 
     private static final VoxelShape SHAPE_DOWN = box(4, 0, 4, 12, 4, 12);
 
@@ -104,13 +111,13 @@ public class SocketBlock extends ElectricBlock implements IBE<SocketBlockEntity>
     @Override
     public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
         var facing = state.getValue(FACING);
-        return canSupportCenter(world, pos.relative(facing, -1), facing);
+        return canSupportCenter(world, pos.relative(facing, 1), facing.getOpposite());
     }
 
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
         var facing = state.getValue(FACING);
-        return direction == facing.getOpposite() && !canSurvive(state, world, pos)
+        return direction == facing && !canSurvive(state, world, pos)
                 ? Blocks.AIR.defaultBlockState()
                 : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
@@ -132,5 +139,17 @@ public class SocketBlock extends ElectricBlock implements IBE<SocketBlockEntity>
     @Override
     public BlockEntityType<? extends SocketBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.SOCKET.get();
+    }
+
+    @Override
+    public ITerminalPlacement socket(BlockState state) {
+        return switch(state.getValue(FACING)) {
+            case DOWN -> SOCKET_DOWN;
+            case UP -> SOCKET_UP;
+            case NORTH -> SOCKET_NORTH;
+            case SOUTH -> SOCKET_SOUTH;
+            case EAST -> SOCKET_EAST;
+            case WEST -> SOCKET_WEST;
+        };
     }
 }

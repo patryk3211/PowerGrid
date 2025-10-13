@@ -23,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
@@ -109,10 +110,36 @@ public class CordItem extends WireItem {
         return InteractionResult.SUCCESS;
     }
 
+    private static InteractionResult addEndpoint(UseOnContext context, ICordEndpoint endpoint) {
+        var stack = context.getItemInHand();
+        var firstPoint = WireEndpointType.deserialize(stack.getTag());
+        if(firstPoint == null) {
+            stack.setTag(endpoint.serialize());
+            IElectric.sendMessage(context, Lang.translate("message.cord_next").style(ChatFormatting.GRAY).component());
+            return InteractionResult.SUCCESS;
+        } else if(firstPoint instanceof ICordEndpoint firstCordPoint) {
+            // Both endpoints specified
+            var result = connect(firstCordPoint, endpoint, context);
+            stack.setTag(null);
+            return result;
+        } else {
+            IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+            stack.setTag(null);
+            return InteractionResult.FAIL;
+        }
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        var electric = IElectric.getAt(context.getLevel(), context.getClickedPos());
         var state = context.getLevel().getBlockState(context.getClickedPos());
+        var socket = ISocketElectric.getAt(context.getLevel(), context.getClickedPos());
+        if(socket != null) {
+            var terminal = socket.socket(state);
+            if(terminal.check(context.getClickedPos(), context.getClickLocation())) {
+                return addEndpoint(context, new SocketEndpoint(context.getClickedPos()));
+            }
+        }
+        var electric = IElectric.getAt(context.getLevel(), context.getClickedPos());
         if(electric != null) {
             var stack = context.getItemInHand();
             var pos = context.getClickedPos();
@@ -124,21 +151,7 @@ public class CordItem extends WireItem {
                     if(!(endpointHalf instanceof BlockWireEndpoint bwe))
                         return InteractionResult.FAIL;
                     var splitEndpoint = new SplitCordEndpoint(bwe, new BlockWireEndpoint(pos, terminal));
-                    var firstPoint = WireEndpointType.deserialize(stack.getTag());
-                    if(firstPoint == null) {
-                        stack.setTag(splitEndpoint.serialize());
-                        IElectric.sendMessage(context, Lang.translate("message.cord_next").style(ChatFormatting.GRAY).component());
-                        return InteractionResult.SUCCESS;
-                    } else if(firstPoint instanceof ICordEndpoint firstCordPoint) {
-                        // Both endpoints specified
-                        var result = connect(firstCordPoint, splitEndpoint, context);
-                        stack.setTag(null);
-                        return result;
-                    } else {
-                        IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
-                        stack.setTag(null);
-                        return InteractionResult.FAIL;
-                    }
+                    return addEndpoint(context, splitEndpoint);
                 } else {
                     var endpoint = new BlockWireEndpoint(pos, terminal);
                     var tag = endpoint.serialize();
