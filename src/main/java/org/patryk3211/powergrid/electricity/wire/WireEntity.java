@@ -43,7 +43,7 @@ public abstract class WireEntity extends BaseWireEntity {
 
     @Override
     public float current() {
-        return wire == null ? 0 : wire.current();
+        return wire == null || !wire.isConverged() ? 0 : wire.current();
     }
 
     @Override
