@@ -19,7 +19,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -60,7 +59,12 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             // Don't render since it's dead and only there to spawn particles.
             return;
 
-        var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
+        VertexConsumer buffer;
+        if(Minecraft.useFancyGraphics()) {
+            buffer = vertexConsumers.getBuffer(RenderType.entityCutout(getTextureLocation(entity)));
+        } else {
+            buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
+        }
         assert entity.renderParams instanceof CurveParameters;
         CurveParameters rp = (CurveParameters) entity.renderParams;
 
@@ -123,7 +127,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                                      float x1, float y1, float z1, float x2, float y2, float z2,
                                      Vec3 cross1, Vec3 cross2, int light, int color,
                                      float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
-        if(Minecraft.getInstance().options.graphicsMode().get() == GraphicsStatus.FAST) {
+        if(!Minecraft.useFancyGraphics()) {
             quad(ms.last(), buffer, light, color,
                     x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
                     x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
@@ -145,24 +149,24 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                     cross1.x - cross2.x, cross1.y - cross2.y, cross1.z - cross2.z,
                     thickness, thicknessOffset, uvLength, lengthOffset);
             quad(ms.last(), buffer, light, color,
-                    x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
                     x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
-                    x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                    x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
                     x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                    x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
                     cross2.x - cross1.x, cross2.y - cross1.y, cross2.z - cross1.z,
                     thickness, thicknessOffset, uvLength, lengthOffset);
             quad(ms.last(), buffer, light, color,
-                    x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
                     x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
-                    x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
+                    x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
                     x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                    x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
                     cross1.x + cross2.x, cross1.y + cross2.y, cross1.z + cross2.z,
                     thickness, thicknessOffset, uvLength, lengthOffset);
             quad(ms.last(), buffer, light, color,
-                    x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
                     x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
-                    x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                    x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
                     x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                    x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
                     -cross1.x - cross2.x, -cross1.y - cross2.y, -cross1.z - cross2.z,
                     thickness, thicknessOffset, uvLength, lengthOffset);
             quad(ms.last(), buffer, light, color,
