@@ -17,10 +17,12 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
@@ -57,6 +59,14 @@ public class SocketEndpoint implements ICordEndpoint {
         return BlockEntityBehaviour.get(world, pos, ElectricBehaviour.TYPE);
     }
 
+    @NotNull
+    public Direction getFacing(Level world) {
+        var state = world.getBlockState(pos);
+        if(state.hasProperty(BlockStateProperties.FACING))
+            return state.getValue(BlockStateProperties.FACING);
+        return Direction.NORTH;
+    }
+
     @Override
     public void read(CompoundTag nbt) {
         pos = NbtUtils.readBlockPos(nbt.getCompound("Pos"));
@@ -72,7 +82,8 @@ public class SocketEndpoint implements ICordEndpoint {
         var socketed = getSocketBlock(world);
         var placement = socketed.socket(world.getBlockState(pos));
         var origin = placement.getOrigin();
-        return new Vec3(pos.getX() + origin.x, pos.getY() + origin.y, pos.getZ() + origin.z);
+        return new Vec3(pos.getX() + origin.x, pos.getY() + origin.y, pos.getZ() + origin.z)
+                .relative(getFacing(world), -3 / 16f);
     }
 
     @Override
@@ -93,5 +104,9 @@ public class SocketEndpoint implements ICordEndpoint {
         if(behaviour == null)
             return false;
         return behaviour.hasTerminal(0) && behaviour.hasTerminal(1);
+    }
+
+    public BlockPos getPosition() {
+        return pos;
     }
 }

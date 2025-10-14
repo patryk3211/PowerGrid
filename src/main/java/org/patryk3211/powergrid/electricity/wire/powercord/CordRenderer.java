@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.LightTexture;
@@ -31,6 +32,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -75,6 +77,7 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
             var sky = world.getBrightness(LightLayer.SKY, blockPos);
             var block = world.getBrightness(LightLayer.BLOCK, blockPos);
+            var currentLight = LightTexture.pack(block, sky);
             if(first) {
                 var endpoint = entity.getEndpoint1();
                 if(endpoint instanceof SplitCordEndpoint split) {
@@ -91,7 +94,7 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                             (float) (x2 - (smallCross1.x + smallCross2.x) * 0.5f + normal.x / 32f),
                             (float) (y2 - (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
                             (float) (z2 - (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
-                            smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFFB02E26,
+                            smallCross1, smallCross2, currentLight, 0xFFB02E26,
                             rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
 
                     direction = new Vec3(x2 - p2.x + pos.x, y2 - p2.y + pos.y, z2 - p2.z + pos.z);
@@ -103,9 +106,27 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                             (float) (x2 + (smallCross1.x + smallCross2.x) * 0.5f + normal.x / 32f),
                             (float) (y2 + (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
                             (float) (z2 + (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
-                            smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFF3C44AA,
+                            smallCross1, smallCross2, currentLight, 0xFF3C44AA,
                             rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
                     return;
+                } else if(endpoint instanceof SocketEndpoint socket) {
+                    var state = world.getBlockState(socket.getPosition());
+                    var facing = socket.getFacing(world);
+                    var model = CachedBuffers.partial(ModdedPartialModels.PLUG, state);
+                    float x3 = x1, y3 = y1, z3 = z1;
+                    switch(facing) {
+                        case NORTH -> z3 -= 3 / 16f;
+                        case SOUTH -> z3 += 3 / 16f;
+                        case WEST -> x3 -= 3 / 16f;
+                        case EAST -> x3 += 3 / 16f;
+                        case DOWN -> y3 -= 3 / 16f;
+                        case UP -> y3 += 3 / 16f;
+                    }
+                    model
+                            .light(currentLight)
+                            .translate(x3, y3, z3)
+                            .rotateToFace(facing)
+                            .renderInto(matrices, vertexConsumers.getBuffer(RenderType.solid()));
                 }
             } else if(last) {
                 var endpoint = entity.getEndpoint2();
@@ -123,7 +144,7 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                             (float) (y1 - (smallCross1.y + smallCross2.y) * 0.5f - normal.y / 32f),
                             (float) (z1 - (smallCross1.z + smallCross2.z) * 0.5f - normal.z / 32f),
                             (float) (p1.x - pos.x), (float) (p1.y - pos.y), (float) (p1.z - pos.z),
-                            smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFFB02E26,
+                            smallCross1, smallCross2, currentLight, 0xFFB02E26,
                             rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
 
                     direction = new Vec3(x1 - p2.x + pos.x, y1 - p2.y + pos.y, z1 - p2.z + pos.z);
@@ -135,15 +156,33 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                             (float) (y1 + (smallCross1.y + smallCross2.y) * 0.5f - normal.y / 32f),
                             (float) (z1 + (smallCross1.z + smallCross2.z) * 0.5f - normal.z / 32f),
                             (float) (p2.x - pos.x), (float) (p2.y - pos.y), (float) (p2.z - pos.z),
-                            smallCross1, smallCross2, LightTexture.pack(block, sky), 0xFF3C44AA,
+                            smallCross1, smallCross2, currentLight, 0xFF3C44AA,
                             rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
                     return;
+                } else if(endpoint instanceof SocketEndpoint socket) {
+                    var state = world.getBlockState(socket.getPosition());
+                    var facing = socket.getFacing(world);
+                    var model = CachedBuffers.partial(ModdedPartialModels.PLUG, state);
+                    float x3 = x2, y3 = y2, z3 = z2;
+                    switch(facing) {
+                        case NORTH -> z3 -= 3 / 16f;
+                        case SOUTH -> z3 += 3 / 16f;
+                        case WEST -> x3 -= 3 / 16f;
+                        case EAST -> x3 += 3 / 16f;
+                        case DOWN -> y3 -= 3 / 16f;
+                        case UP -> y3 += 3 / 16f;
+                    }
+                    model
+                            .light(currentLight)
+                            .translate(x3, y3, z3)
+                            .rotateToFace(facing)
+                            .renderInto(matrices, vertexConsumers.getBuffer(RenderType.solid()));
                 }
             }
-            renderSegment(matrices, buffer,
+            renderSegment(matrices, vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity))),
                     x1, y1, z1,
                     x2, y2, z2,
-                    rp.cross1, rp.cross2, LightTexture.pack(block, sky), color,
+                    rp.cross1, rp.cross2, currentLight, color,
                     rp.thickness, thicknessOffset, length, offset);
         });
     }

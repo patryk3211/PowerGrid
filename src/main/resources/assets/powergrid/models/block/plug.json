@@ -1,0 +1,23 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"0": "powergrid:block/plug",
+		"particle": "powergrid:block/plug"
+	},
+	"elements": [
+		{
+			"from": [-2, -2, 0],
+			"to": [2, 2, 3],
+			"faces": {
+				"north": {"uv": [0, 0, 4, 4], "texture": "#0"},
+				"east": {"uv": [4, 0, 7, 4], "rotation": 180, "texture": "#0"},
+				"south": {"uv": [0, 4, 4, 8], "texture": "#0"},
+				"west": {"uv": [4, 0, 7, 4], "texture": "#0"},
+				"up": {"uv": [4, 0, 7, 4], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [4, 0, 7, 4], "rotation": 270, "texture": "#0"}
+			}
+		}
+	]
+}
