@@ -36,8 +36,8 @@ public class ElectricalNetwork {
     private static final int MAX_SCALE_REUSE_COUNT = 20;
 
     private final boolean addGMin;
-    private final Set<AbstractElectricWire> wires = new HashSet<>();
-    private final Set<ICouplingNode> couplings = new HashSet<>();
+    protected final Set<AbstractElectricWire> wires = new HashSet<>();
+    protected final Set<ICouplingNode> couplings = new HashSet<>();
     protected final List<INode> nodes = new ArrayList<>();
     private int eliminatedStart;
 
@@ -452,9 +452,16 @@ public class ElectricalNetwork {
         other.nodes.forEach(this::addNode);
         other.wires.forEach(this::addWire);
         // Make the other network empty.
-        other.nodes.clear();
-        other.wires.clear();
-        other.couplings.clear();
+        other.clear();
+    }
+
+    public void clear() {
+        nodes.clear();
+        wires.clear();
+        couplings.clear();
+        hooks.clear();
+        residuals.clear();
+        eliminatedStart = 0;
     }
 
     public double getValue(INode node) {
@@ -541,6 +548,7 @@ public class ElectricalNetwork {
         if(node.getIndex() == eliminatedStart - 1) {
             // Simply move pointer back by one to include this node.
             --eliminatedStart;
+            dirty = true;
         } else {
             // Swap nodes and move eliminated pointer
             var other = nodes.get(--eliminatedStart);
@@ -557,6 +565,7 @@ public class ElectricalNetwork {
         if(node.getIndex() == eliminatedStart) {
             // Simply move pointer forward by one to include this node.
             ++eliminatedStart;
+            dirty = true;
         } else {
             // Swap nodes and move eliminated pointer
             var other = nodes.get(++eliminatedStart);

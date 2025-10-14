@@ -43,5 +43,17 @@
 				"down": {"uv": [8, 1, 12, 2], "rotation": 180, "texture": "#0", "cullface": "down"}
 			}
 		}
-	]
+	],
+	"display": {
+		"firstperson_righthand": {
+			"rotation": [0, 45, 0],
+			"translation": [0, 2.5, 0],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, 45, 0],
+			"translation": [0, 2.5, 0],
+			"scale": [0.4, 0.4, 0.4]
+		}
+	}
 }

@@ -36,28 +36,44 @@ public class CordItem extends WireItem {
     private static InteractionResult connect(ICordEndpoint endpoint1, ICordEndpoint endpoint2, UseOnContext context) {
         var level = context.getLevel();
 
-        // TODO: Reimplement these checks correctly.
-//        var behaviour1 = endpoint1.getElectricBehaviour(level);
-//        var behaviour2 = endpoint2.getElectricBehaviour(level);
-//        if(behaviour1 == null || behaviour2 == null) {
-//            IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
-//            PowerGrid.LOGGER.error("Connection failed, at least one behaviour is null");
-//            return InteractionResult.FAIL;
-//        }
-//
-//        var node1 = endpoint1.getNode(level);
-//        var node2 = endpoint2.getNode(level);
-//        if(node1 == null || node2 == null || node1 == node2) {
-//            IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
-//            PowerGrid.LOGGER.error("Connection failed, nodes: ({}, {})", node1, node2);
-//            return InteractionResult.FAIL;
-//        }
-//
-//        // Check if there is an existing connection between these nodes.
-//        if(behaviour1.hasConnection(endpoint1, endpoint2) || behaviour2.hasConnection(endpoint2, endpoint1)) {
-//            IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
-//            return InteractionResult.FAIL;
-//        }
+        if(!endpoint1.isValid(level) || !endpoint2.isValid(level)) {
+            IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+            PowerGrid.LOGGER.error("Connection failed, at least one endpoint is not valid");
+            return InteractionResult.FAIL;
+        }
+
+        // These checks differ from the hanging wire checks.
+        // We treat the cord as if it were two regular wires in parallel,
+        // which means that we allow some permutations where the individual wires go into one terminal.
+        var node1 = endpoint1.getEndpoint1().getNode(level);
+        var node2 = endpoint2.getEndpoint1().getNode(level);
+        if(node1 == null || node2 == null || node1 == node2) {
+            IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+            PowerGrid.LOGGER.error("Connection failed, nodes: ({}, {})", node1, node2);
+            return InteractionResult.FAIL;
+        }
+        node1 = endpoint1.getEndpoint2().getNode(level);
+        node2 = endpoint2.getEndpoint2().getNode(level);
+        if(node1 == null || node2 == null || node1 == node2) {
+            IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+            PowerGrid.LOGGER.error("Connection failed, nodes: ({}, {})", node1, node2);
+            return InteractionResult.FAIL;
+        }
+
+        var behaviour1 = endpoint1.getEndpoint1().getElectricBehaviour(level);
+        var behaviour2 = endpoint2.getEndpoint1().getElectricBehaviour(level);
+        // Check if there is an existing connection between these nodes.
+        if(behaviour1.hasConnection(endpoint1.getEndpoint1(), endpoint2.getEndpoint1()) || behaviour2.hasConnection(endpoint2.getEndpoint1(), endpoint1.getEndpoint1())) {
+            IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
+        }
+        behaviour1 = endpoint1.getEndpoint2().getElectricBehaviour(level);
+        behaviour2 = endpoint2.getEndpoint2().getElectricBehaviour(level);
+        // Check if there is an existing connection between these nodes.
+        if(behaviour1.hasConnection(endpoint1.getEndpoint2(), endpoint2.getEndpoint2()) || behaviour2.hasConnection(endpoint2.getEndpoint2(), endpoint1.getEndpoint2())) {
+            IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
+            return InteractionResult.FAIL;
+        }
 
         var terminal1Pos = endpoint1.getExactPosition(level);
         var terminal2Pos = endpoint2.getExactPosition(level);
@@ -136,8 +152,18 @@ public class CordItem extends WireItem {
         if(socket != null) {
             var terminal = socket.socket(state);
             if(terminal.check(context.getClickedPos(), context.getClickLocation())) {
-                return addEndpoint(context, new SocketEndpoint(context.getClickedPos()));
+                var endpoint = new SocketEndpoint(context.getClickedPos());
+                if(endpoint.hasConnection(context.getLevel())) {
+                    IElectric.sendMessage(context, Lang.translate("message.socket_taken").style(ChatFormatting.RED).component());
+                    return InteractionResult.FAIL;
+                } else {
+                    return addEndpoint(context, endpoint);
+                }
             }
+        }
+        if(state.getBlock() instanceof IAcceptCord cordAcceptor) {
+            var endpoint = cordAcceptor.getEndpoint(context);
+            return addEndpoint(context, endpoint);
         }
         var electric = IElectric.getAt(context.getLevel(), context.getClickedPos());
         if(electric != null) {
@@ -150,7 +176,15 @@ public class CordItem extends WireItem {
                     var endpointHalf = WireEndpointType.deserialize(stack.getTagElement("Half"));
                     if(!(endpointHalf instanceof BlockWireEndpoint bwe))
                         return InteractionResult.FAIL;
-                    var splitEndpoint = new SplitCordEndpoint(bwe, new BlockWireEndpoint(pos, terminal));
+                    var endpoint2 = new BlockWireEndpoint(pos, terminal);
+                    var p1 = endpointHalf.getExactPosition(context.getLevel());
+                    var p2 = endpoint2.getExactPosition(context.getLevel());
+                    if(p1.distanceToSqr(p2) > 4) {
+                        // 4 = 2², split cord allows 2 blocks of distance between endpoints on one end of a cord.
+                        IElectric.sendMessage(context, Lang.translate("message.split_cord_too_far").style(ChatFormatting.RED).component());
+                        return InteractionResult.FAIL;
+                    }
+                    var splitEndpoint = new SplitCordEndpoint(bwe, endpoint2);
                     return addEndpoint(context, splitEndpoint);
                 } else {
                     var endpoint = new BlockWireEndpoint(pos, terminal);

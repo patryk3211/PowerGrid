@@ -75,7 +75,7 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<CordItem> CORD = REGISTRATE.item("copper_cord", CordItem::new)
             .transform(WireProperties.setAll(0.0015f, 8, 2.0f, 0.064f))
-            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.005f, 1.1f, 0.125f, true))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f, true))
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)

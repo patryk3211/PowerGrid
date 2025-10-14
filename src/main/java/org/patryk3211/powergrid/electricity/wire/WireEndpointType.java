@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Contract;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.SocketEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.SplitCordEndpoint;
 
@@ -30,19 +31,25 @@ public enum WireEndpointType {
     DEFERRED_JUNCTION(DeferredJunctionWireEndpoint::new, true),
 
     // Special endpoint type used by the multimeter
-    CIRCUIT_BOARD(CircuitBoardEndpoint::new, false),
+    CIRCUIT_BOARD(CircuitBoardEndpoint::new),
 
     // Cord endpoint types
-    SOCKET(SocketEndpoint::new, true),
-    SPLIT_CORD(SplitCordEndpoint::new, false)
+    SOCKET(SocketEndpoint::new),
+    SPLIT_CORD(SplitCordEndpoint::new),
+    AUTO_CORD(AutoCordEndpoint::new)
     ;
 
     private final Supplier<IWireEndpoint> factory;
+    // This is only used by the block wire placement code.
     private final boolean connectable;
 
     WireEndpointType(Supplier<IWireEndpoint> factory, boolean connectable) {
         this.factory = factory;
         this.connectable = connectable;
+    }
+
+    WireEndpointType(Supplier<IWireEndpoint> factory) {
+        this(factory, false);
     }
 
     public boolean isConnectable() {

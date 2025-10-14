@@ -28,8 +28,9 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+
+import java.util.Objects;
 
 public class SocketEndpoint implements ICordEndpoint {
     private BlockPos pos;
@@ -87,12 +88,12 @@ public class SocketEndpoint implements ICordEndpoint {
     }
 
     @Override
-    public IWireEndpoint getEndpoint1() {
+    public BlockWireEndpoint getEndpoint1() {
         return new BlockWireEndpoint(pos, 0);
     }
 
     @Override
-    public IWireEndpoint getEndpoint2() {
+    public BlockWireEndpoint getEndpoint2() {
         return new BlockWireEndpoint(pos, 1);
     }
 
@@ -108,5 +109,35 @@ public class SocketEndpoint implements ICordEndpoint {
 
     public BlockPos getPosition() {
         return pos;
+    }
+
+    public boolean hasConnection(Level world) {
+        var behaviour = getElectricBehaviour(world);
+        var connections1 = behaviour.getConnections().get(getEndpoint1());
+        var connections2 = behaviour.getConnections().get(getEndpoint2());
+        if(connections1 == null || connections2 == null)
+            return false;
+        for(var wire : connections2) {
+            if(!(wire instanceof CordEntity))
+                continue;
+            if(connections1.contains(wire)) {
+                // Same wire connected to both endpoints,
+                // if either endpoint of this wire is this endpoint,
+                // then this socket is occupied.
+                if(equals(wire.getEndpoint1()) || equals(wire.getEndpoint2()))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        if(obj instanceof SocketEndpoint other) {
+            return Objects.equals(pos, other.pos);
+        }
+        return false;
     }
 }

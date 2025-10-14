@@ -79,6 +79,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
+import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
@@ -156,6 +157,13 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<CordJunctionBlock> CORD_JUNCTION = REGISTRATE.block("cord_junction", CordJunctionBlock::new)
+            .blockstate(downFacing("block/cord_junction"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
             .simpleItem()
             .register();
 

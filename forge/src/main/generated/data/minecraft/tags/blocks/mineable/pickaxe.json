@@ -4,6 +4,7 @@
     "powergrid:conductive_casing",
     "powergrid:wire_connector",
     "powergrid:heavy_wire_connector",
+    "powergrid:cord_junction",
     "powergrid:heating_coil",
     "powergrid:basin_heater",
     "powergrid:voltage_gauge",

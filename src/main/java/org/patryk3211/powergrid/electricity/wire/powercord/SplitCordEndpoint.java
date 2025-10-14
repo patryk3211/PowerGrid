@@ -20,7 +20,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 public class SplitCordEndpoint implements ICordEndpoint {
@@ -85,12 +84,12 @@ public class SplitCordEndpoint implements ICordEndpoint {
     }
 
     @Override
-    public IWireEndpoint getEndpoint1() {
+    public BlockWireEndpoint getEndpoint1() {
         return endpoint1;
     }
 
     @Override
-    public IWireEndpoint getEndpoint2() {
+    public BlockWireEndpoint getEndpoint2() {
         return endpoint2;
     }
 }

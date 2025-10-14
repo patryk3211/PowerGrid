@@ -263,6 +263,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return false;
     }
 
+    public Map<BlockWireEndpoint, Set<BaseWireEntity>> getConnections() {
+        return connections;
+    }
+
     public boolean hasTerminal(int terminal) {
         return terminal >= 0 && terminal < externalNodes.size() && externalNodes.get(terminal) != null;
     }

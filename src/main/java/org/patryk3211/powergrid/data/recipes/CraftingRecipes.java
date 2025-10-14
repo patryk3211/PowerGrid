@@ -397,7 +397,32 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .unlockedBy(() -> ModdedItems.WIRE)
             .viaShapeless(b -> b
                     .requires(ModdedItems.WIRE)
-                    .requires(Items.DRIED_KELP))
+                    .requires(Items.DRIED_KELP)),
+
+    COPPER_CORD = create(ModdedItems.CORD)
+            .unlockedBy(() -> ModdedItems.INSULATED_COPPER_WIRE)
+            .viaShapeless(b -> b
+                    .requires(ModdedItems.INSULATED_COPPER_WIRE)
+                    .requires(ModdedItems.INSULATED_COPPER_WIRE)
+                    .requires(Items.DRIED_KELP)),
+
+    CORD_JUNCTION = create(ModdedBlocks.CORD_JUNCTION)
+            .unlockedBy(() -> ModdedItems.CORD)
+            .viaShaped(b -> b
+                    .pattern("ZZ")
+                    .pattern("NN")
+                    .pattern("II")
+                    .define('Z', RecipeTags.zincSheet())
+                    .define('N', RecipeTags.copperNugget())
+                    .define('I', RecipeTags.ironSheet())),
+
+    POWER_PLUG = create(ModdedBlocks.SOCKET)
+            .unlockedBy(() -> ModdedItems.CORD)
+            .viaShapeless(b -> b
+                    .requires(RecipeTags.copperSheet())
+                    .requires(RecipeTags.conductiveCasing())
+                    .requires(RecipeTags.brassSheet()))
+
             ;
 
     public CraftingRecipes(PackOutput output) {

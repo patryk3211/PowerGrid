@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:plates/iron"
+    },
+    "N": {
+      "tag": "forge:nuggets/copper"
+    },
+    "Z": {
+      "tag": "forge:plates/zinc"
+    }
+  },
+  "pattern": [
+    "ZZ",
+    "NN",
+    "II"
+  ],
+  "result": {
+    "item": "powergrid:cord_junction"
+  },
+  "show_notification": true
+}
