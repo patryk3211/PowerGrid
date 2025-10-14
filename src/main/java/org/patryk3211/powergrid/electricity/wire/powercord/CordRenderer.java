@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -25,24 +24,18 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
-import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+
+import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.renderSegment;
 
 @Environment(EnvType.CLIENT)
 public class CordRenderer extends EntityRenderer<CordEntity> {
-    public static final boolean RAINBOW_WIRES = false;
-
-    public static final double SEGMENT_SIZE = 0.5;
-
     public CordRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
     }
@@ -185,120 +178,5 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                     rp.cross1, rp.cross2, currentLight, color,
                     rp.thickness, thicknessOffset, length, offset);
         });
-    }
-
-    public static void renderFromPositions(PoseStack matrices, VertexConsumer buffer, Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness, int light, int color) {
-        float x = (float) (t1.x + t2.x) * 0.5f;
-        float y = (float) t1.y;
-        float z = (float) (t1.z + t2.z) * 0.5f;
-        var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
-        curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) ->
-                renderSegment(matrices, buffer,
-                        x1 + x, y1 + y, z1 + z,
-                        x2 + x, y2 + y, z2 + z,
-                        curve.cross1, curve.cross2, light, color,
-                        curve.thickness, 0, length, offset));
-    }
-
-    public static void renderFromPositions(PoseStack matrices, VertexConsumer buffer, Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness, BlockAndTintGetter lightProvider, int color) {
-        float x = (float) (t1.x + t2.x) * 0.5f;
-        float y = (float) t1.y;
-        float z = (float) (t1.z + t2.z) * 0.5f;
-        var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
-        curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
-                var blockPos = BlockPos.containing((x1 + x2) * 0.5 + x, (y1 + y2) * 0.5 + y, (z1 + z2) * 0.5 + z);
-                var sky = lightProvider.getBrightness(LightLayer.SKY, blockPos);
-                var block = lightProvider.getBrightness(LightLayer.BLOCK, blockPos);
-                renderSegment(matrices, buffer,
-                        x1 + x, y1 + y, z1 + z,
-                        x2 + x, y2 + y, z2 + z,
-                        curve.cross1, curve.cross2, LightTexture.pack(block, sky), color,
-                        curve.thickness, 0, length, offset);
-        });
-    }
-
-    public static void renderSegment(PoseStack ms, VertexConsumer buffer,
-                                     float x1, float y1, float z1, float x2, float y2, float z2,
-                                     Vec3 cross1, Vec3 cross2, int light, int color,
-                                     float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
-        quad(ms.last(), buffer, light, color,
-                x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
-                x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
-                x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
-                x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
-                cross1.x - cross2.x, cross1.y - cross2.y, cross1.z - cross2.z,
-                thickness, thicknessOffset, uvLength, lengthOffset);
-        quad(ms.last(), buffer, light, color,
-                x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
-                x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
-                x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
-                x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
-                cross2.x - cross1.x, cross2.y - cross1.y, cross2.z - cross1.z,
-                thickness, thicknessOffset, uvLength, lengthOffset);
-        quad(ms.last(), buffer, light, color,
-                x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
-                x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
-                x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
-                x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
-                cross1.x + cross2.x, cross1.y + cross2.y, cross1.z + cross2.z,
-                thickness, thicknessOffset, uvLength, lengthOffset);
-        quad(ms.last(), buffer, light, color,
-                x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
-                x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
-                x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
-                x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
-                -cross1.x - cross2.x, -cross1.y - cross2.y, -cross1.z - cross2.z,
-                thickness, thicknessOffset, uvLength, lengthOffset);
-        quad(ms.last(), buffer, light, color,
-                x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
-                x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
-                x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
-                x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
-                x1 - x2, y1 - y2, z1 - z2,
-                thickness, thicknessOffset, thickness, thicknessOffset);
-        quad(ms.last(), buffer, light, color,
-                x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
-                x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
-                x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
-                x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
-                x2 - x1, y2 - y1, z2 - z1,
-                thickness, thicknessOffset, thickness, thicknessOffset);
-    }
-
-    public static void quad(PoseStack.Pose matrix, VertexConsumer buffer, int light, int color,
-                            double x1, double y1, double z1, double x2, double y2, double z2,
-                            double x3, double y3, double z3, double x4, double y4, double z4,
-                            double nX, double nY, double nZ,
-                            float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
-        var nLen = Math.sqrt(nX * nX + nY * nY + nZ * nZ);
-        nX /= nLen; nY /= nLen; nZ /= nLen;
-        buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
-                .color(color)
-                .uv(lengthOffset, thicknessOffset)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
-                .color(color)
-                .uv(lengthOffset, thicknessOffset + thickness)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
-                .color(color)
-                .uv(lengthOffset + uvLength, thicknessOffset + thickness)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
-                .color(color)
-                .uv(lengthOffset + uvLength, thicknessOffset)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
-                .endVertex();
     }
 }
