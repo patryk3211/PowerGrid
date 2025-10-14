@@ -109,7 +109,7 @@ public abstract class WireEntity extends Entity implements EntityDataS2CPacket.I
 
         float temperature = entityData.get(TEMPERATURE);
         float energy = 0;
-        if (wire != null) {
+        if (wire != null && wire.isConverged()) {
             // We have to use current here since the wire might be a transmission line,
             // which needs special resistance handling.
             var I = wire.current();

@@ -114,17 +114,18 @@ public class VariacBlockEntity extends TunedBlockEntity implements TransformerVo
     public void tick() {
         float power = 0;
         lastCurrent = 0;
-        if(primaryStray != null) {
+        if(primaryStray != null && primaryStray.isConverged()) {
             var I1 = primaryStray.current();
             power += (float) (I1 * I1 * primaryStray.getResistance());
             lastCurrent += Math.abs(I1);
         }
-        if(mutualInductance != null) {
+        if(mutualInductance != null && mutualInductance.isConverged()) {
             var I3 = mutualInductance.current();
             power += (float) (I3 * I3 * mutualInductance.getResistance());
             lastCurrent += Math.abs(I3);
         }
-        applyLostPower(power);
+        if(thermalBehaviour != null)
+            thermalBehaviour.applyTickPower(power);
         super.tick();
     }
 

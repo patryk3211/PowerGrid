@@ -65,7 +65,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
             dialTarget = current / maxValue;
         }
 
-        applyLostPower(wire.power());
+        applyPower(wire);
         super.tick();
     }
 

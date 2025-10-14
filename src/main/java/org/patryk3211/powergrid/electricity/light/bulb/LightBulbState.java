@@ -93,7 +93,8 @@ public abstract class LightBulbState {
 
         var filament = fixture.getFilament();
         float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
-        applyPower(filament.power() - dissipatedPower);
+        if(filament.isConverged())
+            applyPower(filament.power() - dissipatedPower);
         if(!Float.isFinite(temperature))
             temperature = BASE_TEMPERATURE;
         filament.setResistance(bulb.resistanceFunction(temperature));

@@ -240,6 +240,13 @@ public class TransmissionLinePart extends ElectricWire {
     }
 
     @Override
+    public boolean isConverged() {
+        if(line == null)
+            return false;
+        return line.isConverged();
+    }
+
+    @Override
     public String toString() {
         return String.format("LinePart[id=%s, %s, %s]", persistentOwnerId, endpoint1, endpoint2);
     }

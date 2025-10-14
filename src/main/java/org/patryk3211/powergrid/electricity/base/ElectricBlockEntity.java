@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
 import java.util.List;
 
@@ -48,9 +49,9 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
         return null;
     }
 
-    protected void applyLostPower(float power) {
+    protected void applyPower(AbstractElectricWire wire) {
         if(thermalBehaviour != null)
-            thermalBehaviour.applyTickPower(power);
+            thermalBehaviour.applyWirePower(wire);
     }
 
     public ElectricBehaviour getElectricBehaviour() {

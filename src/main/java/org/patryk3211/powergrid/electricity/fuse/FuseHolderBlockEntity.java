@@ -79,7 +79,7 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     public void tick() {
         super.tick();
         if(fuseWire.getState()) {
-            if(Math.abs(fuseWire.current()) > setting.value) {
+            if(fuseWire.isConverged() && Math.abs(fuseWire.current()) > setting.value) {
                 setState(FuseState.BLOWN);
                 if(level.isClientSide)
                     playEffect();

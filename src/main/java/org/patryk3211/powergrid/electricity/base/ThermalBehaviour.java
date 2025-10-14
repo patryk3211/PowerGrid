@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 import org.patryk3211.powergrid.config.ThermalValues;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
 public class ThermalBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<ThermalBehaviour> TYPE = new BehaviourType<>("thermal");
@@ -280,6 +281,11 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
             var energy = power / 20f;
             temperature += energy / thermalMass;
         }
+    }
+
+    public void applyWirePower(AbstractElectricWire wire) {
+        if(wire.isConverged())
+            applyTickPower(wire.power());
     }
 
     @Override

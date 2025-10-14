@@ -29,4 +29,11 @@ public interface INode {
             return getNetwork().getValue(this);
         return 0;
     }
+
+    default boolean isConverged() {
+        var network = getNetwork();
+        if(network == null)
+            return false;
+        return network.isConverged();
+    }
 }

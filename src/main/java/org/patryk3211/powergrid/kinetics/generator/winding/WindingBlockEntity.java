@@ -653,7 +653,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     public float windingCurrent() {
         var be = getSourceHolder();
-        if(be == null)
+        if(be == null || !be.sourceCoupling.isConverged())
             return 0;
         return -be.sourceCoupling.getCurrent() / be.totalCoilCount;
     }
@@ -709,7 +709,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             regrabRotors = false;
         }
         float current = windingCurrent();
-        applyLostPower(current * current * resistance());
+        if(thermalBehaviour != null)
+            thermalBehaviour.applyTickPower(current * current * resistance());
         super.tick();
 
         if(rotorP != null) {

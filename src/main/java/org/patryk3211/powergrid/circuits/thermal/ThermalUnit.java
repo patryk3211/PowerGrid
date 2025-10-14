@@ -75,6 +75,8 @@ public class ThermalUnit {
             return;
         float power = -dissipationFactor * (temperature - BASE_TEMPERATURE) * dissipationMultiplier;
         for(var source : heatSources) {
+            if(!source.isConverged())
+                continue;
             power += source.power();
         }
         temperature += power / 20f / thermalMass;
