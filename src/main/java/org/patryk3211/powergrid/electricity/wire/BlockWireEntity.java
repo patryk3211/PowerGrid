@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -233,7 +232,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         var stack = player.getItemInHand(hand);
         if(stack.getItem() instanceof WireItem wire) {
             // Connect wire to wire.
-            if(player instanceof LocalPlayer) {
+            if(player.level().isClientSide) {
                 return ClientWireInteractions.attachWire(this);
             } else {
                 // Server side.
@@ -243,7 +242,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
             if(player.isShiftKeyDown()) {
                 // Cut the whole wire.
                 return super.interact(player, hand);
-            } else if(player instanceof LocalPlayer) {
+            } else if(player.level().isClientSide) {
                 // Cut a segment of the wire.
                 return ClientWireInteractions.segmentCut(this);
             } else {
