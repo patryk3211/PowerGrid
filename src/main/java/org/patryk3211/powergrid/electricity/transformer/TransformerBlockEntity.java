@@ -72,19 +72,20 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     public void tick() {
         float power = 0;
         lastCurrent = 0;
-        if(primaryStray != null) {
+        if(primaryStray != null && primaryStray.isConverged()) {
             var I1 = primaryStray.current();
             var P1 = I1 * I1 * primaryStray.getResistance();
             power += P1;
             lastCurrent += Math.abs(I1);
         }
-        if(mutualInductance != null) {
+        if(mutualInductance != null && mutualInductance.isConverged()) {
             var I3 = mutualInductance.current();
             var P3 = I3 * I3 * mutualInductance.getResistance();
             power += P3;
             lastCurrent += Math.abs(I3);
         }
-        applyLostPower(power);
+        if(thermalBehaviour != null)
+            thermalBehaviour.applyTickPower(power);
         super.tick();
         if(level.isClientSide) {
             tickAudio();

@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
 import java.util.List;
 
@@ -52,9 +53,9 @@ public abstract class ElectricKineticBlockEntity extends KineticBlockEntity impl
         return null;
     }
 
-    protected void applyLostPower(float power) {
+    protected void applyPower(AbstractElectricWire wire) {
         if(thermalBehaviour != null)
-            thermalBehaviour.applyTickPower(power);
+            thermalBehaviour.applyWirePower(wire);
     }
 
     @Override

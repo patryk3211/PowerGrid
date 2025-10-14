@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
@@ -99,7 +100,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
 
     @Override
     public void tick() {
-        applyLostPower(coil.power());
+        applyPower(coil);
         if(!level.isClientSide || isVirtual()) {
             var speedFromPower = (coil.power() / torque()) * 30 / Math.PI;
             avgSpeed += (float) speedFromPower;
@@ -130,9 +131,9 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         }
     }
 
-    protected void applyLostPower(float power) {
+    protected void applyPower(AbstractElectricWire wire) {
         if(thermalBehaviour != null)
-            thermalBehaviour.applyTickPower(power);
+            thermalBehaviour.applyWirePower(wire);
     }
 
     @Override

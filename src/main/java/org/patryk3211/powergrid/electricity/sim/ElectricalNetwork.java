@@ -79,6 +79,7 @@ public class ElectricalNetwork {
     private int scalesAge = 0;
     private boolean countUpdates = true;
     private boolean lockEliminated = false;
+    private boolean converged;
 
     private boolean recalculateScales;
     private boolean eliminatedChanged;
@@ -197,6 +198,10 @@ public class ElectricalNetwork {
 
     public boolean isDirty() {
         return dirty;
+    }
+
+    public boolean isConverged() {
+        return converged;
     }
 
     public void addWire(AbstractElectricWire wire) {
@@ -750,6 +755,7 @@ public class ElectricalNetwork {
 
     public void calculate() {
         if(sourceCount == 0) {
+            converged = true;
             for(var hook : hooks) {
                 hook.preSolve();
             }
@@ -769,7 +775,7 @@ public class ElectricalNetwork {
         computeRHS();
 
         PERF.start();
-        int maxAttempts = hasHooks() ? 200 : 10;
+        int maxAttempts = hasHooks() ? 200 : 20;
         int i;
         double norm = 0;
         for(i = 0; i < maxAttempts; ++i) {
@@ -820,6 +826,7 @@ public class ElectricalNetwork {
             }
         }
         if(norm > PRECISION) {
+            converged = false;
             if(LOGGER != null) {
                 if(ModdedConfigs.logsEnabled()) {
                     LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
@@ -827,6 +834,8 @@ public class ElectricalNetwork {
             } else {
                 System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
             }
+        } else {
+            converged = true;
         }
         PERF.end();
         for(var hook : hooks) {

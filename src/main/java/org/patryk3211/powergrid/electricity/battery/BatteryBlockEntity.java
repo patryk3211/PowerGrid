@@ -68,7 +68,8 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
         if(sourceCoupling != null) {
             // Internal resistive losses
             var I = sourceCoupling.getCurrent();
-            applyLostPower(I * I * sourceCoupling.getResistance());
+            if(thermalBehaviour != null && sourceCoupling.isConverged())
+                thermalBehaviour.applyTickPower(I * I * sourceCoupling.getResistance());
         }
         super.tick();
 

@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
@@ -83,9 +84,9 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
 //            behaviours.add(thermalBehaviour);
     }
 
-    protected void applyLostPower(float power) {
+    protected void applyPower(AbstractElectricWire wire) {
         if(thermalBehaviour != null)
-            thermalBehaviour.applyTickPower(power);
+            thermalBehaviour.applyWirePower(wire);
     }
 
     @Override

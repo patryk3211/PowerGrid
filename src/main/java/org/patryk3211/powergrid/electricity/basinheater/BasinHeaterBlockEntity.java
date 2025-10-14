@@ -61,7 +61,7 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
-        applyLostPower(coil.power());
+        applyPower(coil);
         super.tick();
         if(thermalBehaviour == null) {
             PowerGrid.LOGGER.warn("Basin heater should always have a thermal behaviour");

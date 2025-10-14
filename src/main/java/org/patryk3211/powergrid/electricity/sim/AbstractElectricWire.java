@@ -112,4 +112,10 @@ public abstract class AbstractElectricWire {
             admittance.add(index, index, change);
         }
     }
+
+    public boolean isConverged() {
+        if(network == null)
+            return false;
+        return network.isConverged();
+    }
 }

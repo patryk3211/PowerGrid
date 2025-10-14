@@ -70,7 +70,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
 
     @Override
     public void tick() {
-        applyLostPower(wire.power());
+        applyPower(wire);
 
         super.tick();
         rod.tickChaser();
