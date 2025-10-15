@@ -214,7 +214,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
 
     public void checkConnectivity(@Nullable T without) {
         // Make sure this is always run on the controller
-        if(!isController()) {
+        if(!isController() && !getPos().equals(controllerPos)) {
             var controller = getController();
             if(controller.isPresent()) {
                 controller.get().checkConnectivity(without);

@@ -227,6 +227,7 @@ public class ElectricalNetwork {
             hooks.add(hook);
         if(wire instanceof IStaticResidual residual)
             residuals.add(residual);
+        converged = false;
     }
 
     public void updateConductance(AbstractElectricWire wire, double change) {
@@ -578,6 +579,10 @@ public class ElectricalNetwork {
             eliminatedStart = nodes.size();
             dirty = true;
         }
+    }
+
+    public boolean isOptimized(INode node) {
+        return node.getIndex() >= eliminatedStart;
     }
 
     private int eliminatedNodeCount() {

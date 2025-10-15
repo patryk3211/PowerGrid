@@ -115,6 +115,12 @@ public class GlobalElectricNetworks {
             line = Component.literal(node.toString());
         }
         line.append(Component.literal("@" + NumberFormats.formatPrecise(node.getVoltage()) + "V").withStyle(ChatFormatting.DARK_GRAY));
+        if(node.getNetwork() != null) {
+            var optimized = node.getNetwork().isOptimized(node);
+            if(optimized) {
+                line.append(Component.literal(" *").withStyle(ChatFormatting.GREEN));
+            }
+        }
         return line;
     }
 

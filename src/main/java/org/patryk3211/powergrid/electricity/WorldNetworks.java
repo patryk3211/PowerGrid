@@ -205,6 +205,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     iter2.remove();
                     continue;
                 }
+                if(Math.abs(line.current()) < 1e-5) {
+                    // Line is not carrying any major current so don't bother synchronizing it.
+                    continue;
+                }
                 var players = PlayerUtilities.partialTracking(serverWorld, line);
                 if(players.isEmpty())
                     continue;
@@ -219,7 +223,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Synchronize solver state with clients
 //            if(syncTicks++ >= 20) {
 //                for(var network : subnetworks) {
-//                    if(network.getStateMatrix() == null)
+//                    if(network.getStateVector() == null)
 //                        continue;
 //                    var tracking = new HashSet<ServerPlayer>();
 //                    var packet = new SolverStateS2CPacket(world, network);
