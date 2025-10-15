@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -85,5 +86,54 @@ public class CordJunctionBlock extends ElectricBlock implements IBE<CordJunction
         return direction == state.getValue(FACING) && !canSurvive(state, world, pos)
                 ? Blocks.AIR.defaultBlockState()
                 : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
+    }
+
+    private static double pickPoint(double location, double center) {
+        var diff = location - center;
+        if(diff >= 0.125)
+            return 0.25;
+        if(diff <= -0.125)
+            return -0.25;
+        return 0;
+    }
+
+    @Override
+    public @Nullable AutoCordEndpoint getEndpoint(UseOnContext context) {
+        var level = context.getLevel();
+        var pos = context.getClickedPos();
+        var state = level.getBlockState(pos);
+        var facing = state.getValue(FACING);
+
+        var center = Vec3.atCenterOf(pos);
+        var normal = facing.getNormal();
+        var point = center.add(normal.getX() * 0.40625, normal.getY() * 0.40625, normal.getZ() * 0.40625);
+
+        var loc = context.getClickLocation();
+        var offset = new Vec3(
+                pickPoint(loc.x, center.x),
+                pickPoint(loc.y, center.y),
+                pickPoint(loc.z, center.z)
+        );
+        switch(facing.getAxis()) {
+            case X -> {
+                if(offset.y == 0 && offset.z == 0)
+                    point = point.add(0.0625, 0, 0);
+                else
+                    point = point.add(0, offset.y, offset.z);
+            }
+            case Y -> {
+                if(offset.x == 0 && offset.z == 0)
+                    point = point.add(0, 0.0625, 0);
+                else
+                    point = point.add(offset.x, 0, offset.z);
+            }
+            case Z -> {
+                if(offset.x == 0 && offset.y == 0)
+                    point = point.add(0, 0, 0.0625);
+                else
+                    point = point.add(offset.x, offset.y, 0);
+            }
+        }
+        return new AutoCordEndpoint(pos, 0, 1, point, null);
     }
 }

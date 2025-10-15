@@ -16,11 +16,13 @@
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
@@ -31,18 +33,18 @@ public class AutoCordEndpoint implements ICordEndpoint {
     private int terminal1;
     private int terminal2;
     private Vec3 placement;
-    private boolean hasPlug;
+    private Direction plugFacing;
 
     public AutoCordEndpoint() {
-        this(null, -1, -1, null, false);
+        this(null, -1, -1, null, null);
     }
 
-    public AutoCordEndpoint(BlockPos pos, int terminal1, int terminal2, Vec3 placement, boolean hasPlug) {
+    public AutoCordEndpoint(BlockPos pos, int terminal1, int terminal2, Vec3 placement, @Nullable Direction plugFacing) {
         this.pos = pos;
         this.terminal1 = terminal1;
         this.terminal2 = terminal2;
         this.placement = placement;
-        this.hasPlug = hasPlug;
+        this.plugFacing = plugFacing;
     }
 
     @Override
@@ -66,7 +68,11 @@ public class AutoCordEndpoint implements ICordEndpoint {
         terminal1 = nbt.getInt("Terminal1");
         terminal2 = nbt.getInt("Terminal2");
         placement = new Vec3(nbt.getFloat("X"), nbt.getFloat("Y"), nbt.getFloat("Z"));
-        hasPlug = nbt.getBoolean("Plug");
+        if(nbt.contains("Plug")) {
+            plugFacing = Direction.values()[nbt.getByte("Plug")];
+        } else {
+            plugFacing = null;
+        }
     }
 
     @Override
@@ -77,7 +83,9 @@ public class AutoCordEndpoint implements ICordEndpoint {
         nbt.putFloat("X", (float) placement.x);
         nbt.putFloat("Y", (float) placement.y);
         nbt.putFloat("Z", (float) placement.z);
-        nbt.putBoolean("Plug", hasPlug);
+        if(plugFacing != null) {
+            nbt.putByte("Plug", (byte) plugFacing.ordinal());
+        }
     }
 
     @Override

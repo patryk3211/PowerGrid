@@ -163,7 +163,9 @@ public class CordItem extends WireItem {
         }
         if(state.getBlock() instanceof IAcceptCord cordAcceptor) {
             var endpoint = cordAcceptor.getEndpoint(context);
-            return addEndpoint(context, endpoint);
+            if(endpoint != null) {
+                return addEndpoint(context, endpoint);
+            }
         }
         var electric = IElectric.getAt(context.getLevel(), context.getClickedPos());
         if(electric != null) {
