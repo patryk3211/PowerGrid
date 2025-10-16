@@ -40,6 +40,9 @@ import org.patryk3211.powergrid.utility.Unit;
 
 public class NeonBulbComponent extends OrientableComponent implements IRenderedComponent, IGoggleLabel {
     public static final FloatProperty BREAKDOWN_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "neon_tube_vb", 60, 30, 300);
+    public static final CalculatedProperty<Float> HOLDING_VOLTAGE = new CalculatedProperty<>(PowerGrid.MOD_ID, "neon_tube_vh",
+            placed -> 0.75f * placed.get(BREAKDOWN_VOLTAGE),
+            v -> Unit.VOLTAGE.formatWithPrefixes(v).string());
     public static final CalculatedProperty<Float> HOLDING_CURRENT = new CalculatedProperty<>(PowerGrid.MOD_ID, "neon_tube_ih",
             placed -> 0.2f / placed.get(BREAKDOWN_VOLTAGE),
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
@@ -52,15 +55,16 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(BREAKDOWN_VOLTAGE, HOLDING_CURRENT, LABEL, LIT);
+        properties.add(BREAKDOWN_VOLTAGE, HOLDING_VOLTAGE, HOLDING_CURRENT, LABEL, LIT);
     }
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var ih = placed.get(HOLDING_CURRENT);
         var vb = placed.get(BREAKDOWN_VOLTAGE);
+        var vh = placed.get(HOLDING_VOLTAGE);
         var wire = new NeonBulbWire(
-                vb, vb * 0.75f, ih, 0.005f,
+                vb, vh, ih, 0.005f,
                 builder.terminalNode(0), builder.terminalNode(1)
         );
         wire.lit = placed.get(LIT);
