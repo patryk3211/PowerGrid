@@ -15,7 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface IAcceptCord {
@@ -32,6 +35,20 @@ public interface IAcceptCord {
             var loc = context.getClickLocation();
             loc = loc.relative(facing, 3 / 16f);
             return new AutoCordEndpoint(context.getClickedPos(), 0, 1, loc, facing);
+        }
+    }
+
+    class Handler implements ICordPlacementHandler {
+        @NotNull
+        @Override
+        public InteractionResultHolder<ICordEndpoint> place(BlockState state, UseOnContext context) {
+            if(state.getBlock() instanceof IAcceptCord cordAcceptor) {
+                var endpoint = cordAcceptor.getEndpoint(context);
+                if(endpoint != null) {
+                    return InteractionResultHolder.success(endpoint);
+                }
+            }
+            return InteractionResultHolder.pass(null);
         }
     }
 }

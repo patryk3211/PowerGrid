@@ -15,9 +15,17 @@
  */
 package org.patryk3211.powergrid.electricity.base;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.ICordPlacementHandler;
+import org.patryk3211.powergrid.electricity.wire.powercord.SocketEndpoint;
+import org.patryk3211.powergrid.utility.Lang;
 
 public interface ISocketElectric {
     static ISocketElectric getAt(Level world, BlockPos pos) {
@@ -28,4 +36,24 @@ public interface ISocketElectric {
     }
 
     ITerminalPlacement socket(BlockState state);
+
+    class Handler implements ICordPlacementHandler {
+        @Override
+        public @NotNull InteractionResultHolder<ICordEndpoint> place(BlockState state, UseOnContext context) {
+            var socket = ISocketElectric.getAt(context.getLevel(), context.getClickedPos());
+            if(socket != null) {
+                var terminal = socket.socket(state);
+                if(terminal.check(context.getClickedPos(), context.getClickLocation())) {
+                    var endpoint = new SocketEndpoint(context.getClickedPos());
+                    if(endpoint.hasConnection(context.getLevel())) {
+                        IElectric.sendMessage(context, Lang.translate("message.socket_taken").style(ChatFormatting.RED).component());
+                        return InteractionResultHolder.fail(null);
+                    } else {
+                        return InteractionResultHolder.success(endpoint);
+                    }
+                }
+            }
+            return InteractionResultHolder.pass(null);
+        }
+    }
 }

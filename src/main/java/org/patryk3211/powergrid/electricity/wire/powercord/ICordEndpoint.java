@@ -16,12 +16,11 @@
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 
 public interface ICordEndpoint extends IWireEndpoint {
-    BlockWireEndpoint getEndpoint1();
-    BlockWireEndpoint getEndpoint2();
+    IWireEndpoint getEndpoint1();
+    IWireEndpoint getEndpoint2();
 
     @Override
     default <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {

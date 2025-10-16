@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
@@ -30,14 +29,6 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
 
     public FEBridgeEnergyStorage(BlockEntity be) {
         this.be = be;
-    }
-
-    public static float voltToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
-    }
-
-    public static float wattToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF();
     }
 
     @Override
@@ -90,7 +81,7 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
 
     @Override
     public void charge(SwitchedWire wire) {
-        float wattToFE = FEBridgeEnergyStorage.wattToFE();
+        float wattToFE = IFEBridgeHandler.wattToFE();
         if(wire.getState()) {
             var I = wire.current();
             amount += Math.round(I * I * wire.getResistance() * wattToFE);
@@ -120,7 +111,7 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
     @Override
     public void manageWire(SwitchedWire wire) {
         var V = Math.abs(wire.potentialDifference());
-        long maxCharge = (long) (V * FEBridgeEnergyStorage.voltToFE());
+        long maxCharge = (long) (V * IFEBridgeHandler.voltToFE());
         capacity = maxCharge;
         long missingCharge = maxCharge - amount;
         if(missingCharge <= 0) {
@@ -128,7 +119,7 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
             return;
         }
 
-        float targetWatts = missingCharge / wattToFE();
+        float targetWatts = missingCharge / IFEBridgeHandler.wattToFE();
         float resistance = V * V / targetWatts;
         if(resistance > 0) {
             wire.setResistance(resistance);

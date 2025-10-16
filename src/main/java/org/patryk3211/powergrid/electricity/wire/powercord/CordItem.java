@@ -21,6 +21,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
@@ -28,7 +29,17 @@ import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CordItem extends WireItem {
+    public static final List<ICordPlacementHandler> PLACEMENT_HANDLERS = new ArrayList<>();
+
+    static {
+        PLACEMENT_HANDLERS.add(new ISocketElectric.Handler());
+        PLACEMENT_HANDLERS.add(new IAcceptCord.Handler());
+    }
+
     public CordItem(Properties settings) {
         super(settings);
     }
@@ -60,19 +71,27 @@ public class CordItem extends WireItem {
             return InteractionResult.FAIL;
         }
 
-        var behaviour1 = endpoint1.getEndpoint1().getElectricBehaviour(level);
-        var behaviour2 = endpoint2.getEndpoint1().getElectricBehaviour(level);
-        // Check if there is an existing connection between these nodes.
-        if(behaviour1.hasConnection(endpoint1.getEndpoint1(), endpoint2.getEndpoint1()) || behaviour2.hasConnection(endpoint2.getEndpoint1(), endpoint1.getEndpoint1())) {
-            IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
-            return InteractionResult.FAIL;
+        var e11 = endpoint1.getEndpoint1();
+        var e21 = endpoint2.getEndpoint1();
+        if(e11 instanceof BlockWireEndpoint be1 && e21 instanceof BlockWireEndpoint be2) {
+            var behaviour1 = be1.getElectricBehaviour(level);
+            var behaviour2 = be2.getElectricBehaviour(level);
+            // Check if there is an existing connection between these nodes.
+            if (behaviour1.hasConnection(be1, be2) || behaviour2.hasConnection(be2, be1)) {
+                IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
+                return InteractionResult.FAIL;
+            }
         }
-        behaviour1 = endpoint1.getEndpoint2().getElectricBehaviour(level);
-        behaviour2 = endpoint2.getEndpoint2().getElectricBehaviour(level);
-        // Check if there is an existing connection between these nodes.
-        if(behaviour1.hasConnection(endpoint1.getEndpoint2(), endpoint2.getEndpoint2()) || behaviour2.hasConnection(endpoint2.getEndpoint2(), endpoint1.getEndpoint2())) {
-            IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
-            return InteractionResult.FAIL;
+        var e12 = endpoint1.getEndpoint2();
+        var e22 = endpoint2.getEndpoint2();
+        if(e12 instanceof BlockWireEndpoint be1 && e22 instanceof BlockWireEndpoint be2) {
+            var behaviour1 = be1.getElectricBehaviour(level);
+            var behaviour2 = be2.getElectricBehaviour(level);
+            // Check if there is an existing connection between these nodes.
+            if (behaviour1.hasConnection(be1, be2) || behaviour2.hasConnection(be2, be1)) {
+                IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
+                return InteractionResult.FAIL;
+            }
         }
 
         var terminal1Pos = endpoint1.getExactPosition(level);
@@ -145,27 +164,17 @@ public class CordItem extends WireItem {
         }
     }
 
+    @NotNull
     @Override
     public InteractionResult useOn(UseOnContext context) {
         var state = context.getLevel().getBlockState(context.getClickedPos());
-        var socket = ISocketElectric.getAt(context.getLevel(), context.getClickedPos());
-        if(socket != null) {
-            var terminal = socket.socket(state);
-            if(terminal.check(context.getClickedPos(), context.getClickLocation())) {
-                var endpoint = new SocketEndpoint(context.getClickedPos());
-                if(endpoint.hasConnection(context.getLevel())) {
-                    IElectric.sendMessage(context, Lang.translate("message.socket_taken").style(ChatFormatting.RED).component());
-                    return InteractionResult.FAIL;
-                } else {
-                    return addEndpoint(context, endpoint);
-                }
-            }
-        }
-        if(state.getBlock() instanceof IAcceptCord cordAcceptor) {
-            var endpoint = cordAcceptor.getEndpoint(context);
-            if(endpoint != null) {
-                return addEndpoint(context, endpoint);
-            }
+        for(var handler : PLACEMENT_HANDLERS) {
+            var result = handler.place(state, context);
+            if(result.getResult() == InteractionResult.PASS)
+                continue;
+            if(result.getResult().consumesAction())
+                return addEndpoint(context, result.getObject());
+            return result.getResult();
         }
         var electric = IElectric.getAt(context.getLevel(), context.getClickedPos());
         if(electric != null) {
