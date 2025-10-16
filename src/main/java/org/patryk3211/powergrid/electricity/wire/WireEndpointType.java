@@ -67,7 +67,11 @@ public enum WireEndpointType {
             return null;
         if(!tag.contains("Type"))
             return null;
-        var type = values()[tag.getInt("Type")];
+        var all = values();
+        var index = tag.getInt("Type");
+        if(index >= all.length)
+            return null;
+        var type = all[index];
         var endpoint = type.factory.get();
         endpoint.read(tag);
         return endpoint;

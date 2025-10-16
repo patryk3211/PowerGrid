@@ -21,6 +21,7 @@ import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -32,6 +33,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -42,10 +44,12 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
 
-public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity> {
+public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity>, IAcceptCord {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;
     public static final BooleanProperty POLARIZED = BooleanProperty.create("polarized");
@@ -197,5 +201,20 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
         } else {
             return super.getRotatedBlockState(originalState, targetedFace);
         }
+    }
+
+    @Override
+    public @Nullable AutoCordEndpoint getEndpoint(UseOnContext context) {
+        var level = context.getLevel();
+        var pos = context.getClickedPos();
+        var state = level.getBlockState(pos);
+        var facing = state.getValue(FACING);
+
+        var center = Vec3.atCenterOf(pos);
+        var normal = facing.getNormal();
+        var point = center.add(normal.getX() * 0.3125, normal.getY() * 0.3125, normal.getZ() * 0.3125);
+
+        return new AutoCordEndpoint(context.getClickedPos(), 0, 1, point,
+                renderPlug() ? context.getClickedFace() : null);
     }
 }
