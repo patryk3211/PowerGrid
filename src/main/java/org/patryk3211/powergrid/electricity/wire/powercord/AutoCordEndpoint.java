@@ -104,4 +104,13 @@ public class AutoCordEndpoint implements ICordEndpoint {
         }
         return false;
     }
+
+    public BlockPos getPosition() {
+        return pos;
+    }
+
+    @Nullable
+    public Direction getPlugFacing() {
+        return plugFacing;
+    }
 }

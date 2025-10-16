@@ -408,13 +408,10 @@ public class CraftingRecipes extends StandardRecipeProvider {
 
     CORD_JUNCTION = create(ModdedBlocks.CORD_JUNCTION)
             .unlockedBy(() -> ModdedItems.CORD)
-            .viaShaped(b -> b
-                    .pattern("ZZ")
-                    .pattern("NN")
-                    .pattern("II")
-                    .define('Z', RecipeTags.zincSheet())
-                    .define('N', RecipeTags.copperNugget())
-                    .define('I', RecipeTags.ironSheet())),
+            .viaShapeless(b -> b
+                    .requires(RecipeTags.conductiveCasing())
+                    .requires(RecipeTags.ironNugget())
+                    .requires(RecipeTags.ironSheet())),
 
     POWER_PLUG = create(ModdedBlocks.SOCKET)
             .unlockedBy(() -> ModdedItems.CORD)

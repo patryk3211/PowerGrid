@@ -25,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
@@ -48,12 +49,14 @@ public class SocketEndpoint implements ICordEndpoint {
         return WireEndpointType.SOCKET;
     }
 
+    @Nullable
     public ISocketElectric getSocketBlock(Level world) {
         if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
             return null;
         return ISocketElectric.getAt(world, pos);
     }
 
+    @Nullable
     public ElectricBehaviour getElectricBehaviour(Level world) {
         if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
             return null;
@@ -81,6 +84,8 @@ public class SocketEndpoint implements ICordEndpoint {
     @Override
     public @NotNull Vec3 getExactPosition(Level world) {
         var socketed = getSocketBlock(world);
+        if(socketed == null)
+            return Vec3.atCenterOf(pos);
         var placement = socketed.socket(world.getBlockState(pos));
         var origin = placement.getOrigin();
         return new Vec3(pos.getX() + origin.x, pos.getY() + origin.y, pos.getZ() + origin.z)
@@ -113,6 +118,8 @@ public class SocketEndpoint implements ICordEndpoint {
 
     public boolean hasConnection(Level world) {
         var behaviour = getElectricBehaviour(world);
+        if(behaviour == null)
+            return false;
         var connections1 = behaviour.getConnections().get(getEndpoint1());
         var connections2 = behaviour.getConnections().get(getEndpoint2());
         if(connections1 == null || connections2 == null)

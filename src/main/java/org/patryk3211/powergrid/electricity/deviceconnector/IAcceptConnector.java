@@ -19,13 +19,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
-public interface IAcceptConnector {
+public interface IAcceptConnector extends IAcceptCord {
     default boolean canConnect(LevelReader world, BlockPos pos, BlockState state, Direction side) {
         return DeviceConnectorBlock.canSupport(world, pos, state, side);
     }
 
     default boolean isPolarized() {
         return false;
+    }
+
+    @Override
+    default boolean renderPlug() {
+        return true;
     }
 }

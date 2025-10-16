@@ -25,7 +25,13 @@ public interface IAcceptCord {
 
     @Nullable
     default AutoCordEndpoint getEndpoint(UseOnContext context) {
-        return new AutoCordEndpoint(context.getClickedPos(), 0, 1, context.getClickLocation(),
-                renderPlug() ? context.getClickedFace() : null);
+        if(!renderPlug()) {
+            return new AutoCordEndpoint(context.getClickedPos(), 0, 1, context.getClickLocation(), null);
+        } else {
+            var facing = context.getClickedFace();
+            var loc = context.getClickLocation();
+            loc = loc.relative(facing, 3 / 16f);
+            return new AutoCordEndpoint(context.getClickedPos(), 0, 1, loc, facing);
+        }
     }
 }

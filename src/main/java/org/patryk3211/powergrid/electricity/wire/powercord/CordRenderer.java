@@ -25,8 +25,11 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
@@ -44,6 +47,25 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
     @Override
     public ResourceLocation getTextureLocation(CordEntity entity) {
         return entity.getWireItem().getWireTexture();
+    }
+
+    private static void renderPlug(PoseStack matrices, MultiBufferSource consumers, BlockState referenceState, Direction facing, float x, float y, float z, int light, boolean offset) {
+        var model = CachedBuffers.partial(ModdedPartialModels.PLUG, referenceState);
+        if(offset) {
+            switch (facing) {
+                case NORTH -> z -= 3 / 16f;
+                case SOUTH -> z += 3 / 16f;
+                case WEST -> x -= 3 / 16f;
+                case EAST -> x += 3 / 16f;
+                case DOWN -> y -= 3 / 16f;
+                case UP -> y += 3 / 16f;
+            }
+        }
+        model
+                .light(light)
+                .translate(x, y, z)
+                .rotateToFace(facing)
+                .renderInto(matrices, consumers.getBuffer(RenderType.solid()));
     }
 
     @Override
@@ -103,23 +125,16 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                             rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
-                    var state = world.getBlockState(socket.getPosition());
-                    var facing = socket.getFacing(world);
-                    var model = CachedBuffers.partial(ModdedPartialModels.PLUG, state);
-                    float x3 = x1, y3 = y1, z3 = z1;
-                    switch(facing) {
-                        case NORTH -> z3 -= 3 / 16f;
-                        case SOUTH -> z3 += 3 / 16f;
-                        case WEST -> x3 -= 3 / 16f;
-                        case EAST -> x3 += 3 / 16f;
-                        case DOWN -> y3 -= 3 / 16f;
-                        case UP -> y3 += 3 / 16f;
+                    renderPlug(matrices, vertexConsumers,
+                            world.getBlockState(socket.getPosition()),
+                            socket.getFacing(world), x1, y1, z1, light, true);
+                } else if(endpoint instanceof AutoCordEndpoint auto) {
+                    var facing = auto.getPlugFacing();
+                    if(facing != null) {
+                        renderPlug(matrices, vertexConsumers,
+                                world.getBlockState(auto.getPosition()),
+                                facing, x1, y1, z1, light, false);
                     }
-                    model
-                            .light(currentLight)
-                            .translate(x3, y3, z3)
-                            .rotateToFace(facing)
-                            .renderInto(matrices, vertexConsumers.getBuffer(RenderType.solid()));
                 }
             } else if(last) {
                 var endpoint = entity.getEndpoint2();
@@ -153,23 +168,16 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                             rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
-                    var state = world.getBlockState(socket.getPosition());
-                    var facing = socket.getFacing(world);
-                    var model = CachedBuffers.partial(ModdedPartialModels.PLUG, state);
-                    float x3 = x2, y3 = y2, z3 = z2;
-                    switch(facing) {
-                        case NORTH -> z3 -= 3 / 16f;
-                        case SOUTH -> z3 += 3 / 16f;
-                        case WEST -> x3 -= 3 / 16f;
-                        case EAST -> x3 += 3 / 16f;
-                        case DOWN -> y3 -= 3 / 16f;
-                        case UP -> y3 += 3 / 16f;
+                    renderPlug(matrices, vertexConsumers,
+                            world.getBlockState(socket.getPosition()),
+                            socket.getFacing(world), x2, y2, z2, light, true);
+                } else if(endpoint instanceof AutoCordEndpoint auto) {
+                    var facing = auto.getPlugFacing();
+                    if(facing != null) {
+                        renderPlug(matrices, vertexConsumers,
+                                world.getBlockState(auto.getPosition()),
+                                facing, x2, y2, z2, light, false);
                     }
-                    model
-                            .light(currentLight)
-                            .translate(x3, y3, z3)
-                            .rotateToFace(facing)
-                            .renderInto(matrices, vertexConsumers.getBuffer(RenderType.solid()));
                 }
             }
             renderSegment(matrices, vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity))),
