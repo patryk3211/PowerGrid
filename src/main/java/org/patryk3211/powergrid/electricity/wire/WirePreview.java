@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.wire;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllSpecialTextures;
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.createmod.catnip.theme.Color;
@@ -43,6 +44,8 @@ import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordRenderer;
+import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
@@ -66,12 +69,14 @@ public class WirePreview {
     }
 
     private static void renderCord(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target, ItemStack wireStack) {
-
+        var endpoint = WireEndpointType.deserialize(wireStack.getTag());
+        if(!(endpoint instanceof ICordEndpoint cordEndpoint))
+            return;
+        CordRenderer.renderPreview(cordEndpoint, player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
+                matrixStack, buffer, world, (CordItem) wireStack.getItem(), 0xFF413C31);
     }
 
     public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target) {
-        if(target.getType() != HitResult.Type.BLOCK)
-            return;
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return;
@@ -81,6 +86,8 @@ public class WirePreview {
             renderCord(buffer, matrixStack, world, player, target, wireStack);
             return;
         }
+        if(target.getType() != HitResult.Type.BLOCK)
+            return;
 
         var tag = wireStack.getTag();
         var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
@@ -156,8 +163,9 @@ public class WirePreview {
                 }
             }
         } else {
-            HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightTexture.FULL_BRIGHT, 0x80AAFFAA);
             length = (float) currentPos.distanceTo(hitPoint);
+            var color = length < wireItem.getMaximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
+            HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightTexture.FULL_BRIGHT, color);
         }
 
         if(!player.isCreative()) {

@@ -50,6 +50,10 @@ public interface IDecoratedTerminal {
             .translate("generic.socket")
             .style(ChatFormatting.YELLOW)
             .component();
+    Component CORD = Lang.builder()
+            .translate("generic.cord")
+            .style(ChatFormatting.GRAY)
+            .component();
 
     int RED = 0xFF3B3B;
     int BLUE = 0x3B80FF;

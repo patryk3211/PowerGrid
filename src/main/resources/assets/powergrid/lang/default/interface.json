@@ -88,6 +88,7 @@
   "powergrid.generic.common": "Common",
   "powergrid.generic.tap": "Tap",
   "powergrid.generic.socket": "Socket",
+  "powergrid.generic.cord": "Cord Connector",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",

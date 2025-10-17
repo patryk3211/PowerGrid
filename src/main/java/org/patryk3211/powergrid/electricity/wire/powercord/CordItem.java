@@ -116,10 +116,6 @@ public class CordItem extends WireItem {
             return InteractionResult.FAIL;
         }
 
-        if(!HangingWireEntity.checkClearance(level, endpoint1.getExactPosition(level), endpoint2.getExactPosition(level))) {
-            return InteractionResult.FAIL;
-        }
-
         if(level.isClientSide)
             return InteractionResult.SUCCESS;
         ServerLevel serverWorld = (ServerLevel) level;

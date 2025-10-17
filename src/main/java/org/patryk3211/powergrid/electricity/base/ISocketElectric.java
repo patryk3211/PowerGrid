@@ -21,7 +21,9 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.ICordPlacementHandler;
 import org.patryk3211.powergrid.electricity.wire.powercord.SocketEndpoint;
@@ -54,6 +56,17 @@ public interface ISocketElectric {
                 }
             }
             return InteractionResultHolder.pass(null);
+        }
+
+        @Override
+        public @Nullable ITerminalPlacement terminal(BlockState state, Level level, BlockHitResult hit) {
+            var socket = ISocketElectric.getAt(level, hit.getBlockPos());
+            if(socket != null) {
+                var terminal = socket.socket(state);
+                if(terminal.check(hit.getBlockPos(), hit.getLocation()))
+                    return terminal;
+            }
+            return null;
         }
     }
 }

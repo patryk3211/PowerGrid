@@ -1,24 +1,18 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "key": {
-    "I": {
+  "ingredients": [
+    {
+      "item": "powergrid:conductive_casing"
+    },
+    {
+      "tag": "forge:nuggets/iron"
+    },
+    {
       "tag": "forge:plates/iron"
-    },
-    "N": {
-      "tag": "forge:nuggets/copper"
-    },
-    "Z": {
-      "tag": "forge:plates/zinc"
     }
-  },
-  "pattern": [
-    "ZZ",
-    "NN",
-    "II"
   ],
   "result": {
     "item": "powergrid:cord_junction"
-  },
-  "show_notification": true
+  }
 }

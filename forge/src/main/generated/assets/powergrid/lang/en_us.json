@@ -208,6 +208,7 @@
   "powergrid.electrozapper.bolt.reload": "%1$s Reload Ticks",
   "powergrid.generic.common": "Common",
   "powergrid.generic.control_terminal": "Control",
+  "powergrid.generic.cord": "Cord Connector",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.socket": "Socket",

@@ -17,8 +17,12 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 
 public interface ICordPlacementHandler {
     /**
@@ -31,4 +35,14 @@ public interface ICordPlacementHandler {
      */
     @NotNull
     InteractionResultHolder<ICordEndpoint> place(BlockState state, UseOnContext context);
+
+    /**
+     * Called to get a visual attachment point that will be displayed as a placement hint to the client
+     * @param state Target block state
+     * @param level Client level
+     * @param hit Block hit result
+     * @return Terminal to render
+     */
+    @Nullable
+    ITerminalPlacement terminal(BlockState state, Level level, BlockHitResult hit);
 }

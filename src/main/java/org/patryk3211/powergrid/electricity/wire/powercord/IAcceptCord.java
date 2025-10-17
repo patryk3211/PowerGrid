@@ -17,9 +17,15 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public interface IAcceptCord {
     default boolean renderPlug() {
@@ -38,6 +44,26 @@ public interface IAcceptCord {
         }
     }
 
+    @Nullable
+    default ITerminalPlacement cordTerminal(BlockState state, Level level, BlockHitResult hit) {
+        if(!renderPlug()) {
+            var shape = state.getShape(level, hit.getBlockPos());
+            var bb = shape.bounds();
+            return new TerminalBoundingBox(IDecoratedTerminal.CORD, bb);
+        } else {
+            var facing = hit.getDirection();
+            var loc = hit.getLocation().subtract(Vec3.atLowerCornerOf(hit.getBlockPos())).scale(16);
+            var size = switch(facing.getAxis()) {
+                case X -> new Vec3(1, 1.5, 1.5);
+                case Y -> new Vec3(1.5, 1, 1.5);
+                case Z -> new Vec3(1.5, 1.5, 1);
+            };
+            return new TerminalBoundingBox(IDecoratedTerminal.CORD,
+                    loc.x - size.x, loc.y - size.y, loc.z - size.z,
+                    loc.x + size.x, loc.y + size.y, loc.z + size.z);
+        }
+    }
+
     class Handler implements ICordPlacementHandler {
         @NotNull
         @Override
@@ -49,6 +75,14 @@ public interface IAcceptCord {
                 }
             }
             return InteractionResultHolder.pass(null);
+        }
+
+        @Override
+        public @Nullable ITerminalPlacement terminal(BlockState state, Level level, BlockHitResult hit) {
+            if(state.getBlock() instanceof IAcceptCord cordAcceptor) {
+                return cordAcceptor.cordTerminal(state, level, hit);
+            }
+            return null;
         }
     }
 }

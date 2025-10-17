@@ -127,13 +127,13 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                 } else if(endpoint instanceof SocketEndpoint socket) {
                     renderPlug(matrices, vertexConsumers,
                             world.getBlockState(socket.getPosition()),
-                            socket.getFacing(world), x1, y1, z1, light, true);
+                            socket.getFacing(world), x1, y1, z1, currentLight, true);
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
                         renderPlug(matrices, vertexConsumers,
                                 world.getBlockState(auto.getPosition()),
-                                facing, x1, y1, z1, light, false);
+                                facing, x1, y1, z1, currentLight, false);
                     }
                 }
             } else if(last) {
@@ -170,13 +170,13 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                 } else if(endpoint instanceof SocketEndpoint socket) {
                     renderPlug(matrices, vertexConsumers,
                             world.getBlockState(socket.getPosition()),
-                            socket.getFacing(world), x2, y2, z2, light, true);
+                            socket.getFacing(world), x2, y2, z2, currentLight, true);
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
                         renderPlug(matrices, vertexConsumers,
                                 world.getBlockState(auto.getPosition()),
-                                facing, x2, y2, z2, light, false);
+                                facing, x2, y2, z2, currentLight, false);
                     }
                 }
             }
@@ -186,5 +186,74 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                     rp.cross1, rp.cross2, currentLight, color,
                     rp.thickness, thicknessOffset, length, offset);
         });
+    }
+
+    public static void renderPreview(ICordEndpoint start, Vec3 end, PoseStack matrices, MultiBufferSource vertexConsumers, Level level, CordItem item, int color) {
+        var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.getWireTexture()));
+        var startPos = start.getExactPosition(level);
+        CurveParameters rp = new CurveParameters(startPos, end, item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
+
+        // To introduce some subtle variety into the wires.
+        var thicknessOffset = 0;
+
+        matrices.pushPose();
+        var pos = new Vec3(
+                (startPos.x + end.x) * 0.5f,
+                startPos.y,
+                (startPos.z + end.z) * 0.5f
+        );
+        matrices.translate(pos.x, pos.y, pos.z);
+        rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length, first, last) -> {
+            var currentLight = LightTexture.FULL_BRIGHT;
+            if(first) {
+                if(start instanceof SplitCordEndpoint split) {
+                    var p1 = split.getEndpoint1().getExactPosition(level);
+                    var p2 = split.getEndpoint2().getExactPosition(level);
+                    var normal = rp.getNormal();
+
+                    var direction = new Vec3(x2 - p1.x + pos.x, y2 - p1.y + pos.y, z2 - p1.z + pos.z);
+                    var v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
+                    var smallCross1 = v1.cross(direction).normalize().scale(rp.thickness * 0.25);
+                    var smallCross2 = smallCross1.cross(direction).normalize().scale(rp.thickness * 0.25);
+                    renderSegment(matrices, buffer,
+                            (float) (p1.x - pos.x), (float) (p1.y - pos.y), (float) (p1.z - pos.z),
+                            (float) (x2 - (smallCross1.x + smallCross2.x) * 0.5f + normal.x / 32f),
+                            (float) (y2 - (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
+                            (float) (z2 - (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
+                            smallCross1, smallCross2, currentLight, 0xFFB02E26,
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+
+                    direction = new Vec3(x2 - p2.x + pos.x, y2 - p2.y + pos.y, z2 - p2.z + pos.z);
+                    v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
+                    smallCross1 = v1.cross(direction).normalize().scale(rp.thickness * 0.25);
+                    smallCross2 = smallCross1.cross(direction).normalize().scale(rp.thickness * 0.25);
+                    renderSegment(matrices, buffer,
+                            (float) (p2.x - pos.x), (float) (p2.y - pos.y), (float) (p2.z - pos.z),
+                            (float) (x2 + (smallCross1.x + smallCross2.x) * 0.5f + normal.x / 32f),
+                            (float) (y2 + (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
+                            (float) (z2 + (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
+                            smallCross1, smallCross2, currentLight, 0xFF3C44AA,
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+                    return;
+                } else if(start instanceof SocketEndpoint socket) {
+                    renderPlug(matrices, vertexConsumers,
+                            level.getBlockState(socket.getPosition()),
+                            socket.getFacing(level), x1, y1, z1, currentLight, true);
+                } else if(start instanceof AutoCordEndpoint auto) {
+                    var facing = auto.getPlugFacing();
+                    if(facing != null) {
+                        renderPlug(matrices, vertexConsumers,
+                                level.getBlockState(auto.getPosition()),
+                                facing, x1, y1, z1, currentLight, false);
+                    }
+                }
+            }
+            renderSegment(matrices, vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.getWireTexture())),
+                    x1, y1, z1,
+                    x2, y2, z2,
+                    rp.cross1, rp.cross2, currentLight, color,
+                    rp.thickness, thicknessOffset, length, offset);
+        });
+        matrices.popPose();
     }
 }
