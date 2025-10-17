@@ -49,17 +49,15 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
         return entity.getWireItem().getWireTexture();
     }
 
-    private static void renderPlug(PoseStack matrices, MultiBufferSource consumers, BlockState referenceState, Direction facing, float x, float y, float z, int light, boolean offset) {
+    private static void renderPlug(PoseStack matrices, MultiBufferSource consumers, BlockState referenceState, Direction facing, float x, float y, float z, int light) {
         var model = CachedBuffers.partial(ModdedPartialModels.PLUG, referenceState);
-        if(offset) {
-            switch (facing) {
-                case NORTH -> z -= 3 / 16f;
-                case SOUTH -> z += 3 / 16f;
-                case WEST -> x -= 3 / 16f;
-                case EAST -> x += 3 / 16f;
-                case DOWN -> y -= 3 / 16f;
-                case UP -> y += 3 / 16f;
-            }
+        switch (facing) {
+            case NORTH -> z -= 3 / 16f;
+            case SOUTH -> z += 3 / 16f;
+            case WEST -> x -= 3 / 16f;
+            case EAST -> x += 3 / 16f;
+            case DOWN -> y -= 3 / 16f;
+            case UP -> y += 3 / 16f;
         }
         model
                 .light(light)
@@ -127,13 +125,13 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                 } else if(endpoint instanceof SocketEndpoint socket) {
                     renderPlug(matrices, vertexConsumers,
                             world.getBlockState(socket.getPosition()),
-                            socket.getFacing(world), x1, y1, z1, currentLight, true);
+                            socket.getFacing(world), x1, y1, z1, currentLight);
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
                         renderPlug(matrices, vertexConsumers,
                                 world.getBlockState(auto.getPosition()),
-                                facing, x1, y1, z1, currentLight, false);
+                                facing.getOpposite(), x1, y1, z1, currentLight);
                     }
                 }
             } else if(last) {
@@ -170,13 +168,13 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                 } else if(endpoint instanceof SocketEndpoint socket) {
                     renderPlug(matrices, vertexConsumers,
                             world.getBlockState(socket.getPosition()),
-                            socket.getFacing(world), x2, y2, z2, currentLight, true);
+                            socket.getFacing(world), x2, y2, z2, currentLight);
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
                         renderPlug(matrices, vertexConsumers,
                                 world.getBlockState(auto.getPosition()),
-                                facing, x2, y2, z2, currentLight, false);
+                                facing.getOpposite(), x2, y2, z2, currentLight);
                     }
                 }
             }
@@ -238,13 +236,13 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                 } else if(start instanceof SocketEndpoint socket) {
                     renderPlug(matrices, vertexConsumers,
                             level.getBlockState(socket.getPosition()),
-                            socket.getFacing(level), x1, y1, z1, currentLight, true);
+                            socket.getFacing(level), x1, y1, z1, currentLight);
                 } else if(start instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
                         renderPlug(matrices, vertexConsumers,
                                 level.getBlockState(auto.getPosition()),
-                                facing, x1, y1, z1, currentLight, false);
+                                facing.getOpposite(), x1, y1, z1, currentLight);
                     }
                 }
             }
