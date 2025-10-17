@@ -27,7 +27,9 @@ import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 
 public class TerminalHandler {
     private static final Object outlineSlot = new Object();
@@ -48,20 +50,28 @@ public class TerminalHandler {
             return;
 
         if(target instanceof BlockHitResult blockHit) {
-            var electric = IElectric.getAt(world, blockHit.getBlockPos());
-            if(electric == null)
-                return;
+            ITerminalPlacement terminal = null;
             var blockPos = blockHit.getBlockPos();
             var state = world.getBlockState(blockPos);
-            var terminal = electric.terminalAt(state, blockHit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
-            if(terminal == null)
-                return;
+            var electric = IElectric.getAt(world, blockPos);
+            if(electric != null) {
+                terminal = electric.terminalAt(state, blockHit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+            }
+            if(terminal == null &&
+                    ((mainItem != null && mainItem.getItem() instanceof CordItem) ||
+                            (offItem != null && offItem.getItem() instanceof CordItem))) {
+                for(var handler : CordItem.PLACEMENT_HANDLERS) {
+                    terminal = handler.terminal(state, world, blockHit);
+                    if(terminal != null)
+                        break;
+                }
+            }
 
             if(!(terminal instanceof IDecoratedTerminal decorated))
                 return;
             targetTerminal = decorated;
 
-            Outliner.getInstance().showAABB(outlineSlot, decorated.getOutline().move(blockPos))
+            Outliner.getInstance().chaseAABB(outlineSlot, decorated.getOutline().move(blockPos))
                     .colored(decorated.getColor())
                     .withFaceTexture(AllSpecialTextures.CUTOUT_CHECKERED)
                     .lineWidth(0.020f);

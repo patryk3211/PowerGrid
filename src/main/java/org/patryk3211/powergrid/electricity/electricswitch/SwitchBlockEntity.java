@@ -62,7 +62,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     public void tick() {
         applyPower(wire);
         super.tick();
-        if(Math.abs(wire.potentialDifference()) > maxVoltage && overvoltResistance == null && !level.isClientSide) {
+        if(wire.isConverged() && Math.abs(wire.potentialDifference()) > maxVoltage && overvoltResistance == null && !level.isClientSide) {
             wire.setState(true);
             // Pick a random resistance for failed switches to spice things up.
             overvoltResistance = level.random.nextFloat() * 1000f;

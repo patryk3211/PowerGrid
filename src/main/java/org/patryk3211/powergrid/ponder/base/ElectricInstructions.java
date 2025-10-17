@@ -21,7 +21,12 @@ import net.createmod.ponder.foundation.element.ElementLinkImpl;
 import net.createmod.ponder.foundation.instruction.FadeOutOfSceneInstruction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
+import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
 
 public class ElectricInstructions {
     public static final float DEFAULT_RESISTANCE = 0.005f;
@@ -42,7 +47,36 @@ public class ElectricInstructions {
 
     public ElementLink<WireElement> connect(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
         var link = new ElementLinkImpl<>(WireElement.class);
-        var element = new WireElement(pos1, terminal1, pos2, terminal2, resistance);
+        var element = new WireElement(level -> {
+            var wire = HangingWireEntity.create(level, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
+            wire.updateRenderParams();
+            return wire;
+        });
+        builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
+        builder.addInstruction(ponder -> ponder.linkElement(element, link));
+        return link;
+    }
+
+    public ElementLink<WireElement> connect(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, DyeColor dye, float resistance) {
+        var link = new ElementLinkImpl<>(WireElement.class);
+        var element = new WireElement(level -> {
+            var wire = HangingWireEntity.create(level, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.INSULATED_COPPER_WIRE.asStack(), resistance);
+            wire.setColor(dye);
+            wire.updateRenderParams();
+            return wire;
+        });
+        builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
+        builder.addInstruction(ponder -> ponder.linkElement(element, link));
+        return link;
+    }
+
+    public ElementLink<WireElement> connectCord(ICordEndpoint endpoint1, ICordEndpoint endpoint2, float resistance) {
+        var link = new ElementLinkImpl<>(WireElement.class);
+        var element = new WireElement(level -> {
+            var wire = CordEntity.create(level, endpoint1, endpoint2, ModdedItems.CORD.asStack(), resistance);
+            wire.updateRenderParams();
+            return wire;
+        });
         builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
         builder.addInstruction(ponder -> ponder.linkElement(element, link));
         return link;
@@ -50,6 +84,14 @@ public class ElectricInstructions {
 
     public ElementLink<WireElement> connect(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2) {
         return connect(pos1, terminal1, pos2, terminal2, DEFAULT_RESISTANCE);
+    }
+
+    public ElementLink<WireElement> connect(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, DyeColor dye) {
+        return connect(pos1, terminal1, pos2, terminal2, dye, DEFAULT_RESISTANCE);
+    }
+
+    public ElementLink<WireElement> connectCord(ICordEndpoint endpoint1, ICordEndpoint endpoint2) {
+        return connectCord(endpoint1, endpoint2, DEFAULT_RESISTANCE);
     }
 
     public ElementLink<WireElement> connectInvisible(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {

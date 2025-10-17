@@ -57,6 +57,11 @@ public class TerminalBoundingBox implements ITerminalPlacement, IDecoratedTermin
         this.expand = expand / 16.0;
     }
 
+    public TerminalBoundingBox(Component name, AABB boundingBox) {
+        this(name, boundingBox.minX * 16, boundingBox.minY * 16, boundingBox.minZ * 16,
+                boundingBox.maxX * 16, boundingBox.maxY * 16, boundingBox.maxZ * 16, 0.1);
+    }
+
     public VoxelShape getShape() {
         return Shapes.box(min.x + expand, min.y + expand, min.z + expand,
                 max.x - expand, max.y - expand, max.z - expand);

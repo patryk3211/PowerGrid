@@ -110,4 +110,26 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
             }
         }
     }
+
+    @Override
+    public void merge(ElectricalNetwork other) {
+        // This ensures proper (un)optimization
+        other.nodes.forEach(node -> {
+            if(node instanceof IElectricNode)
+                addNode(node);
+        });
+        other.nodes.forEach(node -> {
+            if(node instanceof ICouplingNode)
+                addNode(node);
+        });
+        other.wires.forEach(this::addWire);
+        // Make the other network empty.
+        other.clear();
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        optimizerScores.clear();
+    }
 }

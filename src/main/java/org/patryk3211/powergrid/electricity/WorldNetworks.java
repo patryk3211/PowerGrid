@@ -35,9 +35,9 @@ import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
@@ -56,7 +56,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     private final Map<ChunkPos, CheckChunk> expectedInChunks = new ConcurrentHashMap<>();
     private final Map<ChunkPos, CheckChunk> checkForExistence = new ConcurrentHashMap<>();
-    private final Map<UUID, TransmissionLinePart> lineParts = new HashMap<>();
+    private final Map<PartId, TransmissionLinePart> lineParts = new HashMap<>();
     private final Map<OwnedFloatingNode, Set<TransmissionLinePart>> partNodeMap = new HashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
@@ -163,7 +163,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 var entityIter = entry.getValue().entities.iterator();
                 while(entityIter.hasNext()) {
                     var id = entityIter.next();
-                    if(serverWorld.getEntity(id) == null) {
+                    if(id.getEntity(serverWorld) == null) {
                         if(remove) {
                             // Doesn't exist even after chunk has been loaded.
                             var part = lineParts.get(id);
@@ -205,6 +205,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     iter2.remove();
                     continue;
                 }
+                if(Math.abs(line.current()) < 1e-5) {
+                    // Line is not carrying any major current so don't bother synchronizing it.
+                    continue;
+                }
                 var players = PlayerUtilities.partialTracking(serverWorld, line);
                 if(players.isEmpty())
                     continue;
@@ -219,7 +223,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Synchronize solver state with clients
 //            if(syncTicks++ >= 20) {
 //                for(var network : subnetworks) {
-//                    if(network.getStateMatrix() == null)
+//                    if(network.getStateVector() == null)
 //                        continue;
 //                    var tracking = new HashSet<ServerPlayer>();
 //                    var packet = new SolverStateS2CPacket(world, network);
@@ -372,14 +376,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Nullable
-    protected TransmissionLinePart tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    protected TransmissionLinePart tryGrabUnloadedPart(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, PartId id) {
         // Try to resolve trees for correct merging of lines
         resolveTree(endpoint1);
         resolveTree(endpoint2);
 
-        var existingPart = lineParts.get(forEntity.getUUID());
+        var existingPart = lineParts.get(id);
         if(existingPart != null) {
-            existingPart.grab(forEntity);
+            existingPart.grab(forEntity, id);
             return existingPart;
         }
 
@@ -481,16 +485,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Nullable
-    public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, PartId id) {
         add(endpoint1);
         add(endpoint2);
 
-        var linePart = tryGrabUnloadedPart(endpoint1, endpoint2, forEntity);
+        var linePart = tryGrabUnloadedPart(endpoint1, endpoint2, forEntity, id);
         if(linePart != null && linePart.getLine() != null)
             return linePart;
 
         if(linePart == null)
-            linePart = TransmissionLinePart.uniquePart(forEntity.getResistance(), endpoint1, endpoint2, forEntity, this);
+            linePart = TransmissionLinePart.uniquePart(forEntity.getResistance(), endpoint1, endpoint2, forEntity, this, id);
 
         if(makeTransmissionLine(linePart))
             return linePart;
@@ -504,23 +508,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(parts == null)
                 continue;
             wires.addAll(parts);
-//            var nodes = globalGraph.getConnectedNodes(node);
-//            nodes.stream()
-//                    .flatMap(connected -> globalGraph.getWires(node, connected).stream())
-//                    .filter(wire -> wire instanceof TransmissionLine)
-//                    .map(wire -> {
-//                        var line = (TransmissionLine) wire;
-//                        if(line.segments.isEmpty())
-//                            return null;
-//                        if(line.getNode1() == node)
-//                            return line.segments.get(0);
-//                        else if(line.getNode2() == node)
-//                            return line.segments.get(line.segments.size() - 1);
-//                        else
-//                            return null;
-//                    })
-//                    .filter(segment -> segment != null && segment.owner != null)
-//                    .forEach(segment -> wires.add(segment.owner));
         }
         return wires;
     }
@@ -797,7 +784,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
      * @param entityId       Transmission line part entity id
      * @param lastKnownChunk Last known chunk of the entity
      */
-    public void bounty(UUID entityId, ChunkPos lastKnownChunk) {
+    public void bounty(PartId entityId, ChunkPos lastKnownChunk) {
         if(world.hasChunk(lastKnownChunk.x, lastKnownChunk.z)) {
             checkForExistence.computeIfAbsent(lastKnownChunk, $ -> new CheckChunk()).add(entityId);
             return;
@@ -852,14 +839,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return node;
     }
 
-    public void registerPart(UUID persistentOwnerId, TransmissionLinePart part) {
+    public void registerPart(PartId persistentOwnerId, TransmissionLinePart part) {
         lineParts.put(persistentOwnerId, part);
         partNodeMap.computeIfAbsent(part.getNode1(), $ -> new HashSet<>()).add(part);
         partNodeMap.computeIfAbsent(part.getNode2(), $ -> new HashSet<>()).add(part);
         setDirty();
     }
 
-    public void unregisterPart(UUID persistentOwnerId, TransmissionLinePart part) {
+    public void unregisterPart(PartId persistentOwnerId, TransmissionLinePart part) {
         lineParts.remove(persistentOwnerId);
         var set = partNodeMap.get(part.getNode1());
         if(set != null) {
@@ -877,7 +864,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Nullable
-    public TransmissionLinePart getPart(UUID persistentOwnerId) {
+    public TransmissionLinePart getPart(PartId persistentOwnerId) {
         return lineParts.get(persistentOwnerId);
     }
 
@@ -907,17 +894,41 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     private static class CheckChunk {
-        public final Set<UUID> entities = Sets.newConcurrentHashSet();
+        public final Set<PartId> entities = Sets.newConcurrentHashSet();
         public int ticks = 0;
 
-        public void add(UUID id) {
+        public void add(PartId id) {
             entities.add(id);
             ticks = 0;
         }
 
-        public void addAll(Set<UUID> ids) {
+        public void addAll(Set<PartId> ids) {
             entities.addAll(ids);
             ticks = 0;
+        }
+    }
+
+    public interface PartId {
+        BaseWireEntity getEntity(ServerLevel level);
+    }
+
+    public record SimpleId(UUID id) implements PartId {
+        @Override
+        public BaseWireEntity getEntity(ServerLevel level) {
+            var entity = level.getEntity(id);
+            if(entity instanceof BaseWireEntity wire)
+                return wire;
+            return null;
+        }
+    }
+
+    public record ComplexId(UUID id, int sub) implements PartId {
+        @Override
+        public BaseWireEntity getEntity(ServerLevel level) {
+            var entity = level.getEntity(id);
+            if(entity instanceof BaseWireEntity wire)
+                return wire;
+            return null;
         }
     }
 }

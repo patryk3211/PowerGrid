@@ -88,7 +88,12 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void assignWireEntity(WireEntity entity) {
+    public <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
+        return BlockWireEntity.class.isAssignableFrom(clazz);
+    }
+
+    @Override
+    public void assignWireEntity(BaseWireEntity entity) {
         if(!(entity instanceof BlockWireEntity))
             throw new IllegalArgumentException("Wire junction must receive block wire entities");
         var entry = getNode(entity.level(), this.id, false, this);
@@ -96,7 +101,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void removeWireEntity(WireEntity entity) {
+    public void removeWireEntity(BaseWireEntity entity) {
         var entry = getNode(entity.level(), this.id, true, this);
         if(entry == null)
             return;
@@ -246,7 +251,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
 
     private static class NodeEntry {
         public final OwnedFloatingNode node;
-        public final Set<WireEntity> holders = new HashSet<>();
+        public final Set<BaseWireEntity> holders = new HashSet<>();
 
         public NodeEntry(IWireEndpoint endpoint) {
             node = new OwnedFloatingNode(endpoint);

@@ -20,7 +20,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 public interface IWireEndpoint {
@@ -32,16 +31,30 @@ public interface IWireEndpoint {
     @NotNull
     Vec3 getExactPosition(Level world);
 
-    OwnedFloatingNode getNode(Level world);
-    void joinNetwork(Level world, ElectricalNetwork network);
-
     // TODO: Implement for other endpoints
     default boolean isValid(Level world) {
         return true;
     }
 
-    void assignWireEntity(WireEntity entity);
-    void removeWireEntity(WireEntity entity);
+    default <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
+        return false;
+    }
+
+    default OwnedFloatingNode getNode(Level world) {
+        throw new IllegalStateException("Cannot fetch node");
+    }
+
+    default void joinNetwork(Level world, ElectricalNetwork network) {
+        throw new IllegalStateException("Cannot join network");
+    }
+
+    default void assignWireEntity(BaseWireEntity entity) {
+        throw new IllegalStateException("Cannot assign a wire entity");
+    }
+
+    default void removeWireEntity(BaseWireEntity entity) {
+        throw new IllegalStateException("Cannot remove a wire entity");
+    }
 
     default CompoundTag serialize() {
         return type().serialize(this);

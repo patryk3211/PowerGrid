@@ -15,9 +15,18 @@
  */
 package org.patryk3211.powergrid.electricity.febridge;
 
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public interface IFEBridgeHandler {
+    static float voltToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
+    }
+
+    static float wattToFE() {
+        return ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF();
+    }
+
     long getAmount();
     void setAmount(long amount);
 

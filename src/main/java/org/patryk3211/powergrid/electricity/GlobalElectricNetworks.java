@@ -32,6 +32,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.utility.NumberFormats;
@@ -102,8 +103,8 @@ public class GlobalElectricNetworks {
         return null;
     }
 
-    public static ElectricWire makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
-        return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity);
+    public static ElectricWire makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, WorldNetworks.PartId id) {
+        return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity, id);
     }
 
     private static Component display(IElectricNode node) {
@@ -114,6 +115,12 @@ public class GlobalElectricNetworks {
             line = Component.literal(node.toString());
         }
         line.append(Component.literal("@" + NumberFormats.formatPrecise(node.getVoltage()) + "V").withStyle(ChatFormatting.DARK_GRAY));
+        if(node.getNetwork() != null) {
+            var optimized = node.getNetwork().isOptimized(node);
+            if(optimized) {
+                line.append(Component.literal(" *").withStyle(ChatFormatting.GREEN));
+            }
+        }
         return line;
     }
 

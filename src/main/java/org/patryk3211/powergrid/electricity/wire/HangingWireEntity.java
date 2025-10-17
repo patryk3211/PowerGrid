@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -146,15 +148,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             if(world.isClientSide && !particlesSpawned) {
                 var curveParams = (CurveParameters) renderParams;
                 var dx = curveParams.getCurveSpan();
-                var normal = curveParams.getNormal();
                 int pointCount = Math.round(dx / 0.25f);
-                for(int i = 0; i < pointCount; ++i) {
-                    float localX = ((float) i / pointCount - 0.5f) * dx;
-                    var x = pos.x + localX * normal.x;
-                    var y = pos.y + curveParams.apply(localX);
-                    var z = pos.z + localX * normal.z;
-                    world.addParticle(ParticleTypes.FLAME, x, y, z, 0.0f, 0.00f, 0.0f);
-                }
+                curveParams.runForPoints(pointCount, (x, y, z) -> {
+                    world.addParticle(ParticleTypes.FLAME,
+                            pos.x + x, pos.y + y, pos.z + z,
+                            0.0f, 0.00f, 0.0f);
+                });
                 particlesSpawned = true;
             }
         } else if(temperature >= overheatTemperature - 50 && world.isClientSide && renderParams != null) {
@@ -190,7 +189,14 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     public boolean isPickable() {
         // Hits get handled by IComplexRaycast
-        return false;
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> {
+            if(renderParams instanceof CurveParameters rp) {
+                // Use Vanilla AABB based picking
+                return rp.isVertical();
+            } else {
+                return false;
+            }
+        }).orElse(false);
     }
 
     @Override

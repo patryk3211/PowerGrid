@@ -22,13 +22,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
 import java.util.UUID;
-
-;
 
 public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     private BlockPos entityPos;
@@ -98,22 +93,7 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public OwnedFloatingNode getNode(Level world) {
-        throw new IllegalStateException("Cannot fetch node");
-    }
-
-    @Override
-    public void joinNetwork(Level world, ElectricalNetwork network) {
-        throw new IllegalStateException("Cannot join network");
-    }
-
-    @Override
-    public void assignWireEntity(WireEntity entity) {
-        throw new IllegalStateException("Cannot assign a wire entity");
-    }
-
-    @Override
-    public void removeWireEntity(WireEntity entity) {
-        throw new IllegalStateException("Cannot remove a wire entity");
+    public <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
+        return BlockWireEntity.class.isAssignableFrom(clazz);
     }
 }

@@ -44,11 +44,13 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntit
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
+import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
+import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
@@ -79,6 +81,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<ConnectorBlockEntity> WIRE_CONNECTOR =
             REGISTRATE.blockEntity("wire_connector", ConnectorBlockEntity::new)
                     .validBlocks(ModdedBlocks.WIRE_CONNECTOR, ModdedBlocks.HEAVY_WIRE_CONNECTOR)
+                    .register();
+
+    public static final BlockEntityEntry<CordJunctionBlockEntity> CORD_JUNCTION =
+            REGISTRATE.blockEntity("cord_junction", CordJunctionBlockEntity::new)
+                    .validBlock(ModdedBlocks.CORD_JUNCTION)
                     .register();
 
     public static final BlockEntityEntry<MultiBlockBatteryEntity> MULTIBLOCK_BATTERY =
@@ -278,6 +285,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<GroundingRodBlockEntity> GROUNDING_ROD =
             REGISTRATE.blockEntity("grounding_rod", GroundingRodBlockEntity::new)
                     .validBlock(ModdedBlocks.GROUNDING_ROD)
+                    .register();
+
+    public static final BlockEntityEntry<SocketBlockEntity> SOCKET =
+            REGISTRATE.blockEntity("socket", SocketBlockEntity::new)
+                    .validBlock(ModdedBlocks.SOCKET)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

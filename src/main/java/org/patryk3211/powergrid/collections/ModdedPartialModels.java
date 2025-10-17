@@ -61,6 +61,8 @@ public class ModdedPartialModels {
     public static final PartialModel MULTIMETER_NEEDLE = model("item/multimeter/indicator");
     public static final PartialModel COMPONENT_GAUGE_NEEDLE = model("component/gauge_needle");
 
+    public static final PartialModel PLUG = block("plug");
+
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));
     }

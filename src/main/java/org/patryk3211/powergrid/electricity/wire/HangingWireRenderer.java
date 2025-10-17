@@ -19,6 +19,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -30,6 +31,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 @Environment(EnvType.CLIENT)
@@ -42,6 +44,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         super(ctx);
     }
 
+    @NotNull
     @Override
     public ResourceLocation getTextureLocation(HangingWireEntity entity) {
         return entity.getWireItem().getWireTexture();
@@ -56,7 +59,12 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             // Don't render since it's dead and only there to spawn particles.
             return;
 
-        var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
+        VertexConsumer buffer;
+        if(Minecraft.useFancyGraphics()) {
+            buffer = vertexConsumers.getBuffer(RenderType.entityCutout(getTextureLocation(entity)));
+        } else {
+            buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
+        }
         assert entity.renderParams instanceof CurveParameters;
         CurveParameters rp = (CurveParameters) entity.renderParams;
 
@@ -119,18 +127,63 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                                      float x1, float y1, float z1, float x2, float y2, float z2,
                                      Vec3 cross1, Vec3 cross2, int light, int color,
                                      float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
-        quad(ms.last(), buffer, light, color,
-                x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
-                x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
-                x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
-                x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
-                thickness, thicknessOffset, uvLength, lengthOffset);
-        quad(ms.last(), buffer, light, color,
-                x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
-                x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
-                x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
-                x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
-                thickness, thicknessOffset, uvLength, lengthOffset);
+        if(!Minecraft.useFancyGraphics()) {
+            quad(ms.last(), buffer, light, color,
+                    x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
+                    x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
+                    x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
+                    x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                    thickness, thicknessOffset, uvLength, lengthOffset);
+            quad(ms.last(), buffer, light, color,
+                    x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
+                    x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
+                    x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                    x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                    thickness, thicknessOffset, uvLength, lengthOffset);
+        } else {
+            quad(ms.last(), buffer, light, color,
+                    x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
+                    x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
+                    x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
+                    x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                    cross1.x - cross2.x, cross1.y - cross2.y, cross1.z - cross2.z,
+                    thickness, thicknessOffset, uvLength, lengthOffset);
+            quad(ms.last(), buffer, light, color,
+                    x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
+                    x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
+                    x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                    x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                    cross2.x - cross1.x, cross2.y - cross1.y, cross2.z - cross1.z,
+                    thickness, thicknessOffset, uvLength, lengthOffset);
+            quad(ms.last(), buffer, light, color,
+                    x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
+                    x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
+                    x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                    x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
+                    cross1.x + cross2.x, cross1.y + cross2.y, cross1.z + cross2.z,
+                    thickness, thicknessOffset, uvLength, lengthOffset);
+            quad(ms.last(), buffer, light, color,
+                    x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
+                    x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
+                    x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                    x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                    -cross1.x - cross2.x, -cross1.y - cross2.y, -cross1.z - cross2.z,
+                    thickness, thicknessOffset, uvLength, lengthOffset);
+            quad(ms.last(), buffer, light, color,
+                    x1 + cross1.x, y1 + cross1.y, z1 + cross1.z,
+                    x1 + cross2.x, y1 + cross2.y, z1 + cross2.z,
+                    x1 - cross2.x, y1 - cross2.y, z1 - cross2.z,
+                    x1 - cross1.x, y1 - cross1.y, z1 - cross1.z,
+                    x1 - x2, y1 - y2, z1 - z2,
+                    thickness, thicknessOffset, thickness, thicknessOffset);
+            quad(ms.last(), buffer, light, color,
+                    x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
+                    x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
+                    x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                    x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
+                    x2 - x1, y2 - y1, z2 - z1,
+                    thickness, thicknessOffset, thickness, thicknessOffset);
+        }
     }
 
     public static void quad(PoseStack.Pose matrix, VertexConsumer buffer, int light, int color,
@@ -164,6 +217,43 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                 .overlayCoords(OverlayTexture.NO_OVERLAY)
                 .uv2(light)
                 .normal(matrix.normal(), 0, 1, 0)
+                .endVertex();
+    }
+
+    public static void quad(PoseStack.Pose matrix, VertexConsumer buffer, int light, int color,
+                            double x1, double y1, double z1, double x2, double y2, double z2,
+                            double x3, double y3, double z3, double x4, double y4, double z4,
+                            double nX, double nY, double nZ,
+                            float thickness, float thicknessOffset, float uvLength, float lengthOffset) {
+        var nLen = Math.sqrt(nX * nX + nY * nY + nZ * nZ);
+        nX /= nLen; nY /= nLen; nZ /= nLen;
+        buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
+                .color(color)
+                .uv(lengthOffset, thicknessOffset)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
+                .endVertex();
+        buffer.vertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
+                .color(color)
+                .uv(lengthOffset, thicknessOffset + thickness)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
+                .endVertex();
+        buffer.vertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
+                .color(color)
+                .uv(lengthOffset + uvLength, thicknessOffset + thickness)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
+                .endVertex();
+        buffer.vertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
+                .color(color)
+                .uv(lengthOffset + uvLength, thicknessOffset)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
                 .endVertex();
     }
 }

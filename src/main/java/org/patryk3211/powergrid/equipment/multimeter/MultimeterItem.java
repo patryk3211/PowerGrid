@@ -104,7 +104,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         return entityHit.getLocation();
     }
 
-    public InteractionResult useOnWire(Player player, ItemStack stack, InteractionHand hand, WireEntity wireEntity) {
+    public InteractionResult useOnWire(Player player, ItemStack stack, InteractionHand hand, BaseWireEntity wireEntity) {
         if(hand != InteractionHand.MAIN_HAND)
             return InteractionResult.PASS;
         if(getMode(stack) != 1) {
