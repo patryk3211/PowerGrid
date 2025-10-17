@@ -26,7 +26,6 @@ import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
-import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 
 import java.util.List;

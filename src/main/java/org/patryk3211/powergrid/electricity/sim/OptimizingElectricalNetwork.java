@@ -15,7 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
-import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
+import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.INode;
 
 import java.util.HashMap;
 import java.util.Map;

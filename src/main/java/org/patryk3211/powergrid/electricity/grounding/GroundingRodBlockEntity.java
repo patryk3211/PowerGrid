@@ -22,7 +22,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -115,6 +114,7 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
+        assert level != null;
         super.tick();
         if(!level.isClientSide && damageTickCounter++ >= 10) {
             damageTickCounter = 0;

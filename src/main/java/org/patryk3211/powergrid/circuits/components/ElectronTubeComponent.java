@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.circuits.components;
 import com.google.common.collect.ImmutableCollection;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.render.RenderTypes;
-import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;

@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
-import org.ejml.data.DMatrixRMaj;
-
 public interface ISolverHook {
     /**
      * Called before iterative solving loop is started.

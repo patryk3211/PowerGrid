@@ -28,13 +28,10 @@ import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
-import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
-import org.patryk3211.powergrid.circuits.components.properties.ConstantProperty;
 import org.patryk3211.powergrid.circuits.components.properties.IntProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
-import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.utility.Lang;
 

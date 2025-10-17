@@ -38,7 +38,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
-import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 public class GeneratorClutchBlock extends DirectionalKineticBlock implements IBE<GeneratorClutchBlockEntity>, IRotorAssemblyPart {

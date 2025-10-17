@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.equipment.thermometer;
 
-import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -32,7 +31,6 @@ import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     public float maxState;

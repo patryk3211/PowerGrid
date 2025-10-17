@@ -22,8 +22,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.FriendlyByteBuf;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
-import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.function.Supplier;
 

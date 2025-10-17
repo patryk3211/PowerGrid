@@ -22,7 +22,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
-import org.patryk3211.powergrid.collections.ModdedMenus;
 
 public abstract class CircuitEditMenu<T extends SmartBlockEntity & ISchematicHolder> extends AbstractCircuitDesignTableMenu<T> {
     protected CircuitEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {

@@ -16,8 +16,6 @@
 package org.patryk3211.powergrid.electricity.gauge;
 
 import com.simibubi.create.foundation.block.IBE;
-import com.tterrag.registrate.builders.BlockBuilder;
-import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;

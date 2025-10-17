@@ -31,7 +31,6 @@ import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class TransmissionLinePart extends ElectricWire {
     @Nullable

@@ -16,8 +16,6 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.PacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +27,6 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
-import org.patryk3211.powergrid.utility.Lang;
-import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 

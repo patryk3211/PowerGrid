@@ -25,7 +25,10 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
-import org.patryk3211.powergrid.electricity.wire.*;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 

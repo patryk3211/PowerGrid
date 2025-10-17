@@ -26,8 +26,8 @@ import org.joml.Math;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
-import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.ArrayList;
 import java.util.Collection;

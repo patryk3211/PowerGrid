@@ -21,7 +21,6 @@ import net.minecraft.core.Direction;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
 import org.patryk3211.powergrid.circuits.components.PotentiometerComponent;
-import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 

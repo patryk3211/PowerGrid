@@ -55,7 +55,6 @@ import org.patryk3211.powergrid.circuits.components.IInteractableComponent;
 import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.editor.CircuitBoardEditMenu;
-import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditMenu;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;

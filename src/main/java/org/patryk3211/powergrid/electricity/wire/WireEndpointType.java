@@ -17,7 +17,9 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Contract;
-import org.patryk3211.powergrid.electricity.wire.powercord.*;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.SocketEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.SplitCordEndpoint;
 
 import java.util.function.Supplier;
 

@@ -26,8 +26,8 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.HashMap;
 import java.util.HashSet;

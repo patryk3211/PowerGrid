@@ -18,8 +18,6 @@ package org.patryk3211.powergrid.collections;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedTags {

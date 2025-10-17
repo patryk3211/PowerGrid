@@ -47,7 +47,6 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;

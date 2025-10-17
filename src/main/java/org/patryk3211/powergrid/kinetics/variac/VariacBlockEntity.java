@@ -16,14 +16,11 @@
 package org.patryk3211.powergrid.kinetics.variac;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
-import net.createmod.catnip.animation.LerpedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -34,7 +31,6 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSoundInstance;
 import org.patryk3211.powergrid.electricity.transformer.TransformerVolumeProvider;
-import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
 

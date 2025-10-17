@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.circuits.components;
 
 import com.simibubi.create.AllItems;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import org.apache.commons.lang3.RandomUtils;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 

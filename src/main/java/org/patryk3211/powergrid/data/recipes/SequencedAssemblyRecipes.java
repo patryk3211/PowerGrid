@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.SequencedAssemblyRecipeGen;
-import com.simibubi.create.content.fluids.transfer.FillingRecipe;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
 import net.minecraft.data.PackOutput;
