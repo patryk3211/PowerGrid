@@ -40,13 +40,6 @@ public class PowerGridPonderTags {
                 .title("Generator Parts")
                 .description("Components which can be used to build a generator")
                 .item(ModdedBlocks.GENERATOR_ROTOR, true, false)
-                .item(ModdedBlocks.GENERATOR_CLUTCH)
-                .item(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
-                .item(ModdedBlocks.GENERATOR_COMMUTATOR)
-                .item(ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
-                .item(ModdedItems.COPPER_COIL)
-                .item(ModdedBlocks.GENERATOR_HOUSING)
-                .item(ModdedBlocks.VERTICAL_GENERATOR_HOUSING)
                 .addToIndex()
                 .register();
 
@@ -97,6 +90,8 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.WIRE_CONNECTOR)
                 .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
                 .add(ModdedBlocks.DEVICE_CONNECTOR)
+                .add(ModdedBlocks.CORD_JUNCTION)
+                .add(ModdedBlocks.SOCKET)
                 .add(ModdedBlocks.GROUNDING_ROD);
 
         HELPER.addToTag(ELECTRIC_DEVICES)
@@ -114,10 +109,12 @@ public class PowerGridPonderTags {
                 .add(AllItems.COPPER_NUGGET)
                 .add(ModdedItems.RESISTOR)
                 .add(ModdedItems.CAPACITOR)
+                .add(ModdedItems.COPPER_COIL)
                 .add(ModdedItems.RELAY)
                 .add(ModdedItems.REDSTONE_RELAY)
                 .add(AllItems.ELECTRON_TUBE)
                 .add(ModdedItems.REGULATOR_TUBE)
+                .add(ModdedItems.NEON_BULB)
                 .add(ModdedBlocks.LV_SWITCH)
                 .add(ModdedBlocks.LV_BUTTON)
                 .add(ModdedItems.POTENTIOMETER)

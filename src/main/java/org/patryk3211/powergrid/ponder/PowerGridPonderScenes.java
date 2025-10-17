@@ -23,7 +23,6 @@ import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.electricity.bell.AlarmBellSoundInstance;
 import org.patryk3211.powergrid.ponder.scenes.*;
 
 public class PowerGridPonderScenes {
@@ -56,7 +55,9 @@ public class PowerGridPonderScenes {
         HELPER.forComponents(ModdedBlocks.GENERATOR_INDUCTION_ROTOR, ModdedBlocks.GENERATOR_COMMUTATOR, ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
                 .addStoryBoard("generator/inductive", GeneratorScenes::inductive, PowerGridPonderTags.GENERATOR_ASSEMBLY, PowerGridPonderTags.ELECTRIC_DEVICES);
 
-        HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE)
+        HELPER.addStoryBoard(ModdedItems.INSULATED_COPPER_WIRE, "wire/insulated_wire", WireScenes::insulatedWire);
+        HELPER.addStoryBoard(ModdedItems.CORD, "wire/cord", WireScenes::cord);
+        HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE, ModdedItems.INSULATED_COPPER_WIRE)
                 .addStoryBoard("wire/simple", WireScenes::simple)
                 .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
 
@@ -106,6 +107,9 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.ELECTROMAGNET, "electromagnet", DeviceScenes::electromagnet, PowerGridPonderTags.ELECTRIC_DEVICES);
 
         HELPER.addStoryBoard(ModdedBlocks.BATTERY, "battery", DeviceScenes::battery);
+
+        HELPER.addStoryBoard(ModdedBlocks.CORD_JUNCTION, "wire/cord_junction", WireScenes::cordJunction, PowerGridPonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.SOCKET, "wire/cord_socket", WireScenes::cordSocket, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.addStoryBoard(ModdedItems.RESISTOR, "circuit/resistor", CircuitScenes::resistor, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "circuit/voltage", CircuitScenes::voltageGauge, PowerGridPonderTags.CIRCUIT_COMPONENTS);

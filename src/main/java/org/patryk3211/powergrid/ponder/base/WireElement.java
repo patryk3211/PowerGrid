@@ -22,26 +22,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
+
+import java.util.function.Function;
 
 public class WireElement extends AnimatedSceneElementBase {
-    protected WireEntity wire;
+    protected BaseWireEntity wire;
+    protected Function<Level, BaseWireEntity> wireFactory;
 
-    protected BlockPos pos1, pos2;
-    protected int terminal1, terminal2;
-    protected float resistance;
-
-    public WireElement(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
-        this.pos1 = pos1;
-        this.pos2 = pos2;
-        this.terminal1 = terminal1;
-        this.terminal2 = terminal2;
-        this.resistance = resistance;
+    public WireElement(Function<Level, BaseWireEntity> factory) {
+        this.wireFactory = factory;
     }
 
     @Override
@@ -57,9 +49,7 @@ public class WireElement extends AnimatedSceneElementBase {
     protected void renderLast(PonderLevel world, MultiBufferSource buffer, GuiGraphics graphics, float fade, float pt) {
         EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
         if(wire == null && isVisible()) {
-            var hWire = HangingWireEntity.create(world, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
-            hWire.updateRenderParams();
-            wire = hWire;
+            wire = wireFactory.apply(world);
         }
 
         var ms = graphics.pose();

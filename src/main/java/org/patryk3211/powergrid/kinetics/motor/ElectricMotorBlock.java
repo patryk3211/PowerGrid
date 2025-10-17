@@ -45,11 +45,12 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
 
-public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
+public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties, IAcceptCord {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
     private static final VoxelShape NORTH_SHAPE = box(3, 3, 0, 13, 13, 16);
@@ -141,5 +142,10 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     @SuppressWarnings("deprecation")
     public BlockState mirror(BlockState state, Mirror mirrorIn) {
         return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
+    }
+
+    @Override
+    public boolean renderPlug() {
+        return true;
     }
 }
