@@ -119,22 +119,23 @@ public class CordJunctionBlock extends ElectricBlock implements IBE<CordJunction
                 pickPoint(loc.y, center.y),
                 pickPoint(loc.z, center.z)
         );
+        var sign = facing.getAxisDirection() == Direction.AxisDirection.POSITIVE ? -1 : 1;
         switch(facing.getAxis()) {
             case X -> {
                 if(offset.y == 0 && offset.z == 0)
-                    point = point.add(0.0625, 0, 0);
+                    point = point.add(0.0625 * sign, 0, 0);
                 else
                     point = point.add(0, offset.y, offset.z);
             }
             case Y -> {
                 if(offset.x == 0 && offset.z == 0)
-                    point = point.add(0, 0.0625, 0);
+                    point = point.add(0, 0.0625 * sign, 0);
                 else
                     point = point.add(offset.x, 0, offset.z);
             }
             case Z -> {
                 if(offset.x == 0 && offset.y == 0)
-                    point = point.add(0, 0, 0.0625);
+                    point = point.add(0, 0, 0.0625 * sign);
                 else
                     point = point.add(offset.x, offset.y, 0);
             }
@@ -156,22 +157,23 @@ public class CordJunctionBlock extends ElectricBlock implements IBE<CordJunction
                 pickPoint(loc.y, center.y),
                 pickPoint(loc.z, center.z)
         );
+        var sign = facing.getAxisDirection() == Direction.AxisDirection.POSITIVE ? -1 : 1;
         switch(facing.getAxis()) {
             case X -> {
                 if(offset.y == 0 && offset.z == 0)
-                    point = point.add(0.0625, 0, 0);
+                    point = point.add(0.0625 * sign, 0, 0);
                 else
                     point = point.add(0, offset.y, offset.z);
             }
             case Y -> {
                 if(offset.x == 0 && offset.z == 0)
-                    point = point.add(0, 0.0625, 0);
+                    point = point.add(0, 0.0625 * sign, 0);
                 else
                     point = point.add(offset.x, 0, offset.z);
             }
             case Z -> {
                 if(offset.x == 0 && offset.y == 0)
-                    point = point.add(0, 0, 0.0625);
+                    point = point.add(0, 0, 0.0625 * sign);
                 else
                     point = point.add(offset.x, offset.y, 0);
             }
