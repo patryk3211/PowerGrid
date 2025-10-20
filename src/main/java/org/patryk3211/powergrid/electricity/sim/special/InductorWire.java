@@ -17,8 +17,11 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
+
+import java.util.List;
 
 public class InductorWire extends AbstractElectricWire implements IStaticResidual {
     private double inductance;
@@ -49,7 +52,18 @@ public class InductorWire extends AbstractElectricWire implements IStaticResidua
     public void addResidual(IResidualAdder residual) {
         I = (potentialDifference() * conductance() + current()) * 0.99999 + currentInject;
         currentInject = 0;
-        residual.add(node1.getIndex(), -I);
-        residual.add(node2.getIndex(),  I);
+        if(node1 != null)
+            residual.add(node1.getIndex(), -I);
+        if(node2 != null)
+            residual.add(node2.getIndex(),  I);
+    }
+
+    @Override
+    public List<INode> affectedNodes() {
+        if(node1 == null)
+            return List.of(node2);
+        if(node2 == null)
+            return List.of(node1);
+        return List.of(node1, node2);
     }
 }

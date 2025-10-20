@@ -22,6 +22,8 @@ import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
+import java.util.List;
+
 public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private static final double GRID_CONDUCTANCE = 1.0 / 6000.0;
 
@@ -144,6 +146,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
             admittance.add(node1.getIndex(), node1.getIndex(), change);
             // Cathode-Grid
             admittance.add(node1.getIndex(), node3.getIndex(), -change);
+        }
+
+        @Override
+        public List<IElectricNode> coupledNodes() {
+            return List.of(node1, node2, node3);
         }
     }
 }

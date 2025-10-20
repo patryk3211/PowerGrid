@@ -44,6 +44,11 @@ public class NetworkGraph {
     private final Map<IElectricNode, Node> nodes = new HashMap<>();
     public IGraphModifyHooks hooks = null;
 
+    public NetworkGraph() {
+        // Ground
+        addNode(null);
+    }
+
     public void addNode(IElectricNode node) {
         if(nodes.containsKey(node))
             return;
@@ -72,7 +77,7 @@ public class NetworkGraph {
     }
 
     public void connect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
-        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
+        if((node1 != null && !nodes.containsKey(node1)) || (node2 != null && !nodes.containsKey(node2)))
             return;
 
         var object1 = nodes.get(node1);
@@ -94,7 +99,7 @@ public class NetworkGraph {
     }
 
     public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
-        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
+        if((node1 != null && !nodes.containsKey(node1)) || (node2 != null && !nodes.containsKey(node2)))
             return;
 
         var object1 = nodes.get(node1);
@@ -207,6 +212,21 @@ public class NetworkGraph {
         for(var wires : object.connections.values()) {
             for(var wire : wires) {
                 if(!(wire instanceof ElectricWire))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isLeafEliminating(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return false;
+        var object = nodes.get(node);
+        if(!object.couplings.isEmpty())
+            return true;
+        for(var wires : object.connections.values()) {
+            for(var wire : wires) {
+                if(wire.node1 == null || wire.node2 == null)
                     return true;
             }
         }

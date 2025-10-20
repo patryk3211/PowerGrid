@@ -116,9 +116,10 @@ public class GlobalElectricNetworks {
         }
         line.append(Component.literal("@" + NumberFormats.formatPrecise(node.getVoltage()) + "V").withStyle(ChatFormatting.DARK_GRAY));
         if(node.getNetwork() != null) {
-            var optimized = node.getNetwork().isOptimized(node);
-            if(optimized) {
+            if(node.getNetwork().isOptimized(node)) {
                 line.append(Component.literal(" *").withStyle(ChatFormatting.GREEN));
+            } else if(node.getNetwork().isLeaf(node)) {
+                line.append(Component.literal(" -").withStyle(ChatFormatting.GREEN));
             }
         }
         return line;

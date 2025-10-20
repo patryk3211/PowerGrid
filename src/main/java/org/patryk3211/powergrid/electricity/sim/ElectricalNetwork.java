@@ -42,7 +42,9 @@ public class ElectricalNetwork {
     private int eliminatedStart;
 
     private final Set<ISolverHook> hooks = new HashSet<>();
+    private final Set<ISolverHook> disabledHooks = new HashSet<>();
     private final Set<IStaticResidual> residuals = new HashSet<>();
+    protected final Map<IElectricNode, IElectricNode> leafNodes = new HashMap<>();
 
     private final ISolver solver;
     private int sourceCount;
@@ -109,7 +111,7 @@ public class ElectricalNetwork {
     }
 
     public void addNode(INode node) {
-        if(nodes.contains(node))
+        if(nodes.contains(node) || leafNodes.containsKey(node))
             return;
         node.assignIndex(eliminatedStart);
         node.setNetwork(this);
@@ -149,13 +151,21 @@ public class ElectricalNetwork {
     }
 
     public void removeNode(INode node) {
+        internalRemoveNode(node);
+    }
+
+    protected final void internalRemoveNode(INode node) {
         if(node == null)
             return;
+        if(leafNodes.containsKey(node)) {
+            node.setNetwork(null);
+            leafNodes.remove(node);
+            return;
+        }
         if(node.getNetwork() != this || node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
             // This node is not actually in this network.
             return;
 
-        // Node part of the kept group
         for(int i = node.getIndex() + 1; i < nodes.size(); ++i) {
             // Move back all nodes by one.
             nodes.get(i).assignIndex(i - 1);
@@ -193,7 +203,7 @@ public class ElectricalNetwork {
     }
 
     public boolean isEmpty() {
-        return nodes.isEmpty();
+        return nodes.isEmpty() && leafNodes.isEmpty();
     }
 
     public boolean isDirty() {
@@ -205,12 +215,12 @@ public class ElectricalNetwork {
     }
 
     public void addWire(AbstractElectricWire wire) {
-        if(wire.node1 != null && !nodes.contains(wire.node1)) {
+        if(wire.node1 != null && !nodes.contains(wire.node1) && !leafNodes.containsKey(wire.node1)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node1.getNetwork() == null ? "no network" : "different network";
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 " + wire.node1 + " isn't - " + suffix + ")");
         }
-        if(wire.node2 != null && !nodes.contains(wire.node2)) {
+        if(wire.node2 != null && !nodes.contains(wire.node2) && !leafNodes.containsKey(wire.node2)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
@@ -223,8 +233,20 @@ public class ElectricalNetwork {
             ++groundReferenceCount;
 
         updateConductance(wire, wire.conductance());
-        if(wire instanceof ISolverHook hook)
-            hooks.add(hook);
+        if(wire instanceof ISolverHook hook) {
+            var isFull = true;
+            for(var coupled : hook.coupledNodes()) {
+                if(isLeaf(coupled)) {
+                    isFull = false;
+                    break;
+                }
+            }
+            if(isFull) {
+                hooks.add(hook);
+            } else {
+                disabledHooks.add(hook);
+            }
+        }
         if(wire instanceof IStaticResidual residual)
             residuals.add(residual);
         converged = false;
@@ -232,6 +254,8 @@ public class ElectricalNetwork {
 
     public void updateConductance(AbstractElectricWire wire, double change) {
         if(JacobianKept == null || dirty || change == 0)
+            return;
+        if(leafNodes.containsKey(wire.node1) || leafNodes.containsKey(wire.node2))
             return;
 
         conductanceDelta += Math.abs(change);
@@ -260,8 +284,10 @@ public class ElectricalNetwork {
             --groundReferenceCount;
 
         updateConductance(wire, -wire.conductance());
-        if(wire instanceof ISolverHook hook)
+        if(wire instanceof ISolverHook hook) {
             hooks.remove(hook);
+            disabledHooks.remove(hook);
+        }
         if(wire instanceof IStaticResidual residual)
             residuals.remove(residual);
     }
@@ -333,41 +359,39 @@ public class ElectricalNetwork {
             var G = wire.conductance();
             if(!Double.isFinite(G))
                 continue;
-            if(wire.node1 != null) {
-                if(!nodes.contains(wire.node1)) {
-                    if(LOGGER != null) {
-                        LOGGER.warn("Dropped a stale wire (wire nodes not part of this network) between {} and {}.", wire.node1, wire.node2);
-                    }
-                    staleWires.add(wire);
-                    continue;
+            var skip = false;
+            for(var node : wire.coupledNodes()) {
+                if(leafNodes.containsKey(node)) {
+                    skip = true;
+                    break;
                 }
-                if(wire.node1.getIndex() >= nodes.size()) {
-                    if(LOGGER != null)
-                        LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node1);
-                    continue;
+                if(node != null) {
+                    if(nodes.contains(node)) {
+                        if(node.getIndex() >= nodes.size()) {
+                            if(LOGGER != null)
+                                LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", node);
+                            skip = true;
+                            break;
+                        }
+                    } else if(!leafNodes.containsKey(node)) {
+                        if(LOGGER != null) {
+                            LOGGER.warn("Dropped a stale wire (wire nodes not part of this network) between {}.", wire.coupledNodes());
+                        }
+                        staleWires.add(wire);
+                        skip = true;
+                        break;
+                    }
                 }
             }
-            if(wire.node2 != null) {
-                if(!nodes.contains(wire.node2)) {
-                    if(LOGGER != null) {
-                        LOGGER.warn("Dropped a stale wire (wire nodes not part of this network) between {} and {}.", wire.node1, wire.node2);
-                    }
-                    staleWires.add(wire);
-                    continue;
-                }
-                if(wire.node2.getIndex() >= nodes.size()) {
-                    if(LOGGER != null)
-                        LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", wire.node2);
-                    continue;
-                }
-            }
-
+            if(skip) continue;
             wire.stamp(this::jacobianAdd, G);
         }
 
         staleWires.forEach(wire -> {
-            if(wire instanceof ISolverHook hook)
+            if(wire instanceof ISolverHook hook) {
                 hooks.remove(hook);
+                disabledHooks.remove(hook);
+            }
             if(wire instanceof IStaticResidual residual)
                 residuals.remove(residual);
             wires.remove(wire);
@@ -450,6 +474,10 @@ public class ElectricalNetwork {
     }
 
     public void merge(ElectricalNetwork other) {
+        other.leafNodes.forEach((node, tracked) -> {
+            node.setNetwork(this);
+            leafNodes.put(node, tracked);
+        });
         other.nodes.forEach(this::addNode);
         other.wires.forEach(this::addWire);
         // Make the other network empty.
@@ -462,12 +490,19 @@ public class ElectricalNetwork {
         couplings.clear();
         hooks.clear();
         residuals.clear();
+        leafNodes.clear();
         eliminatedStart = 0;
     }
 
     public double getValue(INode node) {
         if(StateVector == null)
             return 0;
+        if(leafNodes.containsKey(node)) {
+            var tracked = leafNodes.get(node);
+            if(tracked != null)
+                return getValue(tracked);
+            return 0;
+        }
         var index = node.getIndex();
         if(index < 0 || index >= nodes.size())
             return 0;
@@ -541,6 +576,8 @@ public class ElectricalNetwork {
     }
 
     public void optimizeNode(@NotNull INode node) {
+        if(leafNodes.containsKey(node))
+            return;
         assert node.getNetwork() == this : "Node is not part of this network";
         if(node.getIndex() >= eliminatedStart) {
             // Already in the correct spot.
@@ -558,6 +595,8 @@ public class ElectricalNetwork {
     }
 
     public void unoptimizeNode(@NotNull INode node) {
+        if(leafNodes.containsKey(node))
+            return;
         assert node.getNetwork() == this : "Node is not part of this network";
         if(node.getIndex() < eliminatedStart) {
             // Already in the correct spot.
@@ -572,6 +611,59 @@ public class ElectricalNetwork {
             var other = nodes.get(++eliminatedStart);
             swapNodes(node, other);
         }
+    }
+
+    public void makeLeaf(IElectricNode node, IElectricNode tracked) {
+        assert node != tracked;
+        if(nodes.contains(node)) {
+            internalRemoveNode(node);
+            leafNodes.put(node, tracked);
+            node.setNetwork(this);
+
+            var iter = hooks.iterator();
+            while(iter.hasNext()) {
+                var hook = iter.next();
+                for(var coupled : hook.coupledNodes()) {
+                    if(node == coupled) {
+                        // Disable hook because this node is not simulated anymore
+                        disabledHooks.add(hook);
+                        iter.remove();
+                    }
+                }
+            }
+        } else if(leafNodes.containsKey(node)) {
+            leafNodes.put(node, tracked);
+        }
+    }
+
+    public void removeLeaf(IElectricNode node) {
+        if(!nodes.contains(node)) {
+            if(leafNodes.containsKey(node)) {
+                leafNodes.remove(node);
+                addNode((INode) node);
+
+                var iter = disabledHooks.iterator();
+                while(iter.hasNext()) {
+                    var hook = iter.next();
+                    var isFull = true;
+                    for(var coupled : hook.coupledNodes()) {
+                        if(isLeaf(coupled)) {
+                            isFull = false;
+                            break;
+                        }
+                    }
+                    if(isFull) {
+                        // Enable hook since all nodes are simulate
+                        hooks.add(hook);
+                        iter.remove();
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean isLeaf(IElectricNode node) {
+        return leafNodes.containsKey(node);
     }
 
     public void unoptimizeAll() {
@@ -698,7 +790,15 @@ public class ElectricalNetwork {
             EliminatedRHSVector.zero();
         eliminatedRHSZero = true;
         for(var residual : residuals) {
-            residual.addResidual(this::rhsAdd);
+            var skip = false;
+            for(var node : residual.affectedNodes()) {
+                if(leafNodes.containsKey(node)) {
+                    skip = true;
+                    break;
+                }
+            }
+            if(!skip)
+                residual.addResidual(this::rhsAdd);
         }
         if(EliminatedRHSVector != null && !eliminatedRHSZero) {
             JacobianEliminated.solve(EliminatedRHSVector, EliminatedSolved);
@@ -778,6 +878,9 @@ public class ElectricalNetwork {
             for(var hook : hooks) {
                 hook.postUpperSolve();
             }
+            for(var hook : disabledHooks) {
+                hook.postUpperSolve();
+            }
             return;
         }
 
@@ -853,6 +956,9 @@ public class ElectricalNetwork {
         }
         PERF.end();
         for(var hook : hooks) {
+            hook.postUpperSolve();
+        }
+        for(var hook : disabledHooks) {
             hook.postUpperSolve();
         }
     }

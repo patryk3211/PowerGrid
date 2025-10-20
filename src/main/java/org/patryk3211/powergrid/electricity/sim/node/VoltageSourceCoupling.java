@@ -100,4 +100,11 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
     public void addResidual(IResidualAdder residual) {
         residual.add(index, voltage);
     }
+
+    @Override
+    public List<INode> affectedNodes() {
+        if(negative != null)
+            return List.of(positive, negative);
+        return List.of(positive);
+    }
 }

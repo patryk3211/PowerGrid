@@ -15,10 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.INode;
+import org.patryk3211.powergrid.electricity.sim.node.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
     private final NetworkGraph graph;
@@ -37,8 +40,13 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         super.addNode(node);
         if(node instanceof IElectricNode enode)
             graph.addNode(enode);
-        if(node instanceof ICouplingNode coupling)
+        if(node instanceof ICouplingNode coupling) {
             graph.couple(coupling);
+            for(var coupled : coupling.coupledNodes()) {
+                checkConnectivity(coupled, null);
+                removeLeaf(coupled);
+            }
+        }
     }
 
     @Override
@@ -53,16 +61,126 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
             graph.decouple(cnode);
     }
 
+    private boolean circularCheck(IElectricNode node, Set<IElectricNode> checked, @Nullable MutableObject<IElectricNode> track) {
+        if(node == null) {
+            if(track != null)
+                track.setValue(null);
+            return true;
+        }
+        if(checked.contains(node))
+            return true;
+        if(graph.isLeafEliminating(node)) {
+            if(track != null)
+                track.setValue(node);
+            return true;
+        }
+        var nodes = graph.getConnectedNodes(node);
+        if(node instanceof CurrentSourceNode) {
+            if(track != null)
+                track.setValue(node);
+            return true;
+        }
+        if(nodes.size() <= 1) {
+            // Leaf node, run circular check to find the tracked node.
+            checked.add(node);
+            if(nodes.size() == 1)
+                circularCheck(nodes.get(0), checked, track);
+            return false;
+        } else if(nodes.size() >= 3) {
+            // Connecting into a tie
+//            if(isLeaf(node)) {
+//                checked.add(node);
+//                // We must trace further
+////                for(var node2 : nodes) {
+////                    if(checked.contains(node2))
+////                        continue;
+////                    var subtrace = new HashSet<IElectricNode>();
+////                    subtrace.add(node);
+////                    if(circularCheck(node2, subtrace, null)) {
+////                        checked.addAll(subtrace);
+////                    }
+////                }
+//            } else {
+            if (track != null)
+                track.setValue(node);
+//            }
+            return true;
+        } else { // nodes.size() == 2
+            // Check both sides
+            var failed = false;
+            checked.add(node);
+            for(var nextNode : nodes) {
+                if(checked.contains(nextNode))
+                    continue;
+                if(!circularCheck(nextNode, checked, track))
+                    failed = true;
+            }
+            return !failed;
+        }
+    }
+
+    private void checkConnectivity(IElectricNode node, Set<IElectricNode> outerChecked) {
+        if(node == null)
+            return;
+        if(outerChecked == null)
+            outerChecked = new HashSet<>();
+        if(!outerChecked.add(node))
+            return;
+        var checked = new HashSet<IElectricNode>();
+        if(isLeaf(node)) {
+            // Trace the graph to check that the node is part of a circle
+            var track = new MutableObject<IElectricNode>(null);
+            if(circularCheck(node, checked, track)) {
+                checked.add(node);
+                for(var node2 : checked)
+                    removeLeaf(node2);
+                // Propagate update
+                for(var connected : graph.getConnectedNodes(node)) {
+                    checkConnectivity(connected, outerChecked);
+                }
+            } else {
+                // Update tracked node
+                for(var node2 : checked)
+                    makeLeaf(node2, track.getValue());
+            }
+        } else {
+            var track = new MutableObject<IElectricNode>(null);
+            if(!circularCheck(node, checked, track)) {
+                checked.add(node);
+                for(var node2 : checked)
+                    makeLeaf(node2, track.getValue());
+                // Propagate update
+                for(var connected : graph.getConnectedNodes(node)) {
+                    checkConnectivity(connected, outerChecked);
+                }
+            }
+        }
+    }
+
+    public void graphCheck() {
+        var checked = new HashSet<IElectricNode>();
+        for(var node : nodes) {
+            if(!(node instanceof FloatingNode)) {
+                // Only floating nodes are checked for continuity
+                continue;
+            }
+        }
+    }
+
     @Override
     public void addWire(AbstractElectricWire wire) {
         graph.connect(wire.node1, wire.node2, wire);
         super.addWire(wire);
+        checkConnectivity(wire.node1, null);
+        checkConnectivity(wire.node2, null);
     }
 
     @Override
     public void removeWire(AbstractElectricWire wire) {
         graph.disconnect(wire.node1, wire.node2, wire);
         super.removeWire(wire);
+        checkConnectivity(wire.node1, null);
+        checkConnectivity(wire.node2, null);
     }
 
     public NetworkGraph getGraph() {

@@ -15,6 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
+import org.patryk3211.powergrid.electricity.sim.node.INode;
+
+import java.util.List;
+
 public interface IStaticResidual {
+    List<INode> affectedNodes();
     void addResidual(IResidualAdder residual);
 }

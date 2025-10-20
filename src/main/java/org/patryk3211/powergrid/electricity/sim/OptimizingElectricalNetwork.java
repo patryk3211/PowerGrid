@@ -121,6 +121,10 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
             if(node instanceof IElectricNode)
                 addNode(node);
         });
+        other.leafNodes.forEach((node, tracked) -> {
+            node.setNetwork(this);
+            leafNodes.put(node, tracked);
+        });
         other.nodes.forEach(node -> {
             if(node instanceof ICouplingNode)
                 addNode(node);

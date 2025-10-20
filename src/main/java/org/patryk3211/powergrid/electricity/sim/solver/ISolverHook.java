@@ -15,6 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+
+import java.util.List;
+
 public interface ISolverHook {
     /**
      * Called before iterative solving loop is started.
@@ -34,4 +38,6 @@ public interface ISolverHook {
      * Here, is where you should save component state for the next iteration.
      */
     default void postUpperSolve() { }
+
+    List<IElectricNode> coupledNodes();
 }
