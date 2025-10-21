@@ -66,4 +66,11 @@ public class InductorWire extends AbstractElectricWire implements IStaticResidua
             return List.of(node1);
         return List.of(node1, node2);
     }
+
+    public void setInductance(float inductance) {
+        var oldConductance = conductance();
+        this.inductance = inductance;
+        if(network != null)
+            network.updateConductance(this, conductance() - oldConductance);
+    }
 }

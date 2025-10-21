@@ -31,17 +31,16 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.special.InductorWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
-import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
-import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.*;
+import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.AXIS;
+import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.PART;
 
 public class WindingBlockEntity extends ElectricBlockEntity {
     /**
@@ -60,15 +59,16 @@ public class WindingBlockEntity extends ElectricBlockEntity {
      * These are all the block entities of a single winding.
      */
     private Set<WindingBlockEntity> collectedBEs;
-    private RotorBehaviour rotorP;
-    private RotorBehaviour rotorN;
+//    private RotorBehaviour rotorP;
+//    private RotorBehaviour rotorN;
 
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
-    private VoltageSourceCoupling sourceCoupling;
+//    private VoltageSourceCoupling sourceCoupling;
+    private InductorWire coilWire;
 
     private boolean rebuildParallels = false;
-    private boolean regrabRotors = false;
+//    private boolean regrabRotors = false;
 
     public WindingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -82,66 +82,71 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return getBlockState().getValue(PART) == 0;
     }
 
-    public float emfVoltage() {
-        float voltage = 0;
-        if(rotorP != null) {
-            voltage -= rotorP.getAngularVelocityRadians() * rotorP.getFieldStrength() * coilConstant();
-        }
-        if(rotorN != null) {
-            voltage -= rotorN.getAngularVelocityRadians() * rotorN.getFieldStrength() * coilConstant();
-        }
-        return voltage;
+    public float fieldStrength() {
+        return windingCurrent() * coilConstant();
     }
 
-    public float windingVoltage() {
-        if(mainBE == null || mainBE.collectedBEs == null)
-            return 0;
-        float total = 0;
-        for(var be : mainBE.collectedBEs)
-            total += be.emfVoltage();
-        return total;
-    }
+//    public float emfVoltage() {
+//        float voltage = 0;
+//        if(rotorP != null) {
+//            voltage -= rotorP.getAngularVelocityRadians() * rotorP.getFieldStrength() * coilConstant();
+//        }
+//        if(rotorN != null) {
+//            voltage -= rotorN.getAngularVelocityRadians() * rotorN.getFieldStrength() * coilConstant();
+//        }
+//        return voltage;
+//    }
 
-    public float outputVoltage() {
-        float min = windingVoltage();
-        if(parallelPositions != null) {
-            var iter = parallelPositions.iterator();
-            while (iter.hasNext()) {
-                var pos = iter.next();
-                var be = level.getBlockEntity(pos, ModdedBlockEntities.WINDING.get());
-                if (be.isEmpty()) {
-                    iter.remove();
-                    continue;
-                }
-                var V = be.get().windingVoltage();
-                if((V > 0 && min < 0) || (V < 0 && min > 0)) {
-                    // Opposite signs not allowed for parallel coils
-                    return 0;
-                }
-                if(Math.abs(V) < Math.abs(min))
-                    min = V;
-            }
-        }
-        return min;
-    }
+//    public float windingVoltage() {
+//        if(mainBE == null || mainBE.collectedBEs == null)
+//            return 0;
+//        float total = 0;
+//        for(var be : mainBE.collectedBEs)
+//            total += be.emfVoltage();
+//        return total;
+//    }
 
-    public void grabRotors() {
-        var state = getBlockState();
-        var along = state.getValue(ALONG_FIRST_AXIS);
-        Direction.Axis magneticAxis = switch(state.getValue(AXIS)) {
-            case X -> along ? Direction.Axis.Y : Direction.Axis.Z;
-            case Y -> along ? Direction.Axis.Z : Direction.Axis.X;
-            case Z -> along ? Direction.Axis.Y : Direction.Axis.X;
-        };
+//    public float outputVoltage() {
+//        assert level != null;
+//        float min = windingVoltage();
+//        if(parallelPositions != null) {
+//            var iter = parallelPositions.iterator();
+//            while (iter.hasNext()) {
+//                var pos = iter.next();
+//                var be = level.getBlockEntity(pos, ModdedBlockEntities.WINDING.get());
+//                if (be.isEmpty()) {
+//                    iter.remove();
+//                    continue;
+//                }
+//                var V = be.get().windingVoltage();
+//                if((V > 0 && min < 0) || (V < 0 && min > 0)) {
+//                    // Opposite signs not allowed for parallel coils
+//                    return 0;
+//                }
+//                if(Math.abs(V) < Math.abs(min))
+//                    min = V;
+//            }
+//        }
+//        return min;
+//    }
 
-        rotorP = BlockEntityBehaviour.get(level, worldPosition.relative(magneticAxis, 1), RotorBehaviour.TYPE);
-        if(rotorP != null && (!rotorP.hasField() || rotorP.getAxis() == magneticAxis))
-            rotorP = null;
-        rotorN = BlockEntityBehaviour.get(level, worldPosition.relative(magneticAxis, -1), RotorBehaviour.TYPE);
-        if(rotorN != null && (!rotorN.hasField() || rotorN.getAxis() == magneticAxis))
-            rotorN = null;
-        sendData();
-    }
+//    public void grabRotors() {
+//        var state = getBlockState();
+//        var along = state.getValue(ALONG_FIRST_AXIS);
+//        Direction.Axis magneticAxis = switch(state.getValue(AXIS)) {
+//            case X -> along ? Direction.Axis.Y : Direction.Axis.Z;
+//            case Y -> along ? Direction.Axis.Z : Direction.Axis.X;
+//            case Z -> along ? Direction.Axis.Y : Direction.Axis.X;
+//        };
+//
+//        rotorP = BlockEntityBehaviour.get(level, worldPosition.relative(magneticAxis, 1), RotorBehaviour.TYPE);
+//        if(rotorP != null && (!rotorP.hasField() || rotorP.getAxis() == magneticAxis))
+//            rotorP = null;
+//        rotorN = BlockEntityBehaviour.get(level, worldPosition.relative(magneticAxis, -1), RotorBehaviour.TYPE);
+//        if(rotorN != null && (!rotorN.hasField() || rotorN.getAxis() == magneticAxis))
+//            rotorN = null;
+//        sendData();
+//    }
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
@@ -163,6 +168,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var thermal = ThermalBehaviour.fromConfig(this);
         if(thermal != null) {
             thermal.overheatCallback(() -> {
+                assert level != null;
                 var block = (WindingBlock) getBlockState().getBlock();
                 block.walk(level, worldPosition, (pos1, state) -> {
                     level.destroyBlock(pos1, false);
@@ -173,6 +179,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     private void checkParallelPosition(BlockPos thisPos, Direction side, boolean thisIsOwner) {
+        assert level != null;
         var checkPos = thisPos.relative(side);
         var checkState = level.getBlockState(checkPos);
         var thisState = level.getBlockState(thisPos);
@@ -262,7 +269,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             old.pause();
             attachBehaviourLate(electricBehaviour);
             // Drop nodes
-            sourceCoupling = null;
+            coilWire = null;
         }
         wires.forEach(TransmissionLinePart::refreshEndpointNodes);
         if(old != null)
@@ -270,6 +277,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     private void collectWindingParts() {
+        assert level != null;
         var block = (WindingBlock) getBlockState().getBlock();
         var parallelCheckAxis = block.getParallelCheckAxis(getBlockState());
         if(isMain()) {
@@ -308,7 +316,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         be.electricBehaviour = null;
                         be.removeBehaviour(ElectricBehaviour.TYPE);
                         // Drop nodes
-                        be.sourceCoupling = null;
+                        be.coilWire = null;
                     }
                 }
                 if(!level.isClientSide) {
@@ -334,6 +342,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     public void makeMain() {
+        assert level != null;
         if(mainBE == null || mainBE == this)
             return;
         collectedBEs = mainBE.collectedBEs;
@@ -346,6 +355,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
 
     private void addParallel(WindingBlockEntity otherMain) {
+        assert level != null;
         assert isMain() : "Only main block entities can keep track of parallel windings";
         assert otherMain.isMain() : "Parallel block entities must be the main entities of their windings";
         assert !level.isClientSide : "Parallel block entity collection can only occur on server";
@@ -393,6 +403,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void initialize() {
+        assert level != null;
         if(collectedBEs == null)
             collectWindingParts();
         if(parallelPositions != null) {
@@ -403,7 +414,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(isMain() && ownerPosition == null)
             calculateElectricalParameters();
         super.initialize();
-        grabRotors();
+//        grabRotors();
     }
 
     public int getCoilCount() {
@@ -422,6 +433,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     private void calculateElectricalParameters() {
+        assert level != null;
         // This makes sure that ownership (which could change if collection method is called) is correct.
         totalCoilCount = getCoilCount();
         if(ownerPosition != null && !ownerPosition.equals(worldPosition)) {
@@ -430,7 +442,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     .ifPresent(WindingBlockEntity::calculateElectricalParameters);
             return;
         }
-        var conductance = 1 / (totalCoilCount * resistance());
+        resistance = totalCoilCount * resistance();
         if(parallelPositions != null) {
             var iter = parallelPositions.iterator();
             while (iter.hasNext()) {
@@ -439,18 +451,17 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 if (be.isPresent()) {
                     var winding = be.get();
                     totalCoilCount += winding.getCoilCount();
-                    conductance += 1 / (winding.getCoilCount() * resistance());
+                    resistance += winding.getCoilCount() * winding.resistance();
                 } else {
                     iter.remove();
                 }
             }
         }
-        resistance = 1 / conductance;
-        if(sourceCoupling == null) {
+        if(coilWire == null) {
             // We only need the nodes on the owner block entity
             addElectricBehaviour();
         } else {
-            sourceCoupling.setResistance(resistance);
+            coilWire.setInductance(resistance);
         }
         if(!level.isClientSide)
             sendData();
@@ -459,82 +470,86 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        if(clientPacket) {
-            rotorP = null;
-            rotorN = null;
-            ownerPosition = null;
-            parallelPositions = null;
-            if(tag.contains("RotorP")) {
-                var posArray = tag.getIntArray("RotorP");
-                var pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
-                rotorP = BlockEntityBehaviour.get(level, pos, RotorBehaviour.TYPE);
-            }
-            if(tag.contains("RotorN")) {
-                var posArray = tag.getIntArray("RotorN");
-                var pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
-                rotorN = BlockEntityBehaviour.get(level, pos, RotorBehaviour.TYPE);
-            }
-            if(isMain()) {
-                if (tag.contains("Owner")) {
-                    var owner = tag.getIntArray("Owner");
-                    ownerPosition = new BlockPos(owner[0], owner[1], owner[2]);
-                    removeElectricBehaviour();
-                } else if(mainBE != null) {
-                    calculateElectricalParameters();
-                }
-                if (tag.contains("Parallel")) {
-                    var data = tag.getIntArray("Parallel");
-                    parallelPositions = new HashSet<>();
-                    for (int i = 0; i < data.length; i += 3) {
-                        var pos = new BlockPos(data[i], data[i + 1], data[i + 2]);
-                        parallelPositions.add(pos);
-                    }
-                    if(mainBE != null) {
-                        // If main block entity is set then the initialization has happened
-                        calculateElectricalParameters();
-                    }
-                }
-            }
-        }
+//        if(clientPacket) {
+//            rotorP = null;
+//            rotorN = null;
+//            ownerPosition = null;
+//            parallelPositions = null;
+//            if(tag.contains("RotorP")) {
+//                var posArray = tag.getIntArray("RotorP");
+//                var pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
+//                rotorP = BlockEntityBehaviour.get(level, pos, RotorBehaviour.TYPE);
+//            }
+//            if(tag.contains("RotorN")) {
+//                var posArray = tag.getIntArray("RotorN");
+//                var pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
+//                rotorN = BlockEntityBehaviour.get(level, pos, RotorBehaviour.TYPE);
+//            }
+//            if(isMain()) {
+//                if (tag.contains("Owner")) {
+//                    var owner = tag.getIntArray("Owner");
+//                    ownerPosition = new BlockPos(owner[0], owner[1], owner[2]);
+//                    removeElectricBehaviour();
+//                } else if(mainBE != null) {
+//                    calculateElectricalParameters();
+//                }
+//                if (tag.contains("Parallel")) {
+//                    var data = tag.getIntArray("Parallel");
+//                    parallelPositions = new HashSet<>();
+//                    for (int i = 0; i < data.length; i += 3) {
+//                        var pos = new BlockPos(data[i], data[i + 1], data[i + 2]);
+//                        parallelPositions.add(pos);
+//                    }
+//                    if(mainBE != null) {
+//                        // If main block entity is set then the initialization has happened
+//                        calculateElectricalParameters();
+//                    }
+//                }
+//            }
+//        }
     }
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        if(clientPacket) {
-            if(rotorP != null) {
-                var pos = rotorP.getPos();
-                tag.putIntArray("RotorP", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-            }
-            if(rotorN != null) {
-                var pos = rotorN.getPos();
-                tag.putIntArray("RotorN", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-            }
-            if(isMain()) {
-                if (ownerPosition != null) {
-                    tag.putIntArray("Owner", new int[]{ownerPosition.getX(), ownerPosition.getY(), ownerPosition.getZ()});
-                }
-                if (parallelPositions != null) {
-                    var data = parallelPositions.stream()
-                            .flatMap(pos -> Stream.of(pos.getX(), pos.getY(), pos.getZ()))
-                            .toList();
-                    tag.putIntArray("Parallel", data);
-                }
-            }
-        }
+//        if(clientPacket) {
+//            if(rotorP != null) {
+//                var pos = rotorP.getPos();
+//                tag.putIntArray("RotorP", new int[] { pos.getX(), pos.getY(), pos.getZ() });
+//            }
+//            if(rotorN != null) {
+//                var pos = rotorN.getPos();
+//                tag.putIntArray("RotorN", new int[] { pos.getX(), pos.getY(), pos.getZ() });
+//            }
+//            if(isMain()) {
+//                if (ownerPosition != null) {
+//                    tag.putIntArray("Owner", new int[]{ownerPosition.getX(), ownerPosition.getY(), ownerPosition.getZ()});
+//                }
+//                if (parallelPositions != null) {
+//                    var data = parallelPositions.stream()
+//                            .flatMap(pos -> Stream.of(pos.getX(), pos.getY(), pos.getZ()))
+//                            .toList();
+//                    tag.putIntArray("Parallel", data);
+//                }
+//            }
+//        }
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         if(ownerPosition == null) {
             builder.setTerminalCount(2);
-            sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class,
-                    builder.terminalNode(0), builder.terminalNode(1),
-                    Math.max(resistance, resistance()));
+//            coilWire = builder.connect(Math.max(resistance, resistance()), builder.terminalNode(0), builder.terminalNode(1));
+            coilWire = new InductorWire(Math.max(resistance, resistance()), builder.terminalNode(0), builder.terminalNode(1));
+            builder.add(coilWire);
+//            sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class,
+//                    builder.terminalNode(0), builder.terminalNode(1),
+//                    Math.max(resistance, resistance()));
         }
     }
 
     private void rebuildParallels() {
+        assert level != null;
         if(level.isClientSide)
             return;
         if(ownerPosition != null)
@@ -576,6 +591,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     private void dissolveParallels() {
+        assert level != null;
         if(parallelPositions != null) {
             for(var parallelPos : parallelPositions) {
                 var be = level.getBlockEntity(parallelPos, ModdedBlockEntities.WINDING.get());
@@ -593,6 +609,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     private void moveParallelOwnership(WindingBlockEntity newOwner, boolean withoutThis) {
+        assert level != null;
         if(newOwner == this)
             return;
         assert this.ownerPosition == null && (worldPosition.equals(newOwner.ownerPosition) || newOwner.ownerPosition == null);
@@ -612,10 +629,11 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     public void onNeighborChanged(BlockPos neighborPos) {
         rebuildParallels = true;
-        regrabRotors = true;
+//        regrabRotors = true;
     }
 
     private void safeRebuildParallels() {
+        assert level != null;
         if(mainBE == null)
             return;
         if(mainBE.parallelPositions != null) {
@@ -631,7 +649,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         }
     }
 
-    private WindingBlockEntity getSourceHolder() {
+    private WindingBlockEntity getSimElementHolder() {
+        assert level != null;
         if(mainBE == null)
             return null;
         if(mainBE.ownerPosition != null) {
@@ -643,23 +662,24 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             var opt = level.getBlockEntity(mainBE.ownerPosition, ModdedBlockEntities.WINDING.get());
             if(opt.isPresent()) {
                 var be = opt.get();
-                return be.getSourceHolder();
+                return be.getSimElementHolder();
             }
         }
-        if(mainBE.sourceCoupling == null || mainBE.totalCoilCount == 0)
+        if(mainBE.coilWire == null || mainBE.totalCoilCount == 0)
             return null;
         return mainBE;
     }
 
     public float windingCurrent() {
-        var be = getSourceHolder();
-        if(be == null || !be.sourceCoupling.isConverged())
+        var be = getSimElementHolder();
+        if(be == null || !be.coilWire.isConverged())
             return 0;
-        return -be.sourceCoupling.getCurrent() / be.totalCoilCount;
+        return be.coilWire.current();
     }
 
     @Override
     public void remove() {
+        assert level != null;
         // Always break connections when the winding is modified.
         if(mainBE != null) {
             for(var part : mainBE.wires()) {
@@ -704,52 +724,52 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             safeRebuildParallels();
             rebuildParallels = false;
         }
-        if(regrabRotors) {
-            grabRotors();
-            regrabRotors = false;
-        }
+//        if(regrabRotors) {
+//            grabRotors();
+//            regrabRotors = false;
+//        }
         float current = windingCurrent();
         if(thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
         super.tick();
 
-        if(rotorP != null) {
-            float torque = coilConstant() * rotorP.getFieldStrength() * current;
+//        if(rotorP != null) {
+//            float torque = coilConstant() * rotorP.getFieldStrength() * current;
+//
+//            float Pe = current * emfVoltage();
+//            if (Pe > 0) {
+//                // Generator is sourcing power
+////                torque *= 1.0f;
+//                torque = rotorP.limitForce(torque);
+//            } else {
+//                // Generator is sinking power
+//                // Reduce torque to account for losses
+//                torque *= 0.5f;
+//            }
+//            rotorP.applyTickForce(torque);
+//        }
+//        if(rotorN != null) {
+//            float torque = coilConstant() * rotorN.getFieldStrength() * current;
+//
+//            float Pe = current * emfVoltage();
+//            if (Pe > 0) {
+//                // Generator is sourcing power
+////                torque *= 1.0f;
+//                torque = rotorN.limitForce(torque);
+//            } else {
+//                // Generator is sinking power
+//                // Reduce torque to account for losses
+//                torque *= 0.5f;
+//            }
+//            rotorN.applyTickForce(torque);
+//        }
 
-            float Pe = current * emfVoltage();
-            if (Pe > 0) {
-                // Generator is sourcing power
-//                torque *= 1.0f;
-                torque = rotorP.limitForce(torque);
-            } else {
-                // Generator is sinking power
-                // Reduce torque to account for losses
-                torque *= 0.5f;
-            }
-            rotorP.applyTickForce(torque);
-        }
-        if(rotorN != null) {
-            float torque = coilConstant() * rotorN.getFieldStrength() * current;
-
-            float Pe = current * emfVoltage();
-            if (Pe > 0) {
-                // Generator is sourcing power
-//                torque *= 1.0f;
-                torque = rotorN.limitForce(torque);
-            } else {
-                // Generator is sinking power
-                // Reduce torque to account for losses
-                torque *= 0.5f;
-            }
-            rotorN.applyTickForce(torque);
-        }
-
-        if(sourceCoupling != null) {
-            if(!isMain()) {
-                PowerGrid.LOGGER.warn("Non-main winding has a source node.");
-                return;
-            }
-            sourceCoupling.setVoltage(outputVoltage());
-        }
+//        if(sourceCoupling != null) {
+//            if(!isMain()) {
+//                PowerGrid.LOGGER.warn("Non-main winding has a source node.");
+//                return;
+//            }
+//            sourceCoupling.setVoltage(outputVoltage());
+//        }
     }
 }

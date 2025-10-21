@@ -36,10 +36,10 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
         this.resistance = resistance;
     }
 
-    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, Float resistance) {
+    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, Number resistance) {
         this.positive = positive;
         this.negative = negative;
-        this.resistance = resistance;
+        this.resistance = resistance.floatValue();
     }
 
     public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, float resistance, float voltage) {
