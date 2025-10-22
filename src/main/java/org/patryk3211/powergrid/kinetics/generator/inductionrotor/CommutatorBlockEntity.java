@@ -135,6 +135,8 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         }
         var I = -source.getCurrent();
         if(source != null) {
+            if(!source.isConverged())
+                I = 0;
             float voltage = 0;
             for (var rotor : rotors) {
                 voltage += rotor.step(I);

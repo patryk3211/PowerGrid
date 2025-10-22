@@ -556,7 +556,7 @@ public class ModdedBlocks {
             .blockstate(windingModel())
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(5))
+            .transform(CResistance.setResistance(7.5))
             .transform(CThermal.maxPower(15, 1.5f))
             .addLayer(() -> RenderType::cutoutMipped)
             .loot((tables, block) -> tables.dropOther(block, ModdedItems.COPPER_COIL))

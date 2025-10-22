@@ -31,7 +31,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.special.LRSeriesWire;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.Collection;
@@ -63,8 +63,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
-    private LRSeriesWire coilWire;
-    private float windingCurrent;
+    private ElectricWire coilWire;
+//    private float windingCurrent;
+
+    private float field;
 
     private boolean rebuildParallels = false;
 
@@ -81,8 +83,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     public float fieldStrength() {
-        var I = windingCurrent();
-        return (float) Math.tanh(I) * coilConstant();
+        var be = getSimElementHolder();
+        if(be == null)
+            return 0;
+        return be.field;
     }
 
     @Override
@@ -379,7 +383,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             return;
         }
         resistance = totalCoilCount * resistance();
-        windingCurrent = totalCoilCount * windingCurrent();
+//        windingCurrent = totalCoilCount * windingCurrent();
         if(parallelPositions != null) {
             var iter = parallelPositions.iterator();
             while (iter.hasNext()) {
@@ -389,7 +393,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     var winding = be.get();
                     totalCoilCount += winding.getCoilCount();
                     resistance += winding.getCoilCount() * winding.resistance();
-                    windingCurrent += winding.windingCurrent() * winding.getCoilCount();
+//                    windingCurrent += winding.windingCurrent() * winding.getCoilCount();
                 } else {
                     iter.remove();
                 }
@@ -399,8 +403,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             // We only need the nodes on the owner block entity
             addElectricBehaviour();
         } else {
-            coilWire.setLR(resistance * 0.1f, resistance);
-            coilWire.setCurrent(windingCurrent / totalCoilCount);
+            coilWire.setResistance(resistance);
+//            coilWire.setCurrent(windingCurrent / totalCoilCount);
         }
         if(!level.isClientSide)
             sendData();
@@ -409,9 +413,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        windingCurrent = tag.getFloat("Current");
-        if(coilWire != null)
-            coilWire.setCurrent(windingCurrent);
+        field = tag.getFloat("Field");
         if(clientPacket) {
             ownerPosition = null;
             parallelPositions = null;
@@ -442,7 +444,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        tag.putFloat("Current", windingCurrent());
+        tag.putFloat("Field", field);
         if(clientPacket) {
             if(isMain()) {
                 if (ownerPosition != null) {
@@ -463,8 +465,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(ownerPosition == null) {
             builder.setTerminalCount(2);
             var R = Math.max(resistance, resistance());
-            coilWire = new LRSeriesWire(R * 0.1f, R, builder.terminalNode(0), builder.terminalNode(1));
-            coilWire.setCurrent(windingCurrent);
+            coilWire = new ElectricWire(R, builder.terminalNode(0), builder.terminalNode(1));
             builder.add(coilWire);
         }
     }
@@ -647,6 +648,12 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         float current = windingCurrent();
         if(thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
+        if(coilWire != null && coilWire.isConverged()) {
+            var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
+            var B = I_sat * (float) Math.tanh(2 * current / I_sat) * coilConstant();
+            field = B * 0.25f + field * 0.75f;
+        }
+
         setChanged();
         super.tick();
     }
