@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 
 import java.util.List;
@@ -116,6 +117,14 @@ public abstract class AbstractElectricWire {
     }
 
     public List<IElectricNode> coupledNodes() {
+        if(node1 == null)
+            return List.of(node2);
+        if(node2 == null)
+            return List.of(node1);
+        return List.of(node1, node2);
+    }
+
+    public List<INode> affectedNodes() {
         if(node1 == null)
             return List.of(node2);
         if(node2 == null)
