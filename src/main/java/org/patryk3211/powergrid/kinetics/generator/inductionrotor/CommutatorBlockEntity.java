@@ -56,25 +56,13 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
         source = builder.addInternalNode(VoltageSourceCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance);
-//        wire = builder.connectSwitch(Math.max(resistance, 1f), builder.terminalNode(0), builder.terminalNode(1), inductionRotorCount > 0);
     }
 
     private void assemblyChanged() {
+        electricBehaviour.remove();
         removeBehaviour(ElectricBehaviour.TYPE);
-//        rotorBehaviour.forEachSegment(segment -> {
-//            if(segment.blockEntity instanceof InductionRotorBlockEntity rotor) {
-//                resistance += ResistanceValues.get(rotor.getBlockState().getBlock());
-//                ++inductionRotorCount;
-//            }
-//        });
         source = null;
         updateBehaviour = true;
-//        if(inductionRotorCount > 0) {
-//            wire.setResistance(resistance);
-//            wire.setState(true);
-//        } else {
-//            wire.setState(false);
-//        }
     }
 
     @Override
@@ -82,9 +70,6 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         super.addBehaviours(behaviours);
         rotorBehaviour.noField();
         rotorBehaviour.setChangeCallback(this::assemblyChanged);
-
-//        electricBehaviour = new ElectricBehaviour(this);
-//        behaviours.add(electricBehaviour);
 
 //        thermalBehaviour = specifyThermalBehaviour();
 //        if(thermalBehaviour != null)
@@ -110,6 +95,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
 
     @Override
     public void tick() {
+        assert level != null;
         super.tick();
         if(updateBehaviour) {
             rotors.clear();

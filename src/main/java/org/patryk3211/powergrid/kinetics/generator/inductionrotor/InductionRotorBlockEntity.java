@@ -74,7 +74,7 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         } else {
             // Generator is sinking power
             // Reduce torque to account for losses
-            torque *= 0.5f;
+            torque *= 0.9f;
         }
         rotorBehaviour.applyTickForce(torque);
 

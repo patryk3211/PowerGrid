@@ -39,7 +39,7 @@ public class PowerGridPonderTags {
         helper.registerTag(GENERATOR_ASSEMBLY)
                 .title("Generator Parts")
                 .description("Components which can be used to build a generator")
-                .item(ModdedBlocks.GENERATOR_ROTOR, true, false)
+                .item(ModdedBlocks.GENERATOR_INDUCTION_ROTOR, true, false)
                 .addToIndex()
                 .register();
 
@@ -66,7 +66,7 @@ public class PowerGridPonderTags {
 
         PonderTagRegistrationHelper<RegistryEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
         HELPER.addToTag(GENERATOR_ASSEMBLY)
-                .add(ModdedBlocks.GENERATOR_ROTOR)
+//                .add(ModdedBlocks.GENERATOR_ROTOR)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)
                 .add(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
                 .add(ModdedBlocks.GENERATOR_COMMUTATOR)

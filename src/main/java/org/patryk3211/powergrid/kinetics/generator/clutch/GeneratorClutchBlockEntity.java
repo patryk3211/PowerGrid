@@ -63,10 +63,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
     public float sourceForce(float velocity) {
         if(getTheoreticalSpeed() == 0 || isOverStressed())
             return 0;
-
-        float couplingStrength = (15 - currentRedstonePower) / 15f;
-        float maxForce = (float) (torqueForStress() * lastStressApplied / 30 * Math.PI);
-        return maxForce * couplingStrength;
+        return (float) (torqueForStress() * lastStressApplied / 30 * Math.PI);
     }
 
     @Override
@@ -82,7 +79,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
     public void updateStrength(int receivedRedstonePower) {
         if(currentRedstonePower != receivedRedstonePower) {
             currentRedstonePower = receivedRedstonePower;
-            notifyUpdate();
+            recalculateStress = true;
         }
     }
 
@@ -96,6 +93,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
                 network.add(this);
             }
             recalculateStress = false;
+            notifyUpdate();
         }
     }
 
@@ -114,10 +112,11 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
     @Override
     public float calculateStressApplied() {
         var totalImpact = new MutableFloat(0.0f);
-        rotorBehaviour.forEachSegment(segment -> {
-            totalImpact.add(BlockStressValues.getImpact(segment.blockEntity.getBlockState().getBlock()));
-        });
-        this.lastStressApplied = totalImpact.getValue();
+        rotorBehaviour.forEachSegment(segment ->
+            totalImpact.add(BlockStressValues.getImpact(segment.blockEntity.getBlockState().getBlock()))
+        );
+        float couplingStrength = (15 - currentRedstonePower) / 15f;
+        this.lastStressApplied = totalImpact.getValue() * couplingStrength;
         return lastStressApplied;
     }
 

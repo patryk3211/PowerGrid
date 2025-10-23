@@ -90,7 +90,6 @@ import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHous
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
-import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
@@ -210,18 +209,18 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
-            .blockstate(rotorModel("block/generator/rotor"))
-            .initialProperties(SharedProperties::stone)
-            .properties(BlockBehaviour.Properties::noOcclusion)
-            .transform(pickaxeOnly())
-            .transform(CStress.setImpact(32))
-            .defaultLoot()
-            .item()
-                .model(itemWithParent("block/generator/rotor"))
-                .build()
-            .lang("Generator Rotor")
-            .register();
+//    public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
+//            .blockstate(rotorModel("block/generator/rotor"))
+//            .initialProperties(SharedProperties::stone)
+//            .properties(BlockBehaviour.Properties::noOcclusion)
+//            .transform(pickaxeOnly())
+//            .transform(CStress.setImpact(32))
+//            .defaultLoot()
+//            .item()
+//                .model(itemWithParent("block/generator/rotor"))
+//                .build()
+//            .lang("Generator Rotor")
+//            .register();
 
     public static final BlockEntry<InductionRotorBlock> GENERATOR_INDUCTION_ROTOR = REGISTRATE.block("generator_induction_rotor", InductionRotorBlock::new)
             .blockstate(rotorModel("block/generator/induction_rotor"))

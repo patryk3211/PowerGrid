@@ -9,7 +9,6 @@
     "powergrid:basin_heater",
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
-    "powergrid:generator_rotor",
     "powergrid:generator_induction_rotor",
     "powergrid:generator_commutator",
     "powergrid:generator_vertical_commutator",

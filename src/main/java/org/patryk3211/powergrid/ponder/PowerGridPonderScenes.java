@@ -36,9 +36,9 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic, PowerGridPonderTags.ELECTRIC_DEVICES)
                 .addStoryBoard("heating_coil/speed", DeviceScenes::heatingCoilSpeed, PowerGridPonderTags.ELECTRIC_DEVICES);
 
-        HELPER.forComponents(ModdedBlocks.GENERATOR_ROTOR)
-                .addStoryBoard("generator/rotor", GeneratorScenes::rotor, PowerGridPonderTags.GENERATOR_ASSEMBLY)
-                .addStoryBoard("generator/generator", GeneratorScenes::generator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
+//        HELPER.forComponents(ModdedBlocks.GENERATOR_ROTOR)
+//                .addStoryBoard("generator/rotor", GeneratorScenes::rotor, PowerGridPonderTags.GENERATOR_ASSEMBLY)
+//                .addStoryBoard("generator/generator", GeneratorScenes::generator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
         HELPER.forComponents(ModdedBlocks.WINDING, ModdedItems.COPPER_COIL)
                 .addStoryBoard("generator/winding", GeneratorScenes::winding, PowerGridPonderTags.GENERATOR_ASSEMBLY)

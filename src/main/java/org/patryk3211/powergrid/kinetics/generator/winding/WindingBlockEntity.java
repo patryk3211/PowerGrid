@@ -64,7 +64,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
     private ElectricWire coilWire;
-//    private float windingCurrent;
 
     private float field;
 
@@ -86,6 +85,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var be = getSimElementHolder();
         if(be == null)
             return 0;
+        if(be.field == 0)
+            return 0.001f;
+        if(Math.abs(be.field) < 0.001f)
+            return 0.001f * Math.signum(be.field);
         return be.field;
     }
 
@@ -383,7 +386,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             return;
         }
         resistance = totalCoilCount * resistance();
-//        windingCurrent = totalCoilCount * windingCurrent();
         if(parallelPositions != null) {
             var iter = parallelPositions.iterator();
             while (iter.hasNext()) {
@@ -393,7 +395,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     var winding = be.get();
                     totalCoilCount += winding.getCoilCount();
                     resistance += winding.getCoilCount() * winding.resistance();
-//                    windingCurrent += winding.windingCurrent() * winding.getCoilCount();
                 } else {
                     iter.remove();
                 }
@@ -404,7 +405,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             addElectricBehaviour();
         } else {
             coilWire.setResistance(resistance);
-//            coilWire.setCurrent(windingCurrent / totalCoilCount);
         }
         if(!level.isClientSide)
             sendData();
@@ -652,6 +652,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
             var B = I_sat * (float) Math.tanh(2 * current / I_sat) * coilConstant();
             field = B * 0.25f + field * 0.75f;
+            if(Math.abs(field) < 0.001f && Math.abs(B) < 0.001f)
+                field = 0;
         }
 
         setChanged();
