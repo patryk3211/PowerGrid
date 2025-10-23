@@ -61,8 +61,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxPower = 256 * torque() * Math.PI / 30;
-        var baseFactor = ThermalBehaviour.dissipationFactor((float) maxPower, 150);
+        var maxPower = 256 * torque() / 60;
+        var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
@@ -96,6 +96,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     @Override
     public void lazyTick() {
+        assert level != null;
         super.lazyTick();
         var newSpeed = (int) (avgSpeed / AVERAGING_TICKS);
         avgSpeed = 0;
@@ -116,11 +117,12 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     @Override
     public void tick() {
+        assert level != null;
         applyPower(coil);
 
         if(!level.isClientSide || isVirtual()) {
-            var speedFromPower = (coil.power() / torque()) * 30 / Math.PI;
-            avgSpeed += (float) speedFromPower * Math.signum(coil.current());
+            var speedFromPower = (coil.power() / torque()) * 60;
+            avgSpeed += speedFromPower * Math.signum(coil.current());
         }
         super.tick();
     }
