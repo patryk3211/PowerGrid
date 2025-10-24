@@ -61,9 +61,9 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     private void assemblyChanged() {
         if(electricBehaviour != null) {
             electricBehaviour.remove();
+            removeBehaviour(ElectricBehaviour.TYPE);
             electricBehaviour = null;
         }
-        removeBehaviour(ElectricBehaviour.TYPE);
         source = null;
         updateBehaviour = true;
     }
@@ -93,6 +93,10 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
 
     public float getCurrent() {
         return -source.getCurrent();
+    }
+
+    public float getPower() {
+        return -source.getCurrent() * source.getVoltage();
     }
 
     @Override

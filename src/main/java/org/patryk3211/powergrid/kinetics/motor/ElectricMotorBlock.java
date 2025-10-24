@@ -127,7 +127,7 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
         var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
-        var maxPower = 256 * torque * Math.PI / 30;
+        var maxPower = 256 * torque / 60;
         Voltage.max((int) Math.sqrt(maxPower * resistance()), player, tooltip);
     }
 

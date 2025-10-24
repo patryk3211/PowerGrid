@@ -56,6 +56,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     private boolean hasSoundSource = false;
     private IForceSource forceSupplier = null;
 
+    public float power;
+
     public RotorBehaviour(SmartBlockEntity be, float inertia) {
         super(be, ModdedConfigs.server().kinetics.generatorControls.rotorAssemblyMaxSize.get(),
                 segment -> !segment.blockEntity.getBlockState()
@@ -282,6 +284,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                     force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
                     angularVelocity += force / 20f / inertia;
                     segment.forceSupplier.receiveUsedForce(Math.abs(force / maxForce));
+
+                    power = force * getAngularVelocityRadians();
                 }
             });
 
