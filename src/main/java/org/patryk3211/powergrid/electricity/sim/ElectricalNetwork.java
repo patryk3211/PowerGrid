@@ -90,8 +90,6 @@ public class ElectricalNetwork {
 
     public static Logger LOGGER = null;
 
-    private final Random random = new Random();
-
     public ElectricalNetwork(boolean addGMin) {
         solver =
                 new DirectSolver();
@@ -423,8 +421,6 @@ public class ElectricalNetwork {
                 } else if (node instanceof FloatingNode) {
                     if(node.getIndex() < eliminatedStart) {
                         JacobianKept.add(node.getIndex(), node.getIndex(), G_MIN);
-                    } else if(withEliminated) {
-                        JacobianEliminated.add(node.getIndex() - eliminatedStart, node.getIndex() - eliminatedStart, G_MIN);
                     }
                 }
             }
@@ -521,21 +517,22 @@ public class ElectricalNetwork {
         return Double.isFinite(value) ? value : 0;
     }
 
-    private void validateJacobian() {
-        var n = nodes.size();
+    private void validateJacobian(DynamicallyTypedMatrix jacobian, DMatrixRMaj residual) {
+        var n = jacobian.getNumRows();
         var v = new DMatrixRMaj(n, 1);
         RandomMatrices_DDRM.fillUniform(v, new Random());
 
         var epsilon = Math.sqrt(Math.ulp(1)) * (1 + NormOps_DDRM.normP1(StateVector));
         var left = new DMatrixRMaj(n, 1);
-        JacobianKept.mult(v, left);
+        jacobian.mult(v, left);
 
-        computeResidual(JacobianKept, StateVector);
-        var residualBase = new DMatrixRMaj(ResidualVector);
-        CommonOps_DDRM.add(StateVector, epsilon, v, StateVector);
-        computeResidual(JacobianKept, StateVector);
+        computeResidual(jacobian, StateVector);
+        var residualBase = new DMatrixRMaj(residual);
+        var state2 = new DMatrixRMaj(n, 1);
+        CommonOps_DDRM.add(StateVector, epsilon, v, state2);
+        computeResidual(jacobian, state2);
         var right = new DMatrixRMaj(n, 1);
-        CommonOps_DDRM.subtract(ResidualVector, residualBase, right);
+        CommonOps_DDRM.subtract(residual, residualBase, right);
 
         CommonOps_DDRM.scale(1 / epsilon, right);
 
@@ -920,7 +917,7 @@ public class ElectricalNetwork {
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if(valid) {
-                double alpha = hasHooks() && i < 5 ? 0.5 : 1.0;
+                double alpha = i < 2 || (hasHooks() && i < 5) ? 0.5 : 1.2;
                 var applied = false;
                 ScaledJ.mult(deltaX, AuxiliaryVector);
                 CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
@@ -932,7 +929,11 @@ public class ElectricalNetwork {
                         CommonOps_DDRM.add(StateVector, -alpha * 0.995, deltaX, StateVector);
                         break;
                     }
-                    alpha *= 0.5;
+                    if(alpha > 1) {
+                        alpha = 1;
+                    } else {
+                        alpha *= 0.5;
+                    }
                     CommonOps_DDRM.add(ResidualVector, alpha, AuxiliaryVector, ResidualVector);
                 }
                 if(!applied) {
