@@ -421,6 +421,8 @@ public class ElectricalNetwork {
                 } else if (node instanceof FloatingNode) {
                     if(node.getIndex() < eliminatedStart) {
                         JacobianKept.add(node.getIndex(), node.getIndex(), G_MIN);
+                    } else if(withEliminated) {
+                        JacobianEliminated.add(node.getIndex() - eliminatedStart, node.getIndex() - eliminatedStart, G_MIN);
                     }
                 }
             }
@@ -870,6 +872,9 @@ public class ElectricalNetwork {
             for(var hook : hooks) {
                 hook.preSolve();
             }
+            for(var hook : disabledHooks) {
+                hook.preSolve();
+            }
             if(StateVector != null)
                 StateVector.zero();
             for(var hook : hooks) {
@@ -896,6 +901,9 @@ public class ElectricalNetwork {
             if(hasHooks() && i < maxAttempts - 20 && i % 2 == 0) {
                 countUpdates = false;
                 for(var hook : hooks) {
+                    hook.preSolve();
+                }
+                for(var hook : disabledHooks) {
                     hook.preSolve();
                 }
                 countUpdates = true;
