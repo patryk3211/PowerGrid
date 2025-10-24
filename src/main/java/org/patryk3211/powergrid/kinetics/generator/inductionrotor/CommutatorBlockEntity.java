@@ -59,7 +59,10 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     }
 
     private void assemblyChanged() {
-        electricBehaviour.remove();
+        if(electricBehaviour != null) {
+            electricBehaviour.remove();
+            electricBehaviour = null;
+        }
         removeBehaviour(ElectricBehaviour.TYPE);
         source = null;
         updateBehaviour = true;
@@ -68,7 +71,6 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        rotorBehaviour.noField();
         rotorBehaviour.setChangeCallback(this::assemblyChanged);
 
 //        thermalBehaviour = specifyThermalBehaviour();
@@ -113,10 +115,11 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 }
             });
             if(proxyTarget.getValue() != null) {
-                attachBehaviourLate(new ProxyElectricBehaviour(this, proxyTarget::getValue));
+                electricBehaviour = new ProxyElectricBehaviour(this, proxyTarget::getValue);
             } else {
-                attachBehaviourLate(new ElectricBehaviour(this));
+                electricBehaviour = new ElectricBehaviour(this);
             }
+            attachBehaviourLate(electricBehaviour);
             updateBehaviour = false;
         }
         var I = -source.getCurrent();

@@ -46,7 +46,6 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
         super.addBehaviours(behaviours);
         rotorBehaviour = new RotorBehaviour(this, ModdedConfigs.server().kinetics.generatorControls.generatorClutchInertia.getF());
         rotorBehaviour.forceSource(this);
-        rotorBehaviour.noField();
         rotorBehaviour.setChangeCallback(this::assemblyChanged);
         behaviours.add(rotorBehaviour);
     }

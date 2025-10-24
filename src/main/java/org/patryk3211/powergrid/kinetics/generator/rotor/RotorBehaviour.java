@@ -39,7 +39,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     // Energy values get loaded from NBT.
     protected float totalForce = 0;
     protected float angularVelocity = 0;
-    private float fieldStrength = 0.3f;
     private final float individualInertia;
 
     // Segment count and inertia get calculated from added segments every time.
@@ -54,7 +53,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
     private float angle = 0;
     private int overspeedTicks = 0;
 
-    private boolean emitsField = true;
     private boolean hasSoundSource = false;
     private IForceSource forceSupplier = null;
 
@@ -64,14 +62,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                         .is(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag));
         this.individualInertia = inertia;
         setLazyTickRate(100);
-    }
-
-    public void noField() {
-        emitsField = false;
-    }
-
-    public boolean hasField() {
-        return emitsField;
     }
 
     public void forceSource(IForceSource availableForce) {
@@ -149,16 +139,12 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
             if(Float.isNaN(angularVelocity))
                 angularVelocity = 0;
         }
-        if(compound.contains("FieldStrength")) {
-            fieldStrength = compound.getFloat("FieldStrength");
-        }
     }
 
     @Override
     public void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putFloat("AngularVelocity", angularVelocity);
-        compound.putFloat("FieldStrength", fieldStrength);
     }
 
     @Override
@@ -226,12 +212,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         return controller.angle;
     }
 
-    public float getFieldStrength() {
-        if(!emitsField)
-            return 0;
-        return fieldStrength;
-    }
-
     public static int getMaxRotationSpeed() {
         return ModdedConfigs.server().kinetics.generatorControls.rotorRPMMax.get();
     }
@@ -243,11 +223,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
 	public static float getRotorKd() {
 		return ModdedConfigs.server().kinetics.generatorControls.rotorKd.getF();
 	}
-
-    public void setFieldStrength(float value) {
-        fieldStrength = value;
-        blockEntity.setChanged();
-    }
 
 	/* Sets the old AngVel amd sends the change to the block entity */
 	public void setOldAngVel(float value) {
@@ -291,10 +266,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                     /* Get the Kp and Kd factors for the equation coming up */
                     float Kp = getRotorKp();
                     float Kd = getRotorKd();
-                    /* Get the current field strength, so we can scale things
-                    properly */
-                    float fieldStrength = getFieldStrength();
-                    /* Delta T is the diff between Target and AngVel 
+                    /* Delta T is the diff between Target and AngVel
                     (Analogous to Proportional control in PID) */
                     float deltaT = (target - angularVelocity);
                     if(target < 0)
@@ -304,10 +276,9 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
                     (Analogous to Derivative/Differential in PID) */
                     float deltaAV = oldAV - angularVelocity;
                     /* Maybe we can scale Kp by the field strength? */
-                    float Kds = fieldStrength * Kd;
                     float maxForce = segment.forceSupplier.sourceForce(angularVelocity);
                     /* Calculate with PD instead of simply P */
-                    float force = ((Kp * deltaT) + (Kds * deltaAV)) * 20f * inertia;
+                    float force = ((Kp * deltaT) + (Kd * deltaAV)) * 20f * inertia;
                     force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
                     angularVelocity += force / 20f / inertia;
                     segment.forceSupplier.receiveUsedForce(Math.abs(force / maxForce));
