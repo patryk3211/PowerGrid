@@ -28,6 +28,8 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import java.util.List;
 
 public class InductionRotorBlockEntity extends RotorBlockEntity {
+    public float field;
+
     public InductionRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
@@ -46,9 +48,10 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         return ModdedConfigs.server().electricity.windingCoilConstant.getF();
     }
 
-    public float step(float current) {
+    public float calculateField() {
+        assert level != null;
+        field = 0;
         var state = getBlockState();
-        float total = 0;
         for(var dir : Direction.values()) {
             if(dir.getAxis() == state.getValue(InductionRotorBlock.AXIS))
                 continue;
@@ -60,13 +63,34 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
                 var be = level.getBlockEntity(worldPosition.relative(dir));
                 if(be instanceof WindingBlockEntity wbe) {
                     // Average field around 4 sides of the rotor.
-                    total += wbe.fieldStrength() * 0.25f;
+                    field += wbe.fieldStrength() * 0.25f;
+                }
+            }
+        }
+        return field;
+    }
+
+    public float step(float current) {
+        assert level != null;
+        var state = getBlockState();
+        for(var dir : Direction.values()) {
+            if(dir.getAxis() == state.getValue(InductionRotorBlock.AXIS))
+                continue;
+            var otherState = level.getBlockState(worldPosition.relative(dir));
+            if(otherState.getBlock() instanceof WindingBlock winding) {
+                var magnetic = winding.getMagneticAxis(otherState);
+                if(magnetic != dir.getAxis())
+                    continue;
+                var be = level.getBlockEntity(worldPosition.relative(dir));
+                if(be instanceof WindingBlockEntity wbe) {
+                    // Average field around 4 sides of the rotor.
+                    field += wbe.fieldStrength() * 0.25f;
                 }
             }
         }
 
-        var voltage = total * rotorBehaviour.getAngularVelocityRadians();
-        float torque = -total * current;
+        var voltage = field * rotorBehaviour.getAngularVelocityRadians();
+        float torque = -field * current;
         float Pe = current * voltage;
         if (Pe > 0) {
             // Generator is sourcing power

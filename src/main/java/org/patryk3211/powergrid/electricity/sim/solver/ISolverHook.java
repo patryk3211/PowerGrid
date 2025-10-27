@@ -17,14 +17,19 @@ package org.patryk3211.powergrid.electricity.sim.solver;
 
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface ISolverHook {
     /**
-     * Called before iterative solving loop is started.
-     * In this hook you can change system state matrices.
+     * Called before the Newton solve loop is started.
      */
     default void preSolve() { }
+
+    /**
+     * Called at the start of each iteration of Newton solve.
+     * In this hook you can change system state matrices.
+     */
+    default void startIteration() { }
 
     /**
      * Called after the initial residual has been calculated (r = b - A * x)
@@ -39,5 +44,5 @@ public interface ISolverHook {
      */
     default void postUpperSolve() { }
 
-    List<IElectricNode> coupledNodes();
+    Collection<IElectricNode> coupledNodes();
 }

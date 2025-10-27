@@ -42,7 +42,7 @@ public class ElectricalNetwork {
     private int eliminatedStart;
 
     private final Set<ISolverHook> hooks = new HashSet<>();
-    private final Set<ISolverHook> disabledHooks = new HashSet<>();
+    private final Set<ISolverHook> leafHooks = new HashSet<>();
     private final Set<IStaticResidual> residuals = new HashSet<>();
     protected final Map<IElectricNode, IElectricNode> leafNodes = new HashMap<>();
 
@@ -242,7 +242,7 @@ public class ElectricalNetwork {
             if(isFull) {
                 hooks.add(hook);
             } else {
-                disabledHooks.add(hook);
+                leafHooks.add(hook);
             }
         }
         if(wire instanceof IStaticResidual residual)
@@ -284,7 +284,7 @@ public class ElectricalNetwork {
         updateConductance(wire, -wire.conductance());
         if(wire instanceof ISolverHook hook) {
             hooks.remove(hook);
-            disabledHooks.remove(hook);
+            leafHooks.remove(hook);
         }
         if(wire instanceof IStaticResidual residual)
             residuals.remove(residual);
@@ -388,7 +388,7 @@ public class ElectricalNetwork {
         staleWires.forEach(wire -> {
             if(wire instanceof ISolverHook hook) {
                 hooks.remove(hook);
-                disabledHooks.remove(hook);
+                leafHooks.remove(hook);
             }
             if(wire instanceof IStaticResidual residual)
                 residuals.remove(residual);
@@ -625,7 +625,7 @@ public class ElectricalNetwork {
                 for(var coupled : hook.coupledNodes()) {
                     if(node == coupled) {
                         // Disable hook because this node is not simulated anymore
-                        disabledHooks.add(hook);
+                        leafHooks.add(hook);
                         iter.remove();
                     }
                 }
@@ -641,7 +641,7 @@ public class ElectricalNetwork {
                 leafNodes.remove(node);
                 addNode((INode) node);
 
-                var iter = disabledHooks.iterator();
+                var iter = leafHooks.iterator();
                 while(iter.hasNext()) {
                     var hook = iter.next();
                     var isFull = true;
@@ -797,7 +797,7 @@ public class ElectricalNetwork {
                 }
             }
             if(!skip)
-                residual.addResidual(this::rhsAdd);
+                residual.addStaticResidual(this::rhsAdd);
         }
         if(EliminatedRHSVector != null && !eliminatedRHSZero) {
             JacobianEliminated.solve(EliminatedRHSVector, EliminatedSolved);
@@ -871,20 +871,24 @@ public class ElectricalNetwork {
             converged = true;
             for(var hook : hooks) {
                 hook.preSolve();
+                hook.startIteration();
             }
-            for(var hook : disabledHooks) {
+            for(var hook : leafHooks) {
                 hook.preSolve();
+                hook.startIteration();
             }
             if(StateVector != null)
                 StateVector.zero();
-            for(var hook : hooks) {
+            for(var hook : hooks)
                 hook.postUpperSolve();
-            }
-            for(var hook : disabledHooks) {
+            for(var hook : leafHooks)
                 hook.postUpperSolve();
-            }
             return;
         }
+        for(var hook : hooks)
+            hook.preSolve();
+        for(var hook : leafHooks)
+            hook.preSolve();
 
         prepareMatrices();
         if(eliminatedChanged) {
@@ -900,12 +904,10 @@ public class ElectricalNetwork {
         for(i = 0; i < maxAttempts; ++i) {
             if(hasHooks() && i < maxAttempts - 20 && i % 2 == 0) {
                 countUpdates = false;
-                for(var hook : hooks) {
-                    hook.preSolve();
-                }
-                for(var hook : disabledHooks) {
-                    hook.preSolve();
-                }
+                for(var hook : hooks)
+                    hook.startIteration();
+                for(var hook : leafHooks)
+                    hook.startIteration();
                 countUpdates = true;
             }
             var workMatrix = getWorkMatrix();
@@ -964,11 +966,9 @@ public class ElectricalNetwork {
             converged = true;
         }
         PERF.end();
-        for(var hook : hooks) {
+        for(var hook : hooks)
             hook.postUpperSolve();
-        }
-        for(var hook : disabledHooks) {
+        for(var hook : leafHooks)
             hook.postUpperSolve();
-        }
     }
 }

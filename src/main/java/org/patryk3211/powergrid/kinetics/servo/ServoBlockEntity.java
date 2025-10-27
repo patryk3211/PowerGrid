@@ -66,8 +66,8 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxPower = MAX_SPEED * torque() * Math.PI / 30;
-        var baseFactor = ThermalBehaviour.dissipationFactor((float) maxPower, 150);
+        var maxPower = MAX_SPEED * torque() / 60;
+        var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
@@ -102,8 +102,8 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     public void tick() {
         applyPower(coil);
         if(!level.isClientSide || isVirtual()) {
-            var speedFromPower = (coil.power() / torque()) * 30 / Math.PI;
-            avgSpeed += (float) speedFromPower;
+            var speedFromPower = (coil.power() / torque()) * 60;
+            avgSpeed += speedFromPower;
             avgTarget += control.potentialDifference();
         }
         super.tick();

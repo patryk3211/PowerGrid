@@ -46,7 +46,7 @@ public class CapacitorWire extends AbstractElectricWire implements IStaticResidu
     }
 
     @Override
-    public void addResidual(IResidualAdder residual) {
+    public void addStaticResidual(IResidualAdder residual) {
         var G = conductance();
         var V = potentialDifference();
         var prevCurrent = G * V + Ieq;

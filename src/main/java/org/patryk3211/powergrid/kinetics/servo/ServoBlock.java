@@ -126,7 +126,7 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance("on"), player, tooltip);
         var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
-        var maxPower = ServoBlockEntity.MAX_SPEED * torque * Math.PI / 30;
+        var maxPower = ServoBlockEntity.MAX_SPEED * torque / 60;
         Voltage.max((int) Math.sqrt(maxPower * resistance("on")), player, tooltip);
     }
 }

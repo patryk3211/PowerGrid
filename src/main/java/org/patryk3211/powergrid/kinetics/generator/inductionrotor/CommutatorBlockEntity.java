@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.special.GeneratorCoupling;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
 import java.util.HashSet;
@@ -38,7 +38,7 @@ import java.util.Set;
 public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
     protected ThermalBehaviour thermalBehaviour;
-    protected VoltageSourceCoupling source;
+    protected GeneratorCoupling source;
     private float resistance = 0;
     private boolean updateBehaviour = true;
     private final Set<InductionRotorBlockEntity> rotors = new HashSet<>();
@@ -55,7 +55,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        source = builder.addInternalNode(VoltageSourceCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance);
+        source = builder.addInternalNode(GeneratorCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance, rotorBehaviour);
     }
 
     private void assemblyChanged() {
@@ -126,15 +126,12 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
             attachBehaviourLate(electricBehaviour);
             updateBehaviour = false;
         }
-        var I = -source.getCurrent();
+        float totalField = 0;
         if(source != null) {
-            if(!source.isConverged())
-                I = 0;
-            float voltage = 0;
             for (var rotor : rotors) {
-                voltage += rotor.step(I);
+                totalField += rotor.calculateField();
             }
-            source.setVoltage(voltage);
+            source.tick(totalField);
         }
         if(level.isClientSide) {
             var angular = rotorBehaviour.getAngularVelocityRadians();

@@ -648,7 +648,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         float current = windingCurrent();
         if(thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
-        if(coilWire != null && coilWire.isConverged()) {
+        if(coilWire != null && (coilWire.isConverged() || coilWire.getNetwork() == null)) {
             var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
             var B = I_sat * (float) Math.tanh(2 * current / I_sat) * coilConstant();
             field = B * 0.25f + field * 0.75f;

@@ -26,13 +26,14 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedTags;
+import org.patryk3211.powergrid.electricity.sim.special.IRotor;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
+public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implements IRotor {
     public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("generator_rotor");
     private static final int OVERSPEED_TICKS = 5;
 
@@ -187,23 +188,13 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> {
         return Math.signum(forceIn) * Math.min(Math.abs(forceIn), Math.abs(maxForce));
     }
 
-    /**
-     * Get the rotor angular velocity.
-     * @return Angular velocity in rotations per minute.
-     */
+    @Override
     public float getAngularVelocity() {
         var controller = getControllerOrThis();
         return controller.angularVelocity;
     }
 
-    /**
-     * Get the rotor angular velocity
-     * @return Angular velocity in radians per second.
-     */
-    public float getAngularVelocityRadians() {
-        return 2f * getAngularVelocity() * (float) Math.PI / 60f;
-    }
-
+    @Override
     public float getInertia() {
         var controller = getControllerOrThis();
         return controller.inertia;

@@ -23,6 +23,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 public class DebugItem extends Item {
@@ -49,6 +50,10 @@ public class DebugItem extends Item {
         if(rotor != null) {
             var power = rotor.getControllerOrThis().power;
             user.sendSystemMessage(Component.literal("Mechanical Power: " + power + " W"));
+        }
+        if(be instanceof InductionRotorBlockEntity rotorBE) {
+            var field = rotorBE.field;
+            user.sendSystemMessage(Component.literal("Field Strength: " + field));
         }
         return InteractionResult.SUCCESS;
     }

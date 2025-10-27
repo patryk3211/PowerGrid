@@ -53,7 +53,7 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
     }
 
     @Override
-    public void addResidual(IResidualAdder residual) {
+    public void addStaticResidual(IResidualAdder residual) {
         var R_Inductor = (2 * inductance) / 0.05;
         var V_Inductor = potentialDifference() * R_Inductor / (R_Inductor + resistance) - I * resistance;
         var G_I = 1 / R_Inductor;

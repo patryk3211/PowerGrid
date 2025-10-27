@@ -46,7 +46,7 @@ public class InductorWire extends AbstractElectricWire implements IStaticResidua
     }
 
     @Override
-    public void addResidual(IResidualAdder residual) {
+    public void addStaticResidual(IResidualAdder residual) {
         I = (potentialDifference() * conductance() + current()) * 0.99999 + currentInject;
         currentInject = 0;
         if(node1 != null)
