@@ -139,21 +139,22 @@ public class SolverTests extends TestHelper {
         var Net = new Network(true);
 
         var rotor1 = new Rotor(256f);
-        var rotor2 = new Rotor(256f);
+        var rotor2 = new Rotor(250f);
 
         var N1 = Net.N();
         var N2 = Net.N();
         var N3 = Net.N();
         var N4 = Net.N();
-        var V1 = new GeneratorCoupling(N1, N2, 0, rotor1);
-        var V2 = new GeneratorCoupling(N3, N4, 0, rotor2);
-        V1.setField(1);
-        V2.setField(1);
+        var V1 = new GeneratorCoupling(N1, N2, 1, rotor1);
+        var V2 = new GeneratorCoupling(N3, N4, 1, rotor2);
+        V1.setField(100);
+        V2.setField(100);
         Net.network.addNodes(V1, V2);
 
-        Net.W(.1f, N1, N2);
+//        Net.W(10f, N1, N2);
         Net.W(.1f, N1, N3);
         Net.W(.1f, N2, N4);
+//        Net.W(10f, N1, N2);
 
         for(int i = 0; i < 20; ++i) {
             rotor1.tick();
@@ -163,17 +164,19 @@ public class SolverTests extends TestHelper {
             var E2 = rotor2.energy();
             Net.calculate();
 
-            V1.tick(1);
-            V2.tick(1);
+            V1.tick(100);
+            V2.tick(100);
             var deltaE1 = rotor1.energy() - E1;
             var deltaE2 = rotor2.energy() - E2;
 
-            var Ee1 = V1.getVoltage() * -V1.getCurrent();
-            var Ee2 = V2.getVoltage() * -V2.getCurrent();
+            var Pe1 = V1.getVoltage() * -V1.getCurrent();
+            var Pe2 = V2.getVoltage() * -V2.getCurrent();
 
             System.out.printf("i = %d:\n", i);
-            System.out.printf("  I_gen1 = %g\n  ΔE_gen1 = %g\n  P_gen1 = %g\n", V1.getCurrent(), deltaE1, Ee1);
-            System.out.printf("  I_gen2 = %g\n  ΔE_gen2 = %g\n  P_gen2 = %g\n", V2.getCurrent(), deltaE2, Ee2);
+            System.out.printf("  ω1 = %g\n  I_gen1 = %g\n  ΔE_gen1 = %g\n  P_gen1 = %g, E = %g\n",
+                    rotor1.getAngularVelocity(), V1.getCurrent(), deltaE1, Pe1, Pe1 * 0.05f);
+            System.out.printf("  ω2 = %g\n  I_gen2 = %g\n  ΔE_gen2 = %g\n  P_gen2 = %g, E = %g\n",
+                    rotor2.getAngularVelocity(), V2.getCurrent(), deltaE2, Pe2, Pe2 * 0.05f);
         }
     }
 }

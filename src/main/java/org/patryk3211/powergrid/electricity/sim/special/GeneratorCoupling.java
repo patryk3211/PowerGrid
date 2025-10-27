@@ -5,6 +5,8 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 
 public class GeneratorCoupling extends VoltageSourceCoupling {
+    private static final float DT = 0.05f;
+
     private final IRotor rotor;
     private float field;
     private float baseResistance;
@@ -17,19 +19,20 @@ public class GeneratorCoupling extends VoltageSourceCoupling {
 
     public void setField(float field) {
         this.field = field;
-        var backEmf = field / rotor.getInertia() * 0.05f;
-        super.setResistance(baseResistance + backEmf);
+        var backEmf = field * field * DT / rotor.getInertia();
+        super.setResistance(baseResistance + backEmf * 0.5f);
     }
 
     @Override
     public void setResistance(float resistance) {
         this.baseResistance = resistance;
-        var backEmf = field / rotor.getInertia() * 0.05f;
+        var backEmf = field * field * DT / rotor.getInertia();
         super.setResistance(resistance + backEmf);
     }
 
     public void tick(float newField) {
-        rotor.applyTickForce(field * getCurrent());
+        if(isConverged())
+            rotor.applyTickForce(field * getCurrent());
 
         setField(newField);
         setVoltage(field * rotor.getAngularVelocityRadians());
