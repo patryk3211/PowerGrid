@@ -20,7 +20,7 @@ public class GeneratorCoupling extends VoltageSourceCoupling {
     public void setField(float field) {
         this.field = field;
         var backEmf = field * field * DT / rotor.getInertia();
-        super.setResistance(baseResistance + backEmf * 0.5f);
+        super.setResistance(baseResistance + backEmf * 0.25f);
     }
 
     @Override
