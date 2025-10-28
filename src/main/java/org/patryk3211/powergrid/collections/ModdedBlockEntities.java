@@ -37,6 +37,7 @@ import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
+import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
@@ -106,6 +107,12 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CurrentGaugeBlockEntity> CURRENT_METER =
             REGISTRATE.blockEntity("current_meter", CurrentGaugeBlockEntity::new)
                     .validBlocks(ModdedBlocks.CURRENT_METER)
+                    .renderer(() -> GaugeRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<PowerGaugeBlockEntity> POWER_METER =
+            REGISTRATE.blockEntity("power_meter", PowerGaugeBlockEntity::new)
+                    .validBlocks(ModdedBlocks.POWER_METER)
                     .renderer(() -> GaugeRenderer::new)
                     .register();
 

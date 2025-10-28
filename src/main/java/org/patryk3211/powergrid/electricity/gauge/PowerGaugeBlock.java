@@ -18,26 +18,36 @@ package org.patryk3211.powergrid.electricity.gauge;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
+import org.patryk3211.powergrid.electricity.info.Current;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 
-public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends HorizontalElectricBlock implements IBE<BE>, IGaugeBlock, IAcceptCord {
+import java.util.List;
+
+public class PowerGaugeBlock extends HorizontalElectricBlock implements IBE<PowerGaugeBlockEntity>, IGaugeBlock, IHaveElectricProperties {
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 14, 13, 6, 16, 15, 10)
-                    .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 0, 13, 6, 2, 15, 10)
+            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 14, 13, 6, 16, 15, 10),
+            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 0, 13, 6, 2, 15, 10),
+            new TerminalBoundingBox(IDecoratedTerminal.COMMON, 6, 13, 13, 10, 15, 15)
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
     private static final VoxelShape SHAPE = box(1, 0, 2, 15, 14, 14);
 
-    public GaugeBlock(Properties settings) {
+    public PowerGaugeBlock(Properties settings) {
         super(settings);
         setTerminalCollection(horizontalNorthTerminals(this, TERMINALS_NORTH, SHAPE));
     }
@@ -62,7 +72,23 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends Horizontal
     }
 
     @Override
-    public boolean renderPlug() {
-        return true;
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var player = ctx.getPlayer() == null || !ctx.getPlayer().isShiftKeyDown() ? ctx.getHorizontalDirection().getOpposite() : ctx.getHorizontalDirection();
+        return defaultBlockState().setValue(HORIZONTAL_FACING, player);
+    }
+
+    @Override
+    public Class<PowerGaugeBlockEntity> getBlockEntityClass() {
+        return PowerGaugeBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends PowerGaugeBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.POWER_METER.get();
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Current.max(stack, player, tooltip);
     }
 }

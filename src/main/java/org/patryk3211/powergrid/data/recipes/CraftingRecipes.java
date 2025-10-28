@@ -134,15 +134,13 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('C', Items.COMPASS)
             ),
 
-    CURRENT_GAUGE = create(ModdedBlocks.CURRENT_METER)
-            .unlockedBy(AllBlocks.ANDESITE_CASING::get)
-            .viaShapeless(b -> b.requires(ModdedBlocks.VOLTAGE_METER)
-            ),
+    GAUGE_CYCLE = conversionCycle(List.of(ModdedBlocks.VOLTAGE_METER, ModdedBlocks.CURRENT_METER)),
 
-    VOLTAGE_GAUGE_BACK = create(ModdedBlocks.VOLTAGE_METER)
-            .unlockedBy(AllBlocks.ANDESITE_CASING::get)
-            .withSuffix("_convert")
-            .viaShapeless(b -> b.requires(ModdedBlocks.CURRENT_METER)
+    POWER_GAUGE = create(ModdedBlocks.POWER_METER)
+            .unlockedBy(ModdedBlocks.CONDUCTIVE_CASING::get)
+            .viaShapeless(b -> b
+                    .requires(ModdedBlocks.VOLTAGE_METER)
+                    .requires(ModdedBlocks.CURRENT_METER)
             ),
 
     LIGHT_FIXTURE = create(ModdedBlocks.LIGHT_FIXTURE)

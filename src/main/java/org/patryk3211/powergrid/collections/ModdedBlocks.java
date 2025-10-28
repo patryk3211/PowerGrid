@@ -67,6 +67,7 @@ import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
+import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
@@ -187,10 +188,9 @@ public class ModdedBlocks {
 
     public static final BlockEntry<VoltageGaugeBlock> VOLTAGE_METER = REGISTRATE.block("voltage_gauge", VoltageGaugeBlock::new)
             .blockstate(horizontalBlock("block/gauge/conductive/base"))
-            .initialProperties(SharedProperties::wooden)
-            .transform(axeOrPickaxe())
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
-            .defaultLoot()
             .item()
                 .model(gauge("block/gauge/item_voltage", "block/conductive_gauge"))
                 .build()
@@ -198,14 +198,25 @@ public class ModdedBlocks {
 
     public static final BlockEntry<CurrentGaugeBlock> CURRENT_METER = REGISTRATE.block("current_gauge", CurrentGaugeBlock::new)
             .blockstate(horizontalBlock("block/gauge/conductive/base"))
-            .initialProperties(SharedProperties::wooden)
+            .initialProperties(SharedProperties::softMetal)
             .transform(CResistance.setResistance(0.05f))
             .transform(CThermal.maxPower(35, 2.0f))
-            .transform(axeOrPickaxe())
+            .transform(pickaxeOnly())
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
-            .defaultLoot()
             .item()
                 .model(gauge("block/gauge/item_current", "block/conductive_gauge"))
+                .build()
+            .register();
+
+    public static final BlockEntry<PowerGaugeBlock> POWER_METER = REGISTRATE.block("power_gauge", PowerGaugeBlock::new)
+            .blockstate(horizontalBlock("block/gauge/conductive/base_power"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(CResistance.setResistance(0.05f))
+            .transform(CThermal.maxPower(35, 2.0f))
+            .transform(pickaxeOnly())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
+            .item()
+                .model(gauge("block/gauge/item_power", "block/conductive_gauge"))
                 .build()
             .register();
 

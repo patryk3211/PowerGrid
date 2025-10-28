@@ -1,6 +1,7 @@
 {
   "powergrid.gui.voltage_meter.title": "Measured voltage",
   "powergrid.gui.current_meter.title": "Measured current",
+  "powergrid.gui.power_meter.title": "Measured power",
   "powergrid.gui.thermometer.title": "Measured temperature",
   "powergrid.gui.thermometer.max_title": "Max measured temperature",
   "powergrid.gui.thermometer.click": "Click to reset max measurement",
@@ -89,6 +90,8 @@
   "powergrid.generic.tap": "Tap",
   "powergrid.generic.socket": "Socket",
   "powergrid.generic.cord": "Cord Connector",
+  "powergrid.generic.input": "Input",
+  "powergrid.generic.output": "Output",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
@@ -102,6 +105,7 @@
   "powergrid.devices.spark_gap.voltage": "Breakdown Voltage",
   "powergrid.devices.gauge.voltage": "Maximum voltage",
   "powergrid.devices.gauge.current": "Maximum current",
+  "powergrid.devices.gauge.power": "Maximum power",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",

@@ -6,7 +6,7 @@
         "items": [
           {
             "items": [
-              "create:andesite_casing"
+              "powergrid:current_gauge"
             ]
           }
         ]
@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "powergrid:crafting//voltage_gauge_convert"
+        "recipe": "powergrid:crafting//voltage_gauge_from_conversion"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "powergrid:crafting//voltage_gauge_convert"
+      "powergrid:crafting//voltage_gauge_from_conversion"
     ]
   },
   "sends_telemetry_event": false
