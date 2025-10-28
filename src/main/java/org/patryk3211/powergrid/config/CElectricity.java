@@ -53,7 +53,7 @@ public class CElectricity extends ConfigBase {
 
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
-    public final CWire wires = nested(0, CWire::new, Comments.wires);
+    public final CWire wires = nested(1, CWire::new, Comments.wires);
 
     @Override
     public String getName() {
