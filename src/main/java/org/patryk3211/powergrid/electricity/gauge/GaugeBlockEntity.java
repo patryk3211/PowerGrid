@@ -48,9 +48,6 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
 
     public GaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-
-//        assert state.getBlock() instanceof IGaugeBlock;
-//        maxValue = ((IGaugeBlock) state.getBlock()).getMaxValue();
     }
 
     @Override
