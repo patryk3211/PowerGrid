@@ -263,7 +263,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         be.coilWire = null;
                     }
                 }
-                if(!level.isClientSide) {
+                if(!level.isClientSide || isVirtual()) {
                     // Check for parallel windings and housings
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.POSITIVE, parallelCheckAxis), false);
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.NEGATIVE, parallelCheckAxis), false);
@@ -293,7 +293,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         collectedBEs.remove(mainBE);
         collectedBEs.forEach(be -> be.mainBE = this);
         calculateElectricalParameters();
-        if(!level.isClientSide)
+        if(!level.isClientSide || isVirtual())
             safeRebuildParallels();
     }
 
@@ -302,7 +302,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         assert level != null;
         assert isMain() : "Only main block entities can keep track of parallel windings";
         assert otherMain.isMain() : "Parallel block entities must be the main entities of their windings";
-        assert !level.isClientSide : "Parallel block entity collection can only occur on server";
+        assert !level.isClientSide || isVirtual() : "Parallel block entity collection can only occur on server";
         if(otherMain == this)
             return;
         if(ownerPosition != null) {
@@ -472,7 +472,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     private void rebuildParallels() {
         assert level != null;
-        if(level.isClientSide)
+        if(level.isClientSide && !isVirtual())
             return;
         if(ownerPosition != null)
             PowerGrid.LOGGER.info("Non-owner winding is rebuilding parallels");

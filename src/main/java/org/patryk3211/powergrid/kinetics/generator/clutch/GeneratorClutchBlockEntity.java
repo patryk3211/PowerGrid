@@ -86,7 +86,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
     public void tick() {
         super.tick();
         if(recalculateStress) {
-            if (hasNetwork() && !level.isClientSide) {
+            if (hasNetwork() && (!level.isClientSide || isVirtual())) {
                 var network = getOrCreateNetwork();
                 network.remove(this);
                 network.add(this);

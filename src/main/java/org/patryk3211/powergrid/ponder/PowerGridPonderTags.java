@@ -66,7 +66,6 @@ public class PowerGridPonderTags {
 
         PonderTagRegistrationHelper<RegistryEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
         HELPER.addToTag(GENERATOR_ASSEMBLY)
-//                .add(ModdedBlocks.GENERATOR_ROTOR)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)
                 .add(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
                 .add(ModdedBlocks.GENERATOR_COMMUTATOR)

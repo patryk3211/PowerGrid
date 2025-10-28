@@ -59,11 +59,6 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     }
 
     private void assemblyChanged() {
-        if(electricBehaviour != null) {
-            electricBehaviour.remove();
-            removeBehaviour(ElectricBehaviour.TYPE);
-            electricBehaviour = null;
-        }
         source = null;
         updateBehaviour = true;
     }
@@ -118,6 +113,10 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                     }
                 }
             });
+            if(electricBehaviour != null) {
+                electricBehaviour.remove();
+                removeBehaviour(ElectricBehaviour.TYPE);
+            }
             if(proxyTarget.getValue() != null) {
                 electricBehaviour = new ProxyElectricBehaviour(this, proxyTarget::getValue);
             } else {
