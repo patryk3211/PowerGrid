@@ -22,13 +22,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.GeneratorCoupling;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
 import java.util.HashSet;
@@ -86,11 +89,24 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         }
     }
 
+    public VoltageSourceCoupling getAssemblySource() {
+        if(electricBehaviour instanceof ProxyElectricBehaviour proxy) {
+            var opt = proxy.getMainBehaviour();
+            if(opt.isEmpty())
+                return null;
+            if(opt.get().blockEntity instanceof CommutatorBlockEntity commutator)
+                return commutator.source;
+            return null;
+        }
+        return source;
+    }
+
     public float getCurrent() {
-        return -source.getCurrent();
+        return -getAssemblySource().getCurrent();
     }
 
     public float getPower() {
+        var source = getAssemblySource();
         return -source.getCurrent() * source.getVoltage();
     }
 
@@ -113,17 +129,25 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                     }
                 }
             });
+            List<TransmissionLinePart> wires = null;
+            ElectricBehaviour oldBehaviour = electricBehaviour;
             if(electricBehaviour != null) {
-                electricBehaviour.remove();
-                removeBehaviour(ElectricBehaviour.TYPE);
+                wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
+                electricBehaviour.pause();
             }
             if(proxyTarget.getValue() != null) {
                 electricBehaviour = new ProxyElectricBehaviour(this, proxyTarget::getValue);
             } else {
                 electricBehaviour = new ElectricBehaviour(this);
             }
+            if(oldBehaviour != null)
+                electricBehaviour.inheritConnections(oldBehaviour);
             attachBehaviourLate(electricBehaviour);
             updateBehaviour = false;
+            if(wires != null) {
+                // Rewire connected wires.
+                wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+            }
         }
         float totalField = 0;
         if(source != null) {
