@@ -5,6 +5,7 @@
   "minVersion": "0.8.3",
   "client": [
     "BlueprintOverlayRendererAccessor",
+    "BlueprintOverlayMixin",
     "ComplexEntityRaycastMixin",
     "ValueSettingsScreenMixin"
   ],

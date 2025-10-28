@@ -50,6 +50,7 @@ public class PlacementOverlay {
     private static final List<IOverlayTextProvider> overlayProviders = new ArrayList<>();
     private static Component prevText = null;
     private static int overlayTicks = -1;
+    public static boolean thisActivation = false;
 
     public static void init() {
         overlayProviders.add(PlacementOverlay::getTransformerText);
@@ -60,10 +61,11 @@ public class PlacementOverlay {
     }
 
     public static void setItemRequirement(Item item, int count, boolean hasItems) {
-        if(!BlueprintOverlayRendererAccessor.getActive()) {
+        if(!BlueprintOverlayRendererAccessor.getActive() || !thisActivation) {
             BlueprintOverlayRendererAccessor.setActive(true);
             BlueprintOverlayRendererAccessor.setEmpty(false);
             BlueprintOverlayRendererAccessor.setNoOutput(true);
+            thisActivation = true;
 
             var ingredients = BlueprintOverlayRendererAccessor.getIngredients();
             ingredients.clear();
