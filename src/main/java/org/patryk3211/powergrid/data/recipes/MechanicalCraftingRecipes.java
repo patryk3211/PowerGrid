@@ -41,15 +41,15 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine("  E  ")
             ),
 
-    GENERATOR_ROTOR = create(ModdedBlocks.GENERATOR_ROTOR::get)
-            .recipe(b -> b
-                    .key('A', AllItems.ANDESITE_ALLOY)
-                    .key('M', ModdedItems.MAGNET)
-                    .key('S', AllBlocks.SHAFT)
-                    .patternLine("AMA")
-                    .patternLine("MSM")
-                    .patternLine("AMA")
-            ),
+//    GENERATOR_ROTOR = create(ModdedBlocks.GENERATOR_ROTOR::get)
+//            .recipe(b -> b
+//                    .key('A', AllItems.ANDESITE_ALLOY)
+//                    .key('M', ModdedItems.MAGNET)
+//                    .key('S', AllBlocks.SHAFT)
+//                    .patternLine("AMA")
+//                    .patternLine("MSM")
+//                    .patternLine("AMA")
+//            ),
 
     GENERATOR_INDUCTION_ROTOR = create(ModdedBlocks.GENERATOR_INDUCTION_ROTOR::get)
             .recipe(b -> b

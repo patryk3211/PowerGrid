@@ -90,7 +90,6 @@ import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHous
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
-import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
@@ -210,25 +209,25 @@ public class ModdedBlocks {
                 .build()
             .register();
 
-    public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
-            .blockstate(rotorModel("block/generator/rotor"))
-            .initialProperties(SharedProperties::stone)
-            .properties(BlockBehaviour.Properties::noOcclusion)
-            .transform(pickaxeOnly())
-            .transform(CStress.setImpact(32))
-            .defaultLoot()
-            .item()
-                .model(itemWithParent("block/generator/rotor"))
-                .build()
-            .lang("Generator Rotor")
-            .register();
+//    public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
+//            .blockstate(rotorModel("block/generator/rotor"))
+//            .initialProperties(SharedProperties::stone)
+//            .properties(BlockBehaviour.Properties::noOcclusion)
+//            .transform(pickaxeOnly())
+//            .transform(CStress.setImpact(32))
+//            .defaultLoot()
+//            .item()
+//                .model(itemWithParent("block/generator/rotor"))
+//                .build()
+//            .lang("Generator Rotor")
+//            .register();
 
     public static final BlockEntry<InductionRotorBlock> GENERATOR_INDUCTION_ROTOR = REGISTRATE.block("generator_induction_rotor", InductionRotorBlock::new)
             .blockstate(rotorModel("block/generator/induction_rotor"))
             .initialProperties(SharedProperties::softMetal)
             .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(5))
+            .transform(CResistance.setResistance(0.5))
             .transform(CStress.setImpact(32))
             .defaultLoot()
             .item()
@@ -462,7 +461,7 @@ public class ModdedBlocks {
                     }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(CStress.setCapacity(64))
-            .transform(CResistance.setResistance(12.8))
+            .transform(CResistance.setResistance(25.6))
             .transform(pickaxeOnly())
             .onRegister(BlockStressValues.setGeneratorSpeed(256, true))
             .defaultLoot()
@@ -478,7 +477,7 @@ public class ModdedBlocks {
             }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(CStress.setCapacity(32))
-            .transform(CResistance.setResistances("on", 6.4, "idle", 64))
+            .transform(CResistance.setResistances("on", 12.8, "idle", 64))
             .transform(pickaxeOnly())
             .onRegister(BlockStressValues.setGeneratorSpeed(32, true))
             .defaultLoot()
@@ -556,7 +555,7 @@ public class ModdedBlocks {
             .blockstate(windingModel())
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(0.3))
+            .transform(CResistance.setResistance(7.5))
             .transform(CThermal.maxPower(15, 1.5f))
             .addLayer(() -> RenderType::cutoutMipped)
             .loot((tables, block) -> tables.dropOther(block, ModdedItems.COPPER_COIL))

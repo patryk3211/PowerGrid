@@ -134,7 +134,7 @@ public class PowerGridImpl {
     public static void imcEnqueue(InterModEnqueueEvent event) {
         var forbiddenBlockEntities = List.of(
                 ModdedBlockEntities.GENERATOR_CLUTCH,
-                ModdedBlockEntities.GENERATOR_ROTOR,
+//                ModdedBlockEntities.GENERATOR_ROTOR,
                 ModdedBlockEntities.GENERATOR_INDUCTION_ROTOR,
                 ModdedBlockEntities.GENERATOR_COMMUTATOR,
                 ModdedBlockEntities.WINDING,

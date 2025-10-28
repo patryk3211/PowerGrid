@@ -19,24 +19,32 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
+import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
-import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.special.GeneratorCoupling;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
     protected ThermalBehaviour thermalBehaviour;
-    protected SwitchedWire wire;
+    protected GeneratorCoupling source;
     private float resistance = 0;
-    private int inductionRotorCount;
+    private boolean updateBehaviour = true;
+    private final Set<InductionRotorBlockEntity> rotors = new HashSet<>();
 
     public CommutatorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -50,34 +58,18 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        wire = builder.connectSwitch(Math.max(resistance, 1f), builder.terminalNode(0), builder.terminalNode(1), inductionRotorCount > 0);
+        source = builder.addInternalNode(GeneratorCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance, rotorBehaviour);
     }
 
     private void assemblyChanged() {
-        resistance = 0;
-        inductionRotorCount = 0;
-        rotorBehaviour.forEachSegment(segment -> {
-            if(segment.blockEntity instanceof InductionRotorBlockEntity rotor) {
-                resistance += ResistanceValues.get(rotor.getBlockState().getBlock());
-                ++inductionRotorCount;
-            }
-        });
-        if(inductionRotorCount > 0) {
-            wire.setResistance(resistance);
-            wire.setState(true);
-        } else {
-            wire.setState(false);
-        }
+        source = null;
+        updateBehaviour = true;
     }
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        rotorBehaviour.noField();
         rotorBehaviour.setChangeCallback(this::assemblyChanged);
-
-        electricBehaviour = new ElectricBehaviour(this);
-        behaviours.add(electricBehaviour);
 
 //        thermalBehaviour = specifyThermalBehaviour();
 //        if(thermalBehaviour != null)
@@ -97,13 +89,73 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         }
     }
 
+    public VoltageSourceCoupling getAssemblySource() {
+        if(electricBehaviour instanceof ProxyElectricBehaviour proxy) {
+            var opt = proxy.getMainBehaviour();
+            if(opt.isEmpty())
+                return null;
+            if(opt.get().blockEntity instanceof CommutatorBlockEntity commutator)
+                return commutator.source;
+            return null;
+        }
+        return source;
+    }
+
     public float getCurrent() {
-        return wire.current();
+        return -getAssemblySource().getCurrent();
+    }
+
+    public float getPower() {
+        var source = getAssemblySource();
+        return -source.getCurrent() * source.getVoltage();
     }
 
     @Override
     public void tick() {
+        assert level != null;
         super.tick();
+        if(updateBehaviour) {
+            rotors.clear();
+            resistance = 0;
+            var proxyTarget = new MutableObject<BlockPos>(null);
+            rotorBehaviour.forEachSegment(segment -> {
+                if(segment.blockEntity instanceof InductionRotorBlockEntity rotor) {
+                    resistance += ResistanceValues.get(rotor.getBlockState().getBlock());
+                    rotors.add(rotor);
+                } else if(segment.blockEntity instanceof CommutatorBlockEntity commutator) {
+                    if(commutator.source != null) {
+                        // Source already exists on a different block, this will be a proxy.
+                        proxyTarget.setValue(commutator.worldPosition);
+                    }
+                }
+            });
+            List<TransmissionLinePart> wires = null;
+            ElectricBehaviour oldBehaviour = electricBehaviour;
+            if(electricBehaviour != null) {
+                wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
+                electricBehaviour.pause();
+            }
+            if(proxyTarget.getValue() != null) {
+                electricBehaviour = new ProxyElectricBehaviour(this, proxyTarget::getValue);
+            } else {
+                electricBehaviour = new ElectricBehaviour(this);
+            }
+            if(oldBehaviour != null)
+                electricBehaviour.inheritConnections(oldBehaviour);
+            attachBehaviourLate(electricBehaviour);
+            updateBehaviour = false;
+            if(wires != null) {
+                // Rewire connected wires.
+                wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+            }
+        }
+        float totalField = 0;
+        if(source != null) {
+            for (var rotor : rotors) {
+                totalField += rotor.calculateField();
+            }
+            source.tick(totalField);
+        }
         if(level.isClientSide) {
             var angular = rotorBehaviour.getAngularVelocityRadians();
             var current = getCurrent();

@@ -16,11 +16,15 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
 public class DebugItem extends Item {
     public DebugItem(Properties settings) {
@@ -33,9 +37,24 @@ public class DebugItem extends Item {
             return InteractionResult.FAIL;
         var world = context.getLevel();
         var behaviour = BlockEntityBehaviour.get(world, context.getClickedPos(), ElectricBehaviour.TYPE);
-        if(behaviour == null)
-            return InteractionResult.FAIL;
-        GlobalElectricNetworks.inspect(behaviour, context.getPlayer());
+        if(behaviour != null) {
+            GlobalElectricNetworks.inspect(behaviour, context.getPlayer());
+        }
+        var user = context.getPlayer();
+        var be = world.getBlockEntity(context.getClickedPos());
+        if(be instanceof CommutatorBlockEntity commutator) {
+            var power = commutator.getPower();
+            user.sendSystemMessage(Component.literal("Electrical Power: " + power + " W"));
+        }
+        var rotor = BlockEntityBehaviour.get(world, context.getClickedPos(), RotorBehaviour.TYPE);
+        if(rotor != null) {
+            var power = rotor.getControllerOrThis().power;
+            user.sendSystemMessage(Component.literal("Mechanical Power: " + power + " W"));
+        }
+        if(be instanceof InductionRotorBlockEntity rotorBE) {
+            var field = rotorBE.field;
+            user.sendSystemMessage(Component.literal("Field Strength: " + field));
+        }
         return InteractionResult.SUCCESS;
     }
 }

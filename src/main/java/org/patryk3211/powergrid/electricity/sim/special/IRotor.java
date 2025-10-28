@@ -13,13 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.sim.solver;
+package org.patryk3211.powergrid.electricity.sim.special;
 
-import org.patryk3211.powergrid.electricity.sim.node.INode;
+public interface IRotor {
+    /**
+     * Get the rotor inertia
+     * @return Rotor inertia
+     */
+    float getInertia();
 
-import java.util.List;
+    /**
+     * Get the rotor angular velocity.
+     * @return Angular velocity in rotations per minute.
+     */
+    float getAngularVelocity();
 
-public interface IStaticResidual {
-    List<INode> affectedNodes();
-    void addStaticResidual(IResidualAdder residual);
+    void applyTickForce(float force);
+
+    /**
+     * Get the rotor angular velocity
+     * @return Angular velocity in radians per second.
+     */
+    default float getAngularVelocityRadians() {
+        return getAngularVelocity() * (float) Math.PI / 30f;
+    }
 }

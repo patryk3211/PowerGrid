@@ -24,9 +24,9 @@ import java.util.Collection;
 import java.util.List;
 
 public class VoltageSourceCoupling extends CouplingNode implements IStaticResidual {
-    private final IElectricNode positive;
+    protected final IElectricNode positive;
     @Nullable
-    private final IElectricNode negative;
+    protected final IElectricNode negative;
     private float voltage;
     private float resistance;
 
@@ -36,10 +36,10 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
         this.resistance = resistance;
     }
 
-    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, Float resistance) {
+    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, Number resistance) {
         this.positive = positive;
         this.negative = negative;
-        this.resistance = resistance;
+        this.resistance = resistance.floatValue();
     }
 
     public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, float resistance, float voltage) {
@@ -97,7 +97,7 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
     }
 
     @Override
-    public void addResidual(IResidualAdder residual) {
+    public void addStaticResidual(IResidualAdder residual) {
         residual.add(index, voltage);
     }
 

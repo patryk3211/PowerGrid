@@ -37,7 +37,7 @@ public abstract class DynamicConductanceWire extends AbstractElectricWire implem
     }
 
     @Override
-    public void preSolve() {
+    public void startIteration() {
         currentConductance = calculateConductance();
         network.updateConductance(this, currentConductance - prevConductance);
         prevConductance = currentConductance;

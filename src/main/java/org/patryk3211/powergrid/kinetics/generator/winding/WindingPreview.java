@@ -37,8 +37,6 @@ import static net.minecraft.world.level.block.state.properties.BlockStatePropert
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementAxis;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementDelta;
 
-;
-
 @Environment(EnvType.CLIENT)
 public class WindingPreview {
     private static final Random r = new Random();

@@ -43,7 +43,7 @@ public class CurrentSourceNode extends ElectricNode implements IStaticResidual {
     }
 
     @Override
-    public void addResidual(IResidualAdder residual) {
+    public void addStaticResidual(IResidualAdder residual) {
         residual.add(getIndex(), current);
     }
 }

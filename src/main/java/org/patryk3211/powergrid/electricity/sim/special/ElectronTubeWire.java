@@ -69,7 +69,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     }
 
     @Override
-    public void preSolve() {
+    public void startIteration() {
         // Implementation adapted from Falstad https://www.falstad.com/circuit-java/
         double vCathode = node1.getVoltage();
         double vGrid = grid.getVoltage();

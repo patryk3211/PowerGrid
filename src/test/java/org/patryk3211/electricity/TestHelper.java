@@ -66,6 +66,15 @@ public abstract class TestHelper {
             return node;
         }
 
+        public VoltageSourceNodePair V(float voltage, float resistance) {
+            var node = new VoltageSourceNodePair();
+            var coupling = new VoltageSourceCoupling(node, null, resistance, voltage);
+            node.coupling = coupling;
+            network.addNode(node);
+            network.addNode(coupling);
+            return node;
+        }
+
         public CurrentSourceNode C(float current) {
             var node = new CurrentSourceNode(current);
             network.addNode(node);
