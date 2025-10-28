@@ -609,7 +609,6 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/rheostat/block"))
             .transform(pickaxeOnly())
             .transform(CStress.setNoImpact())
-            .transform(CResistance.setResistance(100))
             .transform(CThermal.maxPower(1000, 4.0f))
             .item()
                 .model(itemWithParent("block/rheostat/item"))

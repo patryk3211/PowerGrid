@@ -16,13 +16,19 @@
 package org.patryk3211.powergrid.kinetics.rheostat;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.resistor.ResistorValueBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
@@ -30,11 +36,23 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 public class RheostatBlockEntity extends TunedBlockEntity implements IHaveGoggleInformation {
+    protected ResistorValueBehaviour value;
+
     protected ElectricWire half1;
     protected ElectricWire half2;
 
     public RheostatBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        value = new ResistorValueBehaviour(Lang.translateDirect("devices.resistor.resistance"),
+                this, new RheostatBox(), -2, 18);
+        value.setValue(0);
+        value.withCallback($ -> refreshParameters());
+        behaviours.add(value);
+        super.addBehaviours(behaviours);
     }
 
     @Override
@@ -46,6 +64,11 @@ public class RheostatBlockEntity extends TunedBlockEntity implements IHaveGoggle
         if(arm == null)
             return 0.01f;
         return arm.getValue() * 0.98f + 0.01f;
+    }
+
+    @Override
+    public float resistance() {
+        return value.getResistance();
     }
 
     @Override
@@ -88,5 +111,16 @@ public class RheostatBlockEntity extends TunedBlockEntity implements IHaveGoggle
         ratioText.style(ChatFormatting.AQUA)
                 .forGoggles(tooltip, 1);
         return true;
+    }
+
+    public static class RheostatBox extends CenteredSideValueBoxTransform {
+        public RheostatBox() {
+            super((state, dir) -> dir != state.getValue(RheostatBlock.HORIZONTAL_FACING) && dir.getAxis() != Direction.Axis.Y);
+        }
+
+        @Override
+        protected Vec3 getSouthLocation() {
+            return VecHelper.voxelSpace(8.0f, 6.0f, 13.5f);
+        }
     }
 }
