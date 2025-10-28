@@ -198,8 +198,8 @@ public abstract class TransformerCoupling extends CouplingNode {
                 float change = ratio - this.ratio;
                 network.alterConductanceMatrix(this.index, primary1.getIndex(),  change);
                 network.alterConductanceMatrix(this.index, primary2.getIndex(), -change);
-                network.alterConductanceMatrix(primary1.getIndex(), this.index, -change);
-                network.alterConductanceMatrix(primary2.getIndex(), this.index,  change);
+                network.alterConductanceMatrix(primary1.getIndex(), this.index,  change);
+                network.alterConductanceMatrix(primary2.getIndex(), this.index, -change);
             }
             this.ratio = ratio;
         }
