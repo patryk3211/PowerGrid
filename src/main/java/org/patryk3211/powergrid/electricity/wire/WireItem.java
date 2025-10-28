@@ -31,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.config.WireValues;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
@@ -40,11 +41,6 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 import java.util.ArrayList;
 
 public class WireItem extends Item implements IWire {
-    protected float resistance;
-    protected float maxLength;
-    protected float dissipationFactor;
-    protected float thermalMass;
-
     protected ResourceLocation wireTexture;
     protected float horizontalCoefficient = 1.01f;
     protected float verticalCoefficient = 1.2f;
@@ -53,10 +49,6 @@ public class WireItem extends Item implements IWire {
 
     public WireItem(Properties settings) {
         super(settings);
-        resistance = 0.1f;
-        maxLength = 16f;
-        dissipationFactor = 0.2f;
-        thermalMass = 1.0f;
     }
 
     @Override
@@ -296,22 +288,22 @@ public class WireItem extends Item implements IWire {
 
     @Override
     public float getResistance() {
-        return resistance;
+        return WireValues.resistance(this);
     }
 
     @Override
     public float getMaximumLength() {
-        return maxLength;
+        return WireValues.maxLength(this);
     }
 
     @Override
     public float getDissipationFactor() {
-        return dissipationFactor;
+        return WireValues.dissipationFactor(this);
     }
 
     @Override
     public float getThermalMass() {
-        return thermalMass;
+        return WireValues.thermalMass(this);
     }
 
     @Environment(EnvType.CLIENT)

@@ -53,6 +53,7 @@ public class CElectricity extends ConfigBase {
 
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
+    public final CWire wires = nested(0, CWire::new, Comments.wires);
 
     @Override
     public String getName() {
@@ -62,6 +63,7 @@ public class CElectricity extends ConfigBase {
     private static class Comments {
         public static final String resistance = "Resistance values for all devices";
         public static final String thermal = "Thermal properties for all devices";
+        public static final String wires = "Configuration of server-side wire properties";
 
         public static final String explosiveDeconstruction = "Controls the behaviour of overheated devices. If false, instead of exploding, they break without dropping items.";
         public static final String overheating = "Controls the overheat mechanic. Devices which are overheated, break.";
