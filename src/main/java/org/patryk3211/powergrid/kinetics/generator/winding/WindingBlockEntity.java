@@ -650,19 +650,17 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         float current = windingCurrent();
         if (thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
-        float B = 0;
         if (coilWire != null && (coilWire.isConverged() || coilWire.getNetwork() == null)) {
             var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
-            var x = current / I_sat;
-            current = (float) (current * Math.sqrt(Math.sqrt(1 + x * x * x * x)));
-            B = current * coilConstant();
-        }
-        if(warmUpTicks > 5) {
-            field = B * 0.25f + field * 0.75f;
-            if (Math.abs(field) < 0.001f && Math.abs(B) < 0.001f)
-                field = 0;
-        } else {
-            ++warmUpTicks;
+            current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
+            var B = current * coilConstant();
+            if(warmUpTicks > 5) {
+                field = B * 0.25f + field * 0.75f;
+                if (Math.abs(field) < 0.001f && Math.abs(B) < 0.001f)
+                    field = 0;
+            } else {
+                ++warmUpTicks;
+            }
         }
 
         setChanged();
