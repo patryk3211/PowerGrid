@@ -303,6 +303,12 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .requires(ModdedBlocks.ELECTRIC_MOTOR)
                     .requires(AllBlocks.ENCASED_FAN)),
 
+    CONSTANT_SPEED_MOTOR = create(ModdedBlocks.CONSTANT_SPEED_MOTOR)
+            .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
+            .viaShapeless(b -> b
+                    .requires(ModdedBlocks.ELECTRIC_MOTOR)
+                    .requires(AllItems.PRECISION_MECHANISM)),
+
     SERVO = create(ModdedBlocks.SERVO)
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
             .viaShapeless(b -> b

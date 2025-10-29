@@ -106,6 +106,7 @@
   "powergrid.devices.gauge.voltage": "Maximum voltage",
   "powergrid.devices.gauge.current": "Maximum current",
   "powergrid.devices.gauge.power": "Maximum power",
+  "powergrid.devices.motor.speed": "Speed",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",

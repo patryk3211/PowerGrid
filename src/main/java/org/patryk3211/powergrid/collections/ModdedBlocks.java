@@ -92,6 +92,7 @@ import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBloc
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
+import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
@@ -479,6 +480,22 @@ public class ModdedBlocks {
             .item()
                 .model(itemWithParent("block/electric_motor/item"))
                 .build()
+            .register();
+
+    public static final BlockEntry<ConstantSpeedMotorBlock> CONSTANT_SPEED_MOTOR = REGISTRATE.block("constant_speed_motor", ConstantSpeedMotorBlock::new)
+            .blockstate(alternateDirectionalBlock(state -> switch(state.getValue(ConstantSpeedMotorBlock.FACING).getAxis()) {
+                case X, Z -> "block/constant_electric_motor/block";
+                case Y -> "block/constant_electric_motor/block_vertical";
+            }))
+            .initialProperties(() -> Blocks.IRON_BLOCK)
+            .transform(CStress.setCapacity(64))
+            .transform(CResistance.setResistance(25.6))
+            .transform(pickaxeOnly())
+            .onRegister(BlockStressValues.setGeneratorSpeed(256, true))
+            .defaultLoot()
+            .item()
+            .model(itemWithParent("block/constant_electric_motor/item"))
+            .build()
             .register();
 
     public static final BlockEntry<ServoBlock> SERVO = REGISTRATE.block("servo", ServoBlock::new)

@@ -32,6 +32,7 @@
     "powergrid:transformer_medium",
     "powergrid:variac",
     "powergrid:electric_motor",
+    "powergrid:constant_speed_motor",
     "powergrid:servo",
     "powergrid:electromagnet",
     "powergrid:electric_fan",

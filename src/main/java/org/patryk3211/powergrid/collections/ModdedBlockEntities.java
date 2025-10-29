@@ -67,6 +67,7 @@ import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotor
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorVisual;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
+import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
@@ -218,6 +219,13 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("electric_motor", ElectricMotorBlockEntity::new)
                     .visual(() -> HalfShaftVisual::new)
                     .validBlock(ModdedBlocks.ELECTRIC_MOTOR)
+                    .renderer(() -> ElectricMotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<ConstantSpeedMotorBlockEntity> CONSTANT_SPEED_MOTOR =
+            REGISTRATE.blockEntity("constant_speed_motor", ConstantSpeedMotorBlockEntity::new)
+                    .visual(() -> HalfShaftVisual::new)
+                    .validBlock(ModdedBlocks.CONSTANT_SPEED_MOTOR)
                     .renderer(() -> ElectricMotorRenderer::new)
                     .register();
 
