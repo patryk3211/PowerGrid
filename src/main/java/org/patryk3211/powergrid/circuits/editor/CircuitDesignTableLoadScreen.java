@@ -143,6 +143,8 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
         setWindowSize(WIDTH, HEIGHT);
         super.init();
 
+        fileNameInput = new CircuitFileBox(font, leftPos + 48, topPos + 28, 135, 10, Component.empty());
+
         cancelBtn = new IconButton(leftPos + 20, topPos + 58, ModIcons.I_CANCEL);
         cancelBtn.withCallback(this::back);
         cancelBtn.setToolTip(CANCEL);
@@ -155,8 +157,6 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
 
         folderBtn = new IconButton(leftPos + 20, topPos + 23, AllIcons.I_OPEN_FOLDER);
         folderBtn.withCallback(() -> Util.getPlatform().openFile(Paths.get("circuits/").toFile()));
-
-        fileNameInput = new CircuitFileBox(font, leftPos + 48, topPos + 28, 135, 10, Component.empty());
 
         addRenderableWidget(cancelBtn);
         addRenderableWidget(saveBtn);
@@ -198,7 +198,7 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
     @Override
     protected void renderForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         super.renderForeground(graphics, mouseX, mouseY, partialTicks);
-        if(fileNameInput.isMouseOver(mouseX, mouseY)) {
+        if(fileNameInput != null && fileNameInput.isMouseOver(mouseX, mouseY)) {
             List<Component> tooltip = fileNameInput.getToolTip();
             if (tooltip.isEmpty())
                 return;

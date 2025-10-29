@@ -15,12 +15,22 @@
  */
 package org.patryk3211.powergrid.electricity.sim.node;
 
+import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
+
+import java.util.List;
+
 /**
  * Warning! Current source nodes cannot be directly connected to transformer couplings.
  */
-public class CurrentSourceNode extends ElectricNode {
+public class CurrentSourceNode extends ElectricNode implements IStaticResidual {
     public CurrentSourceNode() {
 
+    }
+
+    @Override
+    public List<INode> affectedNodes() {
+        return List.of(this);
     }
 
     public CurrentSourceNode(float current) {
@@ -28,14 +38,12 @@ public class CurrentSourceNode extends ElectricNode {
     }
 
     @Override
-    public void setCurrent(float current) {
-        var old = this.current;
-        super.setCurrent(current);
-        if(network != null)
-            network.updateCurrentMatrix(this, this.current - old);
+    public float getVoltage() {
+        return (float) getStateValue();
     }
+
     @Override
-    public void receiveResult(float value) {
-        this.voltage = value;
+    public void addStaticResidual(IResidualAdder residual) {
+        residual.add(getIndex(), current);
     }
 }

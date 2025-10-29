@@ -120,9 +120,9 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void tick() {
-        applyLostPower(switch1.power());
-        applyLostPower(switch2.power());
-        applyLostPower(coil.power());
+        applyPower(switch1);
+        applyPower(switch2);
+        applyPower(coil);
 
         super.tick();
 

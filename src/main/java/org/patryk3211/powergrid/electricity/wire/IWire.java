@@ -32,6 +32,8 @@ public interface IWire extends IHaveElectricProperties {
     float getDissipationFactor();
     float getThermalMass();
 
+    boolean canBeColored();
+
     @Override
     default void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(getResistance(), player, tooltip);

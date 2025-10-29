@@ -18,8 +18,6 @@ package org.patryk3211.powergrid.collections;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedTags {
@@ -51,7 +49,8 @@ public class ModdedTags {
     public enum Block {
         SILVER_ORES(FORGE_NAMESPACE, "silver_ores"),
         AFFECTED_BY_LAMP("affected_by_lamp"),
-        IGNORE_IN_ROTOR_ASSEMBLY_SIZE("ignore_in_rotor_assembly_size")
+        IGNORE_IN_ROTOR_ASSEMBLY_SIZE("ignore_in_rotor_assembly_size"),
+        CONDUCTIVE_GROUND("conductive_ground")
         ;
 
         public final TagKey<net.minecraft.world.level.block.Block> tag;

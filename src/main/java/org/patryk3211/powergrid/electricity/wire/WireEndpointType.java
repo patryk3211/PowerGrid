@@ -17,6 +17,9 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Contract;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.SocketEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.SplitCordEndpoint;
 
 import java.util.function.Supplier;
 
@@ -28,15 +31,25 @@ public enum WireEndpointType {
     DEFERRED_JUNCTION(DeferredJunctionWireEndpoint::new, true),
 
     // Special endpoint type used by the multimeter
-    CIRCUIT_BOARD(CircuitBoardEndpoint::new, false)
+    CIRCUIT_BOARD(CircuitBoardEndpoint::new),
+
+    // Cord endpoint types
+    SOCKET(SocketEndpoint::new),
+    SPLIT_CORD(SplitCordEndpoint::new),
+    AUTO_CORD(AutoCordEndpoint::new)
     ;
 
     private final Supplier<IWireEndpoint> factory;
+    // This is only used by the block wire placement code.
     private final boolean connectable;
 
     WireEndpointType(Supplier<IWireEndpoint> factory, boolean connectable) {
         this.factory = factory;
         this.connectable = connectable;
+    }
+
+    WireEndpointType(Supplier<IWireEndpoint> factory) {
+        this(factory, false);
     }
 
     public boolean isConnectable() {
@@ -56,7 +69,11 @@ public enum WireEndpointType {
             return null;
         if(!tag.contains("Type"))
             return null;
-        var type = values()[tag.getInt("Type")];
+        var all = values();
+        var index = tag.getInt("Type");
+        if(index >= all.length)
+            return null;
+        var type = all[index];
         var endpoint = type.factory.get();
         endpoint.read(tag);
         return endpoint;

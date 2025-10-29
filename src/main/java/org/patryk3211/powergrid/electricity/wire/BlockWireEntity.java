@@ -69,6 +69,10 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         entity.setXRot(0);
         entity.setOldPosAndRot();
         entity.reapplyPosition();
+
+        if(entity.getWireItem().canBeColored())
+            entity.setColor(0x413c31);
+
         return entity;
     }
 
@@ -86,6 +90,10 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         entity.setXRot(0);
         entity.setOldPosAndRot();
         entity.reapplyPosition();
+
+        if(entity.getWireItem().canBeColored())
+            entity.setColor(0x413c31);
+
         return entity;
     }
 
@@ -303,6 +311,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         entity.setEndpoint1(getEndpoint2());
         entity.setEndpoint2(getEndpoint1());
         entity.getEntityData().set(TEMPERATURE, getTemperature());
+        entity.setColor(getColor());
 
         var pos = position();
         for(int i = 0; i < segments.size(); ++i) {
@@ -354,6 +363,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         var junction = new JunctionWireEndpoint(junctionPos);
 
         var wire2 = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
+        wire2.setColor(getColor());
         wire2.setItem(getWireItem(), 0);
         var splitSegment = new Point(segment.direction, segment.gridLength - segmentPoint);
         wire2.segments.add(splitSegment);

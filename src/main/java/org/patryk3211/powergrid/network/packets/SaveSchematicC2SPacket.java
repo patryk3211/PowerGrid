@@ -20,10 +20,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.function.Supplier;
@@ -35,13 +37,13 @@ public class SaveSchematicC2SPacket implements SimplePacket {
     private String name;
     private boolean load;
 
-    public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, boolean load) {
+    public <T extends BlockEntity&ISchematicHolder> SaveSchematicC2SPacket(T be, boolean load) {
         pos = be.getBlockPos();
         nbt = null;
         this.load = load;
     }
 
-    public SaveSchematicC2SPacket(CircuitDesignTableBlockEntity be, @Nullable String name, CircuitSchematic schematic) {
+    public <T extends BlockEntity&ISchematicHolder> SaveSchematicC2SPacket(T be, @Nullable String name, CircuitSchematic schematic) {
         pos = be.getBlockPos();
         nbt = schematic.serializeNbt();
         this.name = name;
@@ -96,6 +98,10 @@ public class SaveSchematicC2SPacket implements SimplePacket {
                         // Save schematic to item
                         table.writeToItem(ctx.getPlayer().isCreative());
                     }
+                }
+            } else if(be instanceof ISchematicHolder holder) {
+                if(ctx.getPlayer().isCreative() && nbt != null) {
+                    holder.setSchematic(CircuitSchematic.fromNbt(nbt));
                 }
             }
         });

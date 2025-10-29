@@ -106,7 +106,11 @@ public class CircuitSchematic {
             components.clear();
             var list = tag.getList("Components", Tag.TAG_COMPOUND);
             for (var element : list) {
-                components.add(new PlacedComponent((CompoundTag) element));
+                try {
+                    components.add(new PlacedComponent((CompoundTag) element));
+                } catch (RuntimeException e) {
+                    PowerGrid.LOGGER.error("Failed to deserialize circuit component NBT", e);
+                }
             }
             rebuildPads();
         } catch(RuntimeException e) {
@@ -192,7 +196,7 @@ public class CircuitSchematic {
     }
 
     private boolean getAreaState(CircuitLayer layer, int x, int y) {
-        return layer.get(x, y) && !isPad(x, y);
+        return layer.get(x, y);
     }
 
     public List<Area> calculateAreas(Layer forLayer) {
@@ -294,7 +298,7 @@ public class CircuitSchematic {
             return false;
         if(!visitMap.canVisit(layer, x, y))
             return false;
-        return getLayer(layer, x, y) || isPad(x, y);
+        return getLayer(layer, x, y);
     }
 
     @NotNull
@@ -318,8 +322,10 @@ public class CircuitSchematic {
                     componentNode.ifPresent(nodes::add);
 
                     // Flood opposite layer.
-                    var componentNodes = flood(layer.opposite(), nX, nY, visitMap);
-                    nodes.addAll(componentNodes);
+                    if(getLayer(layer.opposite(), nX, nY)) {
+                        var componentNodes = flood(layer.opposite(), nX, nY, visitMap);
+                        nodes.addAll(componentNodes);
+                    }
                 }
 
                 // Add neighbors that haven't been visited.
@@ -336,6 +342,17 @@ public class CircuitSchematic {
         return nodes;
     }
 
+    @NotNull
+    public Collection<Node> flood(int x, int y, VisitMap visitMap) {
+        if(getLayer(Layer.FRONT, x, y)) {
+            return flood(Layer.FRONT, x, y, visitMap);
+        } else if(getLayer(Layer.BACK, x, y)) {
+            return flood(Layer.BACK, x, y, visitMap);
+        } else {
+            return List.of();
+        }
+    }
+
     public Collection<Collection<Node>> findNodeBundles() {
         var visitMap = new VisitMap();
         var bundles = new ArrayList<Collection<Node>>();
@@ -343,7 +360,7 @@ public class CircuitSchematic {
             for(var pad : placed.footprint().getPads().keySet()) {
                 var x = placed.x * GRID_TO_GRID_SCALE + pad.x();
                 var y = placed.y * GRID_TO_GRID_SCALE + pad.y();
-                var nodes = flood(Layer.FRONT, x, y, visitMap);
+                var nodes = flood(x, y, visitMap);
                 if(nodes.size() >= 2)
                     bundles.add(nodes);
             }

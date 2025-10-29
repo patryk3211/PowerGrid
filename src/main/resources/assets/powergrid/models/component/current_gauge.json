@@ -1,0 +1,22 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"1": "powergrid:block/component/gauge",
+		"particle": "powergrid:block/component/gauge"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [5, 3, 5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [5, 0, 0]},
+			"faces": {
+				"north": {"uv": [5, 0, 10, 3], "texture": "#1"},
+				"east": {"uv": [5, 5, 10, 8], "texture": "#1"},
+				"south": {"uv": [5, 0, 10, 3], "texture": "#1"},
+				"west": {"uv": [0, 5, 5, 8], "texture": "#1"},
+				"up": {"uv": [0, 8, 5, 13], "rotation": 90, "texture": "#1"}
+			}
+		}
+	]
+}

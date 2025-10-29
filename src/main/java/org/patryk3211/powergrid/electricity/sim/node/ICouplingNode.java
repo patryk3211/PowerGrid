@@ -15,17 +15,12 @@
  */
 package org.patryk3211.powergrid.electricity.sim.node;
 
-import org.ejml.data.DMatrixRMaj;
+import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 
 import java.util.Collection;
 
 public interface ICouplingNode extends INode {
-    void couple(DMatrixRMaj conductance);
+    void couple(IAdmittanceAdder admittance);
 
     Collection<IElectricNode> coupledNodes();
-
-    @Override
-    default void receiveResult(float value) {
-
-    }
 }

@@ -23,9 +23,9 @@ import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
-import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 public class GaugeScenes {
@@ -135,6 +135,67 @@ public class GaugeScenes {
         scene.idle(70);
 
         Vec3 blockSurface = util.vector().blockSurface(gaugePos, Direction.NORTH);
+        scene.overlay().showControls(blockSurface, Pointing.RIGHT, 80).withItem(AllItems.GOGGLES.asStack());
+        scene.idle(7);
+        scene.overlay().showText(80)
+                .text("When wearing Engineers' Goggles, the player can get more detailed information from the Gauge")
+                .attachKeyFrame()
+                .colored(PonderPalette.MEDIUM)
+                .pointAt(blockSurface)
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void power(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("power_gauge", "Monitoring Electricity using the Power Gauge");
+        scene.configureBasePlate(0, 0, 5);
+
+        var gauge = util.grid().at(2, 1, 2);
+        var common = util.grid().at(4, 1, 3);
+        var input = util.grid().at(4, 1, 2);
+        var bulb = util.grid().at(0, 2, 2);
+
+        scene.showBasePlate();
+        scene.idle(5);
+
+        scene.world().showSection(util.select().fromTo(input, common), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(bulb.below(), bulb), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(gauge), Direction.DOWN);
+        scene.idle(5);
+
+        scene.electric().addSource(common, 0, 0);
+        scene.electric().connect(common, 0, gauge, 2);
+        scene.electric().connect(input, 0, gauge, 0);
+        scene.electric().connect(gauge, 1, bulb, 0);
+        scene.electric().connect(gauge, 2, bulb, 1);
+        scene.idle(10);
+
+        scene.overlay().showText(100)
+                .text("The Power Gauge can be used to measure power going into a section of the electrical network")
+                .pointAt(util.vector().of(2.5, 1.5, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.electric().addSource(input, 0, 245);
+        scene.electric().tickFor(10);
+        scene.world().modifyBlock(bulb, state -> state.setValue(LightFixtureBlock.POWER, 2), false);
+        scene.idle(20);
+        scene.effects().indicateSuccess(gauge);
+        scene.idle(20);
+
+        scene.overlay().showText(60)
+                .text("You can change the gauge's range by clicking on top of it")
+                .attachKeyFrame()
+                .pointAt(util.vector().topOf(gauge))
+                .placeNearTarget();
+        scene.idle(70);
+
+        Vec3 blockSurface = util.vector().blockSurface(gauge, Direction.NORTH);
         scene.overlay().showControls(blockSurface, Pointing.RIGHT, 80).withItem(AllItems.GOGGLES.asStack());
         scene.idle(7);
         scene.overlay().showText(80)

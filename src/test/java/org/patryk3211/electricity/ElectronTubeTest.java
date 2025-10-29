@@ -31,6 +31,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
+        // kG1 = 1 / perveance
         var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
@@ -46,6 +47,7 @@ public class ElectronTubeTest extends TestHelper {
             System.out.printf("Anode voltage: %f\n", Anode.getVoltage());
             System.out.printf("Cathode voltage: %f\n", Cathode.getVoltage());
             System.out.printf("Grid voltage: %f\n", Grid.getVoltage());
+            System.out.printf("Tube current: %f\n", Tube.current());
 
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("V2 current: %f\n", V2.getCurrent());
@@ -102,8 +104,9 @@ public class ElectronTubeTest extends TestHelper {
         for(int i = 0; i < 5; ++i)
             Net.calculate();
 
-        Assertions.assertEquals(0.005f, V1.getCurrent(), 1e-3f, "Anode current is incorrect");
-        Assertions.assertEquals(49.95f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
+        Assertions.assertEquals(0.011143f, V1.getCurrent(), 1e-3f, "Anode current is incorrect");
+        Assertions.assertEquals(49.8885f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
+        Assertions.assertEquals(V1.getCurrent(), Tube.current(), 1e-6f, "Tube current is incorrect");
     }
 
     @Test
@@ -126,6 +129,37 @@ public class ElectronTubeTest extends TestHelper {
         Net.W(R, V2, Grid);
         Net.W(R, GND, Cathode);
 
+        Net.calculate();
+
         Assertions.assertEquals(0, V1.getCurrent(), 1e-3f, "Anode is conducting at reverse voltage");
+    }
+
+    @Test
+    void testTubeSaturation() {
+        var Net = new Network();
+
+        var V1 = Net.V(50f);
+        var V2 = Net.V(0);
+        var GND = Net.V(0);
+
+        var Anode = Net.N();
+        var Cathode = Net.N();
+        var Grid = Net.N();
+
+        var Tube = new ElectronTubeWire(2, 0.001f, 0.1f, Cathode, Anode, Grid);
+        Net.network.addWire(Tube);
+
+        final float R = 0.001f;
+        Net.W(10f, V1, Anode);
+        Net.W(R, V2, Grid);
+        Net.W(R, GND, Cathode);
+
+        for(int i = 0; i < 5; ++i)
+            Net.calculate();
+
+        // Should be about 120mA if saturation wasn't the limit
+        Assertions.assertTrue(0.1f >= V1.getCurrent(), "Anode current is incorrect");
+        Assertions.assertTrue(49.0f <= Anode.getVoltage(), "Anode voltage is incorrect");
+        Assertions.assertEquals(V1.getCurrent(), Tube.current(), 1e-6f, "Tube current is incorrect");
     }
 }

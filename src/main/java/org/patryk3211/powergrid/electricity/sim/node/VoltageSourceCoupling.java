@@ -15,38 +15,39 @@
  */
 package org.patryk3211.powergrid.electricity.sim.node;
 
-import org.ejml.data.DMatrixRMaj;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
 
 import java.util.Collection;
 import java.util.List;
 
-public class VoltageSourceCoupling extends CouplingNode {
-    private final IElectricNode positive;
-    private final IElectricNode negative;
+public class VoltageSourceCoupling extends CouplingNode implements IStaticResidual {
+    protected final IElectricNode positive;
+    @Nullable
+    protected final IElectricNode negative;
     private float voltage;
-    private float current;
     private float resistance;
 
-    public VoltageSourceCoupling(IElectricNode positive, IElectricNode negative, float resistance) {
+    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, float resistance) {
         this.positive = positive;
         this.negative = negative;
         this.resistance = resistance;
     }
 
-    public VoltageSourceCoupling(IElectricNode positive, IElectricNode negative, Float resistance) {
+    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, Number resistance) {
         this.positive = positive;
         this.negative = negative;
-        this.resistance = resistance;
+        this.resistance = resistance.floatValue();
     }
 
-    public VoltageSourceCoupling(IElectricNode positive, IElectricNode negative, float resistance, float voltage) {
+    public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, float resistance, float voltage) {
         this(positive, negative, resistance);
         setVoltage(voltage);
     }
 
     public void setVoltage(float voltage) {
-        if(network != null)
-            network.updateCurrentMatrix(this, voltage - this.voltage);
         this.voltage = voltage;
     }
 
@@ -57,26 +58,25 @@ public class VoltageSourceCoupling extends CouplingNode {
     }
 
     @Override
-    public void couple(DMatrixRMaj conductance) {
-        conductance.add(this.index, positive.getIndex(),  1);
-        conductance.add(this.index, negative.getIndex(), -1);
-        conductance.add(positive.getIndex(), this.index,  1);
-        conductance.add(negative.getIndex(), this.index, -1);
-        conductance.add(this.index, this.index, -resistance);
+    public void couple(IAdmittanceAdder admittance) {
+        admittance.add(this.index, positive.getIndex(),  1);
+        admittance.add(positive.getIndex(), this.index,  1);
+        admittance.add(this.index, this.index, -resistance);
+        if(negative != null) {
+            admittance.add(this.index, negative.getIndex(), -1);
+            admittance.add(negative.getIndex(), this.index, -1);
+        }
     }
 
     @Override
     public Collection<IElectricNode> coupledNodes() {
+        if(negative == null)
+            return List.of(positive);
         return List.of(positive, negative);
     }
 
-    @Override
-    public void receiveResult(float value) {
-        this.current = value;
-    }
-
     public float getCurrent() {
-        return current;
+        return (float) getStateValue();
     }
 
     public float getVoltage() {
@@ -85,5 +85,26 @@ public class VoltageSourceCoupling extends CouplingNode {
 
     public float getResistance() {
         return resistance;
+    }
+
+    public IElectricNode getPositive() {
+        return positive;
+    }
+
+    @Nullable
+    public IElectricNode getNegative() {
+        return negative;
+    }
+
+    @Override
+    public void addStaticResidual(IResidualAdder residual) {
+        residual.add(index, voltage);
+    }
+
+    @Override
+    public List<INode> affectedNodes() {
+        if(negative != null)
+            return List.of(positive, negative);
+        return List.of(positive);
     }
 }

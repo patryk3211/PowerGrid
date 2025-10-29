@@ -27,13 +27,14 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
 
 import java.util.List;
 
 public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
-    private static final int AVERAGING_TICKS = 5;
+    public static final int AVERAGING_TICKS = 5;
 
     protected ElectricBehaviour electricBehaviour;
     @Nullable
@@ -60,16 +61,16 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxPower = 256 * torque() * Math.PI / 30;
-        var baseFactor = ThermalBehaviour.dissipationFactor((float) maxPower, 150);
+        var maxPower = 256 * torque() / 60;
+        var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
             behaviours.add(thermalBehaviour);
     }
 
-    protected void applyLostPower(float power) {
+    protected void applyPower(AbstractElectricWire wire) {
         if(thermalBehaviour != null)
-            thermalBehaviour.applyTickPower(power);
+            thermalBehaviour.applyWirePower(wire);
     }
 
     @Override
@@ -95,6 +96,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     @Override
     public void lazyTick() {
+        assert level != null;
         super.lazyTick();
         var newSpeed = (int) (avgSpeed / AVERAGING_TICKS);
         avgSpeed = 0;
@@ -115,11 +117,12 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     @Override
     public void tick() {
-        applyLostPower(coil.power());
+        assert level != null;
+        applyPower(coil);
 
         if(!level.isClientSide || isVirtual()) {
-            var speedFromPower = (coil.power() / torque()) * 30 / Math.PI;
-            avgSpeed += (float) speedFromPower * Math.signum(coil.current());
+            var speedFromPower = (coil.power() / torque()) * 60;
+            avgSpeed += speedFromPower * Math.signum(coil.current());
         }
         super.tick();
     }

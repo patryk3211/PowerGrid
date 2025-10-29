@@ -22,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -212,6 +213,13 @@ public interface IElectric extends IWrenchable {
         // The amount of used items dictates the resistance of a connection,
         // to make sure everything is fair.
         var entity = HangingWireEntity.create(serverWorld, endpoint1, endpoint2, new ItemStack(stack.getItemHolder(), requiredItemCount), null);
+
+        if(context.getPlayer() != null) {
+            var offItem = context.getPlayer().getOffhandItem();
+            if (item.canBeColored() && offItem.getItem() instanceof DyeItem dye) {
+                entity.setColor(dye.getDyeColor());
+            }
+        }
 
         if(!serverWorld.tryAddFreshEntityWithPassengers(entity)) {
             PowerGrid.LOGGER.error("Failed to spawn new connection wire entity.");

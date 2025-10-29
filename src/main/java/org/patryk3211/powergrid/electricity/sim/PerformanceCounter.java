@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.electricity.sim;
 import org.patryk3211.powergrid.PowerGrid;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +28,7 @@ public class PerformanceCounter {
 
     private String name;
 
+    private int measurementTime = 5000;
     private long microsTotal;
     private long minTime;
     private long maxTime;
@@ -38,6 +38,7 @@ public class PerformanceCounter {
 
     private double prevAvg;
 
+    private long stamp = new Date().getTime();
     private Date lastMeasurement;
 
     public PerformanceCounter(String name) {
@@ -49,7 +50,13 @@ public class PerformanceCounter {
         this.name = name;
     }
 
+    public void setMeasurementTime(int measurementTime) {
+        this.measurementTime = measurementTime;
+    }
+
     public void start() {
+        // Removes stale counters
+        COUNTERS.removeIf(other -> other != this && other.name.equals(name));
         start = System.nanoTime();
     }
 
@@ -66,11 +73,14 @@ public class PerformanceCounter {
         ++epochCount;
         microsTotal += duration / 1000;
 
-        lastMeasurement = new Date();
-        if(epochCount >= 1000) {
+        var currentTime = new Date();
+        var stampDuration = currentTime.getTime() - stamp;
+        if(stampDuration >= measurementTime) {
             prevAvg = (double) microsTotal / epochCount;
+            stamp = currentTime.getTime();
             reset();
         }
+        lastMeasurement = currentTime;
     }
 
     public void reset() {
@@ -99,6 +109,8 @@ public class PerformanceCounter {
     }
 
     public double getAvg() {
+        if(epochCount == 0)
+            return prevAvg;
         var weight = epochCount / 1000.0;
         return prevAvg * 1 / (1 + weight) + ((double) microsTotal / epochCount) * weight / (1 + weight);
     }

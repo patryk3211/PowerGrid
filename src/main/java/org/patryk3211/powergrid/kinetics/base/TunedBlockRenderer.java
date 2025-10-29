@@ -27,7 +27,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
-import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
 
 public class TunedBlockRenderer<T extends TunedBlockEntity> extends KineticBlockEntityRenderer<T> {
     public TunedBlockRenderer(BlockEntityRendererProvider.Context context) {

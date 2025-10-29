@@ -74,6 +74,14 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        if(bulbState != null) {
+            bulbState.write(tag);
+        }
+    }
+
+    @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         var currentItem = bulbState != null ? bulbState.getItem() : null;
@@ -147,7 +155,8 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         return filament;
     }
 
-    public AABB getRenderBoundingBox() {
+    @Override
+    protected AABB createRenderBoundingBox() {
         return new AABB(worldPosition);
     }
 
@@ -155,6 +164,6 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     public ItemRequirement getRequiredItems(BlockState state) {
         if(bulbState != null)
             return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, bulbState.getItem());
-        return super.getRequiredItems(state);
+        return ItemRequirement.NONE;
     }
 }

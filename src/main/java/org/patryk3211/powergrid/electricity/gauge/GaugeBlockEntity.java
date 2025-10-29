@@ -17,9 +17,7 @@ package org.patryk3211.powergrid.electricity.gauge;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
-import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -50,9 +48,6 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
 
     public GaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-
-//        assert state.getBlock() instanceof IGaugeBlock;
-//        maxValue = ((IGaugeBlock) state.getBlock()).getMaxValue();
     }
 
     @Override

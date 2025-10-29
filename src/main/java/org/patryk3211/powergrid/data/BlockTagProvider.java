@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.data;
 
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.foundation.block.CopperBlockSet;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -24,6 +26,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.WeatheringCopper;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.concurrent.CompletableFuture;
@@ -46,5 +49,54 @@ public class BlockTagProvider extends TagsProvider<Block> {
                 .addOptionalTag(BlockTags.BEE_GROWABLES.location())
                 .add(reverseLookup(Blocks.CACTUS))
                 .add(reverseLookup(Blocks.SUGAR_CANE));
+
+        var builder = tag(ModdedTags.Block.CONDUCTIVE_GROUND.tag);
+        builder
+                .add(reverseLookup(Blocks.COPPER_BLOCK))
+                .add(reverseLookup(Blocks.EXPOSED_COPPER))
+                .add(reverseLookup(Blocks.OXIDIZED_COPPER))
+                .add(reverseLookup(Blocks.WEATHERED_COPPER))
+                .add(reverseLookup(Blocks.CUT_COPPER))
+                .add(reverseLookup(Blocks.EXPOSED_CUT_COPPER))
+                .add(reverseLookup(Blocks.OXIDIZED_CUT_COPPER))
+                .add(reverseLookup(Blocks.WEATHERED_CUT_COPPER))
+                .add(reverseLookup(Blocks.CUT_COPPER_SLAB))
+                .add(reverseLookup(Blocks.EXPOSED_CUT_COPPER_SLAB))
+                .add(reverseLookup(Blocks.OXIDIZED_CUT_COPPER_SLAB))
+                .add(reverseLookup(Blocks.WEATHERED_CUT_COPPER_SLAB))
+                .add(reverseLookup(Blocks.CUT_COPPER_STAIRS))
+                .add(reverseLookup(Blocks.EXPOSED_CUT_COPPER_STAIRS))
+                .add(reverseLookup(Blocks.OXIDIZED_CUT_COPPER_STAIRS))
+                .add(reverseLookup(Blocks.WEATHERED_CUT_COPPER_STAIRS))
+                .add(reverseLookup(Blocks.WAXED_COPPER_BLOCK))
+                .add(reverseLookup(Blocks.WAXED_EXPOSED_COPPER))
+                .add(reverseLookup(Blocks.WAXED_OXIDIZED_COPPER))
+                .add(reverseLookup(Blocks.WAXED_WEATHERED_COPPER))
+                .add(reverseLookup(Blocks.WAXED_CUT_COPPER))
+                .add(reverseLookup(Blocks.WAXED_EXPOSED_CUT_COPPER))
+                .add(reverseLookup(Blocks.WAXED_OXIDIZED_CUT_COPPER))
+                .add(reverseLookup(Blocks.WAXED_WEATHERED_CUT_COPPER))
+                .add(reverseLookup(Blocks.WAXED_CUT_COPPER_SLAB))
+                .add(reverseLookup(Blocks.WAXED_EXPOSED_CUT_COPPER_SLAB))
+                .add(reverseLookup(Blocks.WAXED_OXIDIZED_CUT_COPPER_SLAB))
+                .add(reverseLookup(Blocks.WAXED_WEATHERED_CUT_COPPER_SLAB))
+                .add(reverseLookup(Blocks.WAXED_CUT_COPPER_STAIRS))
+                .add(reverseLookup(Blocks.WAXED_EXPOSED_CUT_COPPER_STAIRS))
+                .add(reverseLookup(Blocks.WAXED_OXIDIZED_CUT_COPPER_STAIRS))
+                .add(reverseLookup(Blocks.WAXED_WEATHERED_CUT_COPPER_STAIRS))
+                .add(reverseLookup(AllBlocks.COPPER_BARS.get()))
+                .add(reverseLookup(Blocks.IRON_BLOCK))
+                .add(reverseLookup(Blocks.IRON_BARS))
+                .add(reverseLookup(Blocks.GOLD_BLOCK))
+                .add(reverseLookup(Blocks.NETHERITE_BLOCK))
+                ;
+        for(var variant : CopperBlockSet.DEFAULT_VARIANTS) {
+            for(var state : WeatheringCopper.WeatherState.values()) {
+                builder.add(reverseLookup(AllBlocks.COPPER_TILES.get(variant, state, false).get()));
+                builder.add(reverseLookup(AllBlocks.COPPER_TILES.get(variant, state, true).get()));
+                builder.add(reverseLookup(AllBlocks.COPPER_SHINGLES.get(variant, state, false).get()));
+                builder.add(reverseLookup(AllBlocks.COPPER_SHINGLES.get(variant, state, true).get()));
+            }
+        }
     }
 }

@@ -23,7 +23,6 @@ import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.patryk3211.powergrid.base.CustomProperties;
-import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.SurfaceSwitchBlock;

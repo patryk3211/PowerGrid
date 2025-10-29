@@ -79,6 +79,7 @@ public class ModdedConfigs {
 
         ResistanceValues.register(server.electricity.resistance);
         ThermalValues.register(server.electricity.thermal);
+        WireValues.register(server.electricity.wires);
     }
 
     public static void onLoad(ModConfig modConfig) {

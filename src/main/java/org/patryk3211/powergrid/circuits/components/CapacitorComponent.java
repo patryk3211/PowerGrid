@@ -27,7 +27,7 @@ import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 
 public class CapacitorComponent extends OrientableComponent {
-    public static final FloatProperty CAPACITANCE = new FloatProperty(PowerGrid.MOD_ID, "capacitor_value", 0.1f, 1e-4f, 1.0f);
+    public static final FloatProperty CAPACITANCE = new FloatProperty(PowerGrid.MOD_ID, "capacitor_value", 0.1f, 1e-4f, 1000.0f);
     private static final ChargeProperty CHARGE = new ChargeProperty(PowerGrid.MOD_ID, "charge");
 
     public CapacitorComponent(ComponentFootprint footprint) {
@@ -42,7 +42,7 @@ public class CapacitorComponent extends OrientableComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var capacitorWire = new CapacitorWire(placed.get(CAPACITANCE), builder.terminalNode(0), builder.terminalNode(1));
+        var capacitorWire = new CapacitorWire(placed.get(CAPACITANCE) / 1000, builder.terminalNode(0), builder.terminalNode(1));
         capacitorWire.setVoltage(placed.get(CHARGE));
         builder.add(capacitorWire);
         placed.add(capacitorWire);

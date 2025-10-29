@@ -109,6 +109,14 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         tag.putFloat("NodeValue", getValue());
     }
 
+    @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        if(overwrite)
+            tag.putBoolean("Overwrite", true);
+        tag.putFloat("NodeValue", getValue());
+    }
+
     public void setValue(float value) {
         if(voltageSource) {
             voltageSourceNode.setVoltage(value);

@@ -30,7 +30,6 @@ import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.utility.Lang;
 
 import static net.minecraft.ChatFormatting.*;
-import static net.minecraft.ChatFormatting.DARK_GRAY;
 
 public class ElectricProperties implements TooltipModifier {
     private final IHaveElectricProperties properties;

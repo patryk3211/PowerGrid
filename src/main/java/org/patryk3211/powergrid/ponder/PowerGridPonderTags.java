@@ -39,14 +39,7 @@ public class PowerGridPonderTags {
         helper.registerTag(GENERATOR_ASSEMBLY)
                 .title("Generator Parts")
                 .description("Components which can be used to build a generator")
-                .item(ModdedBlocks.GENERATOR_ROTOR, true, false)
-                .item(ModdedBlocks.GENERATOR_CLUTCH)
-                .item(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
-                .item(ModdedBlocks.GENERATOR_COMMUTATOR)
-                .item(ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
-                .item(ModdedItems.COPPER_COIL)
-                .item(ModdedBlocks.GENERATOR_HOUSING)
-                .item(ModdedBlocks.VERTICAL_GENERATOR_HOUSING)
+                .item(ModdedBlocks.GENERATOR_INDUCTION_ROTOR, true, false)
                 .addToIndex()
                 .register();
 
@@ -73,7 +66,6 @@ public class PowerGridPonderTags {
 
         PonderTagRegistrationHelper<RegistryEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
         HELPER.addToTag(GENERATOR_ASSEMBLY)
-                .add(ModdedBlocks.GENERATOR_ROTOR)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)
                 .add(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
                 .add(ModdedBlocks.GENERATOR_COMMUTATOR)
@@ -96,10 +88,14 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.RESISTOR)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
                 .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
-                .add(ModdedBlocks.DEVICE_CONNECTOR);
+                .add(ModdedBlocks.DEVICE_CONNECTOR)
+                .add(ModdedBlocks.CORD_JUNCTION)
+                .add(ModdedBlocks.SOCKET)
+                .add(ModdedBlocks.GROUNDING_ROD);
 
         HELPER.addToTag(ELECTRIC_DEVICES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR)
+                .add(ModdedBlocks.CONSTANT_SPEED_MOTOR)
                 .add(ModdedBlocks.SERVO)
                 .add(ModdedBlocks.HEATING_COIL)
                 .add(ModdedBlocks.ELECTRIC_FAN)
@@ -112,16 +108,16 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.WIRE_CONNECTOR)
                 .add(AllItems.COPPER_NUGGET)
                 .add(ModdedItems.RESISTOR)
-                .add(ModdedItems.DIODE)
                 .add(ModdedItems.CAPACITOR)
+                .add(ModdedItems.COPPER_COIL)
                 .add(ModdedItems.RELAY)
                 .add(ModdedItems.REDSTONE_RELAY)
                 .add(AllItems.ELECTRON_TUBE)
-                .add(ModdedItems.LED)
+                .add(ModdedItems.REGULATOR_TUBE)
+                .add(ModdedItems.NEON_BULB)
                 .add(ModdedBlocks.LV_SWITCH)
                 .add(ModdedBlocks.LV_BUTTON)
                 .add(ModdedItems.POTENTIOMETER)
-                .add(ModdedItems.BJT_TRANSISTOR)
                 .add(ModdedBlocks.VOLTAGE_METER)
                 .add(ModdedBlocks.CURRENT_METER);
 
@@ -130,11 +126,13 @@ public class PowerGridPonderTags {
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR)
+                .add(ModdedBlocks.CONSTANT_SPEED_MOTOR)
                 .add(ModdedBlocks.SERVO);
 
         HELPER.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
                 .add(ModdedBlocks.VOLTAGE_METER)
                 .add(ModdedBlocks.CURRENT_METER)
+                .add(ModdedBlocks.POWER_METER)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)
                 .add(ModdedBlocks.BATTERY);
     }

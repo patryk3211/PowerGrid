@@ -33,6 +33,8 @@ public class CGenerator extends ConfigBase {
 	public final ConfigFloat generatorCommutatorInertia = f(0.05f, 0, "generatorCommutatorInertia");
 	public final ConfigFloat generatorClutchInertia = f(0.05f, 0, "generatorClutchInertia");
 
+	public final ConfigFloat fieldSaturationCurrent = f(2.0f, 0, "fieldSaturationCurrent", Comments.fieldSaturationCurrent);
+
     @Override
     public String getName() {
         return "generatorControl";
@@ -45,5 +47,6 @@ public class CGenerator extends ConfigBase {
 		public static final String rotorRPMMax = "Maximum rotation speed of a rotor";
 		public static final String rotorAssemblyMaxSize = "Maximum length of a rotor assembly";
 		public static final String rotorSegmentFriction = "Force of friction applied for each segment of the rotor assembly";
+		public static final String fieldSaturationCurrent = "Current required for maximum field strength of the generator's field windings";
 	}
 }

@@ -4,11 +4,12 @@
     "powergrid:conductive_casing",
     "powergrid:wire_connector",
     "powergrid:heavy_wire_connector",
+    "powergrid:cord_junction",
     "powergrid:heating_coil",
     "powergrid:basin_heater",
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
-    "powergrid:generator_rotor",
+    "powergrid:power_gauge",
     "powergrid:generator_induction_rotor",
     "powergrid:generator_commutator",
     "powergrid:generator_vertical_commutator",
@@ -31,6 +32,7 @@
     "powergrid:transformer_medium",
     "powergrid:variac",
     "powergrid:electric_motor",
+    "powergrid:constant_speed_motor",
     "powergrid:servo",
     "powergrid:electromagnet",
     "powergrid:electric_fan",
@@ -38,9 +40,11 @@
     "powergrid:circuit_board",
     "powergrid:winding",
     "powergrid:device_connector",
+    "powergrid:socket",
     "powergrid:fuse_holder",
     "powergrid:alarm_bell",
     "powergrid:thermometer",
-    "powergrid:rheostat"
+    "powergrid:rheostat",
+    "powergrid:grounding_rod"
   ]
 }

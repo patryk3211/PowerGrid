@@ -40,10 +40,11 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
 import java.util.List;
 
-public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>, IHaveElectricProperties {
+public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>, IHaveElectricProperties, IAcceptCord {
     private static final TerminalBoundingBox NORTH_TERMINAL1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 12, 12, 7, 15, 15, 10);
     private static final TerminalBoundingBox NORTH_TERMINAL2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 1, 12, 7, 4, 15, 10);
 
@@ -153,5 +154,10 @@ public class HeaterBlock extends ElectricBlock implements IBE<HeaterBlockEntity>
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
         Power.max(stack, player, tooltip);
+    }
+
+    @Override
+    public boolean renderPlug() {
+        return true;
     }
 }

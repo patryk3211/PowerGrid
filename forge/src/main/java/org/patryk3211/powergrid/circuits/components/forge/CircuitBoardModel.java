@@ -18,9 +18,11 @@ package org.patryk3211.powergrid.circuits.components.forge;
 import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.*;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.*;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.BlockModelRotation;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -171,6 +173,9 @@ public class CircuitBoardModel implements BakedModel {
                             new Transformation(new Vector3f(placed.x / 16f - 0.5f, 2 / 16f - 0.5f, placed.y / 16f - 0.5f),
                                     null, null, null)
                     );
+                }
+                if(placed.destroyed) {
+                    transformer = transformer.andThen(QuadTransformers.applyingColor(64, 64, 64));
                 }
                 var componentQuads = model.getQuads(state, side, rand, data, renderType);
                 quads.addAll(transformer.process(componentQuads));

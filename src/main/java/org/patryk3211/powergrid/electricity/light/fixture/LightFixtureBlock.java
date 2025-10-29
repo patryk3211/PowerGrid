@@ -29,6 +29,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -56,6 +57,8 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -63,7 +66,7 @@ import java.util.List;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixtureBlockEntity> {
+public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixtureBlockEntity>, IAcceptCord {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 2);
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
@@ -206,5 +209,20 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
     @Override
     public BlockEntityType<? extends LightFixtureBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.LIGHT_FIXTURE.get();
+    }
+
+    @Override
+    public @Nullable AutoCordEndpoint getEndpoint(UseOnContext context) {
+        var level = context.getLevel();
+        var pos = context.getClickedPos();
+        var state = level.getBlockState(pos);
+        var facing = state.getValue(FACING);
+
+        var center = Vec3.atCenterOf(pos);
+        var normal = facing.getNormal();
+        var point = center.add(normal.getX() * -0.40625, normal.getY() * -0.40625, normal.getZ() * -0.40625);
+
+        return new AutoCordEndpoint(context.getClickedPos(), 0, 1, point,
+                renderPlug() ? context.getClickedFace() : null);
     }
 }

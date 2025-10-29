@@ -34,6 +34,7 @@ public class CapacitorTest extends TestHelper {
         // Simulate for 1 second
         for(int i = 0; i < 20; ++i) {
             Net.calculate();
+            Assertions.assertEquals(V1.getCurrent(), C.current(), 1e-5f, "Capacitor current is incorrect");
         }
 
         Assertions.assertEquals(0.632f, C.potentialDifference(), 0.01f, "Capacitor voltage is incorrect");

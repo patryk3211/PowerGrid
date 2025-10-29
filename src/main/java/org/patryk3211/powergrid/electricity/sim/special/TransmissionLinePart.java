@@ -26,12 +26,11 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class TransmissionLinePart extends ElectricWire {
     @Nullable
@@ -40,8 +39,8 @@ public class TransmissionLinePart extends ElectricWire {
     private final WorldNetworks global;
 
     @Nullable
-    public WireEntity owner;
-    public final UUID persistentOwnerId;
+    public BaseWireEntity owner;
+    public final WorldNetworks.PartId persistentOwnerId;
     public ChunkPos lastKnownChunk;
 
     @NotNull
@@ -49,7 +48,7 @@ public class TransmissionLinePart extends ElectricWire {
     @NotNull
     public IWireEndpoint endpoint2;
 
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, UUID ownerId, ChunkPos lastKnownChunk, @NotNull WorldNetworks global) {
+    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, WorldNetworks.PartId ownerId, ChunkPos lastKnownChunk, @NotNull WorldNetworks global) {
         super(resistance, global.holderOrPlaceholderNode(endpoint1), global.holderOrPlaceholderNode(endpoint2));
         this.global = global;
         this.endpoint1 = endpoint1;
@@ -59,42 +58,24 @@ public class TransmissionLinePart extends ElectricWire {
         global.registerPart(persistentOwnerId, this);
     }
 
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull WorldNetworks global) {
+    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull BaseWireEntity owner, @NotNull WorldNetworks global, WorldNetworks.PartId id) {
         super(resistance, global.holderOrPlaceholderNode(endpoint1), global.holderOrPlaceholderNode(endpoint2));
         this.global = global;
         this.owner = owner;
         this.endpoint1 = endpoint1;
         this.endpoint2 = endpoint2;
-        this.persistentOwnerId = owner.getUUID();
+        this.persistentOwnerId = id;
         this.lastKnownChunk = new ChunkPos(owner.blockPosition());
-        global.registerPart(persistentOwnerId, this);
-    }
-
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull TransmissionLine line) {
-        super(resistance, line.global().holderOrPlaceholderNode(endpoint1), line.global().holderOrPlaceholderNode(endpoint2));
-        this.line = line;
-        this.global = line.global();
-        this.owner = owner;
-        this.endpoint1 = endpoint1;
-        this.endpoint2 = endpoint2;
-        this.persistentOwnerId = owner.getUUID();
-        this.lastKnownChunk = new ChunkPos(owner.blockPosition());
-        global.registerPart(persistentOwnerId, this);
-    }
-
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, UUID ownerId, ChunkPos lastKnownChunk, @NotNull TransmissionLine line) {
-        super(resistance, line.global().holderOrPlaceholderNode(endpoint1), line.global().holderOrPlaceholderNode(endpoint2));
-        this.global = line.global();
-        this.persistentOwnerId = ownerId;
-        this.lastKnownChunk = lastKnownChunk;
-        this.endpoint1 = endpoint1;
-        this.endpoint2 = endpoint2;
-        this.line = line;
         global.registerPart(persistentOwnerId, this);
     }
 
     public static TransmissionLinePart uniquePart(CompoundTag tag, WorldNetworks global) {
-        var ownerId = tag.getUUID("Owner");
+        WorldNetworks.PartId ownerId;
+        if(tag.contains("ComplexOwner")) {
+            ownerId = new WorldNetworks.ComplexId(tag.getUUID("Owner"), tag.getInt("ComplexOwner"));
+        } else {
+            ownerId = new WorldNetworks.SimpleId(tag.getUUID("Owner"));
+        }
         var resistance = tag.getDouble("Resistance");
         var endpoint1 = WireEndpointType.deserialize(tag.getCompound("Node1"));
         var endpoint2 = WireEndpointType.deserialize(tag.getCompound("Node2"));
@@ -109,32 +90,10 @@ public class TransmissionLinePart extends ElectricWire {
         return part;
     }
 
-    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, WireEntity owner, @NotNull WorldNetworks global) {
-        var part = global.getPart(owner.getUUID());
+    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, BaseWireEntity owner, @NotNull WorldNetworks global, WorldNetworks.PartId id) {
+        var part = global.getPart(id);
         if(part == null)
-            return new TransmissionLinePart(resistance, endpoint1, endpoint2, owner, global);
-        if(!endpoint1.equals(part.endpoint1))
-            throw new IllegalStateException();
-        if(!endpoint2.equals(part.endpoint2))
-            throw new IllegalStateException();
-        return part;
-    }
-
-    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, UUID ownerId, ChunkPos lastKnownChunk, @NotNull TransmissionLine line) {
-        var part = line.global().getPart(ownerId);
-        if(part == null)
-            return new TransmissionLinePart(resistance, endpoint1, endpoint2, ownerId, lastKnownChunk, line);
-        if(!endpoint1.equals(part.endpoint1))
-            throw new IllegalStateException();
-        if(!endpoint2.equals(part.endpoint2))
-            throw new IllegalStateException();
-        return part;
-    }
-
-    public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull WireEntity owner, @NotNull TransmissionLine line) {
-        var part = line.global().getPart(owner.getUUID());
-        if(part == null)
-            return new TransmissionLinePart(resistance, endpoint1, endpoint2, owner, line);
+            return new TransmissionLinePart(resistance, endpoint1, endpoint2, owner, global, id);
         if(!endpoint1.equals(part.endpoint1))
             throw new IllegalStateException();
         if(!endpoint2.equals(part.endpoint2))
@@ -200,8 +159,8 @@ public class TransmissionLinePart extends ElectricWire {
         owner = null;
     }
 
-    public void grab(WireEntity forEntity) {
-        if(persistentOwnerId.equals(forEntity.getUUID())) {
+    public void grab(BaseWireEntity forEntity, WorldNetworks.PartId id) {
+        if(persistentOwnerId.equals(id)) {
             owner = forEntity;
             if (line != null)
                 line.grabPart(forEntity, this);
@@ -240,6 +199,13 @@ public class TransmissionLinePart extends ElectricWire {
     }
 
     @Override
+    public boolean isConverged() {
+        if(line == null)
+            return false;
+        return line.isConverged();
+    }
+
+    @Override
     public String toString() {
         return String.format("LinePart[id=%s, %s, %s]", persistentOwnerId, endpoint1, endpoint2);
     }
@@ -248,7 +214,12 @@ public class TransmissionLinePart extends ElectricWire {
         var tag = new CompoundTag();
         tag.put("Node1", endpoint1.serialize());
         tag.put("Node2", endpoint2.serialize());
-        tag.putUUID("Owner", persistentOwnerId);
+        if(persistentOwnerId instanceof WorldNetworks.SimpleId id) {
+            tag.putUUID("Owner", id.id());
+        } else if(persistentOwnerId instanceof WorldNetworks.ComplexId id) {
+            tag.putUUID("Owner", id.id());
+            tag.putInt("ComplexOwner", id.sub());
+        }
         if(owner != null)
             lastKnownChunk = new ChunkPos(owner.blockPosition());
         tag.putInt("X", lastKnownChunk.x);

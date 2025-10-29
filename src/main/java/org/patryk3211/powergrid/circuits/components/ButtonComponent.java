@@ -35,7 +35,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import java.util.Collection;
 import java.util.List;
 
-public class ButtonComponent extends OrientableComponent implements IInteractableComponent {
+public class ButtonComponent extends OrientableComponent implements IInteractableComponent, IGoggleLabel {
     public static final IntProperty STATE = (IntProperty) new IntProperty(PowerGrid.MOD_ID, "button_state", 0, 0, 10).hidden();
 
     public ButtonComponent(ComponentFootprint footprint) {
@@ -45,7 +45,7 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(STATE, current(16));
+        properties.add(STATE, LABEL, current(16));
     }
 
     @Override

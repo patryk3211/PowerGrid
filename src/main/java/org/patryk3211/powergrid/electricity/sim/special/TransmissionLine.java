@@ -24,10 +24,12 @@ import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class TransmissionLine extends ElectricWire {
     public static final boolean ENABLE_VALIDATION = false;
@@ -63,7 +65,7 @@ public class TransmissionLine extends ElectricWire {
         this.id = id;
     }
 
-    private int validateEndpoints(TransmissionLinePart part, WireEntity owner) {
+    private int validateEndpoints(TransmissionLinePart part, BaseWireEntity owner) {
         if(part.endpoint1.equals(owner.getEndpoint1())) {
             if(part.endpoint2.equals(owner.getEndpoint2())) {
                 return 1;
@@ -148,7 +150,7 @@ public class TransmissionLine extends ElectricWire {
         return endpoint2;
     }
 
-    public void grabPart(@NotNull WireEntity owner, TransmissionLinePart part) {
+    public void grabPart(@NotNull BaseWireEntity owner, TransmissionLinePart part) {
         if(part.persistentOwnerId.equals(owner.getUUID())) {
             // If the owner id matches then the endpoints should match too
             var endpointArrangement = validateEndpoints(part, owner);

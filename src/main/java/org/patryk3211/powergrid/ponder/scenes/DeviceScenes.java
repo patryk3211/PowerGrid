@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
@@ -416,7 +417,44 @@ public class DeviceScenes {
         scene.idle(50);
 
         scene.markAsFinished();
-        scene.electric().unload();
+    }
+
+    public static void constantSpeedMotor(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("constant_speed_motor", "Regulated Motor");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(10);
+        var section = scene.world().showIndependentSection(util.select().fromTo(1, 1, 3, 2, 2, 3), Direction.DOWN);
+        scene.world().moveSection(section, util.vector().of(0, 0, -1), 0);
+        scene.idle(10);
+
+        scene.world().setKineticSpeed(util.select().fromTo(1, 1, 2, 2, 2, 3), 32);
+        scene.world().setKineticSpeed(util.select().fromTo(1, 1, 3, 2, 1, 3), 8);
+
+        scene.overlay().showText(80)
+                .text("A Constant Speed Motor combines the functionality of an Electric Motor and a Speed Controller")
+                .pointAt(util.vector().of(1.5, 1.5, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world().hideIndependentSection(section, Direction.UP);
+        scene.idle(20);
+        scene.world().showSection(util.select().fromTo(1, 1, 2, 2, 1, 2), Direction.DOWN);
+        scene.idle(20);
+        scene.effects().indicateSuccess(util.grid().at(2, 1, 2));
+        scene.idle(20);
+
+        scene.overlay().showText(90)
+                .text("Its speed is constant while the provided voltage determines the stress capacity and rotation direction")
+                .pointAt(util.vector().topOf(2, 1, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(100);
+
+        scene.markAsFinished();
     }
 
     public static void basinHeater(SceneBuilder scene, SceneBuildingUtil util) {
@@ -548,12 +586,12 @@ public class DeviceScenes {
         var magnetPos = util.grid().at(2, 3, 2);
         var depotPos = util.grid().at(2, 1, 1);
 
-        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be -> {
-            var nodes = be.getElectricBehaviour().getExternalNodes();
-            // Override node voltage
-            nodes.get(0).receiveResult(200f);
-            nodes.get(1).receiveResult(0f);
-        });
+        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be ->
+                be.getBehaviour(ThermalBehaviour.TYPE).behaviourFlags(0));
+        scene.electric().addSource(magnetPos, 0, 200);
+        scene.electric().addSource(magnetPos, 1, 0);
+        scene.electric().tickFor(5);
+
         scene.world().showSection(magnet, Direction.DOWN);
         scene.idle(10);
 

@@ -16,14 +16,11 @@
 package org.patryk3211.powergrid.kinetics.variac;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
-import net.createmod.catnip.animation.LerpedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -34,7 +31,6 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSoundInstance;
 import org.patryk3211.powergrid.electricity.transformer.TransformerVolumeProvider;
-import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -114,17 +110,18 @@ public class VariacBlockEntity extends TunedBlockEntity implements TransformerVo
     public void tick() {
         float power = 0;
         lastCurrent = 0;
-        if(primaryStray != null) {
+        if(primaryStray != null && primaryStray.isConverged()) {
             var I1 = primaryStray.current();
             power += (float) (I1 * I1 * primaryStray.getResistance());
             lastCurrent += Math.abs(I1);
         }
-        if(mutualInductance != null) {
+        if(mutualInductance != null && mutualInductance.isConverged()) {
             var I3 = mutualInductance.current();
             power += (float) (I3 * I3 * mutualInductance.getResistance());
             lastCurrent += Math.abs(I3);
         }
-        applyLostPower(power);
+        if(thermalBehaviour != null)
+            thermalBehaviour.applyTickPower(power);
         super.tick();
     }
 

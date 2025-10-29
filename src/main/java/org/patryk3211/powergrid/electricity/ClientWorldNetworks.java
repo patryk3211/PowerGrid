@@ -28,10 +28,10 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
 import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
@@ -56,7 +56,8 @@ public class ClientWorldNetworks extends WorldNetworks {
         var iter = phantomLines.values().iterator();
         while(iter.hasNext()) {
             var data = iter.next();
-            if(data.age++ >= 5) {
+            data.tick();
+            if(data.age > 5) {
                 data.remove();
                 iter.remove();
             }
@@ -64,7 +65,7 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     @Override
-    public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, WireEntity forEntity) {
+    public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, PartId id) {
         throw new IllegalCallerException("Not on the client");
     }
 
@@ -97,30 +98,30 @@ public class ClientWorldNetworks extends WorldNetworks {
                     // Packet is not needed, the nodes are actually connected.
                     return;
             }
-            var line1 = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance, packet.lineId);
-            line1.source.setVoltage(packet.node2Voltage);
+            var line1 = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance, packet.lineId, packet.node2Voltage);
+            line1.setVoltage((packet.node2Voltage - packet.node1Voltage) / packet.lineResistance);
 
-            var line2 = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance, packet.lineId);
-            line2.source.setVoltage(packet.node1Voltage);
+            var line2 = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance, packet.lineId, packet.node1Voltage);
+            line2.setVoltage((packet.node1Voltage - packet.node2Voltage) / packet.lineResistance);
         } else if(packet.endpoint1.isValid(world)) {
-            var line = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance, packet.lineId);
-            line.source.setVoltage(packet.node2Voltage);
+            var line = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance, packet.lineId, packet.node2Voltage);
+            line.setVoltage((packet.node2Voltage - packet.node1Voltage) / packet.lineResistance);
         } else if(packet.endpoint2.isValid(world)) {
-            var line = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance, packet.lineId);
-            line.source.setVoltage(packet.node1Voltage);
+            var line = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance, packet.lineId, packet.node1Voltage);
+            line.setVoltage((packet.node1Voltage - packet.node2Voltage) / packet.lineResistance);
         }
     }
 
-    private PhantomLineData getPhantomLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance, int lineId) {
+    private PhantomLineData getPhantomLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance, int lineId, float initialVoltage) {
         var targetNode = endpoint1.getNode(world);
         if(targetNode.getNetwork() == null) {
             var network = newNetwork();
             endpoint1.joinNetwork(world, network);
         }
         var line = phantomLines.computeIfAbsent(new PhantomLine(endpoint1, endpoint2),
-                key -> new PhantomLineData(targetNode, resistance));
-        if(line.wire.getResistance() != resistance)
-            line.wire.setResistance(resistance);
+                key -> new PhantomLineData(targetNode, resistance, initialVoltage));
+        if(line.source.getResistance() != resistance)
+            line.source.setResistance(resistance);
         line.age = 0;
         line.lineId = lineId;
         return line;
@@ -155,7 +156,10 @@ public class ClientWorldNetworks extends WorldNetworks {
     @Override
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
         var lines = Set.copyOf(globalGraph.getConnectedLines(ownedNode));
-        lines.forEach(TransmissionLine::remove);
+        lines.forEach(line -> {
+            removePhantomLines(line);
+            line.remove();
+        });
 
         super.nodeHolderRemoved(ownedNode);
         ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, true));
@@ -333,27 +337,39 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     private static class PhantomLineData {
-        public final VoltageSourceNode source;
-        public final ElectricWire wire;
+        public final VoltageSourceCoupling source;
         public final IElectricNode node;
         public int age;
         public int lineId;
+        public float current;
 
-        public PhantomLineData(IElectricNode node, float resistance) {
+        public PhantomLineData(IElectricNode node, float resistance, float initialVoltage) {
             assert node.getNetwork() != null;
             this.node = node;
-            this.source = new VoltageSourceNode();
-            this.wire = new ElectricWire(resistance, node, source);
+            this.source = new VoltageSourceCoupling(node, null, resistance, initialVoltage);
             this.age = 0;
 
             var network = node.getNetwork();
             network.addNode(source);
-            network.addWire(wire);
         }
 
         public void remove() {
-            source.getNetwork().removeNode(source);
-            wire.remove();
+            if(source.getNetwork() != null)
+                source.getNetwork().removeNode(source);
+        }
+
+        public void tick() {
+            ++age;
+            if(current == 0 || !source.isConverged() || source.getCurrent() == 0)
+                return;
+            var deltaI = source.getCurrent() + current;
+            if(deltaI == 0)
+                return;
+            source.setVoltage(source.getVoltage() + source.getResistance() * deltaI);
+        }
+
+        public void setVoltage(float targetCurrent) {
+            current = targetCurrent;
         }
     }
 }

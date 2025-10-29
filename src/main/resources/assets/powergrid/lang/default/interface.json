@@ -1,6 +1,7 @@
 {
   "powergrid.gui.voltage_meter.title": "Measured voltage",
   "powergrid.gui.current_meter.title": "Measured current",
+  "powergrid.gui.power_meter.title": "Measured power",
   "powergrid.gui.thermometer.title": "Measured temperature",
   "powergrid.gui.thermometer.max_title": "Max measured temperature",
   "powergrid.gui.thermometer.click": "Click to reset max measurement",
@@ -36,6 +37,7 @@
 
   "powergrid.gui.damage_header": "Damaged",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
+  "powergrid.gui.circuit_board.damage_creative_repair": "Sneak-right-click to repair",
   "powergrid.gui.switch.overvolted": "This switch has been overvolted",
 
   "powergrid.gui.thermometer.temperature": "Temperature: ",
@@ -51,6 +53,7 @@
   "powergrid.generic.unit.watt": "W",
   "powergrid.generic.unit.temperature": "°C",
   "powergrid.generic.unit.block": "blocks",
+  "powergrid.generic.unit.charge": "Wh",
 
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
@@ -65,6 +68,8 @@
   "powergrid.tooltip.power.rated": "Rated power:",
 
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
+
+  "powergrid.tooltip.charge.current": "Current charge:",
 
   "powergrid.tooltip.circuit_assembly": "Circuit Assembly",
   "powergrid.tooltip.circuit_assembly.progress": "Progress",
@@ -83,6 +88,10 @@
   "powergrid.generic.control_terminal": "Control",
   "powergrid.generic.common": "Common",
   "powergrid.generic.tap": "Tap",
+  "powergrid.generic.socket": "Socket",
+  "powergrid.generic.cord": "Cord Connector",
+  "powergrid.generic.input": "Input",
+  "powergrid.generic.output": "Output",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
@@ -96,6 +105,8 @@
   "powergrid.devices.spark_gap.voltage": "Breakdown Voltage",
   "powergrid.devices.gauge.voltage": "Maximum voltage",
   "powergrid.devices.gauge.current": "Maximum current",
+  "powergrid.devices.gauge.power": "Maximum power",
+  "powergrid.devices.motor.speed": "Speed",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",
@@ -126,6 +137,9 @@
   "powergrid.component.property.power.summary": "Maximum power that this component can handle for prolonged periods of time",
   "powergrid.component.property.current": "Current",
   "powergrid.component.property.current.summary": "Maximum current that this component can handle for prolonged periods of time",
+  "powergrid.component.property.voltage": "Voltage",
+  "powergrid.component.property.voltage.summary": "Maximum voltage that this component can handle",
+  "powergrid.component.property.label": "Label",
 
   "powergrid.component.property.tube_gain": "Gain",
   "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
@@ -145,25 +159,27 @@
   "powergrid.component.property.relay_state": "State",
 
   "powergrid.component.property.resistor_value": "Resistance [Ω]",
-  "powergrid.component.property.capacitor_value": "Capacitance [F]",
+  "powergrid.component.property.capacitor_value": "Capacitance [mF]",
+  "powergrid.component.property.inductor_value": "Inductance [mH]",
 
   "powergrid.component.property.redstone_emitter_digital": "Digital",
 
   "powergrid.component.property.orientation": "Orientation",
 
-  "powergrid.component.property.led_red": "Red",
-  "powergrid.component.property.led_green": "Green",
-  "powergrid.component.property.led_blue": "Blue",
-  "powergrid.component.property.led_vf": "Forward Voltage",
-  "powergrid.component.property.led_if": "Forward Current",
-
   "powergrid.component.property.potentiometer_resistance": "Resistance",
   "powergrid.component.property.potentiometer_value": "Setting",
 
-  "powergrid.component.property.bjt_beta": "Beta",
-  "powergrid.component.property.bjt_beta.summary": "Transistor forward current gain value",
-  "powergrid.component.property.bjt_bias": "Bias Voltage",
-  "powergrid.component.property.bjt_bias.summary": "Base-emitter junction bias voltage",
+  "powergrid.component.property.current_gauge_max": "Max Current",
+  "powergrid.component.property.voltage_gauge_max": "Max Voltage",
+
+  "powergrid.component.property.regulator_tube_vh": "Holding Voltage",
+  "powergrid.component.property.regulator_tube_vh.summary": "Regulated voltage held by the regulator tube when it is lit and current is steady",
+  "powergrid.component.property.neon_tube_vb": "Breakdown Voltage",
+  "powergrid.component.property.neon_tube_vb.summary": "Voltage needed to light up the tube",
+  "powergrid.component.property.neon_tube_ih": "Holding Current",
+  "powergrid.component.property.neon_tube_ih.summary": "Minimum current needed to keep the tube lit",
+  "powergrid.component.property.neon_tube_vh": "Holding Voltage",
+  "powergrid.component.property.neon_tube_vh.summary": "Approximate voltage held by the tube once lit",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",

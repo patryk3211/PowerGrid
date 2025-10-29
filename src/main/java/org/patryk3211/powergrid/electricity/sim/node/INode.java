@@ -24,5 +24,16 @@ public interface INode {
     void setNetwork(ElectricalNetwork network);
     ElectricalNetwork getNetwork();
 
-    void receiveResult(float value);
+    default double getStateValue() {
+        if(getNetwork() != null)
+            return getNetwork().getValue(this);
+        return 0;
+    }
+
+    default boolean isConverged() {
+        var network = getNetwork();
+        if(network == null)
+            return false;
+        return network.isConverged();
+    }
 }

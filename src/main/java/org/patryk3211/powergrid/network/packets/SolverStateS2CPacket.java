@@ -26,8 +26,8 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,18 +35,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-;
-
 public class SolverStateS2CPacket implements SimplePacket {
     private final Map<BlockPos, double[]> solverValues = new HashMap<>();
     public final Set<ChunkPos> chunks = new HashSet<>();
 
     public SolverStateS2CPacket(Level world, ElectricalNetwork network) {
         // Read values straight from the solver guess vector
-        var vector = network.getStateMatrix();
-        if(vector == null)
-            return;
-
         for(var node : network.getNodes()) {
             if(!(node instanceof OwnedFloatingNode owned))
                 continue;
@@ -63,20 +57,16 @@ public class SolverStateS2CPacket implements SimplePacket {
             var internal = behaviour.getInternalNodes();
             if(external.isEmpty())
                 continue;
-            if(external.get(0).getNetwork() != network)
+            if(behaviour.getNetwork() != network)
                 continue;
 
             var doubles = new double[external.size() + internal.size()];
             int index = 0;
             for(var eNode : behaviour.getExternalNodes()) {
-                if(vector.getNumRows() <= eNode.getIndex())
-                    continue;
-                doubles[index++] = vector.get(eNode.getIndex(), 0);
+                doubles[index++] = eNode.getStateValue();
             }
             for(var iNode : behaviour.getInternalNodes()) {
-                if(vector.getNumRows() <= iNode.getIndex())
-                    continue;
-                doubles[index++] = vector.get(iNode.getIndex(), 0);
+                doubles[index++] = iNode.getStateValue();
             }
             solverValues.put(behaviour.getPos(), doubles);
         }
@@ -119,20 +109,20 @@ public class SolverStateS2CPacket implements SimplePacket {
                 var external = behaviour.getExternalNodes();
                 if(external.isEmpty())
                     continue;
-                var network = external.get(0).getNetwork();
+                var network = behaviour.getNetwork();
                 if(network == null)
                     continue;
                 var doubles = entry.getValue();
                 int index = 0;
                 // This assumes that the solver guess vector is not reallocated before every solve,
                 // which is true for the current implementation.
-                var vector = network.getStateMatrix();
+                var vector = network.getStateVector();
                 if(vector == null)
                     continue;
                 for(var eNode : external) {
                     if(vector.getNumRows() <= eNode.getIndex())
                         continue;
-                    var diff = doubles[index] - vector.get(eNode.getIndex(), 0);
+                    var diff = doubles[index] - eNode.getStateValue();
                     if(diff > 0.5)
                         PowerGrid.LOGGER.debug("Solver sync corrected difference of {} at {}", diff, pos);
                     vector.set(eNode.getIndex(), 0, doubles[index++]);
@@ -140,7 +130,7 @@ public class SolverStateS2CPacket implements SimplePacket {
                 for(var iNode : behaviour.getInternalNodes()) {
                     if(vector.getNumRows() <= iNode.getIndex())
                         continue;
-                    var diff = doubles[index] - vector.get(iNode.getIndex(), 0);
+                    var diff = doubles[index] - iNode.getStateValue();
                     if(diff > 0.5)
                         PowerGrid.LOGGER.debug("Solver sync corrected difference of {} at {}", diff, pos);
                     vector.set(iNode.getIndex(), 0, doubles[index++]);

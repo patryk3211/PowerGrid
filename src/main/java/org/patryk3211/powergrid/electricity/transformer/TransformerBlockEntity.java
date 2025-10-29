@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -25,9 +26,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -35,6 +39,7 @@ import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, TransformerVolumeProvider {
@@ -64,19 +69,20 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     public void tick() {
         float power = 0;
         lastCurrent = 0;
-        if(primaryStray != null) {
+        if(primaryStray != null && primaryStray.isConverged()) {
             var I1 = primaryStray.current();
             var P1 = I1 * I1 * primaryStray.getResistance();
             power += P1;
             lastCurrent += Math.abs(I1);
         }
-        if(mutualInductance != null) {
+        if(mutualInductance != null && mutualInductance.isConverged()) {
             var I3 = mutualInductance.current();
             var P3 = I3 * I3 * mutualInductance.getResistance();
             power += P3;
             lastCurrent += Math.abs(I3);
         }
-        applyLostPower(power);
+        if(thermalBehaviour != null)
+            thermalBehaviour.applyTickPower(power);
         super.tick();
         if(level.isClientSide) {
             tickAudio();
@@ -140,6 +146,38 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         }
     }
 
+    @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+
+        if(primaryCoil != null && primaryCoil.isDefined()) {
+            var primary = new CompoundTag();
+            primaryCoil.writeNbt(primary);
+            tag.put("Primary", primary);
+        }
+
+        if(secondaryCoil != null && secondaryCoil.isDefined()) {
+            var secondary = new CompoundTag();
+            secondaryCoil.writeNbt(secondary);
+            tag.put("Secondary", secondary);
+        }
+    }
+
+    @Override
+    public ItemRequirement getRequiredItems(BlockState state) {
+        var count = 0;
+        if(primaryCoil != null)
+            count += primaryCoil.getTurns();
+        if(secondaryCoil != null)
+            count += secondaryCoil.getTurns();
+        var stacks = new ArrayList<ItemStack>();
+        while(count > 0) {
+            stacks.add(ModdedItems.WIRE.asStack(Math.min(count, 64)));
+            count -= 64;
+        }
+        return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, stacks);
+    }
+
     public boolean isTerminalUsed(int index) {
         if(primaryCoil.isDefined()) {
             if(primaryCoil.getTerminal1() == index || primaryCoil.getTerminal2() == index)
@@ -196,6 +234,10 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     }
 
+    public static float mutualMultiplier() {
+        return ModdedConfigs.server().electricity.transformerMutualInductanceMultiplier.getF();
+    }
+
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         if(primaryCoil == null) {
@@ -243,15 +285,14 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             var P2 = builder.terminalNode(primaryCoil.getTerminal2());
 
             this.primaryStray = builder.connect(primaryStray, P1, Tnode);
-            // TODO: Make the mutual inductance to resistance conversion ratio a configurable values (or maybe a per core property)
-            this.mutualInductance = builder.connect((float) mutualInductance * 10, Tnode, P2);
+            this.mutualInductance = builder.connect((float) mutualInductance * mutualMultiplier(), Tnode, P2);
             this.coupling = builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
         } else if(primaryCoil.isDefined()) {
-            this.primaryStray = builder.connect((float) primaryInductance * 10, builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));
+            this.primaryStray = builder.connect((float) primaryInductance * mutualMultiplier(), builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));
             this.mutualInductance = null;
             this.coupling = null;
         } else if(secondaryCoil.isDefined()) {
-            this.primaryStray = builder.connect((float) secondaryInductance * 10, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
+            this.primaryStray = builder.connect((float) secondaryInductance * mutualMultiplier(), builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
             this.mutualInductance = null;
             this.coupling = null;
         }

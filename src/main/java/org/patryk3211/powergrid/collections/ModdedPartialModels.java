@@ -23,6 +23,7 @@ public class ModdedPartialModels {
 
     public static final PartialModel CONDUCTIVE_VOLTAGE_HEAD = block("gauge/conductive/voltage_head");
     public static final PartialModel CONDUCTIVE_CURRENT_HEAD = block("gauge/conductive/current_head");
+    public static final PartialModel CONDUCTIVE_POWER_HEAD = block("gauge/conductive/power_head");
 
     public static final PartialModel COMMUTATOR_SHAFT = block("generator/commutator_shaft");
     public static final PartialModel COMMUTATOR_BRUSH = block("generator/commutator_brush");
@@ -45,8 +46,12 @@ public class ModdedPartialModels {
 
     public static final PartialModel SPARK_GAP_ARM = block("spark_gap/arm");
 
-    public static final PartialModel LED_BULB = model("component/led_bulb");
+    public static final PartialModel ELECTRON_TUBE_GLOW = model("component/electron_tube_glow");
+    public static final PartialModel REGULATOR_TUBE_GLOW = model("component/regulator_tube_glow");
     public static final PartialModel POTENTIOMETER_KNOB = model("component/potentiometer_knob");
+
+    public static final PartialModel NEON_TUBE_BULB = model("component/neon_bulb_bulb");
+    public static final PartialModel NEON_TUBE_GLOW = model("component/neon_bulb_glow");
 
     public static final PartialModel ROTOR = block("generator/rotor");
     public static final PartialModel INDUCTION_ROTOR = block("generator/induction_rotor");
@@ -55,6 +60,9 @@ public class ModdedPartialModels {
     public static final PartialModel THERMOMETER_NEEDLE_RED = block("thermometer/needle_red");
 
     public static final PartialModel MULTIMETER_NEEDLE = model("item/multimeter/indicator");
+    public static final PartialModel COMPONENT_GAUGE_NEEDLE = model("component/gauge_needle");
+
+    public static final PartialModel PLUG = block("plug");
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));

@@ -71,7 +71,8 @@ public class GrowthLamp extends LightBulb {
 
             var serverWorld = (ServerLevel) world;
             var random = serverWorld.random;
-            if(random.nextInt(ModdedConfigs.server().electricity.growthLampChance.get() / power) == 0) {
+            int chanceValue = ModdedConfigs.server().electricity.growthLampChance.get() / power;
+            if(chanceValue <= 0 || random.nextInt(chanceValue) == 0) {
                 var x = random.nextIntBetweenInclusive(xMin, xMax);
                 var y = random.nextIntBetweenInclusive(yMin, yMax);
                 var z = random.nextIntBetweenInclusive(zMin, zMax);

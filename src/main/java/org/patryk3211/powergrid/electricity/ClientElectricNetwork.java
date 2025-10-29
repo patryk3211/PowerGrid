@@ -19,8 +19,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 @Environment(EnvType.CLIENT)
 public class ClientElectricNetwork extends GlobalElectricNetworks {

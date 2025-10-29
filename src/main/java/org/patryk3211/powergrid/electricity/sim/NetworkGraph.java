@@ -44,6 +44,11 @@ public class NetworkGraph {
     private final Map<IElectricNode, Node> nodes = new HashMap<>();
     public IGraphModifyHooks hooks = null;
 
+    public NetworkGraph() {
+        // Ground
+        addNode(null);
+    }
+
     public void addNode(IElectricNode node) {
         if(nodes.containsKey(node))
             return;
@@ -66,13 +71,18 @@ public class NetworkGraph {
         }
         if(!object.couplings.isEmpty()) {
             ElectricalNetwork.LOGGER.warn("Electric node removed before it was fully decoupled, this can cause issues");
+            for(var coupling : object.couplings) {
+                var network = coupling.getNetwork();
+                if(network != null)
+                    network.removeNode(coupling);
+            }
         }
         if(hooks != null)
             hooks.removeNode(node);
     }
 
     public void connect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
-        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
+        if((node1 != null && !nodes.containsKey(node1)) || (node2 != null && !nodes.containsKey(node2)))
             return;
 
         var object1 = nodes.get(node1);
@@ -94,7 +104,7 @@ public class NetworkGraph {
     }
 
     public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
-        if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
+        if((node1 != null && !nodes.containsKey(node1)) || (node2 != null && !nodes.containsKey(node2)))
             return;
 
         var object1 = nodes.get(node1);
@@ -196,6 +206,36 @@ public class NetworkGraph {
         for(var list : object.connections.values())
             size += list.size();
         return size;
+    }
+
+    public boolean hasComplexConnections(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return false;
+        var object = nodes.get(node);
+        if(!object.couplings.isEmpty())
+            return true;
+        for(var wires : object.connections.values()) {
+            for(var wire : wires) {
+                if(!(wire instanceof ElectricWire))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isLeafEliminating(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return false;
+        var object = nodes.get(node);
+        if(!object.couplings.isEmpty())
+            return true;
+        for(var wires : object.connections.values()) {
+            for(var wire : wires) {
+                if(wire.node1 == null || wire.node2 == null)
+                    return true;
+            }
+        }
+        return false;
     }
 
     @NotNull

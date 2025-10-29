@@ -18,20 +18,13 @@ package org.patryk3211.powergrid.electricity.sim.solver;
 import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-
 public interface ISolver {
+    void setTargetPrecision(double targetPrecision);
+
     void setStateSize(int size);
     @Nullable
     DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll);
     void zero();
 
-    void saveGuess();
-    void restoreGuess();
-
-    double getInitialGuessDistance();
-    double getFinalGuessDistance();
-
-    void setInitialGuess(DMatrixRMaj state);
-    void invalidatePreconditioner();
+    DMatrixRMaj getLastGuess();
 }

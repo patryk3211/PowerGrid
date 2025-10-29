@@ -74,7 +74,7 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             gridY /= GRID_TO_GRID_SCALE;
             int offsetX = footprint.getWidth() / 2;
             int offsetY = footprint.getHeight() / 2;
-            footprint.render(ctx, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
+            footprint.render(ctx, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE, true);
             footprint.renderPadIndices(ctx, textRenderer, (gridX - offsetX) * GRID_TO_GRID_SCALE, (gridY - offsetY) * GRID_TO_GRID_SCALE);
 
             ms.pushPose();
@@ -85,21 +85,11 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             return;
         }
 
-        if(selectMode == SelectMode.NONE) {
+        if(selectMode == SelectMode.NONE || selectMode == SelectMode.POINT) {
             // Draw cursor
             ms.pushPose();
             ms.scale(1f / scale, 1f / scale, 1f / scale);
             ctx.renderOutline(gridX * scale, gridY * scale, scale, scale, 0xFFAAAAFF);
-            ms.popPose();
-        } else if(selectMode == SelectMode.POINT) {
-            ms.pushPose();
-            ms.translate(gridX, gridY, 0);
-            ms.scale(0.25f, 0.25f, 0.25f);
-            ctx.fill(1, 1, 3, 3, selectionColor);
-            ctx.fill(-6, 1, -1, 3, selectionColor);
-            ctx.fill(1, -6, 3, -1, selectionColor);
-            ctx.fill(5, 1, 10, 3, selectionColor);
-            ctx.fill(1, 5, 3, 10, selectionColor);
             ms.popPose();
         } else if(!selectStarted) {
             ctx.fill(gridX, gridY, gridX + 1, gridY + 1, selectionColor);
@@ -233,11 +223,11 @@ public class CircuitEditWidget extends AbstractSimiWidget {
 
     public void cancelSelection() {
         if(selectMode != SelectMode.NONE) {
-            if(selectionCancelledCallback != null)
-                selectionCancelledCallback.run();
             selectMode = SelectMode.NONE;
             selectionCallback = null;
             selectStarted = false;
+            if(selectionCancelledCallback != null)
+                selectionCancelledCallback.run();
         }
     }
 

@@ -17,10 +17,9 @@ package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.network.SimplePacket;
 
@@ -30,7 +29,7 @@ public class MultimeterDataC2SPacket implements SimplePacket {
     private final Vector3f point;
     private final int wire;
 
-    public MultimeterDataC2SPacket(Vec3 point, WireEntity wire) {
+    public MultimeterDataC2SPacket(Vec3 point, BaseWireEntity wire) {
         this.point = point.toVector3f();
         this.wire = wire.getId();
     }

@@ -22,6 +22,7 @@ public class CurveParameters {
     private final double a, b, c;
     private final Vec3 normal;
     private final float dx;
+    private float dy;
     private final float L;
     public final Vec3 cross1, cross2;
     public final float thickness;
@@ -35,25 +36,33 @@ public class CurveParameters {
         normal = direction.normalize();
         this.thickness = (float) thickness;
 
-        // Calculate total curve length using "material parameters"
-        L = (float) Math.sqrt(dx * dx * horizontalCoefficient + dy * dy * verticalCoefficient);
-        double r = Math.sqrt(L * L - dy * dy) / dx;
+        if(dx > 0) {
+            // Calculate total curve length using "material parameters"
+            L = (float) Math.sqrt(dx * dx * horizontalCoefficient + dy * dy * verticalCoefficient);
+            double r = Math.sqrt(L * L - dy * dy) / dx;
 
-        double A;
-        if (r < 3) A = Math.sqrt(6 * (r - 1));
-        else A = Math.log(2 * r) + Math.log(Math.log(2 * r));
+            double A;
+            if (r < 3) A = Math.sqrt(6 * (r - 1));
+            else A = Math.log(2 * r) + Math.log(Math.log(2 * r));
 
-        // Solve using Newton's iteration
-        for (int i = 0; i < 5; ++i) {
-            var top = Math.sinh(A) - r * A;
-            var bot = Math.cosh(A) - r;
-            A = A - top / bot;
+            // Solve using Newton's iteration
+            for (int i = 0; i < 5; ++i) {
+                var top = Math.sinh(A) - r * A;
+                var bot = Math.cosh(A) - r;
+                A = A - top / bot;
+            }
+
+            a = dx / (2 * A);
+            double z = dy / L;
+            b = -a * 0.5 * Math.log((1 + z) / (1 - z));
+            c = 0.5 * (dy - L / Math.tanh(A));
+        } else {
+            a = 0;
+            b = 0;
+            c = 0;
+            L = (float) dy;
+            this.dy = (float) dy;
         }
-
-        a = dx / (2 * A);
-        double z = dy / L;
-        b = -a * 0.5 * Math.log((1 + z) / (1 - z));
-        c = 0.5 * (dy - L / Math.tanh(A));
 
         // Calculate cross parameters
         direction = new Vec3(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
@@ -67,34 +76,76 @@ public class CurveParameters {
     }
 
     public void runForSegments(ISegmentConsumer consumer) {
+        runForSegments(((x1, y1, z1, x2, y2, z2, offset, length, first, last) ->
+                consumer.apply(x1, y1, z1, x2, y2, z2, offset, length)));
+    }
+
+    public void runForSegments(IMarkedSegmentConsumer consumer) {
         int segmentCount = Math.max((int) Math.round(L / HangingWireRenderer.SEGMENT_SIZE), 5);
 
-        float prevX = -dx / 2;
-        float prevY = apply(prevX);
-        float offset = 0;
-        for (int i = 1; i <= segmentCount; ++i) {
-            float x = (((float) i / segmentCount) - 0.5f) * dx;
-            float y = apply(x);
+        if(dx > 0) {
+            float prevX = -dx / 2;
+            float prevY = apply(prevX);
+            float offset = 0;
+            for (int i = 1; i <= segmentCount; ++i) {
+                float x = (((float) i / segmentCount) - 0.5f) * dx;
+                float y = apply(x);
 
-            float dx = x - prevX;
-            float dy = y - prevY;
-            float length = (float) Math.sqrt(dx * dx + dy * dy);
-            consumer.apply(
-                    (float) normal.x * prevX, prevY, (float) normal.z * prevX,
-                    (float) normal.x * x, y, (float) normal.z * x,
-                    offset, length
-            );
+                float dx = x - prevX;
+                float dy = y - prevY;
+                float length = (float) Math.sqrt(dx * dx + dy * dy);
+                consumer.apply(
+                        (float) normal.x * prevX, prevY, (float) normal.z * prevX,
+                        (float) normal.x * x, y, (float) normal.z * x,
+                        offset, length, i == 1, i == segmentCount
+                );
 
-            offset += length;
-            prevX = x;
-            prevY = y;
+                offset += length;
+                prevX = x;
+                prevY = y;
+            }
+        } else {
+            float prevY = 0;
+            float offset = 0;
+            for (int i = 1; i <= segmentCount; ++i) {
+                float y = ((float) i / segmentCount) * dy;
+
+                float dy = y - prevY;
+                consumer.apply(
+                        0, prevY, 0,
+                        0, y, 0,
+                        offset, dy, i == 1, i == segmentCount
+                );
+
+                offset += dy;
+                prevY = y;
+            }
+        }
+    }
+
+    public void runForPoints(int pointCount, IPointConsumer consumer) {
+        if(dx > 0) {
+            for (int i = 0; i < pointCount; ++i) {
+                float localX = ((float) i / pointCount - 0.5f) * dx;
+                consumer.apply((float) (localX * normal.x), apply(localX), (float) (localX * normal.z));
+            }
+        } else {
+            for (int i = 0; i < pointCount; ++i) {
+                float y = ((float) i / pointCount) * dy;
+                consumer.apply(0, y, 0);
+            }
         }
     }
 
     public Vec3 getRandomPoint(RandomSource random) {
-        float x = random.nextFloat() * dx - dx / 2;
-        float y = apply(x);
-        return new Vec3(normal.x * x, y, normal.z * x);
+        if(dx > 0) {
+            float x = random.nextFloat() * dx - dx / 2;
+            float y = apply(x);
+            return new Vec3(normal.x * x, y, normal.z * x);
+        } else {
+            float y = random.nextFloat() * dy;
+            return new Vec3(0, y, 0);
+        }
     }
 
     /**
@@ -103,7 +154,7 @@ public class CurveParameters {
      * @return Curve span
      */
     public float getCurveSpan() {
-        return dx;
+        return dx > 0 ? dx : dy;
     }
 
     public Vec3 getNormal() {
@@ -148,7 +199,19 @@ public class CurveParameters {
         return x;
     }
 
+    public boolean isVertical() {
+        return dx == 0;
+    }
+
     public interface ISegmentConsumer {
         void apply(float x1, float y1, float z1, float x2, float y2, float z2, float offset, float length);
+    }
+
+    public interface IMarkedSegmentConsumer {
+        void apply(float x1, float y1, float z1, float x2, float y2, float z2, float offset, float length, boolean first, boolean last);
+    }
+
+    public interface IPointConsumer {
+        void apply(float x, float y, float z);
     }
 }

@@ -48,7 +48,7 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-public class PotentiometerComponent extends OrientableComponent implements IInteractableComponent, IRenderedComponent {
+public class PotentiometerComponent extends OrientableComponent implements IInteractableComponent, IRenderedComponent, IGoggleLabel {
     public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "potentiometer_resistance", 1000, 100, 100000);
     public static final IntProperty VALUE = new IntProperty(PowerGrid.MOD_ID, "potentiometer_value", 50, 0, 100);
 
@@ -62,7 +62,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(RESISTANCE, VALUE, power(25));
+        properties.add(RESISTANCE, VALUE, LABEL, power(25));
     }
 
     @Override
@@ -93,8 +93,9 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
         component.onClientWorld(() -> world -> {
             var value = component.get(VALUE);
             if(BOARD == null) {
+                var label = component.get(LABEL);
                 BOARD = CustomValueSettingsScreen.makeBoard(
-                        Lang.translateDirect("gui.potentiometer.setting"),
+                        label.isEmpty() ? Lang.translateDirect("gui.potentiometer.setting") : Component.literal(label),
                         100, 10,
                         List.of(Component.literal("Value")));
             }

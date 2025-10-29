@@ -16,6 +16,11 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.INode;
+import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
+
+import java.util.Collection;
+import java.util.List;
 
 public abstract class AbstractElectricWire {
     protected IElectricNode node1;
@@ -93,12 +98,44 @@ public abstract class AbstractElectricWire {
     }
 
     public float power() {
-        var I = current();
-        var G = conductance();
-        if(I == 0 || G == 0)
-            return 0;
-        return (float) (I * I / G);
+        return current() * potentialDifference();
     }
 
     public abstract double conductance();
+
+    public void stamp(IAdmittanceAdder admittance, double change) {
+        if(node1 != null && node2 != null) {
+            var index1 = node1.getIndex();
+            var index2 = node2.getIndex();
+            admittance.add(index1, index1, change);
+            admittance.add(index2, index2, change);
+            admittance.add(index1, index2, -change);
+            admittance.add(index2, index1, -change);
+        } else {
+            var index = node1 != null ? node1.getIndex() : node2.getIndex();
+            admittance.add(index, index, change);
+        }
+    }
+
+    public Collection<IElectricNode> coupledNodes() {
+        if(node1 == null)
+            return List.of(node2);
+        if(node2 == null)
+            return List.of(node1);
+        return List.of(node1, node2);
+    }
+
+    public List<INode> affectedNodes() {
+        if(node1 == null)
+            return List.of(node2);
+        if(node2 == null)
+            return List.of(node1);
+        return List.of(node1, node2);
+    }
+
+    public boolean isConverged() {
+        if(network == null)
+            return false;
+        return network.isConverged();
+    }
 }

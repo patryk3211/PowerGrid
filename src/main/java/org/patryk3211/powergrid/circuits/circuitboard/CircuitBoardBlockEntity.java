@@ -17,18 +17,25 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.IComponentGoggleInformation;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
+import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -40,6 +47,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.*;
@@ -47,7 +55,7 @@ import java.util.*;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.HORIZONTAL_FACING;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.ROTATION;
 
-public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation {
+public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation, ISchematicHolder {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
     private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
@@ -60,7 +68,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         super(type, pos, state);
     }
 
-    public void withSchematic(CircuitSchematic schematic) {
+    @Override
+    public void setSchematic(CircuitSchematic schematic) {
         if(level.isClientSide)
             return;
         if(schematic == null) {
@@ -299,14 +308,29 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public ITerminalPlacement terminal(BlockState state, int index) {
         if(baked == null)
             return null;
+        if(index < 0 || index >= baked.terminals.size())
+            return null;
         var terminal = baked.terminals.get(index);
         return terminal
                 .rotateAroundX(-CircuitBoardBlock.getAngleX(state))
                 .rotateAroundY(-CircuitBoardBlock.getAngleY(state));
     }
 
+    @Override
     public CircuitSchematic getSchematic() {
         return schematic;
+    }
+
+    @Override
+    public @NotNull String getSchematicName() {
+        var name = schematic.getName();
+        return name == null ? "missing" : name;
+    }
+
+    @Override
+    public void setSchematicName(String name) {
+        schematic.setName(name);
+        notifyUpdate();
     }
 
     public <T> Collection<PlacedComponent> getComponents(Class<T> ofClass) {
@@ -329,15 +353,43 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     @Override
     public boolean addToGoggleTooltip(List<net.minecraft.network.chat.Component> tooltip, boolean isPlayerSneaking) {
-        if(baked == null || !baked.isDamaged())
+        if(baked == null)
             return false;
 
-        Lang.translate("gui.damage_header")
-                .forGoggles(tooltip);
-        Lang.translate("gui.circuit_board.damage_body")
-                .style(ChatFormatting.GRAY)
-                .forGoggles(tooltip);
-        return true;
+        var hasInfo = new MutableBoolean(false);
+        if(baked.isDamaged()) {
+            Lang.translate("gui.damage_header")
+                    .forGoggles(tooltip);
+            Lang.translate("gui.circuit_board.damage_body")
+                    .style(ChatFormatting.GRAY)
+                    .forGoggles(tooltip);
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+                var player = ClientSideAccess.player();
+                if (!player.isCreative())
+                    return;
+                Lang.translate("gui.circuit_board.damage_creative_repair")
+                        .style(ChatFormatting.DARK_GRAY)
+                        .forGoggles(tooltip);
+            });
+            hasInfo.setTrue();
+        }
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+            var hit = ClientSideAccess.getHitResult();
+            var hitLocalPos = hit.getLocation().subtract(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
+            hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -CircuitBoardBlock.getAngleY(getBlockState()), Direction.Axis.Y);
+            hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -CircuitBoardBlock.getAngleX(getBlockState()), Direction.Axis.X);
+            for(var placed : getComponents(IComponentGoggleInformation.class)) {
+                if(hitLocalPos.x * 16 >= placed.x && hitLocalPos.z * 16 >= placed.y &&
+                    hitLocalPos.x * 16 < placed.x + placed.footprint().getWidth() &&
+                    hitLocalPos.z * 16 < placed.y + placed.footprint().getHeight()) {
+                    var info = (IComponentGoggleInformation) placed.component;
+                    if (info.addToGoggleTooltip(placed, tooltip, isPlayerSneaking)) {
+                        hasInfo.setTrue();
+                    }
+                }
+            }
+        });
+        return hasInfo.getValue();
     }
 
     public BakedCircuit getBaked() {
@@ -352,5 +404,18 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public void noCooling() {
         coolingFactorMultiplier = 1;
         coolingAir = null;
+    }
+
+    @Override
+    protected AABB createRenderBoundingBox() {
+        return new AABB(worldPosition);
+    }
+
+    public void repairBroken() {
+        if(baked != null && baked.isDamaged()) {
+            // This repairs all components
+            bakeCircuit();
+            notifyUpdate();
+        }
     }
 }

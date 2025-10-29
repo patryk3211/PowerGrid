@@ -42,7 +42,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.*;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.NewRegistryEvent;
+import net.minecraftforge.registries.RegisterEvent;
+import net.minecraftforge.registries.RegistryBuilder;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -52,7 +55,6 @@ import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
-import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
@@ -60,6 +62,7 @@ import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
+import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -131,7 +134,7 @@ public class PowerGridImpl {
     public static void imcEnqueue(InterModEnqueueEvent event) {
         var forbiddenBlockEntities = List.of(
                 ModdedBlockEntities.GENERATOR_CLUTCH,
-                ModdedBlockEntities.GENERATOR_ROTOR,
+//                ModdedBlockEntities.GENERATOR_ROTOR,
                 ModdedBlockEntities.GENERATOR_INDUCTION_ROTOR,
                 ModdedBlockEntities.GENERATOR_COMMUTATOR,
                 ModdedBlockEntities.WINDING,
@@ -169,6 +172,7 @@ public class PowerGridImpl {
         generator.addProvider(true, new PressingRecipes(output));
         generator.addProvider(true, new SequencedAssemblyRecipes(output));
         generator.addProvider(true, new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(output));
+        generator.addProvider(true, new DeployerApplicationRecipes(output));
 
         generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
         generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));

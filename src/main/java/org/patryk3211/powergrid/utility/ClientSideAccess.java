@@ -20,6 +20,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 
 @Environment(EnvType.CLIENT)
 public class ClientSideAccess {
@@ -29,5 +30,9 @@ public class ClientSideAccess {
 
     public static Player player() {
         return Minecraft.getInstance().player;
+    }
+
+    public static HitResult getHitResult() {
+        return Minecraft.getInstance().hitResult;
     }
 }

@@ -19,8 +19,8 @@ import dev.architectury.networking.NetworkManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.HashMap;
 import java.util.Map;

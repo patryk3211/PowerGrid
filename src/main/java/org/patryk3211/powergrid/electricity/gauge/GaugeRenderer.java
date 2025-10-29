@@ -66,7 +66,9 @@ public class GaugeRenderer extends SafeBlockEntityRenderer<GaugeBlockEntity> {
     }
 
     public static PartialModel getHeadModel(BlockState state, GaugeBlockEntity entity) {
-        if(entity instanceof CurrentGaugeBlockEntity)
+        if(entity instanceof PowerGaugeBlockEntity)
+            return ModdedPartialModels.CONDUCTIVE_POWER_HEAD;
+        else if(entity instanceof CurrentGaugeBlockEntity)
             return ModdedPartialModels.CONDUCTIVE_CURRENT_HEAD;
         else
             return ModdedPartialModels.CONDUCTIVE_VOLTAGE_HEAD;

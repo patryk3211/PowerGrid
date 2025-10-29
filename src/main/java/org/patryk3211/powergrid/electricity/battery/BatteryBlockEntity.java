@@ -23,9 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
 
 public class BatteryBlockEntity extends ElectricBlockEntity {
     protected VoltageSourceCoupling sourceCoupling;
@@ -70,7 +68,8 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
         if(sourceCoupling != null) {
             // Internal resistive losses
             var I = sourceCoupling.getCurrent();
-            applyLostPower(I * I * sourceCoupling.getResistance());
+            if(thermalBehaviour != null && sourceCoupling.isConverged())
+                thermalBehaviour.applyTickPower(I * I * sourceCoupling.getResistance());
         }
         super.tick();
 

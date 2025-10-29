@@ -20,32 +20,6 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.resources.ResourceLocation;
 
 public class WireProperties {
-    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setResistance(float resistance) {
-        return b -> {
-            b.onRegister(item -> item.resistance = resistance);
-            return b;
-        };
-    }
-
-    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setMaxLength(float length) {
-        return b -> {
-            b.onRegister(item -> item.maxLength = length);
-            return b;
-        };
-    }
-
-    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setAll(float resistance, float length, float thermalMass, float dissipationFactor) {
-        return b -> {
-            b.onRegister(item -> {
-                item.resistance = resistance;
-                item.maxLength = length;
-                item.thermalMass = thermalMass;
-                item.dissipationFactor = dissipationFactor;
-            });
-            return b;
-        };
-    }
-
     public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setRenderingParams(ResourceLocation texture, float horizontalCoefficient, float verticalCoefficient, float thickness) {
         return b -> {
             b.onRegister(item -> {
@@ -53,6 +27,19 @@ public class WireProperties {
                 item.horizontalCoefficient = horizontalCoefficient;
                 item.verticalCoefficient = verticalCoefficient;
                 item.wireThickness = thickness;
+            });
+            return b;
+        };
+    }
+
+    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> setRenderingParams(ResourceLocation texture, float horizontalCoefficient, float verticalCoefficient, float thickness, boolean colored) {
+        return b -> {
+            b.onRegister(item -> {
+                item.wireTexture = texture;
+                item.horizontalCoefficient = horizontalCoefficient;
+                item.verticalCoefficient = verticalCoefficient;
+                item.wireThickness = thickness;
+                item.colored = colored;
             });
             return b;
         };

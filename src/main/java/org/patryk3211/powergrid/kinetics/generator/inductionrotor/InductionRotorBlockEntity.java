@@ -17,18 +17,18 @@ package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class InductionRotorBlockEntity extends RotorBlockEntity {
-    private float coilCurrent = 0;
-
-    private List<CommutatorBlockEntity> commutators;
+    public float field;
 
     public InductionRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -39,42 +39,69 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         return ModdedConfigs.server().kinetics.generatorControls.generatorInductionRotorInertia.getF();
     }
 
-    private void assemblyChanged() {
-        commutators = null;
-    }
-
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        rotorBehaviour.setChangeCallback(this::assemblyChanged);
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-        coilCurrent = 0;
-        if(commutators == null) {
-            commutators = new ArrayList<>();
-            rotorBehaviour.forEachSegment(segment -> {
-                if(segment.blockEntity instanceof CommutatorBlockEntity commutator) {
-                    commutators.add(commutator);
-                    var current = commutator.getCurrent();
-                    if(current > coilCurrent)
-                        coilCurrent = current;
+    public static float coilConstant() {
+        return ModdedConfigs.server().electricity.windingCoilConstant.getF();
+    }
+
+    public float calculateField() {
+        assert level != null;
+        field = 0;
+        var state = getBlockState();
+        for(var dir : Direction.values()) {
+            if(dir.getAxis() == state.getValue(InductionRotorBlock.AXIS))
+                continue;
+            var otherState = level.getBlockState(worldPosition.relative(dir));
+            if(otherState.getBlock() instanceof WindingBlock winding) {
+                var magnetic = winding.getMagneticAxis(otherState);
+                if(magnetic != dir.getAxis())
+                    continue;
+                var be = level.getBlockEntity(worldPosition.relative(dir));
+                if(be instanceof WindingBlockEntity wbe) {
+                    // Average field around 4 sides of the rotor.
+                    field += wbe.fieldStrength() * 0.25f;
                 }
-            });
-        } else {
-            for(var commutator : commutators) {
-                var current = commutator.getCurrent();
-                // TODO: This isn't the best way to handle multiple commutators.
-                if(Math.abs(current) > Math.abs(coilCurrent))
-                    coilCurrent = current;
+            }
+        }
+        return field;
+    }
+
+    public float step(float current) {
+        assert level != null;
+        var state = getBlockState();
+        for(var dir : Direction.values()) {
+            if(dir.getAxis() == state.getValue(InductionRotorBlock.AXIS))
+                continue;
+            var otherState = level.getBlockState(worldPosition.relative(dir));
+            if(otherState.getBlock() instanceof WindingBlock winding) {
+                var magnetic = winding.getMagneticAxis(otherState);
+                if(magnetic != dir.getAxis())
+                    continue;
+                var be = level.getBlockEntity(worldPosition.relative(dir));
+                if(be instanceof WindingBlockEntity wbe) {
+                    // Average field around 4 sides of the rotor.
+                    field += wbe.fieldStrength() * 0.25f;
+                }
             }
         }
 
-        var fieldStrength = coilCurrent * 0.5f;
-        if(Math.abs(fieldStrength) < 0.01f)
-            fieldStrength = 0;
-        rotorBehaviour.setFieldStrength(fieldStrength);
+        var voltage = field * rotorBehaviour.getAngularVelocityRadians();
+        float torque = -field * current;
+        float Pe = current * voltage;
+        if (Pe > 0) {
+            // Generator is sourcing power
+            torque = rotorBehaviour.limitForce(torque);
+        } else {
+            // Generator is sinking power
+            // Reduce torque to account for losses
+            torque *= 0.9f;
+        }
+        rotorBehaviour.applyTickForce(torque);
+
+        return voltage;
     }
 }

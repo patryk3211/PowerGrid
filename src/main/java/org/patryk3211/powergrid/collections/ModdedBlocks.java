@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.api.contraption.BlockMovementChecks.CheckResult;
-import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
@@ -30,9 +30,11 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -42,8 +44,6 @@ import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.config.CResistance;
@@ -67,16 +67,20 @@ import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
+import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
+import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
-import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
+import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
+import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
@@ -87,8 +91,8 @@ import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHous
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
-import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
+import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
@@ -157,6 +161,13 @@ public class ModdedBlocks {
             .simpleItem()
             .register();
 
+    public static final BlockEntry<CordJunctionBlock> CORD_JUNCTION = REGISTRATE.block("cord_junction", CordJunctionBlock::new)
+            .blockstate(downFacing("block/cord_junction"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .simpleItem()
+            .register();
+
     public static final BlockEntry<HeaterBlock> HEATING_COIL = REGISTRATE.block("heating_coil", HeaterBlock::new)
             .blockstate(horizontalBlock("block/heating_coil"))
             .initialProperties(SharedProperties::softMetal)
@@ -178,10 +189,9 @@ public class ModdedBlocks {
 
     public static final BlockEntry<VoltageGaugeBlock> VOLTAGE_METER = REGISTRATE.block("voltage_gauge", VoltageGaugeBlock::new)
             .blockstate(horizontalBlock("block/gauge/conductive/base"))
-            .initialProperties(SharedProperties::wooden)
-            .transform(axeOrPickaxe())
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
-            .defaultLoot()
             .item()
                 .model(gauge("block/gauge/item_voltage", "block/conductive_gauge"))
                 .build()
@@ -189,35 +199,48 @@ public class ModdedBlocks {
 
     public static final BlockEntry<CurrentGaugeBlock> CURRENT_METER = REGISTRATE.block("current_gauge", CurrentGaugeBlock::new)
             .blockstate(horizontalBlock("block/gauge/conductive/base"))
-            .initialProperties(SharedProperties::wooden)
+            .initialProperties(SharedProperties::softMetal)
             .transform(CResistance.setResistance(0.05f))
             .transform(CThermal.maxPower(35, 2.0f))
-            .transform(axeOrPickaxe())
+            .transform(pickaxeOnly())
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
-            .defaultLoot()
             .item()
                 .model(gauge("block/gauge/item_current", "block/conductive_gauge"))
                 .build()
             .register();
 
-    public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
-            .blockstate(rotorModel("block/generator/rotor"))
-            .initialProperties(SharedProperties::stone)
-            .properties(BlockBehaviour.Properties::noOcclusion)
+    public static final BlockEntry<PowerGaugeBlock> POWER_METER = REGISTRATE.block("power_gauge", PowerGaugeBlock::new)
+            .blockstate(horizontalBlock("block/gauge/conductive/base_power"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(CResistance.setResistance(0.05f))
+            .transform(CThermal.maxPower(35, 2.0f))
             .transform(pickaxeOnly())
-            .defaultLoot()
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .item()
-                .model(itemWithParent("block/generator/rotor"))
+                .model(gauge("block/gauge/item_power", "block/conductive_gauge"))
                 .build()
-            .lang("Generator Rotor")
             .register();
+
+//    public static final BlockEntry<RotorBlock> GENERATOR_ROTOR = REGISTRATE.block("generator_rotor", RotorBlock::new)
+//            .blockstate(rotorModel("block/generator/rotor"))
+//            .initialProperties(SharedProperties::stone)
+//            .properties(BlockBehaviour.Properties::noOcclusion)
+//            .transform(pickaxeOnly())
+//            .transform(CStress.setImpact(32))
+//            .defaultLoot()
+//            .item()
+//                .model(itemWithParent("block/generator/rotor"))
+//                .build()
+//            .lang("Generator Rotor")
+//            .register();
 
     public static final BlockEntry<InductionRotorBlock> GENERATOR_INDUCTION_ROTOR = REGISTRATE.block("generator_induction_rotor", InductionRotorBlock::new)
             .blockstate(rotorModel("block/generator/induction_rotor"))
             .initialProperties(SharedProperties::softMetal)
             .properties(BlockBehaviour.Properties::noOcclusion)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(5))
+            .transform(CResistance.setResistance(0.5))
+            .transform(CStress.setImpact(32))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/generator/induction_rotor"))
@@ -228,6 +251,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/generator/commutator_base_horizontal"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .transform(CStress.setImpact(8))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/generator/commutator"))
@@ -238,6 +262,7 @@ public class ModdedBlocks {
             .blockstate(verticalCommutator("block/generator/commutator_base_vertical"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .transform(CStress.setImpact(8))
             .defaultLoot()
             .lang("Vertical Generator Commutator")
             .item()
@@ -448,13 +473,29 @@ public class ModdedBlocks {
                     }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(CStress.setCapacity(64))
-            .transform(CResistance.setResistance(12.8))
+            .transform(CResistance.setResistance(25.6))
             .transform(pickaxeOnly())
             .onRegister(BlockStressValues.setGeneratorSpeed(256, true))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/electric_motor/item"))
                 .build()
+            .register();
+
+    public static final BlockEntry<ConstantSpeedMotorBlock> CONSTANT_SPEED_MOTOR = REGISTRATE.block("constant_speed_motor", ConstantSpeedMotorBlock::new)
+            .blockstate(alternateDirectionalBlock(state -> switch(state.getValue(ConstantSpeedMotorBlock.FACING).getAxis()) {
+                case X, Z -> "block/constant_electric_motor/block";
+                case Y -> "block/constant_electric_motor/block_vertical";
+            }))
+            .initialProperties(() -> Blocks.IRON_BLOCK)
+            .transform(CStress.setCapacity(64))
+            .transform(CResistance.setResistance(25.6))
+            .transform(pickaxeOnly())
+            .onRegister(BlockStressValues.setGeneratorSpeed(256, true))
+            .defaultLoot()
+            .item()
+            .model(itemWithParent("block/constant_electric_motor/item"))
+            .build()
             .register();
 
     public static final BlockEntry<ServoBlock> SERVO = REGISTRATE.block("servo", ServoBlock::new)
@@ -464,7 +505,7 @@ public class ModdedBlocks {
             }))
             .initialProperties(() -> Blocks.IRON_BLOCK)
             .transform(CStress.setCapacity(32))
-            .transform(CResistance.setResistances("on", 2, "idle", 20))
+            .transform(CResistance.setResistances("on", 12.8, "idle", 64))
             .transform(pickaxeOnly())
             .onRegister(BlockStressValues.setGeneratorSpeed(32, true))
             .defaultLoot()
@@ -542,8 +583,8 @@ public class ModdedBlocks {
             .blockstate(windingModel())
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(0.3))
-            .transform(CThermal.maxPower(15, 1.5f))
+            .transform(CResistance.setResistance(7.5))
+            .transform(CThermal.maxPower(200, 1.5f))
             .addLayer(() -> RenderType::cutoutMipped)
             .loot((tables, block) -> tables.dropOther(block, ModdedItems.COPPER_COIL))
             .register();
@@ -553,6 +594,14 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .item()
                 .model(itemWithParent("block/device_connector_v"))
+                .build()
+            .register();
+
+    public static final BlockEntry<SocketBlock> SOCKET = REGISTRATE.block("socket", SocketBlock::new)
+            .blockstate(surfaceBlock("block/power_plug"))
+            .transform(pickaxeOnly())
+            .item()
+                .model(itemWithParent("block/power_plug_v"))
                 .build()
             .register();
 
@@ -588,11 +637,17 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/rheostat/block"))
             .transform(pickaxeOnly())
             .transform(CStress.setNoImpact())
-            .transform(CResistance.setResistance(100))
             .transform(CThermal.maxPower(1000, 4.0f))
             .item()
                 .model(itemWithParent("block/rheostat/item"))
                 .build()
+            .register();
+
+    public static final BlockEntry<GroundingRodBlock> GROUNDING_ROD = REGISTRATE.block("grounding_rod", GroundingRodBlock::new)
+            .initialProperties(() -> Blocks.LIGHTNING_ROD)
+            .blockstate(simple("block/grounding_rod"))
+            .transform(pickaxeOnly())
+            .simpleItem()
             .register();
 
     public static void register() {

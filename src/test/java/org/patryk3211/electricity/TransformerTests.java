@@ -184,4 +184,35 @@ public class TransformerTests extends TestHelper {
         parametrizedTransformerTestTModel(0.1f, 2f, 10f, 2f);
         parametrizedTransformerTestTModel(0.1f, 2f, 10f, 0.5f);
     }
+
+    @Test
+    void testRatioChange() {
+        var Net = new Network();
+
+        var V1 = Net.V(5);
+        var V2 = Net.V(0);
+        var S1 = Net.N();
+        var S2 = Net.N();
+
+        var TR = Net.TR(2, 0, V1, V2, S1, S2);
+
+        Net.W(10, S1, S2);
+
+        Net.calculate();
+
+        Assertions.assertEquals(((5f * 2) / 10f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+        Assertions.assertEquals(5f * 2, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
+
+        TR.setRatio(1);
+        Net.calculate();
+
+        Assertions.assertEquals((5f / 10f), V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+        Assertions.assertEquals(5f, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
+
+        TR.setRatio(2);
+        Net.calculate();
+
+        Assertions.assertEquals(((5f * 2) / 10f) * 2, V1.getCurrent(), 1e-6, "Voltage source current is incorrect");
+        Assertions.assertEquals(5f * 2, Math.abs(S1.getVoltage() - S2.getVoltage()), 1e-6, "Transformer secondary voltage is incorrect");
+    }
 }

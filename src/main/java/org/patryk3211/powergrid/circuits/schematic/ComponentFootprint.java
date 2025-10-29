@@ -38,7 +38,7 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender
 public class ComponentFootprint {
     private static final ResourceLocation ARROWS = PowerGrid.texture("gui/circuit_arrows");
 
-    private static final PadData NONE = new PadData(-1, null);
+    private static final PadData NONE = new PadData(-1, null, null);
 
     private final int width;
     private final int height;
@@ -63,22 +63,29 @@ public class ComponentFootprint {
 
     @Environment(EnvType.CLIENT)
     protected void renderPads(@NotNull GuiGraphics ctx, int x, int y) {
-        for(var point : pads.keySet()) {
-            int x1 = point.x() + x;
-            int y1 = point.y() + y;
-            ctx.fill(x1, y1, x1 + 1, y1 + 1, COLOR_TERMINAL);
+        var ms = ctx.pose();
+        ms.pushPose();
+        ms.scale(0.25f, 0.25f, 0.25f);
+        for (var point : pads.keySet()) {
+            int x1 = (point.x() + x) * 4;
+            int y1 = (point.y() + y) * 4;
+            ctx.fill(x1 + 1, y1 + 1, x1 + 3, y1 + 3, COLOR_TERMINAL);
         }
+        ms.popPose();
     }
 
     @Environment(EnvType.CLIENT)
-    public void render(@NotNull GuiGraphics ctx, int x, int y) {
+    public void render(@NotNull GuiGraphics ctx, int x, int y, boolean hovering) {
+        var ms = ctx.pose();
         if(outline) {
-            ctx.renderOutline(x, y, width * GRID_TO_GRID_SCALE, height * GRID_TO_GRID_SCALE, COLOR_COMPONENT_OUTLINE);
+            ms.pushPose();
+            ms.scale(0.5f, 0.5f, 0.5f);
+            ctx.renderOutline(x * 2, y * 2, width * GRID_TO_GRID_SCALE * 2, height * GRID_TO_GRID_SCALE * 2, COLOR_COMPONENT_OUTLINE);
+            ms.popPose();
         }
         renderPads(ctx, x, y);
 
-        var ms = ctx.pose();
-        if(renderedItem != null) {
+        if(renderedItem != null && !hovering) {
             ms.pushPose();
             final int maxSize = 2;
             var scale = Math.min(Math.min(width, height), maxSize) / 16f * GRID_TO_GRID_SCALE;
@@ -132,7 +139,9 @@ public class ComponentFootprint {
             int x1 = (point.x() + x) * scale;
             int y1 = (point.y() + y) * scale;
 
-            var text = Integer.toString(entry.getValue().nodeIndex);
+            var text = entry.getValue().shortText();
+            if(text == null)
+                continue;
             int width = textRenderer.width(text);
             ctx.drawString(textRenderer, text, x1 - width / 2, y1 - 4, -1, false);
         }
@@ -245,21 +254,23 @@ public class ComponentFootprint {
         }
 
         public Builder addPad(int x, int y, int nodeIndex) {
-            return addPad(x, y, nodeIndex, (Component) null);
+            return addPad(x, y, nodeIndex, (Component) null, null);
         }
 
-        public Builder addPad(int x, int y, int nodeIndex, @Nullable Component tooltip) {
+        public Builder addPad(int x, int y, int nodeIndex, @Nullable Component tooltip, @Nullable Component shortText) {
             validatePad(x, y);
-            pads.put(new Point(x, y), new PadData(nodeIndex, tooltip));
+            pads.put(new Point(x, y), new PadData(nodeIndex, tooltip, shortText));
             return this;
         }
 
-        public Builder addPad(int x, int y, int nodeIndex, String defaultLang) {
+        public Builder addPad(int x, int y, int nodeIndex, String defaultLang, String defaultShort) {
             if(translationKey == null)
                 throw new IllegalCallerException("This method may only be used when the translation key base is set");
             var key = translationKey + "." + nodeIndex;
             translatedPads.put(key, defaultLang);
-            return addPad(x, y, nodeIndex, Component.translatable(key));
+            if(defaultShort != null)
+                translatedPads.put(key + ".short", defaultShort);
+            return addPad(x, y, nodeIndex, Component.translatable(key), defaultShort == null ? null : Component.translatable(key + ".short"));
         }
 
         public Builder withOutline() {
@@ -298,5 +309,5 @@ public class ComponentFootprint {
         }
     }
 
-    public record PadData(int nodeIndex, @Nullable Component tooltip) { }
+    public record PadData(int nodeIndex, @Nullable Component tooltip, @Nullable Component shortText) { }
 }

@@ -29,6 +29,8 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ConstantProperty;
+import org.patryk3211.powergrid.circuits.components.properties.Orientation;
+import org.patryk3211.powergrid.circuits.components.properties.StringProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
@@ -42,6 +44,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class Component {
+    public static final StringProperty LABEL = new StringProperty(PowerGrid.MOD_ID, "label");
+
     private static final Map<Item, Component> COMPONENT_MAP = new HashMap<>();
     public static final float BASE_Y = 2 / 16f;
 
@@ -71,6 +75,10 @@ public abstract class Component {
 
     public static ConstantProperty current(float value) {
         return new ConstantProperty(PowerGrid.MOD_ID, "current", Unit.CURRENT.formatWithPrefixes(value).component());
+    }
+
+    public static ConstantProperty voltage(float value) {
+        return new ConstantProperty(PowerGrid.MOD_ID, "voltage", Unit.VOLTAGE.formatWithPrefixes(value).component());
     }
 
     @Environment(EnvType.CLIENT)
@@ -156,6 +164,19 @@ public abstract class Component {
             }
         }
         COMPONENT_MAP.put(item, null);
+        return null;
+    }
+
+    @Nullable
+    public static Orientation getEdge(@NotNull PlacedComponent placed) {
+        if(placed.x == 0)
+            return Orientation.LEFT;
+        if(placed.y == 0)
+            return Orientation.UP;
+        if(placed.x == 16 - placed.footprint().getWidth())
+            return Orientation.RIGHT;
+        if(placed.y == 16 - placed.footprint().getHeight())
+            return Orientation.DOWN;
         return null;
     }
 }

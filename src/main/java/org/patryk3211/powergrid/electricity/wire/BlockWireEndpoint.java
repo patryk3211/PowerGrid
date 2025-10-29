@@ -19,7 +19,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -95,19 +94,12 @@ public class BlockWireEndpoint implements IWireEndpoint {
     @Override
     public OwnedFloatingNode getNode(Level world) {
         var behaviour = getElectricBehaviour(world);
-//        if(global == null) {
-//            // Used during reading of persistent parts from NBT
-//            return null;
-//        }
         if(behaviour == null) {
             var global = GlobalElectricNetworks.getWorldNetworks(world);
             // Try grabbing a node from the global map.
             return global.globalExternalNodes.get(this);
         }
-        var newNode = behaviour.getTerminal(terminal);
-//        if(existingNode != newNode && newNode != null && existingNode != null)
-//            global.addAndMigrateNode(newNode);
-        return newNode;
+        return behaviour.getTerminal(terminal);
     }
 
     @Override
@@ -133,7 +125,12 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void assignWireEntity(WireEntity entity) {
+    public <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
+        return WireEntity.class.isAssignableFrom(clazz);
+    }
+
+    @Override
+    public void assignWireEntity(BaseWireEntity entity) {
         var behaviour = getElectricBehaviour(entity.level());
         if(behaviour == null)
             return;
@@ -141,7 +138,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
-    public void removeWireEntity(WireEntity entity) {
+    public void removeWireEntity(BaseWireEntity entity) {
         var behaviour = getElectricBehaviour(entity.level());
         if(behaviour == null)
             return;
@@ -171,5 +168,10 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var electric = getElectricBlock(world);
         var state = world.getBlockState(pos);
         return electric.terminal(state, terminal);
+    }
+
+    @Override
+    public IWireEndpoint makeOffset(BlockPos offset) {
+        return new BlockWireEndpoint(pos.offset(offset), terminal);
     }
 }

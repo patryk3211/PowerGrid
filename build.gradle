@@ -103,6 +103,7 @@ def getGitHash = { ->
 }
 
 var changelogFile = file('build/changelog.md')
+changelogFile.parentFile.mkdir()
 changelogFile.createNewFile()
 subprojects {
 	apply plugin: "com.github.johnrengelman.shadow"

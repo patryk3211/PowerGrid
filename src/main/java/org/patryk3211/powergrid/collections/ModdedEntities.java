@@ -21,8 +21,10 @@ import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
-import org.patryk3211.powergrid.electricity.zapper.ZapProjectileEntity;
-import org.patryk3211.powergrid.electricity.zapper.ZapProjectileRenderer;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordRenderer;
+import org.patryk3211.powergrid.equipment.zapper.ZapProjectileEntity;
+import org.patryk3211.powergrid.equipment.zapper.ZapProjectileRenderer;
 import org.patryk3211.powergrid.utility.EntityProperties;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -36,6 +38,11 @@ public class ModdedEntities {
     public static final EntityEntry<BlockWireEntity> BLOCK_WIRE =
             REGISTRATE.entity("block_wire", BlockWireEntity::new, MobCategory.MISC)
                     .renderer(() -> BlockWireRenderer::new)
+                    .register();
+
+    public static final EntityEntry<CordEntity> CORD_ENTITY =
+            REGISTRATE.entity("cord", CordEntity::new, MobCategory.MISC)
+                    .renderer(() -> CordRenderer::new)
                     .register();
 
     public static final EntityEntry<ZapProjectileEntity> ZAP_PROJECTILE =

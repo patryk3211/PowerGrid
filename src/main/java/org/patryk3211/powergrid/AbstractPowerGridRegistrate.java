@@ -19,7 +19,6 @@ import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.registry.CreateRegistries;
 import com.simibubi.create.api.registry.registrate.SimpleBuilder;
 import com.simibubi.create.foundation.data.CreateBlockEntityBuilder;
-import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder;

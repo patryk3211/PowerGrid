@@ -75,19 +75,21 @@ public class ThermalUnit {
             return;
         float power = -dissipationFactor * (temperature - BASE_TEMPERATURE) * dissipationMultiplier;
         for(var source : heatSources) {
+            if(!source.isConverged())
+                continue;
             power += source.power();
         }
         temperature += power / 20f / thermalMass;
         if(!Float.isFinite(temperature))
             temperature = BASE_TEMPERATURE;
+        if(temperature > overheatTemperature + 10)
+            temperature = overheatTemperature + 10;
         if(power < 0 && temperature < 22f)
             temperature = 22f;
         if(temperature >= overheatTemperature && power > 0) {
             ++overheatTicks;
         } else if(power < 0) {
             overheatTicks = 0;
-            if(temperature > overheatTemperature + 10)
-                temperature = overheatTemperature + 10;
         }
         temperatureChanged();
     }
@@ -120,5 +122,9 @@ public class ThermalUnit {
 
     public void write(CompoundTag nbt) {
         nbt.putFloat(getKey(), temperature);
+    }
+
+    public UUID getId() {
+        return componentUUID;
     }
 }

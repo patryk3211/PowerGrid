@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.fuse;
 
+import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
@@ -26,6 +27,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
@@ -76,7 +78,7 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     public void tick() {
         super.tick();
         if(fuseWire.getState()) {
-            if(Math.abs(fuseWire.current()) > setting.value) {
+            if(fuseWire.isConverged() && Math.abs(fuseWire.current()) > setting.value) {
                 setState(FuseState.BLOWN);
                 if(level.isClientSide)
                     playEffect();
@@ -98,6 +100,19 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putInt("State", state.ordinal());
+    }
+
+    @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        tag.putInt("State", state.ordinal());
+    }
+
+    @Override
+    public ItemRequirement getRequiredItems(BlockState state) {
+        if(this.state == FuseState.CLOSED)
+            return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, ModdedItems.IRON_WIRE.asStack());
+        return ItemRequirement.NONE;
     }
 
     public boolean resetFuse() {

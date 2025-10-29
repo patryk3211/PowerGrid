@@ -36,20 +36,19 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
 
-public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties {
+public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties, IAcceptCord {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
     private static final VoxelShape NORTH_SHAPE = box(3, 3, 0, 13, 13, 16);
@@ -128,7 +127,7 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
         var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
-        var maxPower = 256 * torque * Math.PI / 30;
+        var maxPower = 256 * torque / 60;
         Voltage.max((int) Math.sqrt(maxPower * resistance()), player, tooltip);
     }
 
@@ -141,5 +140,10 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     @SuppressWarnings("deprecation")
     public BlockState mirror(BlockState state, Mirror mirrorIn) {
         return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
+    }
+
+    @Override
+    public boolean renderPlug() {
+        return true;
     }
 }

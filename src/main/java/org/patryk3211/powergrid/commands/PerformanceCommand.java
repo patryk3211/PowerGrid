@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -57,7 +58,7 @@ public class PerformanceCommand {
         @Override
         public PerformanceCounter parse(StringReader reader) throws CommandSyntaxException {
             final int start = reader.getCursor();
-            while(reader.canRead() && (isAllowedInUnquotedString(reader.peek()) || reader.peek() == ':')) {
+            while (reader.canRead() && (isAllowedInUnquotedString(reader.peek()) || reader.peek() == ':')) {
                 reader.skip();
             }
             var name = reader.getString().substring(start, reader.getCursor());
@@ -74,33 +75,45 @@ public class PerformanceCommand {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return literal("performance")
-                .then(Commands.argument("counter_name", argument())
-                        .executes(ctx -> {
-                            CommandSourceStack source = ctx.getSource();
-                            var counter = ctx.getArgument("counter_name", PerformanceCounter.class);
-                            source.sendSystemMessage(Component.literal("Performance counter '" + counter.getName() + "':").withStyle(ChatFormatting.GRAY));
-                            source.sendSystemMessage(Component.literal("  Last measurement: ")
-                                    .append(Component.literal(counter.getTimestamp()).withStyle(ChatFormatting.AQUA))
-                                    .withStyle(ChatFormatting.GRAY));
-                            source.sendSystemMessage(Component.literal("  ")
-                                    .append(Component.literal("Min").withStyle(ChatFormatting.GRAY))
-                                    .append(" / ")
-                                    .append(Component.literal("Max").withStyle(ChatFormatting.GRAY))
-                                    .append(" / ")
-                                    .append(Component.literal("Avg").withStyle(ChatFormatting.GRAY))
-                                    .withStyle(ChatFormatting.DARK_GRAY));
-                            source.sendSystemMessage(Component.literal("  ")
-                                    .append(Component.literal(NumberFormats.formatConstant(counter.getMin()) + "µs")
-                                            .withStyle(ChatFormatting.AQUA))
-                                    .append(" / ")
-                                    .append(Component.literal(NumberFormats.formatConstant(counter.getMax()) + "µs")
-                                            .withStyle(ChatFormatting.AQUA))
-                                    .append(" / ")
-                                    .append(Component.literal(NumberFormats.formatConstant(counter.getAvg()) + "µs")
-                                            .withStyle(ChatFormatting.AQUA))
-                                    .withStyle(ChatFormatting.DARK_GRAY));
+                .then(literal("get")
+                        .then(Commands.argument("counter_name", argument())
+                                .executes(ctx -> {
+                                    CommandSourceStack source = ctx.getSource();
+                                    var counter = ctx.getArgument("counter_name", PerformanceCounter.class);
+                                    source.sendSystemMessage(Component.literal("Performance counter '" + counter.getName() + "':").withStyle(ChatFormatting.GRAY));
+                                    source.sendSystemMessage(Component.literal("  Last measurement: ")
+                                            .append(Component.literal(counter.getTimestamp()).withStyle(ChatFormatting.AQUA))
+                                            .withStyle(ChatFormatting.GRAY));
+                                    source.sendSystemMessage(Component.literal("  ")
+                                            .append(Component.literal("Min").withStyle(ChatFormatting.GRAY))
+                                            .append(" / ")
+                                            .append(Component.literal("Max").withStyle(ChatFormatting.GRAY))
+                                            .append(" / ")
+                                            .append(Component.literal("Avg").withStyle(ChatFormatting.GRAY))
+                                            .withStyle(ChatFormatting.DARK_GRAY));
+                                    source.sendSystemMessage(Component.literal("  ")
+                                            .append(Component.literal(NumberFormats.formatConstant(counter.getMin()) + "µs")
+                                                    .withStyle(ChatFormatting.AQUA))
+                                            .append(" / ")
+                                            .append(Component.literal(NumberFormats.formatConstant(counter.getMax()) + "µs")
+                                                    .withStyle(ChatFormatting.AQUA))
+                                            .append(" / ")
+                                            .append(Component.literal(NumberFormats.formatConstant(counter.getAvg()) + "µs")
+                                                    .withStyle(ChatFormatting.AQUA))
+                                            .withStyle(ChatFormatting.DARK_GRAY));
 
-                            return Command.SINGLE_SUCCESS;
-                        }));
+                                    return Command.SINGLE_SUCCESS;
+                                })))
+                .then(literal("period")
+                        .then(Commands.argument("counter_name", argument())
+                                .then(Commands.argument("ms_period", IntegerArgumentType.integer())
+                                        .executes(ctx -> {
+                                            CommandSourceStack source = ctx.getSource();
+                                            var counter = ctx.getArgument("counter_name", PerformanceCounter.class);
+                                            var period = ctx.getArgument("ms_period", Integer.class);
+                                            source.sendSystemMessage(Component.literal("Performance counter '" + counter.getName() + "' measurement period set to " + period + "ms").withStyle(ChatFormatting.GRAY));
+                                            counter.setMeasurementTime(period);
+                                            return Command.SINGLE_SUCCESS;
+                                        }))));
     }
 }

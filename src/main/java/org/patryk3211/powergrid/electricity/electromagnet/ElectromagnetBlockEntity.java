@@ -60,7 +60,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
 
     @Override
     public void tick() {
-        applyLostPower(wire.power());
+        applyPower(wire);
         super.tick();
         if(magnetizingBehaviour.running) {
             wire.setResistance(resistance() * 0.5f);

@@ -1,6 +1,0 @@
-{
-  "parent": "powergrid:block/gauge/current_head",
-  "textures": {
-    "2": "powergrid:block/andesite_gauge"
-  }
-}

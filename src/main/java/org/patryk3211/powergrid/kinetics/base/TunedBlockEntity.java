@@ -87,6 +87,12 @@ public abstract class TunedBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        tag.put("Arm", arm.writeNBT());
+    }
+
+    @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         arm.readNBT(compound.getCompound("Arm"), clientPacket);

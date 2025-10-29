@@ -15,14 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.resistor;
 
-import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.SurfaceElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;

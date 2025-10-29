@@ -40,6 +40,10 @@ public class RecipeTags {
         return nuggets("copper");
     }
 
+    public static TagKey<Item> copperIngot() {
+        return ingots("copper");
+    }
+
     public static TagKey<Item> ironNugget() {
         return nuggets("iron");
     }
@@ -114,5 +118,17 @@ public class RecipeTags {
 
     public static ItemLike polishedRoseQuartz() {
         return AllItems.POLISHED_ROSE_QUARTZ;
+    }
+
+    public static ItemLike glowstoneDust() {
+        return Items.GLOWSTONE_DUST;
+    }
+
+    public static ItemLike amethystShard() {
+        return Items.AMETHYST_SHARD;
+    }
+
+    public static ItemLike glass() {
+        return Items.GLASS;
     }
 }

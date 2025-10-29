@@ -46,6 +46,8 @@ public class ElectricWire extends AbstractElectricWire {
 
     private static void validateResistance(double resistance) {
         if(resistance <= 0)
-            throw new IllegalStateException("Wire resistance must be greater than zero");
+            throw new IllegalArgumentException("Wire resistance must be greater than zero");
+        if(!Double.isFinite(resistance))
+            throw new IllegalArgumentException("Wire resistance is not finite");
     }
 }

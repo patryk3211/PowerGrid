@@ -117,7 +117,7 @@ public class WindingItem extends Item {
                     .setValue(PART, 1);
 
             var length = getPlacementDelta(pos, firstPos);
-            if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, length + 1))
+            if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, Math.abs(length) + 1))
                 return InteractionResult.FAIL;
 
             // Verify the winding can be placed

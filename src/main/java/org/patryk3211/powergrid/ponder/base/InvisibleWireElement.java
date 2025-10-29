@@ -25,15 +25,17 @@ import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 
 public class InvisibleWireElement extends WireElement {
     public InvisibleWireElement(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
-        super(pos1, terminal1, pos2, terminal2, resistance);
+        super(level -> {
+            var wire = HangingWireEntity.create(level, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
+            wire.updateRenderParams();
+            return wire;
+        });
     }
 
     @Override
     protected void renderLast(PonderLevel world, MultiBufferSource buffer, GuiGraphics graphics, float fade, float pt) {
         if(wire == null && isVisible()) {
-            var hWire = HangingWireEntity.create(world, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
-            hWire.updateRenderParams();
-            wire = hWire;
+            wire = wireFactory.apply(world);
         }
     }
 }

@@ -17,16 +17,15 @@ package org.patryk3211.powergrid.ponder.base;
 
 import net.createmod.ponder.foundation.PonderScene;
 import net.createmod.ponder.foundation.element.PonderElementBase;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceNode;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 
 public class VoltageSource extends PonderElementBase {
     private final IWireEndpoint target;
     private final float voltage;
 
-    private ElectricWire wire;
-    private VoltageSourceNode source;
+    private VoltageSourceCoupling source;
 
     public VoltageSource(IWireEndpoint target, float voltage) {
         this.target = target;
@@ -36,25 +35,29 @@ public class VoltageSource extends PonderElementBase {
     @Override
     public void tick(PonderScene scene) {
         super.tick(scene);
-        if(wire == null) {
+        if(source == null) {
             var node = target.getNode(scene.getWorld());
-            if(node.getNetwork() == null)
-                return;
-            source = new VoltageSourceNode(voltage);
+            if(node.getNetwork() == null) {
+                var global = GlobalElectricNetworks.getWorldNetworks(scene.getWorld());
+                target.joinNetwork(scene.getWorld(), global.newNetwork());
+            }
             var network = node.getNetwork();
+            source = new VoltageSourceCoupling(node, null, 0, voltage);
             network.addNode(source);
-            wire = new ElectricWire(1e-5, source, node);
-            network.addWire(wire);
         }
     }
 
     @Override
     public void reset(PonderScene scene) {
-        if(wire != null) {
-            wire.remove();
-            wire = null;
+        if(source != null) {
             source.getNetwork().removeNode(source);
             source = null;
+        }
+    }
+
+    public void setValue(float value) {
+        if(source != null) {
+            source.setVoltage(value);
         }
     }
 }

@@ -26,7 +26,7 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
 public class ResistorComponent extends OrientableComponent {
-    public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 1f, 100_000f);
+    public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 1f, 1000_000f);
 
     public ResistorComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -43,7 +43,7 @@ public class ResistorComponent extends OrientableComponent {
         var wire = builder.connect(placed.get(RESISTANCE), builder.terminalNode(0), builder.terminalNode(1));
         // 1 watt of dissipation power, these are not high power resistors.
         thermals.builder()
-                .setThermalMass(0.01f)
+                .setThermalMass(0.05f)
                 .setMaxPower(25, 125f)
                 .addHeatSource(wire);
     }

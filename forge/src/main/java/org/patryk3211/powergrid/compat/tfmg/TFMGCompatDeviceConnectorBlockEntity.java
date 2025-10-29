@@ -67,7 +67,7 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
         powerRefresh = false;
         float power = getGeneratorLoad();
         var resistance = voltage * voltage / power;
-        if(resistance > 0) {
+        if(power > 0 && resistance > 0) {
             converterWire.setResistance(resistance);
             converterWire.setState(true);
         } else {

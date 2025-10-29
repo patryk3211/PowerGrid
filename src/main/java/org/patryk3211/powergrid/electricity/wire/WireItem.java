@@ -25,11 +25,13 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.config.WireValues;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.utility.BlockTrace;
@@ -39,22 +41,14 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 import java.util.ArrayList;
 
 public class WireItem extends Item implements IWire {
-    protected float resistance;
-    protected float maxLength;
-    protected float dissipationFactor;
-    protected float thermalMass;
-
     protected ResourceLocation wireTexture;
     protected float horizontalCoefficient = 1.01f;
     protected float verticalCoefficient = 1.2f;
     protected float wireThickness = 1 / 16f;
+    protected boolean colored = false;
 
     public WireItem(Properties settings) {
         super(settings);
-        resistance = 0.1f;
-        maxLength = 16f;
-        dissipationFactor = 0.2f;
-        thermalMass = 1.0f;
     }
 
     @Override
@@ -142,6 +136,12 @@ public class WireItem extends Item implements IWire {
                     var entity = BlockWireEntity.create(world, endpoint1, stack.copyWithCount(newItems), result.points());
                     if(endpoint2.type().isConnectable())
                         entity.setEndpoint2(endpoint2);
+                    if(player != null) {
+                        var offItem = player.getOffhandItem();
+                        if(((IWire) stack.getItem()).canBeColored() && offItem.getItem() instanceof DyeItem dye) {
+                            entity.setColor(dye.getDyeColor());
+                        }
+                    }
                     if(!((ServerLevel) world).tryAddFreshEntityWithPassengers(entity)) {
                         PowerGrid.LOGGER.error("Failed to spawn new block wire entity.");
                         if(player != null)
@@ -288,22 +288,22 @@ public class WireItem extends Item implements IWire {
 
     @Override
     public float getResistance() {
-        return resistance;
+        return WireValues.resistance(this);
     }
 
     @Override
     public float getMaximumLength() {
-        return maxLength;
+        return WireValues.maxLength(this);
     }
 
     @Override
     public float getDissipationFactor() {
-        return dissipationFactor;
+        return WireValues.dissipationFactor(this);
     }
 
     @Override
     public float getThermalMass() {
-        return thermalMass;
+        return WireValues.thermalMass(this);
     }
 
     @Environment(EnvType.CLIENT)
@@ -324,5 +324,10 @@ public class WireItem extends Item implements IWire {
     @Environment(EnvType.CLIENT)
     public float getWireThickness() {
         return wireThickness;
+    }
+
+    @Override
+    public boolean canBeColored() {
+        return colored;
     }
 }

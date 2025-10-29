@@ -28,16 +28,18 @@ import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
-import org.patryk3211.powergrid.electricity.baton.ElectroBatonItem;
+import org.patryk3211.powergrid.config.CWire;
+import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.light.bulb.LvLightBulb;
-import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryItem;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
-import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItem;
-import org.patryk3211.powergrid.electricity.zapper.ElectroZapperItemRenderer;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
+import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
+import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
@@ -53,19 +55,28 @@ import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParen
 
 public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
-            .transform(WireProperties.setAll(0.0015f, 16, 1.0f, 0.064f))
+            .transform(CWire.set(0.0015f, 16, 1.0f, 80))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
             .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
-            .transform(WireProperties.setAll(0.005f, 32, 2.0f, 0.12f))
+            .transform(CWire.set(0.005f, 32, 2.0f, 160))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.FUSE_RESETTING.tag)
             .register();
     public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
-            .transform(WireProperties.setAll(0.003f, 8, 0.8f, 0.288f))
+            .transform(CWire.set(0.003f, 8, 0.8f, 160))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
+            .register();
+    public static final ItemEntry<WireItem> INSULATED_COPPER_WIRE = REGISTRATE.item("insulated_copper_wire", WireItem::new)
+            .transform(CWire.set(0.0015f, 16, 1.2f, 70))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.01f, 1.2f, 0.0625f, true))
+            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
+            .register();
+    public static final ItemEntry<CordItem> CORD = REGISTRATE.item("copper_cord", CordItem::new)
+            .transform(CWire.set(0.0015f, 8, 2.0f, 60))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f, true))
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
@@ -123,15 +134,10 @@ public class ModdedItems {
     public static final ItemEntry<Item> RELAY = ingredient("relay");
     public static final ItemEntry<Item> RESISTOR = ingredient("resistor");
     public static final ItemEntry<Item> REDSTONE_RELAY = ingredient("redstone_relay");
-    public static final ItemEntry<Item> DIODE = ingredient("diode");
     public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
-    public static final ItemEntry<Item> LED = REGISTRATE.item("led", Item::new)
-            .lang("LED")
-            .register();
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
-    public static final ItemEntry<Item> BJT_TRANSISTOR = REGISTRATE.item("bjt_transistor", Item::new)
-            .lang("BJT Transistor")
-            .register();
+    public static final ItemEntry<Item> REGULATOR_TUBE = ingredient("regulator_tube");
+    public static final ItemEntry<Item> NEON_BULB = ingredient("neon_bulb");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
