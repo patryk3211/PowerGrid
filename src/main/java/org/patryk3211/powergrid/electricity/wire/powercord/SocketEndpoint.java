@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 import java.util.Objects;
@@ -42,6 +43,11 @@ public class SocketEndpoint implements ICordEndpoint {
 
     public SocketEndpoint(BlockPos pos) {
         this.pos = pos;
+    }
+
+    @Override
+    public IWireEndpoint makeOffset(BlockPos offset) {
+        return new SocketEndpoint(pos.offset(offset));
     }
 
     @Override

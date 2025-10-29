@@ -15,11 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 public class SplitCordEndpoint implements ICordEndpoint {
@@ -34,6 +36,13 @@ public class SplitCordEndpoint implements ICordEndpoint {
     public SplitCordEndpoint(BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2) {
         this.endpoint1 = endpoint1;
         this.endpoint2 = endpoint2;
+    }
+
+    @Override
+    public IWireEndpoint makeOffset(BlockPos offset) {
+        return new SplitCordEndpoint(
+                (BlockWireEndpoint) endpoint1.makeOffset(offset),
+                (BlockWireEndpoint) endpoint2.makeOffset(offset));
     }
 
     @Override

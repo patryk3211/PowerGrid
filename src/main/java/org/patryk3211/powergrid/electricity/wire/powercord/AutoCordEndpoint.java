@@ -24,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 import java.util.Objects;
@@ -45,6 +46,12 @@ public class AutoCordEndpoint implements ICordEndpoint {
         this.terminal2 = terminal2;
         this.placement = placement;
         this.plugFacing = plugFacing;
+    }
+
+    @Override
+    public IWireEndpoint makeOffset(BlockPos offset) {
+        return new AutoCordEndpoint(pos.offset(offset), terminal1, terminal2,
+                placement.add(offset.getX(), offset.getY(), offset.getZ()), plugFacing);
     }
 
     @Override

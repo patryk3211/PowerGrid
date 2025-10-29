@@ -94,19 +94,12 @@ public class BlockWireEndpoint implements IWireEndpoint {
     @Override
     public OwnedFloatingNode getNode(Level world) {
         var behaviour = getElectricBehaviour(world);
-//        if(global == null) {
-//            // Used during reading of persistent parts from NBT
-//            return null;
-//        }
         if(behaviour == null) {
             var global = GlobalElectricNetworks.getWorldNetworks(world);
             // Try grabbing a node from the global map.
             return global.globalExternalNodes.get(this);
         }
-        var newNode = behaviour.getTerminal(terminal);
-//        if(existingNode != newNode && newNode != null && existingNode != null)
-//            global.addAndMigrateNode(newNode);
-        return newNode;
+        return behaviour.getTerminal(terminal);
     }
 
     @Override
@@ -175,5 +168,10 @@ public class BlockWireEndpoint implements IWireEndpoint {
         var electric = getElectricBlock(world);
         var state = world.getBlockState(pos);
         return electric.terminal(state, terminal);
+    }
+
+    @Override
+    public IWireEndpoint makeOffset(BlockPos offset) {
+        return new BlockWireEndpoint(pos.offset(offset), terminal);
     }
 }

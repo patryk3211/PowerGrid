@@ -299,16 +299,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         var currentPos = blockPosition();
         if(lastPos != null && !lastPos.equals(currentPos)) {
             var diff = currentPos.subtract(lastPos);
-            if(endpoint1 instanceof BlockWireEndpoint bwe) {
-                endpoint1 = new BlockWireEndpoint(bwe.getPos().offset(diff), bwe.getTerminal());
-            } else {
-                endpoint1 = null;
-            }
-            if(endpoint2 instanceof BlockWireEndpoint bwe) {
-                endpoint2 = new BlockWireEndpoint(bwe.getPos().offset(diff), bwe.getTerminal());
-            } else {
-                endpoint2 = null;
-            }
+            if(endpoint1 != null)
+                endpoint1 = endpoint1.makeOffset(diff);
+            if(endpoint2 != null)
+                endpoint2 = endpoint2.makeOffset(diff);
         }
 
         setEndpoint1(endpoint1);
