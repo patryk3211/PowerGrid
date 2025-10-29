@@ -9,7 +9,5 @@
   "block.powergrid.transformer_medium": "Średni Transformator",
   "block.powergrid.transformer_small": "Mały Transformator",
   "block.powergrid.winding": "Uzwojenie",
-  "component.powergrid.diode.0": "Anoda",
-  "component.powergrid.diode.1": "Katoda",
   "component.powergrid.electron_tube.0": "Katoda"
 }
