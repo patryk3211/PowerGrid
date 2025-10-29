@@ -31,6 +31,7 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "gauges", GaugeScenes::voltage);
         HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "gauges", GaugeScenes::current);
+        HELPER.addStoryBoard(ModdedBlocks.POWER_METER, "power_gauge", GaugeScenes::power);
 
         HELPER.forComponents(ModdedBlocks.HEATING_COIL)
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic, PowerGridPonderTags.ELECTRIC_DEVICES)
