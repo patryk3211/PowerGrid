@@ -79,6 +79,7 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.DEVICE_CONNECTOR, "device_connector", RelayScenes::deviceConnector, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
+        HELPER.addStoryBoard(ModdedBlocks.CONSTANT_SPEED_MOTOR, "constant_speed_motor", DeviceScenes::constantSpeedMotor, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(ModdedBlocks.SERVO, "servo", DeviceScenes::servo, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
 
         HELPER.forComponents(ModdedItems.MAGNET)

@@ -95,6 +95,7 @@ public class PowerGridPonderTags {
 
         HELPER.addToTag(ELECTRIC_DEVICES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR)
+                .add(ModdedBlocks.CONSTANT_SPEED_MOTOR)
                 .add(ModdedBlocks.SERVO)
                 .add(ModdedBlocks.HEATING_COIL)
                 .add(ModdedBlocks.ELECTRIC_FAN)
@@ -125,6 +126,7 @@ public class PowerGridPonderTags {
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR)
+                .add(ModdedBlocks.CONSTANT_SPEED_MOTOR)
                 .add(ModdedBlocks.SERVO);
 
         HELPER.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
