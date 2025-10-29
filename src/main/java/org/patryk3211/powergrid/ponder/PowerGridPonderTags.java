@@ -130,6 +130,7 @@ public class PowerGridPonderTags {
         HELPER.addToTag(AllCreatePonderTags.DISPLAY_SOURCES)
                 .add(ModdedBlocks.VOLTAGE_METER)
                 .add(ModdedBlocks.CURRENT_METER)
+                .add(ModdedBlocks.POWER_METER)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)
                 .add(ModdedBlocks.BATTERY);
     }

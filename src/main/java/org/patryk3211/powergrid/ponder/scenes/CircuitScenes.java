@@ -414,6 +414,42 @@ public class CircuitScenes {
         scene.markAsFinished();
     }
 
+    public static void neonBulb(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("circuit_neon", "Neon Bulb");
+        scene.configureBasePlate(0, 0, 3);
+        scene.scaleSceneView(3.0f);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(1, 1, 1), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("The Neon Bulb is a simple device which will glow when you pass a current though it")
+                .pointAt(util.vector().of(1.375, 1.375, 1.375))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 0, 90);
+        scene.electric().addSource(util.grid().at(1, 1, 1), 1, 0);
+        scene.electric().tickFor(30);
+        scene.idle(30);
+
+        scene.effects().indicateSuccess(util.grid().at(1, 1, 1));
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("It needs a current limiting resistor to not break immediately after lighting up")
+                .pointAt(util.vector().of(1.625, 1.375, 1.625))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
     public static void regulatorTube(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
         scene.title("circuit_regulator_tube", "Regulator Tube");
