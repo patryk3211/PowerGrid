@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid;
+package org.patryk3211.powergrid.fabric;
 
 import com.simibubi.create.foundation.utility.FilesHelper;
 import com.tterrag.registrate.providers.ProviderType;
@@ -22,6 +22,7 @@ import net.createmod.ponder.foundation.PonderIndex;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.data.DataProvider;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;

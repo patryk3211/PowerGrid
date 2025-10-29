@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.circuits;
+package org.patryk3211.powergrid.circuits.components.fabric;
 
+import com.mojang.math.Transformation;
+import io.github.fabricators_of_create.porting_lib.models.QuadTransformers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
@@ -32,7 +34,10 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.circuits.components.IRenderedComponent;
@@ -161,6 +166,15 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
     public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
         baseModel.emitBlockQuads(blockView, state, pos, randomSupplier, context);
         var be = blockView.getBlockEntity(pos);
+
+        context.pushTransform(QuadTransformers.applying(new Transformation(
+                new Vector3f(0.5f, 0.5f, 0.5f),
+                new Quaternionf()
+                        .rotateY((float) Math.PI * CircuitBoardBlock.getAngleY(state) / 180f)
+                        .rotateX((float) Math.PI * CircuitBoardBlock.getAngleX(state) / 180f),
+                null, null
+        )));
+
         if(be instanceof CircuitBoardBlockEntity circuit) {
             // Emit components
             var schematic = circuit.getSchematic();
@@ -168,13 +182,14 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
                 if(placed instanceof IRenderedComponent rendered && !rendered.emitBaked())
                     continue;
                 var model = ComponentModels.getModel(placed);
+                int color = placed.destroyed ? 0xFF404040 : -1;
                 if(placed.has(Orientation.PROPERTY)) {
                     var orientation = placed.get(Orientation.PROPERTY);
                     // We need the raw footprint dimensions (without rotations)
                     var footprint = placed.component.footprint(null);
-                    context.pushTransform(new RotateOffsetTransform(placed.x, 2, placed.y, orientation, footprint.getWidth(), footprint.getHeight()));
+                    context.pushTransform(new RotateOffsetTransform(placed.x, 2, placed.y, orientation, footprint.getWidth(), footprint.getHeight(), color));
                 } else {
-                    context.pushTransform(new OffsetTransform(placed.x, 2, placed.y));
+                    context.pushTransform(new OffsetTransform(placed.x, 2, placed.y, color));
                 }
                 model.emitBlockQuads(blockView, state, pos, randomSupplier, context);
                 context.popTransform();
@@ -192,15 +207,19 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
                 emitPad(point, context);
             }
         }
+
+        context.popTransform();
     }
 
     private static class OffsetTransform implements RenderContext.QuadTransform {
         protected final float x, y, z;
+        protected final int color;
 
-        public OffsetTransform(int x, int y, int z) {
+        public OffsetTransform(int x, int y, int z, int color) {
             this.x = x / 16f;
             this.y = y / 16f;
             this.z = z / 16f;
+            this.color = color;
         }
 
         @Override
@@ -210,6 +229,7 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
                 var y = view.y(i);
                 var z = view.z(i);
                 view.pos(i, x + this.x, y + this.y, z + this.z);
+                view.color(i, color);
             }
             return true;
         }
@@ -219,8 +239,8 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
         protected final Orientation orientation;
         protected final float width, height;
 
-        public RotateOffsetTransform(int x, int y, int z, Orientation orientation, int width, int height) {
-            super(x, y, z);
+        public RotateOffsetTransform(int x, int y, int z, Orientation orientation, int width, int height, int color) {
+            super(x, y, z, color);
             this.orientation = orientation;
             this.width = width / 16f;
             this.height = height / 16f;

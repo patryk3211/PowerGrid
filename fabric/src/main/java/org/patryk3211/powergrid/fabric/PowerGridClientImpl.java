@@ -26,7 +26,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import org.patryk3211.powergrid.PowerGridClient;
-import org.patryk3211.powergrid.circuits.CircuitBoardModel;
+import org.patryk3211.powergrid.circuits.components.fabric.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.collections.fabric.ModdedKeysImpl;
 import org.patryk3211.powergrid.collections.fabric.ModdedParticlesImpl;

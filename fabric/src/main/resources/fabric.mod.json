@@ -23,7 +23,7 @@
 			"org.patryk3211.powergrid.fabric.PowerGridClientImpl"
 		],
 		"fabric-datagen": [
-			"org.patryk3211.powergrid.PowerGridDataGenerator"
+			"org.patryk3211.powergrid.fabric.PowerGridDataGenerator"
 		],
 		"rei_client": [
 			"org.patryk3211.powergrid.compat.rei.PowerGridREI"

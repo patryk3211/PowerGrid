@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid;
+package org.patryk3211.powergrid.fabric;
 
 import com.simibubi.create.foundation.item.TooltipModifier;
 import com.tterrag.registrate.builders.Builder;
@@ -25,6 +25,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 
 public class FabricPowerGridRegistrate extends AbstractPowerGridRegistrate {
     protected FabricPowerGridRegistrate(String modid) {

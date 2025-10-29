@@ -20,18 +20,20 @@ import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
-import org.patryk3211.powergrid.FabricPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.fabric.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.fabric.ModdedSoundEventsImpl;
-import org.patryk3211.powergrid.electricity.ElectricProperties;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
 public class PowerGridImpl implements ModInitializer {
@@ -46,6 +48,14 @@ public class PowerGridImpl implements ModInitializer {
 
         // Register platform events
         ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
+        ServerChunkEvents.CHUNK_LOAD.register(PowerGridImpl::chunkLoad);
+    }
+
+    private static void chunkLoad(ServerLevel level, LevelChunk chunk) {
+        var global = GlobalElectricNetworks.getWorldNetworks(level);
+        if(global == null)
+            return;
+        global.chunkLoaded(chunk.getPos());
     }
 
     public static AbstractPowerGridRegistrate createRegistrate() {

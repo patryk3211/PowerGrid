@@ -13,18 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity;
+package org.patryk3211.powergrid.fabric;
 
 import com.simibubi.create.foundation.item.TooltipModifier;
+import com.simibubi.create.foundation.utility.CreateLang;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
+
+import static net.minecraft.ChatFormatting.*;
 
 public class ElectricProperties implements TooltipModifier {
     private final IHaveElectricProperties properties;
@@ -45,8 +54,40 @@ public class ElectricProperties implements TooltipModifier {
         return null;
     }
 
+    private Component header(boolean shift) {
+        String[] holdDesc = Lang.translateDirect("tooltip.holdForDescription", "$")
+                .getString()
+                .split("\\$");
+        MutableComponent keyShift = CreateLang.translateDirect("tooltip.keyShift");
+        MutableComponent tabBuilder = Component.empty();
+        tabBuilder.append(Component.literal(holdDesc[0]).withStyle(DARK_GRAY));
+        tabBuilder.append(keyShift.plainCopy()
+                .withStyle(shift ? WHITE : GRAY));
+        tabBuilder.append(Component.literal(holdDesc[1]).withStyle(DARK_GRAY));
+        return tabBuilder;
+    }
+
     @Override
     public void modify(ItemStack stack, Player player, TooltipFlag flags, List<Component> tooltip) {
-        properties.appendProperties(stack, player, tooltip);
+        var hasSummary = false;
+        for(var line : tooltip) {
+            var siblings = line.getSiblings();
+            if(siblings.size() < 2)
+                continue;
+            var key = line.getSiblings().get(1);
+            if(key.getContents() instanceof TranslatableContents) {
+                // If the structure matches we assume that the summary thing is present.
+                hasSummary = true;
+                break;
+            }
+        }
+
+        var shift = EnvExecutor.getInEnv(Env.CLIENT, () -> Screen::hasShiftDown).orElse(false);
+        if(!hasSummary) {
+            tooltip.add(header(shift));
+        }
+        if(shift) {
+            properties.appendProperties(stack, player, tooltip);
+        }
     }
 }

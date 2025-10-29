@@ -36,9 +36,11 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 
@@ -46,6 +48,7 @@ import java.util.function.Function;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.*;
 import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
+import static org.patryk3211.powergrid.base.CustomProperties.ROTATION_4;
 
 @SuppressWarnings("unused")
 public class DataProviderUtilityImpl {
@@ -119,10 +122,44 @@ public class DataProviderUtilityImpl {
                 });
     }
 
+    public static NonNullBiConsumer<DataGenContext<Block, LightFixtureBlock>, RegistrateBlockstateProvider> lightFixture(String baseName) {
+        return (ctx, prov) ->
+                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                    var builder = ConfiguredModel.builder();
+                    var facing = state.getValue(FACING);
+                    var axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+
+                    int x = 0, y = 0;
+                    boolean vertical= false;
+                    switch(facing) {
+                        case UP -> vertical = true;
+                        case DOWN -> { x = 180; vertical = true; }
+                        case EAST -> y = 180;
+                        case NORTH -> y = 90;
+                        case SOUTH -> y = -90;
+                    }
+
+                    if(!axis_along_first && vertical)
+                        y = 90;
+                    else if(axis_along_first && !vertical)
+                        x = -90;
+
+                    var suffix = vertical ? "_v" : "_h";
+                    builder.modelFile(modModel(prov, baseName + suffix));
+                    builder.rotationX(x).rotationY(y);
+                    return builder.build();
+                });
+    }
+
     // This function needs two models. One for Y axis and one for other axis.
     public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
         var facing = state.getValue(FACING);
-        var axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+        boolean axis_along_first = false;
+        if(state.hasProperty(ALONG_FIRST_AXIS)) {
+            axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+        } else if (state.hasProperty(ROTATION_4)) {
+            axis_along_first = state.getValue(ROTATION_4) % 2 == 1;
+        }
 
         int x = 0, y = 0;
         boolean verticalModel = false;
@@ -200,6 +237,18 @@ public class DataProviderUtilityImpl {
         });
     }
 
+    public static <T extends VerticalCommutatorBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> verticalCommutator(String name) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+            var model = modModel(prov, name);
+            var builder = ConfiguredModel.builder().modelFile(model);
+            Direction facing = state.getValue(HORIZONTAL_FACING);
+            if(!state.getValue(UP)) {
+                builder.rotationX(180);
+            }
+            builder.rotationY((int) (facing.toYRot() - 180));
+            return builder.build();
+        });
+    }
 
     public static <T extends HvSwitchBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> hvSwitch(String baseName) {
         return (ctx, prov) ->
@@ -259,24 +308,24 @@ public class DataProviderUtilityImpl {
     }
 
     public static void transformerMedium(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, Direction.Axis axis) {
-        transformerMediumPart(builder, prov, "block/transformer/medium_bottom", axis, 0).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_bottom", axis, 1).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_top", axis, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_top", axis, 3).end();
+        transformerMediumPart(builder, prov, "block/transformer/medium_bottom", axis, 0, false).end();
+        transformerMediumPart(builder, prov, "block/transformer/medium_bottom_1", axis, 1, false).end();
+        transformerMediumPart(builder, prov, "block/transformer/medium_top", axis, 2, false).end();
+        transformerMediumPart(builder, prov, "block/transformer/medium_top_1", axis, 3, false).end();
 
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 0)
+        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 0, true)
                 .condition(TransformerMediumBlock.COILS, 1, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 1)
+        transformerMediumPart(builder, prov, "block/transformer/medium_coil1", axis, 1, true)
                 .condition(TransformerMediumBlock.COILS, 1, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 2)
+        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 2, true)
                 .condition(TransformerMediumBlock.COILS, 2).end();
-        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 3)
+        transformerMediumPart(builder, prov, "block/transformer/medium_coil2", axis, 3, true)
                 .condition(TransformerMediumBlock.COILS, 2).end();
     }
 
-    private static MultiPartBlockStateBuilder.PartBuilder transformerMediumPart(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, String model, Direction.Axis axis, int part) {
+    private static MultiPartBlockStateBuilder.PartBuilder transformerMediumPart(MultiPartBlockStateBuilder builder, RegistrateBlockstateProvider prov, String model, Direction.Axis axis, int part, boolean coil) {
         int y = 0;
-        if(part % 2 == 1)
+        if((part % 2 == 1) && coil)
             y = 180;
         if(axis == Direction.Axis.X)
             y -= 90;
@@ -314,7 +363,12 @@ public class DataProviderUtilityImpl {
             }
         }
         var model = switch(part) {
-            case 0, 2 -> modModel(prov, alongFirst ? "block/winding/end_v" : "block/winding/end");
+            case 0, 2 -> {
+                var base = alongFirst ? "block/winding/end_v" : "block/winding/end";
+                if(part == 2 && !alongFirst && axis.isHorizontal())
+                    base += "_1";
+                yield modModel(prov, base);
+            }
             case 1 -> modModel(prov, alongFirst ? "block/winding/middle_v" : "block/winding/middle");
             default -> throw new IllegalStateException();
         };
@@ -334,16 +388,6 @@ public class DataProviderUtilityImpl {
                 default -> throw new IllegalStateException();
             };
         };
-
-        builder.part()
-                .modelFile(model)
-                .rotationX(x)
-                .rotationY(y)
-                .addModel()
-                .condition(AXIS, axis)
-                .condition(WindingBlock.PART, part)
-                .condition(ALONG_FIRST_AXIS, alongFirst)
-                .end();
         // Case halves
         builder.part()
                 .modelFile(caseModel.apply(false))
@@ -365,16 +409,45 @@ public class DataProviderUtilityImpl {
                 .condition(ALONG_FIRST_AXIS, alongFirst)
                 .condition(WindingBlock.CASE_RIGHT, true)
                 .end();
+        if(axis == Direction.Axis.Y && alongFirst && part == 0)
+            y = 180;
+        else if(axis == Direction.Axis.Y && alongFirst && part == 1)
+            y += 180;
+        // Main
+        builder.part()
+                .modelFile(model)
+                .rotationX(x)
+                .rotationY(y)
+                .addModel()
+                .condition(AXIS, axis)
+                .condition(WindingBlock.PART, part)
+                .condition(ALONG_FIRST_AXIS, alongFirst)
+                .end();
     }
 
     public static void rotateDownFacingModel(ConfiguredModel.Builder<?> builder, Direction facing) {
         switch(facing) {
             case UP -> builder.rotationX(180);
-            case NORTH -> builder.rotationX(90);
-            case SOUTH -> builder.rotationX(-90);
+            case NORTH -> builder.rotationX(-90);
+            case SOUTH -> builder.rotationX(90);
             case WEST -> builder.rotationX(90).rotationY(90);
             case EAST -> builder.rotationX(90).rotationY(-90);
         }
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> northFacing(String name) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            builder.modelFile(modModel(prov, name));
+            switch(state.getValue(FACING)) {
+                case DOWN -> builder.rotationX(90);
+                case UP -> builder.rotationX(-90);
+                case SOUTH -> builder.rotationY(180);
+                case EAST -> builder.rotationY(90);
+                case WEST -> builder.rotationY(-90);
+            }
+            return builder.build();
+        });
     }
 
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> downFacing(String name) {
@@ -403,8 +476,7 @@ public class DataProviderUtilityImpl {
 
     public static NonNullBiConsumer<DataGenContext<Block, CircuitBoardBlock>, RegistrateBlockstateProvider> circuitBoard() {
         return (ctx, prov) ->
-                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state ->
-                        ConfiguredModel.builder().modelFile(unchecked("circuit_board")).build());
+                prov.simpleBlock(ctx.getEntry(), unchecked("circuit_board"));
     }
 
     public static NonNullBiConsumer<DataGenContext<Block, CircuitDesignTableBlock>, RegistrateBlockstateProvider> circuitDesignTable() {
@@ -456,6 +528,11 @@ public class DataProviderUtilityImpl {
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> cubeAllWithItem(String name) {
         return (ctx, prov) -> prov
                 .simpleBlockWithItem(ctx.getEntry(), prov.models().cubeAll(ctx.getName(), prov.modLoc(name)));
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> simple(String model) {
+        return (ctx, prov) -> prov
+                .simpleBlock(ctx.getEntry(), modModel(prov, model));
     }
 
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {

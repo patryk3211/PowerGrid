@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.deviceconnector;
+package org.patryk3211.powergrid.electricity.deviceconnector.fabric;
 
 import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
-import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import team.reborn.energy.api.EnergyStorage;
 import team.reborn.energy.api.EnergyStorageUtil;
 
@@ -33,14 +31,6 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
 
     public FEBridgeEnergyStorage(BlockEntity be) {
         this.be = be;
-    }
-
-    public static float voltToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
-    }
-
-    public static float wattsToFE() {
-        return ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF();
     }
 
     @Override
@@ -98,16 +88,6 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
     }
 
     @Override
-    public void charge(SwitchedWire wire) {
-        float wattsToFE = FEBridgeEnergyStorage.wattsToFE();
-        if(wire.getState()) {
-            var I = wire.current();
-            amount += Math.round(I * I * wire.getResistance() * wattsToFE);
-            be.setChanged();
-        }
-    }
-
-    @Override
     public long moveEnergy() {
         if(amount > 0) {
             // Try to move energy
@@ -119,19 +99,7 @@ public class FEBridgeEnergyStorage extends SnapshotParticipant<Long> implements 
     }
 
     @Override
-    public void manageWire(SwitchedWire wire) {
-        long maxCharge = (long) (wire.potentialDifference() * FEBridgeEnergyStorage.voltToFE());
-        capacity = maxCharge;
-        long missingCharge = maxCharge - amount;
-        if(missingCharge <= 0) {
-            wire.setState(false);
-            return;
-        }
-
-        float targetWatts = missingCharge / wattsToFE();
-        var V = wire.potentialDifference();
-        float resistance = V * V / targetWatts;
-        wire.setResistance(resistance);
-        wire.setState(true);
+    public void setChanged() {
+        be.setChanged();
     }
 }
