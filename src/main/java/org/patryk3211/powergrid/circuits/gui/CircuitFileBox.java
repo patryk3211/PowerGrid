@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +67,7 @@ public class CircuitFileBox extends EditBox {
     }
 
     private void refreshFiles() {
-        FilesHelper.createFolderIfMissing("circuits");
+        FilesHelper.createFolderIfMissing(Path.of("circuits"));
         availableSchematics.clear();
 
         try {
