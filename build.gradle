@@ -58,7 +58,6 @@ allprojects {
 		}
 
 		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
-		maven { url = "$rootDir/local-maven" } // Create Fabric v6
 	}
 
 	loom {
@@ -82,7 +81,6 @@ allprojects {
 		implementation(include("org.ejml:ejml-simple:0.44.0"))
 		implementation(include("org.ejml:ejml-ddense:0.44.0"))
 		implementation(include("org.ejml:ejml-dsparse:0.44.0"))
-//		mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	}
 
 	java {
@@ -261,12 +259,6 @@ dependencies {
 	// Roughly Enough Items - Common
 	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api:${rei_version}"
 //	modCompileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin:${rei_version}"
-
-//	modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
-//	modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_forge_version}") { transitive false }
-//	modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_forge_version}") { transitive false }
-//	modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}") { transitive false }
-//	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}") { transitive false }
 
 	// Support for unit tests
 	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
