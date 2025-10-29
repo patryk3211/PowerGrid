@@ -567,7 +567,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::copperMetal)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(7.5))
-            .transform(CThermal.maxPower(15, 1.5f))
+            .transform(CThermal.maxPower(200, 1.5f))
             .addLayer(() -> RenderType::cutoutMipped)
             .loot((tables, block) -> tables.dropOther(block, ModdedItems.COPPER_COIL))
             .register();
