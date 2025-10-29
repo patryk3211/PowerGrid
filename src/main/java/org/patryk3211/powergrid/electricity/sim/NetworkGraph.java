@@ -71,6 +71,11 @@ public class NetworkGraph {
         }
         if(!object.couplings.isEmpty()) {
             ElectricalNetwork.LOGGER.warn("Electric node removed before it was fully decoupled, this can cause issues");
+            for(var coupling : object.couplings) {
+                var network = coupling.getNetwork();
+                if(network != null)
+                    network.removeNode(coupling);
+            }
         }
         if(hooks != null)
             hooks.removeNode(node);

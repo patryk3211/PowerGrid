@@ -394,7 +394,6 @@ public class ElectricalNetwork {
                 residuals.remove(residual);
             wires.remove(wire);
         });
-        var badCouplings = new ArrayList<ICouplingNode>();
         for(var node : couplings) {
             try {
                 // This is using the same method as wires but coupling nodes,
@@ -402,10 +401,8 @@ public class ElectricalNetwork {
                 node.couple(this::jacobianAdd);
             } catch(IllegalArgumentException | NullPointerException e) {
                 LOGGER.error("Failed to couple {}:", node, e);
-                badCouplings.add(node);
             }
         }
-        badCouplings.forEach(this::removeNode);
         lockEliminated = false;
 
         if(addGMin) {

@@ -64,11 +64,19 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     private void overheated() {
         assert level != null;
         if(isController()) {
+            GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour)
+                .forEach(wire -> {
+                    if(wire.owner != null) {
+                        wire.owner.kill();
+                    } else {
+                        wire.remove();
+                    }
+                });
             var r = level.random;
-            var x = worldPosition.getX() + r.nextIntBetweenInclusive(0, getWidth());
-            var y = worldPosition.getY() + r.nextIntBetweenInclusive(0, getHeight());
-            var z = worldPosition.getZ() + r.nextIntBetweenInclusive(0, getWidth());
-            ThermalBehaviour.explode(level, new BlockPos(x, y, z), getBlockState(), getSize() * 0.5f);
+            var x = worldPosition.getX() + r.nextInt(0, getWidth());
+            var y = worldPosition.getY() + r.nextInt(0, getHeight());
+            var z = worldPosition.getZ() + r.nextInt(0, getWidth());
+            ThermalBehaviour.explode(level, new BlockPos(x, y, z), getBlockState(), getSize() * 0.25f);
         }
     }
 
