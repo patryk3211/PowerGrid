@@ -157,11 +157,15 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
 
     @Override
     public float getGeneratedSpeed() {
+        if(Math.abs(generatedSU) < 64)
+            return 0;
         return convertToDirection(scrollValue.getValue() * (generatedSU < 0 ? -1 : 1), getBlockState().getValue(ElectricMotorBlock.FACING));
     }
 
     @Override
     public float calculateAddedStressCapacity() {
+        if(Math.abs(generatedSU) < 64)
+            return 0;
         return Math.abs(generatedSU) / scrollValue.getValue();
     }
 
