@@ -122,7 +122,7 @@ public class SolverTests extends TestHelper {
         }
 
         public void tick() {
-            float Kp = 0.85f;
+            float Kp = 0;//0.85f;
             float deltaT = (target - velocity);
             if(target < 0)
                 deltaT = -deltaT;
@@ -156,7 +156,7 @@ public class SolverTests extends TestHelper {
         Net.W(.1f, N2, N4);
 //        Net.W(10f, N1, N2);
 
-        for(int i = 0; i < 20; ++i) {
+        for(int i = 0; i < 40; ++i) {
             rotor1.tick();
             rotor2.tick();
 
@@ -173,10 +173,11 @@ public class SolverTests extends TestHelper {
             var Pe2 = V2.getVoltage() * -V2.getCurrent();
 
             System.out.printf("i = %d:\n", i);
-            System.out.printf("  ω1 = %g\n  I_gen1 = %g\n  ΔE_gen1 = %g\n  P_gen1 = %g, E = %g\n",
+            System.out.printf("  ω1 = %g\n    I_gen1 = %g\n    ΔE_gen1 = %g\n    P_gen1 = %g, E = %g\n",
                     rotor1.getAngularVelocity(), V1.getCurrent(), deltaE1, Pe1, Pe1 * 0.05f);
-            System.out.printf("  ω2 = %g\n  I_gen2 = %g\n  ΔE_gen2 = %g\n  P_gen2 = %g, E = %g\n",
+            System.out.printf("  ω2 = %g\n    I_gen2 = %g\n    ΔE_gen2 = %g\n    P_gen2 = %g, E = %g\n",
                     rotor2.getAngularVelocity(), V2.getCurrent(), deltaE2, Pe2, Pe2 * 0.05f);
+            System.out.printf("  E_system = %g\n", rotor1.energy() + rotor2.energy());
         }
     }
 }

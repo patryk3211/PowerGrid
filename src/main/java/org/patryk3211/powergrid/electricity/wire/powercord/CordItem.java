@@ -167,14 +167,6 @@ public class CordItem extends WireItem {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         var state = context.getLevel().getBlockState(context.getClickedPos());
-        for(var handler : PLACEMENT_HANDLERS) {
-            var result = handler.place(state, context);
-            if(result.getResult() == InteractionResult.PASS)
-                continue;
-            if(result.getResult().consumesAction())
-                return addEndpoint(context, result.getObject());
-            return result.getResult();
-        }
         var electric = IElectric.getAt(context.getLevel(), context.getClickedPos());
         if(electric != null) {
             var stack = context.getItemInHand();
@@ -204,6 +196,14 @@ public class CordItem extends WireItem {
                     return InteractionResult.SUCCESS;
                 }
             }
+        }
+        for(var handler : PLACEMENT_HANDLERS) {
+            var result = handler.place(state, context);
+            if(result.getResult() == InteractionResult.PASS)
+                continue;
+            if(result.getResult().consumesAction())
+                return addEndpoint(context, result.getObject());
+            return result.getResult();
         }
         return InteractionResult.PASS;
     }

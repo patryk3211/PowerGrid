@@ -78,10 +78,12 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         if(!rod.settled()) {
             // Setting switch to false is needed to prevent imprecision
             // messing with the conductance matrix.
-            wire.setState(false);
-            wire.setResistance(getResistance());
-            wire.setState(isClosed());
-            setChanged();
+            if(wire.getState() != isClosed() || wire.getResistance() != getResistance()) {
+                wire.setState(false);
+                wire.setResistance(getResistance());
+                wire.setState(isClosed());
+                setChanged();
+            }
         }
     }
 
@@ -129,7 +131,8 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
-        rod.readNBT(compound.getCompound("Rod"), clientPacket);
+        // Always force the value to be set
+        rod.readNBT(compound.getCompound("Rod"), false);
         if(wire != null) {
             wire.setState(false);
             wire.setResistance(getResistance());

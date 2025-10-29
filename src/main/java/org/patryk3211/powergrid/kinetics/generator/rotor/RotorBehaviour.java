@@ -39,6 +39,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
 
     // Energy values get loaded from NBT.
     protected float totalForce = 0;
+    public float prevForce = 0;
     protected float angularVelocity = 0;
     private final float individualInertia;
 
@@ -251,7 +252,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
             angularVelocity += totalForce / 20f / inertia;
             if(Math.abs(angularVelocity) < 0.01 || Float.isNaN(angularVelocity))
                 angularVelocity = 0;
-            totalForce = 0;
 
             forEachSegment(segment -> {
                 if(segment.forceSupplier != null) {
@@ -275,10 +275,13 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
                     force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
                     angularVelocity += force / 20f / inertia;
                     segment.forceSupplier.receiveUsedForce(Math.abs(force / maxForce));
+                    totalForce += force;
 
                     power = force * getAngularVelocityRadians();
                 }
             });
+            prevForce = totalForce;
+            totalForce = 0;
 
             if(!getWorld().isClientSide) {
                 var V = Math.abs(angularVelocity);

@@ -66,11 +66,13 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private ElectricWire coilWire;
 
     private float field;
+    private int warmUpTicks = 0;
 
     private boolean rebuildParallels = false;
 
     public WindingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        setLazyTickRate(40);
     }
 
     public static float coilConstant() {
@@ -646,17 +648,25 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             rebuildParallels = false;
         }
         float current = windingCurrent();
-        if(thermalBehaviour != null)
+        if (thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
-        if(coilWire != null && (coilWire.isConverged() || coilWire.getNetwork() == null)) {
+        float B = 0;
+        if (coilWire != null && (coilWire.isConverged() || coilWire.getNetwork() == null)) {
             var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
-            var B = I_sat * (float) Math.tanh(2 * current / I_sat) * coilConstant();
-            field = B * 0.25f + field * 0.75f;
-            if(Math.abs(field) < 0.001f && Math.abs(B) < 0.001f)
-                field = 0;
+            B = I_sat * (float) Math.tanh(2 * current / I_sat) * coilConstant();
         }
+        field = B * 0.25f + field * 0.75f;
+        if (Math.abs(field) < 0.001f && Math.abs(B) < 0.001f)
+            field = 0;
 
         setChanged();
         super.tick();
+    }
+
+    @Override
+    public void lazyTick() {
+        super.lazyTick();
+        if(coilWire != null)
+            sendData();
     }
 }

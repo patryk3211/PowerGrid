@@ -21,7 +21,7 @@ import net.createmod.catnip.config.ConfigBase;
 public class CKinetics extends ConfigBase {
     public final ConfigFloat encasedFanCoolingStrength = f(0.01f, 0, "encasedFanCooling", Comments.encasedFanCoolingStrength);
 
-    public final ConfigFloat torqueForStress = f(2.5f, 0, "torqueForStress", Comments.torqueForStress);
+    public final ConfigFloat torqueForStress = f(15f, 0, "torqueForStress", Comments.torqueForStress);
 
     public final ConfigFloat lightningAttractorSpeedFactor = f(1 / 20f, 0, "lightningAttractorSpeedFactor", Comments.lightningAttractorSpeedFactor);
     public final ConfigFloat lightningAttractorSailFactor = f(1 / 8f, 0, "lightningAttractorSailFactor", Comments.lightningAttractorSailFactor);
