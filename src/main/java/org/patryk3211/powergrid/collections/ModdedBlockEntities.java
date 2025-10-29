@@ -43,7 +43,7 @@ import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
-import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlockEntity;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;

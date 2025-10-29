@@ -20,7 +20,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.world.entity.player.Player;
-import org.patryk3211.powergrid.electricity.portablebattery.BatteryArmorLayer;
+import org.patryk3211.powergrid.equipment.portablebattery.BatteryArmorLayer;
 
 public class BatteryArmorLayerImpl {
     @SuppressWarnings({"unchecked", "rawtypes"})

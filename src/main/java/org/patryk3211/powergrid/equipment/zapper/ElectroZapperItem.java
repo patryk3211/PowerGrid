@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.zapper;
+package org.patryk3211.powergrid.equipment.zapper;
 
 import com.simibubi.create.content.equipment.zapper.ShootableGadgetItemMethods;
 import com.simibubi.create.foundation.item.CustomArmPoseItem;
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.electricity.portablebattery.BatteryUtils;
+import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;

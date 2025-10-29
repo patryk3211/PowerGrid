@@ -27,7 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.electricity.zapper.ElectroZapperS2CPacket;
+import org.patryk3211.powergrid.equipment.zapper.ElectroZapperS2CPacket;
 import org.patryk3211.powergrid.network.SimplePacket;
 import org.patryk3211.powergrid.network.packets.*;
 import org.patryk3211.powergrid.utility.PlayerLookup;

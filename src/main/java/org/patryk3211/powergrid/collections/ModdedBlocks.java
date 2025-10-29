@@ -72,7 +72,7 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
-import org.patryk3211.powergrid.electricity.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;

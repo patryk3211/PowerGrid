@@ -23,8 +23,8 @@ import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordRenderer;
-import org.patryk3211.powergrid.electricity.zapper.ZapProjectileEntity;
-import org.patryk3211.powergrid.electricity.zapper.ZapProjectileRenderer;
+import org.patryk3211.powergrid.equipment.zapper.ZapProjectileEntity;
+import org.patryk3211.powergrid.equipment.zapper.ZapProjectileRenderer;
 import org.patryk3211.powergrid.utility.EntityProperties;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;

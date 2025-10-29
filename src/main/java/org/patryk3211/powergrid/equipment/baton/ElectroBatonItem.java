@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.baton;
+package org.patryk3211.powergrid.equipment.baton;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -28,7 +28,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
-import org.patryk3211.powergrid.electricity.portablebattery.BatteryUtils;
+import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
 import org.patryk3211.powergrid.equipment.ZincToolMaterial;
 
 import java.util.UUID;
