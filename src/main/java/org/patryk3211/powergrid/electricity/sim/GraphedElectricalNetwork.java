@@ -168,6 +168,14 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
     }
 
     @Override
+    protected boolean canOptimize(INode node) {
+        if(node instanceof IElectricNode enode) {
+            return !graph.hasCouplings(enode);
+        }
+        return super.canOptimize(node);
+    }
+
+    @Override
     public void addWire(AbstractElectricWire wire) {
         graph.connect(wire.node1, wire.node2, wire);
         super.addWire(wire);

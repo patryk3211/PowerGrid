@@ -223,6 +223,13 @@ public class NetworkGraph {
         return false;
     }
 
+    public boolean hasCouplings(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return false;
+        var object = nodes.get(node);
+        return !object.couplings.isEmpty();
+    }
+
     public boolean isLeafEliminating(IElectricNode node) {
         if(!nodes.containsKey(node))
             return false;
