@@ -61,7 +61,7 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var ih = placed.get(HOLDING_CURRENT);
         var wire = new ColdCathodeRegulatorTubeWire(
-                placed.get(BREAKDOWN_VOLTAGE), placed.get(HOLDING_VOLTAGE), ih, 0.005f, ih * 3,
+                placed.get(BREAKDOWN_VOLTAGE), placed.get(HOLDING_VOLTAGE), ih, 0.025f,
                 builder.terminalNode(0), builder.terminalNode(1)
         );
         wire.lit = placed.get(LIT);

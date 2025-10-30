@@ -15,51 +15,51 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
 
-public class ColdCathodeRegulatorTubeWire extends DynamicConductanceWire {
+public class ColdCathodeRegulatorTubeWire extends AbstractElectricWire implements IOuterHook, IStaticResidual {
     private final float breakdownVoltage;
     private final float holdingVoltage;
     private final float holdingCurrent;
     private final float dischargeConductance;
-    private final float abnormalCurrent;
+    private double conductance;
 
     public boolean lit = false;
     private double I;
 
-    public ColdCathodeRegulatorTubeWire(float breakdownVoltage, float holdingVoltage, float holdingCurrent, float dischargeConductance, float abnormalCurrent, IElectricNode anode, IElectricNode cathode) {
+    public ColdCathodeRegulatorTubeWire(float breakdownVoltage, float holdingVoltage, float holdingCurrent, float dischargeConductance, IElectricNode anode, IElectricNode cathode) {
         super(anode, cathode);
         this.breakdownVoltage = breakdownVoltage;
         this.holdingVoltage = holdingVoltage;
         this.holdingCurrent = holdingCurrent;
         this.dischargeConductance = dischargeConductance;
-        this.abnormalCurrent = abnormalCurrent;
     }
 
     @Override
-    protected double calculateConductance() {
-        if(!lit) {
-            this.I = 0;
-            return ElectricalNetwork.G_MIN;
+    public double conductance() {
+        return conductance;
+    }
+
+    public void updateConductance(double conductance) {
+        if(network != null)
+            network.updateConductance(this, conductance - this.conductance);
+        this.conductance = conductance;
+    }
+
+    @Override
+    public void addStaticResidual(IResidualAdder residual) {
+        if(lit) {
+            I = holdingVoltage * dischargeConductance;
+            residual.add(node1.getIndex(),  I);
+            residual.add(node2.getIndex(), -I);
+        } else {
+            I = 0;
         }
-
-        var prevI = (potentialDifference() - holdingVoltage) * currentConductance;
-        double G = Math.max(
-                dischargeConductance,
-                dischargeConductance
-                        * (Math.min(prevI, abnormalCurrent) / holdingCurrent) * 0.5
-                        + currentConductance * 0.5
-        );
-        this.I = holdingVoltage * G;
-        return G;
-    }
-
-    @Override
-    public void addResidual(IResidualAdder residual) {
-        residual.add(node1.getIndex(), -I);
-        residual.add(node2.getIndex(),  I);
     }
 
     @Override
@@ -72,8 +72,10 @@ public class ColdCathodeRegulatorTubeWire extends DynamicConductanceWire {
         // Update discharge state
         double V = potentialDifference(), I = current();
         if(!lit && V > breakdownVoltage) {
+            updateConductance(dischargeConductance);
             lit = true;
         } else if(lit && I < holdingCurrent) {
+            updateConductance(ElectricalNetwork.G_MIN);
             lit = false;
         }
     }

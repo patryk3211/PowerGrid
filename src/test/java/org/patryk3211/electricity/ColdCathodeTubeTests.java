@@ -29,7 +29,7 @@ public class ColdCathodeTubeTests extends TestHelper {
         var Anode = Net.N();
         var Cathode = Net.N();
 
-        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.0025f, 0.003f, Anode, Cathode);
+        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.0025f, Anode, Cathode);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;
@@ -63,7 +63,7 @@ public class ColdCathodeTubeTests extends TestHelper {
         var Anode = Net.N();
         var Cathode = Net.N();
 
-        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.001f, 0.003f, Anode, Cathode);
+        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.001f, Anode, Cathode);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;
@@ -88,7 +88,7 @@ public class ColdCathodeTubeTests extends TestHelper {
         var Anode = Net.N();
         var Cathode = Net.N();
 
-        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.001f, 0.003f, Anode, Cathode);
+        var Tube = new ColdCathodeRegulatorTubeWire(90, 60, 0.001f, 0.025f, Anode, Cathode);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;
@@ -98,7 +98,7 @@ public class ColdCathodeTubeTests extends TestHelper {
         for(int i = 0; i < 3; ++i)
             Net.calculate();
 
-        Assertions.assertEquals(61, Anode.getVoltage(), 0.5, "Anode voltage is not correct");
+        Assertions.assertEquals(60.0, Anode.getVoltage(), 0.25, "Anode voltage is not correct");
         Assertions.assertEquals(V1.getCurrent(), Tube.current(), 1e-6, "Tube current is not correct");
     }
 }
