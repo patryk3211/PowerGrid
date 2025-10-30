@@ -76,7 +76,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     public static float coilConstant() {
-        return ModdedConfigs.server().electricity.windingCoilConstant.getF();
+        return ModdedConfigs.server().kinetics.generatorControls.windingCoilConstant.getF();
     }
 
     private boolean isMain() {
