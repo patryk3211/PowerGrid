@@ -1,0 +1,29 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "powergrid:block/cord_junction"
+    },
+    "facing=east": {
+      "model": "powergrid:block/cord_junction",
+      "x": 90,
+      "y": -90
+    },
+    "facing=north": {
+      "model": "powergrid:block/cord_junction",
+      "x": -90
+    },
+    "facing=south": {
+      "model": "powergrid:block/cord_junction",
+      "x": 90
+    },
+    "facing=up": {
+      "model": "powergrid:block/cord_junction",
+      "x": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/cord_junction",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

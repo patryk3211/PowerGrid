@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:block",
+  "functions": [
+    {
+      "function": "minecraft:copy_nbt",
+      "ops": [
+        {
+          "op": "replace",
+          "source": "Charge",
+          "target": "Charge"
+        }
+      ],
+      "source": "block_entity"
+    }
+  ],
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powergrid:portable_battery"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "powergrid:blocks/portable_battery"
+}

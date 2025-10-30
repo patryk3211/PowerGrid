@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "powergrid:wire",
+    "powergrid:golden_wire",
+    "powergrid:insulated_copper_wire"
+  ]
+}

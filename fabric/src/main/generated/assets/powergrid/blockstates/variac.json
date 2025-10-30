@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/variac/block",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/variac/block"
+    },
+    "facing=south": {
+      "model": "powergrid:block/variac/block",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/variac/block",
+      "y": 270
+    }
+  }
+}

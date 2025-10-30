@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powergrid:block/transformer_core"
+    }
+  }
+}

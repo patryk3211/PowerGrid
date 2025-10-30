@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/generator/housing_vertical",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/generator/housing_vertical"
+    },
+    "facing=south": {
+      "model": "powergrid:block/generator/housing_vertical",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/generator/housing_vertical",
+      "y": 270
+    }
+  }
+}

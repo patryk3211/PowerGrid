@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "powergrid:item/insulated_copper_wire"
+  }
+}

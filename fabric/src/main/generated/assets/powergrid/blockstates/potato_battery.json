@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "baked=false,facing=east": {
+      "model": "powergrid:block/potato_battery",
+      "y": 90
+    },
+    "baked=false,facing=north": {
+      "model": "powergrid:block/potato_battery"
+    },
+    "baked=false,facing=south": {
+      "model": "powergrid:block/potato_battery",
+      "y": 180
+    },
+    "baked=false,facing=west": {
+      "model": "powergrid:block/potato_battery",
+      "y": 270
+    },
+    "baked=true,facing=east": {
+      "model": "powergrid:block/baked_potato_battery",
+      "y": 90
+    },
+    "baked=true,facing=north": {
+      "model": "powergrid:block/baked_potato_battery"
+    },
+    "baked=true,facing=south": {
+      "model": "powergrid:block/baked_potato_battery",
+      "y": 180
+    },
+    "baked=true,facing=west": {
+      "model": "powergrid:block/baked_potato_battery",
+      "y": 270
+    }
+  }
+}
