@@ -108,6 +108,7 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.WIRE_CONNECTOR)
                 .add(AllItems.COPPER_NUGGET)
                 .add(ModdedItems.RESISTOR)
+                .add(ModdedItems.DIODE)
                 .add(ModdedItems.CAPACITOR)
                 .add(ModdedItems.COPPER_COIL)
                 .add(ModdedItems.RELAY)

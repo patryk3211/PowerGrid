@@ -15,18 +15,21 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
 public class PNJunctionWire extends DynamicConductanceWire {
     private double temperatureCelsius;
     private final double reverseSaturationCurrent;
     private final double seriesResistance;
+    private final double idealityFactor;
 
-    public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, IElectricNode node1, IElectricNode node2) {
+    public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
         this.reverseSaturationCurrent = reverseSaturationCurrent;
         this.seriesResistance = seriesResistance;
         this.temperatureCelsius = temperatureCelsius;
+        this.idealityFactor = idealityFactor;
     }
 
     private static double LambertW(double z)
@@ -53,15 +56,31 @@ public class PNJunctionWire extends DynamicConductanceWire {
     }
 
     public double calculateConductance() {
+        // TODO: reverse breakdown
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
+        double n = idealityFactor;
         double V = potentialDifference();
-        double I_s = reverseSaturationCurrent;
+        double I_s1 = reverseSaturationCurrent;
+        double E_g = 1.12; // Silicon bandgap energy in eV
+        double T_1 = 22 + 273.15; // Reference temperature in K
+        double T_2 = temperatureCelsius + 273.15; // Actual temperature in K
+        double T_2_div_T_1 = T_2 / T_1;
+        double I_s2 = I_s1 * Math.pow(T_2_div_T_1, 3/n) * Math.exp(- (q * E_g / k / T_2 / n) * (1 - T_2_div_T_1));
         double R_s = seriesResistance;
-        // take derivative of Banwell and Jayakumar (2000)
-        double IsRs = I_s * R_s;
-        double WTerm = LambertW((IsRs + Math.exp((IsRs + V) / V_T )) / V_T);
-        return WTerm / (R_s * (WTerm + 1));
+        // Banwell and Jayakumar (2000)
+        double IsRs = I_s2 * R_s;
+        double W_x = IsRs / n / V_T * Math.exp((IsRs + V) / V_T / n);
+        double WTerm = LambertW(W_x);
+        double result = 0;
+        if (Math.abs(V) < 1e-9) {
+            // dI/dV at V=0 to avoid division by zero
+            result = WTerm / (R_s * (1 + WTerm));
+        }
+        else {
+            result = (n * V_T / R_s * WTerm - I_s2) / V;
+        }
+        return Math.max(result, ElectricalNetwork.G_MIN);
     }
 }
