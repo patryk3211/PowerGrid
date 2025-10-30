@@ -35,7 +35,6 @@ public class ElectricalNetwork {
     private static final double PRECISION = 1e-7;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
     private static final int MAX_SCALE_REUSE_COUNT = 20;
-    public static boolean ADAPTIVE_ALPHA = true;
 
     private final boolean addGMin;
     protected final Set<AbstractElectricWire> wires = new HashSet<>();
@@ -71,6 +70,7 @@ public class ElectricalNetwork {
 
     private DynamicallyTypedMatrix ScaledJ;
     private DMatrixRMaj StateVector;
+    private DMatrixRMaj PrevStateVector;
     private DMatrixRMaj AuxiliaryVector;
     private DMatrixRMaj EliminatedSolved;
 
@@ -738,6 +738,7 @@ public class ElectricalNetwork {
             ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
             ResidualVector = new DMatrixRMaj(reducedCount, 1);
             StateVector = new DMatrixRMaj(reducedCount, 1);
+            PrevStateVector = new DMatrixRMaj(reducedCount, 1);
             AuxiliaryVector = new DMatrixRMaj(reducedCount, 1);
 
             columnScales = new double[reducedCount];
@@ -923,6 +924,10 @@ public class ElectricalNetwork {
                 break;
             if(i == 0)
                 prevNorm = norm;
+            if(norm > prevNorm) {
+                // Backtrack
+//                StateVector.setTo(PrevStateVector);
+            }
             prepareScaled(workMatrix);
 
             // Perform Newton iterations
@@ -935,94 +940,31 @@ public class ElectricalNetwork {
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if(valid) {
-                if(ADAPTIVE_ALPHA) {
-                    CommonOps_DDRM.multRows(columnScales, deltaX);
-                    if (norm > prevNorm || (--recalculateAlpha == 0)) {
-                        // Recalculate alpha
-                        var initialAlpha = alpha;
-                        if (norm > prevNorm || alphaDefault) {
-                            alpha = 1.2;
-                            alphaDefault = false;
-                        }
-                        var beta = 0.5;
-                        double bestAlpha = alpha, bestNorm = norm;
-                        int tries = 0;
-                        var first = true;
-                        var applied = false;
-                        var lastDirection = false;
-                        var PreviousState = StateVector;
-                        StateVector = AuxiliaryVector;
-                        while (beta > 0.0001) {
-                            CommonOps_DDRM.add(PreviousState, -alpha * 0.995, deltaX, AuxiliaryVector);
-                            computeResidual(workMatrix, StateVector);
-                            var newNorm = NormOps_DDRM.normP1(ResidualVector);
-                            if (newNorm < prevNorm) {
-                                applied = true;
-                                StateVector = PreviousState;
-                                StateVector.setTo(AuxiliaryVector);
-                                norm = newNorm;
-                                break;
-                            }
-                            if (!first && newNorm > norm) {
-                                lastDirection = !lastDirection;
-                            }
-                            if (lastDirection) {
-                                alpha *= (1 + beta);
-                            } else {
-                                alpha *= (1 - beta);
-                                first = false;
-                            }
-                            if (norm < bestNorm) {
-                                bestAlpha = alpha;
-                                bestNorm = norm;
-                                tries = 0;
-                                beta *= 0.5;
-                            }
-                            if (tries++ > 10) {
-                                alpha = bestAlpha;
-                                newNorm = bestNorm;
-                                tries = 0;
-                                beta *= 0.5;
-                            }
-                            norm = newNorm;
-                        }
-                        if(initialAlpha == alpha) {
-                            recalculateAlpha = 20;
-                        } else {
-                            recalculateAlpha = 10;
-                        }
-                        if (!applied)
-                            break;
-                    } else {
-                        // Apply known good alpha
+                alpha = i < 2 || (hasHooks() && i < 5) ? 0.5 : 1.2;
+                var applied = false;
+                ScaledJ.mult(deltaX, AuxiliaryVector);
+                CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
+                while(alpha > 0.0001) {
+                    var newNorm = NormOps_DDRM.normP1(ResidualVector);
+                    if(newNorm < norm) {
+                        applied = true;
+                        CommonOps_DDRM.multRows(columnScales, deltaX);
                         CommonOps_DDRM.add(StateVector, -alpha * 0.995, deltaX, StateVector);
-                    }
-                } else {
-                    alpha = i < 2 || (hasHooks() && i < 5) ? 0.5 : 1.2;
-                    var applied = false;
-                    ScaledJ.mult(deltaX, AuxiliaryVector);
-                    CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
-                    while(alpha > 0.0001) {
-                        var newNorm = NormOps_DDRM.normP1(ResidualVector);
-                        if(newNorm < norm) {
-                            applied = true;
-                            CommonOps_DDRM.multRows(columnScales, deltaX);
-                            CommonOps_DDRM.add(StateVector, -alpha * 0.995, deltaX, StateVector);
-                            break;
-                        }
-                        var initialAlpha = alpha;
-                        if(alpha > 1) {
-                            alpha = 1;
-                        } else {
-                            alpha *= 0.5;
-                        }
-                        CommonOps_DDRM.add(ResidualVector, (initialAlpha - alpha), AuxiliaryVector, ResidualVector);
-                    }
-                    if(!applied) {
                         break;
                     }
+                    var initialAlpha = alpha;
+                    if(alpha > 1) {
+                        alpha = 1;
+                    } else {
+                        alpha *= 0.5;
+                    }
+                    CommonOps_DDRM.add(ResidualVector, (initialAlpha - alpha), AuxiliaryVector, ResidualVector);
+                }
+                if(!applied) {
+                    break;
                 }
             } else {
+                StateVector.zero();
                 solver.zero();
             }
         }
