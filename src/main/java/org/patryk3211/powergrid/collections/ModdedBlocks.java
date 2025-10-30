@@ -418,9 +418,9 @@ public class ModdedBlocks {
 
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
             .blockstate(lightFixture("block/fixtures/light_fixture"))
-            .initialProperties(SharedProperties::wooden)
+            .initialProperties(SharedProperties::softMetal)
             .transform(axeOrPickaxe())
-            .transform(LightFixtureBlock.setBulbModelOffset(0, 0.125f, 0))
+            .transform(LightFixtureBlock.setBulbModelOffset(0, 3 / 16f, 0))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/fixtures/light_fixture_v"))
