@@ -33,7 +33,7 @@ public class CGenerator extends ConfigBase {
 	public final ConfigFloat generatorClutchInertia = f(0.05f, 0, "generatorClutchInertia");
 
 	public final ConfigFloat windingCoilConstant = f(5, 0.1f, "windingCoilConstant", Comments.windingCoilConstant);
-	public final ConfigFloat fieldSaturationCurrent = f(3.0f, 0, "fieldSaturationCurrent", Comments.fieldSaturationCurrent);
+	public final ConfigFloat fieldSaturationCurrent = f(2.0f, 0, "fieldSaturationCurrent", Comments.fieldSaturationCurrent);
 
     @Override
     public String getName() {
