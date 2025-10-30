@@ -33,7 +33,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     protected LerpedFloat rod;
     private SwitchedWire wire;
 
-    private boolean wasClosed = false;
+    private int state = 1;
 
     public HvSwitchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -89,17 +89,22 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
 
     @Override
     public void tickAudio() {
+        assert level != null;
         super.tickAudio();
-        var closed = rod.getValue() == 1;
-        var open = rod.getValue() == 0;
-        if(wasClosed && open) {
-            wasClosed = false;
-            level.playLocalSound(getBlockPos(), ModdedSoundEvents.HV_SWITCH_DISCONNECT.getMainEvent(),
-                    SoundSource.BLOCKS, 1, 1, true);
-        } else if(!wasClosed && closed) {
-            wasClosed = true;
-            level.playLocalSound(getBlockPos(), ModdedSoundEvents.HV_SWITCH_CONNECT.getMainEvent(),
-                    SoundSource.BLOCKS, 1, 1, true);
+        var newState = 1;
+        if(rod.getValue() == 1)
+            newState = 2;
+        if(rod.getValue() == 0)
+            newState = 0;
+        if(newState != state) {
+            state = newState;
+            if(state == 2) {
+                level.playLocalSound(getBlockPos(), ModdedSoundEvents.HV_SWITCH_DISCONNECT.getMainEvent(),
+                        SoundSource.BLOCKS, 1, 1, true);
+            } else if(state == 0) {
+                level.playLocalSound(getBlockPos(), ModdedSoundEvents.HV_SWITCH_CONNECT.getMainEvent(),
+                        SoundSource.BLOCKS, 1, 1, true);
+            }
         }
     }
 
