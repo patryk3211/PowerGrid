@@ -70,7 +70,6 @@ public class ElectricalNetwork {
 
     private DynamicallyTypedMatrix ScaledJ;
     private DMatrixRMaj StateVector;
-    private DMatrixRMaj PrevStateVector;
     private DMatrixRMaj AuxiliaryVector;
     private DMatrixRMaj EliminatedSolved;
 
@@ -738,7 +737,6 @@ public class ElectricalNetwork {
             ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
             ResidualVector = new DMatrixRMaj(reducedCount, 1);
             StateVector = new DMatrixRMaj(reducedCount, 1);
-            PrevStateVector = new DMatrixRMaj(reducedCount, 1);
             AuxiliaryVector = new DMatrixRMaj(reducedCount, 1);
 
             columnScales = new double[reducedCount];
@@ -905,10 +903,7 @@ public class ElectricalNetwork {
         PERF.start();
         int maxIterations = this.maxIterations.apply(hasHooks());
         int i;
-        double norm = 0, prevNorm = 0;
-        double alpha = 0.5;
-        var alphaDefault = true;
-        int recalculateAlpha = 5;
+        double norm = 0;
         for(i = 0; i < maxIterations; ++i) {
             if(hasHooks() && i < maxIterations - 20 && i % 2 == 0) {
                 countUpdates = false;
@@ -918,16 +913,9 @@ public class ElectricalNetwork {
             }
             var workMatrix = getWorkMatrix();
             computeResidual(workMatrix, StateVector);
-            prevNorm = norm;
             norm = NormOps_DDRM.normP1(ResidualVector);
             if(norm < PRECISION)
                 break;
-            if(i == 0)
-                prevNorm = norm;
-            if(norm > prevNorm) {
-                // Backtrack
-//                StateVector.setTo(PrevStateVector);
-            }
             prepareScaled(workMatrix);
 
             // Perform Newton iterations
@@ -940,7 +928,7 @@ public class ElectricalNetwork {
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if(valid) {
-                alpha = i < 2 || (hasHooks() && i < 5) ? 0.5 : 1.2;
+                var alpha = i < 2 || (hasHooks() && i < 5) ? 0.5 : 1.2;
                 var applied = false;
                 ScaledJ.mult(deltaX, AuxiliaryVector);
                 CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
