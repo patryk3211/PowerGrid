@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.circuits.gui;
 
 import com.simibubi.create.AllKeys;
 import com.simibubi.create.AllSoundEvents;
-import com.simibubi.create.foundation.utility.FilesHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -66,7 +65,11 @@ public class CircuitFileBox extends EditBox {
     }
 
     private void refreshFiles() {
-        FilesHelper.createFolderIfMissing("circuits");
+        try {
+            Files.createDirectories(Paths.get("circuits"));
+        } catch (IOException e) {
+            PowerGrid.LOGGER.error("Failed to create a folder", e);
+        }
         availableSchematics.clear();
 
         try {
