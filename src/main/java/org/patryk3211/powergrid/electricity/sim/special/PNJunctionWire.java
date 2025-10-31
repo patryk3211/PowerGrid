@@ -15,14 +15,19 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class PNJunctionWire extends DynamicConductanceWire {
+public class PNJunctionWire extends AbstractElectricWire implements ISolverHook {
     private double temperatureCelsius;
     private final double reverseSaturationCurrent;
     private final double seriesResistance;
     private final double idealityFactor;
+    private double G = ElectricalNetwork.G_MIN;
+    private double Ieq = 0;
 
     public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -55,7 +60,13 @@ public class PNJunctionWire extends DynamicConductanceWire {
         this.temperatureCelsius = temperatureCelsius;
     }
 
-    public double calculateConductance() {
+    @Override
+    public double conductance() {
+        return G;
+    }
+
+    @Override
+    public void startIteration() {
         // TODO: reverse breakdown
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
@@ -73,14 +84,16 @@ public class PNJunctionWire extends DynamicConductanceWire {
         double IsRs = I_s2 * R_s;
         double W_x = IsRs / n / V_T * Math.exp((IsRs + V) / V_T / n);
         double WTerm = LambertW(W_x);
-        double result = 0;
-        if (Math.abs(V) < 1e-9) {
-            // dI/dV at V=0 to avoid division by zero
-            result = WTerm / (R_s * (1 + WTerm));
-        }
-        else {
-            result = (n * V_T / R_s * WTerm - I_s2) / V;
-        }
-        return Math.max(result, ElectricalNetwork.G_MIN);
+        double G = WTerm / (R_s * (1 + WTerm));
+        network.updateConductance(this, G - this.G);
+        this.G = G;
+        double I = V_T * n * WTerm / R_s - I_s2;
+        this.Ieq = I - G * V;
+    }
+
+    @Override
+    public void addResidual(IResidualAdder residual) {
+        residual.add(node1.getIndex(), Ieq);
+        residual.add(node2.getIndex(), -Ieq);
     }
 }
