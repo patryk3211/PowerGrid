@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.circuits.gui;
 
 import com.simibubi.create.AllKeys;
 import com.simibubi.create.AllSoundEvents;
+import net.createmod.catnip.gui.TickableGuiEventListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -35,7 +36,7 @@ import java.util.List;
 
 import static net.createmod.catnip.gui.widget.AbstractSimiWidget.HEADER_RGB;
 
-public class CircuitFileBox extends EditBox {
+public class CircuitFileBox extends EditBox implements TickableGuiEventListener {
     private int tick;
     private final List<String> availableSchematics = new ArrayList<>();
     private int selectedIndex = 0;
@@ -60,6 +61,7 @@ public class CircuitFileBox extends EditBox {
         super.tick();
         if(tick++ >= 20) {
             refreshFiles();
+            tick = 0;
         }
         soundPlayed = false;
     }
