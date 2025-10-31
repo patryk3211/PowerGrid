@@ -165,13 +165,14 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
 
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        var stack = player.getItemInHand(hand);
-        var be = world.getBlockEntity(pos, ModdedBlockEntities.LIGHT_FIXTURE.get());
-        if(be.isEmpty())
+        if(hand != InteractionHand.MAIN_HAND)
             return InteractionResult.PASS;
-
+        var stack = player.getItemInHand(hand);
         if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
-            return be.get().replaceBulb(player, hand, stack) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+            return onBlockEntityUse(world, pos, be ->
+                    be.replaceBulb(player, hand, stack)
+                            ? InteractionResult.SUCCESS
+                            : InteractionResult.FAIL);
         } else {
             // Holding something else.
             return InteractionResult.PASS;

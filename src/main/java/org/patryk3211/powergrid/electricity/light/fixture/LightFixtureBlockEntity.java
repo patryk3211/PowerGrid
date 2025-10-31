@@ -146,9 +146,13 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
                 return true;
             } else if(bulbState.isOf(usedStack.getItem()) && usedStack.getCount() < usedStack.getMaxStackSize()) {
                 if(!level.isClientSide) {
-                    usedStack.grow(1);
+                    if(!player.isCreative())
+                        usedStack.grow(1);
                     bulbState = null;
                 }
+                return true;
+            } else if(player.isCreative()) {
+                bulbState = null;
                 return true;
             }
         }
