@@ -73,6 +73,12 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
+    public void makeLeaf(IElectricNode node, IElectricNode tracked) {
+        super.makeLeaf(node, tracked);
+        optimizerScores.remove(node);
+    }
+
+    @Override
     protected void jacobianAdd(int row, int column, double value) {
         super.jacobianAdd(row, column, value);
         if(lockScores)
@@ -99,9 +105,18 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
         lockScores = false;
     }
 
+    protected boolean canOptimize(INode node) {
+        return true;
+    }
+
     private void optimizerRoutine() {
         for(var entry : optimizerScores.entrySet()) {
             var node = entry.getKey();
+            if(!canOptimize(node)) {
+                entry.setValue(20);
+                unoptimizeNode(node);
+                return;
+            }
             var score = entry.getValue();
             if(score >= 10) {
                 unoptimizeNode(node);

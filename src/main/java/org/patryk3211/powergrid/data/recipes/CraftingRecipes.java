@@ -147,10 +147,10 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .unlockedBy(AllBlocks.ANDESITE_CASING::get)
             .viaShaped(b -> b
                     .pattern(" I ")
-                    .pattern("CAC")
+                    .pattern("CZC")
                     .define('I', RecipeTags.ironSheet())
                     .define('C', RecipeTags.copperNugget())
-                    .define('A', AllBlocks.ANDESITE_CASING)
+                    .define('Z', RecipeTags.zincSheet())
             ),
 
     ELECTROMAGNET = create(ModdedBlocks.ELECTROMAGNET)

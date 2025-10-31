@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class ElectricalNetwork {
     public static final double G_MIN = 1e-8;
@@ -41,8 +42,9 @@ public class ElectricalNetwork {
     protected final List<INode> nodes = new ArrayList<>();
     private int eliminatedStart;
 
-    private final Set<ISolverHook> hooks = new HashSet<>();
-    private final Set<ISolverHook> leafHooks = new HashSet<>();
+    private final Set<IOuterHook> outerHooks = new HashSet<>();
+    private final Set<ISolverHook> innerHooks = new HashSet<>();
+    private final Set<ISolverHook> leafInnerHooks = new HashSet<>();
     private final Set<IStaticResidual> residuals = new HashSet<>();
     protected final Map<IElectricNode, IElectricNode> leafNodes = new HashMap<>();
 
@@ -90,6 +92,8 @@ public class ElectricalNetwork {
 
     public static Logger LOGGER = null;
 
+    public Function<Boolean, Integer> maxIterations = b -> 200;
+
     public ElectricalNetwork(boolean addGMin) {
         solver =
                 new DirectSolver();
@@ -105,7 +109,7 @@ public class ElectricalNetwork {
     }
 
     public boolean hasHooks() {
-        return !hooks.isEmpty();
+        return !innerHooks.isEmpty();
     }
 
     public void addNode(INode node) {
@@ -121,8 +125,10 @@ public class ElectricalNetwork {
         nodes.add(eliminatedStart++, node);
         setDirty();
 
+        if(node instanceof IOuterHook hook)
+            outerHooks.add(hook);
         if(node instanceof ISolverHook hook)
-            hooks.add(hook);
+            innerHooks.add(hook);
         if(node instanceof IStaticResidual residual)
             residuals.add(residual);
 
@@ -180,8 +186,10 @@ public class ElectricalNetwork {
             couplings.remove(node);
         if(node instanceof CurrentSourceNode || node instanceof VoltageSourceCoupling)
             --sourceCount;
+        if(node instanceof IOuterHook hook)
+            outerHooks.remove(hook);
         if(node instanceof ISolverHook hook)
-            hooks.remove(hook);
+            innerHooks.remove(hook);
         if(node instanceof IStaticResidual residual)
             residuals.remove(residual);
 
@@ -231,6 +239,8 @@ public class ElectricalNetwork {
             ++groundReferenceCount;
 
         updateConductance(wire, wire.conductance());
+        if(wire instanceof IOuterHook hook)
+            outerHooks.add(hook);
         if(wire instanceof ISolverHook hook) {
             var isFull = true;
             for(var coupled : hook.coupledNodes()) {
@@ -240,9 +250,9 @@ public class ElectricalNetwork {
                 }
             }
             if(isFull) {
-                hooks.add(hook);
+                innerHooks.add(hook);
             } else {
-                leafHooks.add(hook);
+                leafInnerHooks.add(hook);
             }
         }
         if(wire instanceof IStaticResidual residual)
@@ -282,9 +292,11 @@ public class ElectricalNetwork {
             --groundReferenceCount;
 
         updateConductance(wire, -wire.conductance());
+        if(wire instanceof IOuterHook hook)
+            outerHooks.remove(hook);
         if(wire instanceof ISolverHook hook) {
-            hooks.remove(hook);
-            leafHooks.remove(hook);
+            innerHooks.remove(hook);
+            leafInnerHooks.remove(hook);
         }
         if(wire instanceof IStaticResidual residual)
             residuals.remove(residual);
@@ -386,9 +398,11 @@ public class ElectricalNetwork {
         }
 
         staleWires.forEach(wire -> {
+            if(wire instanceof IOuterHook hook)
+                outerHooks.remove(hook);
             if(wire instanceof ISolverHook hook) {
-                hooks.remove(hook);
-                leafHooks.remove(hook);
+                innerHooks.remove(hook);
+                leafInnerHooks.remove(hook);
             }
             if(wire instanceof IStaticResidual residual)
                 residuals.remove(residual);
@@ -483,7 +497,7 @@ public class ElectricalNetwork {
         nodes.clear();
         wires.clear();
         couplings.clear();
-        hooks.clear();
+        innerHooks.clear();
         residuals.clear();
         leafNodes.clear();
         eliminatedStart = 0;
@@ -616,13 +630,13 @@ public class ElectricalNetwork {
             leafNodes.put(node, tracked);
             node.setNetwork(this);
 
-            var iter = hooks.iterator();
+            var iter = innerHooks.iterator();
             while(iter.hasNext()) {
                 var hook = iter.next();
                 for(var coupled : hook.coupledNodes()) {
                     if(node == coupled) {
                         // Disable hook because this node is not simulated anymore
-                        leafHooks.add(hook);
+                        leafInnerHooks.add(hook);
                         iter.remove();
                     }
                 }
@@ -638,7 +652,7 @@ public class ElectricalNetwork {
                 leafNodes.remove(node);
                 addNode((INode) node);
 
-                var iter = leafHooks.iterator();
+                var iter = leafInnerHooks.iterator();
                 while(iter.hasNext()) {
                     var hook = iter.next();
                     var isFull = true;
@@ -650,7 +664,7 @@ public class ElectricalNetwork {
                     }
                     if(isFull) {
                         // Enable hook since all nodes are simulate
-                        hooks.add(hook);
+                        innerHooks.add(hook);
                         iter.remove();
                     }
                 }
@@ -815,7 +829,7 @@ public class ElectricalNetwork {
     public void computeResidual(DynamicallyTypedMatrix workMatrix, DMatrixRMaj state) {
         workMatrix.mult(state, ResidualVector);
         CommonOps_DDRM.subtract(ResidualVector, ReducedRHSVector, ResidualVector);
-        for(var hook : hooks) {
+        for(var hook : innerHooks) {
             hook.addResidual(this::residualAdd);
         }
     }
@@ -866,25 +880,17 @@ public class ElectricalNetwork {
     public void calculate() {
         if(sourceCount == 0) {
             converged = true;
-            for(var hook : hooks) {
+            for(var hook : outerHooks)
                 hook.preSolve();
+            for(var hook : innerHooks)
                 hook.startIteration();
-            }
-            for(var hook : leafHooks) {
-                hook.preSolve();
-                hook.startIteration();
-            }
             if(StateVector != null)
                 StateVector.zero();
-            for(var hook : hooks)
-                hook.postUpperSolve();
-            for(var hook : leafHooks)
+            for(var hook : outerHooks)
                 hook.postUpperSolve();
             return;
         }
-        for(var hook : hooks)
-            hook.preSolve();
-        for(var hook : leafHooks)
+        for(var hook : outerHooks)
             hook.preSolve();
 
         prepareMatrices();
@@ -895,15 +901,13 @@ public class ElectricalNetwork {
         computeRHS();
 
         PERF.start();
-        int maxAttempts = hasHooks() ? 200 : 20;
+        int maxIterations = this.maxIterations.apply(hasHooks());
         int i;
         double norm = 0;
-        for(i = 0; i < maxAttempts; ++i) {
-            if(hasHooks() && i < maxAttempts - 20 && i % 2 == 0) {
+        for(i = 0; i < maxIterations; ++i) {
+            if(hasHooks() && i < maxIterations - 20 && i % 2 == 0) {
                 countUpdates = false;
-                for(var hook : hooks)
-                    hook.startIteration();
-                for(var hook : leafHooks)
+                for(var hook : innerHooks)
                     hook.startIteration();
                 countUpdates = true;
             }
@@ -924,7 +928,7 @@ public class ElectricalNetwork {
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if(valid) {
-                double alpha = i < 2 || (hasHooks() && i < 5) ? 0.5 : 1.2;
+                var alpha = i < 2 || (hasHooks() && i < 5) ? 0.5 : 1.2;
                 var applied = false;
                 ScaledJ.mult(deltaX, AuxiliaryVector);
                 CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
@@ -936,17 +940,19 @@ public class ElectricalNetwork {
                         CommonOps_DDRM.add(StateVector, -alpha * 0.995, deltaX, StateVector);
                         break;
                     }
+                    var initialAlpha = alpha;
                     if(alpha > 1) {
                         alpha = 1;
                     } else {
                         alpha *= 0.5;
                     }
-                    CommonOps_DDRM.add(ResidualVector, alpha, AuxiliaryVector, ResidualVector);
+                    CommonOps_DDRM.add(ResidualVector, (initialAlpha - alpha), AuxiliaryVector, ResidualVector);
                 }
                 if(!applied) {
                     break;
                 }
             } else {
+                StateVector.zero();
                 solver.zero();
             }
         }
@@ -963,9 +969,7 @@ public class ElectricalNetwork {
             converged = true;
         }
         PERF.end();
-        for(var hook : hooks)
-            hook.postUpperSolve();
-        for(var hook : leafHooks)
+        for(var hook : outerHooks)
             hook.postUpperSolve();
     }
 }

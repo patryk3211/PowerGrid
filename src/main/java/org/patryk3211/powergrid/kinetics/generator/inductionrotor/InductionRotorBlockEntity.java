@@ -44,10 +44,6 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         super.addBehaviours(behaviours);
     }
 
-    public static float coilConstant() {
-        return ModdedConfigs.server().electricity.windingCoilConstant.getF();
-    }
-
     public float calculateField() {
         assert level != null;
         field = 0;

@@ -29,7 +29,11 @@ public class GeneratorCoupling extends VoltageSourceCoupling {
     public void addStaticResidual(IResidualAdder residual) {
         super.addStaticResidual(residual);
         var v = -backEmf * getCurrent();
-        residual.add(index, v);
+        // Only apply if it will raise the output voltage,
+        // this should result in an inductor like behaviour,
+        // which will negate the backEmf resistance.
+        if(Math.signum(v) == Math.signum(getVoltage()))
+            residual.add(index, v);
     }
 
     @Override

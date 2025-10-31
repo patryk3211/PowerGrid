@@ -55,16 +55,16 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     public static final BooleanProperty POLARIZED = BooleanProperty.create("polarized");
 
     private final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, -0.5, 10.5, 6, 4.5),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, 11.5, 10.5, 6, 16.5)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, 1.5, 10.5, 4, 4.5),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 1, 11.5, 10.5, 4, 14.5)
     };
 
     // This assumes that terminal 0 is positive and terminal 1 is negative
     // which holds true for all blocks added by this mod.
     private final TerminalBoundingBox[] POLARIZED_TERMINALS_DOWN = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5.5, 1, -0.5, 10.5, 6, 4.5)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5.5, 1, 1.5, 10.5, 4, 4.5)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 5.5, 1, 11.5, 10.5, 6, 16.5)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 5.5, 1, 11.5, 10.5, 4, 14.5)
                     .withColor(IDecoratedTerminal.BLUE)
     };
 

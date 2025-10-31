@@ -15,15 +15,19 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
 
-public class NeonBulbWire extends DynamicConductanceWire {
+public class NeonBulbWire extends AbstractElectricWire implements IOuterHook, IStaticResidual {
     private final float breakdownVoltage;
     private final float holdingVoltage;
     private final float holdingCurrent;
     private final float dischargeConductance;
+    private double conductance;
 
     public boolean lit = false;
     private double I;
@@ -37,20 +41,25 @@ public class NeonBulbWire extends DynamicConductanceWire {
     }
 
     @Override
-    protected double calculateConductance() {
-        if(!lit) {
-            this.I = 0;
-            return ElectricalNetwork.G_MIN;
-        }
+    public double conductance() {
+        return conductance;
+    }
 
-        this.I = holdingVoltage * dischargeConductance * Math.signum(potentialDifference());
-        return dischargeConductance;
+    public void updateConductance(double conductance) {
+        if(network != null)
+            network.updateConductance(this, conductance - this.conductance);
+        this.conductance = conductance;
     }
 
     @Override
-    public void addResidual(IResidualAdder residual) {
-        residual.add(node1.getIndex(), -I);
-        residual.add(node2.getIndex(),  I);
+    public void addStaticResidual(IResidualAdder residual) {
+        if(lit) {
+            I = holdingVoltage * dischargeConductance * Math.signum(potentialDifference());
+            residual.add(node1.getIndex(), I);
+            residual.add(node2.getIndex(), -I);
+        } else {
+            I = 0;
+        }
     }
 
     @Override
@@ -59,12 +68,14 @@ public class NeonBulbWire extends DynamicConductanceWire {
     }
 
     @Override
-    public void postUpperSolve() {
+    public void preSolve() {
         // Update discharge state
         double V = Math.abs(potentialDifference()), I = Math.abs(current());
         if(!lit && V > breakdownVoltage) {
+            updateConductance(dischargeConductance);
             lit = true;
         } else if(lit && (I < holdingCurrent || V < holdingVoltage)) {
+            updateConductance(ElectricalNetwork.G_MIN);
             lit = false;
         }
     }

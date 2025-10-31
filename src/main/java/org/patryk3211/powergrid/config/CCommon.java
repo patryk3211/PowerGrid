@@ -19,6 +19,8 @@ import net.createmod.catnip.config.ConfigBase;
 
 public class CCommon extends ConfigBase {
     public final ConfigBool lotsOfLogs = b(false, "lotsOfLogs", Comments.lotsOfLogs);
+    public final ConfigInt solverSimpleMaxIterations = i(200, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
+    public final ConfigInt solverComplexMaxIterations = i(200, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
 
     @Override
     public String getName() {
@@ -27,5 +29,7 @@ public class CCommon extends ConfigBase {
 
     private static class Comments {
         public static final String lotsOfLogs = "Enables extensive logging in different segments of the mod (can cause larger log files and log spam)";
+        public static final String solverSimpleMaxIterations = "Maximum solver iterations for networks without dynamic residuals";
+        public static final String solverComplexMaxIterations = "Maximum solver iterations for networks with dynamic residuals";
     }
 }

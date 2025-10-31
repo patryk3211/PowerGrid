@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.light.fixture;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
+import com.simibubi.create.foundation.render.RenderTypes;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -52,14 +53,14 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
         if(bulbState.isBurned())
             return;
 
-        var vba = consumer.getBuffer(RenderType.translucent());
+        var vba = consumer.getBuffer(RenderTypes.additive());
         var lightModel = bulbState.getLightModel();
         var lightBuffer = CachedBuffers.partial(lightModel, state);
+        int a = (int) (255 * bulbState.getAlpha());
         rotateToFacing(lightBuffer, facing)
                 .translate(((LightFixtureBlock) state.getBlock()).modelOffset)
                 .light(light)
-//                .light(LightTexture.pack(Math.max(LightTexture.block(light), 6), LightTexture.sky(light)))
-                .color(255, 255, 255, (int) (255 * bulbState.getAlpha()))
+                .color(a, a, a, 255)
                 .renderInto(matrices, vba);
     }
 

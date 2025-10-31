@@ -47,7 +47,6 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
@@ -72,14 +71,11 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
     private static final TerminalBoundingBox[] UP_TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 3, 0, 7, 5, 3, 9),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 0, 7, 13, 3, 9)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 2.5, 1.5, 6.5, 4.5, 3.5, 9.5),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11.5, 1.5, 6.5, 13.5, 3.5, 9.5)
     };
 
-    private static final VoxelShape SHAPE_UP = Shapes.or(
-            box(3.5, 0, 3.5, 12.5, 2, 12.5),
-            box(4.5, 2, 4.5, 11.5, 4, 11.5)
-    );
+    private static final VoxelShape SHAPE_UP = box(3.5, 0, 3.5, 12.5, 3, 12.5);
 
     Vec3 modelOffset;
 
@@ -169,13 +165,14 @@ public class LightFixtureBlock extends ElectricBlock implements IBE<LightFixture
 
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        var stack = player.getItemInHand(hand);
-        var be = world.getBlockEntity(pos, ModdedBlockEntities.LIGHT_FIXTURE.get());
-        if(be.isEmpty())
+        if(hand != InteractionHand.MAIN_HAND)
             return InteractionResult.PASS;
-
+        var stack = player.getItemInHand(hand);
         if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
-            return be.get().replaceBulb(player, hand, stack) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+            return onBlockEntityUse(world, pos, be ->
+                    be.replaceBulb(player, hand, stack)
+                            ? InteractionResult.SUCCESS
+                            : InteractionResult.FAIL);
         } else {
             // Holding something else.
             return InteractionResult.PASS;

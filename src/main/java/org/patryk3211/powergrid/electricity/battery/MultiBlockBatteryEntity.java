@@ -322,6 +322,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     public void notifyMultiUpdated() {
         if(isController()) {
             capacity = spec.getMaxCharge() * getSize();
+            updateThermals();
             updateParameters();
         }
         notifyUpdate();

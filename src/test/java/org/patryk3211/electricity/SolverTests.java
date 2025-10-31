@@ -121,13 +121,12 @@ public class SolverTests extends TestHelper {
             return velocity * velocity * getInertia() * 0.5f;
         }
 
-        public void tick() {
-            float Kp = 0;//0.85f;
+        public void tick(float maxForce) {
+            float Kp = 0.85f;
             float deltaT = (target - velocity);
             if(target < 0)
                 deltaT = -deltaT;
             deltaT = Math.max(0, deltaT);
-            float maxForce = 1;
             float force = (Kp * deltaT) * 20f * getInertia();
             force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
             velocity += force / 20f / getInertia();
@@ -157,15 +156,15 @@ public class SolverTests extends TestHelper {
 //        Net.W(10f, N1, N2);
 
         for(int i = 0; i < 40; ++i) {
-            rotor1.tick();
-            rotor2.tick();
+            rotor1.tick(10);
+            rotor2.tick(0);
 
             var E1 = rotor1.energy();
             var E2 = rotor2.energy();
             Net.calculate();
 
-            V1.tick(100);
-            V2.tick(100);
+            V1.tick(60);
+            V2.tick(60);
             var deltaE1 = rotor1.energy() - E1;
             var deltaE2 = rotor2.energy() - E2;
 

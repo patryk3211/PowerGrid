@@ -106,9 +106,13 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     public boolean replaceBulb(Player player, InteractionHand hand, ItemStack usedStack) {
+        assert level != null;
         boolean result = replaceBulbInternal(player, hand, usedStack);
         if(result) {
             lightBulbChanged();
+            if(!level.isClientSide && bulbState == null) {
+                level.setBlock(worldPosition, getBlockState().setValue(LightFixtureBlock.POWER, 0), LightFixtureBlock.UPDATE_ALL);
+            }
         }
         return result;
     }
@@ -142,9 +146,13 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
                 return true;
             } else if(bulbState.isOf(usedStack.getItem()) && usedStack.getCount() < usedStack.getMaxStackSize()) {
                 if(!level.isClientSide) {
-                    usedStack.grow(1);
+                    if(!player.isCreative())
+                        usedStack.grow(1);
                     bulbState = null;
                 }
+                return true;
+            } else if(player.isCreative()) {
+                bulbState = null;
                 return true;
             }
         }
