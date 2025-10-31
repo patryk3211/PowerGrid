@@ -53,9 +53,6 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     private void lightBulbChanged() {
         if(bulbState == null) {
             filament.setState(false);
-            if(level != null && !level.isClientSide) {
-                level.setBlock(worldPosition, getBlockState().setValue(LightFixtureBlock.POWER, 0), LightFixtureBlock.UPDATE_ALL);
-            }
         } else {
             filament.setResistance(bulbState.resistance());
             filament.setState(!bulbState.isBurned());
@@ -109,9 +106,13 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     public boolean replaceBulb(Player player, InteractionHand hand, ItemStack usedStack) {
+        assert level != null;
         boolean result = replaceBulbInternal(player, hand, usedStack);
         if(result) {
             lightBulbChanged();
+            if(!level.isClientSide && bulbState == null) {
+                level.setBlock(worldPosition, getBlockState().setValue(LightFixtureBlock.POWER, 0), LightFixtureBlock.UPDATE_ALL);
+            }
         }
         return result;
     }
