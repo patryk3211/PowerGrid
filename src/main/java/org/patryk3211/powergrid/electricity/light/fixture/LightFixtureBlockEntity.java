@@ -51,10 +51,9 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     private void lightBulbChanged() {
-        assert level != null;
         if(bulbState == null) {
             filament.setState(false);
-            if(getBlockState().getValue(LightFixtureBlock.POWER) != 0) {
+            if(level != null && !level.isClientSide) {
                 level.setBlock(worldPosition, getBlockState().setValue(LightFixtureBlock.POWER, 0), LightFixtureBlock.UPDATE_ALL);
             }
         } else {
