@@ -42,8 +42,7 @@ import java.util.function.Supplier;
 public class LightBulb extends Item implements ILightBulb, IHaveElectricProperties {
     protected Supplier<Function<State, PartialModel>> modelSupplier = null;
 
-    protected float k = 0.005f;
-    protected float T_mid = 1200;
+    protected float T_max = 1200;
     protected float R_max = 100;
     protected float R_min = 15;
     protected org.patryk3211.powergrid.electricity.light.bulb.ILightBulb.Properties thermalProperties;
@@ -62,11 +61,10 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
         };
     }
 
-    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float minResistance, float maxResistance, float curveConstant, float midpointTemperature, float dissipationFactor, float overheatTemperature, float thermalMass) {
+    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float minResistance, float maxResistance, float operatingTemperature, float dissipationFactor, float overheatTemperature, float thermalMass) {
         return b -> {
             b.onRegister(item -> {
-                item.k = curveConstant;
-                item.T_mid = midpointTemperature;
+                item.T_max = operatingTemperature;
                 item.R_max = maxResistance;
                 item.R_min = minResistance;
                 item.thermalProperties = new org.patryk3211.powergrid.electricity.light.bulb.ILightBulb.Properties(dissipationFactor, thermalMass, overheatTemperature);
@@ -78,10 +76,8 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float ratedPower, float ratedVoltage, float minResistance, float thermalMass) {
         float R_max = ratedVoltage * ratedVoltage / ratedPower;
         final float operatingTemperature = 1450f;
-        final float T_mid = 750f;
-        final float k = 0.005f;
         final float dissipationFactor = ratedPower / (operatingTemperature - ThermalBehaviour.BASE_TEMPERATURE);
-        NonNullUnaryOperator<ItemBuilder<I, P>> result = setProperties(minResistance, R_max, k, T_mid, dissipationFactor, operatingTemperature + 400f, thermalMass);
+        NonNullUnaryOperator<ItemBuilder<I, P>> result = setProperties(minResistance, R_max, operatingTemperature, dissipationFactor, operatingTemperature + 400f, thermalMass);
         return result.andThen(b -> {
             b.onRegister(item -> {
                 item.power = ratedPower;
@@ -93,11 +89,11 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
 
     @Override
     public float resistanceFunction(float temperature) {
-        return resistanceFunction(R_min, R_max, k, T_mid, temperature);
+        return resistanceFunction(R_min, R_max, T_max, temperature);
     }
 
-    public static float resistanceFunction(float R_min, float R_max, float k, float T_mid, float temperature) {
-        return (float) (R_min + (R_max - R_min) / (1 + Math.exp(-k * (temperature - T_mid))));
+    public static float resistanceFunction(float R_min, float R_max, float T_max, float temperature) {
+        return R_min + ((R_max - R_min) / T_max) * temperature;
     }
 
     @Override
