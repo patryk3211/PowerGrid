@@ -43,7 +43,9 @@ public class DiodeComponent extends OrientableComponent {
         builder.add(pnJunctionWire);
         thermals.builder()
                 .setMaxPower(3, 175)
+                .setOverheatTemperature(175)
                 .setThermalMass(0.0025f)
+                .withTemperatureCallback(temperature -> { pnJunctionWire.setTemperatureCelsius(temperature); })
                 .addHeatSource(pnJunctionWire);
     }
 }
