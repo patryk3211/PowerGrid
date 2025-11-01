@@ -39,7 +39,7 @@ public class DiodeComponent extends OrientableComponent {
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         // 1N4007 diode model
-        var pnJunctionWire = new PNJunctionWire(1.098-8, 0.0414f,22, 1.783, builder.terminalNode(1), builder.terminalNode(0));
+        var pnJunctionWire = new PNJunctionWire(5.47e-9, 0.0414f,22, 1.783, builder.terminalNode(1), builder.terminalNode(0));
         builder.add(pnJunctionWire);
         thermals.builder()
                 .setMaxPower(3, 175)
