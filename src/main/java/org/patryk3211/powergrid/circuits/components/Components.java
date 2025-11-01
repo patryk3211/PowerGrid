@@ -133,8 +133,8 @@ public class Components {
 
     public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
             .footprint(5, 3, b -> b
-                    .addPad(0, 1, 0)
-                    .addPad(4, 1, 1)
+                    .addPad(0, 1, 0, "Cathode", "-")
+                    .addPad(4, 1, 1, "Anode", "+")
                     .withItem(ModdedItems.DIODE)
                     .withOutline()
             )
