@@ -183,6 +183,7 @@ subprojects {
 		from commonSources.archiveFile.map { zipTree(it) }
 	}
 
+	var isFabric = project.name == 'fabric';
 	publishMods {
 		file = tasks.remapJar.archiveFile
 		version.set(mod_version.toString())
@@ -194,8 +195,13 @@ subprojects {
 			releaseType = ALPHA
 		}
 		type = releaseType;
-		modLoaders.add('forge')
+		if(isFabric) {
+			modLoaders.add('fabric')
+		} else {
+			modLoaders.add('forge')
+		}
 
+		var createVersion = isFabric ? 'create-fabric' : 'create';
 		curseforge {
 			projectId = curseforgeId
 			accessToken = System.getenv('CURSEFORGE_TOKEN')
@@ -204,14 +210,14 @@ subprojects {
 			clientRequired = true
 			serverRequired = true
 
-			requires('create', 'architectury-api')
+			requires(createVersion, 'architectury-api')
 		}
 		modrinth {
 			projectId = modrinthId
 			accessToken = System.getenv('MODRINTH_TOKEN')
 			minecraftVersions.add(minecraft_version)
 
-			requires('create')
+			requires(createVersion)
 			requires('architectury-api')
 		}
 	}
