@@ -168,6 +168,7 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
     @Override
     protected void containerTick() {
         super.containerTick();
+        fileNameInput.tick();
         if(popupTimeout > 0)
             --popupTimeout;
     }
