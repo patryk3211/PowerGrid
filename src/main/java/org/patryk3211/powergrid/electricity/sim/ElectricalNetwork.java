@@ -901,7 +901,7 @@ public class ElectricalNetwork {
         computeRHS();
 
         PERF.start();
-        int maxIterations = this.maxIterations.apply(hasHooks())*2;
+        int maxIterations = this.maxIterations.apply(hasHooks());
         int i;
         double norm = 0;
         for(i = 0; i < maxIterations; ++i) {
