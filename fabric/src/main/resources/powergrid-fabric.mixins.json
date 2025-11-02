@@ -5,7 +5,8 @@
   "minVersion": "0.8.3",
   "mixins": [
     "ArmInteractionPointMixin",
-    "BasinRecipeMixin"
+    "BasinRecipeMixin",
+    "RecipeApplierMixin"
   ],
   "injectors": {
     "defaultRequire": 1
