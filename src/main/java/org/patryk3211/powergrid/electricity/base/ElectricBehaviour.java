@@ -19,7 +19,10 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.world.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
@@ -329,5 +332,33 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     public boolean hasInternals() {
         return !internalNodes.isEmpty() || !internalWires.isEmpty();
+    }
+
+    public static void handleTicketChange(int newLevel, @NotNull ChunkHolder holder, int oldLevel) {
+        var chunk = holder.getTickingChunk();
+        if(chunk == null)
+            return;
+        if(!ChunkLevel.isBlockTicking(newLevel) && ChunkLevel.isBlockTicking(oldLevel)) {
+            // Block entities no longer ticking.
+            // Above level 33 the entities get completely unloaded so no need to pause them.
+            for(var be : chunk.getBlockEntities().values()) {
+                if(be instanceof SmartBlockEntity smart) {
+                    var electric = smart.getBehaviour(ElectricBehaviour.TYPE);
+                    if(electric == null)
+                        continue;
+                    electric.pause();
+                }
+            }
+        } else if(ChunkLevel.isBlockTicking(newLevel)) {
+            // Block entities ticking again.
+            for(var be : chunk.getBlockEntities().values()) {
+                if(be instanceof SmartBlockEntity smart) {
+                    var electric = smart.getBehaviour(ElectricBehaviour.TYPE);
+                    if(electric == null)
+                        continue;
+                    electric.unpause();
+                }
+            }
+        }
     }
 }

@@ -24,6 +24,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_fabric_version}")
+    modImplementation("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_forge_version}")
 
     modApi "dev.architectury:architectury-fabric:${project.architectury_api_version}"
 

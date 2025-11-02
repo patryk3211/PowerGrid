@@ -18,21 +18,31 @@ package org.patryk3211.powergrid.fabric;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import dev.architectury.event.events.common.CommandRegistrationEvent;
 import net.createmod.catnip.lang.FontHelper;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.fabric.ComponentRegistryImpl;
+import org.patryk3211.powergrid.collections.ItemDisplay;
+import org.patryk3211.powergrid.collections.ModdedCommands;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.fabric.ModdedSoundEventsImpl;
+import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
 
@@ -42,17 +52,29 @@ public class PowerGridImpl implements ModInitializer {
                 .createSimple(ComponentRegistry.REGISTRY_KEY)
                 .buildAndRegister();
 
+        var tab = FabricItemGroup.builder()
+                .icon(() -> new ItemStack(ModdedItems.WIRE))
+                .displayItems(new ItemDisplay.BaseItemDisplay(true))
+                .title(Component.translatable("itemGroup.powergrid.main"))
+                .build();
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, PowerGrid.asResource("main"), tab);
+        ArgumentTypeRegistry.registerArgumentType(PowerGrid.asResource("performance_counter"),
+                PerformanceCommand.PerformanceCounterArgument.class,
+                SingletonArgumentInfo.contextFree(PerformanceCommand.PerformanceCounterArgument::new));
+
         PowerGrid.init();
 
         ModdedSoundEventsImpl.register();
+        PowerGrid.REGISTRATE.addLang("itemGroup", PowerGrid.asResource("main"), "Power Grid");
 
         // Register platform events
         ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
         ServerChunkEvents.CHUNK_LOAD.register(PowerGridImpl::chunkLoad);
+        CommandRegistrationEvent.EVENT.register(ModdedCommands::register);
     }
 
     private static void chunkLoad(ServerLevel level, LevelChunk chunk) {
-        var global = GlobalElectricNetworks.getWorldNetworks(level);
+        var global = GlobalElectricNetworks.getWorldNetworks((LevelAccessor) level);
         if(global == null)
             return;
         global.chunkLoaded(chunk.getPos());
@@ -64,11 +86,7 @@ public class PowerGridImpl implements ModInitializer {
                         new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                                 .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
                                 .andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
-                )
-                .defaultCreativeTab("main", builder -> builder
-                        .title(Component.translatable("itemGroup.powergrid.main"))
-                        .icon(() -> new ItemStack(ModdedItems.WIRE)))
-                .build();
+                );
     }
 
     public static void finalizeRegistrate() {

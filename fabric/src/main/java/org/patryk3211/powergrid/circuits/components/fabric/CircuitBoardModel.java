@@ -135,7 +135,12 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
         float y1 = (float) area.y1() / GRID_SIZE;
         float x2 = (float) area.x2() / GRID_SIZE;
         float y2 = (float) area.y2() / GRID_SIZE;
-        emitter.square(Direction.UP, x1, 1.0f - y2, x2, 1.0f - y1, 14f / 16f - 0.0025f);
+        emitter.square(Direction.UP,
+                x1 - 0.5f,
+                1.0f - y2 + 0.5f,
+                x2 - 0.5f,
+                1.0f - y1 + 0.5f,
+                14f / 16f - 0.0025f + 0.5f);
         emitter.uv(0, x1, y1);
         emitter.uv(1, x1, y2);
         emitter.uv(2, x2, y2);
@@ -152,7 +157,12 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
         x2 /= GRID_SIZE;
         y1 /= GRID_SIZE;
         y2 /= GRID_SIZE;
-        emitter.square(Direction.UP, x1, 1.0f - y2, x2, 1.0f - y1, 14f / 16f - 0.0025f);
+        emitter.square(Direction.UP,
+                x1 - 0.5f,
+                1.0f - y2 + 0.5f,
+                x2 - 0.5f,
+                1.0f - y1 + 0.5f,
+                14f / 16f - 0.0025f + 0.5f);
         emitter.uv(0, x1, y1);
         emitter.uv(1, x1, y2);
         emitter.uv(2, x2, y2);
@@ -164,9 +174,6 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
 
     @Override
     public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
-        baseModel.emitBlockQuads(blockView, state, pos, randomSupplier, context);
-        var be = blockView.getBlockEntity(pos);
-
         context.pushTransform(QuadTransformers.applying(new Transformation(
                 new Vector3f(0.5f, 0.5f, 0.5f),
                 new Quaternionf()
@@ -174,6 +181,8 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
                         .rotateX((float) Math.PI * CircuitBoardBlock.getAngleX(state) / 180f),
                 null, null
         )));
+        baseModel.emitBlockQuads(blockView, state, pos, randomSupplier, context);
+        var be = blockView.getBlockEntity(pos);
 
         if(be instanceof CircuitBoardBlockEntity circuit) {
             // Emit components
@@ -216,9 +225,9 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
         protected final int color;
 
         public OffsetTransform(int x, int y, int z, int color) {
-            this.x = x / 16f;
-            this.y = y / 16f;
-            this.z = z / 16f;
+            this.x = x / 16f - 0.5f;
+            this.y = y / 16f - 0.5f;
+            this.z = z / 16f - 0.5f;
             this.color = color;
         }
 
