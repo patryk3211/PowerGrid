@@ -17,14 +17,15 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
-import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
+import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class InductorWire extends AbstractElectricWire implements IStaticResidual {
+public class InductorWire extends AbstractElectricWire implements ISolverHook, IOuterHook {
     private double inductance;
 
+    private double Ieq;
     private double I;
-    private double currentInject;
 
     public InductorWire(double inductance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -38,21 +39,33 @@ public class InductorWire extends AbstractElectricWire implements IStaticResidua
 
     @Override
     public float current() {
-        return (float) (super.current() + I);
+        return (float) (super.current() + Ieq);
     }
 
     public void setCurrent(float current) {
-        currentInject = current - current();
+        I = current;
     }
 
     @Override
-    public void addStaticResidual(IResidualAdder residual) {
-        I = (potentialDifference() * conductance() + current()) * 0.99999 + currentInject;
-        currentInject = 0;
+    public void postUpperSolve() {
+        I = current();
+    }
+
+    @Override
+    public void startIteration() {
+        var G = conductance();
+        var V = inductance * (current() - I) / 0.05f;
+
+        // Calculate current with a bit of leakage
+        Ieq = (V * G + I) * 0.99999;
+    }
+
+    @Override
+    public void addResidual(IResidualAdder residual) {
         if(node1 != null)
-            residual.add(node1.getIndex(), -I);
+            residual.add(node1.getIndex(),  Ieq);
         if(node2 != null)
-            residual.add(node2.getIndex(),  I);
+            residual.add(node2.getIndex(), -Ieq);
     }
 
     public void setInductance(float inductance) {

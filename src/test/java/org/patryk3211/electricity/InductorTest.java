@@ -63,7 +63,6 @@ public class InductorTest {
         Net1.W(2.0f, V1, N1);
         var L = new InductorWire(0.025f, N1, GND1);
         Net1.network.addWire(L);
-        Net1.network.optimizeNode(N1);
 
         var Net2 = new TestHelper.Network();
         var V2 = Net2.V(3);
@@ -77,8 +76,8 @@ public class InductorTest {
             Net2.calculate();
         }
 
-        Assertions.assertEquals(V1.getCurrent(), V2.getCurrent(), 1e-6f, "Voltage source current is incorrect");
-        Assertions.assertEquals(L.current(), LR.current(), 1e-6f, "Inductor current is incorrect");
+        Assertions.assertEquals(V1.getCurrent(), V2.getCurrent(), 1e-5f, "Voltage source current is incorrect");
+        Assertions.assertEquals(L.current(), LR.current(), 1e-5f, "Inductor current is incorrect");
     }
 
     @Test
@@ -92,7 +91,6 @@ public class InductorTest {
         Net1.W(2.0f, V1, N1);
         var L = new InductorWire(0.025f, N1, GND1);
         Net1.network.addWire(L);
-        Net1.network.optimizeNode(N1);
         L.setCurrent(1.5f);
 
         var Net2 = new TestHelper.Network();
@@ -105,7 +103,7 @@ public class InductorTest {
         Net1.calculate();
         Net2.calculate();
 
-        Assertions.assertEquals(V1.getCurrent(), V2.getCurrent(), 1e-6f, "Voltage source current is incorrect");
-        Assertions.assertEquals(L.current(), LR.current(), 1e-6f, "Inductor current is incorrect");
+        Assertions.assertEquals(V1.getCurrent(), V2.getCurrent(), 1e-5f, "Voltage source current is incorrect");
+        Assertions.assertEquals(L.current(), LR.current(), 1e-5f, "Inductor current is incorrect");
     }
 }

@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
@@ -40,28 +39,18 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private float Itube;
     private float Ptube;
 
-//    private final CapacitorWire anodeCathodeCap;
     private final ConductanceWire gridCathode;
     private final GMStamp gmStamp;
-
-    private final float alpha;
 
     public ElectronTubeWire(float gain, float perveance, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
         super(cathode, anode);
         this.grid = grid;
         gridCathode = addDynamicWire(grid, cathode);
         gmStamp = addInternalWire(new GMStamp(cathode, anode, grid));
-//        addInternalCapacitor(1e-9, anode, grid);
-//        addInternalCapacitor(1e-8, grid, cathode);
-//        anodeCathodeCap = addInternalCapacitor(1e-8, anode, cathode);
-
-//        addInternalCapacitor(1e-9, anode, null);
-//        addInternalCapacitor(1e-9, cathode, null);
 
         this.gain = gain;
         this.perveance = perveance;
         this.saturationCurrent = saturationCurrent;
-        alpha = Mth.clamp(10 / gain, 0.4f, 0.9f);
     }
 
     public void setSaturationCurrent(float saturationCurrent) {
@@ -74,8 +63,14 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         double vCathode = node1.getVoltage();
         double vGrid = grid.getVoltage();
         double vAnode = node2.getVoltage();
-        vCathode = vCathode * alpha + prevCathode * (1 - alpha);
-        vGrid = vGrid * alpha + prevGrid * (1 - alpha);
+        if(vCathode - prevCathode > 0.5)
+            vCathode = prevCathode + 0.5;
+        if(vCathode - prevCathode < -0.5)
+            vCathode = prevCathode - 0.5;
+        if(vGrid - prevGrid > 0.5)
+            vGrid = prevGrid + 0.5;
+        if(vGrid - prevGrid < -0.5)
+            vGrid = prevGrid - 0.5;
         prevCathode = vCathode;
         prevGrid = vGrid;
         vGrid -= vCathode;

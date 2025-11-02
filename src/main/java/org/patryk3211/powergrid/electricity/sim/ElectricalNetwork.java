@@ -901,7 +901,7 @@ public class ElectricalNetwork {
         computeRHS();
 
         PERF.start();
-        int maxIterations = this.maxIterations.apply(hasHooks());
+        int maxIterations = this.maxIterations.apply(hasHooks())*2;
         int i;
         double norm = 0;
         for(i = 0; i < maxIterations; ++i) {
@@ -937,7 +937,7 @@ public class ElectricalNetwork {
                     if(newNorm < norm) {
                         applied = true;
                         CommonOps_DDRM.multRows(columnScales, deltaX);
-                        CommonOps_DDRM.add(StateVector, -alpha * 0.995, deltaX, StateVector);
+                        CommonOps_DDRM.add(StateVector, -alpha, deltaX, StateVector);
                         break;
                     }
                     var initialAlpha = alpha;

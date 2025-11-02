@@ -17,15 +17,16 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
-import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
+import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class LRSeriesWire extends AbstractElectricWire implements IStaticResidual {
+public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, IOuterHook {
     private double inductance;
     private double resistance;
 
+    private double Ieq;
     private double I;
-    private double currentInject;
     private double residualScale;
 
     public LRSeriesWire(double L, double R, IElectricNode node1, IElectricNode node2) {
@@ -45,25 +46,33 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
 
     @Override
     public float current() {
-        return (float) (super.current() + I);
+        return (float) (super.current() + Ieq);
     }
 
     public void setCurrent(float current) {
-        currentInject = current - current();
+        I = current;
     }
 
     @Override
-    public void addStaticResidual(IResidualAdder residual) {
-        var R_Inductor = (2 * inductance) / 0.05;
-        var V_Inductor = potentialDifference() * R_Inductor / (R_Inductor + resistance) - I * resistance;
-        var G_I = 1 / R_Inductor;
+    public void postUpperSolve() {
+        I = current();
+    }
 
-        I = ((V_Inductor * G_I + current()) * 0.99999 + currentInject) * residualScale;
-        currentInject = 0;
+    @Override
+    public void startIteration() {
+        var R_Inductor = (2 * inductance) / 0.05;
+        var G_I = 1 / R_Inductor;
+        var V_Inductor = (inductance * (current() - I) / 0.05f);
+
+        Ieq = (V_Inductor * G_I + I) * residualScale;
+    }
+
+    @Override
+    public void addResidual(IResidualAdder residual) {
         if(node1 != null)
-            residual.add(node1.getIndex(), -I);
+            residual.add(node1.getIndex(),  Ieq);
         if(node2 != null)
-            residual.add(node2.getIndex(),  I);
+            residual.add(node2.getIndex(), -Ieq);
     }
 
     public void setLR(double L, double R) {

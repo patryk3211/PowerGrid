@@ -17,13 +17,15 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
-import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
+import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class CapacitorWire extends AbstractElectricWire implements IStaticResidual {
+public class CapacitorWire extends AbstractElectricWire implements ISolverHook, IOuterHook {
     private double capacitance;
-    private double voltageInject;
     private double Ieq;
+
+    private double V;
 
     public CapacitorWire(double capacitance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -37,7 +39,7 @@ public class CapacitorWire extends AbstractElectricWire implements IStaticResidu
     }
 
     public void setVoltage(float voltage) {
-        voltageInject = voltage - potentialDifference();
+        V = voltage;
     }
 
     @Override
@@ -46,19 +48,24 @@ public class CapacitorWire extends AbstractElectricWire implements IStaticResidu
     }
 
     @Override
-    public void addStaticResidual(IResidualAdder residual) {
+    public void postUpperSolve() {
+        V = potentialDifference();
+    }
+
+    @Override
+    public void startIteration() {
         var G = conductance();
-        var V = potentialDifference();
-        var prevCurrent = G * V + Ieq;
-        var prevPotential = V + voltageInject;
-        voltageInject = 0;
+        var I = capacitance * (potentialDifference() - V) / 0.05f;
 
         // Calculate current with a bit of leakage
-        Ieq = (-G * prevPotential - prevCurrent) * 0.99999;
+        Ieq = (-G * V - I) * 0.99999;
+    }
 
+    @Override
+    public void addResidual(IResidualAdder residual) {
         if(node1 != null)
-            residual.add(node1.getIndex(), -Ieq);
+            residual.add(node1.getIndex(),  Ieq);
         if(node2 != null)
-            residual.add(node2.getIndex(),  Ieq);
+            residual.add(node2.getIndex(), -Ieq);
     }
 }
