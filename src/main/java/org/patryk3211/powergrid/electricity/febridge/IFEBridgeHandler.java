@@ -30,7 +30,34 @@ public interface IFEBridgeHandler {
     long getAmount();
     void setAmount(long amount);
 
-    void charge(SwitchedWire wire);
+    default void charge(SwitchedWire wire) {
+        float wattsToFE = IFEBridgeHandler.wattToFE();
+        if(wire.getState()) {
+            var I = wire.current();
+            setAmount(getAmount() + Math.round(I * I * wire.getResistance() * wattsToFE));
+            setChanged();
+        }
+    }
+
     long moveEnergy();
-    void manageWire(SwitchedWire wire);
+    void setChanged();
+
+    default void manageWire(SwitchedWire wire) {
+        var V = Math.abs(wire.potentialDifference());
+        long maxCharge = (long) (V * IFEBridgeHandler.voltToFE());
+        long missingCharge = maxCharge - getAmount();
+        if(missingCharge <= 0) {
+            wire.setState(false);
+            return;
+        }
+
+        float targetWatts = missingCharge / IFEBridgeHandler.wattToFE();
+        float resistance = V * V / targetWatts;
+        if(resistance > 0) {
+            wire.setResistance(resistance);
+            wire.setState(true);
+        } else {
+            wire.setState(false);
+        }
+    }
 }

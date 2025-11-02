@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:copper_nuggets"
+    },
+    "I": {
+      "tag": "c:iron_plates"
+    },
+    "R": {
+      "item": "powergrid:resistive_coil"
+    }
+  },
+  "pattern": [
+    "C C",
+    "IRI",
+    "IRI"
+  ],
+  "result": {
+    "item": "powergrid:heating_coil"
+  },
+  "show_notification": true
+}

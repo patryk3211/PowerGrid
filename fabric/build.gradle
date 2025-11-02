@@ -59,7 +59,14 @@ loom {
         named("client") {
             vmArg("-enableassertions")
             vmArg("-Dfabric.development=true")
-            vmArg("-javaagent:\"/home/patryk/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.4+mixin.0.8.7/6a12aacc794f1078458433116e9ed42c1cc98096/sponge-mixin-0.15.4+mixin.0.8.7.jar\"")
+            vmArg("-XX:+AllowEnhancedClassRedefinition")
         }
+    }
+}
+
+sourceSets.main {
+    resources {
+        srcDir("src/main/generated")
+        exclude("**/.cache/**")
     }
 }

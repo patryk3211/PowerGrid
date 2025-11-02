@@ -47,9 +47,4 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
     public SequencedAssemblyRecipes(PackOutput output) {
         super(output, PowerGrid.MOD_ID);
     }
-
-//    @Override
-//    public String getName() {
-//        return "Power Grid's Platform Sequenced Assembly Recipes";
-//    }
 }

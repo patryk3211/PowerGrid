@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/alarm_bell",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/alarm_bell"
+    },
+    "facing=south": {
+      "model": "powergrid:block/alarm_bell",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/alarm_bell",
+      "y": 270
+    }
+  }
+}

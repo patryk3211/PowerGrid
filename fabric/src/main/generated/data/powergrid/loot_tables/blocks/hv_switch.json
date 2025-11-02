@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        },
+        {
+          "block": "powergrid:hv_switch",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "part": "0"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powergrid:hv_switch"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "powergrid:blocks/hv_switch"
+}

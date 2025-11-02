@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=east,part=0": {
+      "model": "powergrid:block/switches/hv_switch_body",
+      "y": 270
+    },
+    "facing=east,part=1": {
+      "model": "powergrid:block/switches/hv_switch_receptacle",
+      "y": 270
+    },
+    "facing=north,part=0": {
+      "model": "powergrid:block/switches/hv_switch_body",
+      "y": 180
+    },
+    "facing=north,part=1": {
+      "model": "powergrid:block/switches/hv_switch_receptacle",
+      "y": 180
+    },
+    "facing=south,part=0": {
+      "model": "powergrid:block/switches/hv_switch_body"
+    },
+    "facing=south,part=1": {
+      "model": "powergrid:block/switches/hv_switch_receptacle"
+    },
+    "facing=west,part=0": {
+      "model": "powergrid:block/switches/hv_switch_body",
+      "y": 90
+    },
+    "facing=west,part=1": {
+      "model": "powergrid:block/switches/hv_switch_receptacle",
+      "y": 90
+    }
+  }
+}

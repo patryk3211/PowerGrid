@@ -51,7 +51,7 @@ public abstract class ArmInteractionPointMixin {
     @Shadow public abstract BlockPos getPos();
 
     @Unique
-    private ItemStack handleDepot(ItemStack stack, TransactionContext ctx) {
+    private ItemStack powerGrid$handleDepot(ItemStack stack, TransactionContext ctx) {
         var handler = getHandler();
         if (handler == null)
             return null;
@@ -81,7 +81,7 @@ public abstract class ArmInteractionPointMixin {
     }
 
     @Unique
-    private ItemStack handleBelt(ItemStack stack, TransactionContext ctx) {
+    private ItemStack powerGrid$handleBelt(ItemStack stack, TransactionContext ctx) {
         var beltBE = BeltHelper.getSegmentBE(getLevel(), getPos());
         if (beltBE == null)
             return null;
@@ -122,9 +122,9 @@ public abstract class ArmInteractionPointMixin {
     private void insertAssembleCircuit(ItemStack stack, TransactionContext ctx, CallbackInfoReturnable<ItemStack> cir) {
         ItemStack remainder = null;
         if(((Object) this) instanceof AllArmInteractionPointTypes.BeltPoint) {
-            remainder = handleBelt(stack, ctx);
+            remainder = powerGrid$handleBelt(stack, ctx);
         } else if(((Object) this) instanceof AllArmInteractionPointTypes.DepotPoint) {
-            remainder = handleDepot(stack, ctx);
+            remainder = powerGrid$handleDepot(stack, ctx);
         }
         if(remainder != null)
             cir.setReturnValue(remainder);
