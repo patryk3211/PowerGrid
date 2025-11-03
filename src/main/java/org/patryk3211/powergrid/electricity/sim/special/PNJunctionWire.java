@@ -37,27 +37,36 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         this.idealityFactor = idealityFactor;
     }
 
-    private static double LambertW(double z)
+    private static double WrightOmega(double z)
     {
-        double PRECISION = 1E-12;
-        double S = 0.0;
-        for (int n=1; n <= 100; n++)
+        // D'Angelo, Gabrielli and Turchet (2019) approximation
+        double x1 = -3.341459552768620;
+        double x2 = 8;
+        double alpha = -1.314293149877800e-3;
+        double beta = 4.775931364975583e-2;
+        double gamma = 3.631952663804445e-1;
+        double zeta = 6.313183464296682e-1;
+        if (z <= x1)
         {
-            double Se = S * StrictMath.pow(StrictMath.E, S);
-            double S1e = (S+1) *
-                    StrictMath.pow(StrictMath.E, S);
-            if (PRECISION > StrictMath.abs((z-Se)/S1e))
-            {
-                return S;
-            }
-            S -=
-                    (Se-z) / (S1e - (S+2) * (Se-z) / (2*S+2));
+            return 0;
         }
-        return S;
+        else if (z < x2)
+        {
+            return alpha * z * z * z + beta * z * z + gamma * z + zeta;
+        }
+        else
+        {
+            return z - Math.log(z);
+        }
     }
 
     public void setTemperatureCelsius(double temperatureCelsius) {
         this.temperatureCelsius = temperatureCelsius;
+    }
+
+    @Override
+    public float current() {
+        return (float) (this.Ieq + this.G * potentialDifference());
     }
 
     @Override
@@ -82,9 +91,11 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double R_s = seriesResistance;
         // Banwell and Jayakumar (2000)
         double IsRs = I_s2 * R_s;
-        double W_x = IsRs / n / V_T * Math.exp((IsRs + V) / V_T / n);
-        double WTerm = LambertW(W_x);
-        double G = WTerm / (R_s * (1 + WTerm));
+        // double W_x = IsRs / n / V_T * Math.exp((IsRs + V) / V_T / n);
+        // double WTerm = LambertW(W_x);
+        double Omega_arg = Math.log(IsRs / n / V_T) + (IsRs + V) / (n * V_T);
+        double WTerm = WrightOmega(Omega_arg);
+        double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
         network.updateConductance(this, G - this.G);
         this.G = G;
         double I = V_T * n * WTerm / R_s - I_s2;
