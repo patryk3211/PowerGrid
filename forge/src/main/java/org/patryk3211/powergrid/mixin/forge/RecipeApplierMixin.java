@@ -21,6 +21,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -29,12 +30,8 @@ import java.util.List;
 
 @Mixin(RecipeApplier.class)
 public class RecipeApplierMixin {
-    @Inject(
-            method = "applyRecipeOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
-            at = @At("RETURN"),
-            remap = false
-    )
-    private static void recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, boolean returnProcessingRemainder, CallbackInfoReturnable<List<ItemStack>> cir) {
+    @Unique
+    private static void powerGrid$handleTransfer(Level level, ItemStack stackIn, Recipe<?> recipe, CallbackInfoReturnable<List<ItemStack>> cir) {
         var outputs = cir.getReturnValue();
         if(outputs == null || outputs.isEmpty() ||
                 !stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) ||
@@ -47,5 +44,25 @@ public class RecipeApplierMixin {
                 output.getOrCreateTag().put("Schematic", schematic);
             }
         }
+    }
+
+    @Inject(
+            method = "applyRecipeOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
+            at = @At("RETURN"),
+            remap = false,
+            require = 0
+    )
+    private static void recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, boolean returnProcessingRemainder, CallbackInfoReturnable<List<ItemStack>> cir) {
+        powerGrid$handleTransfer(level, stackIn, recipe, cir);
+    }
+
+    @Inject(
+            method = "applyRecipeOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/Recipe;)Ljava/util/List;",
+            at = @At("RETURN"),
+            remap = false,
+            require = 0
+    )
+    private static void recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, CallbackInfoReturnable<List<ItemStack>> cir) {
+        powerGrid$handleTransfer(level, stackIn, recipe, cir);
     }
 }
