@@ -37,7 +37,7 @@ public class MvSwitchBlock extends SurfaceSwitchBlock {
 
     public MvSwitchBlock(Properties settings) {
         super(settings);
-        this.maxVoltage = 320;
+        this.maxVoltage = 640;
 
         var shaper = VoxelShaper.forDirectional(SHAPE_DOWN, Direction.DOWN);
         var shaper2 = VoxelShaper.forDirectional(SHAPE_DOWN_2, Direction.DOWN);
