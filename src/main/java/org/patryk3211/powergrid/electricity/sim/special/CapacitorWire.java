@@ -49,7 +49,8 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
 
     @Override
     public void postUpperSolve() {
-        V = potentialDifference();
+        if(isConverged())
+            V = potentialDifference();
     }
 
     @Override

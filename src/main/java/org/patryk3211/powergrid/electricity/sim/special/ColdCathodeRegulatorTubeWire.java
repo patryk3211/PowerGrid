@@ -69,6 +69,8 @@ public class ColdCathodeRegulatorTubeWire extends AbstractElectricWire implement
 
     @Override
     public void preSolve() {
+        if(!isConverged())
+            return;
         // Update discharge state
         double V = potentialDifference(), I = current();
         if(!lit && V > breakdownVoltage) {

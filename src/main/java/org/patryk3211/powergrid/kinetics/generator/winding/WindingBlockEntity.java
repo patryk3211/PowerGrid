@@ -31,7 +31,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.special.LRSeriesWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.Collection;
@@ -63,7 +63,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
-    private ElectricWire coilWire;
+    private LRSeriesWire coilWire;
 
     private float field;
     private int warmUpTicks = 0;
@@ -406,7 +406,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             // We only need the nodes on the owner block entity
             addElectricBehaviour();
         } else {
-            coilWire.setResistance(resistance);
+            coilWire.setLR(resistance * 0.01f, resistance);
+//            coilWire.setResistance(resistance);
         }
         if(!level.isClientSide)
             sendData();
@@ -467,7 +468,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(ownerPosition == null) {
             builder.setTerminalCount(2);
             var R = Math.max(resistance, resistance());
-            coilWire = new ElectricWire(R, builder.terminalNode(0), builder.terminalNode(1));
+            coilWire = new LRSeriesWire(R * 0.01f, R, builder.terminalNode(0), builder.terminalNode(1));
             builder.add(coilWire);
         }
     }
@@ -655,7 +656,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
             var B = current * coilConstant();
             if(warmUpTicks > 5) {
-                field = B * 0.25f + field * 0.75f;
+                field = B;// * 0.25f + field * 0.75f;
                 if (Math.abs(field) < 0.001f && Math.abs(B) < 0.001f)
                     field = 0;
             } else {
@@ -670,7 +671,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     @Override
     public void lazyTick() {
         super.lazyTick();
-        if(coilWire != null)
-            sendData();
+//        if(coilWire != null)
+//            sendData();
     }
 }

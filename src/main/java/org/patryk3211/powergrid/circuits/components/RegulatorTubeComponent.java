@@ -54,7 +54,7 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(HOLDING_VOLTAGE, BREAKDOWN_VOLTAGE, HOLDING_CURRENT, LIT);
+        properties.add(HOLDING_VOLTAGE, BREAKDOWN_VOLTAGE, HOLDING_CURRENT, LIT, power(1.5f));
     }
 
     @Override

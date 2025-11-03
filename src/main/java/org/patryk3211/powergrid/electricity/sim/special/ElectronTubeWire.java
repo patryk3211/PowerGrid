@@ -57,20 +57,20 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         this.saturationCurrent = saturationCurrent;
     }
 
+    private static double limit(double dX) {
+        return Math.min(1.2 * Math.log1p(dX), dX);
+    }
+
     @Override
     public void startIteration() {
         // Implementation adapted from Falstad https://www.falstad.com/circuit-java/
         double vCathode = node1.getVoltage();
         double vGrid = grid.getVoltage();
         double vAnode = node2.getVoltage();
-        if(vCathode - prevCathode > 0.5)
-            vCathode = prevCathode + 0.5;
-        if(vCathode - prevCathode < -0.5)
-            vCathode = prevCathode - 0.5;
-        if(vGrid - prevGrid > 0.5)
-            vGrid = prevGrid + 0.5;
-        if(vGrid - prevGrid < -0.5)
-            vGrid = prevGrid - 0.5;
+        var dVc = vCathode - prevCathode;
+        var dVg = vGrid - prevGrid;
+        vCathode = prevCathode + limit(Math.abs(dVc)) * Math.signum(dVc);
+        vGrid = prevGrid + limit(Math.abs(dVg)) * Math.signum(dVg);
         prevCathode = vCathode;
         prevGrid = vGrid;
         vGrid -= vCathode;
@@ -78,7 +78,14 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
         double ids, Gds, gm = 0;
         double ival = vGrid + vAnode / gain;
-        gridCathode.setConductance(vGrid > 0.01 ? GRID_CONDUCTANCE : ElectricalNetwork.G_MIN);
+        var xg = vGrid * 5;
+        if(xg <= 0) {
+            gridCathode.setConductance(ElectricalNetwork.G_MIN);
+        } else if(xg >= 1) {
+            gridCathode.setConductance(ElectricalNetwork.G_MIN + GRID_CONDUCTANCE);
+        } else {
+            gridCathode.setConductance(ElectricalNetwork.G_MIN + GRID_CONDUCTANCE * (3*xg*xg - 2*xg*xg*xg));
+        }
 
         if (ival < 0 || saturationCurrent == 0) {
             Gds = ElectricalNetwork.G_MIN;
@@ -87,9 +94,14 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
             ids = Math.sqrt(ival * ival * ival) * perveance;
             var x = ids / saturationCurrent;
             ids = ids / Math.sqrt(Math.sqrt(1 + x * x * x * x));
-            double q = 1.5 * Math.sqrt(ival) * perveance;
-            Gds = q;
-            gm = q / gain;
+//            if(ids > 1e-4) {
+                double q = 1.5 * Math.sqrt(ival) * perveance;
+                Gds = q;
+                gm = q / gain;
+//            } else {
+//                Gds = ElectricalNetwork.G_MIN;
+//                ids = vAnode * Gds;
+//            }
         }
 
         Ia = -ids + Gds * vAnode + gm * vGrid;

@@ -48,7 +48,8 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
 
     @Override
     public void postUpperSolve() {
-        I = current();
+        if(isConverged())
+            I = current();
     }
 
     @Override

@@ -55,7 +55,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(BREAKDOWN_VOLTAGE, HOLDING_VOLTAGE, HOLDING_CURRENT, LABEL, LIT);
+        properties.add(BREAKDOWN_VOLTAGE, HOLDING_VOLTAGE, HOLDING_CURRENT, LABEL, LIT, power(1.5f));
     }
 
     @Override

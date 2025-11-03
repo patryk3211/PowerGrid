@@ -48,7 +48,7 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
         super.addNode(node);
         if(node instanceof FloatingNode) {
             // Only floating nodes get scores.
-            optimizerScores.put(node, 10);
+//            optimizerScores.put(node, 10);
         } else if(node instanceof ICouplingNode coupling) {
             for(var coupled : coupling.coupledNodes()) {
                 unoptimizeNode(coupled);
@@ -115,7 +115,7 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
             if(!canOptimize(node)) {
                 entry.setValue(20);
                 unoptimizeNode(node);
-                return;
+                continue;
             }
             var score = entry.getValue();
             if(score >= 10) {

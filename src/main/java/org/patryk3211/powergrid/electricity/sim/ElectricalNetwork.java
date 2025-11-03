@@ -905,7 +905,7 @@ public class ElectricalNetwork {
         int i;
         double norm = 0;
         for(i = 0; i < maxIterations; ++i) {
-            if(hasHooks() && i < maxIterations - 20 && i % 2 == 0) {
+            if(hasHooks() && i < maxIterations - 10 && i % 2 == 0) {
                 countUpdates = false;
                 for(var hook : innerHooks)
                     hook.startIteration();
@@ -928,7 +928,7 @@ public class ElectricalNetwork {
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if(valid) {
-                var alpha = i < 2 || (hasHooks() && i < 5) ? 0.5 : 1.2;
+                var alpha = i < 3 ? 0.75 : 1.2;
                 var applied = false;
                 ScaledJ.mult(deltaX, AuxiliaryVector);
                 CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
@@ -966,7 +966,9 @@ public class ElectricalNetwork {
                 System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
             }
         } else {
-            converged = true;
+            converged = i < maxIterations - 10;
+            if(LOGGER != null && !converged)
+               LOGGER.debug("Dirty converge at {} iterations", i);
         }
         PERF.end();
         for(var hook : outerHooks)
