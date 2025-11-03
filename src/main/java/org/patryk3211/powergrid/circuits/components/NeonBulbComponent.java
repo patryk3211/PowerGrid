@@ -67,7 +67,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
                 vb, vh, ih, 0.005f,
                 builder.terminalNode(0), builder.terminalNode(1)
         );
-        wire.lit = placed.get(LIT);
+        wire.setLit(placed.get(LIT));
         builder.add(wire);
         placed.add(wire);
 
@@ -108,7 +108,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
                 placed.customData = state;
             }
             state.tickChaser();
-            if(wire.lit) {
+            if(wire.isLit()) {
                 if (wire.current() > 0) {
                     state.first.updateChaseTarget(1);
                     state.second.updateChaseTarget(0);
@@ -121,8 +121,8 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
                 state.second.updateChaseTarget(0);
             }
         });
-        if(wire.lit != placed.get(LIT)) {
-            placed.set(LIT, wire.lit);
+        if(wire.isLit() != placed.get(LIT)) {
+            placed.set(LIT, wire.isLit());
         }
         return true;
     }

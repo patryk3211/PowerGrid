@@ -84,6 +84,7 @@ public class ElectricalNetwork {
     private boolean countUpdates = true;
     private boolean lockEliminated = false;
     private boolean converged;
+    private int warmUpTicks = 0;
 
     private boolean recalculateScales;
     private boolean eliminatedChanged;
@@ -112,6 +113,11 @@ public class ElectricalNetwork {
         return !innerHooks.isEmpty();
     }
 
+    public void warmUp(int ticks) {
+        if(warmUpTicks < ticks)
+            warmUpTicks = ticks;
+    }
+
     public void addNode(INode node) {
         if(nodes.contains(node) || leafNodes.containsKey(node))
             return;
@@ -136,6 +142,7 @@ public class ElectricalNetwork {
             addNode(enode);
         if(node instanceof ICouplingNode cnode)
             addNode(cnode);
+        warmUp(5);
     }
 
     private void addNode(IElectricNode node) {
@@ -193,6 +200,7 @@ public class ElectricalNetwork {
         if(node instanceof IStaticResidual residual)
             residuals.remove(residual);
 
+        warmUp(3);
         node.setNetwork(null);
         setDirty();
     }
@@ -258,6 +266,7 @@ public class ElectricalNetwork {
         if(wire instanceof IStaticResidual residual)
             residuals.add(residual);
         converged = false;
+        warmUp(1);
     }
 
     public void updateConductance(AbstractElectricWire wire, double change) {
@@ -300,6 +309,7 @@ public class ElectricalNetwork {
         }
         if(wire instanceof IStaticResidual residual)
             residuals.remove(residual);
+        warmUp(1);
     }
 
     public void updateResistance(AbstractElectricWire wire, double oldResistance) {
@@ -930,24 +940,31 @@ public class ElectricalNetwork {
             if(valid) {
                 var alpha = i < 3 ? 0.75 : 1.2;
                 var applied = false;
-                ScaledJ.mult(deltaX, AuxiliaryVector);
-                CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
+                CommonOps_DDRM.multRows(columnScales, deltaX);
+                var PrevState = StateVector;
+                StateVector = AuxiliaryVector;
+//                ScaledJ.mult(deltaX, AuxiliaryVector);
+//                CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
                 while(alpha > 0.0001) {
+                    CommonOps_DDRM.add(PrevState, -alpha, deltaX, StateVector);
+                    computeResidual(workMatrix, StateVector);
                     var newNorm = NormOps_DDRM.normP1(ResidualVector);
                     if(newNorm < norm) {
                         applied = true;
-                        CommonOps_DDRM.multRows(columnScales, deltaX);
-                        CommonOps_DDRM.add(StateVector, -alpha, deltaX, StateVector);
+                        PrevState.setTo(AuxiliaryVector);
+//                        CommonOps_DDRM.multRows(columnScales, deltaX);
+//                        CommonOps_DDRM.add(StateVector, -alpha, deltaX, StateVector);
                         break;
                     }
-                    var initialAlpha = alpha;
+//                    var initialAlpha = alpha;
                     if(alpha > 1) {
                         alpha = 1;
                     } else {
                         alpha *= 0.5;
                     }
-                    CommonOps_DDRM.add(ResidualVector, (initialAlpha - alpha), AuxiliaryVector, ResidualVector);
+//                    CommonOps_DDRM.add(ResidualVector, (initialAlpha - alpha), AuxiliaryVector, ResidualVector);
                 }
+                StateVector = PrevState;
                 if(!applied) {
                     break;
                 }
@@ -969,6 +986,12 @@ public class ElectricalNetwork {
             converged = i < maxIterations - 10;
             if(LOGGER != null && !converged)
                LOGGER.debug("Dirty converge at {} iterations", i);
+            if(converged && warmUpTicks > 0) {
+                // This effectively freezes component states and allows the network
+                // to settle completely after a structure change (or world load).
+                --warmUpTicks;
+                converged = false;
+            }
         }
         PERF.end();
         for(var hook : outerHooks)

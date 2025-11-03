@@ -55,8 +55,6 @@ public class PerformanceCounter {
     }
 
     public void start() {
-        // Removes stale counters
-        COUNTERS.removeIf(other -> other != this && other.name.equals(name));
         start = System.nanoTime();
     }
 

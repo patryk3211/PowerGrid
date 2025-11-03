@@ -64,12 +64,15 @@ public class GlobalElectricNetworks {
             if(key instanceof PonderLevel)
                 return new WorldNetworks(key);
             if(key.isClientSide) return makeClientWorldNetworks(key);
-            var server = (ServerLevel) world;
-            return server.getDataStorage().computeIfAbsent(
-                    nbt -> new WorldNetworks(world, nbt),
-                    () -> new WorldNetworks(world),
-                    "powergrid_electric_network_data"
-            );
+            if(world instanceof ServerLevel server) {
+                return server.getDataStorage().computeIfAbsent(
+                        nbt -> new WorldNetworks(world, nbt),
+                        () -> new WorldNetworks(world),
+                        "powergrid_electric_network_data"
+                );
+            } else {
+                return new WorldNetworks(world);
+            }
         });
     }
 

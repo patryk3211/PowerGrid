@@ -203,7 +203,7 @@ public class BakedCircuit {
             for (var unit : thermalUnits) {
                 var overheated = unit.hasOverheated();
                 unit.tick(be.coolingFactorMultiplier);
-                if (client) {
+                if(client) {
                     var world = this.be.getLevel();
                     var random = world.random;
                     var pos = unit.getPosition();
@@ -227,6 +227,11 @@ public class BakedCircuit {
                                 Component.modelChanged(be.getBlockPos());
                             }
                         }
+                    }
+                } else {
+                    if(!overheated && unit.hasOverheated()) {
+                        // Server should sync overheat events
+                        be.sendData();
                     }
                 }
             }

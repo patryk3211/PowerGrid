@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.contactor;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -100,6 +101,7 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
             }
         }
         state = newState;
+        setChanged();
     }
 
     private void addExternal(ContactorBlockEntity be) {
@@ -119,6 +121,15 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
+    public void initialize() {
+        super.initialize();
+        // Apply state read from NBT
+        var state = this.state;
+        this.state = false;
+        setState(state);
+    }
+
+    @Override
     public void tick() {
         applyPower(switch1);
         applyPower(switch2);
@@ -127,10 +138,12 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
         super.tick();
 
         var I = Math.abs(coil.current());
-        if (I > 2.0f) {
-            setState(true);
-        } else if (I < 2.0f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
-            setState(false);
+        if(coil.isConverged()) {
+            if (I > 2.0f) {
+                setState(true);
+            } else if (I < 2.0f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
+                setState(false);
+            }
         }
     }
 
@@ -139,6 +152,18 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
         super.remove();
         // Removed contactor as external holder of state
         setState(false);
+    }
+
+    @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        state = tag.getBoolean("State");
+    }
+
+    @Override
+    protected void write(CompoundTag tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        tag.putBoolean("State", state);
     }
 
     @Override

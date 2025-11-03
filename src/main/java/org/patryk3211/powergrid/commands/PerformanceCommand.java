@@ -62,11 +62,27 @@ public class PerformanceCommand {
                 reader.skip();
             }
             var name = reader.getString().substring(start, reader.getCursor());
+            PerformanceCounter prev = null;
+            boolean cleanup = false;
             for (var counter : PerformanceCounter.COUNTERS) {
                 if (name.equals(counter.getName())) {
-                    return counter;
+                    if(prev != null) {
+                        cleanup = true;
+                    }
+                    prev = counter;
                 }
             }
+            if(cleanup) {
+                var iter = PerformanceCounter.COUNTERS.iterator();
+                while(iter.hasNext()) {
+                    var counter = iter.next();
+                    if(name.equals(counter.getName()) && counter != prev) {
+                        iter.remove();
+                    }
+                }
+            }
+            if(prev != null)
+                return prev;
             throw new SimpleCommandExceptionType(Component
                     .literal("Performance counter '" + name + "' doesn't exist!")
                     .withStyle(ChatFormatting.RED)).create();

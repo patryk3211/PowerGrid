@@ -64,7 +64,7 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
                 placed.get(BREAKDOWN_VOLTAGE), placed.get(HOLDING_VOLTAGE), ih, 0.025f,
                 builder.terminalNode(0), builder.terminalNode(1)
         );
-        wire.lit = placed.get(LIT);
+        wire.setLit(placed.get(LIT));
         builder.add(wire);
         placed.add(wire);
 
@@ -89,10 +89,10 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
                 placed.customData = state;
             }
             state.tickChaser();
-            state.updateChaseTarget(wire.lit ? 1 : 0);
+            state.updateChaseTarget(wire.isLit() ? 1 : 0);
         });
-        if(wire.lit != placed.get(LIT)) {
-            placed.set(LIT, wire.lit);
+        if(wire.isLit() != placed.get(LIT)) {
+            placed.set(LIT, wire.isLit());
         }
         return true;
     }

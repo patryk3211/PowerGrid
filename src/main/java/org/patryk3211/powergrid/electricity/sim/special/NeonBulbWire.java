@@ -29,7 +29,7 @@ public class NeonBulbWire extends AbstractElectricWire implements IOuterHook, IS
     private final float dischargeConductance;
     private double conductance;
 
-    public boolean lit = false;
+    private boolean lit = false;
     private double I;
 
     public NeonBulbWire(float breakdownVoltage, float holdingVoltage, float holdingCurrent, float dischargeConductance, IElectricNode anode, IElectricNode cathode) {
@@ -38,6 +38,18 @@ public class NeonBulbWire extends AbstractElectricWire implements IOuterHook, IS
         this.holdingVoltage = holdingVoltage;
         this.holdingCurrent = holdingCurrent;
         this.dischargeConductance = dischargeConductance;
+        this.conductance = ElectricalNetwork.G_MIN;
+    }
+
+    public void setLit(boolean lit) {
+        if(this.lit != lit) {
+            this.lit = lit;
+            updateConductance(lit ? dischargeConductance : ElectricalNetwork.G_MIN);
+        }
+    }
+
+    public boolean isLit() {
+        return lit;
     }
 
     @Override

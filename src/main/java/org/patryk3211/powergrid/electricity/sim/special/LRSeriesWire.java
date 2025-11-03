@@ -50,7 +50,8 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     public void setCurrent(float current) {
-        I = current;
+        if(Float.isFinite(current))
+            I = current;
     }
 
     @Override
@@ -61,6 +62,10 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
 
     @Override
     public void startIteration() {
+        if(inductance == 0) {
+            Ieq = 0;
+            return;
+        }
         var R_Inductor = (2 * inductance) / 0.05;
         var G_I = 1 / R_Inductor;
         var V_Inductor = (inductance * (current() - I) / 0.05f);

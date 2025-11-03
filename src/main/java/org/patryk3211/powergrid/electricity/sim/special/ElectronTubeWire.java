@@ -25,6 +25,7 @@ import java.util.List;
 
 public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private static final double GRID_CONDUCTANCE = 1.0 / 6000.0;
+    private static final double OFF_GRID_CONDUCTANCE = 1.0 / 60000.0;
 
     private final IElectricNode grid;
 
@@ -80,11 +81,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         double ival = vGrid + vAnode / gain;
         var xg = vGrid * 5;
         if(xg <= 0) {
-            gridCathode.setConductance(ElectricalNetwork.G_MIN);
+            gridCathode.setConductance(OFF_GRID_CONDUCTANCE);
         } else if(xg >= 1) {
-            gridCathode.setConductance(ElectricalNetwork.G_MIN + GRID_CONDUCTANCE);
+            gridCathode.setConductance(GRID_CONDUCTANCE);
         } else {
-            gridCathode.setConductance(ElectricalNetwork.G_MIN + GRID_CONDUCTANCE * (3*xg*xg - 2*xg*xg*xg));
+            gridCathode.setConductance(OFF_GRID_CONDUCTANCE + (GRID_CONDUCTANCE - OFF_GRID_CONDUCTANCE) * (3*xg*xg - 2*xg*xg*xg));
         }
 
         if (ival < 0 || saturationCurrent == 0) {
