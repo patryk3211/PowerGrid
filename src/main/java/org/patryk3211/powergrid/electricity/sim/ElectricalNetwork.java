@@ -717,7 +717,14 @@ public class ElectricalNetwork {
                 || (eliminatedCount != 0
                         && (JacobianEliminated == null || JacobianEliminated.getNumRows() != eliminatedCount));
         if(shouldReallocate) {
-            var prevState = StateVector;
+            var NewState = new DMatrixRMaj(reducedCount, 1);
+            // Use previous state matrix to accelerate warm up
+            if(StateVector != null) {
+                for(int i = 0; i < reducedCount; ++i) {
+                    NewState.set(i, 0, getValue(nodes.get(i)));
+                }
+            }
+
             // Kept Jacobian
             JacobianKept = new DynamicallyTypedMatrix(reducedCount, reducedCount);
             if(eliminatedCount != 0) {
@@ -750,22 +757,13 @@ public class ElectricalNetwork {
 
             ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
             ResidualVector = new DMatrixRMaj(reducedCount, 1);
-            StateVector = new DMatrixRMaj(reducedCount, 1);
             AuxiliaryVector = new DMatrixRMaj(reducedCount, 1);
+            StateVector = NewState;
 
             columnScales = new double[reducedCount];
             rowScales = new double[reducedCount];
             solver.setStateSize(reducedCount);
             dirty = false;
-
-            // Use previous state matrix to accelerate warm up
-            if(prevState != null) {
-                for(int i = 0; i < reducedCount; ++i) {
-                    if(i >= prevState.getNumRows())
-                        continue;
-                    StateVector.set(i, 0, prevState.get(i, 0));
-                }
-            }
 
             // Conductance and coupling matrices need to be fully rebuild only after a state size change,
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
@@ -889,6 +887,19 @@ public class ElectricalNetwork {
         workMatrix.multColumns(columnScales, ScaledJ);
         rowScales(ScaledJ);
         scalesAge = 0;
+    }
+
+    public List<INode> findProblematicNodes(DMatrixRMaj residual, double threshold) {
+        var nodes = new ArrayList<INode>();
+        for(var node : this.nodes) {
+            if(node.getIndex() >= eliminatedStart)
+                continue;
+            var x = residual.get(node.getIndex(), 0);
+            if(Math.abs(x) > threshold) {
+                nodes.add(node);
+            }
+        }
+        return nodes;
     }
 
     public void calculate() {

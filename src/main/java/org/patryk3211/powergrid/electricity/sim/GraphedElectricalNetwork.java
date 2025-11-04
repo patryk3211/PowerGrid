@@ -16,10 +16,12 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -189,6 +191,20 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         super.removeWire(wire);
         checkConnectivity(wire.node1, null);
         checkConnectivity(wire.node2, null);
+    }
+
+    private Collection<AbstractElectricWire> findProblematicWires(DMatrixRMaj residual, double threshold) {
+        var nodes = findProblematicNodes(residual, threshold);
+        var wires = new HashSet<AbstractElectricWire>();
+        for(var node1 : nodes) {
+            for(var node2 : nodes) {
+                if(node1 == node2)
+                    continue;
+                if(node1 instanceof IElectricNode enode1 && node2 instanceof IElectricNode enode2)
+                    wires.addAll(graph.getWires(enode1, enode2));
+            }
+        }
+        return wires;
     }
 
     public NetworkGraph getGraph() {
