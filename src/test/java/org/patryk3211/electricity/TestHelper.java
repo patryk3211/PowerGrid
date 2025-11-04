@@ -45,10 +45,12 @@ public abstract class TestHelper {
 
         public Network() {
             network = new ElectricalNetwork(false);
+            network.warmUp(-1);
         }
 
         public Network(boolean addGMin) {
             network = new ElectricalNetwork(addGMin);
+            network.warmUp(-1);
         }
 
         public FloatingNode N() {

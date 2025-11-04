@@ -114,6 +114,10 @@ public class ElectricalNetwork {
     }
 
     public void warmUp(int ticks) {
+        if(ticks == -1 || warmUpTicks == -1) {
+            warmUpTicks = -1;
+            return;
+        }
         if(warmUpTicks < ticks)
             warmUpTicks = ticks;
     }
@@ -984,8 +988,13 @@ public class ElectricalNetwork {
             }
         } else {
             converged = i < maxIterations - 10;
-            if(LOGGER != null && !converged)
-               LOGGER.debug("Dirty converge at {} iterations", i);
+            if(!converged) {
+                if(LOGGER != null) {
+                    LOGGER.debug("Dirty converge at {} iterations", i);
+                } else {
+                    System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
+                }
+            }
             if(converged && warmUpTicks > 0) {
                 // This effectively freezes component states and allows the network
                 // to settle completely after a structure change (or world load).
