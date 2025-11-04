@@ -994,6 +994,10 @@ public class ElectricalNetwork {
                 } else {
                     System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
                 }
+            } else {
+                if(LOGGER == null) {
+                    System.out.printf("Converged after %d iterations\n", i);
+                }
             }
             if(converged && warmUpTicks > 0) {
                 // This effectively freezes component states and allows the network
