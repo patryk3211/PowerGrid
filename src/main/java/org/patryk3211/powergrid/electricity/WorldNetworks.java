@@ -36,6 +36,7 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
 import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
@@ -220,20 +221,21 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
             removed.forEach(TransmissionLine::remove);
-            // Synchronize solver state with clients
-//            if(syncTicks++ >= 20) {
-//                for(var network : subnetworks) {
-//                    if(network.getStateVector() == null)
-//                        continue;
-//                    var tracking = new HashSet<ServerPlayer>();
-//                    var packet = new SolverStateS2CPacket(world, network);
-//                    for(var chunk : packet.chunks) {
-//                        tracking.addAll(PlayerLookup.tracking(serverWorld, chunk));
-//                    }
-//                    ModdedPackets.sendToClients(packet, tracking);
-//                }
-//                syncTicks = 0;
-//            }
+            // Synchronize state with clients
+            if(syncTicks++ >= 40) {
+                // TODO: Perhaps we should avoid sending ALL subnetworks at once and instead
+                //  split the sync up to avoid generating a lot of intermittent network traffic.
+                for(var network : subnetworks) {
+                    for(var node : network.getNodes()) {
+                        if(!(node instanceof OwnedFloatingNode owned))
+                            continue;
+                        if(!(owned.endpoint instanceof BlockWireEndpoint bwe))
+                            continue;
+                        bwe.getElectricBehaviour(world).blockEntity.sendData();
+                    }
+                }
+                syncTicks = 0;
+            }
         }
     }
 

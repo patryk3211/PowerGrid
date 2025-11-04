@@ -680,11 +680,4 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         setChanged();
         super.tick();
     }
-
-    @Override
-    public void lazyTick() {
-        super.lazyTick();
-        if(coilWire != null)
-            sendData();
-    }
 }

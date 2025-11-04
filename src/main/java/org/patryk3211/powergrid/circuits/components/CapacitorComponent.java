@@ -57,6 +57,14 @@ public class CapacitorComponent extends OrientableComponent {
         return true;
     }
 
+    @Override
+    public void stateUpdated(@NotNull PlacedComponent placed) {
+        if(placed.wires.isEmpty())
+            return;
+        var wire = (CapacitorWire) placed.wires.get(0);
+        wire.setVoltage(placed.get(CHARGE));
+    }
+
     private static class ChargeProperty extends FloatProperty {
         public ChargeProperty(String namespace, String name) {
             super(namespace, name, 0, 0, 0);

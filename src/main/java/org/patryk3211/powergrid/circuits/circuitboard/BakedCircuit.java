@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -162,7 +163,7 @@ public class BakedCircuit {
         tag.put("Thermal", thermalTag);
     }
 
-    public void read(CompoundTag tag) {
+    public void read(CompoundTag tag, boolean clientPacket) {
         if(tag.contains("Thermal")) {
             var thermalTag = tag.getCompound("Thermal");
             for(var unit : thermalUnits) {
@@ -179,6 +180,33 @@ public class BakedCircuit {
             }
         }
         isDamaged = false;
+        if(!clientPacket)
+            return;
+        var schematic = tag.getCompound("Schematic");
+        if(schematic.contains("Components")) {
+            for(var generic : schematic.getList("Components", Tag.TAG_COMPOUND)) {
+                var compound = (CompoundTag) generic;
+                var id = compound.getUUID("UUID");
+                for(var placed : tickedComponents) {
+                    if(!placed.uuid.equals(id))
+                        continue;
+                    var changed = false;
+                    var tagProperties = compound.getCompound("Properties");
+                    for(var property : placed.component.getProperties()) {
+                        var tagEntry = tagProperties.get(property.id().toString());
+                        var readValue = property.read(tagEntry);
+                        if(tagEntry != null && !placed.get(property).equals(readValue)) {
+                            // Value changed
+                            placed.getEntry(property).setValueRaw(readValue);
+                            changed = true;
+                        }
+                    }
+                    if(changed) {
+                        placed.stateUpdated();
+                    }
+                }
+            }
+        }
     }
 
     public boolean isDamaged() {

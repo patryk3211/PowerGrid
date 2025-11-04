@@ -43,6 +43,7 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     public void setCurrent(float current) {
+        valueChange(current, I);
         if(Float.isFinite(current))
             I = current;
     }

@@ -39,6 +39,7 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
     }
 
     public void setVoltage(float voltage) {
+        valueChange(voltage, V);
         if(Float.isFinite(voltage))
             V = voltage;
     }

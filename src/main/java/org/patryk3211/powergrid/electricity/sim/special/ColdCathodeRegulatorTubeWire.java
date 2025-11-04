@@ -45,6 +45,8 @@ public class ColdCathodeRegulatorTubeWire extends AbstractElectricWire implement
         if(this.lit != lit) {
             this.lit = lit;
             updateConductance(lit ? dischargeConductance : ElectricalNetwork.G_MIN);
+            if(network != null)
+                network.warmUp(1);
         }
     }
 

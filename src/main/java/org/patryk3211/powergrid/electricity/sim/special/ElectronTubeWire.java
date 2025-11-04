@@ -55,6 +55,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     }
 
     public void setSaturationCurrent(float saturationCurrent) {
+        valueChange(saturationCurrent, this.saturationCurrent);
         this.saturationCurrent = saturationCurrent;
     }
 

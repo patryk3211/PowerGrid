@@ -161,6 +161,8 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                             var V = line.voltageFor(node);
                             data.putFloat("PosV", V);
                             posRem = false;
+                        } else {
+                            data.putFloat("PosV", node.getVoltage());
                         }
                     }
                     if(neg != null && neg.type() == WireEndpointType.BLOCK && neg.isValid(level)) {
@@ -170,12 +172,15 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                             var V = line.voltageFor(node);
                             data.putFloat("NegV", V);
                             negRem = false;
+                        } else {
+                            data.putFloat("NegV", node.getVoltage());
                         }
                     }
-                    if(posRem)
+                    // The client can only provide a good reading if it is simulating both nodes.
+                    if(posRem && negRem) {
                         data.remove("PosV");
-                    if(negRem)
                         data.remove("NegV");
+                    }
                 }
             }
             case 1 -> {

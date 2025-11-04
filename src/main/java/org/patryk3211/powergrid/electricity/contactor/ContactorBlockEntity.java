@@ -157,7 +157,11 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        state = tag.getBoolean("State");
+        if(!clientPacket) {
+            state = tag.getBoolean("State");
+        } else {
+            setState(tag.getBoolean("State"));
+        }
     }
 
     @Override

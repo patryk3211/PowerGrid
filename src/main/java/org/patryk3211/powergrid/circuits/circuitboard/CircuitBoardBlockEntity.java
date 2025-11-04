@@ -84,7 +84,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public void setAdditionalData(CompoundTag tag) {
         if(baked == null)
             return;
-        baked.read(tag);
+        baked.read(tag, false);
         notifyUpdate();
     }
 
@@ -290,7 +290,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             bakeCircuit();
         }
         if(baked != null)
-            baked.read(tag);
+            baked.read(tag, clientPacket);
     }
 
     @Override

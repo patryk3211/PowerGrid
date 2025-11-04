@@ -45,6 +45,8 @@ public class NeonBulbWire extends AbstractElectricWire implements IOuterHook, IS
         if(this.lit != lit) {
             this.lit = lit;
             updateConductance(lit ? dischargeConductance : ElectricalNetwork.G_MIN);
+            if(network != null)
+                network.warmUp(1);
         }
     }
 

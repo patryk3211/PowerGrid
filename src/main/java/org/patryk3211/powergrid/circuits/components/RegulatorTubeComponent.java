@@ -98,6 +98,14 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
     }
 
     @Override
+    public void stateUpdated(@NotNull PlacedComponent placed) {
+        if(placed.wires.isEmpty())
+            return;
+        var wire = (ColdCathodeRegulatorTubeWire) placed.wires.get(0);
+        wire.setLit(placed.get(LIT));
+    }
+
+    @Override
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
         int a = 0;
         if(placed.customData instanceof LerpedFloat lerped) {

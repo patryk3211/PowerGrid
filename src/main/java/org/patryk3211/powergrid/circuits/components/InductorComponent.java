@@ -57,6 +57,13 @@ public class InductorComponent extends OrientableComponent {
         return true;
     }
 
+    @Override
+    public void stateUpdated(@NotNull PlacedComponent placed) {
+        if(placed.wires.isEmpty())
+            return;
+        var wire = (InductorWire) placed.wires.get(0);
+        wire.setCurrent(placed.get(CURRENT));
+    }
 
     private static class CurrentProperty extends FloatProperty {
         public CurrentProperty(String namespace, String name) {
