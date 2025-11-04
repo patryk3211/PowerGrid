@@ -65,10 +65,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private int totalCoilCount = 0;
     private LRSeriesWire coilWire;
 
-    private float field;
-    private float current;
-    private int warmUpTicks = 0;
-
     private boolean rebuildParallels = false;
 
     public WindingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -88,11 +84,15 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var be = getSimElementHolder();
         if(be == null)
             return 0;
-        if(be.field == 0)
+        var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
+        var current = be.coilWire.current();
+        current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
+        var B = current * coilConstant();
+        if(B == 0)
             return 0.001f;
-        if(Math.abs(be.field) < 0.001f)
-            return 0.001f * Math.signum(be.field);
-        return be.field;
+        if(Math.abs(B) < 0.001f)
+            return 0.001f * Math.signum(B);
+        return B;
     }
 
     @Override
@@ -408,7 +408,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             addElectricBehaviour();
         } else {
             coilWire.setLR(resistance * 0.01f, resistance);
-//            coilWire.setResistance(resistance);
         }
         if(!level.isClientSide)
             sendData();
@@ -417,7 +416,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        field = tag.getFloat("Field");
         if(clientPacket) {
             ownerPosition = null;
             parallelPositions = null;
@@ -443,8 +441,9 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 }
             }
         }
-        current = tag.getFloat("Current");
+        var current = tag.getFloat("Current");
         if(coilWire != null) {
+            coilWire.valueChange(current, coilWire.current(), 5);
             coilWire.setCurrent(current);
         }
     }
@@ -452,8 +451,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        if(field != 0)
-            tag.putFloat("Field", field);
         if(coilWire != null) {
             tag.putFloat("Current", coilWire.current());
         }
@@ -478,7 +475,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             builder.setTerminalCount(2);
             var R = Math.max(resistance, resistance());
             coilWire = new LRSeriesWire(R * 0.01f, R, builder.terminalNode(0), builder.terminalNode(1));
-            coilWire.setCurrent(current);
             builder.add(coilWire);
         }
     }
@@ -661,21 +657,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         float current = windingCurrent();
         if (thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
-        if (coilWire != null && (coilWire.isConverged() || coilWire.getNetwork() == null)) {
-            var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
-            current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
-            var B = current * coilConstant();
-            if(warmUpTicks > 5) {
-                this.current = current;
-                field = B;// * 0.25f + field * 0.75f;
-                if (Math.abs(field) < 0.001f && Math.abs(B) < 0.001f)
-                    field = 0;
-            } else {
-                if(Math.abs(coilWire.current()) < Math.abs(this.current))
-                    coilWire.setCurrent(this.current);
-                ++warmUpTicks;
-            }
-        }
 
         setChanged();
         super.tick();

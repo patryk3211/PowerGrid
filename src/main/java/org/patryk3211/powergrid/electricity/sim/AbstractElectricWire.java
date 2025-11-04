@@ -33,15 +33,19 @@ public abstract class AbstractElectricWire {
         this.node2 = node2;
     }
 
-    protected void valueChange(double x, double x0) {
+    public void valueChange(double x, double x0, int ticks) {
         if(network == null)
             return;
         if(x0 == 0 && Math.abs(x) > 0.05) {
             network.warmUp(1);
             return;
         }
-        if((x - x0) / x0 > 0.2)
-            network.warmUp(1);
+        if(Math.abs((x - x0) / x0) > 0.2)
+            network.warmUp(ticks);
+    }
+
+    protected void valueChange(double x, double x0) {
+            valueChange(x, x0, 1);
     }
 
     public void setNetwork(ElectricalNetwork network) {
