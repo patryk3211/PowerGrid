@@ -36,4 +36,9 @@ public interface INode {
             return false;
         return network.isConverged();
     }
+
+    default void remove() {
+        if(getNetwork() != null)
+            getNetwork().removeNode(this);
+    }
 }

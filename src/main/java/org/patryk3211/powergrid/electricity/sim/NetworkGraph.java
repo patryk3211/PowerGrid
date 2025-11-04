@@ -151,6 +151,14 @@ public class NetworkGraph {
         }
     }
 
+    @NotNull
+    public Collection<ICouplingNode> getCouplings(IElectricNode node) {
+        if(node != null && !nodes.containsKey(node))
+            return List.of();
+        var object = nodes.get(node);
+        return object.couplings;
+    }
+
     @Nullable
     public AbstractElectricWire getFirstWire(IElectricNode node1, IElectricNode node2) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))

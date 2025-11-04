@@ -305,6 +305,11 @@ public class ClientWorldNetworks extends WorldNetworks {
             var line = transmissionLines.get(id);
             line.remove();
         }
+//        var node = endpoint.getNode(world);
+//        var currentLines = globalGraph.getConnectedLines(node);
+//        if(currentLines.isEmpty()) {
+//            removeFromNetwork(node);
+//        }
     }
 
     public float tryGetCurrent(int lineId) {

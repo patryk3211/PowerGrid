@@ -32,6 +32,8 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.*;
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
@@ -895,6 +897,27 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if (parts.isEmpty())
                 partNodeMap.remove(oldNode);
             partNodeMap.computeIfAbsent(newNode, $ -> new HashSet<>()).add(part);
+        }
+    }
+
+    public void removeFromNetwork(OwnedFloatingNode node) {
+        var checked = new HashSet<IElectricNode>();
+        var toCheck = new ArrayList<IElectricNode>();
+        toCheck.add(node);
+        while(!toCheck.isEmpty()) {
+            var check = toCheck.remove(0);
+            if(!checked.add(check))
+                continue;
+            var nodes = globalGraph.getConnectedNodes(check);
+            var couplings = globalGraph.getCouplings(node);
+            couplings.forEach(INode::remove);
+            for(var connected : nodes) {
+                var wires = globalGraph.getWires(node, connected);
+                for(var wire : wires)
+                    wire.remove();
+                toCheck.add(connected);
+            }
+            node.remove();
         }
     }
 
