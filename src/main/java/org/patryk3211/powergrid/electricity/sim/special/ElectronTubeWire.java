@@ -80,7 +80,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
         double ids, Gds, gm = 0;
         double ival = vGrid + vAnode / gain;
-        var xg = vGrid * 5;
+        var xg = vGrid * 0.5;
         if(xg <= 0) {
             gridCathode.setConductance(OFF_GRID_CONDUCTANCE);
         } else if(xg >= 1) {
@@ -96,14 +96,9 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
             ids = Math.sqrt(ival * ival * ival) * perveance;
             var x = ids / saturationCurrent;
             ids = ids / Math.sqrt(Math.sqrt(1 + x * x * x * x));
-//            if(ids > 1e-4) {
-                double q = 1.5 * Math.sqrt(ival) * perveance;
-                Gds = q;
-                gm = q / gain;
-//            } else {
-//                Gds = ElectricalNetwork.G_MIN;
-//                ids = vAnode * Gds;
-//            }
+            double q = 1.5 * Math.sqrt(ival) * perveance;
+            Gds = q;
+            gm = q / gain;
         }
 
         Ia = -ids + Gds * vAnode + gm * vGrid;
