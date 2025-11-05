@@ -902,8 +902,8 @@ public class ElectricalNetwork {
         return nodes;
     }
 
-    private void iterHooks(int i, int max) {
-        if(hasHooks() && i < max - 10 && i % 2 == 0) {
+    private void iterHooks(int i, int max, double norm) {
+        if(hasHooks() && i < max - 10 && (i % 2 == 0 || norm < 1e-5)) {
             countUpdates = false;
             for(var hook : innerHooks)
                 hook.startIteration();
@@ -939,7 +939,7 @@ public class ElectricalNetwork {
         int i;
         double norm = 0;
         for(i = 0; i < maxIterations; ++i) {
-            iterHooks(i, maxIterations);
+            iterHooks(i, maxIterations, norm);
             var workMatrix = getWorkMatrix();
             computeResidual(workMatrix, StateVector);
             norm = NormOps_DDRM.normP1(ResidualVector);
@@ -965,7 +965,7 @@ public class ElectricalNetwork {
                 while(alpha > 0.0001) {
                     // Fully recompute the residual each time
                     CommonOps_DDRM.add(PrevState, -alpha, deltaX, StateVector);
-                    iterHooks(i, maxIterations);
+                    iterHooks(i, maxIterations, norm);
                     workMatrix = getWorkMatrix();
                     computeResidual(workMatrix, StateVector);
                     var newNorm = NormOps_DDRM.normP1(ResidualVector);
