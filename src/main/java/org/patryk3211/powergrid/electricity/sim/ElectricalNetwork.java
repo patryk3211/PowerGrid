@@ -902,6 +902,15 @@ public class ElectricalNetwork {
         return nodes;
     }
 
+    private void iterHooks(int i, int max) {
+        if(hasHooks() && i < max - 10 && i % 2 == 0) {
+            countUpdates = false;
+            for(var hook : innerHooks)
+                hook.startIteration();
+            countUpdates = true;
+        }
+    }
+
     public void calculate() {
         if(sourceCount == 0) {
             converged = true;
@@ -930,12 +939,7 @@ public class ElectricalNetwork {
         int i;
         double norm = 0;
         for(i = 0; i < maxIterations; ++i) {
-            if(hasHooks() && i < maxIterations - 10 && i % 2 == 0) {
-                countUpdates = false;
-                for(var hook : innerHooks)
-                    hook.startIteration();
-                countUpdates = true;
-            }
+            iterHooks(i, maxIterations);
             var workMatrix = getWorkMatrix();
             computeResidual(workMatrix, StateVector);
             norm = NormOps_DDRM.normP1(ResidualVector);
@@ -953,34 +957,33 @@ public class ElectricalNetwork {
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if(valid) {
-                var alpha = i < 3 ? 0.75 : 1.2;
+                var alpha = i < 4 ? 0.75 : 1.2;
                 var applied = false;
                 CommonOps_DDRM.multRows(columnScales, deltaX);
                 var PrevState = StateVector;
                 StateVector = AuxiliaryVector;
-//                ScaledJ.mult(deltaX, AuxiliaryVector);
-//                CommonOps_DDRM.add(ResidualVector, -alpha, AuxiliaryVector, ResidualVector);
                 while(alpha > 0.0001) {
+                    // Fully recompute the residual each time
                     CommonOps_DDRM.add(PrevState, -alpha, deltaX, StateVector);
+                    iterHooks(i, maxIterations);
+                    workMatrix = getWorkMatrix();
                     computeResidual(workMatrix, StateVector);
                     var newNorm = NormOps_DDRM.normP1(ResidualVector);
                     if(newNorm < norm) {
                         applied = true;
                         PrevState.setTo(AuxiliaryVector);
-//                        CommonOps_DDRM.multRows(columnScales, deltaX);
-//                        CommonOps_DDRM.add(StateVector, -alpha, deltaX, StateVector);
                         break;
                     }
-//                    var initialAlpha = alpha;
                     if(alpha > 1) {
                         alpha = 1;
                     } else {
                         alpha *= 0.5;
                     }
-//                    CommonOps_DDRM.add(ResidualVector, (initialAlpha - alpha), AuxiliaryVector, ResidualVector);
                 }
                 StateVector = PrevState;
-                if(!applied) {
+                // If network has hooks they might alter the residual
+                // and still allow for convergence in the next iteration.
+                if(!applied && !hasHooks()) {
                     break;
                 }
             } else {

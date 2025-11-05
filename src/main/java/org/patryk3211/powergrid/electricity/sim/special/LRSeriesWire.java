@@ -67,8 +67,7 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
             Ieq = 0;
             return;
         }
-        var R_Inductor = (2 * inductance) / 0.05;
-        var G_I = 1 / R_Inductor;
+        var G_I = 0.05 / (2 * inductance);
         var V_Inductor = (inductance * (current() - I) / 0.05f);
 
         Ieq = (V_Inductor * G_I + I) * residualScale;
