@@ -958,7 +958,7 @@ public class ElectricalNetwork {
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if(valid) {
-                var alpha = i < 4 ? 0.75 : 1.2;
+                var alpha = i < 4 ? 0.75 : 1.0;
                 var applied = false;
                 CommonOps_DDRM.multRows(columnScales, deltaX);
                 var PrevState = StateVector;
