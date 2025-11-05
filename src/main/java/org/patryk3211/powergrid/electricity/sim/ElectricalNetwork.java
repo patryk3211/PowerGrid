@@ -903,10 +903,11 @@ public class ElectricalNetwork {
     }
 
     private void iterHooks(int i, int max, double norm) {
-        if(hasHooks() && i < max - 10 && (i % 2 == 0 || norm < 1e-5)) {
+        if(hasHooks() && i < max - 10 && i % 2 == 0) {
             countUpdates = false;
-            for(var hook : innerHooks)
+            for(var hook : innerHooks) {
                 hook.startIteration();
+            }
             countUpdates = true;
         }
     }
