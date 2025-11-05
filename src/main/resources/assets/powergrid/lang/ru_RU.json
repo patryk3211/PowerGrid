@@ -55,7 +55,6 @@
   "component.powergrid.electron_tube.0": "Катод",
   "component.powergrid.electron_tube.1": "Сетка",
   "component.powergrid.electron_tube.2": "Анод",
-  "component.powergrid.electron_tube.3": "Накаливатель",
   "component.powergrid.relay.0": "Катушка",
   "component.powergrid.relay.1": "Катушка",
   "component.powergrid.relay.2": "Нормально замкнутый",
