@@ -293,7 +293,6 @@
   "powergrid.ponder.generator_winding.header": "Мотки провода",
   "powergrid.ponder.generator_winding.text_1": "Нажатие ПКМ на два вала с предметом катушки создаёт обмотку",
   "powergrid.ponder.growth_lamp.header": "Ускорение роста растений",
-  "powergrid.ponder.growth_lamp.text_1": "Фитосветильник - это особый тип лампы, который ускоряет рост растений в определенной области при включении",
   "powergrid.ponder.heating_coil_basic.header": "Разогрев воздуха",
   "powergrid.ponder.heating_coil_basic.text_1": "Нагревательный элемент можно использовать для нагрева проходящего через него Воздушного потока, если к нему прилагается достаточная мощность",
   "powergrid.ponder.heating_coil_basic.text_2": "При подаче большего напряжения Воздушный поток можно использовать для массовой плавки",
