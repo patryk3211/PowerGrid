@@ -3,6 +3,8 @@
   "block.powergrid.alarm_bell": "Alarm Bell",
   "block.powergrid.basin_heater": "Basin Heater",
   "block.powergrid.battery": "Battery",
+  "block.powergrid.carbon_pile": "Carbon Pile",
+  "block.powergrid.carbon_pile_coil": "Carbon Pile Coil",
   "block.powergrid.circuit_board": "Circuit Board",
   "block.powergrid.circuit_design_table": "Circuit Design Table",
   "block.powergrid.circuit_design_table.tooltip.behaviour1": "Writes the current design into a schematic item",

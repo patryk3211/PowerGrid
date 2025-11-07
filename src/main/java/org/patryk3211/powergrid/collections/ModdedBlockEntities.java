@@ -23,6 +23,7 @@ import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlockEntity;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlockEntity;
 import org.patryk3211.powergrid.electricity.contactor.ContactorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
@@ -304,6 +305,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<SocketBlockEntity> SOCKET =
             REGISTRATE.blockEntity("socket", SocketBlockEntity::new)
                     .validBlock(ModdedBlocks.SOCKET)
+                    .register();
+
+    public static final BlockEntityEntry<CarbonPileCoilBlockEntity> CARBON_PILE_COIL =
+            REGISTRATE.blockEntity("carbon_pile_coil", CarbonPileCoilBlockEntity::new)
+                    .validBlock(ModdedBlocks.CARBON_PILE_COIL)
                     .register();
 
     @SuppressWarnings("EmptyMethod")
