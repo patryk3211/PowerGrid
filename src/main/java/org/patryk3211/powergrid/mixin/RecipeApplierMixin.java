@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.mixin.fabric;
+package org.patryk3211.powergrid.mixin;
 
 import com.simibubi.create.foundation.recipe.RecipeApplier;
 import net.minecraft.world.item.ItemStack;
@@ -30,12 +30,16 @@ import java.util.List;
 @Mixin(RecipeApplier.class)
 public class RecipeApplierMixin {
     @Inject(
-            method = "applyRecipeOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/Recipe;)Ljava/util/List;",
-            at = @At("RETURN")
+            method = "applyRecipeOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
+            at = @At("RETURN"),
+            remap = false,
+            require = 0
     )
-    private static void recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, CallbackInfoReturnable<List<ItemStack>> cir) {
+    private static void recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, boolean returnProcessingRemainder, CallbackInfoReturnable<List<ItemStack>> cir) {
         var outputs = cir.getReturnValue();
-        if(outputs == null || outputs.isEmpty() || !stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) || !stackIn.hasTag() || !stackIn.getTag().contains("Schematic"))
+        if(outputs == null || outputs.isEmpty() ||
+                !stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) ||
+                !stackIn.hasTag() || !stackIn.getTag().contains("Schematic"))
             return;
         // Modify output with NBT
         for(var output : outputs) {

@@ -6,8 +6,7 @@
   "mixins": [
     "ArmInteractionPointMixin",
     "BasinRecipeMixin",
-    "ChunkMapMixin",
-    "RecipeApplierMixin"
+    "ChunkMapMixin"
   ],
   "injectors": {
     "defaultRequire": 1

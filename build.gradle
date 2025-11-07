@@ -1,7 +1,7 @@
 plugins {
 	id 'maven-publish'
 	id 'architectury-plugin' version '3.4-SNAPSHOT'
-	id 'dev.architectury.loom' version '1.11+' apply false
+	id 'dev.architectury.loom' version '1.13+' apply false
 	id "com.github.johnrengelman.shadow" version "7.1.2"
 	id 'me.modmuss50.mod-publish-plugin' version '1.0.0' apply false
 }
@@ -256,7 +256,9 @@ architectury {
 dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	modCompileOnly("com.simibubi.create:create-fabric-${project.minecraft_version}:${project.create_fabric_version}")
+	modCompileOnly("com.simibubi.create:create-fabric:${project.create_fabric_version}-mc${project.minecraft_version}")
+	modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_fabric_version}")
+	modCompileOnly("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_forge_version}")
 	modCompileOnly("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
 
 	// Just Enough Items
