@@ -17,13 +17,18 @@ package org.patryk3211.powergrid.electricity.carbonpile;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedTags;
 
 public class CarbonPileBlock extends Block {
     public static final BooleanProperty TOP = BooleanProperty.create("top");
@@ -47,5 +52,46 @@ public class CarbonPileBlock extends Block {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return state.getValue(TOP) ? SHAPE_TOP : SHAPE_MIDDLE;
+    }
+
+    @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
+        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
+        // We only care about changes in the Y axis
+        if(pos.getX() != neighborPos.getX() || pos.getZ() != neighborPos.getZ())
+            return;
+        var current = pos;
+        int size = 0;
+        while(level.getBlockState(current).is(this)) {
+            current = current.below();
+            ++size;
+        }
+        var hasBase = ModdedBlocks.CARBON_PILE_COIL.has(level.getBlockState(current));
+        if(!hasBase) {
+            // Deconstruct
+            current = current.above();
+            while(level.getBlockState(current).is(this)) {
+                level.setBlock(current, Blocks.COAL_BLOCK.defaultBlockState(), UPDATE_ALL);
+            }
+            return;
+        }
+        var base = current;
+        if(state.getValue(TOP)) {
+            // Try to extend the pile
+            current = pos.above();
+            var baseState = defaultBlockState();
+            while(level.getBlockState(current).is(ModdedTags.Block.CARBON_PILE_BLOCK.tag) && size < CarbonPileCoilBlock.maxSize()) {
+                ++size;
+                level.setBlock(current, baseState.setValue(TOP, true), UPDATE_ALL);
+                level.setBlock(current.below(), baseState.setValue(TOP, false), UPDATE_ALL);
+            }
+        } else {
+            // Check if there is a pile above
+            if(!level.getBlockState(pos.above()).is(this)) {
+                level.setBlock(pos, state.setValue(TOP, true), UPDATE_ALL);
+            }
+        }
+        level.getBlockEntity(base, ModdedBlockEntities.CARBON_PILE_COIL.get())
+                .ifPresent(CarbonPileCoilBlockEntity::pileChanged);
     }
 }

@@ -49,6 +49,8 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat groundingHighestResistance = f(5000, 0.001f, "groundingHighestResistance", Comments.groundingHighestResistance);
     public final ConfigFloat groundingLowestResistance = f(1, 0.001f, "groundingLowestResistance", Comments.groundingLowestResistance);
 
+    public final ConfigInt carbonPileMaxHeight = i(5, 1, "carbonPileMaxHeight", Comments.carbonPileMaxHeight);
+
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
     public final CWire wires = nested(1, CWire::new, Comments.wires);
@@ -93,5 +95,7 @@ public class CElectricity extends ConfigBase {
         public static final String groundingMaximumBlocks = "Maximum conductive blocks needed for a grounding rod to reach its lowest resistance";
         public static final String groundingHighestResistance = "Highest resistance of the grounding rod";
         public static final String groundingLowestResistance = "Lowest resistance of the grounding rod";
+
+        public static final String carbonPileMaxHeight = "Maximum block height of the carbon pile structure";
     }
 }

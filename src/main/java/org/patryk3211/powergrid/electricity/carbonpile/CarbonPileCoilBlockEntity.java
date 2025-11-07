@@ -35,4 +35,8 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity {
         coil = builder.connect(resistance(), builder.terminalNode(0), builder.terminalNode(1));
         pile = builder.connectSwitch(1, builder.terminalNode(2), builder.terminalNode(3));
     }
+
+    public void pileChanged() {
+
+    }
 }

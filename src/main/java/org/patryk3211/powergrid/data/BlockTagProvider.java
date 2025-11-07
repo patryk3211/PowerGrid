@@ -50,6 +50,9 @@ public class BlockTagProvider extends TagsProvider<Block> {
                 .add(reverseLookup(Blocks.CACTUS))
                 .add(reverseLookup(Blocks.SUGAR_CANE));
 
+        tag(ModdedTags.Block.CARBON_PILE_BLOCK.tag)
+                .add(reverseLookup(Blocks.COAL_BLOCK));
+
         var builder = tag(ModdedTags.Block.CONDUCTIVE_GROUND.tag);
         builder
                 .add(reverseLookup(Blocks.COPPER_BLOCK))
@@ -88,6 +91,8 @@ public class BlockTagProvider extends TagsProvider<Block> {
                 .add(reverseLookup(Blocks.IRON_BLOCK))
                 .add(reverseLookup(Blocks.IRON_BARS))
                 .add(reverseLookup(Blocks.GOLD_BLOCK))
+                .add(reverseLookup(AllBlocks.BRASS_BLOCK.get()))
+                .add(reverseLookup(AllBlocks.BRASS_BARS.get()))
                 .add(reverseLookup(Blocks.NETHERITE_BLOCK))
                 ;
         for(var variant : CopperBlockSet.DEFAULT_VARIANTS) {
