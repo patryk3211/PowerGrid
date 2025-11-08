@@ -107,7 +107,7 @@ public class WindingItem extends Item {
                 return InteractionResult.FAIL;
 
             var placementAxis = getPlacementAxis(pos, firstPos);
-            if(placementAxis == axis)
+            if(placementAxis == axis || !isPlacementAxisAligned(pos, firstPos))
                 return InteractionResult.FAIL;
 
             var isAlongFirst = isAlongFirst(placementAxis, axis);
@@ -205,5 +205,13 @@ public class WindingItem extends Item {
         } else {
             return dZ;
         }
+    }
+
+    public static boolean isPlacementAxisAligned(BlockPos pos, BlockPos firstPos) {
+        var hasX = pos.getX() != firstPos.getX() ? 1 : 0;
+        var hasY = pos.getY() != firstPos.getY() ? 1 : 0;
+        var hasZ = pos.getZ() != firstPos.getZ() ? 1 : 0;
+
+        return hasX + hasY + hasZ < 2;
     }
 }
