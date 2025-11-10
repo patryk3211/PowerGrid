@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentBuilder;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
+import org.patryk3211.powergrid.utility.SimpleBlockEntityVisualFactory;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -86,7 +87,7 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
 
     public static class PowerGridBlockEntityBuilder<T extends BlockEntity, P> extends BlockEntityBuilder<T, P> {
         @Nullable
-        private NonNullSupplier<SimpleBlockEntityVisualizer.Factory<T>> visualFactory;
+        private NonNullSupplier<SimpleBlockEntityVisualFactory<T>> visualFactory;
         private Predicate<T> renderNormally;
 
         private Collection<NonNullSupplier<? extends Collection<NonNullSupplier<? extends Block>>>> deferredValidBlocks = new ArrayList<>();
@@ -124,17 +125,17 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
         }
 
         public PowerGridBlockEntityBuilder<T, P> visual(
-                NonNullSupplier<SimpleBlockEntityVisualizer.Factory<T>> visualFactory) {
+                NonNullSupplier<SimpleBlockEntityVisualFactory<T>> visualFactory) {
             return visual(visualFactory, true);
         }
 
         public PowerGridBlockEntityBuilder<T, P> visual(
-                NonNullSupplier<SimpleBlockEntityVisualizer.Factory<T>> visualFactory,
+                NonNullSupplier<SimpleBlockEntityVisualFactory<T>> visualFactory,
                 boolean renderNormally) {
             return visual(visualFactory, be -> renderNormally);
         }
 
-        public PowerGridBlockEntityBuilder<T, P> visual(NonNullSupplier<SimpleBlockEntityVisualizer.Factory<T>> visualFactory, Predicate<T> renderNormally) {
+        public PowerGridBlockEntityBuilder<T, P> visual(NonNullSupplier<SimpleBlockEntityVisualFactory<T>> visualFactory, Predicate<T> renderNormally) {
             if (this.visualFactory == null) {
                 EnvExecutor.runInEnv(Env.CLIENT, () -> this::registerVisualizer);
             }
@@ -150,7 +151,7 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
                 Objects.requireNonNull(this.visualFactory);
                 Predicate<T> renderNormally = this.renderNormally;
                 SimpleBlockEntityVisualizer.builder(this.getEntry())
-                        .factory(this.visualFactory.get())
+                        .factory(this.visualFactory.get()::create)
                         .skipVanillaRender(be -> !renderNormally.test(be))
                         .apply();
             });

@@ -249,6 +249,13 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('I', RecipeTags.ironSheet())
                     .define('A', RecipeTags.andesiteCasing())),
 
+    DIODE = create(ModdedItems.DIODE)
+            .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
+            .viaShaped(b -> b
+                    .pattern("RC")
+                    .define('R', AllItems.POLISHED_ROSE_QUARTZ)
+                    .define('C', RecipeTags.copperSheet())),
+
     CAPACITOR = create(ModdedItems.CAPACITOR)
             .unlockedBy(() -> AllItems.IRON_SHEET)
             .viaShaped(b -> b

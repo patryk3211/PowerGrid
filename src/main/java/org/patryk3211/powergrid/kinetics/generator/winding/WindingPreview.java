@@ -36,6 +36,7 @@ import java.util.Random;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementAxis;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementDelta;
+import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.isPlacementAxisAligned;
 
 @Environment(EnvType.CLIENT)
 public class WindingPreview {
@@ -88,7 +89,9 @@ public class WindingPreview {
        if (!ShaftBlock.isShaft(selectedState))
             selected = selected.relative(hit.getDirection());
 
-        boolean canConnect = ShaftBlock.isShaft(selectedState) && firstState.getValue(AXIS) == selectedState.getValue(AXIS);
+        boolean canConnect = ShaftBlock.isShaft(selectedState)
+                && isPlacementAxisAligned(selected, firstPos)
+                && firstState.getValue(AXIS) == selectedState.getValue(AXIS);
         var placementAxis = getPlacementAxis(selected, firstPos);
         if(placementAxis == firstState.getValue(AXIS))
             canConnect = false;
