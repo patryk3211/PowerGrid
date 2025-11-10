@@ -23,8 +23,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation("com.simibubi.create:create-fabric:${project.create_fabric_version}-mc${project.minecraft_version}")
-    modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_fabric_version}")
+    modImplementation("com.simibubi.create:create-fabric-1.20.1:${project.create_fabric_version}")
     modImplementation("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_forge_version}")
 
     modApi "dev.architectury:architectury-fabric:${project.architectury_api_version}"
@@ -40,7 +39,6 @@ dependencies {
 
     // Development QOL
     modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
-    modLocalRuntime("dev.engine-room.flywheel:flywheel-fabric-${minecraft_version}:${flywheel_fabric_version}")
     modLocalRuntime "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}"
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 
