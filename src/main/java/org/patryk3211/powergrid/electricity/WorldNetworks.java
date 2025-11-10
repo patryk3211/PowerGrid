@@ -233,7 +233,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             continue;
                         if(!(owned.endpoint instanceof BlockWireEndpoint bwe))
                             continue;
-                        bwe.getElectricBehaviour(world).blockEntity.sendData();
+                        var behaviour = bwe.getElectricBehaviour(world);
+                        if(behaviour != null)
+                            behaviour.blockEntity.sendData();
                     }
                 }
                 syncTicks = 0;
