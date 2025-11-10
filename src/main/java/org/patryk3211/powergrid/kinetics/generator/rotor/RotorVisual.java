@@ -24,10 +24,10 @@ import dev.engine_room.flywheel.lib.model.Models;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import dev.engine_room.flywheel.lib.visual.AbstractBlockEntityVisual;
 import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
-import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.utility.SimpleBlockEntityVisualFactory;
 
 import java.util.function.Consumer;
 
@@ -36,7 +36,7 @@ import static org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer.ge
 public class RotorVisual<T extends RotorBlockEntity> extends AbstractBlockEntityVisual<T> implements SimpleDynamicVisual {
     protected TransformedInstance assembly;
 
-    public static <T extends RotorBlockEntity> SimpleBlockEntityVisualizer.Factory<T> of(PartialModel model) {
+    public static <T extends RotorBlockEntity> SimpleBlockEntityVisualFactory<T> of(PartialModel model) {
         return (ctx, be, partialTick) -> {
             var state = be.getBlockState();
             var axis = ((AbstractRotorBlock) state.getBlock()).getAssemblyRotationAxis(state);
