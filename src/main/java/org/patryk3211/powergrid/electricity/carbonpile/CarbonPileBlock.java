@@ -15,11 +15,16 @@
  */
 package org.patryk3211.powergrid.electricity.carbonpile;
 
+import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -30,7 +35,7 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
-public class CarbonPileBlock extends Block {
+public class CarbonPileBlock extends Block implements IBE<CarbonPileBlockEntity> {
     public static final BooleanProperty TOP = BooleanProperty.create("top");
 
     private static final VoxelShape SHAPE_MIDDLE = box(2, 0, 2, 14, 16, 14);
@@ -52,6 +57,11 @@ public class CarbonPileBlock extends Block {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return state.getValue(TOP) ? SHAPE_TOP : SHAPE_MIDDLE;
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+        return new ItemStack(Items.COAL_BLOCK);
     }
 
     @Override
@@ -93,5 +103,20 @@ public class CarbonPileBlock extends Block {
         }
         level.getBlockEntity(base, ModdedBlockEntities.CARBON_PILE_COIL.get())
                 .ifPresent(CarbonPileCoilBlockEntity::pileChanged);
+    }
+
+    @Override
+    public Class<CarbonPileBlockEntity> getBlockEntityClass() {
+        return CarbonPileBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends CarbonPileBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.CARBON_PILE.get();
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return state.getValue(TOP) ? IBE.super.newBlockEntity(pos, state) : null;
     }
 }

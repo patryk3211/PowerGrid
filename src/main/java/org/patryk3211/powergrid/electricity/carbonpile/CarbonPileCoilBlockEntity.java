@@ -16,14 +16,22 @@
 package org.patryk3211.powergrid.electricity.carbonpile;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public class CarbonPileCoilBlockEntity extends ElectricBlockEntity {
     private ElectricWire coil;
-    private ElectricWire pile;
+    private SwitchedWire pile;
+    private float baseResistance;
+    private float trim = 1;
+    private float coilPull = 0;
 
     public CarbonPileCoilBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -33,10 +41,58 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity {
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(4);
         coil = builder.connect(resistance(), builder.terminalNode(0), builder.terminalNode(1));
-        pile = builder.connectSwitch(1, builder.terminalNode(2), builder.terminalNode(3));
+        // Resistance values won't be valid here
+        pile = builder.connectSwitch(1, builder.terminalNode(2), builder.terminalNode(3), false);
+    }
+
+    @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        baseResistance = tag.getFloat("Base");
+        trim = tag.getFloat("Trim");
+        coilPull = tag.getFloat("Coil");
+        refreshResistance();
+    }
+
+    @Override
+    protected void write(CompoundTag tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        tag.putFloat("Base", baseResistance);
+        tag.putFloat("Trim", trim);
+        tag.putFloat("Coil", coilPull);
+    }
+
+    public void refreshResistance() {
+        var R = baseResistance * trim * (1 + coilPull);
+        pile.setState(R > 0);
+        if(R > 0) {
+            // Max coil current makes the resistance twice as high
+            pile.setResistance(R);
+        }
     }
 
     public void pileChanged() {
+        assert level != null;
+        baseResistance = 0;
+        var pos = worldPosition.above();
+        BlockState state;
+        while(ModdedBlocks.CARBON_PILE.has(state = level.getBlockState(pos))) {
+            baseResistance += ResistanceValues.get(state.getBlock());
+            pos = pos.above();
+        }
+        if(baseResistance == 0) {
+            pile.setState(false);
+        }
+        trim = 1.0f;
+        refreshResistance();
+        setChanged();
+    }
 
+    @Override
+    public void tick() {
+        super.tick();
+        coilPull = Mth.clamp(Math.abs(coil.current()), 0, 1);
+        refreshResistance();
+        setChanged();
     }
 }
