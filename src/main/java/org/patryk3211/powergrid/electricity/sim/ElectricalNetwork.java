@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.*;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
+import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -903,9 +904,11 @@ public class ElectricalNetwork {
     }
 
     private void iterHooks(int i, int max, double norm) {
-        if(hasHooks() && i < max - 10 && i % 2 == 0) {
+        if(hasHooks() && i < max - 10) {
             countUpdates = false;
             for(var hook : innerHooks) {
+                if(!(hook instanceof PNJunctionWire) && i % 2 != 0)
+                    continue;
                 hook.startIteration();
             }
             countUpdates = true;
