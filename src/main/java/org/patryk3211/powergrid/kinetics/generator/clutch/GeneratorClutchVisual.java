@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.kinetics.generator.clutch;
 
 import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
+import dev.engine_room.flywheel.api.visual.DynamicVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
@@ -55,7 +56,7 @@ public class GeneratorClutchVisual extends SingleAxisRotatingVisual<GeneratorClu
     }
 
     @Override
-    public void beginFrame(Context context) {
+    public void beginFrame(DynamicVisual.Context context) {
         transformAssembly();
     }
 

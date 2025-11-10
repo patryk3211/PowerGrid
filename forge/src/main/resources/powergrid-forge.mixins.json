@@ -8,7 +8,6 @@
     "BasinRecipeMixin",
     "EntityTrackerAccessor",
     "ItemAccessor",
-    "RecipeApplierMixin",
     "ThreadedAnvilChunkStorageAccessor"
   ],
   "injectors": {

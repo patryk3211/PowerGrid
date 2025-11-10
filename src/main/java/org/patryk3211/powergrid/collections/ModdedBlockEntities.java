@@ -43,7 +43,6 @@ import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
-import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
@@ -52,6 +51,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEn
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlockEntity;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;

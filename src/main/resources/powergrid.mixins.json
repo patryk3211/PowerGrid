@@ -11,6 +11,7 @@
     "FanProcessingMixin",
     "KineticBlockEntityAccessor",
     "LightningAccessor",
+    "RecipeApplierMixin",
     "SoundEntryBuilderMixin"
   ],
   "injectors": {

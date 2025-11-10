@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 import com.simibubi.create.content.kinetics.base.ShaftVisual;
+import dev.engine_room.flywheel.api.visual.DynamicVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
@@ -60,7 +61,7 @@ public class HvSwitchVisual extends ShaftVisual<HvSwitchBlockEntity> implements 
     }
 
     @Override
-    public void beginFrame(Context context) {
+    public void beginFrame(DynamicVisual.Context context) {
         if(blockEntity.rod.settled() && settled)
             return;
 
