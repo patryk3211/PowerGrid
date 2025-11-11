@@ -70,6 +70,7 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.RHEOSTAT, "rheostat", RelayScenes::rheostat, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.RESISTOR, "power_resistor", RelayScenes::powerResistor, PowerGridPonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.CARBON_PILE_COIL, "carbon_pile", RelayScenes::carbonPile, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB, ModdedItems.LV_LIGHT_BULB)
                 .addStoryBoard("lightbulb", DeviceScenes::light, PowerGridPonderTags.ELECTRIC_DEVICES);

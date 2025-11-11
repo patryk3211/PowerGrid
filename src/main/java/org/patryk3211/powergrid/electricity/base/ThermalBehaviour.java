@@ -25,6 +25,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
@@ -65,6 +66,8 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     private int behaviourFlags = OVERHEAT_PARTICLES | OVERHEAT_EXPLOSION;
     private Runnable overheatCallback;
     private boolean firstTick = true;
+
+    private IParticleGenerator particleGenerator = null;
 
     protected ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor, float overheatTemperature) {
         super(be);
@@ -158,6 +161,11 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         return this;
     }
 
+    public ThermalBehaviour particleGenerator(IParticleGenerator generator) {
+        this.particleGenerator = generator;
+        return this;
+    }
+
     public void track(@Nullable ThermalBehaviour other) {
         if(other == this || other == null) {
             this.trackedBehaviour = null;
@@ -227,15 +235,20 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
 
         var world = getWorld();
         var pos = getPos();
-        if(world.isClientSide && ((behaviourFlags & OVERHEAT_PARTICLES) != 0)) {
+        if(world.isClientSide && ((behaviourFlags & OVERHEAT_PARTICLES) != 0) && temperature >= overheatTemperature - 50) {
             var random = getWorld().getRandom();
-            float x = pos.getX() + random.nextFloat();
-            float y = pos.getY() + random.nextFloat();
-            float z = pos.getZ() + random.nextFloat();
-            if (temperature >= overheatTemperature - 50) {
-                float chance = (temperature - overheatTemperature + 100) / 100;
-                if (random.nextFloat() < chance)
+            float chance = (temperature - overheatTemperature + 100) / 100;
+            if (random.nextFloat() < chance) {
+                if (particleGenerator == null) {
+                    float x = pos.getX() + random.nextFloat();
+                    float y = pos.getY() + random.nextFloat();
+                    float z = pos.getZ() + random.nextFloat();
                     world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
+                } else {
+                    particleGenerator.generate((x, y, z) ->
+                        world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f),
+                            random);
+                }
             }
         }
 
@@ -328,5 +341,15 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
                 return Component.translatable(translationId, killed.getDisplayName(), machineName);
             }
         }
+    }
+
+    @FunctionalInterface
+    public interface IParticleGenerator {
+        void generate(IParticleConsumer consumer, RandomSource random);
+    }
+
+    @FunctionalInterface
+    public interface IParticleConsumer {
+        void accept(float x, float y, float z);
     }
 }

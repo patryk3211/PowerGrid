@@ -50,7 +50,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat groundingLowestResistance = f(1, 0.001f, "groundingLowestResistance", Comments.groundingLowestResistance);
 
     public final ConfigInt carbonPileMaxHeight = i(5, 1, "carbonPileMaxHeight", Comments.carbonPileMaxHeight);
-    public final ConfigFloat carbonPileGain = f(5, 0, "carbonPileGain", Comments.carbonPileGain);
+    public final ConfigFloat carbonPileGain = f(10, 0, "carbonPileGain", Comments.carbonPileGain);
 
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);

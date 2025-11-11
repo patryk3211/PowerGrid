@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -35,6 +36,7 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
     protected ThermalBehaviour thermal;
     protected TrimValueBehaviour trim;
     private CarbonPileCoilBlockEntity coil;
+    private int size;
 
     public CarbonPileBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -43,7 +45,17 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> list) {
         thermal = ThermalBehaviour.fromConfig(this);
-        list.add(thermal);
+        if(thermal != null) {
+            thermal.particleGenerator((consumer, random) -> {
+                for (int i = 0; i < Math.ceil(size / 2.0f); ++i) {
+                    float x = worldPosition.getX() + random.nextFloat();
+                    float z = worldPosition.getZ() + random.nextFloat();
+                    float y = worldPosition.getY() - size + 1 + random.nextFloat() * size;
+                    consumer.accept(x, y, z);
+                }
+            });
+            list.add(thermal);
+        }
         trim = new TrimValueBehaviour(Lang.translateDirect("gui.carbon_pile.trim"), this, new Box());
         trim.withCallback(i -> {
             assert coil != null;
@@ -57,8 +69,10 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
         assert level != null;
         super.initialize();
         var pos = worldPosition.below();
+        size = 1;
         while(ModdedBlocks.CARBON_PILE.has(level.getBlockState(pos))) {
             pos = pos.below();
+            ++size;
         }
         var coil = level.getBlockEntity(pos, ModdedBlockEntities.CARBON_PILE_COIL.get());
         if(coil.isEmpty()) {
@@ -67,6 +81,19 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
         }
         this.coil = coil.get();
         trim.setValue((int) ((this.coil.getTrim() - 1.0f) * 100));
+        if(thermal != null) {
+            thermal.setThermalMass(ThermalValues.getMass(getBlockState().getBlock()) * size);
+            thermal.setDissipationFactor(
+                    ThermalBehaviour.dissipationFactor(ThermalValues.getPower(getBlockState().getBlock()) * size,
+                            175.0f));
+        }
+    }
+
+    @Override
+    public void tick() {
+        if(thermal != null && coil != null)
+            thermal.applyWirePower(coil.getPileWire());
+        super.tick();
     }
 
     private static class Box extends CenteredSideValueBoxTransform {

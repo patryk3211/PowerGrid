@@ -27,6 +27,7 @@ import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.utility.Lang;
@@ -63,6 +64,12 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
     }
 
     @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        tag.putFloat("Trim", trim);
+    }
+
+    @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putFloat("Base", baseResistance);
@@ -75,7 +82,7 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
     }
 
     public void refreshResistance() {
-        var R = baseResistance * trim * (1 + coilPull * gain());
+        var R = baseResistance * trim * (1 + Math.sqrt(coilPull * coilPull * coilPull) * gain());
         pile.setState(R > 0);
         if(R > 0) {
             // Max coil current makes the resistance twice as high
@@ -102,14 +109,17 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
 
     @Override
     public void tick() {
+        applyPower(coil);
         super.tick();
-        coilPull = Mth.clamp(Math.abs(coil.current()), 0, 1);
+        coilPull = Mth.clamp(Math.abs(coil.current()) * 5, 0, 2) * 0.5f + coilPull * 0.5f;
         refreshResistance();
         setChanged();
     }
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        if(!pile.getState())
+            return false;
         Lang.translate("gui.carbon_pile.info_header")
                 .forGoggles(tooltip);
 
@@ -141,5 +151,9 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
         this.trim = trim;
         refreshResistance();
         notifyUpdate();
+    }
+
+    public AbstractElectricWire getPileWire() {
+        return pile;
     }
 }

@@ -667,7 +667,7 @@ public class ModdedBlocks {
             .initialProperties(() -> Blocks.COAL_BLOCK)
             .blockstate(carbonPile("block/carbon_pile"))
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(100))
+            .transform(CResistance.setResistance(20))
             .transform(CThermal.maxPower(1000, 2.0f))
             .register();
 

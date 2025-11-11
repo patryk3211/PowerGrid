@@ -2,12 +2,17 @@ package org.patryk3211.powergrid.electricity.carbonpile;
 
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -15,8 +20,13 @@ import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Power;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 
-public class CarbonPileCoilBlock extends HorizontalElectricBlock implements IBE<CarbonPileCoilBlockEntity> {
+import java.util.List;
+
+public class CarbonPileCoilBlock extends HorizontalElectricBlock implements IBE<CarbonPileCoilBlockEntity>, IHaveElectricProperties {
     private static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 4, 1, 1, 7, 3, 2),
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 9, 1, 1, 12, 3, 2),
@@ -32,6 +42,12 @@ public class CarbonPileCoilBlock extends HorizontalElectricBlock implements IBE<
     public CarbonPileCoilBlock(Properties settings) {
         super(settings);
         setTerminalCollection(horizontalNorthTerminals(this, TERMINALS, SHAPE));
+    }
+
+    @Override
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var player = ctx.getPlayer() == null || !ctx.getPlayer().isShiftKeyDown() ? ctx.getHorizontalDirection().getOpposite() : ctx.getHorizontalDirection();
+        return defaultBlockState().setValue(HORIZONTAL_FACING, player);
     }
 
     @Override
@@ -70,5 +86,12 @@ public class CarbonPileCoilBlock extends HorizontalElectricBlock implements IBE<
             }
             withBlockEntityDo(level, pos, CarbonPileCoilBlockEntity::pileChanged);
         }
+    }
+
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Resistance.coil(resistance(), player, tooltip);
+        Power.max(stack, player, tooltip);
     }
 }

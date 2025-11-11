@@ -23,7 +23,10 @@ import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.patryk3211.powergrid.base.CustomProperties;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.SurfaceSwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
@@ -455,5 +458,93 @@ public class RelayScenes {
 
         scene.markAsFinished();
         electric.unload();
+    }
+
+    public static void carbonPile(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("carbon_pile", "A pile of coal");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().fromTo(2, 1, 2, 2, 2, 2), Direction.DOWN);
+        scene.idle(10);
+
+        var pile = util.grid().at(2, 2, 2);
+        var currentMeter = util.grid().at(1, 1, 2);
+        var voltageMeter = util.grid().at(2, 1, 1);
+        var connector1 = util.grid().at(0, 2, 2);
+        var connector2 = util.grid().at(4, 2, 2);
+
+        scene.overlay().showText(80)
+                .text("To assemble a Carbon Pile you must place Blocks of Coal on top of a Carbon Pile Coil")
+                .pointAt(util.vector().topOf(pile))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world().showSection(util.select().position(2, 3, 2), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(2, 4, 2), Direction.DOWN);
+        scene.idle(15);
+        var state = ModdedBlocks.CARBON_PILE.getDefaultState();
+        scene.world().setBlock(util.grid().at(2, 3, 2), state.setValue(CarbonPileBlock.TOP, false), false);
+        scene.world().setBlock(util.grid().at(2, 4, 2), state.setValue(CarbonPileBlock.TOP, true), false);
+        scene.world().modifyBlockEntity(util.grid().at(2, 2, 2), CarbonPileCoilBlockEntity.class, be -> be.pileChanged());
+        scene.idle(10);
+        scene.effects().indicateSuccess(util.grid().at(2, 2, 2));
+        scene.effects().indicateSuccess(util.grid().at(2, 3, 2));
+        scene.effects().indicateSuccess(util.grid().at(2, 4, 2));
+        scene.idle(20);
+
+        scene.world().showSection(util.select().fromTo(connector1.below(), connector1), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().fromTo(connector2.below(), connector2), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(currentMeter), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(voltageMeter), Direction.DOWN);
+        scene.idle(5);
+
+        scene.electric().connect(connector2, 0, pile, 3);
+        scene.electric().connect(currentMeter, 1, pile, 2);
+        scene.electric().connect(voltageMeter, 0, pile, 0);
+        scene.electric().connect(voltageMeter, 1, pile, 1);
+        scene.electric().connect(currentMeter, 0, connector1, 0);
+        scene.electric().addSource(connector1, 0, 0);
+        scene.electric().addSource(connector2, 0, 70);
+        scene.electric().addSource(voltageMeter, 0, 0);
+        scene.electric().tickFor(10);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("Resistance of the Carbon Pile changes based on the current provided to the coil")
+                .pointAt(util.vector().of(2.5, 2.5, 2.0))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.electric().addSource(voltageMeter, 1, 10);
+        scene.electric().tickFor(20);
+        scene.idle(20);
+        scene.effects().indicateSuccess(currentMeter);
+        scene.effects().indicateSuccess(voltageMeter);
+        scene.idle(30);
+
+        scene.overlay().showText(80)
+                .text("The resistance values of the pile increase with the height of the structure")
+                .pointAt(util.vector().of(2.5, 3.5, 2.0))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(80)
+                .text("The overall resistance can also be tuned with a wrench point on top of the pile")
+                .pointAt(util.vector().of(2.5, 5.0, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.markAsFinished();
     }
 }
