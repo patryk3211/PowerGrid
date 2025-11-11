@@ -17,15 +17,24 @@ package org.patryk3211.powergrid.electricity.carbonpile;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
 public class CarbonPileBlockEntity extends SmartBlockEntity {
     protected ThermalBehaviour thermal;
+    protected TrimValueBehaviour trim;
+    private CarbonPileCoilBlockEntity coil;
 
     public CarbonPileBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -35,5 +44,39 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
     public void addBehaviours(List<BlockEntityBehaviour> list) {
         thermal = ThermalBehaviour.fromConfig(this);
         list.add(thermal);
+        trim = new TrimValueBehaviour(Lang.translateDirect("gui.carbon_pile.trim"), this, new Box());
+        trim.withCallback(i -> {
+            assert coil != null;
+            coil.setTrim(1.0f + i / 200f);
+        });
+        list.add(trim);
+    }
+
+    @Override
+    public void initialize() {
+        assert level != null;
+        super.initialize();
+        var pos = worldPosition.below();
+        while(ModdedBlocks.CARBON_PILE.has(level.getBlockState(pos))) {
+            pos = pos.below();
+        }
+        var coil = level.getBlockEntity(pos, ModdedBlockEntities.CARBON_PILE_COIL.get());
+        if(coil.isEmpty()) {
+            level.destroyBlock(worldPosition, true);
+            return;
+        }
+        this.coil = coil.get();
+        trim.setValue((int) ((this.coil.getTrim() - 1.0f) * 100));
+    }
+
+    private static class Box extends CenteredSideValueBoxTransform {
+        public Box() {
+            super((state, dir) -> dir == Direction.UP);
+        }
+
+        @Override
+        protected Vec3 getSouthLocation() {
+            return VecHelper.voxelSpace(8.0f, 8.0f, 12.5f);
+        }
     }
 }

@@ -15,18 +15,26 @@
  */
 package org.patryk3211.powergrid.electricity.carbonpile;
 
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
-public class CarbonPileCoilBlockEntity extends ElectricBlockEntity {
+import java.util.List;
+
+public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     private ElectricWire coil;
     private SwitchedWire pile;
     private float baseResistance;
@@ -62,8 +70,12 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity {
         tag.putFloat("Coil", coilPull);
     }
 
+    public static float gain() {
+        return ModdedConfigs.server().electricity.carbonPileGain.getF();
+    }
+
     public void refreshResistance() {
-        var R = baseResistance * trim * (1 + coilPull);
+        var R = baseResistance * trim * (1 + coilPull * gain());
         pile.setState(R > 0);
         if(R > 0) {
             // Max coil current makes the resistance twice as high
@@ -85,7 +97,7 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity {
         }
         trim = 1.0f;
         refreshResistance();
-        setChanged();
+        notifyUpdate();
     }
 
     @Override
@@ -94,5 +106,40 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity {
         coilPull = Mth.clamp(Math.abs(coil.current()), 0, 1);
         refreshResistance();
         setChanged();
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        Lang.translate("gui.carbon_pile.info_header")
+                .forGoggles(tooltip);
+
+        Lang.translate("gui.carbon_pile.min_resistance")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+        Lang.numberConstant(baseResistance * trim)
+                .style(ChatFormatting.AQUA)
+                .add(Component.literal(" "))
+                .add(Unit.RESISTANCE.get())
+                .forGoggles(tooltip, 1);
+
+        Lang.translate("gui.carbon_pile.current_resistance")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+        Lang.numberConstant(pile.getResistance())
+                .style(ChatFormatting.AQUA)
+                .add(Component.literal(" "))
+                .add(Unit.RESISTANCE.get())
+                .forGoggles(tooltip, 1);
+        return true;
+    }
+
+    public float getTrim() {
+        return trim;
+    }
+
+    public void setTrim(float trim) {
+        this.trim = trim;
+        refreshResistance();
+        notifyUpdate();
     }
 }

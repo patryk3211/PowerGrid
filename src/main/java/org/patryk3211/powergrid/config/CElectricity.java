@@ -50,6 +50,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat groundingLowestResistance = f(1, 0.001f, "groundingLowestResistance", Comments.groundingLowestResistance);
 
     public final ConfigInt carbonPileMaxHeight = i(5, 1, "carbonPileMaxHeight", Comments.carbonPileMaxHeight);
+    public final ConfigFloat carbonPileGain = f(5, 0, "carbonPileGain", Comments.carbonPileGain);
 
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -97,5 +98,6 @@ public class CElectricity extends ConfigBase {
         public static final String groundingLowestResistance = "Lowest resistance of the grounding rod";
 
         public static final String carbonPileMaxHeight = "Maximum block height of the carbon pile structure";
+        public static final String carbonPileGain = "Carbon pile \"gain\", controls how much the coil current affects the resistance";
     }
 }
