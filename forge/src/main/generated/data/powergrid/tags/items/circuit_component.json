@@ -11,6 +11,7 @@
     "powergrid:redstone_relay",
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
+    "powergrid:diode",
     "powergrid:capacitor",
     "powergrid:copper_coil",
     "powergrid:lv_button",
