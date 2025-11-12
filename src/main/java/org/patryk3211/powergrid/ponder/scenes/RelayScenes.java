@@ -539,7 +539,7 @@ public class RelayScenes {
         scene.idle(90);
 
         scene.overlay().showText(80)
-                .text("The overall resistance can also be tuned with a wrench point on top of the pile")
+                .text("The overall resistance can also be tuned with a value panel on top of the pile")
                 .pointAt(util.vector().of(2.5, 5.0, 2.5))
                 .placeNearTarget()
                 .attachKeyFrame();
