@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.content.kinetics.base.ShaftVisual;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardRenderer;
@@ -72,6 +73,8 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
+import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
+import org.patryk3211.powergrid.kinetics.plotter.PlotterRenderer;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
@@ -117,6 +120,13 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("power_meter", PowerGaugeBlockEntity::new)
                     .validBlocks(ModdedBlocks.POWER_METER)
                     .renderer(() -> GaugeRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<PlotterBlockEntity> PLOTTER =
+            REGISTRATE.blockEntity("plotter", PlotterBlockEntity::new)
+                    .visual(() -> ShaftVisual::new)
+                    .validBlock(ModdedBlocks.PLOTTER)
+                    .renderer(() -> PlotterRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<HeaterBlockEntity> HEATING_COIL =

@@ -96,6 +96,7 @@ import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommut
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
+import org.patryk3211.powergrid.kinetics.plotter.PlotterBlock;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
@@ -220,6 +221,17 @@ public class ModdedBlocks {
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .item()
                 .model(gauge("block/gauge/item_power", "block/conductive_gauge"))
+                .build()
+            .register();
+
+    public static final BlockEntry<PlotterBlock> PLOTTER = REGISTRATE.block("plotter", PlotterBlock::new)
+            .blockstate(horizontalBlock("block/plotter/base"))
+            .initialProperties(SharedProperties::wooden)
+            .addLayer(() -> RenderType::translucent)
+            .transform(CStress.setImpact(2.0))
+            .transform(axeOrPickaxe())
+            .item()
+                .model(itemWithParent("block/plotter/item"))
                 .build()
             .register();
 

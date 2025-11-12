@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.collections;
 
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.createmod.catnip.render.SpriteShiftEntry;
+import net.createmod.catnip.render.SpriteShifter;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPartialModels {
@@ -63,6 +65,11 @@ public class ModdedPartialModels {
     public static final PartialModel COMPONENT_GAUGE_NEEDLE = model("component/gauge_needle");
 
     public static final PartialModel PLUG = block("plug");
+
+    public static final PartialModel PLOTTER_POINTER = block("plotter/pointer");
+    public static final PartialModel PLOTTER_PAPER = block("plotter/paper");
+
+    public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(PowerGrid.asResource("plotter_paper"), PowerGrid.asResource("plotter_paper_shift"));
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));
