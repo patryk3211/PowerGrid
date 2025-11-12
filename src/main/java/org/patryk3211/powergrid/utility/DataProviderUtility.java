@@ -157,6 +157,11 @@ public class DataProviderUtility {
     }
 
     @ExpectPlatform
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> carbonPile(String baseName) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {
         throw new AssertionError();
     }

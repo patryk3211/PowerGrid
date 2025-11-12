@@ -45,6 +45,8 @@
     "powergrid:alarm_bell",
     "powergrid:thermometer",
     "powergrid:rheostat",
-    "powergrid:grounding_rod"
+    "powergrid:grounding_rod",
+    "powergrid:carbon_pile_coil",
+    "powergrid:carbon_pile"
   ]
 }

@@ -55,6 +55,8 @@ import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlock;
 import org.patryk3211.powergrid.electricity.contactor.ContactorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
@@ -648,6 +650,25 @@ public class ModdedBlocks {
             .blockstate(simple("block/grounding_rod"))
             .transform(pickaxeOnly())
             .simpleItem()
+            .register();
+
+    public static final BlockEntry<CarbonPileCoilBlock> CARBON_PILE_COIL = REGISTRATE.block("carbon_pile_coil", CarbonPileCoilBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(horizontalBlock("block/carbon_pile/coil"))
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(50))
+            .transform(CThermal.maxPower(100, 2.0f))
+            .item()
+                .model(itemWithParent("block/carbon_pile/coil"))
+                .build()
+            .register();
+
+    public static final BlockEntry<CarbonPileBlock> CARBON_PILE = REGISTRATE.block("carbon_pile", CarbonPileBlock::new)
+            .initialProperties(() -> Blocks.COAL_BLOCK)
+            .blockstate(carbonPile("block/carbon_pile"))
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(20))
+            .transform(CThermal.maxPower(1000, 2.0f))
             .register();
 
     public static void register() {

@@ -36,6 +36,8 @@
     "minecraft:iron_block",
     "minecraft:iron_bars",
     "minecraft:gold_block",
+    "create:brass_block",
+    "create:brass_bars",
     "minecraft:netherite_block",
     "create:copper_tiles",
     "create:waxed_copper_tiles",

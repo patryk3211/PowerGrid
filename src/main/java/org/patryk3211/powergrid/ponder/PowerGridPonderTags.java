@@ -86,6 +86,7 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.VARIAC)
                 .add(ModdedBlocks.RHEOSTAT)
                 .add(ModdedBlocks.RESISTOR)
+                .add(ModdedBlocks.CARBON_PILE_COIL)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
                 .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
                 .add(ModdedBlocks.DEVICE_CONNECTOR)

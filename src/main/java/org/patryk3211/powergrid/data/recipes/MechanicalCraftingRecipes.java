@@ -148,7 +148,17 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .key('C', RecipeTags.copperSheet())
                     .patternLine("RRRRR")
                     .patternLine(" C C ")
-                    .patternLine(" CEC "))
+                    .patternLine(" CEC ")),
+
+    CARBON_PILE_COIL = create(ModdedBlocks.CARBON_PILE_COIL::get)
+            .recipe(b -> b
+                    .key('C', RecipeTags.copperCoil())
+                    .key('E', RecipeTags.conductiveCasing())
+                    .key('Z', RecipeTags.zincSheet())
+                    .key('I', RecipeTags.ironSheet())
+                    .patternLine("  I  ")
+                    .patternLine("CCICC")
+                    .patternLine(" ZEZ "))
             ;
 
 

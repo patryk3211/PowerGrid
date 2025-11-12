@@ -32,6 +32,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
@@ -533,6 +534,15 @@ public class DataProviderUtilityImpl {
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> simple(String model) {
         return (ctx, prov) -> prov
                 .simpleBlock(ctx.getEntry(), modModel(prov, model));
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> carbonPile(String baseName) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry())
+                .forAllStates(state -> {
+                    var builder = ConfiguredModel.builder();
+                    builder.modelFile(modModel(prov, baseName + (state.getValue(CarbonPileBlock.TOP) ? "/top" : "/center")));
+                    return builder.build();
+                });
     }
 
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {
