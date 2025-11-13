@@ -91,10 +91,9 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
             float x2 = (float) i / be.sampleBuffer.length;
 
             float thickness = 1 / 32f;
-            if(Math.abs(y - yPrev) > 1 / 32f) {
-                var diff = Math.abs(y - yPrev) * 0.5f;
-                thickness += diff;
-            }
+            var diff = Math.abs(y - yPrev) * 0.5f;
+            thickness += diff;
+
             float yMid = (yPrev + y) * 0.5f;
             y = yPrev = yMid;
             consumer.vertex(m4, yPrev - thickness, x1, 0).endVertex();

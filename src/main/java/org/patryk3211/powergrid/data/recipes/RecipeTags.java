@@ -131,4 +131,8 @@ public class RecipeTags {
     public static ItemLike glass() {
         return Items.GLASS;
     }
+
+    public static ItemLike paper() {
+        return Items.PAPER;
+    }
 }

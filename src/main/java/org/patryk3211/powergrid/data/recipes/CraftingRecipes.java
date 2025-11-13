@@ -133,6 +133,17 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('c', RecipeTags.copperCoil())
                     .define('C', Items.COMPASS)
             ),
+    PLOTTER = create(ModdedBlocks.PLOTTER)
+            .unlockedBy(ModdedBlocks.VOLTAGE_METER::get)
+            .viaShaped(b -> b
+                    .pattern(" P")
+                    .pattern("SV")
+                    .pattern(" A")
+                    .define('P', RecipeTags.paper())
+                    .define('S', RecipeTags.shaft())
+                    .define('A', RecipeTags.andesiteCasing())
+                    .define('V', ModdedBlocks.VOLTAGE_METER)
+            ),
 
     GAUGE_CYCLE = conversionCycle(List.of(ModdedBlocks.VOLTAGE_METER, ModdedBlocks.CURRENT_METER)),
 

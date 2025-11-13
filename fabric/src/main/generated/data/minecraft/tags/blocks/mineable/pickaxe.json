@@ -11,6 +11,7 @@
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
     "powergrid:power_gauge",
+    "powergrid:plotter",
     "powergrid:generator_induction_rotor",
     "powergrid:generator_commutator",
     "powergrid:generator_vertical_commutator",

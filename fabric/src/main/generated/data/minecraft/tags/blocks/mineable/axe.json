@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "powergrid:plotter",
     "powergrid:generator_clutch",
     "powergrid:lv_switch",
     "powergrid:lv_button",
