@@ -19,9 +19,13 @@ import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -29,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -66,6 +71,19 @@ public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlo
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var player = ctx.getPlayer() == null || !ctx.getPlayer().isShiftKeyDown() ? ctx.getHorizontalDirection().getOpposite() : ctx.getHorizontalDirection();
         return defaultBlockState().setValue(HORIZONTAL_FACING, player);
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(hand == InteractionHand.MAIN_HAND) {
+            var item = player.getItemInHand(hand);
+            if(item.getItem() instanceof DyeItem dye) {
+                if(!level.isClientSide)
+                    withBlockEntityDo(level, pos, be -> be.setColor(dye.getDyeColor()));
+                return InteractionResult.SUCCESS;
+            }
+        }
+        return super.use(state, level, pos, player, hand, hit);
     }
 
     @Override

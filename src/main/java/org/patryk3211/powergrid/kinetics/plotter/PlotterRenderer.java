@@ -77,7 +77,9 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
         }
         float yPrev = 0;
         var consumer = buffer.getBuffer(ModdedRenderLayers.getColor());
-        consumer.defaultColor(1, 0, 1, 1);
+
+        var color = be.color.getTextureDiffuseColors();
+        consumer.defaultColor((int) (color[0] * 160) + 16, (int) (color[1] * 160) + 16, (int) (color[2] * 160) + 16, 255);
         var m4 = ms.last().pose();
         for(int i = 0; i < be.sampleBuffer.length; ++i) {
             float y = Mth.clamp(be.sampleBuffer[(be.head + i) % be.sampleBuffer.length], -1, 1);

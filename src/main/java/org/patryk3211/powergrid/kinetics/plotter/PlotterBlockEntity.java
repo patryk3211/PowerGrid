@@ -25,9 +25,11 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.gauge.GaugeValueBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
@@ -48,6 +50,8 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     protected float headTarget = 0;
     protected float headPosition = 0;
     protected float prevHeadPosition = 0;
+    @NotNull
+    protected DyeColor color = DyeColor.BLACK;
 
     public PlotterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -109,6 +113,13 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         }
         head = compound.getInt("Head");
         maxValue = MAX_VALUES[gaugeValue.getValue()];
+        color = DyeColor.values()[compound.getInt("Color")];
+    }
+
+    @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        tag.putInt("Color", color.ordinal());
     }
 
     @Override
@@ -120,6 +131,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         }
         compound.put("Samples", samples);
         compound.putInt("Head", head);
+        compound.putInt("Color", color.ordinal());
     }
 
     @Override
@@ -134,6 +146,11 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         sampleBuffer[head] = headPosition;
         head = (head + 1) % sampleBuffer.length;
         setChanged();
+    }
+
+    public void setColor(DyeColor dyeColor) {
+        this.color = dyeColor;
+        notifyUpdate();
     }
 
     public static class BoxTransform extends CenteredSideValueBoxTransform {
