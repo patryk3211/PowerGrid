@@ -69,7 +69,9 @@ public class ModdedPartialModels {
     public static final PartialModel PLOTTER_POINTER = block("plotter/pointer");
     public static final PartialModel PLOTTER_PAPER = block("plotter/paper");
 
-    public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(PowerGrid.asResource("plotter_paper"), PowerGrid.asResource("plotter_paper_shift"));
+    public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(
+            PowerGrid.asResource("block/plotter_paper"),
+            PowerGrid.asResource("block/plotter_paper_shift"));
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));
