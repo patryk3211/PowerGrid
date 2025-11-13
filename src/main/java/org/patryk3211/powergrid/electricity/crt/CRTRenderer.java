@@ -55,7 +55,7 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
         ms.scale(CRT_SPAN * 0.5f, CRT_SPAN * 0.5f, 1);
         var m4 = ms.last().pose();
         float x1 = 0, y1 = 0, b1 = 0;
-        for(int i = 0; i < SAMPLE_COUNT; ++i) {
+        for(int i = 0; i < SAMPLE_COUNT - 1; ++i) {
             int i1 = (i + be.head + 1) % SAMPLE_COUNT;
             var x2 = be.xPoints[i1];
             var y2 = be.yPoints[i1];
