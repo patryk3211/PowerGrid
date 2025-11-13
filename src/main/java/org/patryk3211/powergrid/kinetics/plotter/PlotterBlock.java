@@ -18,6 +18,9 @@ package org.patryk3211.powergrid.kinetics.plotter;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -33,9 +36,13 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
-public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlockEntity> {
+import java.util.List;
+
+public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
@@ -85,5 +92,10 @@ public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlo
     @Override
     public BlockEntityType<? extends PlotterBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.PLOTTER.get();
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Voltage.max(2000, player, tooltip);
     }
 }

@@ -71,8 +71,10 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
         ms.rotateAround(new Quaternionf().rotateX(-112.5f / 180f * (float) Math.PI), (float) GRAPH_ORIGIN.x, (float) GRAPH_ORIGIN.y, (float) GRAPH_ORIGIN.z);
         ms.translate(GRAPH_ORIGIN.x, GRAPH_ORIGIN.y, GRAPH_ORIGIN.z);
         ms.scale(VOLTAGE_SPAN * 0.5f, TIME_SPAN, 1);
-        // This keeps the graph movement in sync with the paper scrolling.
-        ms.translate(0, -1.0f / be.sampleBuffer.length * partialTicks, 0);
+        if(be.getAnimationSpeed() != 0) {
+            // This keeps the graph movement in sync with the paper scrolling.
+            ms.translate(0, -1.0f / be.sampleBuffer.length * partialTicks, 0);
+        }
         float yPrev = 0;
         var consumer = buffer.getBuffer(ModdedRenderLayers.getColor());
         consumer.defaultColor(1, 0, 1, 1);
@@ -86,10 +88,17 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
             float x1 = (float) (i - 1) / be.sampleBuffer.length;
             float x2 = (float) i / be.sampleBuffer.length;
 
-            consumer.vertex(m4, yPrev - 1/32f, x1, 0).endVertex();
-            consumer.vertex(m4, yPrev + 1/32f, x1, 0).endVertex();
-            consumer.vertex(m4, y + 1/32f, x2, 0).endVertex();
-            consumer.vertex(m4, y - 1/32f, x2, 0).endVertex();
+            float thickness = 1 / 32f;
+            if(Math.abs(y - yPrev) > 1 / 32f) {
+                var diff = Math.abs(y - yPrev) * 0.5f;
+                thickness += diff;
+            }
+            float yMid = (yPrev + y) * 0.5f;
+            y = yPrev = yMid;
+            consumer.vertex(m4, yPrev - thickness, x1, 0).endVertex();
+            consumer.vertex(m4, yPrev + thickness, x1, 0).endVertex();
+            consumer.vertex(m4, y + thickness, x2, 0).endVertex();
+            consumer.vertex(m4, y - thickness, x2, 0).endVertex();
 
             yPrev = y;
         }
