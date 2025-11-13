@@ -68,6 +68,7 @@ public class ModdedPartialModels {
 
     public static final PartialModel PLOTTER_POINTER = block("plotter/pointer");
     public static final PartialModel PLOTTER_PAPER = block("plotter/paper");
+    public static final PartialModel CRT_BACKGROUND = block("crt_background");
 
     public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(
             PowerGrid.asResource("block/plotter_paper"),

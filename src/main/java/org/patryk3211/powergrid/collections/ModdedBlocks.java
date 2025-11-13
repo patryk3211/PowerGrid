@@ -60,6 +60,7 @@ import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlock;
 import org.patryk3211.powergrid.electricity.contactor.ContactorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
+import org.patryk3211.powergrid.electricity.crt.CRTBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvButtonBlock;
@@ -74,7 +75,6 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
-import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
@@ -84,6 +84,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
@@ -681,6 +682,16 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(20))
             .transform(CThermal.maxPower(1000, 2.0f))
+            .register();
+
+    public static final BlockEntry<CRTBlock> CRT = REGISTRATE.block("crt", CRTBlock::new)
+            .initialProperties(() -> Blocks.GLASS)
+            .blockstate(horizontalBlock("block/crt"))
+            .addLayer(() -> RenderType::translucent)
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistances("gun", 500, "coils", 40))
+            .transform(CThermal.maxPower(100, 3.0f))
+            .simpleItem()
             .register();
 
     public static void register() {

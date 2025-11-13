@@ -103,6 +103,13 @@
 
   "powergrid.variac.primary": "Primary",
 
+  "powergrid.crt.gun.positive": "Electron Gun +",
+  "powergrid.crt.gun.negative": "Electron Gun -",
+  "powergrid.crt.x.positive": "X Deflection +",
+  "powergrid.crt.x.negative": "X Deflection -",
+  "powergrid.crt.y.positive": "Y Deflection +",
+  "powergrid.crt.y.negative": "Y Deflection -",
+
   "powergrid.devices.creative.voltage": "Output voltage",
   "powergrid.devices.creative.current": "Output current",
   "powergrid.devices.resistor.resistance": "Resistance",

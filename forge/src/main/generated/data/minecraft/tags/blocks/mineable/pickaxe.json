@@ -48,6 +48,7 @@
     "powergrid:rheostat",
     "powergrid:grounding_rod",
     "powergrid:carbon_pile_coil",
-    "powergrid:carbon_pile"
+    "powergrid:carbon_pile",
+    "powergrid:crt"
   ]
 }

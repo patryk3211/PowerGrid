@@ -29,6 +29,8 @@ import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlockEntity
 import org.patryk3211.powergrid.electricity.contactor.ContactorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
+import org.patryk3211.powergrid.electricity.crt.CRTBlockEntity;
+import org.patryk3211.powergrid.electricity.crt.CRTRenderer;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
@@ -326,6 +328,12 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CarbonPileBlockEntity> CARBON_PILE =
             REGISTRATE.blockEntity("carbon_pile", CarbonPileBlockEntity::new)
                     .validBlock(ModdedBlocks.CARBON_PILE)
+                    .register();
+
+    public static final BlockEntityEntry<CRTBlockEntity> CRT =
+            REGISTRATE.blockEntity("crt", CRTBlockEntity::new)
+                    .validBlock(ModdedBlocks.CRT)
+                    .renderer(() -> CRTRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

@@ -1,0 +1,26 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "powergrid:block/crt",
+		"particle": "powergrid:block/crt"
+	},
+	"elements": [
+		{
+			"name": "background",
+			"from": [4, 2, 1],
+			"to": [12, 10, 1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [9, 2, 1]},
+			"faces": {
+				"north": {"uv": [0, 8, 4, 12], "texture": "#0"},
+				"east": {"uv": [0, 4, 6, 8], "texture": "#0"},
+				"south": {"uv": [4, 8, 8, 12], "texture": "#0"},
+				"west": {"uv": [0, 4, 6, 8], "texture": "#0"},
+				"up": {"uv": [6, 8, 0, 4], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [6, 4, 0, 8], "rotation": 270, "texture": "#0"}
+			}
+		}
+	]
+}
