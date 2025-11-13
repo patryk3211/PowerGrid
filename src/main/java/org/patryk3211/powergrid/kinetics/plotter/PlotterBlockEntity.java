@@ -39,7 +39,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     private static final float[] MAX_VALUES = new float[] { 2, 20, 200, 2000 };
 
     private GaugeValueBehaviour gaugeValue;
-    private float maxValue;
+    private float maxValue = MAX_VALUES[0];
 
     private ElectricWire wire;
     protected float[] sampleBuffer = new float[40];
@@ -73,7 +73,9 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     }
 
     public float getAnimationSpeed() {
-        return -Mth.clamp(getSpeed(), 16, 256);
+        if(getSpeed() < 16)
+            return 0;
+        return -getSpeed();
     }
 
     @Override
