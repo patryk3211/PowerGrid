@@ -74,7 +74,9 @@ public class WireItem extends Item implements IWire {
             if(endpoint == null)
                 return InteractionResult.FAIL;
 
-            var result = connect(world, stack, context.getPlayer(), endpoint, new ImaginaryWireEndpoint(context.getClickLocation()));
+            var result = connect(world, stack, context.getPlayer(), endpoint, new ImaginaryWireEndpoint(
+                    context.getClickLocation().relative(context.getClickedFace(), 1 / 32f)
+            ));
             if(result.getResult().consumesAction()) {
                 var entity = result.getObject();
                 if(entity != null) {

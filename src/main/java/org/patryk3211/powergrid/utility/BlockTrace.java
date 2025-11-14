@@ -23,6 +23,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -94,9 +95,9 @@ public class BlockTrace {
 
     public static Vec3 alignPosition(Vec3 position) {
         return new Vec3(
-                (int) Math.round(position.x * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE,
-                (int) Math.round(position.y * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE,
-                (int) Math.round(position.z * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE
+                (int) Math.round(position.x * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE - 1/32f,
+                (int) Math.round(position.y * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE - 1/32f,
+                (int) Math.round(position.z * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE - 1/32f
         );
     }
 
@@ -147,7 +148,7 @@ public class BlockTrace {
             var cell = visitQueue.poll();
             if(cell.originDistance > 10 * 16)
                 continue;
-            if(cell.position.equals(state.target))
+            if(cell.position.distManhattan(state.target) <= 1)
                 return Pair.of(state, new TraceResult(state.traceResult(cell), true));
             if(state.states.size() > 150)
                 break;
@@ -258,9 +259,9 @@ public class BlockTrace {
 
         public Vec3 transform(Vec3i pos) {
             return new Vec3(
-                    pos.getX() * UNIT_SIZE + origin.x,
-                    pos.getY() * UNIT_SIZE + origin.y,
-                    pos.getZ() * UNIT_SIZE + origin.z
+                    pos.getX() * UNIT_SIZE + origin.x + 1/32f,
+                    pos.getY() * UNIT_SIZE + origin.y + 1/32f,
+                    pos.getZ() * UNIT_SIZE + origin.z + 1/32f
             );
         }
 
@@ -366,6 +367,9 @@ public class BlockTrace {
                 return currentPos.relative(axis, offset);
             }
             var cellPos = transform(hit.getLocation());
+            if(hit.getType() != HitResult.Type.MISS && hit.getDirection().getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
+                cellPos = cellPos.relative(hit.getDirection());
+            }
             var retPos = switch(hit.getType()) {
                 case MISS -> cellPos;
                 case ENTITY -> null;
@@ -377,7 +381,7 @@ public class BlockTrace {
                     // This is to prevent later raycasts from being stuck
                     // on the boundary and landing inside the supporting block.
 //                    retPos = retPos.relative(hit.getDirection());
-                    writeCell(cellPos, Vec3.ZERO.with(side.getAxis(), -UNIT_SIZE * 0.5f));
+//                    writeCell(cellPos, Vec3.ZERO.with(side.getAxis(), -UNIT_SIZE * 0.5f));
                 }
             }
             return retPos;

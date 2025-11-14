@@ -127,7 +127,11 @@ public class WirePreview {
                 if(terminal != null) {
                     hitPoint = terminal.getOrigin().add(pos.getX(), pos.getY(), pos.getZ());
                     hitTerminal = terminal;
+                } else {
+                    hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
                 }
+            } else {
+                hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
             }
         }
 
