@@ -61,7 +61,7 @@ public class CRTBlockEntity extends ElectricBlockEntity {
 
         var I = anodeCathode.current();
         // Heater power affects the electron gun current.
-        var R = ival <= 0 ? 0 : (anodeCathode.potentialDifference() / (ival * 0.01f * heaterPower));
+        var R = (ival <= 0 || heaterPower <= 0) ? 0 : (anodeCathode.potentialDifference() / (ival * 0.01f * heaterPower));
         if(R <= 0) {
             anodeCathode.setState(false);
         } else {
