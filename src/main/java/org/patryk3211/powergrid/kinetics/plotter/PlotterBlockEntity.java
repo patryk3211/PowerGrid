@@ -77,18 +77,18 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     }
 
     public float getAnimationSpeed() {
-        if(Math.abs(getSpeed()) < 16)
+        if(!isSpeedRequirementFulfilled())
             return 0;
-        return -getSpeed();
+        return -Math.abs(getSpeed());
     }
 
     @Override
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
-        if(Math.abs(getSpeed()) < 16)
+        if(!isSpeedRequirementFulfilled())
             return;
         var old = sampleBuffer;
-        sampleBuffer = new float[(int) (128 / getSpeed() * 40)];
+        sampleBuffer = new float[(int) (128 / Math.abs(getSpeed()) * 40)];
         for(int i = 0; i < sampleBuffer.length; ++i) {
             float oldI = (float) i / sampleBuffer.length * old.length;
             int i0 = Mth.clamp(Mth.floor(oldI), 0, old.length - 1);
@@ -137,7 +137,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if(Math.abs(getSpeed()) < 16)
+        if(!isSpeedRequirementFulfilled())
             return;
         headTarget = Mth.clamp(wire.potentialDifference() / maxValue, -1, 1);
         prevHeadPosition = headPosition;
@@ -151,6 +151,11 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     public void setColor(DyeColor dyeColor) {
         this.color = dyeColor;
         notifyUpdate();
+    }
+
+    @Override
+    public boolean isSpeedRequirementFulfilled() {
+        return Math.abs(getSpeed()) >= 16;
     }
 
     public static class BoxTransform extends CenteredSideValueBoxTransform {
