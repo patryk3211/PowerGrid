@@ -51,13 +51,15 @@ public class ModdedRenderLayers {
     private static final RenderType ADDITIVE_COLOR = RenderType.create(
             "powergrid_additive_color",
             DefaultVertexFormat.POSITION_COLOR,
-            VertexFormat.Mode.QUADS,
+            VertexFormat.Mode.TRIANGLES,
             256,
-            false, true,
+            false, false,
             RenderType.CompositeState.builder()
                     .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
                     .setCullState(RenderStateShard.NO_CULL)
                     .setTransparencyState(RenderStateShard.ADDITIVE_TRANSPARENCY)
+                    .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+                    .setOutputState(RenderStateShard.PARTICLES_TARGET)
                     .createCompositeState(false)
     );
 

@@ -689,7 +689,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/crt"))
             .addLayer(() -> RenderType::translucent)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistances("gun", 500, "coils", 40))
+            .transform(CResistance.setResistances("anode", 20000, "heater", 12, "coils", 40))
             .transform(CThermal.maxPower(100, 3.0f))
             .simpleItem()
             .register();

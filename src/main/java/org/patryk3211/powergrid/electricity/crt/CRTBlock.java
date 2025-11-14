@@ -31,23 +31,27 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
 public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEntity> {
-    private static final Component GUN_POSITIVE = Lang.builder()
-            .translate("crt.gun.positive")
+    private static final Component HEATER = Lang.builder()
+            .translate("crt.heater")
             .style(ChatFormatting.RED).component();
-    private static final Component GUN_NEGATIVE = Lang.builder()
-            .translate("crt.gun.negative")
+    private static final Component CATHODE = Lang.builder()
+            .translate("crt.cathode")
             .style(ChatFormatting.BLUE).component();
-    private static final Component X_POSITIVE = Lang.builder()
-            .translate("crt.x.positive")
+    private static final Component GRID = Lang.builder()
+            .translate("crt.grid")
+            .style(ChatFormatting.GRAY).component();
+    private static final Component ANODE = Lang.builder()
+            .translate("crt.anode")
             .style(ChatFormatting.RED).component();
-    private static final Component X_NEGATIVE = Lang.builder()
-            .translate("crt.x.negative")
-            .style(ChatFormatting.BLUE).component();
-    private static final Component Y_POSITIVE = Lang.builder()
-            .translate("crt.y.positive")
+
+    private static final Component X_COIL = Lang.builder()
+            .translate("crt.coil.x")
             .style(ChatFormatting.RED).component();
-    private static final Component Y_NEGATIVE = Lang.builder()
-            .translate("crt.y.negative")
+    private static final Component Y_COIL = Lang.builder()
+            .translate("crt.coil.y")
+            .style(ChatFormatting.RED).component();
+    private static final Component COMMON_COIL = Lang.builder()
+            .translate("crt.coil.common")
             .style(ChatFormatting.BLUE).component();
 
     private static final VoxelShape SHAPE = Shapes.or(
@@ -58,18 +62,19 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
     );
 
     private static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(GUN_POSITIVE, 5, 5, 15, 6, 7, 16)
-                    .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(GUN_NEGATIVE, 10, 5, 15, 11, 7, 16)
+            new TerminalBoundingBox(CATHODE, 5, 5, 15, 6, 7, 16)
                     .withColor(IDecoratedTerminal.BLUE),
-            new TerminalBoundingBox(X_POSITIVE, 2, 2, 7, 3, 4, 8)
+            new TerminalBoundingBox(HEATER, 10, 5, 15, 11, 7, 16)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(X_NEGATIVE, 13, 2, 7, 14, 4, 8)
-                    .withColor(IDecoratedTerminal.BLUE),
-            new TerminalBoundingBox(Y_POSITIVE, 7, 11, 7, 9, 12, 8)
+            new TerminalBoundingBox(GRID, 7, 3, 15, 9, 4, 16),
+            new TerminalBoundingBox(ANODE, 3, 6, 2, 4, 7, 3)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(Y_NEGATIVE, 7, 3, 15, 9, 4, 16)
-                    .withColor(IDecoratedTerminal.BLUE)
+
+            new TerminalBoundingBox(X_COIL, 2, 2, 7, 3, 4, 8)
+                    .withColor(IDecoratedTerminal.RED),
+            new TerminalBoundingBox(Y_COIL, 13, 2, 7, 14, 4, 8)
+                    .withColor(IDecoratedTerminal.RED),
+            new TerminalBoundingBox(COMMON_COIL, 7, 11, 7, 9, 12, 8),
     };
 
     public CRTBlock(Properties settings) {

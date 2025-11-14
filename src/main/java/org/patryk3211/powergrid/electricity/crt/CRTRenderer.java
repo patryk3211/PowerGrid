@@ -59,34 +59,95 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
             int i1 = (i + be.head + 1) % SAMPLE_COUNT;
             var x2 = be.xPoints[i1];
             var y2 = be.yPoints[i1];
-            var b2 = be.brightness[i1] * (float) (1 - Math.exp(-i * 0.25f));
-            if(i == 0) {
-                x1 = x2;
-                y1 = y2;
-                b1 = b2;
-                continue;
-            }
+            var b2 = be.brightness[i1] * (float) (1 - Math.exp(-i * 0.125f));
 
-            var cx =  y2 - y1;
-            var cy =  x1 - x2;
-            var len = Math.sqrt(cx*cx + cy*cy);
+            var nx = x2 - x1;
+            var ny = y2 - y1;
+
+            var snx = Math.signum(nx);
+            var sny = Math.signum(ny);
+
             float size = 1 / 32f;
-            if(len != 0) {
-                cx /= len;
-                cy /= len;
+            if(i == 0 || (Math.abs(nx) < 1e-3f && Math.abs(ny) < 1e-3f)) {
+                putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 - size, y2 + size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 + size, y2 + size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 + size, y2 - size, R * b2, G * b2, B * b2, i);
+
+                putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 + size, y2 + size, R * b2, G * b2, B * b2, i);
+            } else if(Math.abs(nx) < 1e-3f) {
+                putPoint(consumer, m4, x2 - size, y1 + size * sny, R * b1, G * b1, B * b1, i - 1);
+                putPoint(consumer, m4, x2 + size, y1 + size * sny, R * b1, G * b1, B * b1, i - 1);
+                putPoint(consumer, m4, x2 + size, y2 + size * sny, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 - size, y2 + size * sny, R * b2, G * b2, B * b2, i);
+
+                putPoint(consumer, m4, x2 + size, y2 + size * sny, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 - size, y1 + size * sny, R * b1, G * b1, B * b1, i - 1);
+            } else if(Math.abs(ny) < 1e-3f) {
+                putPoint(consumer, m4, x1 + size * snx, y2 - size, R * b1, G * b1, B * b1, i - 1);
+                putPoint(consumer, m4, x1 + size * snx, y2 + size, R * b1, G * b1, B * b1, i - 1);
+                putPoint(consumer, m4, x2 + size * snx, y2 + size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 + size * snx, y2 - size, R * b2, G * b2, B * b2, i);
+
+                putPoint(consumer, m4, x1 + size * snx, y2 - size, R * b1, G * b1, B * b1, i - 1);
+                putPoint(consumer, m4, x2 + size * snx, y2 + size, R * b2, G * b2, B * b2, i);
             } else {
-                x1 -= size;
-                x2 += size;
-                cx = 0;
-                cy = 1;
+                // 3 quads must be drawn (1 dots at end and 2 connecting quads)
+                putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 - size, y2 + size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 + size, y2 + size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 + size, y2 - size, R * b2, G * b2, B * b2, i);
+
+                putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
+                putPoint(consumer, m4, x2 + size, y2 + size, R * b2, G * b2, B * b2, i);
+
+                var mainX1 = x1 + size * snx;
+                var mainY1 = y1 + size * sny;
+                var mainX2 = x2 - size * snx;
+                var mainY2 = y2 - size * sny;
+
+                var leftX1 = mainX1 - size * 2 * snx;
+                var topY2 = mainY2 + size * 2 * sny;
+                var bottomY1 = mainY1 - size * 2 * sny;
+                var rightX2 = mainX2 + size * 2 * snx;
+
+                if((mainY2 - mainY1) * sny < 0) {
+                    putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+
+                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
+                } else {
+                    putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+
+                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                }
+
+                if((mainX2 - mainX1) * snx < 0) {
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
+
+                    putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+                } else {
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+
+                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+                }
             }
-            cx *= size; cy *= size;
-
-            putPoint(consumer, m4, x1 - cx, y1 - cy, R * b1, G * b1, B * b1, i);
-            putPoint(consumer, m4, x1 + cx, y1 + cy, R * b1, G * b1, B * b1, i);
-
-            putPoint(consumer, m4, x2 + cx, y2 + cy, R * b2, G * b2, B * b2, i);
-            putPoint(consumer, m4, x2 - cx, y2 - cy, R * b2, G * b2, B * b2, i);
 
             x1 = x2;
             y1 = y2;
@@ -96,7 +157,7 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
     }
 
     private static void putPoint(VertexConsumer consumer, Matrix4f m4, float x, float y, float r, float g, float b, int z) {
-        consumer.vertex(m4, x, y, z * 0.0001f)
+        consumer.vertex(m4, x, y, -z * 0.0001f)
                 .color((int) r, (int) g, (int) b, 255)
                 .endVertex();
     }

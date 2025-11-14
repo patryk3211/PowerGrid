@@ -21,11 +21,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public class CRTBlockEntity extends ElectricBlockEntity {
     public static final int SAMPLE_COUNT = 80;
 
-    private ElectricWire gun, xDeflect, yDeflect;
+    private ElectricWire xDeflect, yDeflect;
+    private ElectricWire heater, gridCathode;
+    private SwitchedWire anodeCathode;
 
     // These are only needed on the client. CRT state is not persistent nor synchronized.
     protected float[] xPoints = new float[SAMPLE_COUNT];
@@ -37,23 +40,49 @@ public class CRTBlockEntity extends ElectricBlockEntity {
         super(type, pos, state);
     }
 
-    int tick = 0;
     @Override
     public void tick() {
+        applyPower(xDeflect);
+        applyPower(yDeflect);
+        applyPower(heater);
         super.tick();
+        // Simplified electron tube model
+        var Vgk = gridCathode.potentialDifference();
+        var ival = Math.min(Vgk, 0) + anodeCathode.potentialDifference() / 50;
+
+        // 1 amp is the target current for normal operation.
+        // 0.8 amps is the minimum current.
+        var heaterPower = Math.abs(heater.current());
+        heaterPower = heaterPower < 0.8 ? 0 : Math.min(heaterPower * heaterPower, 1.2f);
+
+        var I = anodeCathode.current();
+        // Heater power affects the electron gun current.
+        var R = ival <= 0 ? 0 : (anodeCathode.potentialDifference() / (ival * 0.01f * heaterPower));
+        if(R <= 0) {
+            anodeCathode.setState(false);
+        } else {
+            anodeCathode.setState(true);
+            anodeCathode.setResistance(R);
+        }
+
         if(level.isClientSide) {
-            brightness[head] = Mth.clamp(gun.current() / 0.1f, 0, 1);
-            xPoints[head] = xDeflect.current() / 0.5f;
-            yPoints[head] = yDeflect.current() / 0.5f;
+            // 100 mA is needed for max brightness.
+            // 50 mA is the minimum current.
+            brightness[head] = Mth.clamp((I - 0.05f) / 0.05f, 0, 1);
+            xPoints[head] = Mth.clamp(xDeflect.current() / 0.5f, -1, 1);
+            yPoints[head] = Mth.clamp(yDeflect.current() / 0.5f, -1, 1);
             head = (head + 1) % SAMPLE_COUNT;
         }
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        builder.setTerminalCount(6);
-        gun = builder.connect(resistance("gun"), builder.terminalNode(0), builder.terminalNode(1));
-        xDeflect = builder.connect(resistance("coils"), builder.terminalNode(2), builder.terminalNode(3));
-        yDeflect = builder.connect(resistance("coils"), builder.terminalNode(4), builder.terminalNode(5));
+        builder.setTerminalCount(7);
+        xDeflect = builder.connect(resistance("coils"), builder.terminalNode(4), builder.terminalNode(6));
+        yDeflect = builder.connect(resistance("coils"), builder.terminalNode(5), builder.terminalNode(6));
+
+        gridCathode = builder.connect(1e-6f, builder.terminalNode(2), builder.terminalNode(0));
+        heater = builder.connect(resistance("heater"), builder.terminalNode(1), builder.terminalNode(0));
+        anodeCathode = builder.connectSwitch(resistance("anode"), builder.terminalNode(3), builder.terminalNode(0));
     }
 }
