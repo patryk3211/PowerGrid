@@ -74,7 +74,8 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
                     .withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(Y_COIL, 13, 2, 7, 14, 4, 8)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(COMMON_COIL, 7, 11, 7, 9, 12, 8),
+            new TerminalBoundingBox(COMMON_COIL, 7, 11, 7, 9, 12, 8)
+                    .withColor(IDecoratedTerminal.BLUE),
     };
 
     public CRTBlock(Properties settings) {

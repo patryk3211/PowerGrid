@@ -15,29 +15,33 @@
  */
 package org.patryk3211.powergrid.electricity.crt;
 
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public class CRTBlockEntity extends ElectricBlockEntity {
-    public static final int SAMPLE_COUNT = 80;
-
     private ElectricWire xDeflect, yDeflect;
     private ElectricWire heater, gridCathode;
     private SwitchedWire anodeCathode;
 
     // These are only needed on the client. CRT state is not persistent nor synchronized.
-    protected float[] xPoints = new float[SAMPLE_COUNT];
-    protected float[] yPoints = new float[SAMPLE_COUNT];
-    protected float[] brightness = new float[SAMPLE_COUNT];
+    protected float[] xPoints = new float[sampleCount()];
+    protected float[] yPoints = new float[sampleCount()];
+    protected float[] brightness = new float[sampleCount()];
     protected int head;
 
     public CRTBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    public static int sampleCount() {
+        return EnvExecutor.getEnvSpecific(() -> () -> ModdedConfigs.client().crtPointCount.get(), () -> () -> 1);
     }
 
     @Override
@@ -71,7 +75,7 @@ public class CRTBlockEntity extends ElectricBlockEntity {
             brightness[head] = Mth.clamp((I - 0.05f) / 0.05f, 0, 1);
             xPoints[head] = Mth.clamp(xDeflect.current() / 0.5f, -1, 1);
             yPoints[head] = Mth.clamp(yDeflect.current() / 0.5f, -1, 1);
-            head = (head + 1) % SAMPLE_COUNT;
+            head = (head + 1) % brightness.length;
         }
     }
 

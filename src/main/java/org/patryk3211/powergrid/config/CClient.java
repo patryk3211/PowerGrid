@@ -22,6 +22,12 @@ public class CClient extends ConfigBase {
     public final ConfigInt crtGreen = i(4, 0, 255, "crtGreen", Comments.crtGreen);
     public final ConfigInt crtBlue = i(2, 0, 255, "crtBlue", Comments.crtBlue);
 
+    public final ConfigInt crtPointCount = i(100, 10, "crtPointCount", Comments.crtPointCount);
+    public final ConfigFloat crtTracePersistence = f(0.125f, 0, "crtTracePersistence", Comments.crtTracePersistence);
+    public final ConfigFloat crtDotSize = f(1/32f, 0, "crtDotSize", Comments.crtDotSize);
+
+    public final ConfigFloat crtZDepth = f(0.0001f, 0, "crtZDepth", Comments.crtZDepth);
+
     @Override
     public String getName() {
         return "common";
@@ -31,5 +37,10 @@ public class CClient extends ConfigBase {
         public static final String crtRed = "Amount of red in the CRT screen glow";
         public static final String crtGreen = "Amount of green in the CRT screen glow";
         public static final String crtBlue = "Amount of blue in the CRT screen glow";
+
+        public static final String crtPointCount = "Controls how many individual points the CRT trace can have (1 point is added per tick)";
+        public static final String crtTracePersistence = "Controls the slope of trace brightness decay (lower value means faster decay)";
+        public static final String crtDotSize = "Controls the CRT trace thickness";
+        public static final String crtZDepth = "Controls how much the CRT trace falls as it fades. This values shouldn't be too small or it can cause Z fighting";
     }
 }

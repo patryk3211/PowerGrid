@@ -28,10 +28,12 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
-import static org.patryk3211.powergrid.electricity.crt.CRTBlockEntity.SAMPLE_COUNT;
-
 public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
     private static final float CRT_SPAN = 7.5f / 16f;
+
+    public static float zDepth() {
+        return ModdedConfigs.client().crtZDepth.getF();
+    }
 
     public CRTRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -51,15 +53,17 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
 
         ms.pushPose();
         ms.rotateAround(new Quaternionf().rotateY(0.5f * (float) Math.PI * (2 - facing.get2DDataValue())), 0.5f, 0.5f, 0.5f);
-        ms.translate(0.5f, 0.375f, 1 / 32f);
+        ms.translate(0.5f, 0.375f, 1 / 32f + zDepth() * 0.5f);
         ms.scale(CRT_SPAN * 0.5f, CRT_SPAN * 0.5f, 1);
         var m4 = ms.last().pose();
         float x1 = 0, y1 = 0, b1 = 0;
-        for(int i = 0; i < SAMPLE_COUNT - 1; ++i) {
-            int i1 = (i + be.head + 1) % SAMPLE_COUNT;
+        final float size = ModdedConfigs.client().crtDotSize.getF();
+        // Can't use sampleCount() since the entity may have been allocated with a different count.
+        for(int i = 0; i < be.brightness.length - 1; ++i) {
+            int i1 = (i + be.head + 1) % be.brightness.length;
             var x2 = be.xPoints[i1];
             var y2 = be.yPoints[i1];
-            var b2 = be.brightness[i1] * (float) (1 - Math.exp(-i * 0.125f));
+            var b2 = be.brightness[i1] * (float) (1 - Math.exp(-i * ModdedConfigs.client().crtTracePersistence.getF()));
 
             var nx = x2 - x1;
             var ny = y2 - y1;
@@ -67,7 +71,6 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
             var snx = Math.signum(nx);
             var sny = Math.signum(ny);
 
-            float size = 1 / 32f;
             if(i == 0 || (Math.abs(nx) < 1e-3f && Math.abs(ny) < 1e-3f)) {
                 putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
                 putPoint(consumer, m4, x2 - size, y2 + size, R * b2, G * b2, B * b2, i);
@@ -157,7 +160,7 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
     }
 
     private static void putPoint(VertexConsumer consumer, Matrix4f m4, float x, float y, float r, float g, float b, int z) {
-        consumer.vertex(m4, x, y, -z * 0.0001f)
+        consumer.vertex(m4, x, y, -z * zDepth())
                 .color((int) r, (int) g, (int) b, 255)
                 .endVertex();
     }

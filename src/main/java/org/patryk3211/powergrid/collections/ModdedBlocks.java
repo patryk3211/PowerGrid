@@ -686,6 +686,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<CRTBlock> CRT = REGISTRATE.block("crt", CRTBlock::new)
             .initialProperties(() -> Blocks.GLASS)
+            .lang("Cathode Ray Tube")
             .blockstate(horizontalBlock("block/crt"))
             .addLayer(() -> RenderType::translucent)
             .transform(pickaxeOnly())
