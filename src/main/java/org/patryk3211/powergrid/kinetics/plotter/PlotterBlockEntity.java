@@ -77,7 +77,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     }
 
     public float getAnimationSpeed() {
-        if(getSpeed() < 16)
+        if(Math.abs(getSpeed()) < 16)
             return 0;
         return -getSpeed();
     }
@@ -85,7 +85,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
-        if(getSpeed() < 16)
+        if(Math.abs(getSpeed()) < 16)
             return;
         var old = sampleBuffer;
         sampleBuffer = new float[(int) (128 / getSpeed() * 40)];
@@ -137,7 +137,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if(getSpeed() < 16)
+        if(Math.abs(getSpeed()) < 16)
             return;
         headTarget = Mth.clamp(wire.potentialDifference() / maxValue, -1, 1);
         prevHeadPosition = headPosition;
