@@ -85,7 +85,7 @@ public class CRTBlockEntity extends ElectricBlockEntity {
         xDeflect = builder.connect(resistance("coils"), builder.terminalNode(4), builder.terminalNode(6));
         yDeflect = builder.connect(resistance("coils"), builder.terminalNode(5), builder.terminalNode(6));
 
-        gridCathode = builder.connect(1e-6f, builder.terminalNode(2), builder.terminalNode(0));
+        gridCathode = builder.connect(1e+6f, builder.terminalNode(2), builder.terminalNode(0));
         heater = builder.connect(resistance("heater"), builder.terminalNode(1), builder.terminalNode(0));
         anodeCathode = builder.connectSwitch(resistance("anode"), builder.terminalNode(3), builder.terminalNode(0));
     }
