@@ -20,7 +20,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
@@ -42,6 +44,11 @@ public class CRTBlockEntity extends ElectricBlockEntity {
 
     public static int sampleCount() {
         return EnvExecutor.getEnvSpecific(() -> () -> ModdedConfigs.client().crtPointCount.get(), () -> () -> 1);
+    }
+
+    @Override
+    public float resistance(String suffix) {
+        return ResistanceValues.get(ModdedBlocks.CRT.get(), suffix);
     }
 
     @Override
@@ -87,6 +94,6 @@ public class CRTBlockEntity extends ElectricBlockEntity {
 
         gridCathode = builder.connect(1e+6f, builder.terminalNode(2), builder.terminalNode(0));
         heater = builder.connect(resistance("heater"), builder.terminalNode(1), builder.terminalNode(0));
-        anodeCathode = builder.connectSwitch(resistance("anode"), builder.terminalNode(3), builder.terminalNode(0));
+        anodeCathode = builder.connectSwitch(1, builder.terminalNode(3), builder.terminalNode(0), false);
     }
 }

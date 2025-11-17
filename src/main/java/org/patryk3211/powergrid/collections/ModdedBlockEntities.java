@@ -332,7 +332,7 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<CRTBlockEntity> CRT =
             REGISTRATE.blockEntity("crt", CRTBlockEntity::new)
-                    .validBlock(ModdedBlocks.CRT)
+                    .validBlocks(ModdedBlocks.CRT, ModdedBlocks.ANDESITE_CRT)
                     .renderer(() -> CRTRenderer::new)
                     .register();
 

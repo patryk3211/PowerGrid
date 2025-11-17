@@ -15,14 +15,20 @@
  */
 package org.patryk3211.powergrid.electricity.crt;
 
+import com.simibubi.create.content.decoration.encasing.EncasableBlock;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -36,27 +42,27 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEntity>, IHaveElectricProperties {
-    private static final Component HEATER = Lang.builder()
+public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEntity>, IHaveElectricProperties, EncasableBlock {
+    static final Component HEATER = Lang.builder()
             .translate("crt.heater")
             .style(ChatFormatting.RED).component();
-    private static final Component CATHODE = Lang.builder()
+    static final Component CATHODE = Lang.builder()
             .translate("crt.cathode")
             .style(ChatFormatting.BLUE).component();
-    private static final Component GRID = Lang.builder()
+    static final Component GRID = Lang.builder()
             .translate("crt.grid")
             .style(ChatFormatting.GRAY).component();
-    private static final Component ANODE = Lang.builder()
+    static final Component ANODE = Lang.builder()
             .translate("crt.anode")
             .style(ChatFormatting.RED).component();
 
-    private static final Component X_COIL = Lang.builder()
+    static final Component X_COIL = Lang.builder()
             .translate("crt.coil.x")
             .style(ChatFormatting.RED).component();
-    private static final Component Y_COIL = Lang.builder()
+    static final Component Y_COIL = Lang.builder()
             .translate("crt.coil.y")
             .style(ChatFormatting.RED).component();
-    private static final Component COMMON_COIL = Lang.builder()
+    static final Component COMMON_COIL = Lang.builder()
             .translate("crt.coil.common")
             .style(ChatFormatting.BLUE).component();
 
@@ -64,7 +70,7 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
             box(4, 2, 0, 12, 10, 12),
             box(3, 1, 6, 13, 11, 9),
             box(5, 3, 12, 11, 9, 15),
-            box(4, 0, 1, 12, 2, 10)
+            box(4, 0, 4, 12, 2, 12)
     );
 
     public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
@@ -87,6 +93,11 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
     public CRTBlock(Properties settings) {
         super(settings);
         setTerminalCollection(horizontalNorthTerminals(this, TERMINALS, SHAPE));
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return tryEncase(state, level, pos, player.getItemInHand(hand), player, hand, hit);
     }
 
     @Override

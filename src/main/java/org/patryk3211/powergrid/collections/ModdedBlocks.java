@@ -15,12 +15,14 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.api.contraption.BlockMovementChecks.CheckResult;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
+import com.simibubi.create.content.decoration.encasing.EncasingRegistry;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -61,6 +64,7 @@ import org.patryk3211.powergrid.electricity.contactor.ContactorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
 import org.patryk3211.powergrid.electricity.crt.CRTBlock;
+import org.patryk3211.powergrid.electricity.crt.EncasedCRTBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.LvButtonBlock;
@@ -690,9 +694,19 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/crt"))
             .addLayer(() -> RenderType::translucent)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistances("anode", 20000, "heater", 12, "coils", 40))
+            .transform(CResistance.setResistances("heater", 12, "coils", 40))
             .transform(CThermal.maxPower(100, 3.0f))
             .simpleItem()
+            .register();
+
+    public static final BlockEntry<EncasedCRTBlock> ANDESITE_CRT = REGISTRATE.block("andesite_encased_crt", p -> new EncasedCRTBlock(p, AllBlocks.ANDESITE_CASING::get))
+            .initialProperties(SharedProperties::wooden)
+            .lang("Andesite Encased CRT")
+            .blockstate(horizontalBlock("block/crt_andesite"))
+            .addLayer(() -> RenderType::translucent)
+            .transform(axeOrPickaxe())
+            .properties(p -> p.mapColor(MapColor.PODZOL))
+            .transform(EncasingRegistry.addVariantTo(CRT))
             .register();
 
     public static void register() {
