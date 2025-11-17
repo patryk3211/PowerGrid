@@ -53,15 +53,17 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
         if(bulbState.isBurned())
             return;
 
-        var vba = consumer.getBuffer(RenderTypes.additive());
-        var lightModel = bulbState.getLightModel();
-        var lightBuffer = CachedBuffers.partial(lightModel, state);
         int a = (int) (255 * bulbState.getAlpha());
-        rotateToFacing(lightBuffer, facing)
-                .translate(((LightFixtureBlock) state.getBlock()).modelOffset)
-                .light(light)
-                .color(a, a, a, 255)
-                .renderInto(matrices, vba);
+        if(a > 0) {
+            var vba = consumer.getBuffer(RenderTypes.additive());
+            var lightModel = bulbState.getLightModel();
+            var lightBuffer = CachedBuffers.partial(lightModel, state);
+            rotateToFacing(lightBuffer, facing)
+                    .translate(((LightFixtureBlock) state.getBlock()).modelOffset)
+                    .light(light)
+                    .color(a, a, a, 255)
+                    .renderInto(matrices, vba);
+        }
     }
 
     public SuperByteBuffer rotateToFacing(SuperByteBuffer buffer, Direction facing) {

@@ -23,7 +23,7 @@ public class CClient extends ConfigBase {
     public final ConfigInt crtBlue = i(2, 0, 255, "crtBlue", Comments.crtBlue);
 
     public final ConfigInt crtPointCount = i(100, 10, "crtPointCount", Comments.crtPointCount);
-    public final ConfigFloat crtTracePersistence = f(0.125f, 0, "crtTracePersistence", Comments.crtTracePersistence);
+    public final ConfigFloat crtTracePersistence = f(0.025f, 0, "crtTracePersistence", Comments.crtTracePersistence);
     public final ConfigFloat crtDotSize = f(1/32f, 0, "crtDotSize", Comments.crtDotSize);
 
     public final ConfigFloat crtZDepth = f(0.0001f, 0, "crtZDepth", Comments.crtZDepth);

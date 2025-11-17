@@ -52,7 +52,7 @@ public class CRTBlockEntity extends ElectricBlockEntity {
         super.tick();
         // Simplified electron tube model
         var Vgk = gridCathode.potentialDifference();
-        var ival = Math.min(Vgk, 0) + anodeCathode.potentialDifference() / 50;
+        var ival = Math.min(Vgk, 0) + anodeCathode.potentialDifference() / 100;
 
         // 1 amp is the target current for normal operation.
         // 0.8 amps is the minimum current.
@@ -72,7 +72,7 @@ public class CRTBlockEntity extends ElectricBlockEntity {
         if(level.isClientSide) {
             // 100 mA is needed for max brightness.
             // 50 mA is the minimum current.
-            brightness[head] = Mth.clamp((I - 0.05f) / 0.05f, 0, 1);
+            brightness[head] = Mth.clamp((I - 0.05f) / 0.05f, 0, 1.5f);
             xPoints[head] = Mth.clamp(xDeflect.current() / 0.5f, -1, 1);
             yPoints[head] = Mth.clamp(yDeflect.current() / 0.5f, -1, 1);
             head = (head + 1) % brightness.length;

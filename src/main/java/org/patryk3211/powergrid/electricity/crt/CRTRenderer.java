@@ -96,15 +96,6 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
                 putPoint(consumer, m4, x1 + size * snx, y2 - size, R * b1, G * b1, B * b1, i - 1);
                 putPoint(consumer, m4, x2 + size * snx, y2 + size, R * b2, G * b2, B * b2, i);
             } else {
-                // 3 quads must be drawn (1 dots at end and 2 connecting quads)
-                putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
-                putPoint(consumer, m4, x2 - size, y2 + size, R * b2, G * b2, B * b2, i);
-                putPoint(consumer, m4, x2 + size, y2 + size, R * b2, G * b2, B * b2, i);
-                putPoint(consumer, m4, x2 + size, y2 - size, R * b2, G * b2, B * b2, i);
-
-                putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
-                putPoint(consumer, m4, x2 + size, y2 + size, R * b2, G * b2, B * b2, i);
-
                 var mainX1 = x1 + size * snx;
                 var mainY1 = y1 + size * sny;
                 var mainX2 = x2 - size * snx;
@@ -115,40 +106,70 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
                 var bottomY1 = mainY1 - size * 2 * sny;
                 var rightX2 = mainX2 + size * 2 * snx;
 
-                if((mainY2 - mainY1) * sny < 0) {
-                    putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
-                    putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                var xInside = (mainX2 - mainX1) * snx < 0;
+                var yInside = (mainY2 - mainY1) * sny < 0;
 
-                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                if(xInside && yInside) {
+                    // Only 4 triangles are needed
+                    putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
                     putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
                     putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
+
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, rightX2, topY2, R * b2, G * b2, B * b2, i);
+
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, rightX2, topY2, R * b2, G * b2, B * b2, i);
+
+                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+                    putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
                 } else {
-                    putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    // 3 quads must be drawn (1 dot at end and 2 connecting quads)
+                    putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, x2 - size, y2 + size, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, x2 + size, y2 + size, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, x2 + size, y2 - size, R * b2, G * b2, B * b2, i);
 
-                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
-                    putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
-                }
+                    putPoint(consumer, m4, x2 - size, y2 - size, R * b2, G * b2, B * b2, i);
+                    putPoint(consumer, m4, x2 + size, y2 + size, R * b2, G * b2, B * b2, i);
 
-                if((mainX2 - mainX1) * snx < 0) {
-                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
-                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
+                    if (yInside) {
+                        putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                        putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
 
-                    putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
-                    putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
-                } else {
-                    putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
-                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+                        putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                        putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
+                    } else {
+                        putPoint(consumer, m4, mainX2, topY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
 
-                    putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
-                    putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+                        putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                        putPoint(consumer, m4, leftX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                    }
+                    if (xInside) {
+                        putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                        putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
+
+                        putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                        putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+                    } else {
+                        putPoint(consumer, m4, mainX1, mainY1, R * b1, G * b1, B * b1, i - 1);
+                        putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+
+                        putPoint(consumer, m4, mainX2, mainY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, rightX2, mainY2, R * b2, G * b2, B * b2, i);
+                        putPoint(consumer, m4, mainX1, bottomY1, R * b1, G * b1, B * b1, i - 1);
+                    }
                 }
             }
 

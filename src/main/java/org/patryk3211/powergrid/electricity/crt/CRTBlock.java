@@ -18,6 +18,8 @@ package org.patryk3211.powergrid.electricity.crt;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,9 +30,13 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.utility.Lang;
 
-public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEntity> {
+import java.util.List;
+
+public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEntity>, IHaveElectricProperties {
     private static final Component HEATER = Lang.builder()
             .translate("crt.heater")
             .style(ChatFormatting.RED).component();
@@ -61,7 +67,7 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
             box(4, 0, 1, 12, 2, 10)
     );
 
-    private static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
+    public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(CATHODE, 5, 5, 15, 6, 7, 16)
                     .withColor(IDecoratedTerminal.BLUE),
             new TerminalBoundingBox(HEATER, 10, 5, 15, 11, 7, 16)
@@ -97,5 +103,13 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
     @Override
     public BlockEntityType<? extends CRTBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.CRT.get();
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Voltage.voltage("tooltip.crt.deflection", ChatFormatting.DARK_AQUA, 20, player, tooltip);
+        Voltage.voltage("tooltip.crt.heater", ChatFormatting.YELLOW, 12, player, tooltip);
+        Voltage.voltage("tooltip.crt.anode", ChatFormatting.RED, 1000, player, tooltip);
+        Voltage.voltage("tooltip.crt.grid", ChatFormatting.DARK_AQUA, -10, player, tooltip);
     }
 }

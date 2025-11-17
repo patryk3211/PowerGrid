@@ -424,8 +424,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
         int nConns1 = connectionCount(endpoint1);
         int nConns2 = connectionCount(endpoint2);
-        var connected1 = nConns1 == 1 ? globalGraph.getConnectedNodes(node1).get(0) : null;
-        var connected2 = nConns2 == 1 ? globalGraph.getConnectedNodes(node2).get(0) : null;
+        List<IElectricNode> nodes;
+        var connected1 = nConns1 == 1 ? !(nodes = globalGraph.getConnectedNodes(node1)).isEmpty() ? nodes.get(0) : null : null;
+        var connected2 = nConns2 == 1 ? !(nodes = globalGraph.getConnectedNodes(node2)).isEmpty() ? nodes.get(0) : null : null;
 
         TransmissionLine line1 = null, line2 = null;
         if(nConns1 == 1) {
