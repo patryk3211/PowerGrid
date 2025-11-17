@@ -87,6 +87,11 @@
   "powergrid.tooltip.multimeter.voltage": "Voltage: ",
   "powergrid.tooltip.multimeter.current": "Current: ",
 
+  "powergrid.tooltip.crt.deflection": "Deflection voltage:",
+  "powergrid.tooltip.crt.heater": "Heater voltage:",
+  "powergrid.tooltip.crt.anode": "Anode voltage:",
+  "powergrid.tooltip.crt.grid": "Grid voltage:",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
@@ -102,6 +107,14 @@
   "powergrid.contactor.switch2": "Switch 2",
 
   "powergrid.variac.primary": "Primary",
+
+  "powergrid.crt.coil.x": "X Deflection",
+  "powergrid.crt.coil.y": "Y Deflection",
+  "powergrid.crt.coil.common": "Deflection Common",
+  "powergrid.crt.cathode": "Cathode",
+  "powergrid.crt.anode": "Anode",
+  "powergrid.crt.heater": "Heater",
+  "powergrid.crt.grid": "Grid",
 
   "powergrid.devices.creative.voltage": "Output voltage",
   "powergrid.devices.creative.current": "Output current",

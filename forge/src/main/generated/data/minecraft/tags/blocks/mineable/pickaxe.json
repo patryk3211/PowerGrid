@@ -10,6 +10,7 @@
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
     "powergrid:power_gauge",
+    "powergrid:plotter",
     "powergrid:generator_induction_rotor",
     "powergrid:generator_commutator",
     "powergrid:generator_vertical_commutator",
@@ -47,6 +48,8 @@
     "powergrid:rheostat",
     "powergrid:grounding_rod",
     "powergrid:carbon_pile_coil",
-    "powergrid:carbon_pile"
+    "powergrid:carbon_pile",
+    "powergrid:crt",
+    "powergrid:andesite_encased_crt"
   ]
 }

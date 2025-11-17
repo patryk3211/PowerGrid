@@ -131,4 +131,12 @@ public class RecipeTags {
     public static ItemLike glass() {
         return Items.GLASS;
     }
+
+    public static ItemLike paper() {
+        return Items.PAPER;
+    }
+
+    public static ItemLike electronTube() {
+        return AllItems.ELECTRON_TUBE.get();
+    }
 }

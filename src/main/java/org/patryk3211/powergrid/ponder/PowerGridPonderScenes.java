@@ -33,6 +33,8 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "gauges", GaugeScenes::current);
         HELPER.addStoryBoard(ModdedBlocks.POWER_METER, "power_gauge", GaugeScenes::power);
 
+        HELPER.addStoryBoard(ModdedBlocks.PLOTTER, "plotter", DeviceScenes::plotter);
+
         HELPER.forComponents(ModdedBlocks.HEATING_COIL)
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic, PowerGridPonderTags.ELECTRIC_DEVICES)
                 .addStoryBoard("heating_coil/speed", DeviceScenes::heatingCoilSpeed, PowerGridPonderTags.ELECTRIC_DEVICES);
@@ -110,6 +112,8 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.CORD_JUNCTION, "wire/cord_junction", WireScenes::cordJunction, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.SOCKET, "wire/cord_socket", WireScenes::cordSocket, PowerGridPonderTags.ELECTRIC_RELAYS);
+
+        HELPER.addStoryBoard(ModdedBlocks.CRT, "crt", DeviceScenes::crt);
 
         HELPER.addStoryBoard(ModdedItems.RESISTOR, "circuit/resistor", CircuitScenes::resistor, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "circuit/voltage", CircuitScenes::voltageGauge, PowerGridPonderTags.CIRCUIT_COMPONENTS);

@@ -103,7 +103,8 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.BASIN_HEATER)
                 .add(ModdedItems.LV_LIGHT_BULB)
                 .add(ModdedItems.LIGHT_BULB)
-                .add(ModdedItems.GROWTH_LAMP);
+                .add(ModdedItems.GROWTH_LAMP)
+                .add(ModdedBlocks.PLOTTER);
 
         HELPER.addToTag(CIRCUIT_COMPONENTS)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
@@ -123,7 +124,8 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.CURRENT_METER);
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)
-                .add(ModdedBlocks.GENERATOR_CLUTCH);
+                .add(ModdedBlocks.GENERATOR_CLUTCH)
+                .add(ModdedBlocks.PLOTTER);
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR)

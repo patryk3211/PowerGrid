@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -38,11 +39,13 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
+import org.patryk3211.powergrid.electricity.crt.CRTBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
+import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 import java.util.Optional;
@@ -763,6 +766,157 @@ public class DeviceScenes {
         scene.electric().tickFor(30);
         scene.addInstruction(new DisChargeBattery(30, 0.0f, battery));
         scene.idle(50);
+
+        scene.markAsFinished();
+    }
+
+    public static void plotter(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("plotter", "Plotting voltage");
+        scene.configureBasePlate(1, 0, 5);
+
+        var plotter = util.grid().at(3, 1, 2);
+        var bulb = util.grid().at(3, 2, 4);
+        var connector1 = util.grid().at(1, 2, 2);
+        var connector2 = util.grid().at(5, 2, 2);
+
+        scene.electric().addSource(connector2, 0, 0);
+        var source = scene.electric().addSource(connector1, 0, 0);
+
+        scene.world().setKineticSpeed(util.select().position(plotter), 0);
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().position(plotter), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("The Plotter is a simple electromechanical device that measures voltage over time")
+                .pointAt(util.vector().topOf(plotter))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world().showSection(util.select().fromTo(0, 1, 3, 6, 1, 3), Direction.DOWN);
+        scene.world().showSection(util.select().position(0, 0, 2), Direction.DOWN);
+        scene.world().showSection(util.select().position(6, 0, 2), Direction.DOWN);
+        scene.world().showSection(util.select().position(2, 1, 2), Direction.DOWN);
+        scene.idle(10);
+        scene.world().setKineticSpeed(util.select().position(plotter), 64);
+
+        scene.world().showSection(util.select().fromTo(connector1.below(), connector1), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(connector2.below(), connector2), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(bulb.below(), bulb), Direction.DOWN);
+        scene.idle(10);
+
+        scene.electric().connect(connector1, 0, plotter, 1);
+        scene.electric().connect(connector2, 0, plotter, 0);
+        scene.electric().connect(connector1, 0, bulb, 0);
+        scene.electric().connect(connector2, 0, bulb, 1);
+        scene.idle(20);
+
+        scene.electric().setSource(source, 90);
+        scene.electric().tickFor(10);
+        scene.addKeyframe();
+        scene.idle(40);
+
+        scene.electric().setSource(source, 122);
+        scene.electric().tickFor(20);
+        scene.idle(40);
+
+        scene.electric().setSource(source, -122);
+        scene.electric().tickFor(20);
+        scene.idle(40);
+
+        scene.effects().indicateSuccess(plotter);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("The graph color can be changed by right clicking the plotter with a dye")
+                .pointAt(util.vector().of(3.5, 1.9, 2.5))
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+        scene.overlay().showControls(util.vector().of(3.5, 1.9, 2.5), Pointing.UP, 30)
+                .withItem(new ItemStack(Items.RED_DYE))
+                .rightClick();
+        scene.idle(20);
+        scene.world().modifyBlockEntity(plotter, PlotterBlockEntity.class, be -> be.setColor(DyeColor.RED));
+        scene.idle(40);
+
+        scene.markAsFinished();
+    }
+
+    public static void crt(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("crt", "Cathode Ray Tube");
+        scene.configureBasePlate(0, 0, 3);
+
+        scene.scaleSceneView(3.0f);
+
+        var crt = util.grid().at(1, 1, 1);
+
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().position(crt), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("The Cathode Ray Tube is a complex device that needs a bit of setup to work")
+                .pointAt(util.vector().of(1.5, 1.75, 1.5))
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.rotateCameraY(-90);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("First, you need to provide 12 volts between the Heater and Cathode pins")
+                .pointAt(CRTBlock.TERMINALS[1].getOrigin().add(1, 1, 1))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+        scene.electric().addSource(crt, 0, 0);
+        scene.electric().addSource(crt, 1, 12);
+        scene.electric().tickForever();
+        scene.idle(20);
+
+        scene.overlay().showText(70)
+                .text("Next, connect about 1000 volts between the Anode and Cathode")
+                .pointAt(CRTBlock.TERMINALS[3].getOrigin().add(1, 1, 1))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(60);
+        scene.electric().addSource(crt, 3, 1000);
+        scene.idle(20);
+
+        scene.rotateCameraY(90);
+        scene.idle(20);
+        scene.effects().indicateSuccess(crt);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("You can change the position of the dot using the deflection coils")
+                .pointAt(util.vector().of(1.25, 1.75, 1.5))
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(70);
+
+        scene.electric().addSource(crt, 6, 0);
+        var x = scene.electric().addSource(crt, 4, 0);
+        var y = scene.electric().addSource(crt, 5, 0);
+
+        scene.electric().setSource(x, t -> (float) Math.cos(t * 0.33) * 15f * Math.min(t * 0.1f, 1));
+        scene.electric().setSource(y, t -> (float) Math.sin(t * 0.33) * 15f * Math.min(t * 0.1f, 1));
+        scene.idle(80);
+
+        scene.overlay().showText(80)
+                .text("You can apply a negative voltage to the Grid to change brightness of the trace")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(50);
+        scene.electric().addSource(crt, 2, -3.5f);
+        scene.idle(120);
 
         scene.markAsFinished();
     }

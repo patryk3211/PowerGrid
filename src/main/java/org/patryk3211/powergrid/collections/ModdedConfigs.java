@@ -36,6 +36,7 @@ public class ModdedConfigs {
 
     private static CServer server;
     private static CCommon common;
+    private static CClient client;
 
     public static CServer server() {
         return server;
@@ -43,6 +44,10 @@ public class ModdedConfigs {
 
     public static CCommon common() {
         return common;
+    }
+
+    public static CClient client() {
+        return client;
     }
 
     public static ConfigBase byType(ModConfig.Type type) {
@@ -70,6 +75,7 @@ public class ModdedConfigs {
     public static void register() {
         server = register(CServer::new, ModConfig.Type.SERVER);
         common = register(CCommon::new, ModConfig.Type.COMMON);
+        client = register(CClient::new, ModConfig.Type.CLIENT);
 
         registerPlatform();
 

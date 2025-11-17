@@ -158,8 +158,20 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .key('I', RecipeTags.ironSheet())
                     .patternLine("  I  ")
                     .patternLine("CCICC")
-                    .patternLine(" ZEZ "))
-            ;
+                    .patternLine(" ZEZ ")),
+
+
+    CRT = create(ModdedBlocks.CRT::get)
+            .recipe(b -> b
+                    .key('G', RecipeTags.glass())
+                    .key('C', RecipeTags.copperCoil())
+                    .key('E', RecipeTags.electronTube())
+                    .key('g', RecipeTags.glowstoneDust())
+                    .patternLine("  g  ")
+                    .patternLine(" GGG ")
+                    .patternLine("CCGCC")
+                    .patternLine("  E  "))
+        ;
 
 
     public MechanicalCraftingRecipes(PackOutput output) {
