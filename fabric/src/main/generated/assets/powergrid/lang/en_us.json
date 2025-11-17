@@ -464,6 +464,7 @@
   "powergrid.ponder.parallel_generator_winding.text_2": "This allows for a cleaner generator setup with less wires connected around rotors",
   "powergrid.ponder.plotter.header": "Plotting voltage",
   "powergrid.ponder.plotter.text_1": "The Plotter is a simple electromechanical device that measures voltage over time",
+  "powergrid.ponder.plotter.text_2": "The graph color can be changed by right clicking the plotter with a dye",
   "powergrid.ponder.power_gauge.header": "Monitoring Electricity using the Power Gauge",
   "powergrid.ponder.power_gauge.text_1": "The Power Gauge can be used to measure power going into a section of the electrical network",
   "powergrid.ponder.power_gauge.text_2": "You can change the gauge's range by clicking on top of it",

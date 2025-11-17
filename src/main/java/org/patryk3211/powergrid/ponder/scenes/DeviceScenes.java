@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -44,6 +45,7 @@ import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
+import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 import java.util.Optional;
@@ -827,6 +829,19 @@ public class DeviceScenes {
 
         scene.effects().indicateSuccess(plotter);
         scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("The graph color can be changed by right clicking the plotter with a dye")
+                .pointAt(util.vector().of(3.5, 1.9, 2.5))
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+        scene.overlay().showControls(util.vector().of(3.5, 1.9, 2.5), Pointing.UP, 30)
+                .withItem(new ItemStack(Items.RED_DYE))
+                .rightClick();
+        scene.idle(20);
+        scene.world().modifyBlockEntity(plotter, PlotterBlockEntity.class, be -> be.setColor(DyeColor.RED));
+        scene.idle(40);
 
         scene.markAsFinished();
     }
