@@ -127,13 +127,21 @@ public class WirePreview {
                 if(terminal != null) {
                     hitPoint = terminal.getOrigin().add(pos.getX(), pos.getY(), pos.getZ());
                     hitTerminal = terminal;
+                } else {
+                    hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
                 }
+            } else {
+                hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
             }
         }
 
-        float length = 0;
+        float length = (float) currentPos.distanceTo(hitPoint);
+        // Stop rendering the preview above a thousand blocks to stop the game from freezing
+        if(length > 1000)
+            return;
         boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
         if(isBlockWire || hitTerminal == null) {
+            length = 0;
             currentPos = BlockTrace.alignPosition(currentPos);
             var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
             if(output != null) {
@@ -163,7 +171,6 @@ public class WirePreview {
                 }
             }
         } else {
-            length = (float) currentPos.distanceTo(hitPoint);
             var color = length < wireItem.getMaximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
             HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightTexture.FULL_BRIGHT, color);
         }
