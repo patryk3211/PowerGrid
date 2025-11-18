@@ -123,6 +123,16 @@ public class ElectricalNetwork {
             warmUpTicks = ticks;
     }
 
+    public void addSegment(Collection<INetworkElement> elements) {
+        for(var element : elements) {
+            if(element instanceof INode node) {
+                addNode(node);
+            } else if(element instanceof AbstractElectricWire wire) {
+                addWire(wire);
+            }
+        }
+    }
+
     public void addNode(INode node) {
         if(nodes.contains(node) || leafNodes.containsKey(node))
             return;
@@ -498,6 +508,8 @@ public class ElectricalNetwork {
     }
 
     public void merge(ElectricalNetwork other) {
+        if(other == this)
+            return;
         other.leafNodes.forEach((node, tracked) -> {
             node.setNetwork(this);
             leafNodes.put(node, tracked);

@@ -21,6 +21,7 @@ import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
+import java.util.Collection;
 import java.util.List;
 
 public class ElectronTubeWire extends CompoundWire implements ISolverHook {
@@ -51,6 +52,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         this.gain = gain;
         this.perveance = perveance;
         this.saturationCurrent = saturationCurrent;
+    }
+
+    @Override
+    public Collection<IElectricNode> coupledNodes() {
+        return List.of(node1, node2, grid);
     }
 
     public void setSaturationCurrent(float saturationCurrent) {

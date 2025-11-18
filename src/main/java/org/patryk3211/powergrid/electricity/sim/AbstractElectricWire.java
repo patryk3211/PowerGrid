@@ -16,13 +16,14 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.INetworkElement;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 
 import java.util.Collection;
 import java.util.List;
 
-public abstract class AbstractElectricWire {
+public abstract class AbstractElectricWire implements INetworkElement {
     protected IElectricNode node1;
     protected IElectricNode node2;
 
@@ -48,14 +49,17 @@ public abstract class AbstractElectricWire {
             valueChange(x, x0, 1);
     }
 
+    @Override
     public void setNetwork(ElectricalNetwork network) {
         this.network = network;
     }
 
+    @Override
     public ElectricalNetwork getNetwork() {
         return network;
     }
 
+    @Override
     public void remove() {
         if(network != null)
             network.removeWire(this);

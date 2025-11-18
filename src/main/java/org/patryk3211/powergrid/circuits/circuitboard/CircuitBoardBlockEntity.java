@@ -111,20 +111,20 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         return null;
     }
 
-    private ElectricalNetwork unifyNetwork(ElectricBehaviour other) {
-        var net1 = electricBehaviour.getNetwork();
-        var net2 = other.getNetwork();
+    private ElectricalNetwork unifyNetwork(ElectricBehaviour eb1, IElectricNode node1, ElectricBehaviour eb2, IElectricNode node2) {
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
         ElectricalNetwork network;
         if(net1 == null && net2 == null) {
             network = GlobalElectricNetworks.getWorldNetworks(level).newNetwork();
-            electricBehaviour.joinNetwork(network);
-            other.joinNetwork(network);
+            eb1.tracedAdd(network, node1);
+            eb2.tracedAdd(network, node2);
         } else if(net1 == null) {
             network = net2;
-            electricBehaviour.joinNetwork(network);
+            eb1.tracedAdd(net2, node1);
         } else if(net2 == null) {
             network = net1;
-            other.joinNetwork(network);
+            eb2.tracedAdd(net1, node2);
         } else if(net1 != net2) {
             if(net1.size() >= net2.size()) {
                 network = net1;
@@ -139,10 +139,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         return network;
     }
 
-    private ElectricWire makeWire(ElectricBehaviour eb2, IElectricNode node1, IElectricNode node2) {
-        var wire = new ElectricWire(0.002f, node1, node2);
+    private ElectricWire makeWire(ElectricBehaviour eb2, IElectricNode outNode, IElectricNode hereNode) {
+        var wire = new ElectricWire(0.002f, outNode, hereNode);
         if(!electricBehaviour.isPaused() && !eb2.isPaused()) {
-            var network = unifyNetwork(eb2);
+            var network = unifyNetwork(electricBehaviour, hereNode, eb2, outNode);
             network.addWire(wire);
         }
         return wire;
@@ -264,8 +264,19 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             var other = entry.getKey().electricBehaviour;
             if(!other.isPaused()) {
                 // Both are unpaused, can add shared wires.
-                var network = unifyNetwork(other);
-                entry.getValue().forEach(network::addWire);
+                for(var wire : entry.getValue()) {
+                    var node1 = wire.getNode1();
+                    var node2 = wire.getNode2();
+                    ElectricalNetwork network;
+                    if(electricBehaviour.getInternalNodes().contains(node1)) {
+                        // Node1 is hereNode
+                        network = unifyNetwork(electricBehaviour, node1, other, node2);
+                    } else {
+                        // Node2 is hereNode
+                        network = unifyNetwork(electricBehaviour, node2, other, node1);
+                    }
+                    network.addWire(wire);
+                }
             }
         }
     }

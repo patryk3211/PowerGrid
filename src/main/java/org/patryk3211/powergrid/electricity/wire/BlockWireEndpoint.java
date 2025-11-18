@@ -111,7 +111,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
                 network.addNode(node);
             return;
         }
-        behaviour.joinNetwork(network);
+        behaviour.joinNetwork(network, terminal);
     }
 
     @Override

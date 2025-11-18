@@ -27,8 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.INode;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -64,65 +63,33 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
     }
 
-    @Nullable
-    public ElectricalNetwork getNetwork() {
-        if(externalNodes.isEmpty()) {
-            if(internalNodes.isEmpty())
-                return null;
-            // Same as below, only the first node really matters.
-            for(var node : internalNodes) {
-                return node.getNetwork();
-            }
-        }
-        // Since every node has to have the same network we can
-        // just take the network of the first external node and
-        // assume that every other node belongs to it.
-        for(var node : externalNodes) {
-            if(node != null) {
-                return node.getNetwork();
-            }
-        }
-        return null;
+    public void joinNetwork(@NotNull ElectricalNetwork network, int externalIndex) {
+        if(externalIndex < 0 || externalIndex >= externalNodes.size())
+            return;
+        var node = externalNodes.get(externalIndex);
+        tracedAdd(network, node);
     }
 
-    public void joinNetwork(ElectricalNetwork network) {
-        if(externalNodes.isEmpty() && internalNodes.isEmpty())
-            throw new IllegalStateException("Cannot join a network if no nodes are defined");
-        if(getNetwork() == null) {
-            externalNodes.forEach(node -> {
-                if(node != null)
-                    network.addNode(node);
-            });
-            if(!paused) {
-                internalNodes.forEach(network::addNode);
-                internalWires.forEach(network::addWire);
-            }
-        } else {
-            externalNodes.forEach(node -> {
-                if(node != null && node.getNetwork() == null) {
-                    network.addNode(node);
-                }
-            });
-            if(!paused) {
-                internalNodes.forEach(node -> {
-                    if (node.getNetwork() == null)
-                        network.addNode(node);
-                });
-                internalWires.forEach(wire -> {
-                    if (wire.getNetwork() == null)
-                        network.addWire(wire);
-                });
-            }
-        }
+    public void tracedAdd(ElectricalNetwork network, IElectricNode node) {
+        addOrMerge(node, network);
+        var list = new LinkedList<INode>();
+        list.add(node);
+        tracedAdd(list);
     }
 
     public void rebuildCircuit() {
         var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
-        builder.with(getNetwork());
+        var networkList = externalNodes.stream().map(INode::getNetwork).toList();
         if(paused)
             builder.paused();
         builder.clear();
         element.buildCircuit(builder);
+        // Make sure external (and internal) nodes are in the correct networks.
+        for(int i = 0; i < networkList.size(); ++i) {
+            if(networkList.get(i) == null)
+                continue;
+            joinNetwork(networkList.get(i), i);
+        }
 
         // Break connections if external node was removed.
         var iter = connections.entrySet().iterator();
@@ -157,22 +124,62 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return externalNodes;
     }
 
-    @Override
-    public boolean isSafeNBT() {
-        return true;
-    }
-
     public void pause() {
         if(!paused) {
             paused = true;
             element.paused();
             internalWires.forEach(AbstractElectricWire::remove);
-            var network = getNetwork();
-            if(network != null) {
-                // Remove nodes in reverse order.
-                for(int i = internalNodes.size() - 1; i >= 0; --i) {
-                    var node = internalNodes.get(i);
-                    network.removeNode(node);
+            // Remove nodes in reverse order.
+            for(int i = internalNodes.size() - 1; i >= 0; --i) {
+                var node = internalNodes.get(i);
+                node.remove();
+            }
+        }
+    }
+
+    private static void addOrMerge(IElectricNode node, ElectricalNetwork network) {
+        if(node.getNetwork() == network)
+            return;
+        if(node.getNetwork() == null)
+            network.addNode(node);
+        network.merge(node.getNetwork());
+    }
+
+    public void tracedAdd(List<INode> scanNodes) {
+        if(paused)
+            return;
+        var handled = new HashSet<INetworkElement>();
+        while(!scanNodes.isEmpty()) {
+            var node = scanNodes.remove(0);
+            var network = node.getNetwork();
+            if(network == null)
+                continue;
+            handled.add(node);
+            for(var wire : internalWires) {
+                if(wire.coupledNodes().contains(node)) {
+                    // Wire connects here
+                    if(handled.add(wire)) {
+                        wire.coupledNodes().forEach(other -> {
+                            addOrMerge(other, network);
+                            if(handled.add(other))
+                                scanNodes.add(other);
+                        });
+                        network.addWire(wire);
+                    }
+                }
+            }
+            for(var inode : internalNodes) {
+                if(!(inode instanceof ICouplingNode coupling))
+                    continue;
+                if(coupling.coupledNodes().contains(node)) {
+                    if(handled.add(coupling)) {
+                        coupling.coupledNodes().forEach(other -> {
+                            addOrMerge(other, network);
+                            if(handled.add(other))
+                                scanNodes.add(other);
+                        });
+                        network.addNode(coupling);
+                    }
                 }
             }
         }
@@ -181,14 +188,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void unpause() {
         if(paused) {
             paused = false;
-            var network = getNetwork();
-            if (network == null)
-                return;
             // External nodes weren't removed so they don't have to be added.
             if(hasInternals()) {
                 GlobalElectricNetworks.prepareUnpaused(this);
-                internalNodes.forEach(network::addNode);
-                internalWires.forEach(network::addWire);
+                tracedAdd(new LinkedList<>(externalNodes));
                 element.unpaused();
             }
         }

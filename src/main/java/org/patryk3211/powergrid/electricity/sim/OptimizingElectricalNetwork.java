@@ -131,6 +131,8 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
 
     @Override
     public void merge(ElectricalNetwork other) {
+        if(other == this)
+            return;
         // This ensures proper (un)optimization
         other.nodes.forEach(node -> {
             if(node instanceof IElectricNode)
