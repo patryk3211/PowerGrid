@@ -32,10 +32,7 @@ import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
 import org.patryk3211.powergrid.electricity.crt.CRTBlockEntity;
 import org.patryk3211.powergrid.electricity.crt.CRTRenderer;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchVisual;
-import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
+import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
@@ -185,6 +182,13 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("spark_gap", SparkGapBlockEntity::new)
                     .validBlock(ModdedBlocks.SPARK_GAP)
                     .renderer(() -> SparkGapRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<HvBreakerBlockEntity> HV_BREAKER =
+            REGISTRATE.blockEntity("hv_breaker", HvBreakerBlockEntity::new)
+                    .visual(() -> ShaftVisual::new)
+                    .validBlock(ModdedBlocks.HV_BREAKER)
+                    .renderer(() -> HvBreakerRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ContactorBlockEntity> CONTACTOR =

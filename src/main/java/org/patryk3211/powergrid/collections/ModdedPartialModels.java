@@ -70,6 +70,9 @@ public class ModdedPartialModels {
     public static final PartialModel PLOTTER_PAPER = block("plotter/paper");
     public static final PartialModel CRT_BACKGROUND = block("crt_background");
 
+    public static final PartialModel HV_BREAKER_SIGNAL1 = block("switches/hv_breaker_signal1");
+    public static final PartialModel HV_BREAKER_SIGNAL2 = block("switches/hv_breaker_signal2");
+
     public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(
             PowerGrid.asResource("block/plotter_paper"),
             PowerGrid.asResource("block/plotter_paper_shift"));

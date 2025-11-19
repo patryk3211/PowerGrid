@@ -66,10 +66,7 @@ import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
 import org.patryk3211.powergrid.electricity.crt.CRTBlock;
 import org.patryk3211.powergrid.electricity.crt.EncasedCRTBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.LvButtonBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
@@ -380,6 +377,19 @@ public class ModdedBlocks {
             .lang("HV Switch")
             .item()
                 .model(itemWithParent("block/switches/hv_switch"))
+                .build()
+            .register();
+
+    public static final BlockEntry<HvBreakerBlock> HV_BREAKER = REGISTRATE.block("hv_breaker", HvBreakerBlock::new)
+            .blockstate(horizontalBlock("block/switches/hv_breaker_block"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .transform(CStress.setImpact(2))
+            .transform(CResistance.setResistance(0.1))
+            .transform(CThermal.maxPower(102.4, 2.0f))
+            .lang("HV Breaker")
+            .item()
+                .model(itemWithParent("block/switches/hv_breaker_item"))
                 .build()
             .register();
 

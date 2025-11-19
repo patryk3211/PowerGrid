@@ -16,6 +16,24 @@
       }
     ]
   },
+  "breaker_off": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "powergrid:contactor_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.breaker_off"
+  },
+  "breaker_on": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "powergrid:contactor_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.breaker_on"
+  },
   "component_explode": {
     "sounds": [
       {

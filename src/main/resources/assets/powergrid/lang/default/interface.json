@@ -38,6 +38,11 @@
   "powergrid.gui.carbon_pile.max_resistance": "Maximum resistance:",
   "powergrid.gui.carbon_pile.current_resistance": "Current resistance:",
 
+  "powergrid.gui.hv_breaker.status": "Status:",
+  "powergrid.gui.hv_breaker.open": "Open",
+  "powergrid.gui.hv_breaker.closed": "Closed",
+  "powergrid.gui.hv_breaker.charged": "Charged",
+
   "powergrid.gui.potentiometer.setting": "Setting",
 
   "powergrid.gui.damage_header": "Damaged",
