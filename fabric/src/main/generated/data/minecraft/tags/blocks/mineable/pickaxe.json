@@ -22,6 +22,7 @@
     "powergrid:lv_button",
     "powergrid:mv_switch",
     "powergrid:hv_switch",
+    "powergrid:hv_breaker",
     "powergrid:spark_gap",
     "powergrid:contactor",
     "powergrid:creative_voltage_source",

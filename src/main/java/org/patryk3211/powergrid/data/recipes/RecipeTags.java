@@ -139,4 +139,8 @@ public class RecipeTags {
     public static ItemLike electronTube() {
         return AllItems.ELECTRON_TUBE.get();
     }
+
+    public static ItemLike precisionMechanism() {
+        return AllItems.PRECISION_MECHANISM;
+    }
 }

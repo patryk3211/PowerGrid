@@ -111,36 +111,6 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine("A")
             ),
 
-    HV_SWITCH = create(ModdedBlocks.HV_SWITCH::get)
-            .recipe(b -> b
-                    .key('I', RecipeTags.ironSheet())
-                    .key('A', AllBlocks.ANDESITE_CASING)
-                    .key('G', AllBlocks.COGWHEEL)
-                    .patternLine("I  ")
-                    .patternLine("I  ")
-                    .patternLine("AGI")),
-
-    VARIAC = create(ModdedBlocks.VARIAC::get)
-            .recipe(b -> b
-                    .key('C', RecipeTags.coal())
-                    .key('T', RecipeTags.transformerCore())
-                    .key('W', RecipeTags.copperCoil())
-                    .key('E', RecipeTags.conductiveCasing())
-                    .key('S', RecipeTags.shaft())
-                    .patternLine("CS ")
-                    .patternLine("WTW")
-                    .patternLine("WEW")),
-
-    RHEOSTAT = create(ModdedBlocks.RHEOSTAT::get)
-            .recipe(b -> b
-                    .key('C', RecipeTags.coal())
-                    .key('W', RecipeTags.resistiveCoil())
-                    .key('E', RecipeTags.conductiveCasing())
-                    .key('S', RecipeTags.shaft())
-                    .patternLine("CS ")
-                    .patternLine("WWW")
-                    .patternLine("WEW")),
-
     BASIN_HEATER = create(ModdedBlocks.BASIN_HEATER::get)
             .recipe(b -> b
                     .key('R', RecipeTags.resistiveCoil())

@@ -1,6 +1,6 @@
 {
-  "type": "create:mechanical_crafting",
-  "acceptMirrored": true,
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
     "C": {
       "tag": "minecraft:coals"
@@ -11,16 +11,20 @@
     "S": {
       "item": "create:shaft"
     },
+    "T": {
+      "item": "powergrid:transformer_core"
+    },
     "W": {
-      "item": "powergrid:resistive_coil"
+      "tag": "c:copper_coils"
     }
   },
   "pattern": [
     "CS ",
-    "WWW",
+    "WTW",
     "WEW"
   ],
   "result": {
-    "item": "powergrid:rheostat"
-  }
+    "item": "powergrid:variac"
+  },
+  "show_notification": true
 }

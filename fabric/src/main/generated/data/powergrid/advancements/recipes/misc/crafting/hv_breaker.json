@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "powergrid:crafting//generator_housing"
+        "recipe": "powergrid:crafting//hv_breaker"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "powergrid:crafting//generator_housing"
+      "powergrid:crafting//hv_breaker"
     ]
   },
   "sends_telemetry_event": false
