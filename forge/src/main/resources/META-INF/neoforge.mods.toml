@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "${forge_version_range}"
+loaderVersion = "${neoforge_version_range}"
 issueTrackerURL = "https://github.com/patryk3211/PowerGrid/issues"
 license = "Apache-2.0"
 
@@ -14,9 +14,9 @@ Providing electricity to a world near you.
 logoFile = "assets/powergrid/icon.png"
 
 [[dependencies.powergrid]]
-modId = "forge"
+modId = "neoforge"
 mandatory = true
-versionRange = "${forge_version_range}"
+versionRange = "${neoforge_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
@@ -40,3 +40,10 @@ mandatory = true
 versionRange = "${create_forge_version}"
 ordering = "NONE"
 side = "BOTH"
+
+[[mixins]]
+config = "powergrid.mixins.json"
+[[mixins]]
+config = "powergrid.client.mixins.json"
+[[mixins]]
+config = "powergrid-forge.mixins.json"

@@ -11,5 +11,5 @@ pluginManagement {
 
 rootProject.name = "Power Grid"
 
-include("fabric")
+//include("fabric")
 include("forge")

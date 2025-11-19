@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-architectury.forge()
+architectury.neoForge {
+    platformPackage = "forge"
+}
 
 configurations {
-    developmentForge.extendsFrom common
+    developmentNeoForge.extendsFrom common
 }
 
 dependencies {
-    forge "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    neoForge "net.neoforged:neoforge:${neoforge_version}"
 
     modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
-    modImplementation("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_forge_version}")
-    modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_forge_version}")
+    modImplementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_forge_version}")
+    modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_forge_version}")
     modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
 
     modImplementation "dev.architectury:architectury-forge:${architectury_api_version}"
@@ -41,22 +43,22 @@ dependencies {
     compileOnly("io.github.llamalad7:mixinextras-common:${mixin_extras_version}")
     annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")))
 
-    shadowCommon(project(path: rootProject.path, configuration: "transformProductionForge")) { transitive false }
+    shadowCommon(project(path: rootProject.path, configuration: "transformProductionNeoForge")) { transitive false }
 
     forgeRuntimeLibrary "org.ejml:ejml-core:0.44.0"
     forgeRuntimeLibrary "org.ejml:ejml-simple:0.44.0"
     forgeRuntimeLibrary "org.ejml:ejml-ddense:0.44.0"
     forgeRuntimeLibrary "org.ejml:ejml-dsparse:0.44.0"
 
-    modLocalRuntime("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_forge_version}")
-    modLocalRuntime("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
+    modLocalRuntime("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_forge_version}")
+    modLocalRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 //    modLocalRuntime("maven.modrinth:create-tfmg:1.0.2c")
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
 }
 
 loom {
-    forge {
-        mixinConfigs("powergrid.mixins.json", "powergrid.client.mixins.json", "powergrid-forge.mixins.json")
+    neoForge {
+//        mixinConfigs("powergrid.mixins.json", "powergrid.client.mixins.json", "powergrid-forge.mixins.json")
     }
 
     runs {

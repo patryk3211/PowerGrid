@@ -21,11 +21,12 @@ allprojects {
 	version = "mc${project.minecraft_version}-${project.mod_version}"
 
 	tasks.withType(JavaCompile).configureEach {
-		it.options.release = 17
+		it.options.release = 21
 	}
 
 	repositories {
 		maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
+		maven { url = "https://maven.neoforged.net/releases" }
 
 		maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
 		maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
@@ -87,8 +88,8 @@ allprojects {
 	java {
 		withSourcesJar()
 
-		sourceCompatibility = JavaVersion.VERSION_17
-		targetCompatibility = JavaVersion.VERSION_17
+		sourceCompatibility = JavaVersion.VERSION_21
+		targetCompatibility = JavaVersion.VERSION_21
 	}
 }
 
@@ -125,8 +126,8 @@ subprojects {
 				architectury_version : project.architectury_api_version,
 				create_forge_version : project.create_forge_range,
 				create_fabric_version: project.create_fabric_version,
-				forge_version        : project.forge_version,
-				forge_version_range	 : project.forge_version_range,
+				neoforge_version     : project.neoforge_version,
+				neoforge_version_range : project.neoforge_version_range,
 				fabric_version       : project.fabric_version,
 				loader_version       : project.loader_version,
 				minecraft_version    : project.minecraft_version
@@ -251,16 +252,22 @@ subprojects {
 /*    -------========= COMMON PROJECT CONFIGURATION =========-------    */
 
 architectury {
-	common(project.enabled_platforms.split(','))
+	common(project.enabled_platforms.split(',')) {
+		it.platformPackage "neoforge", "forge"
+	}
 }
 
 dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	modCompileOnly("com.simibubi.create:create-fabric:${project.create_fabric_version}-mc${project.minecraft_version}")
-	modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_fabric_version}")
-	modCompileOnly("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_forge_version}")
-	modCompileOnly("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
+	modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
+	modImplementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_forge_version}")
+	modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_forge_version}")
+	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
+//	modCompileOnly("com.simibubi.create:create-fabric:${project.create_fabric_version}-mc${project.minecraft_version}")
+//	modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_fabric_version}")
+//	modCompileOnly("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_forge_version}")
+//	modCompileOnly("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
 
 	// Just Enough Items
 	modCompileOnly "mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}"
