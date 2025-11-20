@@ -83,7 +83,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         if(simulate)
             return true;
 
-        var outputs = RecipeApplier.applyRecipeOn(level, input.stack.copyWithCount(1), recipe.get(), true);
+        var outputs = RecipeApplier.applyRecipeOn(level, input.stack.copyWithCount(1), recipe.get());
 //        for(ItemStack created : outputs) {
 //            if(!created.isEmpty()) {
 //                onItemPressed(created);
@@ -104,7 +104,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         if(simulate)
             return true;
 
-        for(var result : RecipeApplier.applyRecipeOn(level, item.copyWithCount(1), recipe.get(), true)) {
+        for(var result : RecipeApplier.applyRecipeOn(level, item.copyWithCount(1), recipe.get())) {
             var created = new ItemEntity(level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), result);
             created.setDefaultPickUpDelay();
             created.setDeltaMovement(VecHelper.offsetRandomly(Vec3.ZERO, level.random, .05f));
