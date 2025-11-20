@@ -23,4 +23,6 @@ public interface ILightBulb {
     float resistanceFunction(float temperature);
     Properties thermalProperties();
     LightBulbState createState(LightFixtureBlockEntity fixture);
+
+    boolean canBeDyed();
 }

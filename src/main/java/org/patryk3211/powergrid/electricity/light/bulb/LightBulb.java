@@ -23,6 +23,7 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,17 +36,20 @@ import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
+import java.util.EnumMap;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class LightBulb extends Item implements ILightBulb, IHaveElectricProperties {
     protected Supplier<Function<State, PartialModel>> modelSupplier = null;
+    protected Supplier<Function<DyedState, PartialModel>> dyedModelSupplier = null;
 
     protected float T_max = 1200;
     protected float R_max = 100;
     protected float R_min = 15;
     protected org.patryk3211.powergrid.electricity.light.bulb.ILightBulb.Properties thermalProperties;
+    protected boolean canBeDyed;
 
     protected float power = 0;
     protected float voltage = 0;
@@ -57,6 +61,45 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setModelProvider(Supplier<Function<State, PartialModel>> provider) {
         return b -> {
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> b.onRegister(item -> item.modelSupplier = provider));
+            return b;
+        };
+    }
+
+    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setModelNameProvider(Supplier<Function<State, ResourceLocation>> provider) {
+        return b -> {
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+                // Build a model map and use that
+                var map = new EnumMap<State, PartialModel>(State.class);
+                for (var state : State.values()) {
+                    var name = provider.get().apply(state);
+                    map.put(state, PartialModel.of(name));
+                }
+                b.onRegister(item -> item.modelSupplier = () -> map::get);
+            });
+            return b;
+        };
+    }
+
+    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setDyedModelProvider(Supplier<Function<DyedState, PartialModel>> provider) {
+        return b -> {
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> b.onRegister(item -> item.dyedModelSupplier = provider));
+            b.onRegister(item -> item.canBeDyed = true);
+            return b;
+        };
+    }
+
+    public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setDyedModelNameProvider(Supplier<Function<DyedState, ResourceLocation>> provider) {
+        return b -> {
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+                // Build a model map and use that
+                var map = new EnumMap<DyedState, PartialModel>(DyedState.class);
+                for (var state : DyedState.values()) {
+                    var name = provider.get().apply(state);
+                    map.put(state, PartialModel.of(name));
+                }
+                b.onRegister(item -> item.dyedModelSupplier = () -> map::get);
+            });
+            b.onRegister(item -> item.canBeDyed = true);
             return b;
         };
     }
@@ -103,7 +146,12 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
 
     @Override
     public LightBulbState createState(LightFixtureBlockEntity fixture) {
-        return new SimpleState(this, fixture, modelSupplier);
+        return new SimpleState(this, fixture, modelSupplier, dyedModelSupplier);
+    }
+
+    @Override
+    public boolean canBeDyed() {
+        return canBeDyed;
     }
 
     @Override
@@ -120,13 +168,32 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
         OFF, LOW_POWER, ON, BROKEN, LIGHT
     }
 
+    public enum DyedState {
+        OFF, LOW_POWER, ON, BROKEN, LIGHT, BULB;
+
+        public static DyedState fromState(State state) {
+            return switch(state) {
+                case OFF -> OFF;
+                case LOW_POWER -> LOW_POWER;
+                case ON -> ON;
+                case BROKEN -> BROKEN;
+                case LIGHT -> LIGHT;
+            };
+        }
+    }
+
     public static class SimpleState extends LightBulbState {
         @Environment(EnvType.CLIENT)
         public Function<State, PartialModel> modelProvider;
+        @Environment(EnvType.CLIENT)
+        public Function<DyedState, PartialModel> dyedModelProvider;
 
-        public <T extends Item & ILightBulb> SimpleState(T bulb, LightFixtureBlockEntity fixture, Supplier<Function<State, PartialModel>> modelProviderSupplier) {
+        public <T extends Item & ILightBulb> SimpleState(T bulb, LightFixtureBlockEntity fixture,
+                                                         Supplier<Function<State, PartialModel>> modelProviderSupplier,
+                                                         Supplier<Function<DyedState, PartialModel>> dyedModelProviderSupplier) {
             super(bulb, fixture);
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> modelProvider = modelProviderSupplier.get());
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> dyedModelProvider = dyedModelProviderSupplier.get());
         }
 
         @Override
@@ -144,12 +211,24 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
                     state = State.ON;
                 }
             }
+            if(bulb.canBeDyed() && color != null)
+                return dyedModelProvider.apply(DyedState.fromState(state));
             return modelProvider.apply(state);
         }
 
         @Override
         @Environment(EnvType.CLIENT)
+        public PartialModel getDyedBulb() {
+            if(bulb.canBeDyed())
+                return dyedModelProvider.apply(DyedState.BULB);
+            return null;
+        }
+
+        @Override
+        @Environment(EnvType.CLIENT)
         public @NotNull PartialModel getLightModel() {
+            if(bulb.canBeDyed() && color != null)
+                return dyedModelProvider.apply(DyedState.LIGHT);
             return modelProvider.apply(State.LIGHT);
         }
 

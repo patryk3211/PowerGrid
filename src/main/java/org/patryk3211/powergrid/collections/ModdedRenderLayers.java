@@ -63,6 +63,17 @@ public class ModdedRenderLayers {
                     .createCompositeState(false)
     );
 
+    private static final RenderType ADDITIVE = RenderType.create("powergrid_additive", DefaultVertexFormat.BLOCK,
+            VertexFormat.Mode.QUADS, 256, true, true, RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.RENDERTYPE_SOLID_SHADER)
+                    .setTextureState(RenderStateShard.BLOCK_SHEET)
+                    .setTransparencyState(RenderStateShard.ADDITIVE_TRANSPARENCY)
+                    .setCullState(RenderStateShard.NO_CULL)
+                    .setLightmapState(RenderStateShard.LIGHTMAP)
+                    .setOverlayState(RenderStateShard.OVERLAY)
+                    .setOutputState(RenderStateShard.PARTICLES_TARGET)
+                    .createCompositeState(true));
+
     public static RenderType getDebugLines() {
         return DEBUG_LINES;
     }
@@ -73,6 +84,10 @@ public class ModdedRenderLayers {
 
     public static RenderType getAdditiveColor() {
         return ADDITIVE_COLOR;
+    }
+
+    public static RenderType getAdditive() {
+        return ADDITIVE;
     }
 
     @SuppressWarnings("EmptyMethod")

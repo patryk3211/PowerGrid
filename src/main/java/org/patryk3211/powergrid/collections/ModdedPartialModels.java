@@ -33,16 +33,6 @@ public class ModdedPartialModels {
 
     public static final PartialModel CLUTCH_SHAFT = block("generator/clutch_shaft");
 
-    public static final PartialModel LIGHT_BULB_OFF = block("lamps/light_bulb");
-    public static final PartialModel LIGHT_BULB_ON = block("lamps/light_bulb_on");
-    public static final PartialModel LIGHT_BULB_BROKEN = block("lamps/light_bulb_broken");
-    public static final PartialModel LIGHT_BULB_LIGHT = block("lamps/light_bulb_light");
-
-    public static final PartialModel GROWTH_LAMP_OFF = block("lamps/growth_lamp");
-    public static final PartialModel GROWTH_LAMP_ON = block("lamps/growth_lamp_on");
-    public static final PartialModel GROWTH_LAMP_BROKEN = block("lamps/growth_lamp_broken");
-    public static final PartialModel GROWTH_LAMP_LIGHT = block("lamps/growth_lamp_light");
-
     public static final PartialModel HV_SWITCH_ROD = block("switches/hv_switch_rod");
     public static final PartialModel VARIAC_ARMATURE = block("variac/armature");
 

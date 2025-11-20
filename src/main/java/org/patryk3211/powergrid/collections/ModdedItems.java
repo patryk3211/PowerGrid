@@ -88,35 +88,49 @@ public class ModdedItems {
     public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
 
     public static final ItemEntry<LvLightBulb> LV_LIGHT_BULB = REGISTRATE.item("lv_light_bulb", LvLightBulb::new)
-            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
-                case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
-                case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
-                case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
-                case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
-            }))
+            .transform(LightBulb.setModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/light_bulb";
+                case LOW_POWER, ON -> "block/lamps/light_bulb_on";
+                case BROKEN -> "block/lamps/light_bulb_broken";
+                case LIGHT -> "block/lamps/light_bulb_light";
+            })))
+            .transform(LightBulb.setDyedModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/dyed_light_bulb";
+                case LOW_POWER, ON -> "block/lamps/dyed_light_bulb_on";
+                case BROKEN -> "block/lamps/dyed_light_bulb_broken";
+                case LIGHT -> "block/lamps/dyed_light_bulb_light";
+                case BULB -> "block/lamps/dyed_light_bulb_bulb";
+            })))
             .transform(LightBulb.setProperties(3, 12, 20, 0.001f))
             .model(itemWithParent("block/lamps/light_bulb"))
             .lang("LV Light Bulb")
             .register();
 
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
-            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
-                case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
-                case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
-                case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
-                case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
-            }))
+            .transform(LightBulb.setModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/light_bulb";
+                case LOW_POWER, ON -> "block/lamps/light_bulb_on";
+                case BROKEN -> "block/lamps/light_bulb_broken";
+                case LIGHT -> "block/lamps/light_bulb_light";
+            })))
+            .transform(LightBulb.setDyedModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/dyed_light_bulb";
+                case LOW_POWER, ON -> "block/lamps/dyed_light_bulb_on";
+                case BROKEN -> "block/lamps/dyed_light_bulb_broken";
+                case LIGHT -> "block/lamps/dyed_light_bulb_light";
+                case BULB -> "block/lamps/dyed_light_bulb_bulb";
+            })))
             .transform(LightBulb.setProperties(30, 120, 120, 0.005f))
             .model(itemWithParent("block/lamps/light_bulb"))
             .register();
 
     public static final ItemEntry<GrowthLamp> GROWTH_LAMP = REGISTRATE.item("growth_lamp", GrowthLamp::new)
-            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
-                case OFF -> ModdedPartialModels.GROWTH_LAMP_OFF;
-                case LOW_POWER, ON -> ModdedPartialModels.GROWTH_LAMP_ON;
-                case BROKEN -> ModdedPartialModels.GROWTH_LAMP_BROKEN;
-                case LIGHT -> ModdedPartialModels.GROWTH_LAMP_LIGHT;
-            }))
+            .transform(LightBulb.setModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/growth_lamp";
+                case LOW_POWER, ON -> "block/lamps/growth_lamp_on";
+                case BROKEN -> "block/lamps/growth_lamp_broken";
+                case LIGHT -> "block/lamps/growth_lamp_light";
+            })))
             .transform(LightBulb.setProperties(120, 240, 120, 0.01f))
             .model(itemWithParent("block/lamps/growth_lamp"))
             .register();
