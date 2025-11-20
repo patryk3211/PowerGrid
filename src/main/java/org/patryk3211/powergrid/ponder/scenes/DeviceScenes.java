@@ -43,6 +43,7 @@ import org.patryk3211.powergrid.electricity.crt.CRTBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
@@ -318,6 +319,19 @@ public class DeviceScenes {
         scene.idle(40);
         scene.world().modifyBlock(light, state -> state.setValue(LightFixtureBlock.POWER, 1), false);
         scene.idle(50);
+
+        scene.overlay().showText(80)
+                .text("You can change the color of the light bulb by right-clicking it with a dye")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showControls(util.vector().of(2.5, 2.5, 2.5), Pointing.DOWN, 40)
+                .withItem(new ItemStack(Items.RED_DYE))
+                .rightClick();
+        scene.idle(20);
+        scene.world().modifyBlockEntity(light, LightFixtureBlockEntity.class, be -> be.setColor(DyeColor.RED));
+        scene.idle(20);
 
         scene.markAsFinished();
     }

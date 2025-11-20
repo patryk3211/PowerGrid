@@ -1,21 +1,20 @@
 {
-  "replace": false,
   "values": [
-    "create:copper_nugget",
-    "create:electron_tube",
-    "powergrid:regulator_tube",
+    "powergrid:potentiometer",
     "powergrid:neon_bulb",
-    "powergrid:wire_connector",
-    "powergrid:lv_switch",
-    "powergrid:relay",
-    "powergrid:resistor",
-    "powergrid:redstone_relay",
-    "powergrid:voltage_gauge",
     "powergrid:current_gauge",
-    "powergrid:diode",
-    "powergrid:capacitor",
     "powergrid:copper_coil",
+    "create:electron_tube",
+    "powergrid:relay",
+    "create:copper_nugget",
+    "powergrid:lv_switch",
+    "powergrid:capacitor",
     "powergrid:lv_button",
-    "powergrid:potentiometer"
+    "powergrid:wire_connector",
+    "powergrid:redstone_relay",
+    "powergrid:regulator_tube",
+    "powergrid:voltage_gauge",
+    "powergrid:diode",
+    "powergrid:resistor"
   ]
 }

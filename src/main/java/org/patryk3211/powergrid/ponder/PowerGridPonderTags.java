@@ -79,6 +79,7 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.LV_BUTTON)
                 .add(ModdedBlocks.MV_SWITCH)
                 .add(ModdedBlocks.HV_SWITCH)
+                .add(ModdedBlocks.HV_BREAKER)
                 .add(ModdedBlocks.CONTACTOR)
                 .add(ModdedBlocks.SPARK_GAP)
                 .add(ModdedBlocks.FUSE_HOLDER)
@@ -104,7 +105,8 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.LV_LIGHT_BULB)
                 .add(ModdedItems.LIGHT_BULB)
                 .add(ModdedItems.GROWTH_LAMP)
-                .add(ModdedBlocks.PLOTTER);
+                .add(ModdedBlocks.PLOTTER)
+                .add(ModdedBlocks.CRT);
 
         HELPER.addToTag(CIRCUIT_COMPONENTS)
                 .add(ModdedBlocks.WIRE_CONNECTOR)

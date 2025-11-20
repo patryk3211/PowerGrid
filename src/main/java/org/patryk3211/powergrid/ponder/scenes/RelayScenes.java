@@ -27,6 +27,7 @@ import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
 import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlockEntity;
+import org.patryk3211.powergrid.electricity.electricswitch.HvBreakerBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
 import org.patryk3211.powergrid.electricity.electricswitch.SurfaceSwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
@@ -123,6 +124,75 @@ public class RelayScenes {
             be.onSpeedChanged(64);
         });
         scene.idle(40);
+
+        scene.markAsFinished();
+    }
+
+    public static void hvBreaker(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("hv_breaker", "A high power switch");
+        scene.configureBasePlate(0, 0, 5);
+
+        var breaker = util.grid().at(2, 1, 2);
+        var light = util.grid().at(2, 2, 2);
+        var connector1 = util.grid().at(4, 2, 2);
+        var connector2 = util.grid().at(2, 1, 4);
+
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().position(breaker), Direction.DOWN);
+        scene.idle(10);
+
+        scene.world().showSection(util.select().fromTo(connector1.below(), connector1), Direction.DOWN);
+        scene.world().showSection(util.select().position(connector2), Direction.DOWN);
+        scene.world().showSection(util.select().position(light), Direction.DOWN);
+
+        scene.electric().connect(connector1, 0, light, 0);
+        scene.electric().connect(light, 1, breaker, 1);
+        scene.electric().connect(breaker, 0, connector2, 0);
+        scene.electric().addSource(connector1, 0, 122);
+        scene.electric().addSource(connector2, 0, 0);
+        scene.electric().tickForever();
+        scene.idle(10);
+
+        scene.world().showSection(util.select().fromTo(2, 1, 0, 2, 1, 1), Direction.DOWN);
+        scene.world().showSection(util.select().position(1, 1, 2), Direction.EAST);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("HV Breaker can be used to safely switch a high power load")
+                .pointAt(util.vector().blockSurface(breaker, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(80)
+                .text("To toggle its state, you must first wind it up")
+                .pointAt(util.vector().of(1.5, 1.5, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(60);
+
+        scene.world().setKineticSpeed(util.select().fromTo(breaker, breaker.west()), 32);
+        scene.world().modifyBlockEntity(breaker, HvBreakerBlockEntity.class, be -> be.onSpeedChanged(0));
+        scene.idle(90);
+        scene.world().setKineticSpeed(util.select().fromTo(breaker, breaker.west()), 0);
+        scene.world().modifyBlockEntity(breaker, HvBreakerBlockEntity.class, be -> be.onSpeedChanged(32));
+
+        scene.effects().indicateSuccess(breaker);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("Its state can then be toggled with a redstone pulse")
+                .pointAt(util.vector().of(2.5, 1.0, 1.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.world().toggleRedstonePower(util.select().fromTo(breaker, breaker.north(3)));
+        scene.idle(40);
+        scene.world().toggleRedstonePower(util.select().fromTo(breaker, breaker.north(3)));
+        scene.idle(20);
 
         scene.markAsFinished();
     }

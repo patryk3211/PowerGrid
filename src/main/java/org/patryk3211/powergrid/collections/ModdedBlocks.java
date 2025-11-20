@@ -365,7 +365,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(2))
             .transform(CResistance.setResistance(0.1))
-            .transform(CThermal.maxPower(102.4, 2.0f))
+            .transform(CThermal.maxPower(153.6, 2.0f))
             .loot((tables, block) ->
                     tables.add(block, b -> LootTable.lootTable()
                             .withPool(LootPool.lootPool()
