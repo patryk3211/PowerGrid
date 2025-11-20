@@ -19,24 +19,21 @@ import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
-import org.patryk3211.powergrid.electricity.transformer.TransformerSoundInstance;
-import org.patryk3211.powergrid.electricity.transformer.TransformerVolumeProvider;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.sound.SoundScapes;
 
 import java.util.List;
 
-public class VariacBlockEntity extends TunedBlockEntity implements TransformerVolumeProvider, IHaveGoggleInformation {
+public class VariacBlockEntity extends TunedBlockEntity implements IHaveGoggleInformation {
     public static final float PRIMARY_TURNS = 25;
     public static final float CORE_AL = 1.5f;
     public static final float COUPLING_FACTOR = 0.9999f;
@@ -47,7 +44,6 @@ public class VariacBlockEntity extends TunedBlockEntity implements TransformerVo
     protected TransformerCoupling coupling;
 
     public float lastCurrent;
-    private boolean hasSoundSource;
 
     public VariacBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -56,12 +52,6 @@ public class VariacBlockEntity extends TunedBlockEntity implements TransformerVo
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
-    }
-
-    @Override
-    public float getVolume() {
-        var volume = lastCurrent / 80;
-        return Mth.clamp(volume * volume, 0, 0.5f);
     }
 
     public float getRatio() {
@@ -129,12 +119,7 @@ public class VariacBlockEntity extends TunedBlockEntity implements TransformerVo
     @Environment(EnvType.CLIENT)
     public void tickAudio() {
         super.tickAudio();
-        if(!hasSoundSource && getVolume() > 0) {
-            Minecraft.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
-            hasSoundSource = true;
-        } else if(hasSoundSource && getVolume() <= 0) {
-            hasSoundSource = false;
-        }
+        SoundScapes.play(SoundScapes.AmbienceGroup.HUM, worldPosition, 1, lastCurrent / 20);
     }
 
     @Override

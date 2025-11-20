@@ -52,6 +52,11 @@ public class CRTBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
+    public boolean isNoisy() {
+        return false;
+    }
+
+    @Override
     public void tick() {
         applyPower(xDeflect);
         applyPower(yDeflect);

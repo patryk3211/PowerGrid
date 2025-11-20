@@ -43,6 +43,11 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
+    public boolean isNoisy() {
+        return false;
+    }
+
+    @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
     }

@@ -20,11 +20,9 @@ import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -38,11 +36,12 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
+import org.patryk3211.powergrid.utility.sound.SoundScapes;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, TransformerVolumeProvider {
+public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     protected TransformerCoilParameters primaryCoil;
     protected TransformerCoilParameters secondaryCoil;
 
@@ -51,7 +50,6 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     protected TransformerCoupling coupling;
 
     public float lastCurrent;
-    private boolean hasSoundSource;
 
     public TransformerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -89,20 +87,9 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         }
     }
 
-    @Override
-    public float getVolume() {
-        var volume = lastCurrent / 80;
-        return Mth.clamp(volume * volume, 0, 0.333f);
-    }
-
     @Environment(EnvType.CLIENT)
-    protected void tickAudio() {
-        if(!hasSoundSource && getVolume() > 0) {
-            Minecraft.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
-            hasSoundSource = true;
-        } else if(hasSoundSource && getVolume() <= 0) {
-            hasSoundSource = false;
-        }
+    public void tickAudio() {
+        SoundScapes.play(SoundScapes.AmbienceGroup.HUM, worldPosition, 1.0f, lastCurrent / 20);
     }
 
     @Override
@@ -125,7 +112,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         }
 
         if(rebuild) {
-            electricBehaviour.rebuildCircuit();
+            electricBehaviour.rebuildCircuit(false);
         }
     }
 
@@ -192,7 +179,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     public void makePrimary(int terminal1, int terminal2, int turns, Item item) {
         primaryCoil.set(terminal1, terminal2, turns, item);
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(false);
         notifyUpdate();
     }
 
@@ -206,7 +193,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     public void makeSecondary(int terminal1, int terminal2, int turns, Item item) {
         secondaryCoil.set(terminal1, terminal2, turns, item);
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(false);
         notifyUpdate();
     }
 
@@ -220,13 +207,13 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     public void removeSecondary() {
         secondaryCoil.clear();
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(false);
         notifyUpdate();
     }
 
     public void removePrimary() {
         primaryCoil.clear();
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(false);
         notifyUpdate();
     }
 

@@ -174,6 +174,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         this.trackedBehaviour = other.getPos();
     }
 
+    public float maxPower() {
+        return (overheatTemperature - BASE_TEMPERATURE) * dissipationFactor;
+    }
+
     public void resetTemperature() {
         this.temperature = BASE_TEMPERATURE;
     }

@@ -17,11 +17,14 @@ package org.patryk3211.powergrid.electricity.base;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
+import org.patryk3211.powergrid.utility.sound.SoundScapes;
 
 import java.util.List;
 
@@ -29,6 +32,8 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
     protected ElectricBehaviour electricBehaviour;
     @Nullable
     protected ThermalBehaviour thermalBehaviour;
+
+    private float power;
 
     public ElectricBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -50,8 +55,30 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
     }
 
     protected void applyPower(AbstractElectricWire wire) {
+        power += wire.power();
         if(thermalBehaviour != null)
             thermalBehaviour.applyWirePower(wire);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if(level.isClientSide) {
+            tickAudio();
+        }
+        power = 0;
+    }
+
+    public boolean isNoisy() {
+        return true;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public void tickAudio() {
+        if(!isNoisy() || thermalBehaviour == null)
+            return;
+        var percent = power / thermalBehaviour.maxPower();
+        SoundScapes.play(SoundScapes.AmbienceGroup.HUM, worldPosition, 1, percent);
     }
 
     public ElectricBehaviour getElectricBehaviour() {

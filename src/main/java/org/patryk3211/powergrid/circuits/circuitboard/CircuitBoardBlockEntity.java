@@ -200,7 +200,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         for(var placed : schematic.components()) {
             placed.withWorld(this::getLevel, worldPosition);
         }
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(true);
         if(level != null) {
             if(level.isClientSide)
                 Component.modelChanged(worldPosition);

@@ -58,6 +58,7 @@ public interface IElectricEntity {
         private final Collection<INode> internalNodes;
         private final Collection<AbstractElectricWire> wires;
         private boolean paused = false;
+        private boolean rebuildExternal = true;
 
         public CircuitBuilder(BlockPos pos, List<OwnedFloatingNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
             this.pos = pos;
@@ -69,9 +70,11 @@ public interface IElectricEntity {
         public void clear() {
             wires.forEach(AbstractElectricWire::remove);
             internalNodes.forEach(INode::remove);
-            externalNodes.forEach(INode::remove);
+            if(rebuildExternal)
+                externalNodes.forEach(INode::remove);
 
-            externalNodes.clear();
+            if(rebuildExternal)
+                externalNodes.clear();
             internalNodes.clear();
             wires.clear();
         }
@@ -81,6 +84,8 @@ public interface IElectricEntity {
          * node bindings for electric block terminal indices.
          */
         protected void addExternalNode() {
+            if(!rebuildExternal)
+                return;
             int index = externalNodes.size();
             var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, index));
             externalNodes.add(node);
@@ -241,13 +246,18 @@ public interface IElectricEntity {
 
         public void setTo(BakedCircuit circuit) {
             clear();
-            externalNodes.addAll(circuit.externalNodes);
+            if(rebuildExternal)
+                externalNodes.addAll(circuit.externalNodes);
             internalNodes.addAll(circuit.internalNodes);
             wires.addAll(circuit.wires);
         }
 
         public void paused() {
             paused = true;
+        }
+
+        public void rebuildExternal(boolean rebuildExternal) {
+            this.rebuildExternal = rebuildExternal;
         }
     }
 }

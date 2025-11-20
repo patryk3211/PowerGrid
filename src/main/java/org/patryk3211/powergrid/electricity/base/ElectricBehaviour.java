@@ -46,7 +46,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     private final Map<BlockWireEndpoint, Set<BaseWireEntity>> connections = new HashMap<>();
     private boolean destroying = false;
-    private boolean rebuildOnClient = false;
+    private byte rebuildOnClient = 0;
     private boolean removed = false;
     private boolean paused = true;
 
@@ -77,9 +77,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         tracedAdd(list);
     }
 
-    public void rebuildCircuit() {
+    public void rebuildCircuit(boolean rebuildExternal) {
         var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         var networkList = externalNodes.stream().map(INode::getNetwork).toList();
+        builder.rebuildExternal(rebuildExternal);
         if(paused)
             builder.paused();
         builder.clear();
@@ -113,7 +114,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
         var world = getWorld();
         if(world != null && !world.isClientSide)
-            rebuildOnClient = true;
+            rebuildOnClient = rebuildExternal ? (byte) 2 : (byte) 1;
     }
 
     public List<INode> getInternalNodes() {
@@ -298,8 +299,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void read(CompoundTag nbt, boolean clientPacket) {
         super.read(nbt, clientPacket);
         if(clientPacket) {
-            if(nbt.getBoolean("Rebuild"))
-                rebuildCircuit();
+            var level = nbt.getByte("Rebuild");
+            if(level > 0)
+                rebuildCircuit(level > 1);
         }
     }
 
@@ -307,9 +309,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void write(CompoundTag nbt, boolean clientPacket) {
         super.write(nbt, clientPacket);
         if(clientPacket) {
-            if(rebuildOnClient) {
-                nbt.putBoolean("Rebuild", true);
-                rebuildOnClient = false;
+            if(rebuildOnClient != 0) {
+                nbt.putByte("Rebuild", rebuildOnClient);
+                rebuildOnClient = 0;
             }
         }
     }
