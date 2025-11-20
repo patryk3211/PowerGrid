@@ -36,8 +36,7 @@ public class Components {
                     .addPad(2, 0, 1, "Grid", "G")
                     .addPad(0, 2, 3, "Heater", "H")
                     .addPad(2, 2, 4, "Heater", "H")
-                    .withItem(AllItems.ELECTRON_TUBE)
-                    .withOutline())
+                    .withItem().withOutline())
             .item(AllItems.ELECTRON_TUBE)
             .register();
 
@@ -45,8 +44,7 @@ public class Components {
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0, "Anode", "+")
                     .addPad(2, 1, 1, "Cathode", "-")
-                    .withItem(ModdedItems.REGULATOR_TUBE)
-                    .withOutline())
+                    .withItem().withOutline())
             .item(ModdedItems.REGULATOR_TUBE)
             .register();
 
@@ -54,8 +52,7 @@ public class Components {
             .footprint(2, 2, b -> b
                     .addPad(0, 0, 0)
                     .addPad(1, 1, 1)
-                    .withItem(ModdedItems.NEON_BULB)
-                    .withOutline())
+                    .withItem().withOutline())
             .item(ModdedItems.NEON_BULB)
             .register();
 
@@ -70,8 +67,7 @@ public class Components {
             .footprint(4, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(3, 1, 1)
-                    .withItem(ModdedBlocks.LV_SWITCH::asItem)
-                    .withOutline())
+                    .withItem().withOutline())
             .item(ModdedBlocks.LV_SWITCH)
             .register();
 
@@ -82,8 +78,7 @@ public class Components {
                     .addPad(2, 0, 2, "Normally Closed", "NC")
                     .addPad(3, 1, 3, "Common", "CC")
                     .addPad(2, 2, 4, "Normally Open", "NO")
-                    .withItem(ModdedItems.RELAY)
-                    .withOutline()
+                    .withItem().withOutline()
             )
             .item(ModdedItems.RELAY)
             .register();
@@ -92,8 +87,7 @@ public class Components {
             .footprint(5, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(4, 1, 1)
-                    .withItem(ModdedItems.RESISTOR)
-                    .withOutline()
+                    .withItem().withOutline()
             )
             .item(ModdedItems.RESISTOR)
             .register();
@@ -102,9 +96,7 @@ public class Components {
             .footprint(3, 5, b -> b
                     .addPad(1, 0, 0)
                     .addPad(1, 4, 1)
-                    .withItem(ModdedItems.REDSTONE_RELAY)
-                    .withArrow()
-                    .withOutline()
+                    .withItem().withArrow().withOutline()
             )
             .item(ModdedItems.REDSTONE_RELAY)
             .register();
@@ -113,9 +105,7 @@ public class Components {
             .footprint(5, 5, b -> b
                     .addPad(2, 0, 0)
                     .addPad(2, 4, 1)
-                    .withItem(ModdedBlocks.VOLTAGE_METER::asItem)
-                    .withArrow()
-                    .withOutline()
+                    .withItem().withArrow().withOutline()
             )
             .item(ModdedBlocks.VOLTAGE_METER)
             .register();
@@ -124,9 +114,7 @@ public class Components {
             .footprint(5, 5, b -> b
                     .addPad(2, 0, 0)
                     .addPad(2, 4, 1)
-                    .withItem(ModdedBlocks.CURRENT_METER::asItem)
-                    .withArrow()
-                    .withOutline()
+                    .withItem().withArrow().withOutline()
             )
             .item(ModdedBlocks.CURRENT_METER)
             .register();
@@ -135,8 +123,7 @@ public class Components {
             .footprint(5, 3, b -> b
                     .addPad(0, 1, 0, "Cathode", "-")
                     .addPad(4, 1, 1, "Anode", "+")
-                    .withItem(ModdedItems.DIODE)
-                    .withOutline()
+                    .withItem().withOutline()
             )
             .item(ModdedItems.DIODE)
             .register();
@@ -145,8 +132,7 @@ public class Components {
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(2, 1, 1)
-                    .withItem(ModdedItems.CAPACITOR)
-                    .withOutline()
+                    .withItem().withOutline()
             )
             .item(ModdedItems.CAPACITOR)
             .register();
@@ -155,8 +141,7 @@ public class Components {
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(2, 1, 1)
-                    .withItem(ModdedItems.COPPER_COIL::get)
-                    .withOutline())
+                    .withItem().withOutline())
             .item(ModdedItems.COPPER_COIL)
             .register();
 
@@ -164,8 +149,7 @@ public class Components {
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(2, 1, 1)
-                    .withItem(ModdedBlocks.LV_BUTTON::asItem)
-                    .withOutline()
+                    .withItem().withOutline()
             )
             .item(ModdedBlocks.LV_BUTTON)
             .register();
@@ -175,8 +159,7 @@ public class Components {
                     .addPad(1, 2, 0)
                     .addPad(2, 3, 1)
                     .addPad(3, 2, 2)
-                    .withItem(ModdedItems.POTENTIOMETER)
-                    .withOutline()
+                    .withItem().withOutline()
             )
             .item(ModdedItems.POTENTIOMETER)
             .register();

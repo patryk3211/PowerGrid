@@ -148,7 +148,7 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         }
         ctx.blit(PROPERTIES, 60 + centerSliceSize, 0, 92, 50, 60, 6);
 
-        var stack = component.footprint().getRenderedStack();
+        var stack = component.footprint().getRenderedStack(component.component);
         if(stack != null) {
             ctx.blit(PROPERTIES, getWidth() / 2 - 8, 4, 240, 0, 16, 10);
 
