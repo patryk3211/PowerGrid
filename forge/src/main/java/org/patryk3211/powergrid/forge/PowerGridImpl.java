@@ -42,10 +42,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraftforge.registries.*;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -113,6 +110,11 @@ public class PowerGridImpl {
                 RegistryBuilder.of(ComponentRegistry.REGISTRY_KEY.location()),
                 registry -> ComponentRegistryImpl.REGISTRY = registry
         );
+    }
+
+    @SubscribeEvent
+    public static void newDynamicRegistryEvent(DataPackRegistryEvent.NewRegistry event) {
+        event.dataPackRegistry(ComponentRegistry.ITEM_REGISTRY_KEY, ComponentRegistry.ITEM_CODEC, ComponentRegistry.ITEM_CODEC);
     }
 
     @SubscribeEvent
@@ -199,18 +201,13 @@ public class PowerGridImpl {
     }
 
     public static AbstractPowerGridRegistrate createRegistrate() {
+        AbstractPowerGridRegistrate.COMPONENT_ITEMS = ProviderType.register("component_items", ComponentItemEntryProviderImpl::new);
         return ForgePowerGridRegistrate.create(PowerGrid.MOD_ID)
                 .setTooltipModifierFactory(item ->
                         new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                                 .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
                                 .andThen(TooltipModifier.mapNull(ElectricProperties.create(item)))
                 );
-//                .defaultCreativeTab("power_grid" , builder -> builder
-//                        .icon(() -> new ItemStack(ModdedItems.WIRE))
-//                        .displayItems(new ItemDisplay.BaseItemDisplay(false))
-//                )
-//                .lang(tab -> "itemGroup.powergrid.main", "Create: Power Grid")
-//                .build();
     }
 
     public static void finalizeRegistrate() {

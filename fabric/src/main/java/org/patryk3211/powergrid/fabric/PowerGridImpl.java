@@ -18,12 +18,14 @@ package org.patryk3211.powergrid.fabric;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import com.tterrag.registrate.providers.ProviderType;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import net.createmod.catnip.lang.FontHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
@@ -51,6 +53,8 @@ public class PowerGridImpl implements ModInitializer {
         ComponentRegistryImpl.REGISTRY = FabricRegistryBuilder
                 .createSimple(ComponentRegistry.REGISTRY_KEY)
                 .buildAndRegister();
+        DynamicRegistries.registerSynced(ComponentRegistry.ITEM_REGISTRY_KEY, ComponentRegistry.ITEM_CODEC,
+                DynamicRegistries.SyncOption.SKIP_WHEN_EMPTY);
 
         var tab = FabricItemGroup.builder()
                 .icon(() -> new ItemStack(ModdedItems.WIRE))
@@ -81,6 +85,7 @@ public class PowerGridImpl implements ModInitializer {
     }
 
     public static AbstractPowerGridRegistrate createRegistrate() {
+        AbstractPowerGridRegistrate.COMPONENT_ITEMS = ProviderType.register("component_items", ComponentItemEntryProviderImpl::new);
         return FabricPowerGridRegistrate.create(PowerGrid.MOD_ID)
                 .setTooltipModifierFactory(item ->
                         new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)

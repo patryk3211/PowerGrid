@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -39,12 +40,12 @@ public class IncompleteCircuitItem extends Item {
         super(settings.stacksTo(1));
     }
 
-    private static CompoundTag makeAssemblyTag(CompoundTag schematicTag) {
+    private static CompoundTag makeAssemblyTag(Level level, CompoundTag schematicTag) {
         var schematic = CircuitSchematic.fromNbt(schematicTag);
         var componentAmounts = new HashMap<Item, Integer>();
         int componentCount = 0;
         for(var placed : schematic.components()) {
-            var item = placed.component.getRequiredItem();
+            var item = ComponentRegistry.getItem(level, placed.component);
             componentAmounts.compute(item, (key, current) -> current == null ? 1 : current + 1);
             ++componentCount;
         }
@@ -95,12 +96,12 @@ public class IncompleteCircuitItem extends Item {
 //    }
 
     @Nullable
-    public static ItemStack insert(ItemStack circuit, ItemStack component) {
+    public static ItemStack insert(Level level, ItemStack circuit, ItemStack component) {
         if(!circuit.is(ModdedItems.INCOMPLETE_CIRCUIT.get()) || !circuit.hasTag())
             return null;
         var tag = circuit.getTag().copy();
         if(!tag.contains("Assembly")) {
-            tag.put("Assembly", makeAssemblyTag(tag.getCompound("Schematic")));
+            tag.put("Assembly", makeAssemblyTag(level, tag.getCompound("Schematic")));
         }
         if(!insertComponent(tag.getCompound("Assembly"), component))
             return null;
@@ -146,7 +147,7 @@ public class IncompleteCircuitItem extends Item {
         if(!stack.getTag().contains("Assembly")) {
             if(!stack.getTag().contains("Schematic"))
                 return;
-            assemblyTag = makeAssemblyTag(stack.getTagElement("Schematic"));
+            assemblyTag = makeAssemblyTag(world, stack.getTagElement("Schematic"));
         } else {
             assemblyTag = stack.getTagElement("Assembly");
         }

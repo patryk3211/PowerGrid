@@ -57,7 +57,7 @@ public abstract class ArmInteractionPointMixin {
             if(circuitStack.isEmpty())
                 continue;
             if(circuitStack.is(ModdedItems.INCOMPLETE_CIRCUIT.get())) {
-                var newCircuit = IncompleteCircuitItem.insert(circuitStack, componentStack);
+                var newCircuit = IncompleteCircuitItem.insert(getLevel(), circuitStack, componentStack);
                 if(newCircuit != null) {
                     if(!simulate) {
                         var extracted = handler.extractItem(i, 1, false);
@@ -91,7 +91,7 @@ public abstract class ArmInteractionPointMixin {
         transport.handleCenteredProcessingOnAllItems(0.05f, tis -> {
             if(found.isFalse() && ModdedItems.INCOMPLETE_CIRCUIT.isIn(tis.stack)) {
                 found.setTrue();
-                var newCircuit = IncompleteCircuitItem.insert(tis.stack, stack);
+                var newCircuit = IncompleteCircuitItem.insert(getLevel(), tis.stack, stack);
                 if(newCircuit != null) {
                     inserted.setTrue();
                     if(!simulate) {

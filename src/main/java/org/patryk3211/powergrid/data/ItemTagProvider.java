@@ -22,8 +22,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
-import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
-import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -41,10 +39,5 @@ public class ItemTagProvider extends TagsProvider<Item> {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        var builder = tag(ModdedTags.Item.CIRCUIT_COMPONENT.tag);
-        for(var component : ComponentRegistry.entries()) {
-            var item = component.getRequiredItem();
-            builder.add(reverseLookup(item));
-        }
     }
 }

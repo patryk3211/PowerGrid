@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.api.registry.CreateRegistries;
@@ -23,13 +25,20 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder;
 import com.tterrag.registrate.builders.BuilderCallback;
+import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -40,9 +49,8 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.utility.SimpleBlockEntityVisualFactory;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -155,6 +163,56 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
                         .skipVanillaRender(be -> !renderNormally.test(be))
                         .apply();
             });
+        }
+    }
+
+    public static ProviderType<ComponentItemEntryProvider> COMPONENT_ITEMS;
+    public abstract static class ComponentItemEntryProvider implements RegistrateProvider {
+        private final Map<String, Item> entries = new HashMap<>();
+        private final AbstractRegistrate<?> owner;
+        private final PackOutput output;
+
+        public ComponentItemEntryProvider(AbstractRegistrate<?> owner, PackOutput output) {
+            this.owner = owner;
+            this.output = output;
+        }
+
+        @NotNull
+        @Override
+        public CompletableFuture<?> run(@NotNull CachedOutput output) {
+            entries.clear();
+            owner.genData(COMPONENT_ITEMS, this);
+            var namespace = owner.getModid();
+
+            // Generate circuit_component tag
+            var tagJson = new JsonObject();
+            var array = new JsonArray();
+            tagJson.add("values", array);
+            entries.values().stream().map(item -> {
+                var id = BuiltInRegistries.ITEM.getResourceKey(item);
+                return id.get().location().toString();
+            }).forEach(array::add);
+            var tag = DataProvider.saveStable(output, tagJson, this.output.getOutputFolder()
+                    .resolve("data/" + namespace + "/tags/items/circuit_component.json"));
+
+            // Generate all item mappings
+            var path = this.output.getOutputFolder().resolve("data/" + namespace + "/powergrid/component_items");
+            return CompletableFuture.allOf(CompletableFuture.allOf(entries.entrySet().stream().map(entry -> {
+                var json = new JsonObject();
+                var id = BuiltInRegistries.ITEM.getResourceKey(entry.getValue());
+                json.addProperty("item", id.get().location().toString());
+                return DataProvider.saveStable(output, json, path.resolve(entry.getKey() + ".json"));
+            }).toArray(CompletableFuture[]::new)), tag);
+        }
+
+        @NotNull
+        @Override
+        public String getName() {
+            return "Component Item Mapping";
+        }
+
+        public void add(String componentId, ItemLike item) {
+            entries.put(componentId, item.asItem());
         }
     }
 }
