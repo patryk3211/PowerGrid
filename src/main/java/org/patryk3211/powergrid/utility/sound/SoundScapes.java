@@ -35,8 +35,7 @@ public class SoundScapes {
     static final int SOUND_VOLUME_ARG_MAX = 15;
 
     public enum AmbienceGroup {
-        HUM(SoundScapes::hum),
-        GENERATOR(SoundScapes::generator);
+        HUM(SoundScapes::hum);
 
         private BiFunction<Float, AmbienceGroup, SoundScape> factory;
 
@@ -50,13 +49,8 @@ public class SoundScapes {
     }
 
     private static SoundScape hum(float pitch, AmbienceGroup group) {
-        return new SoundScape(pitch, group)
+        return new SoundScape(pitch, group, true)
                 .continuous(ModdedSoundEvents.TRANSFORMER_HUM.getMainEvent(), 2, 1);
-    }
-
-    private static SoundScape generator(float pitch, AmbienceGroup group) {
-        return new SoundScape(pitch, group)
-                .continuous(ModdedSoundEvents.GENERATOR.getMainEvent(), 1, 1);
     }
 
     enum RangeGroup {

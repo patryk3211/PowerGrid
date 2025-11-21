@@ -38,10 +38,10 @@ class SoundScape {
     private Vec3 meanPos;
     private SoundScapes.RangeGroup pitchGroup;
 
-    public SoundScape(float pitch, SoundScapes.AmbienceGroup group) {
+    public SoundScape(float pitch, SoundScapes.AmbienceGroup group, boolean withVolume) {
         this.pitchGroup = SoundScapes.getGroupFromPitch(pitch);
         this.pitch = pitch;
-        this.prevVolume = this.volume = 0.1f;
+        this.prevVolume = this.volume = withVolume ? 0.1f : -1;
         this.group = group;
         continuous = new ArrayList<>();
         repeating = new ArrayList<>();
@@ -71,14 +71,18 @@ class SoundScape {
     }
 
     public void addVolume(float volume) {
+        if(this.volume < 0)
+            return;
         this.volume = Math.max(this.volume, volume);
     }
 
     public void tick() {
         if (AnimationTickHolder.getTicks() % SoundScapes.UPDATE_INTERVAL == 0) {
             meanPos = null;
-            prevVolume = volume;
-            volume = 0.1f;
+            if(volume >= 0) {
+                prevVolume = volume;
+                volume = 0.1f;
+            }
         }
         repeating.forEach(RepeatingSound::tick);
     }
@@ -114,6 +118,6 @@ class SoundScape {
         int soundCount = SoundScapes.getSoundCount(group, pitchGroup);
         float max = AllConfigs.client().ambientVolumeCap.getF();
         float argMax = (float) SoundScapes.SOUND_VOLUME_ARG_MAX;
-        return Mth.clamp(soundCount / (argMax * 10f), 0.025f, max) * distanceMultiplier * Math.max(prevVolume, volume);
+        return Mth.clamp(soundCount / (argMax * 10f), 0.025f, max) * distanceMultiplier * (volume < 0 ? 1 : Math.max(prevVolume, volume));
     }
 }

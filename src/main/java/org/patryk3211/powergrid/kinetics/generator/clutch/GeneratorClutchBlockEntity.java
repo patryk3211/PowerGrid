@@ -88,8 +88,7 @@ public class GeneratorClutchBlockEntity extends KineticBlockEntity implements Ro
         if(recalculateStress) {
             if (hasNetwork() && (!level.isClientSide || isVirtual())) {
                 var network = getOrCreateNetwork();
-                network.remove(this);
-                network.add(this);
+                network.updateStressFor(this, calculateStressApplied());
             }
             recalculateStress = false;
             notifyUpdate();

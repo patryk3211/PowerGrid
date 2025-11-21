@@ -78,7 +78,7 @@ public class RotorSoundInstance extends AbstractTickableSoundInstance {
                 stop();
             } else {
                 var volume = (velocity / 128);
-                this.volume = Mth.clamp(volume, 0, 1) * 0.3f;
+                this.volume = Mth.clamp(volume, 0, 1);
             }
             this.pitch = Mth.clamp(pitch, 0.5f, 2f);
         }
