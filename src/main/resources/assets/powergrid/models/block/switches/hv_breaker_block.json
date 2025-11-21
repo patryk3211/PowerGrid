@@ -273,6 +273,16 @@
 				"up": {"uv": [4, 6, 8, 6.5], "rotation": 270, "texture": "#0"},
 				"down": {"uv": [8, 6.5, 4, 7], "rotation": 90, "texture": "#0"}
 			}
+		},
+		{
+			"from": [3, 6, 10],
+			"to": [13, 10, 11],
+			"rotation": {"angle": 0, "axis": "y", "origin": [3, 6, 10]},
+			"faces": {
+				"south": {"uv": [2.75, 6.5, 1.75, 4], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [2.75, 6.5, 2.5, 4], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [2, 6.5, 1.75, 4], "rotation": 90, "texture": "#0"}
+			}
 		}
 	],
 	"groups": [
@@ -305,6 +315,7 @@
 			"origin": [0, 2, 0],
 			"color": 0,
 			"children": [17, 18, 19, 20, 21]
-		}
+		},
+		22
 	]
 }
