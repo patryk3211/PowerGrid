@@ -53,7 +53,7 @@ public class ElectricalNetwork {
     private int sourceCount;
     private int groundReferenceCount;
 
-    private DMatrixRMaj ResidualVector;
+    public DMatrixRMaj ResidualVector;
 
     private DynamicallyTypedMatrix JacobianKept;
     private DynamicallyTypedMatrix JacobianEliminated;
@@ -927,6 +927,10 @@ public class ElectricalNetwork {
         }
     }
 
+    protected void convergenceProblems(double residual) {
+
+    }
+
     public void calculate() {
         if(sourceCount == 0) {
             converged = true;
@@ -961,6 +965,12 @@ public class ElectricalNetwork {
             norm = NormOps_DDRM.normP1(ResidualVector);
             if(norm < PRECISION)
                 break;
+            if(converged && i >= maxIterations - 11) {
+                // Right before non-linear devices are disabled.
+                // Only append new problem frames if the network has been converging before.
+                convergenceProblems(norm);
+                converged = false;
+            }
             prepareScaled(workMatrix);
 
             // Perform Newton iterations

@@ -19,6 +19,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.commands.DebugCommand;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 
 import java.util.Collection;
@@ -205,6 +206,11 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
             }
         }
         return wires;
+    }
+
+    @Override
+    protected void convergenceProblems(double residual) {
+        DebugCommand.pushProblems(this, residual, findProblematicWires(ResidualVector, 1e-8f));
     }
 
     public NetworkGraph getGraph() {

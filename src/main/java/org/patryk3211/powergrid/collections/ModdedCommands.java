@@ -20,13 +20,15 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import org.patryk3211.powergrid.commands.DebugCommand;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
 
 public class ModdedCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context, Commands.CommandSelection selection) {
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("powergrid")
                 .requires(cs -> cs.hasPermission(3))
-                .then(PerformanceCommand.register());
+                .then(PerformanceCommand.register())
+                .then(DebugCommand.register());
 
         dispatcher.register(root);
     }
