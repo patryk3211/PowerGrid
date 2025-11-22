@@ -28,6 +28,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
@@ -190,10 +191,13 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
 
         public <T extends Item & ILightBulb> SimpleState(T bulb, LightFixtureBlockEntity fixture,
                                                          Supplier<Function<State, PartialModel>> modelProviderSupplier,
-                                                         Supplier<Function<DyedState, PartialModel>> dyedModelProviderSupplier) {
+                                                         @Nullable Supplier<Function<DyedState, PartialModel>> dyedModelProviderSupplier) {
             super(bulb, fixture);
-            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> modelProvider = modelProviderSupplier.get());
-            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> dyedModelProvider = dyedModelProviderSupplier.get());
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+                modelProvider = modelProviderSupplier.get();
+                if(dyedModelProviderSupplier != null)
+                    dyedModelProvider = dyedModelProviderSupplier.get();
+            });
         }
 
         @Override
@@ -204,7 +208,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
                 state = State.BROKEN;
             } else {
                 var blockState = fixture.getBlockState();
-                var powerLevel = blockState.getValue(LightFixtureBlock.POWER);
+                int powerLevel = blockState.getValue(LightFixtureBlock.POWER);
                 if(powerLevel == 1) {
                     state = State.LOW_POWER;
                 } else if(powerLevel == 2) {
@@ -235,7 +239,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
         @Override
         public float getAlpha() {
             var blockState = fixture.getBlockState();
-            var powerLevel = blockState.getValue(LightFixtureBlock.POWER);
+            int powerLevel = blockState.getValue(LightFixtureBlock.POWER);
             if(powerLevel == 2) {
                 return 1;
             } else if(powerLevel == 1) {
