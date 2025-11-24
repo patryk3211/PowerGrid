@@ -224,7 +224,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
             removed.forEach(TransmissionLine::remove);
             // Synchronize state with clients
-            if(syncTicks++ >= 40) {
+            if(syncTicks++ >= ModdedConfigs.common().stateSynchronization.get()) {
                 // TODO: Perhaps we should avoid sending ALL subnetworks at once and instead
                 //  split the sync up to avoid generating a lot of intermittent network traffic.
                 for(var network : subnetworks) {

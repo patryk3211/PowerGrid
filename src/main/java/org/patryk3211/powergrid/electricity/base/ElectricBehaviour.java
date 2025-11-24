@@ -19,6 +19,9 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.world.entity.Entity;
@@ -302,6 +305,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             var level = nbt.getByte("Rebuild");
             if(level > 0)
                 rebuildCircuit(level > 1);
+            var list = nbt.getList("Nodes", Tag.TAG_FLOAT);
+            int index = 0;
+            for(var node : externalNodes) {
+                node.setStateValue(list.getFloat(index++) * 0.5f + node.getStateValue() * 0.5f);
+            }
+            for(var node : internalNodes) {
+                node.setStateValue(list.getFloat(index++) * 0.5f + node.getStateValue() * 0.5f);
+            }
         }
     }
 
@@ -313,6 +324,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 nbt.putByte("Rebuild", rebuildOnClient);
                 rebuildOnClient = 0;
             }
+            var list = new ListTag();
+            for(var node : externalNodes) {
+                list.add(FloatTag.valueOf((float) node.getStateValue()));
+            }
+            for(var node : internalNodes) {
+                list.add(FloatTag.valueOf((float) node.getStateValue()));
+            }
+            nbt.put("Nodes", list);
         }
     }
 

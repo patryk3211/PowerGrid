@@ -25,6 +25,12 @@ public interface INode extends INetworkElement {
         return 0;
     }
 
+    default void setStateValue(double value) {
+        if(getNetwork() == null)
+            return;
+        getNetwork().setValue(this, value);
+    }
+
     default void remove() {
         if(getNetwork() != null)
             getNetwork().removeNode(this);
