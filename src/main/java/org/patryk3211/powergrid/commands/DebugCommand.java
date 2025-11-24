@@ -5,6 +5,8 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.LevelAccessor;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.GraphedElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.NetworkGraph;
@@ -64,6 +66,23 @@ public class DebugCommand {
                             source.sendSystemMessage(Component.literal("  Closest owned node:").withStyle(ChatFormatting.DARK_GRAY));
                             source.sendSystemMessage(Component.literal("  " + entry.closestOwnedNode()).withStyle(ChatFormatting.DARK_GRAY));
                         }
+                    }
+                    return Command.SINGLE_SUCCESS;
+                }))
+                .then(literal("status").executes(ctx -> {
+                    var source = ctx.getSource();
+                    var player = source.getPlayerOrException();
+                    var global = GlobalElectricNetworks.getWorldNetworks((LevelAccessor) player.level());
+                    if(global == null) {
+                        source.sendSystemMessage(Component.literal("Current level doesn't have any electrical networks"));
+                    } else {
+                        var nets = global.subnetworks;
+                        int notConverged = 0;
+                        for(var net : nets) {
+                            if(!net.isConverged())
+                                ++notConverged;
+                        }
+                        source.sendSystemMessage(Component.literal("Current level has " + global.subnetworks.size() + " networks, " + notConverged + " are not converged."));
                     }
                     return Command.SINGLE_SUCCESS;
                 }));
