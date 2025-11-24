@@ -224,21 +224,24 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
             removed.forEach(TransmissionLine::remove);
             // Synchronize state with clients
-            if(syncTicks++ >= ModdedConfigs.common().stateSynchronization.get()) {
-                // TODO: Perhaps we should avoid sending ALL subnetworks at once and instead
-                //  split the sync up to avoid generating a lot of intermittent network traffic.
-                for(var network : subnetworks) {
-                    for(var node : network.getNodes()) {
-                        if(!(node instanceof OwnedFloatingNode owned))
-                            continue;
-                        if(!(owned.endpoint instanceof BlockWireEndpoint bwe))
-                            continue;
-                        var behaviour = bwe.getElectricBehaviour(world);
-                        if(behaviour != null)
-                            behaviour.blockEntity.sendData();
+            final int syncInterval = ModdedConfigs.common().stateSynchronization.get();
+            if(syncInterval > 0) {
+                if (syncTicks++ >= syncInterval) {
+                    // TODO: Perhaps we should avoid sending ALL subnetworks at once and instead
+                    //  split the sync up to avoid generating a lot of intermittent network traffic.
+                    for (var network : subnetworks) {
+                        for (var node : network.getNodes()) {
+                            if (!(node instanceof OwnedFloatingNode owned))
+                                continue;
+                            if (!(owned.endpoint instanceof BlockWireEndpoint bwe))
+                                continue;
+                            var behaviour = bwe.getElectricBehaviour(world);
+                            if (behaviour != null)
+                                behaviour.blockEntity.sendData();
+                        }
                     }
+                    syncTicks = 0;
                 }
-                syncTicks = 0;
             }
         }
     }
