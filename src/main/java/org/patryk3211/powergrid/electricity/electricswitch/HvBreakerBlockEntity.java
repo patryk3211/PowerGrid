@@ -111,6 +111,7 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
             if(Math.abs(wire.current()) > setting.getValue()) {
                 state = false;
                 wire.setState(false);
+                charge.setValueNoUpdate(0);
                 ModdedSoundEvents.BREAKER_OFF.playOnServer(level, worldPosition);
                 sendData();
             }
@@ -120,7 +121,7 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
         if(redstone && !redstoneState && (charge.getValue() == 1 || state)) {
             state = !state;
             wire.setState(state);
-            charge.setValueNoUpdate(0);
+            charge.setValueNoUpdate(state ? 1 : 0);
             (state ? ModdedSoundEvents.BREAKER_ON : ModdedSoundEvents.BREAKER_OFF)
                     .playOnServer(level, worldPosition);
         }
@@ -138,7 +139,9 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         // Always force the value to be set
-        charge.readNBT(compound.getCompound("Charge"), false);
+        charge.readNBT(compound.getCompound("Charge"), clientPacket);
+        if(compound.contains("Charge"))
+            charge.setValueNoUpdate(compound.getCompound("Charge").getFloat("Value"));
         state = compound.getBoolean("State");
         wire.setState(state);
     }
