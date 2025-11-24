@@ -166,8 +166,8 @@ public class RelayScenes {
                 .attachKeyFrame();
         scene.idle(90);
 
-        scene.overlay().showText(80)
-                .text("To toggle its state, you must first wind it up")
+        scene.overlay().showText(70)
+                .text("To close it, you must first wind it up")
                 .pointAt(util.vector().of(1.5, 1.5, 2.5))
                 .placeNearTarget()
                 .attachKeyFrame();
@@ -193,6 +193,12 @@ public class RelayScenes {
         scene.idle(40);
         scene.world().toggleRedstonePower(util.select().fromTo(breaker, breaker.north(3)));
         scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("The breaker can be opened without having to wind it up again")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
 
         scene.markAsFinished();
     }

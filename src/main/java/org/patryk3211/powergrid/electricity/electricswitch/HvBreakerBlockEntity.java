@@ -15,8 +15,12 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
+import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.lang.LangBuilder;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +30,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -37,6 +42,7 @@ import java.util.List;
 
 public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
     private SwitchedWire wire;
+    private ScrollValueBehaviour setting;
 
     protected LerpedFloat charge;
     protected boolean prevState, state;
@@ -48,6 +54,14 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        setting = new HvBreakerScrollBehaviour(Lang.translateDirect("gui.hv_breaker.setting"), this, new Box());
+        setting.setValue(0);
+        behaviours.add(setting);
+    }
+
+    @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
     }
@@ -55,6 +69,8 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
+        if(state)
+            return;
         charge.chase(1, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
         sendData();
     }
@@ -91,8 +107,17 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
                     .25f, 1.5f);
         }
 
+        if(state && setting.getValue() != 0 && !level.isClientSide && wire.isConverged()) {
+            if(Math.abs(wire.current()) > setting.getValue()) {
+                state = false;
+                wire.setState(false);
+                ModdedSoundEvents.BREAKER_OFF.playOnServer(level, worldPosition);
+                sendData();
+            }
+        }
+
         var redstone = level.getBestNeighborSignal(worldPosition) > 0;
-        if(redstone && !redstoneState && charge.getValue() == 1) {
+        if(redstone && !redstoneState && (charge.getValue() == 1 || state)) {
             state = !state;
             wire.setState(state);
             charge.setValueNoUpdate(0);
@@ -100,17 +125,6 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
                     .playOnServer(level, worldPosition);
         }
         redstoneState = redstone;
-
-//        if(!rod.settled()) {
-//            // Setting switch to false is needed to prevent imprecision
-//            // messing with the conductance matrix.
-//            if(wire.getState() != isClosed() || wire.getResistance() != getResistance()) {
-//                wire.setState(false);
-//                wire.setResistance(getResistance());
-//                wire.setState(isClosed());
-//                setChanged();
-//            }
-//        }
     }
 
     @Override
@@ -156,5 +170,16 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
         }
         line.forGoggles(tooltip, 1);
         return true;
+    }
+
+    public static class Box extends CenteredSideValueBoxTransform {
+        public Box() {
+            super((state, dir) -> dir == state.getValue(HvBreakerBlock.HORIZONTAL_FACING));
+        }
+
+        @Override
+        protected Vec3 getSouthLocation() {
+            return VecHelper.voxelSpace(8.0f, 7.0f, 15.5f);
+        }
     }
 }

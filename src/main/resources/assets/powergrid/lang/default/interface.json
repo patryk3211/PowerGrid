@@ -33,11 +33,13 @@
   "powergrid.gui.device_connector.buffered.unit": "FE",
   "powergrid.gui.device_connector.for": " for ",
 
+  "powergrid.gui.carbon_pile.trim": "Trim",
   "powergrid.gui.carbon_pile.info_header": "Carbon pile information",
   "powergrid.gui.carbon_pile.min_resistance": "Minimum resistance:",
   "powergrid.gui.carbon_pile.max_resistance": "Maximum resistance:",
   "powergrid.gui.carbon_pile.current_resistance": "Current resistance:",
 
+  "powergrid.gui.hv_breaker.setting": "Trip current",
   "powergrid.gui.hv_breaker.status": "Status:",
   "powergrid.gui.hv_breaker.open": "Open",
   "powergrid.gui.hv_breaker.closed": "Closed",
