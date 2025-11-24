@@ -102,11 +102,16 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     }
 
     public float getCurrent() {
-        return -getAssemblySource().getCurrent();
+        var source = getAssemblySource();
+        if(source == null)
+            return 0;
+        return -source.getCurrent();
     }
 
     public float getPower() {
         var source = getAssemblySource();
+        if(source == null)
+            return 0;
         return -source.getCurrent() * source.getVoltage();
     }
 
