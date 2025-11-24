@@ -91,15 +91,14 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double R_s = seriesResistance;
         // Banwell and Jayakumar (2000)
         double IsRs = I_s2 * R_s;
-        // double W_x = IsRs / n / V_T * Math.exp((IsRs + V) / V_T / n);
-        // double WTerm = LambertW(W_x);
         double Omega_arg = Math.log(IsRs / n / V_T) + (IsRs + V) / (n * V_T);
-        double WTerm = WrightOmega(Omega_arg);
-        double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
+        double GWTerm = WrightOmega(Omega_arg + (IsRs + V_T) / (n * V_T));
+        double G = Math.max(GWTerm / (R_s * (1 + GWTerm)), ElectricalNetwork.G_MIN);
         // Adding a resistor across the diode helps with convergence in certain cases.
         G += 1e-6; // 1 MOhm
         network.updateConductance(this, G - this.G);
         this.G = G;
+        double WTerm = WrightOmega(Omega_arg);
         double I = V_T * n * WTerm / R_s - I_s2;
         this.Ieq = I - (G - 1e-6) * V;
     }

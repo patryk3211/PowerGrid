@@ -26,6 +26,7 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
 
     private double Ieq;
     private double I;
+    private double Vprev;
 
     public InductorWire(double inductance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -44,23 +45,26 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
 
     public void setCurrent(float current) {
         valueChange(current, I);
-        if(Float.isFinite(current))
+        if(Float.isFinite(current)) {
+            Vprev = 0;
             I = current;
+        }
     }
 
     @Override
     public void postUpperSolve() {
-        if(isConverged())
-            I = current();
+        if(isConverged()) {
+            Vprev = inductance * (current() - I) / 0.05f;
+            // Save current with a bit of leakage
+            I = current() * 0.99999;
+        }
     }
 
     @Override
     public void startIteration() {
         var G = conductance();
         var V = inductance * (current() - I) / 0.05f;
-
-        // Calculate current with a bit of leakage
-        Ieq = (V * G + I) * 0.99999;
+        Ieq = (V + Vprev) * 0.5f * G + I;
     }
 
     @Override

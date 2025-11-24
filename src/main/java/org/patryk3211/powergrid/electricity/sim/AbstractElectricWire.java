@@ -46,7 +46,7 @@ public abstract class AbstractElectricWire implements INetworkElement {
     }
 
     protected void valueChange(double x, double x0) {
-            valueChange(x, x0, 1);
+        valueChange(x, x0, 1);
     }
 
     @Override

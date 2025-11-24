@@ -25,7 +25,6 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.*;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -557,6 +556,21 @@ public class ElectricalNetwork {
         return Double.isFinite(value) ? value : 0;
     }
 
+    public void setValue(INode node, double value) {
+        if(StateVector == null || dirty)
+            return;
+        if(leafNodes.containsKey(node))
+            return;
+        var index = node.getIndex();
+        if(index < 0 || index >= nodes.size())
+            return;
+        if(index >= eliminatedStart)
+            return;
+        if(index >= StateVector.getNumRows())
+            return;
+        StateVector.set(index, 0, value);
+    }
+
     private void validateJacobian(DynamicallyTypedMatrix jacobian, DMatrixRMaj residual) {
         var n = jacobian.getNumRows();
         var v = new DMatrixRMaj(n, 1);
@@ -916,11 +930,13 @@ public class ElectricalNetwork {
     }
 
     private void iterHooks(int i, int max, double norm) {
-        if(hasHooks() && i < max - 10) {
+        if(hasHooks() && i < max - 10 && i % 2 == 0) {
             countUpdates = false;
             for(var hook : innerHooks) {
-                if(!(hook instanceof PNJunctionWire) && i % 2 != 0)
-                    continue;
+//                if(hook instanceof ElectronTubeWire && i % 2 != 0)
+//                    continue;
+//                if(!(hook instanceof PNJunctionWire) && i % 2 != 0)
+//                    continue;
                 hook.startIteration();
             }
             countUpdates = true;
@@ -965,7 +981,7 @@ public class ElectricalNetwork {
             norm = NormOps_DDRM.normP1(ResidualVector);
             if(norm < PRECISION)
                 break;
-            if(converged && i >= maxIterations - 11) {
+            if(converged && i >= maxIterations - 12) {
                 // Right before non-linear devices are disabled.
                 // Only append new problem frames if the network has been converging before.
                 convergenceProblems(norm);
@@ -988,7 +1004,7 @@ public class ElectricalNetwork {
                 CommonOps_DDRM.multRows(columnScales, deltaX);
                 var PrevState = StateVector;
                 StateVector = AuxiliaryVector;
-                while(alpha > 0.0001) {
+                while(alpha > 0.00001) {
                     // Fully recompute the residual each time
                     CommonOps_DDRM.add(PrevState, -alpha, deltaX, StateVector);
                     iterHooks(i, maxIterations, norm);

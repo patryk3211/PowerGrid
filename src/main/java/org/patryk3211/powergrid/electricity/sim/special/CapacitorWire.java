@@ -26,6 +26,7 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
     private double Ieq;
 
     private double V;
+    private double Iprev;
 
     public CapacitorWire(double capacitance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -40,8 +41,10 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
 
     public void setVoltage(float voltage) {
         valueChange(voltage, V);
-        if(Float.isFinite(voltage))
+        if(Float.isFinite(voltage)) {
+            Iprev = 0;
             V = voltage;
+        }
     }
 
     @Override
@@ -51,17 +54,18 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
 
     @Override
     public void postUpperSolve() {
-        if(isConverged())
-            V = potentialDifference();
+        if(isConverged()) {
+            Iprev = (potentialDifference() - V) * capacitance / 0.05f;
+            // Save voltage with a bit of leakage
+            V = potentialDifference() * 0.99999;
+        }
     }
 
     @Override
     public void startIteration() {
         var G = conductance();
         var I = capacitance * (potentialDifference() - V) / 0.05f;
-
-        // Calculate current with a bit of leakage
-        Ieq = (-G * V - I) * 0.99999;
+        Ieq = -G * V - (I + Iprev) * 0.5f;
     }
 
     @Override

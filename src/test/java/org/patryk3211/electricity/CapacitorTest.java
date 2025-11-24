@@ -32,7 +32,7 @@ public class CapacitorTest extends TestHelper {
         Net.network.addWire(C);
 
         // Simulate for 1 second
-        for(int i = 0; i < 20; ++i) {
+        for(int i = 0; i < 21; ++i) {
             Net.calculate();
             Assertions.assertEquals(V1.getCurrent(), C.current(), 1e-5f, "Capacitor current is incorrect");
         }
@@ -63,7 +63,7 @@ public class CapacitorTest extends TestHelper {
         V2.setVoltage(4);
 
         // Simulate for 1 second
-        for(int i = 0; i < 20; ++i) {
+        for(int i = 0; i < 21; ++i) {
             Net.calculate();
         }
 

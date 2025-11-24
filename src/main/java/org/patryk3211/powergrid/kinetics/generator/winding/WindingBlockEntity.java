@@ -82,7 +82,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     public float fieldStrength() {
         var be = getSimElementHolder();
-        if(be == null)
+        if(be == null || be.coilWire == null || be.coilWire.getNetwork() == null)
             return 0;
         var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
         var current = be.coilWire.current();

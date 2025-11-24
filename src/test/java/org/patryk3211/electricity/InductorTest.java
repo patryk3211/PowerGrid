@@ -43,7 +43,7 @@ public class InductorTest {
         V2.setVoltage(4);
 
         // Simulate for 1 second
-        for(int i = 0; i < 20; ++i) {
+        for(int i = 0; i < 21; ++i) {
             Net.calculate();
         }
 

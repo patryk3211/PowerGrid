@@ -27,6 +27,7 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
 
     private double Ieq;
     private double I;
+    private double Vprev;
     private double residualScale;
 
     public LRSeriesWire(double L, double R, IElectricNode node1, IElectricNode node2) {
@@ -57,8 +58,10 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
 
     @Override
     public void postUpperSolve() {
-        if(isConverged())
-            I = current();
+        if(isConverged()) {
+            Vprev = inductance * (current() - I) / 0.05f;
+            I = current() * 0.99999;
+        }
     }
 
     @Override
@@ -70,7 +73,7 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
         var G_I = 0.05 / (2 * inductance);
         var V_Inductor = (inductance * (current() - I) / 0.05f);
 
-        Ieq = (V_Inductor * G_I + I) * residualScale;
+        Ieq = ((V_Inductor + Vprev) * 0.5f * G_I + I) * residualScale;
     }
 
     @Override

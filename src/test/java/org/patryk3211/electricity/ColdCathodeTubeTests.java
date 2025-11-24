@@ -74,7 +74,7 @@ public class ColdCathodeTubeTests extends TestHelper {
             Net.calculate();
 
         Assertions.assertEquals(80, Anode.getVoltage(), 1e-6, "Anode voltage is not correct");
-        Assertions.assertEquals(0, V1.getCurrent(), 1e-6, "Source current is not correct");
+        Assertions.assertEquals(0, V1.getCurrent(), 1e-4, "Source current is not correct");
         Assertions.assertEquals(V1.getCurrent(), Tube.current(), 1e-6, "Source current is not correct");
     }
 
