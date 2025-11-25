@@ -234,7 +234,7 @@ public class TransmissionLine extends ElectricWire {
         segments.addAll(line.segments);
         setResistance(resistance + line.getResistance());
         global.assignTransmissionLine(line.getNode1(), this);
-        // TODO: REmove node here?
+        var middleNode = line.getNode1();
         segments.forEach(part -> {
             global.assignTransmissionLine(part.getNode2(), this);
             if(part.owner == null || part.owner.isRemoved())
@@ -245,6 +245,7 @@ public class TransmissionLine extends ElectricWire {
         line.segments.clear();
         setNode2(line.endpoint2, line.getNode2());
         line.remove();
+        network.removeNode(middleNode);
         if(ENABLE_VALIDATION)
             validateLine();
     }

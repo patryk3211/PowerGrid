@@ -31,12 +31,15 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class ElectricBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<ElectricBehaviour> TYPE = new BehaviourType<>();
@@ -389,16 +392,26 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
     }
 
-    public void writeToSync(FriendlyByteBuf buffer) {
+    public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineGetter) {
         var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
         if(thermal != null) {
             buffer.writeFloat(thermal.getTemperature());
         }
         for(var node : externalNodes) {
-            buffer.writeFloat((float) node.getStateValue());
+            if(node.getNetwork() == null) {
+                // Potentially part of a transmission line.
+                var line = lineGetter.apply(node);
+                buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
+            } else {
+                buffer.writeFloat((float) node.getStateValue());
+            }
         }
         for(var node : internalNodes) {
             buffer.writeFloat((float) node.getStateValue());
+        }
+        for(var wire : internalWires) {
+            if(wire instanceof SwitchedWire switched)
+                buffer.writeBoolean(switched.getState());
         }
         if(syncAppender != null)
             syncAppender.writeToSync(buffer);
@@ -414,6 +427,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
         for(var node : internalNodes) {
             node.setStateValue(buffer.readFloat());
+        }
+        for(var wire : internalWires) {
+            if(wire instanceof SwitchedWire switched)
+                switched.setState(buffer.readBoolean());
         }
         if(syncAppender != null)
             syncAppender.readFromSync(buffer);

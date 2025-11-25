@@ -168,13 +168,12 @@ public class BakedCircuit {
             var thermalTag = tag.getCompound("Thermal");
             for(var unit : thermalUnits) {
                 unit.read(thermalTag);
-                if(unit.hasOverheated()) {
-                    // Mark component as destroyed for rendering purposes
-                    for(var placed : padNodeProviderMap.keySet()) {
-                        if(placed.uuid.equals(unit.getId())) {
-                            placed.destroyed = true;
+                // Mark component as destroyed for rendering purposes
+                for(var placed : padNodeProviderMap.keySet()) {
+                    if(placed.uuid.equals(unit.getId())) {
+                        placed.destroyed = unit.hasOverheated();
+                        if(clientPacket)
                             Component.modelChanged(be.getBlockPos());
-                        }
                     }
                 }
             }
@@ -227,7 +226,7 @@ public class BakedCircuit {
             return;
         }
         var client = be.getLevel().isClientSide;
-        if(ThermalBehaviour.shouldOverheat()) {
+        if(ThermalBehaviour.shouldOverheat() && !client) {
             for (var unit : thermalUnits) {
                 var overheated = unit.hasOverheated();
                 unit.tick(be.coolingFactorMultiplier);

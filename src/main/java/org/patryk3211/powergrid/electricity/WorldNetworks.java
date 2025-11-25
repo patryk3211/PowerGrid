@@ -189,15 +189,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     checkIter.remove();
                 }
             }
-            // Send lines to clients
-//            for(var endpoint : updatedEndpoints) {
-//                var players = trackers.get(endpoint);
-//                if(players == null)
-//                    continue;
-//                var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
-//                ModdedPackets.sendToClients(new TransmissionLineManagementS2CPacket(endpoint, lines), players);
-//            }
-//            updatedEndpoints.clear();
             // Send partial lines to clients
             var iter2 = transmissionLines.values().iterator();
             var removed = new ArrayList<TransmissionLine>();
@@ -207,21 +198,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     PowerGrid.LOGGER.warn("Empty transmission line {} dropped during tick", line);
                     removed.add(line);
                     iter2.remove();
-                    continue;
                 }
-//                if(Math.abs(line.current()) < 1e-5) {
-//                    // Line is not carrying any major current so don't bother synchronizing it.
-//                    continue;
-//                }
-//                var players = PlayerUtilities.partialTracking(serverWorld, line);
-//                if(players.isEmpty())
-//                    continue;
-//                try {
-//                    var packet = new TransmissionLineStateS2CPacket(line);
-//                    ModdedPackets.sendToClients(packet, players);
-//                } catch (RuntimeException e) {
-//                    PowerGrid.LOGGER.error("Failed to send a transmission line packet", e);
-//                }
             }
             removed.forEach(TransmissionLine::remove);
             // Synchronize state with clients
@@ -246,7 +223,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     if(syncTicks % pair.getValue().lod() != 0)
                         continue;
                     packet.begin(pair.getKey().getPos());
-                    pair.getKey().writeToSync(wrapper);
+                    pair.getKey().writeToSync(wrapper, this::findLineMiddle);
                     packet.end();
                 }
                 ModdedPackets.sendToClient(packet, entry.getKey());
@@ -701,6 +678,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void addAndMigrateNode(IWireEndpoint oldEndpoint, OwnedFloatingNode newNode) {
+        if(newNode == null)
+            return;
         var endpoint = newNode.endpoint;
         var oldNode = globalExternalNodes.put(endpoint, newNode);
         addAndMigrateNode(oldNode, newNode);
@@ -946,7 +925,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             var couplings = globalGraph.getCouplings(node);
             couplings.forEach(INode::remove);
             for(var connected : nodes) {
-                var wires = globalGraph.getWires(node, connected);
+                var wires = List.copyOf(globalGraph.getWires(node, connected));
                 for(var wire : wires)
                     wire.remove();
                 toCheck.add(connected);
