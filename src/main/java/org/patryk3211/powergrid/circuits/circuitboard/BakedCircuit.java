@@ -167,13 +167,35 @@ public class BakedCircuit {
         if(tag.contains("Thermal")) {
             var thermalTag = tag.getCompound("Thermal");
             for(var unit : thermalUnits) {
+                var overheated = unit.hasOverheated();
                 unit.read(thermalTag);
+                if(!overheated && unit.hasOverheated() && clientPacket) {
+                    // Just destroyed
+                    var world = be.getLevel();
+                    if(world != null) {
+                        // Spawn a spark explosion
+                        var random = world.random;
+                        var pos = unit.getPosition();
+                        var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                        var y = (float) pos.y() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                        var z = (float) pos.z() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                        SparkParticleData.explodeParticles(world, x, y, z, Direction.UP, 10);
+                        ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
+                        // Mark component as destroyed for rendering purposes
+                        for(var placed : padNodeProviderMap.keySet()) {
+                            if(placed.uuid.equals(unit.getId())) {
+                                placed.destroyed = true;
+                                Component.modelChanged(be.getBlockPos());
+                            }
+                        }
+                    }
+                }
                 // Mark component as destroyed for rendering purposes
                 for(var placed : padNodeProviderMap.keySet()) {
                     if(placed.uuid.equals(unit.getId())) {
-                        placed.destroyed = unit.hasOverheated();
-                        if(clientPacket)
+                        if(clientPacket && placed.destroyed != unit.hasOverheated())
                             Component.modelChanged(be.getBlockPos());
+                        placed.destroyed = unit.hasOverheated();
                     }
                 }
             }
@@ -226,10 +248,11 @@ public class BakedCircuit {
             return;
         }
         var client = be.getLevel().isClientSide;
-        if(ThermalBehaviour.shouldOverheat() && !client) {
+        if(ThermalBehaviour.shouldOverheat()) {
             for (var unit : thermalUnits) {
                 var overheated = unit.hasOverheated();
-                unit.tick(be.coolingFactorMultiplier);
+                if(!client)
+                    unit.tick(be.coolingFactorMultiplier);
                 if(client) {
                     var world = this.be.getLevel();
                     var random = world.random;
@@ -244,16 +267,6 @@ public class BakedCircuit {
                             world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
                         }
                     } else if (!overheated && unit.hasOverheated()) {
-                        // Spawn a spark explosion
-                        SparkParticleData.explodeParticles(world, x, y, z, Direction.UP, 10);
-                        ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
-                        // Mark component as destroyed for rendering purposes
-                        for(var placed : padNodeProviderMap.keySet()) {
-                            if(placed.uuid.equals(unit.getId())) {
-                                placed.destroyed = true;
-                                Component.modelChanged(be.getBlockPos());
-                            }
-                        }
                     }
                 } else {
                     if(!overheated && unit.hasOverheated()) {

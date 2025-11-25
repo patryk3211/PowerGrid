@@ -107,6 +107,11 @@ public class ThermalUnit {
         return temperature;
     }
 
+    public void setTemperature(float temperature) {
+        this.temperature = temperature;
+        temperatureChanged();
+    }
+
     public float getOverheatTemperature() {
         return overheatTemperature;
     }
@@ -117,6 +122,8 @@ public class ThermalUnit {
 
     public void read(CompoundTag nbt) {
         temperature = nbt.getFloat(getKey());
+        if(temperature >= overheatTemperature)
+            overheatTicks = ThermalBehaviour.OVERHEAT_TICKS;
         temperatureChanged();
     }
 
