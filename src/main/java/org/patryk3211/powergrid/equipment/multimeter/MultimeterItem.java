@@ -185,8 +185,16 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 if(!level.isClientSide) {
                     if(data.contains("UUID")) {
                         var genericEntity = ((ServerLevel) level).getEntity(data.getUUID("UUID"));
-                        if(genericEntity != null)
+                        if(genericEntity != null) {
                             data.putInt("EID", genericEntity.getId());
+                        } else {
+                            if(entity instanceof Player player)
+                                player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
+                                        .style(ChatFormatting.GRAY)
+                                        .component(), true);
+                            // Wipe all data
+                            stack.getOrCreateTag().remove("ModeData");
+                        }
                     }
                 }
                 if(data.contains("X")) {
