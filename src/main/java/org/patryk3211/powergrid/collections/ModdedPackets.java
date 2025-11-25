@@ -43,6 +43,7 @@ public enum ModdedPackets {
     TRANSMISSION_LINE_MANAGEMENT(TransmissionLineManagementS2CPacket.class, TransmissionLineManagementS2CPacket::new),
     LIGHTNING_SYNC(LightningSyncS2CPacket.class, LightningSyncS2CPacket::new),
     ENTITY_DATA(EntityDataS2CPacket.class, EntityDataS2CPacket::new),
+    STATE(StateS2CPacket.class, StateS2CPacket::new),
 
     TRANSFORMER_WINDING(TransformerWindingC2SPacket.class, TransformerWindingC2SPacket::new),
     CHANGE_SCREEN(ChangeScreenC2SPacket.class, ChangeScreenC2SPacket::new),

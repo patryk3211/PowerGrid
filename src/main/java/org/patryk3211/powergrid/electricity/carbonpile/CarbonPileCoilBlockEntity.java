@@ -16,9 +16,11 @@
 package org.patryk3211.powergrid.electricity.carbonpile;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -26,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -35,7 +38,7 @@ import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
-public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
+public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, ElectricBehaviour.SyncAppender {
     private ElectricWire coil;
     private SwitchedWire pile;
     private float baseResistance;
@@ -44,6 +47,12 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
 
     public CarbonPileCoilBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        electricBehaviour.setSyncAppender(this);
     }
 
     @Override
@@ -99,6 +108,8 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
             baseResistance += ResistanceValues.get(state.getBlock());
             pos = pos.above();
         }
+//        level.getBlockEntity(pos.below(), ModdedBlockEntities.CARBON_PILE.get())
+//                .ifPresentOrElse(be -> electricBehaviour.setSyncAppender(be), () -> electricBehaviour.setSyncAppender(null));
         if(baseResistance == 0) {
             pile.setState(false);
         }
@@ -108,9 +119,8 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         applyPower(coil);
-        super.tick();
         if(coil.isConverged()) {
             coilPull = Mth.clamp(Math.abs(coil.current()) * 5, 0, 2) * 0.5f + coilPull * 0.5f;
             refreshResistance();
@@ -157,5 +167,35 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
 
     public AbstractElectricWire getPileWire() {
         return pile;
+    }
+
+    @Override
+    public void writeToSync(FriendlyByteBuf buffer) {
+        assert level != null;
+        var pos = worldPosition.above();
+        BlockState state;
+        while(ModdedBlocks.CARBON_PILE.has(state = level.getBlockState(pos))) {
+            if(state.getValue(CarbonPileBlock.TOP)) {
+                var be = (CarbonPileBlockEntity) level.getBlockEntity(pos);
+                buffer.writeFloat(be.thermal.getTemperature());
+                break;
+            }
+            pos = pos.above();
+        }
+    }
+
+    @Override
+    public void readFromSync(FriendlyByteBuf buffer) {
+        assert level != null;
+        var pos = worldPosition.above();
+        BlockState state;
+        while(ModdedBlocks.CARBON_PILE.has(state = level.getBlockState(pos))) {
+            if(state.getValue(CarbonPileBlock.TOP)) {
+                var be = (CarbonPileBlockEntity) level.getBlockEntity(pos);
+                be.thermal.setTemperature(buffer.readFloat());
+                break;
+            }
+            pos = pos.above();
+        }
     }
 }

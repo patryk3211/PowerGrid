@@ -79,12 +79,9 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             power += P3;
             lastCurrent += Math.abs(I3);
         }
-        if(thermalBehaviour != null)
+        if(thermalBehaviour != null && !level.isClientSide)
             thermalBehaviour.applyTickPower(power);
         super.tick();
-        if(level.isClientSide) {
-            tickAudio();
-        }
     }
 
     @Environment(EnvType.CLIENT)

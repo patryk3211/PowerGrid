@@ -55,6 +55,13 @@ public class CarbonPileBlock extends Block implements IBE<CarbonPileBlockEntity>
     }
 
     @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        IBE.onRemove(state, level, pos, newState);
+        if(!newState.getValue(TOP))
+            level.removeBlockEntity(pos);
+    }
+
+    @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return state.getValue(TOP) ? SHAPE_TOP : SHAPE_MIDDLE;
     }

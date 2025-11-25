@@ -100,8 +100,8 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
 
     @Override
     public void tick() {
-        applyPower(coil);
         if(!level.isClientSide || isVirtual()) {
+            applyPower(coil);
             var speedFromPower = (coil.power() / torque()) * 60;
             avgSpeed += speedFromPower;
             avgTarget += control.potentialDifference();

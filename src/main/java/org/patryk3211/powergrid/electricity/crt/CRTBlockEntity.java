@@ -57,10 +57,32 @@ public class CRTBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         applyPower(xDeflect);
         applyPower(yDeflect);
         applyPower(heater);
+
+        // Simplified electron tube model
+        var Vgk = gridCathode.potentialDifference();
+        var ival = Math.min(Vgk, 0) + anodeCathode.potentialDifference() / 100;
+
+        // 1 amp is the target current for normal operation.
+        // 0.8 amps is the minimum current.
+        var heaterPower = Math.abs(heater.current());
+        heaterPower = heaterPower < 0.8 ? 0 : Math.min(heaterPower * heaterPower, 1.2f);
+
+        // Heater power affects the electron gun current.
+        var R = (ival <= 0 || heaterPower <= 0) ? 0 : (anodeCathode.potentialDifference() / (ival * 0.01f * heaterPower));
+        if(R <= 0) {
+            anodeCathode.setState(false);
+        } else {
+            anodeCathode.setState(true);
+            anodeCathode.setResistance(R);
+        }
+    }
+
+    @Override
+    public void tick() {
         super.tick();
         // Simplified electron tube model
         var Vgk = gridCathode.potentialDifference();

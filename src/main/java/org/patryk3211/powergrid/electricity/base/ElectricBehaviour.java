@@ -22,6 +22,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.world.entity.Entity;
@@ -52,6 +53,8 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     private byte rebuildOnClient = 0;
     private boolean removed = false;
     private boolean paused = true;
+
+    private SyncAppender syncAppender;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
         this(be, true);
@@ -384,5 +387,44 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 }
             }
         }
+    }
+
+    public void writeToSync(FriendlyByteBuf buffer) {
+        var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
+        if(thermal != null) {
+            buffer.writeFloat(thermal.getTemperature());
+        }
+        for(var node : externalNodes) {
+            buffer.writeFloat((float) node.getStateValue());
+        }
+        for(var node : internalNodes) {
+            buffer.writeFloat((float) node.getStateValue());
+        }
+        if(syncAppender != null)
+            syncAppender.writeToSync(buffer);
+    }
+
+    public void readFromSync(FriendlyByteBuf buffer) {
+        var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
+        if(thermal != null) {
+            thermal.setTemperature(buffer.readFloat());
+        }
+        for(var node : externalNodes) {
+            node.setStateValue(buffer.readFloat());
+        }
+        for(var node : internalNodes) {
+            node.setStateValue(buffer.readFloat());
+        }
+        if(syncAppender != null)
+            syncAppender.readFromSync(buffer);
+    }
+
+    public void setSyncAppender(SyncAppender syncAppender) {
+        this.syncAppender = syncAppender;
+    }
+
+    public interface SyncAppender {
+        void writeToSync(FriendlyByteBuf buffer);
+        void readFromSync(FriendlyByteBuf buffer);
     }
 }

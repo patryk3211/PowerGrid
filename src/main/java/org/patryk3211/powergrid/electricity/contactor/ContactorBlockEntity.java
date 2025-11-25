@@ -130,12 +130,10 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         applyPower(switch1);
         applyPower(switch2);
         applyPower(coil);
-
-        super.tick();
 
         var I = Math.abs(coil.current());
         if(coil.isConverged()) {

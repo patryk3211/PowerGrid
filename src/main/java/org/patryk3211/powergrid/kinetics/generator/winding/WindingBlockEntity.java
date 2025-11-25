@@ -654,11 +654,14 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             safeRebuildParallels();
             rebuildParallels = false;
         }
+        super.tick();
+    }
+
+    @Override
+    public void electricalTick() {
         float current = windingCurrent();
         if (thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
-
         setChanged();
-        super.tick();
     }
 }
