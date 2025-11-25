@@ -48,6 +48,18 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
         behaviours.add(setting);
     }
 
+
+    @Override
+    public void electricalTick() {
+        if(!plasmaChannel.getState() && Math.abs(plasmaChannel.potentialDifference()) > setting.getVoltage()) {
+            plasmaChannel.setState(true);
+            notifyUpdate();
+        } else if(plasmaChannel.getState() && Math.abs(plasmaChannel.current()) < setting.getCurrent()) {
+            plasmaChannel.setState(false);
+            notifyUpdate();
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -62,14 +74,6 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
                             .withLife(1)
                             .withSegments(5),
                     start.x, start.y, start.z, 0, 0, 0);
-        }
-
-        if(!plasmaChannel.getState() && Math.abs(plasmaChannel.potentialDifference()) > setting.getVoltage()) {
-            plasmaChannel.setState(true);
-            notifyUpdate();
-        } else if(plasmaChannel.getState() && Math.abs(plasmaChannel.current()) < setting.getCurrent()) {
-            plasmaChannel.setState(false);
-            notifyUpdate();
         }
     }
 

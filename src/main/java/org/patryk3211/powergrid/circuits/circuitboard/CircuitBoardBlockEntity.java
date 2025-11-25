@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.math.VecHelper;
@@ -24,6 +25,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -55,7 +57,7 @@ import java.util.*;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.HORIZONTAL_FACING;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.ROTATION;
 
-public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation, ISchematicHolder {
+public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation, ISchematicHolder, ElectricBehaviour.SyncAppender {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
     private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
@@ -66,6 +68,12 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        electricBehaviour.setSyncAppender(this);
     }
 
     @Override
@@ -427,6 +435,24 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             // This repairs all components
             bakeCircuit();
             notifyUpdate();
+        }
+    }
+
+    @Override
+    public void writeToSync(FriendlyByteBuf buffer) {
+        if(baked == null)
+            return;
+        for(var unit : baked.thermalUnits) {
+            buffer.writeFloat(unit.getTemperature());
+        }
+    }
+
+    @Override
+    public void readFromSync(FriendlyByteBuf buffer) {
+        if(baked == null)
+            return;
+        for(var unit : baked.thermalUnits) {
+            unit.setTemperature(buffer.readFloat());
         }
     }
 }

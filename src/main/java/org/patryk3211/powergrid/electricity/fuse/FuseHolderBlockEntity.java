@@ -75,13 +75,10 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public void electricalTick() {
         if(fuseWire.getState()) {
             if(fuseWire.isConverged() && Math.abs(fuseWire.current()) > setting.value) {
                 setState(FuseState.BLOWN);
-                if(level.isClientSide)
-                    playEffect();
             }
         }
     }

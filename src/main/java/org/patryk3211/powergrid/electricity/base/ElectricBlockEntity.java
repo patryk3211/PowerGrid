@@ -62,11 +62,17 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
 
     @Override
     public void tick() {
+        if(!level.isClientSide || isVirtual())
+            electricalTick();
         super.tick();
         if(level.isClientSide) {
             tickAudio();
         }
         power = 0;
+    }
+
+    public void electricalTick() {
+
     }
 
     public boolean isNoisy() {

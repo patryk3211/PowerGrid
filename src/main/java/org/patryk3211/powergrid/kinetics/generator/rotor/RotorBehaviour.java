@@ -22,10 +22,12 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedTags;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.IRotor;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
@@ -33,7 +35,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implements IRotor {
+public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implements IRotor, ElectricBehaviour.SyncAppender {
     public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("generator_rotor");
     private static final int OVERSPEED_TICKS = 5;
 
@@ -315,6 +317,16 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
             angle = getAngle();
         }
         blockEntity.setChanged();
+    }
+
+    @Override
+    public void writeToSync(FriendlyByteBuf buffer) {
+        buffer.writeFloat(getControllerOrThis().getAngularVelocity());
+    }
+
+    @Override
+    public void readFromSync(FriendlyByteBuf buffer) {
+        getControllerOrThis().angularVelocity = buffer.readFloat();
     }
 
     public interface IForceSource {

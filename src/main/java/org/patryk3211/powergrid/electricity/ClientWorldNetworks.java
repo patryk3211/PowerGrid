@@ -15,116 +15,54 @@
  */
 package org.patryk3211.powergrid.electricity;
 
-import com.google.common.base.Objects;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
+import org.patryk3211.powergrid.electricity.sim.DummyElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
+import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
-import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
-import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
 public class ClientWorldNetworks extends WorldNetworks {
-    private final Map<PhantomLine, PhantomLineData> phantomLines = new HashMap<>();
+    private final DummyElectricalNetwork network = new DummyElectricalNetwork(globalGraph);
 
     public ClientWorldNetworks(Level world) {
         super(world);
         perf.rename("ClientWorld");
+        subnetworks.add(network);
     }
 
     @Override
-    public void tick() {
-        super.tick();
-        var iter = phantomLines.values().iterator();
-        while(iter.hasNext()) {
-            var data = iter.next();
-            data.tick();
-            if(data.age > 5) {
-                data.remove();
-                iter.remove();
-            }
-        }
+    public ElectricalNetwork newNetwork() {
+        return network;
     }
 
     @Override
     public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, PartId id) {
-        throw new IllegalCallerException("Not on the client");
-    }
+        var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
 
-    private void removePhantomLines(TransmissionLine line) {
-        // TODO: I don't remember why all lines are getting deleted, this needs verification.
-        // Delete all phantom lines
-        phantomLines.forEach((key, line2) -> line2.remove());
-        phantomLines.clear();
+        if(node1.getNetwork() == null)
+            network.addNode(node1);
+        if(node2.getNetwork() == null)
+            network.addNode(node2);
 
-        var node1 = line.getNode1();
-        var node2 = line.getNode2();
-        var key1 = new PhantomLine(node1.endpoint, node2.endpoint);
-        if(phantomLines.containsKey(key1)) {
-            phantomLines.remove(key1).remove();
-        }
-        var key2 = new PhantomLine(node2.endpoint, node1.endpoint);
-        if(phantomLines.containsKey(key2)) {
-            phantomLines.remove(key2).remove();
-        }
-    }
-
-    public void partialLine(TransmissionLineStateS2CPacket packet) {
-       if(packet.endpoint1.isValid(world) && packet.endpoint2.isValid(world)) {
-            var node1 = packet.endpoint1.getNode(world);
-            var node2 = packet.endpoint2.getNode(world);
-
-            var wires = globalGraph.getWires(node1, node2);
-            for (var wire : wires) {
-                if (wire instanceof TransmissionLine)
-                    // Packet is not needed, the nodes are actually connected.
-                    return;
-            }
-            var line1 = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance, packet.lineId, packet.node2Voltage);
-            line1.setVoltage((packet.node2Voltage - packet.node1Voltage) / packet.lineResistance);
-
-            var line2 = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance, packet.lineId, packet.node1Voltage);
-            line2.setVoltage((packet.node1Voltage - packet.node2Voltage) / packet.lineResistance);
-        } else if(packet.endpoint1.isValid(world)) {
-            var line = getPhantomLine(packet.endpoint1, packet.endpoint2, packet.lineResistance, packet.lineId, packet.node2Voltage);
-            line.setVoltage((packet.node2Voltage - packet.node1Voltage) / packet.lineResistance);
-        } else if(packet.endpoint2.isValid(world)) {
-            var line = getPhantomLine(packet.endpoint2, packet.endpoint1, packet.lineResistance, packet.lineId, packet.node1Voltage);
-            line.setVoltage((packet.node1Voltage - packet.node2Voltage) / packet.lineResistance);
-        }
-    }
-
-    private PhantomLineData getPhantomLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance, int lineId, float initialVoltage) {
-        var targetNode = endpoint1.getNode(world);
-        if(targetNode.getNetwork() == null) {
-            var network = newNetwork();
-            endpoint1.joinNetwork(world, network);
-        }
-        var line = phantomLines.computeIfAbsent(new PhantomLine(endpoint1, endpoint2),
-                key -> new PhantomLineData(targetNode, resistance, initialVoltage));
-        if(line.source.getResistance() != resistance)
-            line.source.setResistance(resistance);
-        line.age = 0;
-        line.lineId = lineId;
-        return line;
+        var wire = new ElectricWire(forEntity.getResistance(), node1, node2);
+        network.addWire(wire);
+        return wire;
     }
 
     @Override
@@ -141,9 +79,22 @@ public class ClientWorldNetworks extends WorldNetworks {
     @Override
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode, boolean hasInternals) {
         var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
+        if(ownedNode.endpoint instanceof BlockWireEndpoint bwe)
+            bwe.joinNetwork(world, network);
         if(oldNode != null && oldNode != ownedNode) {
-            // Drops all connections from the old node (they will be recreated by the line management packet)
-            nodeHolderRemoved(oldNode);
+            var nodes = globalGraph.getConnectedNodes(oldNode);
+            var allWires = new ArrayList<AbstractElectricWire>();
+            for(var node : nodes) {
+                allWires.addAll(globalGraph.getWires(oldNode, node));
+            }
+            for(var wire : allWires) {
+                if(wire.getNode1() == oldNode) {
+                    wire.setNode1(ownedNode);
+                } else if(wire.getNode2() == oldNode) {
+                    wire.setNode2(ownedNode);
+                }
+            }
+            network.removeNode(oldNode);
         }
         ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, false));
     }
@@ -156,11 +107,9 @@ public class ClientWorldNetworks extends WorldNetworks {
     @Override
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
         var lines = Set.copyOf(globalGraph.getConnectedLines(ownedNode));
-        lines.forEach(line -> {
-            removePhantomLines(line);
-            line.remove();
-        });
+        lines.forEach(TransmissionLine::remove);
 
+        removeFromNetwork(ownedNode);
         super.nodeHolderRemoved(ownedNode);
         ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(ownedNode, true));
     }
@@ -251,130 +200,5 @@ public class ClientWorldNetworks extends WorldNetworks {
         }
 
         return network;
-    }
-
-    public void lineManagement(IWireEndpoint endpoint, TransmissionLineManagementS2CPacket.Entry[] entries) {
-        var lines = globalGraph.getConnectedLines(endpoint.getNode(world))
-                .stream().map(TransmissionLine::getId).collect(Collectors.toCollection(IntOpenHashSet::new));
-        for(var entry : entries) {
-            if(!entry.endpoint1().isValid(world) || !entry.endpoint2().isValid(world)) {
-                // If an endpoint of the line is not valid it is discarded. If it existed before,
-                // it is treated as if it were removed.
-                continue;
-            }
-            var line = transmissionLines.get(entry.id());
-            if(line != null) {
-                // Alter existing line
-                lines.remove(line.getId());
-                // We compare NODES not ENDPOINTS.
-                // This is important since stale endpoints might remain here.
-                // They shouldn't, but that's a whole different subject.
-                var ln1 = line.getNode1();
-                var ln2 = line.getNode2();
-                var en1 = entry.endpoint1().getNode(world);
-                var en2 = entry.endpoint2().getNode(world);
-                if(!((ln1 == en1 && ln2 == en2) || (ln1 == en2 && ln2 == en1))) {
-                    // Nodes do not match.
-                    if(ln1 != en1) {
-                        prepareForConnection(ln1, en1);
-                        line.setNode1(entry.endpoint1(), en1);
-                    }
-                    if(ln2 != en2) {
-                        prepareForConnection(ln2, en2);
-                        line.setNode2(entry.endpoint2(), en2);
-                    }
-                }
-                line.setResistance(entry.resistance());
-            } else {
-                // Completely new line
-                var node1 = entry.endpoint1().getNode(world);
-                var node2 = entry.endpoint2().getNode(world);
-                var network = prepareForConnection(node1, node2);
-                if(network == null) {
-                    PowerGrid.LOGGER.warn("Failed to create a new transmission line from management packet");
-                    return;
-                }
-                line = new TransmissionLine(entry.id(), entry.resistance(),
-                        node1, node2, this);
-                network.addWire(line);
-            }
-            removePhantomLines(line);
-        }
-        for(var id : lines) {
-            // Remaining lines have been removed.
-            var line = transmissionLines.get(id);
-            line.remove();
-        }
-//        var node = endpoint.getNode(world);
-//        var currentLines = globalGraph.getConnectedLines(node);
-//        if(currentLines.isEmpty()) {
-//            removeFromNetwork(node);
-//        }
-    }
-
-    public float tryGetCurrent(int lineId) {
-        var line = transmissionLines.get(lineId);
-        if(line != null)
-            return line.current();
-        for(var data : phantomLines.values()) {
-            if(data.lineId == lineId) {
-                return data.source.getCurrent();
-            }
-        }
-        return 0;
-    }
-
-    private record PhantomLine(IWireEndpoint endpoint, IWireEndpoint otherEndpoint) {
-        @Override
-        public boolean equals(Object obj) {
-            if(obj == this)
-                return true;
-            if(obj instanceof PhantomLine line) {
-                return endpoint.equals(line.endpoint) && otherEndpoint.equals(line.otherEndpoint);
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(endpoint, otherEndpoint);
-        }
-    }
-
-    private static class PhantomLineData {
-        public final VoltageSourceCoupling source;
-        public final IElectricNode node;
-        public int age;
-        public int lineId;
-        public float current;
-
-        public PhantomLineData(IElectricNode node, float resistance, float initialVoltage) {
-            assert node.getNetwork() != null;
-            this.node = node;
-            this.source = new VoltageSourceCoupling(node, null, resistance, initialVoltage);
-            this.age = 0;
-
-            var network = node.getNetwork();
-            network.addNode(source);
-        }
-
-        public void remove() {
-            if(source.getNetwork() != null)
-                source.getNetwork().removeNode(source);
-        }
-
-        public void tick() {
-            ++age;
-            if(current == 0 || !source.isConverged() || source.getCurrent() == 0)
-                return;
-            var deltaI = source.getCurrent() + current;
-            if(deltaI == 0)
-                return;
-            source.setVoltage(source.getVoltage() + source.getResistance() * deltaI);
-        }
-
-        public void setVoltage(float targetCurrent) {
-            current = targetCurrent;
-        }
     }
 }

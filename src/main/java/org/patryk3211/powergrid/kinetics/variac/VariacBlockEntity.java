@@ -110,7 +110,7 @@ public class VariacBlockEntity extends TunedBlockEntity implements IHaveGoggleIn
             power += (float) (I3 * I3 * mutualInductance.getResistance());
             lastCurrent += Math.abs(I3);
         }
-        if(thermalBehaviour != null)
+        if(thermalBehaviour != null && !level.isClientSide)
             thermalBehaviour.applyTickPower(power);
         super.tick();
     }

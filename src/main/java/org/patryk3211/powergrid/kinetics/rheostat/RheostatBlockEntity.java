@@ -88,10 +88,9 @@ public class RheostatBlockEntity extends TunedBlockEntity implements IHaveGoggle
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         applyPower(half1);
         applyPower(half2);
-        super.tick();
     }
 
     @Override

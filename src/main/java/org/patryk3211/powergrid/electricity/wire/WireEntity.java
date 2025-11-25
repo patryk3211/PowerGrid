@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -50,8 +49,8 @@ public abstract class WireEntity extends BaseWireEntity {
     public void makeWire() {
         // Client doesn't make a wire, connections are handled differently.
         var world = level();
-        if(world.isClientSide && !(world instanceof PonderLevel))
-            return;
+//        if(world.isClientSide && !(world instanceof PonderLevel))
+//            return;
 
         dropWire();
 

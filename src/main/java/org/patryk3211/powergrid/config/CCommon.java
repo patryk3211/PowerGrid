@@ -21,7 +21,7 @@ public class CCommon extends ConfigBase {
     public final ConfigBool lotsOfLogs = b(false, "lotsOfLogs", Comments.lotsOfLogs);
     public final ConfigInt solverSimpleMaxIterations = i(200, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
     public final ConfigInt solverComplexMaxIterations = i(200, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
-    public final ConfigInt stateSynchronization = i(80, 0, "stateSynchronizationInterval", Comments.stateSynchronization);
+    public final ConfigInt stateSynchronization = i(100, 0, "fullStateSynchronizationInterval", Comments.stateSynchronization);
 
     @Override
     public String getName() {
@@ -32,6 +32,6 @@ public class CCommon extends ConfigBase {
         public static final String lotsOfLogs = "Enables extensive logging in different segments of the mod (can cause larger log files and log spam)";
         public static final String solverSimpleMaxIterations = "Maximum solver iterations for networks without dynamic residuals";
         public static final String solverComplexMaxIterations = "Maximum solver iterations for networks with dynamic residuals";
-        public static final String stateSynchronization = "Periodic state synchronization sent by the server. This option makes sure that the clients are always close to the server simulation state, however it can sometimes cause issues when synchronizing certain circuit (0 = disabled)";
+        public static final String stateSynchronization = "Periodic state synchronization sent by the server. This option makes sure that the clients are always close to the server simulation state, it will send the NBT data of all block entities in an electrical network to all clients (0 = disabled)";
     }
 }

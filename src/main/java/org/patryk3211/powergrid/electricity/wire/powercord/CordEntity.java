@@ -151,8 +151,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     public void makeWire() {
         // Client doesn't make a wire, connections are handled differently.
         var world = level();
-        if(world.isClientSide && !(world instanceof PonderLevel))
-            return;
+//        if(world.isClientSide && !(world instanceof PonderLevel))
+//            return;
 
         dropWire();
 

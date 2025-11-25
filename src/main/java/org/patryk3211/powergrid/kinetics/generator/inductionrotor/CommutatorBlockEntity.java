@@ -145,6 +145,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
             } else {
                 electricBehaviour = new ElectricBehaviour(this);
             }
+            electricBehaviour.setSyncAppender(rotorBehaviour);
             if(oldBehaviour != null)
                 electricBehaviour.inheritConnections(oldBehaviour);
             attachBehaviourLate(electricBehaviour);
@@ -154,14 +155,15 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 wires.forEach(TransmissionLinePart::refreshEndpointNodes);
             }
         }
-        float totalField = 0;
-        if(source != null) {
-            for (var rotor : rotors) {
-                totalField += rotor.calculateField();
+        if(!level.isClientSide) {
+            float totalField = 0;
+            if (source != null) {
+                for (var rotor : rotors) {
+                    totalField += rotor.calculateField();
+                }
+                source.tick(totalField);
             }
-            source.tick(totalField);
-        }
-        if(level.isClientSide) {
+        } else {
             var angular = rotorBehaviour.getAngularVelocityRadians();
             var current = getCurrent();
             // Max 5 particles per tick

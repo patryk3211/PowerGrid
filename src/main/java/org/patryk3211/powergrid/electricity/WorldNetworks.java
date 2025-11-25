@@ -41,9 +41,7 @@ import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
-import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
-import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
-import org.patryk3211.powergrid.utility.PlayerUtilities;
+import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,6 +66,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
     protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
     private int syncTicks = 0;
+
+    private record SyncState(int lod) { }
+    private final Map<ServerPlayer, Map<ElectricBehaviour, SyncState>> syncStates = new HashMap<>();
 
     public WorldNetworks(Level world) {
         this.world = world;
@@ -188,15 +189,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     checkIter.remove();
                 }
             }
-            // Send lines to clients
-            for(var endpoint : updatedEndpoints) {
-                var players = trackers.get(endpoint);
-                if(players == null)
-                    continue;
-                var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
-                ModdedPackets.sendToClients(new TransmissionLineManagementS2CPacket(endpoint, lines), players);
-            }
-            updatedEndpoints.clear();
             // Send partial lines to clients
             var iter2 = transmissionLines.values().iterator();
             var removed = new ArrayList<TransmissionLine>();
@@ -206,27 +198,39 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     PowerGrid.LOGGER.warn("Empty transmission line {} dropped during tick", line);
                     removed.add(line);
                     iter2.remove();
-                    continue;
-                }
-                if(Math.abs(line.current()) < 1e-5) {
-                    // Line is not carrying any major current so don't bother synchronizing it.
-                    continue;
-                }
-                var players = PlayerUtilities.partialTracking(serverWorld, line);
-                if(players.isEmpty())
-                    continue;
-                try {
-                    var packet = new TransmissionLineStateS2CPacket(line);
-                    ModdedPackets.sendToClients(packet, players);
-                } catch (RuntimeException e) {
-                    PowerGrid.LOGGER.error("Failed to send a transmission line packet", e);
                 }
             }
             removed.forEach(TransmissionLine::remove);
             // Synchronize state with clients
+            if(syncTicks % 5 == 0) {
+                syncStates.clear();
+                for (var entry : trackers.entrySet()) {
+                    for (var player : entry.getValue()) {
+                        var endpoint = entry.getKey();
+                        if(!(endpoint instanceof BlockWireEndpoint bwe))
+                            continue;
+                        var eb = bwe.getElectricBehaviour(world);
+                        syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
+                    }
+                }
+            }
+            for(var entry : syncStates.entrySet()) {
+                var packet = new StateS2CPacket();
+                var wrapper = packet.wrapper();
+                var behaviours = entry.getValue();
+                for(var pair : behaviours.entrySet()) {
+                    if(syncTicks % pair.getValue().lod() != 0)
+                        continue;
+                    packet.begin(pair.getKey().getPos());
+                    pair.getKey().writeToSync(wrapper, this::findLineMiddle);
+                    packet.end();
+                }
+                ModdedPackets.sendToClient(packet, entry.getKey());
+            }
             final int syncInterval = ModdedConfigs.common().stateSynchronization.get();
             if(syncInterval > 0) {
-                if (syncTicks++ >= syncInterval) {
+                if (syncTicks >= syncInterval) {
                     // TODO: Perhaps we should avoid sending ALL subnetworks at once and instead
                     //  split the sync up to avoid generating a lot of intermittent network traffic.
                     for (var network : subnetworks) {
@@ -243,6 +247,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     syncTicks = 0;
                 }
             }
+            ++syncTicks;
         }
     }
 
@@ -673,6 +678,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void addAndMigrateNode(IWireEndpoint oldEndpoint, OwnedFloatingNode newNode) {
+        if(newNode == null)
+            return;
         var endpoint = newNode.endpoint;
         var oldNode = globalExternalNodes.put(endpoint, newNode);
         addAndMigrateNode(oldNode, newNode);
@@ -808,8 +815,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void tracking(ServerPlayer tracker, IWireEndpoint endpoint, boolean end) {
         if(!end) {
             trackers.computeIfAbsent(endpoint, $ -> new HashSet<>()).add(tracker);
-            var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
-            ModdedPackets.sendToClient(new TransmissionLineManagementS2CPacket(endpoint, lines), tracker);
+//            var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
+//            ModdedPackets.sendToClient(new TransmissionLineManagementS2CPacket(endpoint, lines), tracker);
         } else {
             var list = trackers.get(endpoint);
             if(list == null)
@@ -918,7 +925,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             var couplings = globalGraph.getCouplings(node);
             couplings.forEach(INode::remove);
             for(var connected : nodes) {
-                var wires = globalGraph.getWires(node, connected);
+                var wires = List.copyOf(globalGraph.getWires(node, connected));
                 for(var wire : wires)
                     wire.remove();
                 toCheck.add(connected);

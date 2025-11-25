@@ -40,13 +40,11 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Voltage;
-import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.MultimeterDataC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -187,13 +185,15 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 if(!level.isClientSide) {
                     if(data.contains("UUID")) {
                         var genericEntity = ((ServerLevel) level).getEntity(data.getUUID("UUID"));
-                        if (genericEntity instanceof WireEntity wireEntity) {
-                            var wire = wireEntity.getWire();
-                            if (wire instanceof TransmissionLinePart part && part.getLine() != null) {
-                                var lineId = part.getLine().getId();
-                                if (data.getInt("LineId") != lineId)
-                                    data.putInt("LineId", lineId);
-                            }
+                        if(genericEntity != null) {
+                            data.putInt("EID", genericEntity.getId());
+                        } else {
+                            if(entity instanceof Player player)
+                                player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
+                                        .style(ChatFormatting.GRAY)
+                                        .component(), true);
+                            // Wipe all data
+                            stack.getOrCreateTag().remove("ModeData");
                         }
                     }
                 }
@@ -303,8 +303,12 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 yield posV - negV;
             }
             case 1 -> {
-                var lineId = data.getInt("LineId");
-                yield  ClientElectricNetwork.getWorldNetworks().tryGetCurrent(lineId);
+                var lineId = data.getInt("EID");
+                var entity = level.getEntity(lineId);
+                if(entity instanceof BaseWireEntity wire) {
+                    yield wire.current();
+                }
+                yield 0;
             }
             default -> 0;
         };

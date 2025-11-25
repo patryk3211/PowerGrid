@@ -91,7 +91,7 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
 
     @Override
     public void tick() {
-        if(thermal != null && coil != null)
+        if(thermal != null && coil != null && !level.isClientSide)
             thermal.applyWirePower(coil.getPileWire());
         super.tick();
     }

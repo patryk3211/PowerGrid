@@ -39,10 +39,9 @@ import java.util.function.Supplier;
 public enum ModdedPackets {
     ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket::new, true),
     ZAP_PROJECTILE(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new),
-    TRANSMISSION_LINE_STATE(TransmissionLineStateS2CPacket.class, TransmissionLineStateS2CPacket::new),
-    TRANSMISSION_LINE_MANAGEMENT(TransmissionLineManagementS2CPacket.class, TransmissionLineManagementS2CPacket::new),
     LIGHTNING_SYNC(LightningSyncS2CPacket.class, LightningSyncS2CPacket::new),
     ENTITY_DATA(EntityDataS2CPacket.class, EntityDataS2CPacket::new),
+    STATE(StateS2CPacket.class, StateS2CPacket::new),
 
     TRANSFORMER_WINDING(TransformerWindingC2SPacket.class, TransformerWindingC2SPacket::new),
     CHANGE_SCREEN(ChangeScreenC2SPacket.class, ChangeScreenC2SPacket::new),

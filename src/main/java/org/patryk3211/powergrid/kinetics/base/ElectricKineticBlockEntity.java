@@ -38,6 +38,17 @@ public abstract class ElectricKineticBlockEntity extends KineticBlockEntity impl
     }
 
     @Override
+    public void tick() {
+        if(!level.isClientSide || isVirtual())
+            electricalTick();
+        super.tick();
+    }
+
+    public void electricalTick() {
+
+    }
+
+    @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
         electricBehaviour = new ElectricBehaviour(this);

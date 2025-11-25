@@ -122,7 +122,7 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         }
     }
 
-    private void checkConnectivity(IElectricNode node, Set<IElectricNode> outerChecked) {
+    protected void checkConnectivity(IElectricNode node, Set<IElectricNode> outerChecked) {
         if(node == null)
             return;
         if(outerChecked == null)
@@ -194,7 +194,7 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         checkConnectivity(wire.node2, null);
     }
 
-    private Collection<AbstractElectricWire> findProblematicWires(DMatrixRMaj residual, double threshold) {
+    public Collection<AbstractElectricWire> findProblematicWires(DMatrixRMaj residual, double threshold) {
         var nodes = findProblematicNodes(residual, threshold);
         var wires = new HashSet<AbstractElectricWire>();
         for(var node1 : nodes) {

@@ -69,21 +69,21 @@ public class ElectricalNetwork {
     private DynamicallyTypedMatrix ReducedJacobian;
 
     private DynamicallyTypedMatrix ScaledJ;
-    private DMatrixRMaj StateVector;
-    private DMatrixRMaj AuxiliaryVector;
+    protected DMatrixRMaj StateVector;
+    protected DMatrixRMaj AuxiliaryVector;
     private DMatrixRMaj EliminatedSolved;
 
     private double[] columnScales;
     private double[] rowScales;
 
-    private boolean dirty;
+    protected boolean dirty;
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
     private int eliminatedUpdates = 0;
     private int scalesAge = 0;
     private boolean countUpdates = true;
     private boolean lockEliminated = false;
-    private boolean converged;
+    protected boolean converged;
     private int warmUpTicks = 0;
 
     private boolean recalculateScales;
@@ -732,7 +732,7 @@ public class ElectricalNetwork {
         return nodes.size() - eliminatedStart;
     }
 
-    private void prepareMatrices() {
+    protected void prepareMatrices() {
         ++scalesAge;
         var nodeCount = nodes.size();
         var eliminatedCount = eliminatedNodeCount();
