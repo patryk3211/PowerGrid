@@ -83,6 +83,11 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
     @Override
     public void calculate() {
         prepareMatrices();
-        converged = true;
+        if(warmUpTicks > 0) {
+            converged = false;
+            warmUpTicks = 0;
+        } else {
+            converged = true;
+        }
     }
 }

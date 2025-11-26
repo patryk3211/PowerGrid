@@ -84,7 +84,7 @@ public class ElectricalNetwork {
     private boolean countUpdates = true;
     private boolean lockEliminated = false;
     protected boolean converged;
-    private int warmUpTicks = 0;
+    protected int warmUpTicks = 0;
 
     private boolean recalculateScales;
     private boolean eliminatedChanged;

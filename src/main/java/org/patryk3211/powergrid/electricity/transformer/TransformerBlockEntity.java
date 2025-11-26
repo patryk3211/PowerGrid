@@ -91,8 +91,6 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
-
         boolean rebuild = false;
         if(tag.contains("Primary")) {
             var primary = tag.getCompound("Primary");
@@ -110,7 +108,10 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
         if(rebuild) {
             electricBehaviour.rebuildCircuit(false);
+            tag.remove("Rebuild");
         }
+
+        super.read(tag, clientPacket);
     }
 
     @Override

@@ -89,6 +89,13 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void rebuildCircuit(boolean rebuildExternal) {
         var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
         var networkList = externalNodes.stream().map(INode::getNetwork).toList();
+        if(rebuildExternal) {
+            for (var endpointConnections : connections.values()) {
+                for (var entity : endpointConnections) {
+                    entity.dropWire();
+                }
+            }
+        }
         builder.rebuildExternal(rebuildExternal);
         if(paused)
             builder.paused();
@@ -101,25 +108,27 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             joinNetwork(networkList.get(i), i);
         }
 
-        // Break connections if external node was removed.
-        var iter = connections.entrySet().iterator();
-        while(iter.hasNext()) {
-            var entry = iter.next();
-            var endpoint = entry.getKey();
-            if(endpoint.getTerminal() < externalNodes.size() && externalNodes.get(endpoint.getTerminal()) != null) {
-                // Rewire
-                for(var entity : entry.getValue())
-                    entity.makeWire();
-                continue;
+        if(rebuildExternal) {
+            // Break connections if external node was removed.
+            var iter = connections.entrySet().iterator();
+            while (iter.hasNext()) {
+                var entry = iter.next();
+                var endpoint = entry.getKey();
+                if (endpoint.getTerminal() < externalNodes.size() && externalNodes.get(endpoint.getTerminal()) != null) {
+                    // Rewire
+                    for (var entity : entry.getValue())
+                        entity.makeWire();
+                    continue;
+                }
+                var connCopy = List.copyOf(entry.getValue());
+                for (BaseWireEntity entity : connCopy) {
+                    entity.endpointRemoved(endpoint);
+                }
+                iter.remove();
             }
-            var connCopy = List.copyOf(entry.getValue());
-            for(BaseWireEntity entity : connCopy) {
-                entity.endpointRemoved(endpoint);
-            }
-            iter.remove();
+            if(getWorld() != null)
+                GlobalElectricNetworks.nodeHolderAdded(this);
         }
-        if(getWorld() != null)
-            GlobalElectricNetworks.nodeHolderAdded(this);
 
         var world = getWorld();
         if(world != null && !world.isClientSide)
