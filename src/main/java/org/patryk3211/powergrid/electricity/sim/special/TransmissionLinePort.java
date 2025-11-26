@@ -20,9 +20,7 @@ import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 
 public class TransmissionLinePort extends VoltageSourceCoupling {
     private final TransmissionLine line;
-
     TransmissionLinePort other;
-    int sideSign;
 
     public TransmissionLinePort(IElectricNode node, float resistance, TransmissionLine line) {
         super(node, null, resistance);
@@ -31,6 +29,7 @@ public class TransmissionLinePort extends VoltageSourceCoupling {
 
     public void preSolve() {
         var I = getCurrent() + other.getCurrent();
-        setVoltage(other.positive.getVoltage() + I * getResistance());
+        var voltage = other.positive.getVoltage() + I * getResistance();
+        setVoltage(getVoltage() * 0.5f + voltage * 0.5f);
     }
 }

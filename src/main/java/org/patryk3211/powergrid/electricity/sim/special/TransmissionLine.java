@@ -487,9 +487,7 @@ public class TransmissionLine extends ElectricWire {
             var port1 = new TransmissionLinePort(node1, (float) resistance, this);
             var port2 = new TransmissionLinePort(node2, (float) resistance, this);
             port1.other = port2;
-            port1.sideSign = -1;
             port2.other = port1;
-            port2.sideSign = 1;
             portPair = Pair.of(port1, port2);
             node1.getNetwork().addNode(port1);
             node2.getNetwork().addNode(port2);
@@ -513,7 +511,8 @@ public class TransmissionLine extends ElectricWire {
         for(var segment : segments) {
             R += segment.getResistance();
             if(segment.getNode2() == node) {
-                return node1.getVoltage() + R * current();
+                var a = (float) (R / getResistance());
+                return node1.getVoltage() * (1 - a) + node2.getVoltage() * a;
             }
         }
         return node2.getVoltage();
