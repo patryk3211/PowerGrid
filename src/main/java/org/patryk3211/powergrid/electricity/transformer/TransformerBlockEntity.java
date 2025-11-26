@@ -178,6 +178,9 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     public void makePrimary(int terminal1, int terminal2, int turns, Item item) {
         primaryCoil.set(terminal1, terminal2, turns, item);
         electricBehaviour.rebuildCircuit(false);
+        if(level != null && !level.isClientSide) {
+            updateCoilBlockState();
+        }
         notifyUpdate();
     }
 
@@ -192,6 +195,9 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     public void makeSecondary(int terminal1, int terminal2, int turns, Item item) {
         secondaryCoil.set(terminal1, terminal2, turns, item);
         electricBehaviour.rebuildCircuit(false);
+        if(level != null && !level.isClientSide) {
+            updateCoilBlockState();
+        }
         notifyUpdate();
     }
 
@@ -206,12 +212,18 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     public void removeSecondary() {
         secondaryCoil.clear();
         electricBehaviour.rebuildCircuit(false);
+        if(level != null && !level.isClientSide) {
+            updateCoilBlockState();
+        }
         notifyUpdate();
     }
 
     public void removePrimary() {
         primaryCoil.clear();
         electricBehaviour.rebuildCircuit(false);
+        if(level != null && !level.isClientSide) {
+            updateCoilBlockState();
+        }
         notifyUpdate();
     }
 
@@ -228,10 +240,6 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         if(primaryCoil == null) {
             primaryCoil = new TransformerCoilParameters();
             secondaryCoil = new TransformerCoilParameters();
-        }
-
-        if(level != null && !level.isClientSide) {
-            updateCoilBlockState();
         }
 
         var coreAl = coreAl();
