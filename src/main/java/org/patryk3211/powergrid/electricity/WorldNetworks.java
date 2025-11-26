@@ -210,6 +210,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         if(!(endpoint instanceof BlockWireEndpoint bwe))
                             continue;
                         var eb = bwe.getElectricBehaviour(world);
+                        if(eb == null)
+                            continue;
                         syncStates.computeIfAbsent(player, $ -> new HashMap<>())
                                 .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
                     }
