@@ -56,8 +56,14 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
     public void removeNode(INode node) {
         super.removeNode(node);
         if(node instanceof IElectricNode enode) {
-            if(!graph.getConnectedLines(enode).isEmpty())
-                PowerGrid.LOGGER.warn("Removed a node which had connections", new Throwable());
+            var connections = graph.getConnectedLines(enode);
+            if(!connections.isEmpty()) {
+                PowerGrid.LOGGER.warn("Removed a node which had connections");
+                for(var conn : connections) {
+                    PowerGrid.LOGGER.warn(" - {}", conn);
+                }
+                PowerGrid.LOGGER.warn("Stack trace: ", new Throwable());
+            }
             graph.removeNode(enode);
         }
         if(node instanceof ICouplingNode cnode)

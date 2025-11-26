@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import net.createmod.catnip.data.Pair;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.MatrixFeatures_DDRM;
@@ -132,6 +133,28 @@ public class ElectricalNetwork {
         }
     }
 
+    public void fromElements(Collection<INetworkElement> elements) {
+        var values = new ArrayList<Pair<INode, Double>>();
+        for(var element : elements) {
+            if(element instanceof IElectricNode node) {
+                values.add(Pair.of(node, node.getStateValue()));
+                addNode(node);
+            }
+        }
+        for(var element : elements) {
+            if(element instanceof ICouplingNode node) {
+                values.add(Pair.of(node, node.getStateValue()));
+                addNode(node);
+            } else if(element instanceof AbstractElectricWire wire) {
+                addWire(wire);
+            }
+        }
+        prepareMatrices();
+        for(var pair : values) {
+            setValue(pair.getFirst(), pair.getSecond());
+        }
+    }
+
     public void addNode(INode node) {
         if(nodes.contains(node) || leafNodes.containsKey(node))
             return;
@@ -153,18 +176,18 @@ public class ElectricalNetwork {
             residuals.add(residual);
 
         if(node instanceof IElectricNode enode)
-            addNode(enode);
+            nodeSpecifics(enode);
         if(node instanceof ICouplingNode cnode)
-            addNode(cnode);
+            nodeSpecifics(cnode);
         warmUp(5);
     }
 
-    private void addNode(IElectricNode node) {
+    private void nodeSpecifics(IElectricNode node) {
         if(node instanceof CurrentSourceNode)
             ++sourceCount;
     }
 
-    private void addNode(ICouplingNode coupling) {
+    private void nodeSpecifics(ICouplingNode coupling) {
         couplings.add(coupling);
         if(coupling instanceof VoltageSourceCoupling)
             ++sourceCount;
@@ -691,7 +714,7 @@ public class ElectricalNetwork {
         if(!nodes.contains(node)) {
             if(leafNodes.containsKey(node)) {
                 leafNodes.remove(node);
-                addNode((INode) node);
+                addNode(node);
 
                 var iter = leafInnerHooks.iterator();
                 while(iter.hasNext()) {
