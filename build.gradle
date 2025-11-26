@@ -148,9 +148,8 @@ subprojects {
 		common(project(path: rootProject.path, configuration: "namedElements")) { transitive false }
 	}
 
-	tasks.register("devBuild", {
-		version = "${project.mod_version}+${project.minecraft_version}-${getGitHash}"
-		dependsOn tasks.build
+	tasks.named("build", {
+		version = "mc${project.minecraft_version}-${project.mod_version}-${getGitHash}"
 	})
 
 	tasks.jar {
