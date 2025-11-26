@@ -108,8 +108,6 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
             baseResistance += ResistanceValues.get(state.getBlock());
             pos = pos.above();
         }
-//        level.getBlockEntity(pos.below(), ModdedBlockEntities.CARBON_PILE.get())
-//                .ifPresentOrElse(be -> electricBehaviour.setSyncAppender(be), () -> electricBehaviour.setSyncAppender(null));
         if(baseResistance == 0) {
             pile.setState(false);
         }
@@ -172,6 +170,8 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
     @Override
     public void writeToSync(FriendlyByteBuf buffer) {
         assert level != null;
+        // Synchronized only for the goggle information.
+        buffer.writeFloat((float) pile.getResistance());
         var pos = worldPosition.above();
         BlockState state;
         while(ModdedBlocks.CARBON_PILE.has(state = level.getBlockState(pos))) {
@@ -187,6 +187,7 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
     @Override
     public void readFromSync(FriendlyByteBuf buffer) {
         assert level != null;
+        pile.setResistance(buffer.readFloat());
         var pos = worldPosition.above();
         BlockState state;
         while(ModdedBlocks.CARBON_PILE.has(state = level.getBlockState(pos))) {
