@@ -306,9 +306,9 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             this.mutualInductance = builder.connect((float) mutualInductance * mutualMultiplier(), Tnode, P2);
             if(primaryTurns == secondaryTurns) {
                 // TODO: Consider allowing more variation in the ratio that splits networks.
-                this.couplingV1 = new VoltageSourceCoupling(P1, P2, secondaryStray*100);
+                this.couplingV1 = new VoltageSourceCoupling(P1, P2, secondaryStray * 100);
                 this.couplingV2 = new VoltageSourceCoupling(builder.terminalNode(secondaryCoil.getTerminal1()),
-                        builder.terminalNode(secondaryCoil.getTerminal2()), secondaryStray*100);
+                        builder.terminalNode(secondaryCoil.getTerminal2()), secondaryStray * 100);
                 builder.add(couplingV1);
                 builder.add(couplingV2);
             } else {
@@ -351,7 +351,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         ratio.style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         if(primaryStray != null && mutualInductance != null) {
             float primary = (float) primaryStray.getResistance();
-            float secondary = coupling != null ? coupling.getResistance() : couplingV1.getResistance();
+            float secondary = coupling != null ? coupling.getResistance() : couplingV1.getResistance() * 0.01f;
             if(primaryTurns > secondaryTurns) {
                 var r = primary;
                 primary = secondary;
