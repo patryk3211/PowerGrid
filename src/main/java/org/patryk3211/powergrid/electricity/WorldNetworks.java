@@ -62,7 +62,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private final Map<OwnedFloatingNode, Set<TransmissionLinePart>> partNodeMap = new HashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
-    private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
 
     private final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
     protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
@@ -86,10 +85,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void lineConnected(TransmissionLine line) {
         var id = line.getId();
         transmissionLines.put(id, line);
-        updatedEndpoints.add(line.getEndpoint1());
-        updatedEndpoints.add(line.getEndpoint2());
-        updatedEndpoints.add(line.getNode1().endpoint);
-        updatedEndpoints.add(line.getNode2().endpoint);
 
         var line1 = findLineMiddle(line.getNode1());
         if(line1 != null)
@@ -105,10 +100,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         transmissionLines.remove(line.getId());
         if(line.getNetwork() != null)
             islandDiscoveryQueue.add(line.getNetwork());
-        updatedEndpoints.add(line.getEndpoint1());
-        updatedEndpoints.add(line.getEndpoint2());
-        updatedEndpoints.add(line.getNode1().endpoint);
-        updatedEndpoints.add(line.getNode2().endpoint);
         setDirty();
     }
 
@@ -138,7 +129,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
             island.add(enode);
             for(var wire : globalGraph.getWires(enode)) {
-                if(wire instanceof TransmissionLine line && line.getResistance() > 0.2f) {
+                if(wire instanceof TransmissionLine line && line.getResistance() > ModdedConfigs.server().electricity.transmissionLineThreshold.getF()) {
                     // Weak line can split islands.
                     var otherNode = line.getNode1() == node ? line.getNode2() : line.getNode1();
                     Island connectedIsland = null;
@@ -823,7 +814,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var endpoint = newNode.endpoint;
         var oldNode = globalExternalNodes.put(endpoint, newNode);
         addAndMigrateNode(oldNode, newNode);
-        updatedEndpoints.add(oldEndpoint);
         var oldNode2 = globalExternalNodes.remove(oldEndpoint);
         addAndMigrateNode(oldNode2, newNode);
 
@@ -835,7 +825,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public void addAndMigrateNode(OwnedFloatingNode oldNode, OwnedFloatingNode newNode) {
         var endpoint = newNode.endpoint;
-        updatedEndpoints.add(endpoint);
         if(oldNode != null && oldNode != newNode) {
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.

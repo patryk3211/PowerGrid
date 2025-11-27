@@ -52,6 +52,8 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt carbonPileMaxHeight = i(5, 1, "carbonPileMaxHeight", Comments.carbonPileMaxHeight);
     public final ConfigFloat carbonPileGain = f(10, 0, "carbonPileGain", Comments.carbonPileGain);
 
+    public final ConfigFloat transmissionLineThreshold = f(0.2f, 0, "transmissionLineThreshold", Comments.transmissionLineThreshold);
+
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
     public final CWire wires = nested(1, CWire::new, Comments.wires);
@@ -99,5 +101,7 @@ public class CElectricity extends ConfigBase {
 
         public static final String carbonPileMaxHeight = "Maximum block height of the carbon pile structure";
         public static final String carbonPileGain = "Carbon pile \"gain\", controls how much the coil current affects the resistance";
+
+        public static final String transmissionLineThreshold = "Threshold resistance for a transmission line to be able to split the grid into island networks. Lines with resistance above this value have a propagation delay of roughly 1 tick, and can improve performance by simulating small segments of the grid separately.";
     }
 }
