@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.*;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -477,6 +478,8 @@ public class ElectricalNetwork {
             FloatingNode anchor = null;
             for (var node : nodes) {
                 if (node instanceof CurrentSourceNode) {
+                    shouldAnchor = false;
+                } else if (node instanceof TransmissionLinePort) {
                     shouldAnchor = false;
                 } else if (node instanceof VoltageSourceCoupling source) {
                     if (anchor == null && source.getNegative() instanceof FloatingNode floating && floating.getIndex() < eliminatedStart) {

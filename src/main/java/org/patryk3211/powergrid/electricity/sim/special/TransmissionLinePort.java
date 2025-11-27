@@ -29,8 +29,8 @@ public class TransmissionLinePort extends VoltageSourceCoupling {
     }
 
     public void preSolve() {
-        var I = getCurrent() + other.getCurrent();
+        var I = getCurrent();
         var voltage = other.positive.getVoltage() + I * getResistance();
-        setVoltage(getVoltage() * 0.25f + voltage * 0.75f);
+        setVoltage(getVoltage() * 0.5f + voltage * 0.5f);
     }
 }
