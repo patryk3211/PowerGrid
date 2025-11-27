@@ -135,8 +135,6 @@ public class NetworkGraph {
     }
 
     public void couple(ICouplingNode coupling) {
-        if(coupling instanceof TransmissionLinePort)
-            return;
         for(var node : coupling.coupledNodes()) {
             var object = nodes.get(node);
             if(object == null)
@@ -226,7 +224,7 @@ public class NetworkGraph {
             return 0;
 
         var object = nodes.get(node);
-        int size = object.couplings.size();
+        int size = (int) object.couplings.stream().filter(cnode -> !(cnode instanceof TransmissionLinePort)).count();
         for(var list : object.connections.values())
             size += list.size();
         return size;

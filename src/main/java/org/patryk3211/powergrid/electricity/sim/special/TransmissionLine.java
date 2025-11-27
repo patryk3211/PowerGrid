@@ -318,7 +318,7 @@ public class TransmissionLine extends ElectricWire {
     public void setNetwork(ElectricalNetwork network) {
         super.setNetwork(network);
         // Port pair only works for weakly coupling lines.
-        if(portPair != null) {
+        if(portPair != null && network != null) {
             portPair.getFirst().remove();
             portPair.getSecond().remove();
             portPair = null;
