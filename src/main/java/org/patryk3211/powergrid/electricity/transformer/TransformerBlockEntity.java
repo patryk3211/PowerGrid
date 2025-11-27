@@ -92,14 +92,21 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     public void electricalTick() {
         if(couplingV1 != null) {
             assert couplingV1.getNegative() != null && couplingV2.getNegative() != null;
+            var I = couplingV1.getCurrent() + couplingV2.getCurrent();
             // Exchange port variables.
             var V1 = couplingV1.getNetwork() == null ? couplingV1.getVoltage() :
                     couplingV1.getPositive().getVoltage() - couplingV1.getNegative().getVoltage();
             var V2 = couplingV2.getNetwork() == null ? couplingV2.getVoltage() :
                     couplingV2.getPositive().getVoltage() - couplingV2.getNegative().getVoltage();
             // No ratio multiplication since only 1:1 transformers are allowed here for now.
-            var U1 = V2 + couplingV1.getResistance() * couplingV1.getCurrent();
-            var U2 = V1 + couplingV2.getResistance() * couplingV2.getCurrent();
+            var U1 = V2 + couplingV1.getResistance() * I;
+            var U2 = V1 + couplingV2.getResistance() * I;
+//            if(Math.signum(couplingV1.getVoltage()) == Math.signum(couplingV1.getCurrent())) {
+//                U1 += couplingV1.getCurrent() * couplingV1.getResistance();
+//            }
+//            if(Math.signum(couplingV2.getVoltage()) == Math.signum(couplingV2.getCurrent())) {
+//                U2 += couplingV2.getCurrent() * couplingV2.getResistance();
+//            }
 
             couplingV1.setVoltage(couplingV1.getVoltage() * 0.5f + U1 * 0.5f);
             couplingV2.setVoltage(couplingV2.getVoltage() * 0.5f + U2 * 0.5f);
@@ -351,7 +358,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         ratio.style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         if(primaryStray != null && mutualInductance != null) {
             float primary = (float) primaryStray.getResistance();
-            float secondary = coupling != null ? coupling.getResistance() : couplingV1.getResistance() * 0.01f;
+            float secondary = coupling != null ? coupling.getResistance() : couplingV1.getResistance();// * 0.01f;
             if(primaryTurns > secondaryTurns) {
                 var r = primary;
                 primary = secondary;
