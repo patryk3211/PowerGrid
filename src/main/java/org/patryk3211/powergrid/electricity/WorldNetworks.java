@@ -103,7 +103,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     @Override
     public void lineDisconnected(TransmissionLine line) {
         transmissionLines.remove(line.getId());
-        islandDiscoveryQueue.add(line.getNetwork());
+        if(line.getNetwork() != null)
+            islandDiscoveryQueue.add(line.getNetwork());
         updatedEndpoints.add(line.getEndpoint1());
         updatedEndpoints.add(line.getEndpoint2());
         updatedEndpoints.add(line.getNode1().endpoint);
@@ -117,6 +118,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var couplings = new HashMap<CouplingKey, Set<TransmissionLine>>();
 
         var queue = new ArrayList<>(network.getNodes());
+        queue.addAll(network.getLeafs());
         while(!queue.isEmpty()) {
             var node = queue.remove(0);
             if(!(node instanceof IElectricNode enode))
@@ -431,7 +433,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return network;
     }
 
-    public ElectricalNetwork prepareForTransmissionLine(@NotNull OwnedFloatingNode node1, @NotNull OwnedFloatingNode node2, TransmissionLine line) {
+    public ElectricalNetwork prepareForTransmissionLine(@NotNull OwnedFloatingNode node1, @NotNull OwnedFloatingNode node2, TransmissionLine line, Runnable callback) {
         var endpoint1 = node1.endpoint;
         var endpoint2 = node2.endpoint;
 
@@ -448,6 +450,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(network != null) {
             inNetwork(network, node1);
             inNetwork(network, node2);
+            callback.run();
             return network;
         }
         if(net1 == null && net2 == null) {
@@ -471,6 +474,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         } else {
             network = net1;
         }
+        // We must disconnect the line or else graph will be broken.
+        globalGraph.disconnect(line.getNode1(), line.getNode2(), line);
+        callback.run();
+        network.addWire(line);
         return network;
     }
 

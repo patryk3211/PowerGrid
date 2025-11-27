@@ -21,6 +21,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 
 import java.util.*;
 
@@ -134,6 +135,8 @@ public class NetworkGraph {
     }
 
     public void couple(ICouplingNode coupling) {
+        if(coupling instanceof TransmissionLinePort)
+            return;
         for(var node : coupling.coupledNodes()) {
             var object = nodes.get(node);
             if(object == null)

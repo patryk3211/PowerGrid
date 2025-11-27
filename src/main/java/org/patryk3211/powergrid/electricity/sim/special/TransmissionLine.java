@@ -265,15 +265,15 @@ public class TransmissionLine extends ElectricWire {
                     // This is the last segment of this line.
                     // All other segments go to the next line.
                     line2 = new TransmissionLine(1, segment.endpoint2, endpoint2, global);
-                    global.prepareForTransmissionLine(getNode1(), splitNode, this);
-                    setNode2(segment.getEndpoint2(), splitNode);
+                    global.prepareForTransmissionLine(getNode1(), splitNode, this,
+                            () -> setNode2(segment.getEndpoint2(), splitNode));
                 } else if(segment.getEndpoint2().equals(atNode.endpoint)) {
                     // Nodes do not match but the endpoint does. Split should occur.
                     line2 = new TransmissionLine(1, segment.endpoint2, endpoint2, global);
                     // Get the most up-to-date node.
                     var newNode = atNode.endpoint.getNode(global.world);
-                    global.prepareForTransmissionLine(getNode1(), newNode, this);
-                    setNode2(segment.getEndpoint2(), newNode);
+                    global.prepareForTransmissionLine(getNode1(), newNode, this,
+                            () -> setNode2(segment.getEndpoint2(), newNode));
                 }
             } else {
                 R2 += segment.getResistance();
@@ -339,6 +339,11 @@ public class TransmissionLine extends ElectricWire {
         super.remove();
         if(ModdedConfigs.logsEnabled())
             PowerGrid.LOGGER.debug("{}: Removing transmission line between {} and {}", this, node1, node2);
+        if(portPair != null) {
+            portPair.getFirst().remove();
+            portPair.getSecond().remove();
+            portPair = null;
+        }
         for(var segment : segments) {
             global.unregisterPart(segment.persistentOwnerId, segment);
             segment.setLine(null);
@@ -381,20 +386,22 @@ public class TransmissionLine extends ElectricWire {
                 return;
             var line1 = lines.get(0);
             var line2 = lines.get(1);
-            if(line1.getNetwork() != line2.getNetwork())
-                return;
             if(line1.getNode1() == line2.getNode2()) {
                 // Append line1 onto line2
-                line2.merge(line1);
+                global.globalGraph.disconnect(line1.getNode1(), line1.getNode2(), line1);
+                global.prepareForTransmissionLine(line2.getNode1(), line1.getNode2(), line2, () -> line2.merge(line1));
             } else if(line1.getNode2() == line2.getNode1()) {
                 // Append line2 onto line1
-                line1.merge(line2);
+                global.globalGraph.disconnect(line2.getNode1(), line2.getNode2(), line2);
+                global.prepareForTransmissionLine(line1.getNode1(), line2.getNode2(), line1, () -> line1.merge(line2));
             } else if(line1.getNode1() == line2.getNode1()) {
+                global.globalGraph.disconnect(line2.getNode1(), line2.getNode2(), line2);
                 line1.flip();
-                line1.merge(line2);
+                global.prepareForTransmissionLine(line1.getNode1(), line2.getNode2(), line1, () -> line1.merge(line2));
             } else if(line1.getNode2() == line2.getNode2()) {
+                global.globalGraph.disconnect(line2.getNode1(), line2.getNode2(), line2);
                 line2.flip();
-                line1.merge(line2);
+                global.prepareForTransmissionLine(line1.getNode1(), line2.getNode2(), line1, () -> line1.merge(line2));
             } else {
                 PowerGrid.LOGGER.error("Unknown line optimization case");
             }
@@ -424,9 +431,9 @@ public class TransmissionLine extends ElectricWire {
             setResistance(resistance - removed.getResistance());
 
             var node1 = wire.endpoint2.getNode(global.world);
-            global.prepareForTransmissionLine(node1, getNode2(), this);
             var optiNode = getNode1();
-            setNode1(wire.endpoint2, node1);
+            global.prepareForTransmissionLine(node1, getNode2(), this,
+                    () -> setNode1(wire.endpoint2, node1));
             optimizeNode(optiNode);
             if(ENABLE_VALIDATION)
                 validateLine();
@@ -444,9 +451,9 @@ public class TransmissionLine extends ElectricWire {
             setResistance(resistance - removed.getResistance());
 
             var node2 = wire.endpoint1.getNode(global.world);
-            global.prepareForTransmissionLine(getNode1(), node2, this);
             var optiNode = getNode2();
-            setNode2(wire.endpoint1, node2);
+            global.prepareForTransmissionLine(getNode1(), node2, this,
+                    () -> setNode2(wire.endpoint1, node2));
             optimizeNode(optiNode);
             if(ENABLE_VALIDATION)
                 validateLine();
@@ -473,8 +480,8 @@ public class TransmissionLine extends ElectricWire {
                 return;
             }
             setResistance(resistance - removed.getResistance());
-            global.prepareForTransmissionLine(getNode1(), terminatingNode, this);
-            setNode2(wire.endpoint1, terminatingNode);
+            global.prepareForTransmissionLine(getNode1(), terminatingNode, this,
+                    () -> setNode2(wire.endpoint1, terminatingNode));
             if(ENABLE_VALIDATION)
                 validateLine();
         }
@@ -483,15 +490,17 @@ public class TransmissionLine extends ElectricWire {
     public Pair<TransmissionLinePort, TransmissionLinePort> makePortPair() {
         if(node1.getNetwork() == node2.getNetwork() || network != null)
             return null;
-        if(portPair == null) {
-            var port1 = new TransmissionLinePort(node1, (float) resistance, this);
-            var port2 = new TransmissionLinePort(node2, (float) resistance, this);
-            port1.other = port2;
-            port2.other = port1;
-            portPair = Pair.of(port1, port2);
-            node1.getNetwork().addNode(port1);
-            node2.getNetwork().addNode(port2);
+        if(portPair != null) {
+            portPair.getFirst().remove();
+            portPair.getSecond().remove();
         }
+        var port1 = new TransmissionLinePort(node1, (float) resistance, this);
+        var port2 = new TransmissionLinePort(node2, (float) resistance, this);
+        port1.other = port2;
+        port2.other = port1;
+        portPair = Pair.of(port1, port2);
+        node1.getNetwork().addNode(port1);
+        node2.getNetwork().addNode(port2);
         return portPair;
     }
 
@@ -521,6 +530,10 @@ public class TransmissionLine extends ElectricWire {
     public void step() {
         if(portPair == null)
             return;
+        if(node1.getNetwork() == node2.getNetwork()) {
+            node1.getNetwork().addWire(this);
+            return;
+        }
         portPair.getFirst().preSolve();
         portPair.getSecond().preSolve();
     }

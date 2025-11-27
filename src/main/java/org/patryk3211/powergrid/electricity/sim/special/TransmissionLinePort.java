@@ -25,11 +25,12 @@ public class TransmissionLinePort extends VoltageSourceCoupling {
     public TransmissionLinePort(IElectricNode node, float resistance, TransmissionLine line) {
         super(node, null, resistance);
         this.line = line;
+        setVoltage(node.getVoltage());
     }
 
     public void preSolve() {
         var I = getCurrent() + other.getCurrent();
         var voltage = other.positive.getVoltage() + I * getResistance();
-        setVoltage(getVoltage() * 0.5f + voltage * 0.5f);
+        setVoltage(getVoltage() * 0.25f + voltage * 0.75f);
     }
 }

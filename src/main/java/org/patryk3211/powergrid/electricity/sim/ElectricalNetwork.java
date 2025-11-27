@@ -360,6 +360,10 @@ public class ElectricalNetwork {
         return nodes;
     }
 
+    public Collection<IElectricNode> getLeafs() {
+        return leafNodes.keySet();
+    }
+
     public DMatrixRMaj getStateVector() {
         return StateVector;
     }
@@ -391,6 +395,8 @@ public class ElectricalNetwork {
     protected void rhsAdd(int row, double value) {
         if(value == 0)
             return;
+        if(row >= nodes.size())
+            throw new IllegalArgumentException("Provided entry lays outside of the allocated matrices.");
         if(row < eliminatedStart) {
             ReducedRHSVector.add(row, 0, value);
         } else {
@@ -543,6 +549,18 @@ public class ElectricalNetwork {
     }
 
     public void clear() {
+        nodes.forEach(node -> {
+            if(node.getNetwork() == this)
+                node.setNetwork(null);
+        });
+        wires.forEach(wire -> {
+            if(wire.getNetwork() == this)
+                wire.setNetwork(null);
+        });
+        leafNodes.forEach((node, $) -> {
+            if(node.getNetwork() == this)
+                node.setNetwork(null);
+        });
         nodes.clear();
         wires.clear();
         couplings.clear();
