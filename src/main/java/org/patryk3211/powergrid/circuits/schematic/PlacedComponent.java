@@ -103,6 +103,10 @@ public class PlacedComponent {
         return worldSupplier.get();
     }
 
+    public boolean isClient() {
+        return getWorld().isClientSide;
+    }
+
     public void onClientWorld(Supplier<Consumer<Level>> callback) {
         var world = getWorld();
         if(world.isClientSide)

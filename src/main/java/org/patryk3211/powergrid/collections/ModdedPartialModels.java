@@ -45,6 +45,9 @@ public class ModdedPartialModels {
     public static final PartialModel NEON_TUBE_BULB = model("component/neon_bulb_bulb");
     public static final PartialModel NEON_TUBE_GLOW = model("component/neon_bulb_glow");
 
+    public static final PartialModel LIGHT_BULB_BULB = model("component/light_bulb_bulb");
+    public static final PartialModel LIGHT_BULB_GLOW = model("component/light_bulb_glow");
+
     public static final PartialModel ROTOR = block("generator/rotor");
     public static final PartialModel INDUCTION_ROTOR = block("generator/induction_rotor");
 

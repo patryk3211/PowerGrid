@@ -15,6 +15,7 @@
     "powergrid:regulator_tube",
     "powergrid:voltage_gauge",
     "powergrid:diode",
+    "powergrid:lv_light_bulb",
     "powergrid:resistor"
   ]
 }

@@ -56,6 +56,14 @@ public class Components {
             .item(ModdedItems.NEON_BULB)
             .register();
 
+    public static final RegistryEntry<LightBulbComponent> LIGHT_BULB = REGISTRATE.component("light_bulb", LightBulbComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 1, 0)
+                    .addPad(2, 1, 1)
+                    .withItem().withOutline())
+            .item(ModdedItems.LV_LIGHT_BULB)
+            .register();
+
     public static final RegistryEntry<ConnectorComponent> CONNECTOR = REGISTRATE.component("connector", ConnectorComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(1, 1, 0)
