@@ -53,6 +53,8 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat carbonPileGain = f(10, 0, "carbonPileGain", Comments.carbonPileGain);
 
     public final ConfigFloat transmissionLineThreshold = f(0.2f, 0, "transmissionLineThreshold", Comments.transmissionLineThreshold);
+    public final ConfigBool splittingTransmissionLines = b(false, "splittingTransmissionLines", Comments.splittingTransmissionLines);
+    public final ConfigBool splittingTransformers = b(false, "splittingsTransformers", Comments.splittingTransformers);
 
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -103,5 +105,7 @@ public class CElectricity extends ConfigBase {
         public static final String carbonPileGain = "Carbon pile \"gain\", controls how much the coil current affects the resistance";
 
         public static final String transmissionLineThreshold = "Threshold resistance for a transmission line to be able to split the grid into island networks. Lines with resistance above this value have a propagation delay of roughly 1 tick, and can improve performance by simulating small segments of the grid separately.";
+        public static final String splittingTransmissionLines = "Allows transmission lines to split large grid into smaller networks. This option should improve performance for large grids but it will result in transmission lines having a propagation delay and capacitance.";
+        public static final String splittingTransformers = "Allows transformers to split the grid. This option should improve performance but it will result in transformers having some capacitance and delay.";
     }
 }

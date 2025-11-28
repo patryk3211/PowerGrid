@@ -311,7 +311,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
             this.primaryStray = builder.connect(primaryStray, P1, Tnode);
             this.mutualInductance = builder.connect((float) mutualInductance * mutualMultiplier(), Tnode, P2);
-            if(primaryTurns == secondaryTurns) {
+            if(primaryTurns == secondaryTurns && ModdedConfigs.server().electricity.splittingTransformers.get()) {
                 // TODO: Consider allowing more variation in the ratio that splits networks.
                 this.couplingV1 = new VoltageSourceCoupling(P1, P2, secondaryStray * 100);
                 this.couplingV2 = new VoltageSourceCoupling(builder.terminalNode(secondaryCoil.getTerminal1()),

@@ -103,6 +103,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         setDirty();
     }
 
+    private static boolean canWeakCouple(TransmissionLine line) {
+        return ModdedConfigs.server().electricity.splittingTransmissionLines.get() &&
+                line.getResistance() > ModdedConfigs.server().electricity.transmissionLineThreshold.getF();
+    }
+
     private void runIslandDiscoveryFor(ElectricalNetwork network) {
         var visited = new HashSet<IElectricNode>();
         var islands = new ArrayList<Island>();
@@ -129,7 +134,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
             island.add(enode);
             for(var wire : globalGraph.getWires(enode)) {
-                if(wire instanceof TransmissionLine line && line.getResistance() > ModdedConfigs.server().electricity.transmissionLineThreshold.getF()) {
+                if(wire instanceof TransmissionLine line && canWeakCouple(line)) {
                     // Weak line can split islands.
                     var otherNode = line.getNode1() == node ? line.getNode2() : line.getNode1();
                     Island connectedIsland = null;
