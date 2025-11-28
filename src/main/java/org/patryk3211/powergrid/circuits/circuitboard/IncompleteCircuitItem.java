@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.createmod.catnip.theme.Color;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -42,16 +41,15 @@ public class IncompleteCircuitItem extends Item {
 
     private static CompoundTag makeAssemblyTag(Level level, CompoundTag schematicTag) {
         var schematic = CircuitSchematic.fromNbt(schematicTag);
-        var componentAmounts = new HashMap<Item, Integer>();
+        var componentAmounts = new HashMap<org.patryk3211.powergrid.circuits.components.Component, Integer>();
         int componentCount = 0;
         for(var placed : schematic.components()) {
-            var item = ComponentRegistry.getItem(level, placed.component);
-            componentAmounts.compute(item, (key, current) -> current == null ? 1 : current + 1);
+            componentAmounts.compute(placed.component, (key, current) -> current == null ? 1 : current + 1);
             ++componentCount;
         }
         var componentTag = new CompoundTag();
-        componentAmounts.forEach((item, count) -> {
-            var id = BuiltInRegistries.ITEM.getKey(item);
+        componentAmounts.forEach((component, count) -> {
+            var id = ComponentRegistry.getId(component);
             componentTag.putInt(id.toString(), count);
         });
 
@@ -62,9 +60,12 @@ public class IncompleteCircuitItem extends Item {
         return assemblyTag;
     }
 
-    private static boolean insertComponent(CompoundTag assemblyTag, ItemStack component) {
+    private static boolean insertComponent(Level level, CompoundTag assemblyTag, ItemStack component) {
         var missingComponents = assemblyTag.getCompound("Missing");
-        var id = BuiltInRegistries.ITEM.getKey(component.getItem()).toString();
+        var location = ComponentRegistry.getComponentId(level, component);
+        if(location == null)
+            return false;
+        var id = location.toString();
         if(!missingComponents.contains(id))
             return false;
         int missingAmount = missingComponents.getInt(id);
@@ -77,24 +78,6 @@ public class IncompleteCircuitItem extends Item {
         return true;
     }
 
-//    @Nullable
-//    public static ItemVariant insert(ItemVariant circuit, ItemStack component) {
-//        if(!circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get()))
-//            return null;
-//        var tag = circuit.copyNbt();
-//        if(!tag.contains("Assembly")) {
-//            tag.put("Assembly", makeAssemblyTag(tag.getCompound("Schematic")));
-//        }
-//        if(!insertComponent(tag.getCompound("Assembly"), component))
-//            return null;
-//        var missing = tag.getCompound("Assembly").getCompound("Missing");
-//        if(missing.isEmpty()) {
-//            tag.remove("Assembly");
-//            return ItemVariant.of(ModdedBlocks.CIRCUIT_BOARD, tag);
-//        }
-//        return ItemVariant.of(ModdedItems.INCOMPLETE_CIRCUIT, tag);
-//    }
-
     @Nullable
     public static ItemStack insert(Level level, ItemStack circuit, ItemStack component) {
         if(!circuit.is(ModdedItems.INCOMPLETE_CIRCUIT.get()) || !circuit.hasTag())
@@ -103,7 +86,7 @@ public class IncompleteCircuitItem extends Item {
         if(!tag.contains("Assembly")) {
             tag.put("Assembly", makeAssemblyTag(level, tag.getCompound("Schematic")));
         }
-        if(!insertComponent(tag.getCompound("Assembly"), component))
+        if(!insertComponent(level, tag.getCompound("Assembly"), component))
             return null;
         var missing = tag.getCompound("Assembly").getCompound("Missing");
         ItemStack newStack;
@@ -164,8 +147,9 @@ public class IncompleteCircuitItem extends Item {
                 .component());
         var missing = assemblyTag.getCompound("Missing");
         int index = 0;
-        for(var itemId : missing.getAllKeys()) {
-            var item = BuiltInRegistries.ITEM.get(new ResourceLocation(itemId));
+        for(var componentId : missing.getAllKeys()) {
+            var component = ComponentRegistry.get(new ResourceLocation(componentId));
+            var item = ComponentRegistry.getItem(component);
             var key = item.getDescriptionId();
             var line = switch(index) {
                 case 0 -> Lang.translate("tooltip.circuit_assembly.insert")

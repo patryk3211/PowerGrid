@@ -23,13 +23,18 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
+
+import java.util.Optional;
 
 public class ComponentRegistry {
     public static final ResourceKey<Registry<Component>> REGISTRY_KEY = ResourceKey.createRegistryKey(PowerGrid.asResource("components"));
@@ -37,7 +42,8 @@ public class ComponentRegistry {
     public static final ResourceKey<Registry<ComponentItemEntry>> ITEM_REGISTRY_KEY = ResourceKey.createRegistryKey(PowerGrid.asResource("component_items"));
     public static final Codec<ComponentItemEntry> ITEM_CODEC = RecordCodecBuilder.create(instance -> instance
             .group(
-                    BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(ComponentItemEntry::item)
+                    BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(ComponentItemEntry::item),
+                    Codec.optionalField("tag", TagKey.codec(Registries.ITEM)).forGetter(ComponentItemEntry::tag)
             ).apply(instance, ComponentItemEntry::new));
 
     @ExpectPlatform
@@ -54,11 +60,26 @@ public class ComponentRegistry {
                 .get(getId(component)).item();
     }
 
-    public static Component getComponent(@NotNull Level level, Item item) {
-        var id = level.registryAccess()
-                .registryOrThrow(ComponentRegistry.ITEM_REGISTRY_KEY)
-                .getKey(new ComponentItemEntry(item));
-        return id == null ? null : get(id);
+    @Contract("_, null -> null")
+    public static Optional<TagKey<Item>> getItemTag(@NotNull Level level, Component component) {
+        if(component == null)
+            return null;
+        return level.registryAccess()
+                .registryOrThrow(ITEM_REGISTRY_KEY)
+                .get(getId(component)).tag();
+    }
+
+    public static ResourceLocation getComponentId(@NotNull Level level, ItemStack stack) {
+        var registry = level.registryAccess()
+                .registryOrThrow(ComponentRegistry.ITEM_REGISTRY_KEY);
+        for(var entry : registry.entrySet()) {
+            if(stack.is(entry.getValue().item()))
+                return entry.getKey().location();
+            var tag = entry.getValue().tag();
+            if(tag.isPresent() && stack.is(tag.get()))
+                return entry.getKey().location();
+        }
+        return null;
     }
 
     @Environment(EnvType.CLIENT)
@@ -76,6 +97,9 @@ public class ComponentRegistry {
                 .registryOrThrow(ComponentRegistry.ITEM_REGISTRY_KEY);
         for(var entry : registry.entrySet()) {
             if(entry.getValue().item() == item)
+                return get(entry.getKey().location());
+            var tag = entry.getValue().tag();
+            if(tag.isPresent() && item.builtInRegistryHolder().is(tag.get()))
                 return get(entry.getKey().location());
         }
         return null;

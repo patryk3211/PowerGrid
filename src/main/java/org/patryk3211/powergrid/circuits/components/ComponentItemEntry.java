@@ -15,6 +15,9 @@
  */
 package org.patryk3211.powergrid.circuits.components;
 
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
-public record ComponentItemEntry(Item item) { }
+import java.util.Optional;
+
+public record ComponentItemEntry(Item item, Optional<TagKey<Item>> tag) { }
