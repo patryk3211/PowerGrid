@@ -16,8 +16,9 @@
 package org.patryk3211.powergrid.electricity.sim.node;
 
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.calculation.IStamped;
 
-public interface INetworkElement {
+public interface INetworkElement extends IStamped {
     void setNetwork(ElectricalNetwork network);
     ElectricalNetwork getNetwork();
 
@@ -29,4 +30,12 @@ public interface INetworkElement {
     }
 
     void remove();
+
+    @Override
+    default int getStamp() {
+        var network = getNetwork();
+        if(network == null)
+            return -1;
+        return network.getStamp();
+    }
 }

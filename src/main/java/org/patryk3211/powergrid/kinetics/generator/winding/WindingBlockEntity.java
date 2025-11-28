@@ -31,6 +31,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
 import org.patryk3211.powergrid.electricity.sim.special.LRSeriesWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
@@ -64,6 +65,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
     private LRSeriesWire coilWire;
+    private final Precalculated<Float, LRSeriesWire> fieldValue = new Precalculated<>(WindingBlockEntity::fieldCalc, 0f);
 
     private boolean rebuildParallels = false;
 
@@ -80,19 +82,20 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return getBlockState().getValue(PART) == 0;
     }
 
-    public float fieldStrength() {
-        var be = getSimElementHolder();
-        if(be == null || be.coilWire == null || be.coilWire.getNetwork() == null)
-            return 0;
+    private static float fieldCalc(LRSeriesWire coil, float Bprev) {
         var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
-        var current = be.coilWire.current();
+        var current = coil.current();
         current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
         var B = current * coilConstant();
-        if(B == 0)
-            return 0.001f;
-        if(Math.abs(B) < 0.001f)
-            return 0.001f * Math.signum(B);
-        return B;
+        return (B + Bprev) * 0.5f + 0.001f;
+    }
+
+    public float fieldStrength() {
+        var be = getSimElementHolder();
+        if(be == null)
+            return 0;
+        be.fieldValue.updateDependency(be.coilWire);
+        return be.fieldValue.get();
     }
 
     @Override

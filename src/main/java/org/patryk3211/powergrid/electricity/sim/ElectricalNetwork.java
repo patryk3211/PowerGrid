@@ -23,6 +23,7 @@ import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.sim.calculation.IStamped;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.*;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
@@ -32,7 +33,7 @@ import org.slf4j.Logger;
 import java.util.*;
 import java.util.function.Function;
 
-public class ElectricalNetwork {
+public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
     private static final double PRECISION = 1e-7;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
@@ -87,6 +88,7 @@ public class ElectricalNetwork {
     private boolean lockEliminated = false;
     protected boolean converged;
     protected int warmUpTicks = 0;
+    protected int stamp;
 
     private boolean recalculateScales;
     private boolean eliminatedChanged;
@@ -991,7 +993,13 @@ public class ElectricalNetwork {
 
     }
 
+    @Override
+    public int getStamp() {
+        return stamp;
+    }
+
     public void calculate() {
+        ++stamp;
         if(sourceCount == 0) {
             converged = true;
             for(var hook : outerHooks)
