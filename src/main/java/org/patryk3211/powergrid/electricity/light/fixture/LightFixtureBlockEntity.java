@@ -182,6 +182,8 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     public InteractionResult setColor(DyeColor color) {
+        if(bulbState == null)
+            return InteractionResult.PASS;
         if(bulbState.setColor(color)) {
             notifyUpdate();
             return InteractionResult.SUCCESS;
