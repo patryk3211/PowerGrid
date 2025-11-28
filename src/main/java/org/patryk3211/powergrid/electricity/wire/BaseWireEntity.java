@@ -133,7 +133,6 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         // We don't need Entity#baseTick() in wires
         var world = level();
         temperatureUpdate();
-        baseTick();
 
         if((deferEndpointResolution & 1) != 0) {
             if(endpoint1 != null && endpoint1.isValid(world)) {
