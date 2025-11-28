@@ -52,6 +52,11 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     @Override
+    public void preSolve() {
+        Ieq = 0;
+    }
+
+    @Override
     public void postUpperSolve() {
         if(isConverged()) {
             Vprev = inductance * (current() - I) / 0.05f;
