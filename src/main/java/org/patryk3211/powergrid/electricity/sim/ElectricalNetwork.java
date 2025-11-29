@@ -976,13 +976,9 @@ public class ElectricalNetwork implements IStamped {
     }
 
     private void iterHooks(int i, int max, double norm) {
-        if(hasHooks() && i < max - 10 && i % 2 == 0) {
+        if(hasHooks() && i < max - 10) {
             countUpdates = false;
             for(var hook : innerHooks) {
-//                if(hook instanceof ElectronTubeWire && i % 2 != 0)
-//                    continue;
-//                if(!(hook instanceof PNJunctionWire) && i % 2 != 0)
-//                    continue;
                 hook.startIteration();
             }
             countUpdates = true;
@@ -1030,8 +1026,10 @@ public class ElectricalNetwork implements IStamped {
             iterHooks(i, maxIterations, norm);
             var workMatrix = getWorkMatrix();
             computeResidual(workMatrix, StateVector);
-            norm = NormOps_DDRM.normP1(ResidualVector);
-            if(norm < PRECISION)
+            var nextNorm = NormOps_DDRM.normP1(ResidualVector);
+            var dNorm = Math.abs(nextNorm - norm);
+            norm = nextNorm;
+            if(norm < PRECISION || dNorm < PRECISION)
                 break;
             if(converged && i >= maxIterations - 12) {
                 // Right before non-linear devices are disabled.
