@@ -90,7 +90,7 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
         if(placed.customData instanceof RenderData temps) {
             a = (int) (Mth.lerp(partialTicks, temps.prev, temps.current) * 128);
         }
-        var center = 1 / 16f;
+        var center = 1.5f / 16f;
         var orientation = placed.get(ORIENTATION);
         if(a != 0) {
             var buffer = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_GLOW, be.getBlockState());
