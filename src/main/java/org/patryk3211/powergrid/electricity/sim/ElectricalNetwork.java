@@ -931,11 +931,13 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void computeResidual(DynamicallyTypedMatrix workMatrix, DMatrixRMaj state) {
-        workMatrix.mult(state, ResidualVector);
+//        workMatrix.mult(state, ResidualVector);
+        ResidualVector.zero();
         CommonOps_DDRM.subtract(ResidualVector, ReducedRHSVector, ResidualVector);
         for(var hook : innerHooks) {
             hook.addResidual(this::residualAdd);
         }
+        CommonOps_DDRM.changeSign(ResidualVector);
     }
 
     private void columnScales(DynamicallyTypedMatrix matrix) {
@@ -1047,10 +1049,13 @@ public class ElectricalNetwork implements IStamped {
                 iterHooks(i, maxIterations, norm);
                 var workMatrix = getWorkMatrix();
                 computeResidual(workMatrix, StateVector);
-                var nextNorm = NormOps_DDRM.normP1(ResidualVector);
+
+                workMatrix.mult(StateVector, AuxiliaryVector);
+                CommonOps_DDRM.subtract(AuxiliaryVector, ResidualVector, AuxiliaryVector);
+                var nextNorm = NormOps_DDRM.normP1(AuxiliaryVector);
                 var dNorm = Math.abs(nextNorm - norm);
                 norm = nextNorm;
-                if (norm < PRECISION || dNorm < PRECISION)
+                if (norm < PRECISION || dNorm < 1e-15f)
                     break;
                 if (converged && i >= maxIterations - 12) {
                     // Right before non-linear devices are disabled.
@@ -1073,6 +1078,10 @@ public class ElectricalNetwork implements IStamped {
                     var alpha = i < 4 ? 0.75 : 1.0;
                     var applied = false;
                     CommonOps_DDRM.multRows(columnScales, deltaX);
+                    if(true) {
+                        StateVector.setTo(deltaX);
+                        continue;
+                    }
                     var PrevState = StateVector;
                     StateVector = AuxiliaryVector;
                     while (alpha > 0.00001) {

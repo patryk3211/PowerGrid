@@ -53,7 +53,13 @@ public class DebugCommand {
 
     public static ArgumentBuilder<CommandSourceStack, ?> register() {
         return literal("debug")
-                .then(literal("problems").executes(ctx -> {
+                .then(literal("problems")
+                        .then(literal("clear").executes(ctx -> {
+                            savedProblematicExecutions.clear();
+                            ctx.getSource().sendSystemMessage(Component.literal("Cleared problem frame storage"));
+                            return Command.SINGLE_SUCCESS;
+                        }))
+                        .executes(ctx -> {
                     var source = ctx.getSource();
                     source.sendSystemMessage(Component.literal("Showing problematic wires of " + savedProblematicExecutions.size() +
                             " latest non-converged networks:").withStyle(ChatFormatting.GRAY));
