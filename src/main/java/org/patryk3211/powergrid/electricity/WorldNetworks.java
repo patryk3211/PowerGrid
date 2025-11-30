@@ -247,7 +247,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 iter.remove();
                 continue;
             }
-            network.calculate();
+            network.calculate(1);
         }
         perf.end();
         if(world instanceof ServerLevel serverWorld) {

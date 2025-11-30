@@ -17,11 +17,12 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.ITimeAwareWire;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class CapacitorWire extends AbstractElectricWire implements ISolverHook, IOuterHook {
+public class CapacitorWire extends AbstractElectricWire implements ISolverHook, IOuterHook, ITimeAwareWire {
     private double capacitance;
     private double Ieq;
 
@@ -36,7 +37,7 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
     @Override
     public double conductance() {
         // dt = 50ms (1 tick)
-        return 2 * capacitance / 0.05f;
+        return 2 * capacitance / getDeltaTime();
     }
 
     public void setVoltage(float voltage) {
@@ -55,7 +56,7 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
     @Override
     public void postUpperSolve() {
         if(isConverged()) {
-            Iprev = (potentialDifference() - V) * capacitance / 0.05f;
+            Iprev = (potentialDifference() - V) * capacitance / getDeltaTime();
             // Save voltage with a bit of leakage
             V = potentialDifference() * 0.99999;
         }
@@ -64,7 +65,7 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
     @Override
     public void startIteration() {
         var G = conductance();
-        var I = capacitance * (potentialDifference() - V) / 0.05f;
+        var I = capacitance * (potentialDifference() - V) / getDeltaTime();
         Ieq = -G * V - (I * 0.1f + Iprev * 0.9f);
     }
 

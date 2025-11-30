@@ -17,11 +17,12 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.ITimeAwareWire;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, IOuterHook {
+public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, IOuterHook, ITimeAwareWire {
     private double inductance;
     private double resistance;
 
@@ -35,14 +36,14 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
         this.inductance = L;
         this.resistance = R;
 
-        var R_Inductor = (2 * inductance) / 0.05;
+        var R_Inductor = (2 * inductance) / getDeltaTime();
         var G_I = 1 / R_Inductor;
         residualScale = 1 - G_I / (1 / resistance + G_I);
     }
 
     @Override
     public double conductance() {
-        return 1 / (resistance + (2 * inductance) / 0.05);
+        return 1 / (resistance + (2 * inductance) / getDeltaTime());
     }
 
     @Override
@@ -64,7 +65,7 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
     @Override
     public void postUpperSolve() {
         if(isConverged()) {
-            Vprev = inductance * (current() - I) / 0.05f;
+            Vprev = inductance * (current() - I) / getDeltaTime();
             I = current() * 0.99999;
         }
     }
@@ -75,8 +76,8 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
             Ieq = 0;
             return;
         }
-        var G_I = 0.05 / (2 * inductance);
-        var V_Inductor = (inductance * (current() - I) / 0.05f);
+        var G_I = getDeltaTime() / (2 * inductance);
+        var V_Inductor = (inductance * (current() - I) / getDeltaTime());
 
         Ieq = (V_Inductor * 0.1f + Vprev * 0.9f * G_I + I) * residualScale;
     }

@@ -60,7 +60,7 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
     }
 
     @Override
-    protected void prepareMatrices() {
+    protected void prepareMatrices(int multiTicks) {
         // Client is not simulated so don't bother with allocating any other matrices.
         // The network is basically just there to hold the state vector and make all other code,
         // that expects a network to work.
@@ -81,8 +81,8 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
     }
 
     @Override
-    public void calculate() {
-        prepareMatrices();
+    public void calculate(int multiTicks) {
+        prepareMatrices(multiTicks);
         if(warmUpTicks > 0) {
             converged = false;
             warmUpTicks = 0;

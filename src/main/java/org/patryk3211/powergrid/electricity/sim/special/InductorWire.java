@@ -17,11 +17,12 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.ITimeAwareWire;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class InductorWire extends AbstractElectricWire implements ISolverHook, IOuterHook {
+public class InductorWire extends AbstractElectricWire implements ISolverHook, IOuterHook, ITimeAwareWire {
     private double inductance;
 
     private double Ieq;
@@ -35,7 +36,7 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
 
     @Override
     public double conductance() {
-        return 0.05 / (2 * inductance);
+        return getDeltaTime() / (2 * inductance);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
     @Override
     public void postUpperSolve() {
         if(isConverged()) {
-            Vprev = inductance * (current() - I) / 0.05f;
+            Vprev = inductance * (current() - I) / getDeltaTime();
             // Save current with a bit of leakage
             I = current() * 0.99999;
         }
@@ -68,7 +69,7 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
     @Override
     public void startIteration() {
         var G = conductance();
-        var V = inductance * (current() - I) / 0.05f;
+        var V = inductance * (current() - I) / getDeltaTime();
         Ieq = (V * 0.1f + Vprev * 0.9f) * G + I;
     }
 

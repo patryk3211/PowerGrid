@@ -89,6 +89,7 @@ public class ElectricalNetwork implements IStamped {
     protected boolean converged;
     protected int warmUpTicks = 0;
     protected int stamp;
+    private int currentMultiTick = 1;
 
     private boolean recalculateScales;
     private boolean eliminatedChanged;
@@ -115,6 +116,10 @@ public class ElectricalNetwork implements IStamped {
 
     public boolean hasHooks() {
         return !innerHooks.isEmpty();
+    }
+
+    public double getDeltaTime() {
+        return 0.05f / currentMultiTick;
     }
 
     public void warmUp(int ticks) {
@@ -152,7 +157,7 @@ public class ElectricalNetwork implements IStamped {
                 addWire(wire);
             }
         }
-        prepareMatrices();
+        prepareMatrices(currentMultiTick);
         for(var pair : values) {
             setValue(pair.getFirst(), pair.getSecond());
         }
@@ -778,7 +783,7 @@ public class ElectricalNetwork implements IStamped {
         return nodes.size() - eliminatedStart;
     }
 
-    protected void prepareMatrices() {
+    protected void prepareMatrices(int multiTicks) {
         ++scalesAge;
         var nodeCount = nodes.size();
         var eliminatedCount = eliminatedNodeCount();
@@ -838,6 +843,7 @@ public class ElectricalNetwork implements IStamped {
             solver.setStateSize(reducedCount);
             dirty = false;
 
+            currentMultiTick = multiTicks;
             // Conductance and coupling matrices need to be fully rebuild only after a state size change,
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix(true);
@@ -845,9 +851,22 @@ public class ElectricalNetwork implements IStamped {
         } else if(conductanceUpdates >= 500 || conductanceDelta > 1000 || eliminatedUpdates >= 100) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
+            currentMultiTick = multiTicks;
             if(LOGGER != null && ModdedConfigs.logsEnabled())
                 LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
             populateConductanceMatrix(eliminatedUpdates >= 100);
+        } else if(currentMultiTick != multiTicks) {
+            var old = currentMultiTick;
+            for(var wire : wires) {
+                if(wire instanceof ITimeAwareWire) {
+                    var Gold = wire.conductance();
+                    currentMultiTick = multiTicks;
+                    var Gnew = wire.conductance();
+                    currentMultiTick = old;
+                    updateConductance(wire, Gnew - Gold);
+                }
+            }
+            currentMultiTick = multiTicks;
         }
     }
 
@@ -994,7 +1013,7 @@ public class ElectricalNetwork implements IStamped {
         return stamp;
     }
 
-    public void calculate() {
+    public void calculate(int multiTicks) {
         ++stamp;
         if(sourceCount == 0) {
             converged = true;
@@ -1008,112 +1027,115 @@ public class ElectricalNetwork implements IStamped {
                 hook.postUpperSolve();
             return;
         }
-        for(var hook : outerHooks)
-            hook.preSolve();
+        PERF.start();
 
-        prepareMatrices();
+        prepareMatrices(multiTicks);
         if(eliminatedChanged) {
             // Make sure eliminated Jacobian is factorized for RHS compute
             calculateEliminatedMatrices();
         }
-        computeRHS();
 
-        PERF.start();
-        int maxIterations = this.maxIterations.apply(hasHooks());
-        int i;
-        double norm = 0;
-        for(i = 0; i < maxIterations; ++i) {
-            iterHooks(i, maxIterations, norm);
-            var workMatrix = getWorkMatrix();
-            computeResidual(workMatrix, StateVector);
-            var nextNorm = NormOps_DDRM.normP1(ResidualVector);
-            var dNorm = Math.abs(nextNorm - norm);
-            norm = nextNorm;
-            if(norm < PRECISION || dNorm < PRECISION)
-                break;
-            if(converged && i >= maxIterations - 12) {
-                // Right before non-linear devices are disabled.
-                // Only append new problem frames if the network has been converging before.
-                convergenceProblems(norm);
-                converged = false;
-            }
-            prepareScaled(workMatrix);
+        for(int t = 0; t < multiTicks; ++t) {
+            for (var hook : outerHooks)
+                hook.preSolve();
+            computeRHS();
 
-            // Perform Newton iterations
-            AuxiliaryVector.setTo(ResidualVector);
-            CommonOps_DDRM.multRows(rowScales, AuxiliaryVector);
+            int maxIterations = this.maxIterations.apply(hasHooks());
+            int i;
+            double norm = 0;
+            for (i = 0; i < maxIterations; ++i) {
+                iterHooks(i, maxIterations, norm);
+                var workMatrix = getWorkMatrix();
+                computeResidual(workMatrix, StateVector);
+                var nextNorm = NormOps_DDRM.normP1(ResidualVector);
+                var dNorm = Math.abs(nextNorm - norm);
+                norm = nextNorm;
+                if (norm < PRECISION || dNorm < PRECISION)
+                    break;
+                if (converged && i >= maxIterations - 12) {
+                    // Right before non-linear devices are disabled.
+                    // Only append new problem frames if the network has been converging before.
+                    convergenceProblems(norm);
+                    converged = false;
+                }
+                prepareScaled(workMatrix);
 
-            var deltaX = solver.solve(ScaledJ, AuxiliaryVector, false);
-            if (deltaX == null)
-                continue;
+                // Perform Newton iterations
+                AuxiliaryVector.setTo(ResidualVector);
+                CommonOps_DDRM.multRows(rowScales, AuxiliaryVector);
 
-            var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
-            if(valid) {
-                var alpha = i < 4 ? 0.75 : 1.0;
-                var applied = false;
-                CommonOps_DDRM.multRows(columnScales, deltaX);
-                var PrevState = StateVector;
-                StateVector = AuxiliaryVector;
-                while(alpha > 0.00001) {
-                    // Fully recompute the residual each time
-                    CommonOps_DDRM.add(PrevState, -alpha, deltaX, StateVector);
-                    iterHooks(i, maxIterations, norm);
-                    workMatrix = getWorkMatrix();
-                    computeResidual(workMatrix, StateVector);
-                    var newNorm = NormOps_DDRM.normP1(ResidualVector);
-                    if(newNorm < norm) {
-                        applied = true;
-                        PrevState.setTo(AuxiliaryVector);
+                var deltaX = solver.solve(ScaledJ, AuxiliaryVector, false);
+                if (deltaX == null)
+                    continue;
+
+                var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
+                if (valid) {
+                    var alpha = i < 4 ? 0.75 : 1.0;
+                    var applied = false;
+                    CommonOps_DDRM.multRows(columnScales, deltaX);
+                    var PrevState = StateVector;
+                    StateVector = AuxiliaryVector;
+                    while (alpha > 0.00001) {
+                        // Fully recompute the residual each time
+                        CommonOps_DDRM.add(PrevState, -alpha, deltaX, StateVector);
+                        iterHooks(i, maxIterations, norm);
+                        workMatrix = getWorkMatrix();
+                        computeResidual(workMatrix, StateVector);
+                        var newNorm = NormOps_DDRM.normP1(ResidualVector);
+                        if (newNorm < norm) {
+                            applied = true;
+                            PrevState.setTo(AuxiliaryVector);
+                            break;
+                        }
+                        if (alpha > 1) {
+                            alpha = 1;
+                        } else {
+                            alpha *= 0.5;
+                        }
+                    }
+                    StateVector = PrevState;
+                    // If network has hooks they might alter the residual
+                    // and still allow for convergence in the next iteration.
+                    if (!applied && !hasHooks()) {
                         break;
                     }
-                    if(alpha > 1) {
-                        alpha = 1;
+                } else {
+                    StateVector.zero();
+                    solver.zero();
+                }
+            }
+            if (norm > PRECISION) {
+                converged = false;
+                if (LOGGER != null) {
+                    if (ModdedConfigs.logsEnabled()) {
+                        LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
+                    }
+                } else {
+                    System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
+                }
+            } else {
+                converged = i < maxIterations - 10;
+                if (!converged) {
+                    if (LOGGER != null) {
+                        LOGGER.debug("Dirty converge at {} iterations", i);
                     } else {
-                        alpha *= 0.5;
+                        System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
+                    }
+                } else {
+                    if (LOGGER == null) {
+                        System.out.printf("Converged after %d iterations\n", i);
                     }
                 }
-                StateVector = PrevState;
-                // If network has hooks they might alter the residual
-                // and still allow for convergence in the next iteration.
-                if(!applied && !hasHooks()) {
-                    break;
-                }
-            } else {
-                StateVector.zero();
-                solver.zero();
-            }
-        }
-        if(norm > PRECISION) {
-            converged = false;
-            if(LOGGER != null) {
-                if(ModdedConfigs.logsEnabled()) {
-                    LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
-                }
-            } else {
-                System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
-            }
-        } else {
-            converged = i < maxIterations - 10;
-            if(!converged) {
-                if(LOGGER != null) {
-                    LOGGER.debug("Dirty converge at {} iterations", i);
-                } else {
-                    System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
-                }
-            } else {
-                if(LOGGER == null) {
-                    System.out.printf("Converged after %d iterations\n", i);
+                if (converged && warmUpTicks > 0) {
+                    // This effectively freezes component states and allows the network
+                    // to settle completely after a structure change (or world load).
+                    --warmUpTicks;
+                    converged = false;
                 }
             }
-            if(converged && warmUpTicks > 0) {
-                // This effectively freezes component states and allows the network
-                // to settle completely after a structure change (or world load).
-                --warmUpTicks;
-                converged = false;
-            }
+            for (var hook : outerHooks)
+                hook.postUpperSolve();
         }
         PERF.end();
-        for(var hook : outerHooks)
-            hook.postUpperSolve();
     }
 }

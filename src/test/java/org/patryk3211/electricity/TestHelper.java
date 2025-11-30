@@ -138,7 +138,11 @@ public abstract class TestHelper {
         }
 
         public void calculate() {
-            network.calculate();
+            network.calculate(1);
+        }
+
+        public void calculate(int multiTicks) {
+            network.calculate(multiTicks);
         }
     }
 }

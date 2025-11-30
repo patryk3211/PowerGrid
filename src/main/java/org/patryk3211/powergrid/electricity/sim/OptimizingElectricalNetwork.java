@@ -34,13 +34,13 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
-    public void calculate() {
+    public void calculate(int multiTicks) {
         if(optimizerCounter++ >= 5) {
             optimizerCounter = 0;
             optimizerRoutine();
         }
 
-        super.calculate();
+        super.calculate(multiTicks);
     }
 
     @Override
