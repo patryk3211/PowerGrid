@@ -95,6 +95,12 @@ public class WireItem extends Item implements IWire {
         if(endpoint1.type() == WireEndpointType.BLOCK_WIRE && endpoint2.type() == WireEndpointType.BLOCK_WIRE)
             return mergeWires(world, stack, player, (BlockWireEntityEndpoint) endpoint1, (BlockWireEntityEndpoint) endpoint2);
 
+        if(endpoint1.type() == WireEndpointType.BLOCK && endpoint2.type() == WireEndpointType.BLOCK_WIRE) {
+            var e = endpoint1;
+            endpoint1 = endpoint2;
+            endpoint2 = e;
+        }
+
         var lastPoint = endpoint1.getExactPosition(world);
         if(endpoint1.type() != WireEndpointType.BLOCK_WIRE)
             lastPoint = BlockTrace.alignPosition(lastPoint);
