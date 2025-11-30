@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.carbonpile;
 
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -57,8 +58,13 @@ public class CarbonPileBlock extends Block implements IBE<CarbonPileBlockEntity>
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         IBE.onRemove(state, level, pos, newState);
-        if(!newState.getValue(TOP))
+        if(newState.getBlock() instanceof CarbonPileBlock && !newState.getValue(TOP)) {
+            // IBE handles the regular block entity destruction.
+            var blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof SmartBlockEntity sbe)
+                sbe.destroy();
             level.removeBlockEntity(pos);
+        }
     }
 
     @Override
