@@ -18,10 +18,12 @@ package org.patryk3211.powergrid.electricity.sim.special;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
+import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class TransmissionLinePort extends VoltageSourceCoupling implements IOuterHook {
+public class TransmissionLinePort extends VoltageSourceCoupling implements IOuterHook, ISolverHook {
     private final TransmissionLine line;
-    TransmissionLinePort other;
+    public TransmissionLinePort other;
     public boolean solved = false;
 
     private float I, V;
@@ -34,7 +36,7 @@ public class TransmissionLinePort extends VoltageSourceCoupling implements IOute
 
     @Override
     public void preSolve() {
-        setVoltage(getVoltage() * 0.5f + V * 0.5f);
+        setVoltage(V);
     }
 
     @Override
@@ -44,9 +46,17 @@ public class TransmissionLinePort extends VoltageSourceCoupling implements IOute
             solved = false;
             other.solved = false;
 
-            other.I = I = getCurrent() + other.getCurrent();
+            I = getCurrent();
+            other.I = other.getCurrent();
+            var I = this.I + other.I;
+
             V = other.positive.getVoltage() + I * getResistance();
             other.V = positive.getVoltage() + I * getResistance();
         }
+    }
+
+    @Override
+    public void addResidual(IResidualAdder residual) {
+        residual.add(index, -(getCurrent() - I) * getResistance());
     }
 }
