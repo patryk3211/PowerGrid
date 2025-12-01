@@ -156,40 +156,37 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         return wire;
     }
 
+    private void processViaOrientation(@NotNull CircuitBoardBlockEntity be, Orientation expectedOrientation, PlacedComponent placed, Orientation edge, int position) {
+        if(edge != expectedOrientation)
+            return;
+        var dir = CircuitBoardBlock.getDirection(getBlockState(), edge);
+        var viaNode = be.getViaAt(dir.getOpposite(), position, edge);
+        var thisViaNode = baked.getNode(new CircuitSchematic.Node(placed, 0));
+        if(viaNode == null)
+            return;
+        if(thisViaNode == null)
+            return;
+
+        var wire = makeWire(be.electricBehaviour, viaNode, thisViaNode);
+        edgeViadWires.computeIfAbsent(be, $ -> new ArrayList<>()).add(wire);
+        be.edgeViadWires.computeIfAbsent(this, $ -> new ArrayList<>()).add(wire);
+    }
+
     private void processNeighbor(@NotNull CircuitBoardBlockEntity be, Orientation expectedOrientation) {
         for(var placed : getComponents(ViaComponent.class)) {
-            // Which edge
-            Orientation edge;
-            int position;
+            // This must also take corners into account (a via on two edges)
             if(placed.x == 0) {
-                edge = Orientation.LEFT;
-                position = placed.y;
-            } else if(placed.y == 0) {
-                edge = Orientation.UP;
-                position = placed.x;
-            } else if(placed.x == 15) {
-                edge = Orientation.RIGHT;
-                position = placed.y;
-            } else if(placed.y == 15) {
-                edge = Orientation.DOWN;
-                position = placed.x;
-            } else {
-                // Not on edge
-                continue;
+                processViaOrientation(be, expectedOrientation, placed, Orientation.LEFT, placed.y);
             }
-            if(edge != expectedOrientation)
-                continue;
-            var dir = CircuitBoardBlock.getDirection(getBlockState(), edge);
-            var viaNode = be.getViaAt(dir.getOpposite(), position, edge);
-            var thisViaNode = baked.getNode(new CircuitSchematic.Node(placed, 0));
-            if(viaNode == null)
-                continue;
-            if(thisViaNode == null)
-                continue;
-
-            var wire = makeWire(be.electricBehaviour, viaNode, thisViaNode);
-            edgeViadWires.computeIfAbsent(be, $ -> new ArrayList<>()).add(wire);
-            be.edgeViadWires.computeIfAbsent(this, $ -> new ArrayList<>()).add(wire);
+            if(placed.y == 0) {
+                processViaOrientation(be, expectedOrientation, placed, Orientation.UP, placed.x);
+            }
+            if(placed.x == 15) {
+                processViaOrientation(be, expectedOrientation, placed, Orientation.RIGHT, placed.y);
+            }
+            if(placed.y == 15) {
+                processViaOrientation(be, expectedOrientation, placed, Orientation.DOWN, placed.x);
+            }
         }
     }
 
