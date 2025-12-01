@@ -665,6 +665,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         float current = windingCurrent();
         if (thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
-        setChanged();
+        setUnsaved();
     }
 }

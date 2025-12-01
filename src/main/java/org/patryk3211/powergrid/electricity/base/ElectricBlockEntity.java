@@ -39,6 +39,12 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
         super(type, pos, state);
     }
 
+    public void setUnsaved() {
+        if(level != null && !level.isClientSide) {
+            level.blockEntityChanged(worldPosition);
+        }
+    }
+
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         electricBehaviour = new ElectricBehaviour(this);

@@ -223,7 +223,6 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
 	/* Sets the old AngVel amd sends the change to the block entity */
 	public void setOldAngVel(float value) {
 		oldAngVel = value;
-		blockEntity.setChanged();
 	}
 
 	/* Of course, we'll need to get the old AngVel, too, if we want to do
@@ -316,7 +315,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
             angularVelocity = getAngularVelocity();
             angle = getAngle();
         }
-        blockEntity.setChanged();
+        getWorld().blockEntityChanged(getPos());
     }
 
     @Override

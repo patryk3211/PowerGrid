@@ -252,8 +252,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         }
         if(baked != null) {
             baked.tick();
-            if(!level.isClientSide)
-                setChanged();
+            setUnsaved();
         }
     }
 

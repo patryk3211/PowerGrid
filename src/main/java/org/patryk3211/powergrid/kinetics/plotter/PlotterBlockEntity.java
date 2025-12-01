@@ -145,7 +145,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
 
         sampleBuffer[head] = headPosition;
         head = (head + 1) % sampleBuffer.length;
-        setChanged();
+        setUnsaved();
     }
 
     public void setColor(DyeColor dyeColor) {

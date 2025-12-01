@@ -230,7 +230,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
                 if (dissipatedPower > 0 && temperature < BASE_TEMPERATURE)
                     temperature = BASE_TEMPERATURE;
                 if (dissipatedPower != 0)
-                    blockEntity.setChanged();
+                    world.blockEntityChanged(getPos());
             }
             if (!Float.isFinite(temperature)) {
                 // Reset if something went wrong.

@@ -57,6 +57,7 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
 
     @Override
     public void tick() {
+        assert level != null;
         super.tick();
         var temperature = temperature();
         if(temperature > maxTemperature)
@@ -70,7 +71,7 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
                 dialState -= (dialState - 1) * level.random.nextFloat();
             if(maxState < dialState) {
                 maxState = dialState;
-                setChanged();
+                level.blockEntityChanged(worldPosition);
             }
             var newOutput = Mth.floor(Mth.clamp(dialTarget * 15, 0, 15));
             if(newOutput != redstoneOutput) {

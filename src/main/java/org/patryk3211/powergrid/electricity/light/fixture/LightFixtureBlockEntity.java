@@ -49,7 +49,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
 
         if(bulbState != null) {
             bulbState.tick();
-            setChanged();
+            setUnsaved();
         }
     }
 
