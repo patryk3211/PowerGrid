@@ -527,14 +527,16 @@ public class TransmissionLine extends ElectricWire {
         return node2.getVoltage();
     }
 
-    public void step() {
+    public void tick() {
         if(portPair == null)
             return;
         if(node1.getNetwork() == node2.getNetwork()) {
+            if(portPair != null) {
+                portPair.getFirst().remove();
+                portPair.getSecond().remove();
+                portPair = null;
+            }
             node1.getNetwork().addWire(this);
-            return;
         }
-        portPair.getFirst().preSolve();
-        portPair.getSecond().preSolve();
     }
 }

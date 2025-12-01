@@ -90,4 +90,19 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
             converged = true;
         }
     }
+
+    @Override
+    public void prepare(int multiTicks) {
+        prepareMatrices(multiTicks);
+    }
+
+    @Override
+    public void singleTick() {
+        if(warmUpTicks > 0) {
+            converged = false;
+            warmUpTicks = 0;
+        } else {
+            converged = true;
+        }
+    }
 }

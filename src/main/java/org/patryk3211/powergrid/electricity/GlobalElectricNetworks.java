@@ -43,11 +43,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GlobalElectricNetworks {
     protected static final Map<Level, WorldNetworks> worldNetworks = new ConcurrentHashMap<>();
 
-    public static void tick(Level world) {
+    public static void preTick(Level world) {
         var networks = worldNetworks.get(world);
         if(networks == null)
             return;
-        networks.tick();
+        networks.preTick();
+    }
+
+    public static void postTick(Level world) {
+        var networks = worldNetworks.get(world);
+        if(networks == null)
+            return;
+        networks.postTick();
     }
 
     public static void unloadWorld(ServerLevel world) {

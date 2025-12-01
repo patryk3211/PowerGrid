@@ -67,7 +67,8 @@ public class PowerGrid {
 	}
 
 	public static void registerArchitecturyEvents() {
-		TickEvent.ServerLevelTick.SERVER_LEVEL_PRE.register(GlobalElectricNetworks::tick);
+		TickEvent.ServerLevelTick.SERVER_LEVEL_PRE.register(GlobalElectricNetworks::preTick);
+		TickEvent.ServerLevelTick.SERVER_LEVEL_POST.register(GlobalElectricNetworks::postTick);
 		LifecycleEvent.SERVER_LEVEL_UNLOAD.register(GlobalElectricNetworks::unloadWorld);
 		CommandRegistrationEvent.EVENT.register(ModdedCommands::register);
 	}

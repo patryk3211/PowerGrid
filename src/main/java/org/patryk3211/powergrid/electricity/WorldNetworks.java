@@ -212,7 +212,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         subnetworks.remove(network);
     }
 
-    public void tick() {
+    public void preTick() {
         deferredRewireEntities.removeIf(part -> {
             part.refreshEndpointNodes();
             return true;
@@ -234,23 +234,31 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 iter2.remove();
                 continue;
             }
-            if(line.getNetwork() == null) {
-                line.step();
-            }
+            line.tick();
         }
         removed.forEach(TransmissionLine::remove);
 
         perf.start();
+        int multiTick = ModdedConfigs.server().electricity.multiTicks.get();
         var iter = subnetworks.iterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             var network = iter.next();
-            if(network.isEmpty()) {
+            if (network.isEmpty()) {
                 iter.remove();
                 continue;
             }
-            network.calculate(1);
+            network.prepare(multiTick);
+        }
+        for(int i = 0; i < multiTick; ++i) {
+            // I guess this could go on a thread-pool
+            for(var network : subnetworks) {
+                network.singleTick();
+            }
         }
         perf.end();
+    }
+
+    public void postTick() {
         if(world instanceof ServerLevel serverWorld) {
             // Check for line parts existence
             var checkIter = checkForExistence.entrySet().iterator();

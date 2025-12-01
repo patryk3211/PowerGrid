@@ -1012,13 +1012,46 @@ public class ElectricalNetwork implements IStamped {
 
     }
 
+    private void verifyConvergence(double norm, int i, int maxIterations) {
+        if (norm > MINIMUM_ALLOWED_PRECISION) {
+            if(converged)
+                convergenceProblems(norm);
+            converged = false;
+            if (LOGGER != null) {
+                if (ModdedConfigs.logsEnabled()) {
+                    LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
+                }
+            } else {
+                System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
+            }
+        } else {
+            converged = i < maxIterations - 10;
+            if (!converged) {
+                if (LOGGER != null) {
+                    LOGGER.debug("Dirty converge at {} iterations", i);
+                } else {
+                    System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
+                }
+            } else {
+                if (LOGGER == null) {
+                    System.out.printf("Converged after %d iterations\n", i);
+                }
+            }
+            if (converged && warmUpTicks > 0) {
+                // This effectively freezes component states and allows the network
+                // to settle completely after a structure change (or world load).
+                --warmUpTicks;
+                converged = false;
+            }
+        }
+    }
+
     @Override
     public int getStamp() {
         return stamp;
     }
 
-    public void calculate(int multiTicks) {
-        ++stamp;
+    public void prepare(int multiTicks) {
         if(sourceCount == 0) {
             converged = true;
             for(var hook : outerHooks)
@@ -1031,91 +1064,73 @@ public class ElectricalNetwork implements IStamped {
                 hook.postUpperSolve();
             return;
         }
-        PERF.start();
 
         prepareMatrices(multiTicks);
+    }
+
+    public void singleTick() {
+        if(sourceCount == 0)
+            return;
+        ++stamp;
+        PERF.start();
+        for (var hook : outerHooks)
+            hook.preSolve();
         if(eliminatedChanged) {
-            // Make sure eliminated Jacobian is factorized for RHS compute
+            // Make sure eliminated Jacobian is factorized for the RHS compute
             calculateEliminatedMatrices();
         }
+        computeRHS();
 
-        for(int t = 0; t < multiTicks; ++t) {
-            for (var hook : outerHooks)
-                hook.preSolve();
-            computeRHS();
+        int maxIterations = this.maxIterations.apply(hasHooks());
+        int i;
+        double norm = 0;
+        for (i = 0; i < maxIterations; ++i) {
+            iterHooks(i, maxIterations, norm);
+            var workMatrix = getWorkMatrix();
+            computeResidual(workMatrix, StateVector);
 
-            int maxIterations = this.maxIterations.apply(hasHooks());
-            int i;
-            double norm = 0;
-            for (i = 0; i < maxIterations; ++i) {
-                iterHooks(i, maxIterations, norm);
-                var workMatrix = getWorkMatrix();
-                computeResidual(workMatrix, StateVector);
-
-                workMatrix.mult(StateVector, AuxiliaryVector);
-                CommonOps_DDRM.subtract(AuxiliaryVector, ResidualVector, AuxiliaryVector);
-                var nextNorm = NormOps_DDRM.normP1(AuxiliaryVector);
-                var dNorm = Math.abs(nextNorm - norm);
-                norm = nextNorm;
-                if (norm < ABSOLUTE_STOPPING_CRITERION || dNorm < RELATIVE_STOPPING_CRITERION)
-                    break;
-                if (converged && i >= maxIterations - 12) {
-                    // Right before non-linear devices are disabled.
-                    // Only append new problem frames if the network has been converging before.
-                    convergenceProblems(norm);
-                    converged = false;
-                }
-                prepareScaled(workMatrix);
-
-                // Perform Newton iterations
-                AuxiliaryVector.setTo(ResidualVector);
-                CommonOps_DDRM.multRows(rowScales, AuxiliaryVector);
-
-                var deltaX = solver.solve(ScaledJ, AuxiliaryVector, false);
-                if (deltaX == null)
-                    continue;
-
-                var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
-                if (valid) {
-                    CommonOps_DDRM.multRows(columnScales, deltaX);
-                    StateVector.setTo(deltaX);
-                } else {
-                    StateVector.zero();
-                    solver.zero();
-                }
-            }
-            if (norm > MINIMUM_ALLOWED_PRECISION) {
+            workMatrix.mult(StateVector, AuxiliaryVector);
+            CommonOps_DDRM.subtract(AuxiliaryVector, ResidualVector, AuxiliaryVector);
+            var nextNorm = NormOps_DDRM.normP1(AuxiliaryVector);
+            var dNorm = Math.abs(nextNorm - norm);
+            norm = nextNorm;
+            if (norm < ABSOLUTE_STOPPING_CRITERION || dNorm < RELATIVE_STOPPING_CRITERION)
+                break;
+            if (converged && i >= maxIterations - 12) {
+                // Right before non-linear devices are disabled.
+                // Only append new problem frames if the network has been converging before.
+                convergenceProblems(norm);
                 converged = false;
-                if (LOGGER != null) {
-                    if (ModdedConfigs.logsEnabled()) {
-                        LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
-                    }
-                } else {
-                    System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
-                }
-            } else {
-                converged = i < maxIterations - 10;
-                if (!converged) {
-                    if (LOGGER != null) {
-                        LOGGER.debug("Dirty converge at {} iterations", i);
-                    } else {
-                        System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
-                    }
-                } else {
-                    if (LOGGER == null) {
-                        System.out.printf("Converged after %d iterations\n", i);
-                    }
-                }
-                if (converged && warmUpTicks > 0) {
-                    // This effectively freezes component states and allows the network
-                    // to settle completely after a structure change (or world load).
-                    --warmUpTicks;
-                    converged = false;
-                }
             }
-            for (var hook : outerHooks)
-                hook.postUpperSolve();
+            prepareScaled(workMatrix);
+
+            // Perform Newton iterations
+            AuxiliaryVector.setTo(ResidualVector);
+            CommonOps_DDRM.multRows(rowScales, AuxiliaryVector);
+
+            var deltaX = solver.solve(ScaledJ, AuxiliaryVector, false);
+            if (deltaX == null)
+                continue;
+
+            var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
+            if (valid) {
+                CommonOps_DDRM.multRows(columnScales, deltaX);
+                StateVector.setTo(deltaX);
+            } else {
+                StateVector.zero();
+                solver.zero();
+            }
         }
+        verifyConvergence(norm, i, maxIterations);
+        for (var hook : outerHooks)
+            hook.postUpperSolve();
         PERF.end();
+    }
+
+    public void calculate(int multiTicks) {
+        prepare(multiTicks);
+        for(int t = 0; t < multiTicks; ++t) {
+            singleTick();
+        }
     }
 }

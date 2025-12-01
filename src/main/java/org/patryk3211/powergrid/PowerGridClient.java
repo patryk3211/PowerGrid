@@ -51,7 +51,7 @@ public class PowerGridClient {
 	}
 
 	public static void registerArchitecturyEvents() {
-		ClientTickEvent.CLIENT_LEVEL_PRE.register(GlobalElectricNetworks::tick);
+		ClientTickEvent.CLIENT_LEVEL_PRE.register(GlobalElectricNetworks::preTick);
 		ClientTickEvent.CLIENT_LEVEL_POST.register(TerminalHandler::tick);
 		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
 	}
