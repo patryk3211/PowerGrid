@@ -35,7 +35,9 @@ import java.util.function.Function;
 
 public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
-    private static final double PRECISION = 1e-7;
+    private static final double MINIMUM_ALLOWED_PRECISION = 1e-6;
+    private static final double ABSOLUTE_STOPPING_CRITERION = 1e-7;
+    private static final double RELATIVE_STOPPING_CRITERION = 1e-9;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
     private static final int MAX_SCALE_REUSE_COUNT = 20;
 
@@ -1055,7 +1057,7 @@ public class ElectricalNetwork implements IStamped {
                 var nextNorm = NormOps_DDRM.normP1(AuxiliaryVector);
                 var dNorm = Math.abs(nextNorm - norm);
                 norm = nextNorm;
-                if (norm < PRECISION || dNorm < 1e-15f)
+                if (norm < ABSOLUTE_STOPPING_CRITERION || dNorm < RELATIVE_STOPPING_CRITERION)
                     break;
                 if (converged && i >= maxIterations - 12) {
                     // Right before non-linear devices are disabled.
@@ -1075,45 +1077,14 @@ public class ElectricalNetwork implements IStamped {
 
                 var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
                 if (valid) {
-                    var alpha = i < 4 ? 0.75 : 1.0;
-                    var applied = false;
                     CommonOps_DDRM.multRows(columnScales, deltaX);
-                    if(true) {
-                        StateVector.setTo(deltaX);
-                        continue;
-                    }
-                    var PrevState = StateVector;
-                    StateVector = AuxiliaryVector;
-                    while (alpha > 0.00001) {
-                        // Fully recompute the residual each time
-                        CommonOps_DDRM.add(PrevState, -alpha, deltaX, StateVector);
-                        iterHooks(i, maxIterations, norm);
-                        workMatrix = getWorkMatrix();
-                        computeResidual(workMatrix, StateVector);
-                        var newNorm = NormOps_DDRM.normP1(ResidualVector);
-                        if (newNorm < norm) {
-                            applied = true;
-                            PrevState.setTo(AuxiliaryVector);
-                            break;
-                        }
-                        if (alpha > 1) {
-                            alpha = 1;
-                        } else {
-                            alpha *= 0.5;
-                        }
-                    }
-                    StateVector = PrevState;
-                    // If network has hooks they might alter the residual
-                    // and still allow for convergence in the next iteration.
-                    if (!applied && !hasHooks()) {
-                        break;
-                    }
+                    StateVector.setTo(deltaX);
                 } else {
                     StateVector.zero();
                     solver.zero();
                 }
             }
-            if (norm > PRECISION) {
+            if (norm > MINIMUM_ALLOWED_PRECISION) {
                 converged = false;
                 if (LOGGER != null) {
                     if (ModdedConfigs.logsEnabled()) {
