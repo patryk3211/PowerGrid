@@ -47,6 +47,10 @@
 
   "powergrid.gui.potentiometer.setting": "Setting",
 
+  "powergrid.gui.clutch_mode": "Clutch Mode",
+  "powergrid.gui.clutch_mode.generator": "Generator",
+  "powergrid.gui.clutch_mode.motor": "Motor",
+
   "powergrid.gui.damage_header": "Damaged",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
   "powergrid.gui.circuit_board.damage_creative_repair": "Sneak-right-click to repair",
