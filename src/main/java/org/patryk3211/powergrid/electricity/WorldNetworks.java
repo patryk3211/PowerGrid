@@ -31,6 +31,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INetworkElement;
@@ -68,7 +69,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private int syncTicks = 0;
 
     private record SyncState(int lod) { }
-    private final Map<ServerPlayer, Map<ElectricBehaviour, SyncState>> syncStates = new HashMap<>();
+    private final Map<ServerPlayer, Map<ISynchronizedElement, SyncState>> syncStates = new HashMap<>();
 
     public WorldNetworks(Level world) {
         this.world = world;
@@ -297,13 +298,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 for (var entry : trackers.entrySet()) {
                     for (var player : entry.getValue()) {
                         var endpoint = entry.getKey();
-                        if(!(endpoint instanceof BlockWireEndpoint bwe))
-                            continue;
-                        var eb = bwe.getElectricBehaviour(world);
-                        if(eb == null)
-                            continue;
-                        syncStates.computeIfAbsent(player, $ -> new HashMap<>())
-                                .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
+                        if(endpoint instanceof BlockWireEndpoint bwe) {
+                            var eb = bwe.getElectricBehaviour(world);
+                            if (eb == null)
+                                continue;
+                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                    .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
+                        } else if(endpoint instanceof JunctionWireEndpoint je) {
+                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                    .put(je.makeSyncEntry(world), new SyncState((int) (je.getExactPosition(world).distanceTo(player.position()) / 16 + 1)));
+                        }
                     }
                 }
             }
@@ -314,7 +318,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 for(var pair : behaviours.entrySet()) {
                     if(syncTicks % pair.getValue().lod() != 0)
                         continue;
-                    packet.begin(pair.getKey().getPos());
+                    packet.begin(pair.getKey());
                     pair.getKey().writeToSync(wrapper, this::findLineMiddle);
                     packet.end();
                 }

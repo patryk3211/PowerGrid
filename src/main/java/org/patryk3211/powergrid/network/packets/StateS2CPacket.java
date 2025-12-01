@@ -21,17 +21,22 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
+import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
 import org.patryk3211.powergrid.network.SimplePacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class StateS2CPacket implements SimplePacket {
-    private final List<BlockPos> positions = new ArrayList<>();
+    private final List<Key> keys = new ArrayList<>();
     private final ByteBuf data;
     private FriendlyByteBuf wrapper;
     private int lengthPosition;
@@ -49,7 +54,7 @@ public class StateS2CPacket implements SimplePacket {
     public StateS2CPacket(FriendlyByteBuf buf) {
         int count = buf.readInt();
         for(int i = 0; i < count; ++i) {
-            positions.add(buf.readBlockPos());
+            keys.add(Key.read(buf));
         }
         int size = buf.readInt();
         data = PooledByteBufAllocator.DEFAULT.buffer(size, size);
@@ -58,9 +63,9 @@ public class StateS2CPacket implements SimplePacket {
 
     @Override
     public void encode(FriendlyByteBuf buf) {
-        buf.writeInt(positions.size());
-        for(var pos : positions) {
-            buf.writeBlockPos(pos);
+        buf.writeInt(keys.size());
+        for(var key : keys) {
+            key.serialize(buf);
         }
         buf.writeInt(data.writerIndex());
         buf.writeBytes(data, data.writerIndex());
@@ -70,15 +75,15 @@ public class StateS2CPacket implements SimplePacket {
     public void handle(Supplier<NetworkManager.PacketContext> context) {
         context.get().queue(() -> {
             var level = ClientSideAccess.world();
-            for(var pos : positions) {
+            for(var key : keys) {
                 var entryLength = wrapper().readInt();
-                var eb = BlockEntityBehaviour.get(level, pos, ElectricBehaviour.TYPE);
-                if(eb == null) {
+                var element = key.resolve(level);
+                if(element == null) {
                     // Skip entry
                     wrapper().skipBytes(entryLength);
                 } else {
                     var start = wrapper().readerIndex();
-                    eb.readFromSync(wrapper());
+                    element.readFromSync(wrapper());
                     var end = wrapper().readerIndex();
                     if(end - start > entryLength) {
                         PowerGrid.LOGGER.warn("Buffer read overrun (Entry of {} bytes, read {} bytes)", entryLength, end - start);
@@ -92,8 +97,8 @@ public class StateS2CPacket implements SimplePacket {
         });
     }
 
-    public void begin(BlockPos pos) {
-        positions.add(pos);
+    public void begin(ISynchronizedElement pos) {
+        keys.add(pos.getKey());
         lengthPosition = wrapper().writerIndex();
         wrapper().writeInt(0);
     }
@@ -101,5 +106,48 @@ public class StateS2CPacket implements SimplePacket {
     public void end() {
         var entryLength = wrapper().writerIndex() - lengthPosition - 4;
         wrapper.setInt(lengthPosition, entryLength);
+    }
+
+    public interface Key {
+        void serialize(FriendlyByteBuf buf);
+        @Nullable
+        ISynchronizedElement resolve(Level level);
+
+        static Key read(FriendlyByteBuf buf) {
+            var i = buf.readByte();
+            return switch(i) {
+                case 0 -> new PosKey(buf.readBlockPos());
+                case 1 -> new UUIDKey(buf.readUUID());
+                default -> throw new IllegalStateException("Unknown key type");
+            };
+        }
+    }
+
+    public record PosKey(BlockPos pos) implements Key {
+        @Override
+        public void serialize(FriendlyByteBuf buf) {
+            buf.writeByte(0);
+            buf.writeBlockPos(pos);
+        }
+
+        @Override
+        @Nullable
+        public ISynchronizedElement resolve(Level level) {
+            return BlockEntityBehaviour.get(level, pos, ElectricBehaviour.TYPE);
+        }
+    }
+
+    public record UUIDKey(UUID id) implements Key {
+        @Override
+        public void serialize(FriendlyByteBuf buf) {
+            buf.writeByte(1);
+            buf.writeUUID(id);
+        }
+
+        @Override
+        @Nullable
+        public ISynchronizedElement resolve(Level level) {
+            return JunctionWireEndpoint.getSyncObject(level, id);
+        }
     }
 }

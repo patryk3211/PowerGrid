@@ -37,11 +37,12 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
 import java.util.function.Function;
 
-public class ElectricBehaviour extends BlockEntityBehaviour {
+public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchronizedElement {
     public static final BehaviourType<ElectricBehaviour> TYPE = new BehaviourType<>();
 
     private final IElectricEntity element;
@@ -401,6 +402,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
     }
 
+    @Override
     public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineGetter) {
         var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
         if(thermal != null) {
@@ -426,6 +428,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
             syncAppender.writeToSync(buffer);
     }
 
+    @Override
     public void readFromSync(FriendlyByteBuf buffer) {
         var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
         if(thermal != null) {
@@ -443,6 +446,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
         if(syncAppender != null)
             syncAppender.readFromSync(buffer);
+    }
+
+    @Override
+    public StateS2CPacket.Key getKey() {
+        return new StateS2CPacket.PosKey(getPos());
     }
 
     public void setSyncAppender(SyncAppender syncAppender) {

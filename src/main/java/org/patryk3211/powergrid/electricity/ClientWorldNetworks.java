@@ -28,7 +28,6 @@ import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
 
@@ -79,8 +78,7 @@ public class ClientWorldNetworks extends WorldNetworks {
     @Override
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode, boolean hasInternals) {
         var oldNode = globalExternalNodes.put(ownedNode.endpoint, ownedNode);
-        if(ownedNode.endpoint instanceof BlockWireEndpoint bwe)
-            bwe.joinNetwork(world, network);
+        ownedNode.endpoint.joinNetwork(world, network);
         if(oldNode != null && oldNode != ownedNode) {
             var nodes = globalGraph.getConnectedNodes(oldNode);
             var allWires = new ArrayList<AbstractElectricWire>();
