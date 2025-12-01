@@ -105,7 +105,7 @@ public class ElectricalNetwork implements IStamped {
     public ElectricalNetwork(boolean addGMin) {
         solver =
                 new DirectSolver();
-//                new BiCGSTABSolver(0.001, 0.1);
+//                new BiCGSTABSolver(1e-7f, 0.001f);
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
