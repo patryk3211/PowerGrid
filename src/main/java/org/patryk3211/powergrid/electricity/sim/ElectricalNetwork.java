@@ -36,7 +36,7 @@ public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
     private static final double MINIMUM_ALLOWED_PRECISION = 1e-6;
     private static final double ABSOLUTE_STOPPING_CRITERION = 1e-7;
-    private static final double RELATIVE_STOPPING_CRITERION = 1e-9;
+    private static final double RELATIVE_STOPPING_CRITERION = 1e-12;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
     private static final int MAX_SCALE_REUSE_COUNT = 20;
 
@@ -52,7 +52,11 @@ public class ElectricalNetwork implements IStamped {
     private final Set<IStaticResidual> residuals = new HashSet<>();
     protected final Map<IElectricNode, IElectricNode> leafNodes = new HashMap<>();
 
-    private final ISolver solver;
+    private double minimumAllowedPrecision = 1e-6;
+    private double absoluteStoppingCriterion = 1e-7;
+    private double relativeStoppingCriterion = 1e-12;
+
+    private ISolver solver;
     private int sourceCount;
     private int groundReferenceCount;
 
@@ -102,12 +106,37 @@ public class ElectricalNetwork implements IStamped {
     public Function<Boolean, Integer> maxIterations = b -> 200;
 
     public ElectricalNetwork(boolean addGMin) {
-        solver =
-                new DirectSolver();
-//                new BiCGSTABSolver(1e-7f, 0.001f);
+        this(addGMin, SolverType.DIRECT);
+    }
+
+    public ElectricalNetwork(boolean addGMin, SolverType solver) {
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
+        setSolverType(solver);
+    }
+
+    public void setSolverType(SolverType type) {
+        if(solver != null) {
+            var currentType = solver instanceof DirectSolver ? SolverType.DIRECT : SolverType.BICGSTAB;
+            if (currentType == type)
+                return;
+        }
+        solver = switch(type) {
+            case DIRECT -> new DirectSolver();
+            case BICGSTAB -> new BiCGSTABSolver(ABSOLUTE_STOPPING_CRITERION, 0.001f);
+        };
+        if(nodes.isEmpty())
+            return;
+        var eliminatedCount = eliminatedNodeCount();
+        var reducedCount = nodes.size() - eliminatedCount;
+        solver.setStateSize(reducedCount);
+    }
+
+    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
+        this.absoluteStoppingCriterion = absoluteCriterion;
+        this.relativeStoppingCriterion = relativeCriterion;
+        this.minimumAllowedPrecision = minimumPrecision;
     }
 
     // Make sure all variables are completely rebuilt and repopulated.
@@ -1113,5 +1142,9 @@ public class ElectricalNetwork implements IStamped {
         for(int t = 0; t < multiTicks; ++t) {
             singleTick();
         }
+    }
+
+    public enum SolverType {
+        DIRECT, BICGSTAB
     }
 }

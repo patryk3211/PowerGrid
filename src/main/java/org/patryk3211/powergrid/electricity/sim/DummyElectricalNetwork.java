@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class DummyElectricalNetwork extends GraphedElectricalNetwork {
     public DummyElectricalNetwork(NetworkGraph graph) {
-        super(graph, false);
+        super(graph, false, SolverType.DIRECT);
     }
 
     @Override

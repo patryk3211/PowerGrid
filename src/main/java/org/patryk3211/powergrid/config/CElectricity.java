@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.config;
 
 import net.createmod.catnip.config.ConfigBase;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 
 public class CElectricity extends ConfigBase {
     public final ConfigBool explosiveDeconstruction = b(true, "explosiveDeconstruction", Comments.explosiveDeconstruction);
@@ -56,7 +57,15 @@ public class CElectricity extends ConfigBase {
     public final ConfigBool splittingTransmissionLines = b(false, "splittingTransmissionLines", Comments.splittingTransmissionLines);
     public final ConfigBool splittingTransformers = b(false, "splittingsTransformers", Comments.splittingTransformers);
 
+    public final ConfigInt solverSimpleMaxIterations = i(200, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
+    public final ConfigInt solverComplexMaxIterations = i(200, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
+
+    public final ConfigFloat solverAbsolutePrecision = f(1e-7f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
+    public final ConfigFloat solverRelativePrecision = f(1e-15f, 0, "solverAbsolutePrecision", Comments.solverRelativePrecision);
+    public final ConfigFloat solverAbsoluteMinimumPrecision = f(1e-6f, 0, "solverAbsoluteMinimumPrecision", Comments.solverAbsoluteMinimumPrecision);
+
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
+    public final ConfigEnum<ElectricalNetwork.SolverType> solverType = e(ElectricalNetwork.SolverType.DIRECT, "solverType", Comments.solverType);
 
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -107,9 +116,16 @@ public class CElectricity extends ConfigBase {
         public static final String carbonPileGain = "Carbon pile \"gain\", controls how much the coil current affects the resistance";
 
         public static final String transmissionLineThreshold = "Threshold resistance for a transmission line to be able to split the grid into island networks. Lines with resistance above this value have a propagation delay of roughly 1 tick, and can improve performance by simulating small segments of the grid separately.";
-        public static final String splittingTransmissionLines = "Allows transmission lines to split large grid into smaller networks. This option should improve performance for large grids but it will result in transmission lines having a propagation delay and capacitance.";
-        public static final String splittingTransformers = "Allows transformers to split the grid. This option should improve performance but it will result in transformers having some capacitance and delay.";
+        public static final String splittingTransmissionLines = "Experimental! Allows transmission lines to split large grid into smaller networks. This option should improve performance for large grids but it will result in transmission lines having a propagation delay and capacitance.";
+        public static final String splittingTransformers = "Experimental! Allows transformers to split the grid. This option should improve performance but it will result in transformers having some capacitance and delay.";
 
+        public static final String solverAbsolutePrecision = "Absolute stopping criterion";
+        public static final String solverRelativePrecision = "Relative stopping criterion";
+        public static final String solverAbsoluteMinimumPrecision = "Minimum accepted precision";
+
+        public static final String solverSimpleMaxIterations = "Maximum solver iterations for networks without dynamic residuals";
+        public static final String solverComplexMaxIterations = "Maximum solver iterations for networks with dynamic residuals";
         public static final String multiTicks = "Experimental! This option enables all electrical networks to tick multiple times per world tick. This allows for better simulation precision when reactive components are involved but can have a significant impact on performance.";
+        public static final String solverType = "Experimental! This option enables the use of an iterative linear equation solver which can be faster than the direct solver, however it can fail for certain networks.";
     }
 }

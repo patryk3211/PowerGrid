@@ -29,8 +29,8 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
     private final Map<INode, Integer> optimizerScores = new HashMap<>();
     private boolean lockScores = false;
 
-    public OptimizingElectricalNetwork(boolean addGMin) {
-        super(addGMin);
+    public OptimizingElectricalNetwork(boolean addGMin, SolverType solver) {
+        super(addGMin, solver);
     }
 
     @Override

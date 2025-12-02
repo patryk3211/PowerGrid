@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.config;
 
 import net.createmod.catnip.config.ConfigBase;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 public class CServer extends ConfigBase {
     public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
@@ -25,6 +27,13 @@ public class CServer extends ConfigBase {
     @Override
     public String getName() {
         return "server";
+    }
+
+    @Override
+    public void onReload() {
+        super.onReload();
+        PowerGrid.LOGGER.warn("Server config reloaded, this can cause unexpected behaviour if done during gameplay!");
+        GlobalElectricNetworks.configsReloaded();
     }
 
     private static class Comments {

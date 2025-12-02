@@ -368,10 +368,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph, true);
+        var network = new GraphedElectricalNetwork(globalGraph, true, ModdedConfigs.server().electricity.solverType.get());
         network.maxIterations = hooks -> hooks
-                ? ModdedConfigs.common().solverComplexMaxIterations.get()
-                : ModdedConfigs.common().solverSimpleMaxIterations.get();
+                ? ModdedConfigs.server().electricity.solverComplexMaxIterations.get()
+                : ModdedConfigs.server().electricity.solverSimpleMaxIterations.get();
         subnetworks.add(network);
         return network;
     }

@@ -27,6 +27,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -185,4 +186,18 @@ public class GlobalElectricNetworks {
             worldNetworks.prepareUnpaused(node);
         }
     }
+
+    public static void configsReloaded() {
+        var solverType = ModdedConfigs.server().electricity.solverType.get();
+        var rA = ModdedConfigs.server().electricity.solverAbsolutePrecision.get();
+        var rR = ModdedConfigs.server().electricity.solverRelativePrecision.get();
+        var rM = ModdedConfigs.server().electricity.solverAbsoluteMinimumPrecision.get();
+        for(var networks : worldNetworks.values()) {
+            networks.subnetworks.forEach(network -> {
+                network.setSolverType(solverType);
+                network.setPrecision(rA, rR, rM);
+            });
+        }
+    }
+
 }

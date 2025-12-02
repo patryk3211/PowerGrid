@@ -21,7 +21,6 @@ import net.createmod.catnip.config.ConfigBase;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.config.*;
 
 import java.util.EnumMap;
@@ -98,8 +97,6 @@ public class ModdedConfigs {
         for(ConfigBase config : CONFIGS.values())
             if(config.specification == modConfig.getSpec())
                 config.onReload();
-        if(modConfig.getType() == ModConfig.Type.SERVER)
-            PowerGrid.LOGGER.warn("Server config reloaded, this can cause unexpected behaviour if done during gameplay!");
     }
 
     public static boolean logsEnabled() {

@@ -30,11 +30,11 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
     private final NetworkGraph graph;
 
     public GraphedElectricalNetwork(boolean addGMin) {
-        this(new NetworkGraph(), addGMin);
+        this(new NetworkGraph(), addGMin, SolverType.DIRECT);
     }
 
-    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin) {
-        super(addGMin);
+    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, SolverType solver) {
+        super(addGMin, solver);
         this.graph = graph;
     }
 
