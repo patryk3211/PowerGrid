@@ -136,6 +136,15 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     }
 
     @Override
+    public float measuredCurrent() {
+        if(wire1 == null || wire2 == null)
+            return 0;
+        if(!wire1.isConverged() || !wire2.isConverged())
+            return 0;
+        return Math.abs(wire1.current() + wire2.current());
+    }
+
+    @Override
     public void setEndpoint1(IWireEndpoint endpoint) {
         assert endpoint == null || endpoint instanceof ICordEndpoint;
         super.setEndpoint1(endpoint);

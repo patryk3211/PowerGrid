@@ -46,6 +46,11 @@ public abstract class WireEntity extends BaseWireEntity {
     }
 
     @Override
+    public float measuredCurrent() {
+        return Math.abs(current());
+    }
+
+    @Override
     public void makeWire() {
         // Client doesn't make a wire, connections are handled differently.
         var world = level();

@@ -273,7 +273,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 var lineId = data.getInt("EID");
                 var entity = level.getEntity(lineId);
                 if(entity instanceof BaseWireEntity wire) {
-                    yield wire.current();
+                    yield wire.measuredCurrent();
                 }
                 yield 0;
             }
