@@ -27,6 +27,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableFloat;
+import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 import org.patryk3211.powergrid.utility.Lang;
@@ -218,8 +219,8 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
         @Override
         public AllIcons getIcon() {
             return switch(this) {
-                case GENERATOR -> AllIcons.I_FILL;
-                case MOTOR -> AllIcons.I_CLEAR;
+                case GENERATOR -> ModIcons.I_GENERATOR;
+                case MOTOR -> ModIcons.I_MOTOR;
             };
         }
 
