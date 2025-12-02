@@ -35,6 +35,11 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
     }
 
     @Override
+    public boolean isSource() {
+        return true;
+    }
+
+    @Override
     public double conductance() {
         // dt = 50ms (1 tick)
         return 2 * capacitance / getDeltaTime();

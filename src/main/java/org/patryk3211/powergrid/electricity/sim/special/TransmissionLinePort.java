@@ -26,12 +26,13 @@ public class TransmissionLinePort extends VoltageSourceCoupling implements IOute
     public TransmissionLinePort other;
     public boolean solved = false;
 
-    private float I, V;
+    float I, V;
+    private float Ieq;
 
     public TransmissionLinePort(IElectricNode node, float resistance, TransmissionLine line) {
         super(node, null, resistance);
         this.line = line;
-        setVoltage(node.getVoltage());
+        V = node.getVoltage();
     }
 
     @Override
@@ -56,7 +57,21 @@ public class TransmissionLinePort extends VoltageSourceCoupling implements IOute
     }
 
     @Override
+    public void startIteration() {
+        var I = -(getCurrent() - this.I) * getResistance();
+        Ieq = Ieq * 0.5f + I * 0.5f;
+    }
+
+    @Override
     public void addResidual(IResidualAdder residual) {
-        residual.add(index, -(getCurrent() - I) * getResistance());
+        residual.add(index, Ieq);
+    }
+
+    public TransmissionLinePort getOther() {
+        return other;
+    }
+
+    public TransmissionLine getLine() {
+        return line;
     }
 }

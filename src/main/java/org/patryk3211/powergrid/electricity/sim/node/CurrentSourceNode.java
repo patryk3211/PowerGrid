@@ -29,6 +29,11 @@ public class CurrentSourceNode extends ElectricNode implements IStaticResidual {
     }
 
     @Override
+    public boolean isSource() {
+        return true;
+    }
+
+    @Override
     public List<INode> affectedNodes() {
         return List.of(this);
     }

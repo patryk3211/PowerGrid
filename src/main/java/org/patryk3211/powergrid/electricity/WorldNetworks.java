@@ -33,12 +33,10 @@ import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.*;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.INetworkElement;
-import org.patryk3211.powergrid.electricity.sim.node.INode;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
@@ -66,6 +64,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     private final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
     protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
+    private boolean runningDiscovery = false;
     private int syncTicks = 0;
 
     private record SyncState(int lod) { }
@@ -93,6 +92,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var line2 = findLineMiddle(line.getNode2());
         if(line2 != null)
             line2.splitAt(line.getNode2());
+        if(!runningDiscovery) {
+            islandDiscoveryQueue.add(line.getNode1().getNetwork());
+            islandDiscoveryQueue.add(line.getNode2().getNetwork());
+        }
         setDirty();
     }
 
@@ -104,7 +107,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         setDirty();
     }
 
-    private static boolean canWeakCouple(TransmissionLine line) {
+    public static boolean canWeakCouple(TransmissionLine line) {
         return ModdedConfigs.server().electricity.splittingTransmissionLines.get() &&
                 line.getResistance() > ModdedConfigs.server().electricity.transmissionLineThreshold.getF();
     }
@@ -175,7 +178,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
                 island.add(wire);
             }
+            var remove = new ArrayList<ICouplingNode>();
             for(var coupling : globalGraph.getCouplings(enode)) {
+                if(coupling instanceof TransmissionLinePort) {
+                    // This should be handled by transmission lines above
+                    remove.add(coupling);
+                    continue;
+                }
                 for(var otherNode : coupling.coupledNodes()) {
                     if(otherNode == node)
                         continue;
@@ -195,6 +204,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
                 island.add(coupling);
             }
+            remove.forEach(INode::remove);
         }
         if(islands.size() <= 1)
             return;
@@ -219,10 +229,12 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         });
         JunctionWireEndpoint.processNewNodes(world);
 
+        runningDiscovery = true;
         for(var network : islandDiscoveryQueue) {
             runIslandDiscoveryFor(network);
         }
         islandDiscoveryQueue.clear();
+        runningDiscovery = false;
 
         var iter2 = transmissionLines.values().iterator();
         var removed = new ArrayList<TransmissionLine>();

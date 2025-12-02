@@ -47,6 +47,11 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
         setVoltage(voltage);
     }
 
+    @Override
+    public boolean isSource() {
+        return true;
+    }
+
     public void setVoltage(float voltage) {
         this.voltage = voltage;
     }

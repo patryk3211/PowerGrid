@@ -79,6 +79,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     public abstract float current();
+    public abstract float measuredCurrent();
 
     @Override
     protected void defineSynchedData() {

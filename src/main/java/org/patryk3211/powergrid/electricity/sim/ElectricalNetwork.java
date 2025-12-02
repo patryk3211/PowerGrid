@@ -26,7 +26,6 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.calculation.IStamped;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.*;
-import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.slf4j.Logger;
 
@@ -184,23 +183,12 @@ public class ElectricalNetwork implements IStamped {
             innerHooks.add(hook);
         if(node instanceof IStaticResidual residual)
             residuals.add(residual);
+        if(node.isSource())
+            ++sourceCount;
 
-        if(node instanceof IElectricNode enode)
-            nodeSpecifics(enode);
         if(node instanceof ICouplingNode cnode)
-            nodeSpecifics(cnode);
+            couplings.add(cnode);
         warmUp(5);
-    }
-
-    private void nodeSpecifics(IElectricNode node) {
-        if(node instanceof CurrentSourceNode)
-            ++sourceCount;
-    }
-
-    private void nodeSpecifics(ICouplingNode coupling) {
-        couplings.add(coupling);
-        if(coupling instanceof VoltageSourceCoupling)
-            ++sourceCount;
     }
 
     public void addNodes(INode... nodes) {
@@ -238,7 +226,7 @@ public class ElectricalNetwork implements IStamped {
 
         if(node instanceof ICouplingNode)
             couplings.remove(node);
-        if(node instanceof CurrentSourceNode || node instanceof VoltageSourceCoupling)
+        if(node.isSource())
             --sourceCount;
         if(node instanceof IOuterHook hook)
             outerHooks.remove(hook);
@@ -250,13 +238,6 @@ public class ElectricalNetwork implements IStamped {
         warmUp(3);
         node.setNetwork(null);
         setDirty();
-    }
-
-    public void removeNode(int index) {
-        if(nodes.size() <= index)
-            return;
-
-        removeNode(nodes.get(index));
     }
 
     public int size() {
@@ -288,7 +269,7 @@ public class ElectricalNetwork implements IStamped {
         }
         wire.setNetwork(this);
         wires.add(wire);
-        if(wire instanceof CapacitorWire)
+        if(wire.isSource())
             ++sourceCount;
         if(wire.node1 == null || wire.node2 == null)
             ++groundReferenceCount;
@@ -342,7 +323,7 @@ public class ElectricalNetwork implements IStamped {
             return;
         wires.remove(wire);
         wire.setNetwork(null);
-        if(wire instanceof CapacitorWire)
+        if(wire.isSource())
             --sourceCount;
         if(wire.node1 == null || wire.node2 == null)
             --groundReferenceCount;

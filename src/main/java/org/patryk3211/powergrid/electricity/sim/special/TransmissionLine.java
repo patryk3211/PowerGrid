@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import net.createmod.catnip.data.Pair;
 import net.createmod.ponder.api.level.PonderLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +29,7 @@ import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,7 +45,9 @@ public class TransmissionLine extends ElectricWire {
 
     private IWireEndpoint endpoint1;
     private IWireEndpoint endpoint2;
-    private Pair<TransmissionLinePort, TransmissionLinePort> portPair;
+
+    private TransmissionLinePort port1;
+    private TransmissionLinePort port2;
 
     private boolean splitting = false;
 
@@ -104,11 +106,21 @@ public class TransmissionLine extends ElectricWire {
     }
 
     public void setNode1(@NotNull IWireEndpoint endpoint, OwnedFloatingNode node) {
+        if(getNetwork() == null && port1 != null) {
+            global.globalGraph.disconnect(node1, node2, this);
+            global.globalGraph.connect(node, node2, this);
+            makePortPair();
+        }
         this.endpoint1 = endpoint;
         super.setNode1(node);
     }
 
     public void setNode2(@NotNull IWireEndpoint endpoint, OwnedFloatingNode node) {
+        if(getNetwork() == null && port2 != null) {
+            global.globalGraph.disconnect(node1, node2, this);
+            global.globalGraph.connect(node1, node, this);
+            makePortPair();
+        }
         this.endpoint2 = endpoint;
         super.setNode2(node);
     }
@@ -116,15 +128,15 @@ public class TransmissionLine extends ElectricWire {
     @Override
     public void setNode1(IElectricNode node1) {
         assert node1 instanceof OwnedFloatingNode;
-        super.setNode1(Objects.requireNonNull(node1));
-        endpoint1 = ((OwnedFloatingNode) node1).endpoint;
+        var node = (OwnedFloatingNode) node1;
+        setNode1(node.endpoint, Objects.requireNonNull(node));
     }
 
     @Override
     public void setNode2(IElectricNode node2) {
         assert node2 instanceof OwnedFloatingNode;
-        super.setNode2(Objects.requireNonNull(node2));
-        endpoint2 = ((OwnedFloatingNode) node2).endpoint;
+        var node = (OwnedFloatingNode) node1;
+        setNode2(node.endpoint, Objects.requireNonNull(node));
     }
 
     @Override
@@ -318,19 +330,19 @@ public class TransmissionLine extends ElectricWire {
     public void setNetwork(ElectricalNetwork network) {
         super.setNetwork(network);
         // Port pair only works for weakly coupling lines.
-        if(portPair != null && network != null) {
-            portPair.getFirst().remove();
-            portPair.getSecond().remove();
-            portPair = null;
+        if(port1 != null && network != null) {
+            port1.remove();
+            port2.remove();
+            port1 = port2 = null;
         }
     }
 
     @Override
     public void setResistance(double resistance) {
         super.setResistance(resistance);
-        if(portPair != null) {
-            portPair.getFirst().setResistance((float) resistance);
-            portPair.getSecond().setResistance((float) resistance);
+        if(port1 != null) {
+            port1.setResistance((float) resistance);
+            port2.setResistance((float) resistance);
         }
     }
 
@@ -339,10 +351,10 @@ public class TransmissionLine extends ElectricWire {
         super.remove();
         if(ModdedConfigs.logsEnabled())
             PowerGrid.LOGGER.debug("{}: Removing transmission line between {} and {}", this, node1, node2);
-        if(portPair != null) {
-            portPair.getFirst().remove();
-            portPair.getSecond().remove();
-            portPair = null;
+        if(port1 != null) {
+            port1.remove();
+            port2.remove();
+            port1 = port2 = null;
         }
         for(var segment : segments) {
             global.unregisterPart(segment.persistentOwnerId, segment);
@@ -487,21 +499,22 @@ public class TransmissionLine extends ElectricWire {
         }
     }
 
-    public Pair<TransmissionLinePort, TransmissionLinePort> makePortPair() {
+    public void makePortPair() {
         if(node1.getNetwork() == node2.getNetwork() || network != null)
-            return null;
-        if(portPair != null) {
-            portPair.getFirst().remove();
-            portPair.getSecond().remove();
+            return;
+        if(port1 != null) {
+            port1.remove();
+            port2.remove();
         }
-        var port1 = new TransmissionLinePort(node1, (float) resistance, this);
-        var port2 = new TransmissionLinePort(node2, (float) resistance, this);
+        port1 = new TransmissionLinePort(node1, (float) resistance, this);
+        port2 = new TransmissionLinePort(node2, (float) resistance, this);
         port1.other = port2;
         port2.other = port1;
-        portPair = Pair.of(port1, port2);
+        var Isum = potentialDifference() * conductance();
+        port1.I = -(float) (Isum * 0.5f);
+        port2.I = -(float) (Isum * 0.5f);
         node1.getNetwork().addNode(port1);
         node2.getNetwork().addNode(port2);
-        return portPair;
     }
 
     @Override
@@ -528,15 +541,27 @@ public class TransmissionLine extends ElectricWire {
     }
 
     public void tick() {
-        if(portPair == null)
+        if(port1 == null)
             return;
         if(node1.getNetwork() == node2.getNetwork()) {
-            if(portPair != null) {
-                portPair.getFirst().remove();
-                portPair.getSecond().remove();
-                portPair = null;
-            }
+            port1.remove();
+            port2.remove();
+            port1 = port2 = null;
             node1.getNetwork().addWire(this);
+        } else if(getNetwork() == null && !WorldNetworks.canWeakCouple(this)) {
+            node1.getNetwork().merge(node2.getNetwork());
+            unifyPorts(node1.getNetwork());
         }
+    }
+
+    public static void unifyPorts(ElectricalNetwork network) {
+        var lines = new HashSet<TransmissionLine>();
+        for(var node : network.getNodes()) {
+            if(!(node instanceof TransmissionLinePort port))
+                continue;
+            if(port.getNetwork() == port.getOther().getNetwork() && port.getNetwork() == network)
+                lines.add(port.getLine());
+        }
+        lines.forEach(network::addWire);
     }
 }

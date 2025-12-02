@@ -38,4 +38,8 @@ public interface INetworkElement extends IStamped {
             return -1;
         return network.getStamp();
     }
+
+    default boolean isSource() {
+        return false;
+    }
 }
