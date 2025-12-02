@@ -144,7 +144,8 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     @Override
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
-        updateFromNetwork(capacity, stress, getOrCreateNetwork().getSize());
+        if(hasNetwork())
+            updateFromNetwork(capacity, stress, getOrCreateNetwork().getSize());
     }
 
     @Override
@@ -169,12 +170,19 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putByte("Power", (byte) currentRedstonePower);
+        if(generatedSpeed != 0)
+            compound.putInt("GeneratedSpeed", generatedSpeed);
     }
 
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         currentRedstonePower = compound.getByte("Power");
+        if(compound.contains("GeneratedSpeed")) {
+            generatedSpeed = compound.getInt("GeneratedSpeed");
+        } else {
+            generatedSpeed = 0;
+        }
     }
 
     public float stressSum() {
