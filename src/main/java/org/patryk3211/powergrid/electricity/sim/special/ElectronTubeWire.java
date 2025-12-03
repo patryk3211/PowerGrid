@@ -35,6 +35,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
     private double prevGrid;
     private double prevCathode;
+    private double prevAnode;
 
     private double Ia;
     private float Itube;
@@ -64,8 +65,8 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         this.saturationCurrent = saturationCurrent;
     }
 
-    private static double limit(double dX) {
-        return Math.min(1.1 * Math.log1p(dX), dX);
+    private static double limit(double dX, double a) {
+        return Math.min(a * Math.log1p(dX), dX);
     }
 
     @Override
@@ -76,8 +77,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         double vAnode = node2.getVoltage();
         var dVc = vCathode - prevCathode;
         var dVg = vGrid - prevGrid;
-        vCathode = prevCathode + limit(Math.abs(dVc)) * Math.signum(dVc);
-        vGrid = prevGrid + limit(Math.abs(dVg)) * Math.signum(dVg);
+        var dVa = vAnode - prevAnode;
+        vCathode = prevCathode + limit(Math.abs(dVc), 1.2) * Math.signum(dVc);
+        vGrid = prevGrid + limit(Math.abs(dVg), 1.2) * Math.signum(dVg);
+        vAnode = prevAnode + limit(Math.abs(dVa), 1.0) * Math.signum(dVa);
+        prevAnode = vAnode;
         prevCathode = vCathode;
         prevGrid = vGrid;
         vGrid -= vCathode;
