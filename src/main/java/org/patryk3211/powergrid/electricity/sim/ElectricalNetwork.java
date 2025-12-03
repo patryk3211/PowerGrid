@@ -614,7 +614,7 @@ public class ElectricalNetwork implements IStamped {
             return value;
         }
         if(index >= StateVector.getNumRows())
-            return 0;
+            return node.getSavedValue();
         var value = StateVector.get(index);
         return Double.isFinite(value) ? value : 0;
     }

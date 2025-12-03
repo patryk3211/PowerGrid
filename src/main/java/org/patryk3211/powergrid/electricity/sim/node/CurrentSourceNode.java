@@ -24,6 +24,8 @@ import java.util.List;
  * Warning! Current source nodes cannot be directly connected to transformer couplings.
  */
 public class CurrentSourceNode extends ElectricNode implements IStaticResidual {
+    protected float current;
+
     public CurrentSourceNode() {
 
     }
@@ -45,6 +47,16 @@ public class CurrentSourceNode extends ElectricNode implements IStaticResidual {
     @Override
     public float getVoltage() {
         return (float) getStateValue();
+    }
+
+    @Override
+    public void setCurrent(float current) {
+        this.current = current;
+    }
+
+    @Override
+    public float getCurrent() {
+        return current;
     }
 
     @Override
