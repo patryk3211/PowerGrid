@@ -69,9 +69,9 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
+        charge.chase(1, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
         if(state)
             return;
-        charge.chase(1, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
         sendData();
     }
 
