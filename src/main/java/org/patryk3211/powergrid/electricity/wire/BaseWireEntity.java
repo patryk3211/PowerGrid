@@ -46,6 +46,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
@@ -416,6 +417,8 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
                 setColor(dye.getDyeColor());
                 return InteractionResult.SUCCESS;
             }
+        } else if(stack.getItem() instanceof DebugItem debugger) {
+            return debugger.useOn(this, player, hand);
         }
         return super.interact(player, hand);
     }

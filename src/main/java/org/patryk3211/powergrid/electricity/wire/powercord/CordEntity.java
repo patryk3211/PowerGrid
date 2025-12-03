@@ -85,6 +85,14 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         super(type, world);
     }
 
+    public ElectricWire getWire1() {
+        return wire1;
+    }
+
+    public ElectricWire getWire2() {
+        return wire2;
+    }
+
     public void updateRenderParams() {
         if(!level().isClientSide)
             return;
