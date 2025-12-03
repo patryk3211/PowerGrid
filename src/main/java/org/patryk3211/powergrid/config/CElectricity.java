@@ -61,7 +61,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt solverComplexMaxIterations = i(200, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
 
     public final ConfigFloat solverAbsolutePrecision = f(1e-7f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
-    public final ConfigFloat solverRelativePrecision = f(1e-15f, 0, "solverAbsolutePrecision", Comments.solverRelativePrecision);
+    public final ConfigFloat solverRelativePrecision = f(1e-15f, 0, "solverRelativePrecision", Comments.solverRelativePrecision);
     public final ConfigFloat solverAbsoluteMinimumPrecision = f(1e-6f, 0, "solverAbsoluteMinimumPrecision", Comments.solverAbsoluteMinimumPrecision);
 
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
