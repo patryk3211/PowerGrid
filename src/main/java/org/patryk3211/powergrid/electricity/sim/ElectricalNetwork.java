@@ -34,9 +34,6 @@ import java.util.function.Function;
 
 public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
-    private static final double MINIMUM_ALLOWED_PRECISION = 1e-6;
-    private static final double ABSOLUTE_STOPPING_CRITERION = 1e-7;
-    private static final double RELATIVE_STOPPING_CRITERION = 1e-12;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
     private static final int MAX_SCALE_REUSE_COUNT = 20;
 
@@ -124,7 +121,7 @@ public class ElectricalNetwork implements IStamped {
         }
         solver = switch(type) {
             case DIRECT -> new DirectSolver();
-            case BICGSTAB -> new BiCGSTABSolver(ABSOLUTE_STOPPING_CRITERION, 0.001f);
+            case BICGSTAB -> new BiCGSTABSolver(absoluteStoppingCriterion, 0.001f);
         };
         if(nodes.isEmpty())
             return;
@@ -1023,7 +1020,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     private void verifyConvergence(double norm, int i, int maxIterations) {
-        if (norm > MINIMUM_ALLOWED_PRECISION) {
+        if (norm > minimumAllowedPrecision) {
             if(converged)
                 convergenceProblems(norm);
             converged = false;
@@ -1104,7 +1101,7 @@ public class ElectricalNetwork implements IStamped {
             var nextNorm = NormOps_DDRM.normP1(AuxiliaryVector);
             var dNorm = Math.abs(nextNorm - norm);
             norm = nextNorm;
-            if (norm < ABSOLUTE_STOPPING_CRITERION || dNorm < RELATIVE_STOPPING_CRITERION)
+            if (norm < absoluteStoppingCriterion || dNorm < relativeStoppingCriterion)
                 break;
             if (converged && i >= maxIterations - 12) {
                 // Right before non-linear devices are disabled.
