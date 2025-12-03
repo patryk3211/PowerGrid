@@ -93,12 +93,17 @@ allprojects {
 }
 
 def getGitHash = { ->
-	def stdout = new ByteArrayOutputStream()
-	exec {
-		commandLine 'git', 'rev-parse', '--short', 'HEAD'
-		standardOutput = stdout
-	}
-	return stdout.toString().trim()
+	var headFile = new File("$projectDir/.git/HEAD");
+	if(!headFile.exists())
+		return null
+	var head = headFile.text.split(":")
+	def isCommit = head.length == 1
+	if(isCommit) return head[0].trim().take(8)
+
+	var ref = new File("$projectDir/.git/" + head[1].trim())
+	if(!ref.exists())
+		return null
+	return ref.text.trim().take(8)
 }
 
 var changelogFile = file('build/changelog.md')
@@ -149,7 +154,9 @@ subprojects {
 	}
 
 	tasks.named("build", {
-		version = "mc${project.minecraft_version}-${project.mod_version}-${getGitHash}"
+		var hash = getGitHash()
+		if(hash != null)
+			version = "mc${project.minecraft_version}-${project.mod_version}-${hash}"
 	})
 
 	tasks.jar {
