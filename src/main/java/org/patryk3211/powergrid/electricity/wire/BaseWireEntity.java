@@ -60,6 +60,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     protected IWireEndpoint endpoint2;
     protected byte deferEndpointResolution = 0;
     protected int deferTicks = 0;
+    private boolean overheated = false;
 
     @NotNull
     private WireItem item;
@@ -94,16 +95,17 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
             return;
         }
 
+        float temperature = entityData.get(TEMPERATURE);
+        overheated = temperature >= overheatTemperature && entityData.get(OVERHEAT_TICKS) >= ThermalBehaviour.OVERHEAT_TICKS;
         if(level().isClientSide && !(level() instanceof PonderLevel))
             return;
 
-        float temperature = entityData.get(TEMPERATURE);
         float energy = 0;
         // We have to use current here since the wire might be a transmission line,
         // which needs special resistance handling.
         var I = current();
         energy += I * I * getResistance() / 20f;
-        if(!isOverheated()) {
+        if(!overheated) {
             // If wire is overheated it is considered dead.
             energy -= dissipationFactor * (temperature - BASE_TEMPERATURE) / 20f;
             temperature += energy / thermalMass;
@@ -123,7 +125,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     public boolean isOverheated() {
-        return entityData.get(TEMPERATURE) >= overheatTemperature && entityData.get(OVERHEAT_TICKS) >= ThermalBehaviour.OVERHEAT_TICKS;
+        return overheated;
     }
 
     public float getTemperature() {
@@ -328,12 +330,13 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         int thermalCount = Math.max(itemCount, 1);
         thermalMass = item.getThermalMass() * thermalCount;
         dissipationFactor = item.getDissipationFactor() * thermalCount;
+        resistanceOverride = null;
     }
 
     public float getResistance() {
-        if(resistanceOverride != null)
-            return resistanceOverride;
-        return item.getResistance() * Math.max(itemCount, 1);
+        if(resistanceOverride == null)
+            resistanceOverride = item.getResistance() * Math.max(itemCount, 1);
+        return resistanceOverride;
     }
 
     @Override
@@ -439,6 +442,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         int thermalCount = Math.max(itemCount, 1);
         thermalMass = item.getThermalMass() * thermalCount;
         dissipationFactor = item.getDissipationFactor() * thermalCount;
+        resistanceOverride = null;
     }
 
     @Override

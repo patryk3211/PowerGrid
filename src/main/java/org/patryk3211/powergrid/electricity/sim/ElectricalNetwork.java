@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.createmod.catnip.data.Pair;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
@@ -35,7 +36,7 @@ import java.util.function.Function;
 public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
-    private static final int MAX_SCALE_REUSE_COUNT = 20;
+    private static final int MAX_SCALE_REUSE_COUNT = 50;
 
     private final boolean addGMin;
     protected final Set<AbstractElectricWire> wires = new HashSet<>();
@@ -47,7 +48,7 @@ public class ElectricalNetwork implements IStamped {
     private final Set<ISolverHook> innerHooks = new HashSet<>();
     private final Set<ISolverHook> leafInnerHooks = new HashSet<>();
     private final Set<IStaticResidual> residuals = new HashSet<>();
-    protected final Map<IElectricNode, IElectricNode> leafNodes = new HashMap<>();
+    protected final Map<IElectricNode, IElectricNode> leafNodes = new Reference2ReferenceOpenHashMap<>();
 
     private double minimumAllowedPrecision = 1e-6;
     private double absoluteStoppingCriterion = 1e-7;
@@ -604,15 +605,15 @@ public class ElectricalNetwork implements IStamped {
         if(index >= eliminatedStart) {
             if(WMatrix == null || index - eliminatedStart >= WMatrix.getNumRows())
                 return 0;
-            double value = eliminatedSolved ? EliminatedSolved.get(index - eliminatedStart, 0) : 0;
+            double value = eliminatedSolved ? EliminatedSolved.unsafe_get(index - eliminatedStart, 0) : 0;
             for(int i = 0; i < StateVector.getNumRows(); ++i) {
-                value -= WMatrix.get(index - eliminatedStart, i) * StateVector.get(i, 0);
+                value -= WMatrix.unsafe_get(index - eliminatedStart, i) * StateVector.unsafe_get(i, 0);
             }
             return value;
         }
         if(index >= StateVector.getNumRows())
             return node.getSavedValue();
-        var value = StateVector.get(index);
+        var value = StateVector.unsafe_get(index, 0);
         return Double.isFinite(value) ? value : 0;
     }
 
@@ -628,7 +629,7 @@ public class ElectricalNetwork implements IStamped {
             return;
         if(index >= StateVector.getNumRows())
             return;
-        StateVector.set(index, 0, value);
+        StateVector.unsafe_set(index, 0, value);
     }
 
     private void validateJacobian(DynamicallyTypedMatrix jacobian, DMatrixRMaj residual) {
@@ -808,7 +809,7 @@ public class ElectricalNetwork implements IStamped {
             // Use previous state matrix to accelerate warm up
             if(StateVector != null) {
                 for(int i = 0; i < reducedCount; ++i) {
-                    NewState.set(i, 0, getValue(nodes.get(i)));
+                    NewState.unsafe_set(i, 0, getValue(nodes.get(i)));
                 }
             }
 
@@ -857,13 +858,14 @@ public class ElectricalNetwork implements IStamped {
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix(true);
             scalesAge = MAX_SCALE_REUSE_COUNT + 1;
-        } else if(conductanceUpdates >= 500 || conductanceDelta > 1000 || eliminatedUpdates >= 100) {
+        } else if(conductanceUpdates >= reducedCount * 40 || conductanceDelta > 1000 || eliminatedUpdates >= eliminatedCount * 40) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
             currentMultiTick = multiTicks;
             if(LOGGER != null && ModdedConfigs.logsEnabled())
-                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
-            populateConductanceMatrix(eliminatedUpdates >= 100);
+                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation ({} {} {})",
+                        conductanceUpdates, conductanceDelta, eliminatedUpdates);
+            populateConductanceMatrix(eliminatedUpdates >= eliminatedCount * 40);
         } else if(currentMultiTick != multiTicks) {
             var old = currentMultiTick;
             for(var wire : wires) {
@@ -895,7 +897,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     private void prepareScaled(DynamicallyTypedMatrix workMatrix) {
-        if(scalesAge >= 20) {
+        if(scalesAge >= MAX_SCALE_REUSE_COUNT) {
             computeScales(workMatrix);
             recalculateScales = true;
         }
@@ -954,7 +956,7 @@ public class ElectricalNetwork implements IStamped {
         for(int i = 0; i < n; ++i) {
             double max = 0;
             for(int j = 0; j < n; ++j) {
-                var v = Math.abs(matrix.get(j, i));
+                var v = Math.abs(matrix.unsafe_get(j, i));
                 max += v * v;
             }
             if(max == 0) {
@@ -974,7 +976,7 @@ public class ElectricalNetwork implements IStamped {
             }
             double max = 0;
             for(int j = 0; j < n; ++j)  {
-                var v = Math.abs(matrix.get(i, j));
+                var v = Math.abs(matrix.unsafe_get(i, j));
                 max += v * v;
             }
             if(max == 0) {
