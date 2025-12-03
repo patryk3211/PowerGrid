@@ -108,8 +108,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public static boolean canWeakCouple(TransmissionLine line) {
-        return ModdedConfigs.server().electricity.splittingTransmissionLines.get() &&
-                line.getResistance() > ModdedConfigs.server().electricity.transmissionLineThreshold.getF();
+        return ModdedConfigs.server().electricity.solver.splittingTransmissionLines.get() &&
+                line.getResistance() > ModdedConfigs.server().electricity.solver.transmissionLineThreshold.getF();
     }
 
     private void runIslandDiscoveryFor(ElectricalNetwork network) {
@@ -251,7 +251,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         removed.forEach(TransmissionLine::remove);
 
         perf.start();
-        int multiTick = ModdedConfigs.server().electricity.multiTicks.get();
+        int multiTick = ModdedConfigs.server().electricity.solver.multiTicks.get();
         var iter = subnetworks.iterator();
         while (iter.hasNext()) {
             var network = iter.next();
@@ -368,10 +368,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph, true, ModdedConfigs.server().electricity.solverType.get());
+        var network = new GraphedElectricalNetwork(globalGraph, true, ModdedConfigs.server().electricity.solver.solverType.get());
         network.maxIterations = hooks -> hooks
-                ? ModdedConfigs.server().electricity.solverComplexMaxIterations.get()
-                : ModdedConfigs.server().electricity.solverSimpleMaxIterations.get();
+                ? ModdedConfigs.server().electricity.solver.solverComplexMaxIterations.get()
+                : ModdedConfigs.server().electricity.solver.solverSimpleMaxIterations.get();
         subnetworks.add(network);
         return network;
     }

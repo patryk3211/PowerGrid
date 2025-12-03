@@ -22,6 +22,12 @@
 
   "powergrid.message.multimeter_disconnected": "Multimeter disconnected",
 
+  "powergrid.message.outdated_configs": "Power Grid has detected outdated server configuration files, consider resetting your configs if issues occur.",
+  "powergrid.message.reset_configs": "[Reset now]",
+  "powergrid.message.disable_config_message": "[Disable this message]",
+  "powergrid.message.config_reset_ok": "Configuration successfully reset",
+  "powergrid.message.config_ignore_ok": "This message will not be shown again",
+
   "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
   "death.attack.zap": "%1$s was zapped by %2$s",

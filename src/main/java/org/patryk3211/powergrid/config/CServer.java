@@ -20,6 +20,9 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 public class CServer extends ConfigBase {
+    public static final int CONFIG_VERSION = 1;
+    public final ConfigInt version = i(CONFIG_VERSION, "configVersion", Comments.version);
+
     public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
     public final CRecipes recipes = nested(0, CRecipes::new, Comments.recipes);
     public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
@@ -30,15 +33,29 @@ public class CServer extends ConfigBase {
     }
 
     @Override
+    public void onLoad() {
+        super.onLoad();
+        if(!isUpToDate())
+            PowerGrid.LOGGER.warn("Detected outdated configs, consider resetting your server configs if you experience issues.");
+    }
+
+    @Override
     public void onReload() {
         super.onReload();
         PowerGrid.LOGGER.warn("Server config reloaded, this can cause unexpected behaviour if done during gameplay!");
         GlobalElectricNetworks.configsReloaded();
     }
 
+    public boolean isUpToDate() {
+        if(version.get() < 0)
+            return true;
+        return version.get() >= CONFIG_VERSION;
+    }
+
     private static class Comments {
         public static final String electricity = "All things related to purely electrical devices";
         public static final String kinetics = "Things related to kinetic and electrokinetic devices";
         public static final String recipes = "Recipe configuration values";
+        public static final String version = "Config version check, values below 0 will disable config version checker";
     }
 }
