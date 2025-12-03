@@ -1015,14 +1015,14 @@ public class ElectricalNetwork implements IStamped {
         }
     }
 
-    protected void convergenceProblems(double residual) {
+    protected void convergenceProblems(double residual, DMatrixRMaj ResidualVector) {
 
     }
 
-    private void verifyConvergence(double norm, int i, int maxIterations) {
+    private void verifyConvergence(double norm, int i, int maxIterations, DMatrixRMaj ResidualVector) {
         if (norm > minimumAllowedPrecision) {
             if(converged)
-                convergenceProblems(norm);
+                convergenceProblems(norm, ResidualVector);
             converged = false;
             if (LOGGER != null) {
                 if (ModdedConfigs.logsEnabled()) {
@@ -1108,15 +1108,14 @@ public class ElectricalNetwork implements IStamped {
                 // Only append new problem frames if the network has been converging before.
                 converged = norm < minimumAllowedPrecision;
                 if(!converged)
-                    convergenceProblems(norm);
+                    convergenceProblems(norm, AuxiliaryVector);
             }
             prepareScaled(workMatrix);
 
             // Perform Newton iterations
-            AuxiliaryVector.setTo(ResidualVector);
-            CommonOps_DDRM.multRows(rowScales, AuxiliaryVector);
+            CommonOps_DDRM.multRows(rowScales, ResidualVector);
 
-            var deltaX = solver.solve(ScaledJ, AuxiliaryVector, false);
+            var deltaX = solver.solve(ScaledJ, ResidualVector, false);
             if (deltaX == null)
                 continue;
 
@@ -1129,7 +1128,7 @@ public class ElectricalNetwork implements IStamped {
                 solver.zero();
             }
         }
-        verifyConvergence(norm, i, maxIterations);
+        verifyConvergence(norm, i, maxIterations, AuxiliaryVector);
         for (var hook : outerHooks)
             hook.postUpperSolve();
         PERF.end();

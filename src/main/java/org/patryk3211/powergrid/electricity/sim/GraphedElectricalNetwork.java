@@ -215,7 +215,7 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
     }
 
     @Override
-    protected void convergenceProblems(double residual) {
+    protected void convergenceProblems(double residual, DMatrixRMaj ResidualVector) {
         DebugCommand.pushProblems(this, residual, findProblematicWires(ResidualVector, 1e-8f));
     }
 
