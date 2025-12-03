@@ -135,7 +135,7 @@ public class TransmissionLine extends ElectricWire {
     @Override
     public void setNode2(IElectricNode node2) {
         assert node2 instanceof OwnedFloatingNode;
-        var node = (OwnedFloatingNode) node1;
+        var node = (OwnedFloatingNode) node2;
         setNode2(node.endpoint, Objects.requireNonNull(node));
     }
 
