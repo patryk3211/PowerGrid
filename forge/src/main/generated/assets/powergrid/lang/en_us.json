@@ -299,6 +299,7 @@
   "powergrid.gui.hv_breaker.open": "Open",
   "powergrid.gui.hv_breaker.setting": "Trip current",
   "powergrid.gui.hv_breaker.status": "Status:",
+  "powergrid.gui.plotter.header": "Voltage at T-",
   "powergrid.gui.potentiometer.setting": "Setting",
   "powergrid.gui.power_meter.title": "Measured power",
   "powergrid.gui.rheostat.info_header": "Rheostat information",

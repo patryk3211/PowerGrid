@@ -18,14 +18,18 @@ package org.patryk3211.powergrid.kinetics.plotter;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import net.createmod.catnip.animation.AnimationTickHolder;
+import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
@@ -34,8 +38,21 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
     private static final float VOLTAGE_SPAN = 11.5f / 16;
     private static final Vec3 GRAPH_ORIGIN = new Vec3(8.0 / 16.0, 16.2 / 16.0, 13.0 / 16.0);
 
+    private static final Quaternionf GRAPH_ROTATION = new Quaternionf()
+            .rotateX(-112.5f / 180f * (float) Math.PI);
+
     public PlotterRenderer(BlockEntityRendererProvider.Context context) {
         super(context);
+    }
+
+    public static Vec3 graphPoint(float t, float v, BlockPos pos, Direction facing) {
+        var dest = new Vector3d();
+        GRAPH_ROTATION.transform(v * VOLTAGE_SPAN * 0.5f, t * TIME_SPAN, 0, dest);
+        var out = new Vec3(
+                dest.x + pos.getX() + GRAPH_ORIGIN.x,
+                dest.y + pos.getY() + GRAPH_ORIGIN.y,
+                dest.z + pos.getZ() + GRAPH_ORIGIN.z);
+        return VecHelper.rotateCentered(out, (2 - facing.get2DDataValue()) * 180, Direction.Axis.Y);
     }
 
     @Override
@@ -68,7 +85,7 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
         // Render the graph from samples
         ms.pushPose();
         ms.rotateAround(new Quaternionf().rotateY(0.5f * (float) Math.PI * (2 - facing.get2DDataValue())), 0.5f, 0.5f, 0.5f);
-        ms.rotateAround(new Quaternionf().rotateX(-112.5f / 180f * (float) Math.PI), (float) GRAPH_ORIGIN.x, (float) GRAPH_ORIGIN.y, (float) GRAPH_ORIGIN.z);
+        ms.rotateAround(GRAPH_ROTATION, (float) GRAPH_ORIGIN.x, (float) GRAPH_ORIGIN.y, (float) GRAPH_ORIGIN.z);
         ms.translate(GRAPH_ORIGIN.x, GRAPH_ORIGIN.y, GRAPH_ORIGIN.z);
         ms.scale(VOLTAGE_SPAN * 0.5f, TIME_SPAN, 1);
         if(be.getAnimationSpeed() != 0) {

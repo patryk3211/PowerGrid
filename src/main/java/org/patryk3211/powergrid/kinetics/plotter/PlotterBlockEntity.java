@@ -17,8 +17,14 @@ package org.patryk3211.powergrid.kinetics.plotter;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.catnip.outliner.Outliner;
+import net.createmod.catnip.theme.Color;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
@@ -28,11 +34,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.gauge.GaugeValueBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
+import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
@@ -151,6 +161,59 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     public void setColor(DyeColor dyeColor) {
         this.color = dyeColor;
         notifyUpdate();
+    }
+
+    private static final Object MAG_SLOT = new Object();
+    private static final Object TIME_SLOT = new Object();
+    private static final Object ZERO_SLOT = new Object();
+
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+            var target = ClientSideAccess.getHitResult();
+            if(target.getType() == HitResult.Type.BLOCK) {
+                var hit = (BlockHitResult) target;
+                if(hit.getDirection() != Direction.UP)
+                    return;
+                var loc = target.getLocation();
+                var facing = getBlockState().getValue(PlotterBlock.HORIZONTAL_FACING);
+                var coord = loc.get(facing.getAxis()) - worldPosition.get(facing.getAxis());
+                if(facing.getAxisDirection() == Direction.AxisDirection.POSITIVE)
+                    coord = 1 - coord;
+                coord = (coord - 4 / 16f) / ((16 - 4) / 16f);
+                if(coord < 0 || coord > 1)
+                    return;
+                coord = 1 - coord;
+                int i = Math.round((float) coord * sampleBuffer.length);
+                var x = sampleBuffer[(head + i) % sampleBuffer.length];
+
+                var p1 = PlotterRenderer.graphPoint((float) i / sampleBuffer.length, 0, worldPosition, facing);
+                var p2 = PlotterRenderer.graphPoint((float) i / sampleBuffer.length, x, worldPosition, facing);
+                Outliner.getInstance().showLine(MAG_SLOT, p1, p2)
+                        .lineWidth(1 / 80f)
+                        .colored(new Color(200, 48, 48));
+                Outliner.getInstance().showLine(TIME_SLOT,
+                                PlotterRenderer.graphPoint((float) i / sampleBuffer.length, -1, worldPosition, facing),
+                                PlotterRenderer.graphPoint((float) i / sampleBuffer.length, 1, worldPosition, facing))
+                        .lineWidth(1 / 96f)
+                        .colored(new Color(64, 64, 64));
+                Outliner.getInstance().showLine(ZERO_SLOT,
+                                PlotterRenderer.graphPoint(0, 0, worldPosition, facing),
+                                PlotterRenderer.graphPoint(1, 0, worldPosition, facing))
+                        .lineWidth(1 / 96f)
+                        .colored(new Color(64, 64, 64));
+
+                Lang.translate("gui.plotter.header")
+                        .add(Lang.numberConstant((1 - coord) * sampleBuffer.length / 20f))
+                        .add(Component.literal("s"))
+                        .forGoggles(tooltip);
+                Unit.VOLTAGE.formatWithPrefixes(x * maxValue)
+                        .style(ChatFormatting.AQUA)
+                        .forGoggles(tooltip, 1);
+            }
+        });
+        return true;
     }
 
     @Override
