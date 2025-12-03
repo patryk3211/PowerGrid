@@ -65,7 +65,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     }
 
     private static double limit(double dX) {
-        return Math.min(1.2 * Math.log1p(dX), dX);
+        return Math.min(1.1 * Math.log1p(dX), dX);
     }
 
     @Override
@@ -132,6 +132,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         return (float) (anodeCurrent / Math.pow(anodeVoltage / gain, 3 / 2f));
     }
 
+    @Override
+    public String toString() {
+        return String.format("ElectronTube(mu=%g G=%g Is=%g)", gain, perveance, saturationCurrent);
+    }
+
     private static class GMStamp extends ConductanceWire {
         private final IElectricNode node3;
 
@@ -155,6 +160,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         @Override
         public List<IElectricNode> coupledNodes() {
             return List.of(node1, node2, node3);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("ElectronTube#GM(gm=%g)", conductance());
         }
     }
 }

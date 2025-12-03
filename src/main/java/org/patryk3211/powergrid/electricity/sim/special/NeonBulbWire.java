@@ -98,4 +98,9 @@ public class NeonBulbWire extends AbstractElectricWire implements IOuterHook, IS
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format("NeonBulb(Vb=%g Vh=%g Ih=%g G=%g)", breakdownVoltage, holdingVoltage, holdingCurrent, dischargeConductance);
+    }
 }

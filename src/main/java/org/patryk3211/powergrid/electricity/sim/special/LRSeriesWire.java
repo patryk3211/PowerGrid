@@ -79,7 +79,7 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
         var G_I = getDeltaTime() / (2 * inductance);
         var V_Inductor = (inductance * (current() - I) / getDeltaTime());
 
-        Ieq = ((V_Inductor * 0.1f + Vprev * 0.9f) * G_I + I) * residualScale;
+        Ieq = ((V_Inductor * 0.05f + Vprev * 0.95f) * G_I + I) * residualScale;
     }
 
     @Override
@@ -109,5 +109,10 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
 
     public void setResistance(double R) {
         setLR(inductance, R);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("LRWire(L=%g R=%g)", inductance, resistance);
     }
 }

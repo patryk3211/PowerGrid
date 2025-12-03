@@ -1106,8 +1106,9 @@ public class ElectricalNetwork implements IStamped {
             if (converged && i >= maxIterations - 12) {
                 // Right before non-linear devices are disabled.
                 // Only append new problem frames if the network has been converging before.
-                convergenceProblems(norm);
-                converged = false;
+                converged = norm < minimumAllowedPrecision;
+                if(!converged)
+                    convergenceProblems(norm);
             }
             prepareScaled(workMatrix);
 

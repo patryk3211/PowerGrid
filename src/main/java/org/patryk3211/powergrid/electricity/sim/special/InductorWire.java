@@ -70,7 +70,7 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
     public void startIteration() {
         var G = conductance();
         var V = inductance * (current() - I) / getDeltaTime();
-        Ieq = (V * 0.1f + Vprev * 0.9f) * G + I;
+        Ieq = (V * 0.05f + Vprev * 0.95f) * G + I;
     }
 
     @Override
@@ -86,5 +86,10 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
         this.inductance = inductance;
         if(network != null)
             network.updateConductance(this, conductance() - oldConductance);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Inductor(L=%g)", inductance);
     }
 }
