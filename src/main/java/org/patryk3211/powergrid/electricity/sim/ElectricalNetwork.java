@@ -123,7 +123,7 @@ public class ElectricalNetwork implements IStamped {
         solver = switch(type) {
             case DIRECT -> new DirectSolver();
             case BICGSTAB -> new BiCGSTABSolver(absoluteStoppingCriterion, 0.001f);
-            case GMRES -> new GMRESSolver(absoluteStoppingCriterion, 0.001f, 10);
+            case GMRES -> new GMRESSolver(absoluteStoppingCriterion, 0.001f, 30);
         };
         if(nodes.isEmpty())
             return;
