@@ -116,13 +116,14 @@ public class ElectricalNetwork implements IStamped {
 
     public void setSolverType(SolverType type) {
         if(solver != null) {
-            var currentType = solver instanceof DirectSolver ? SolverType.DIRECT : SolverType.BICGSTAB;
+            var currentType = solver.type();
             if (currentType == type)
                 return;
         }
         solver = switch(type) {
             case DIRECT -> new DirectSolver();
             case BICGSTAB -> new BiCGSTABSolver(absoluteStoppingCriterion, 0.001f);
+            case GMRES -> new GMRESSolver(absoluteStoppingCriterion, 0.001f, 10);
         };
         if(nodes.isEmpty())
             return;
@@ -904,7 +905,7 @@ public class ElectricalNetwork implements IStamped {
         if(recalculateScales) {
             workMatrix.multColumns(columnScales, ScaledJ);
             ScaledJ.multRows(rowScales, null);
-            ScaledJ.refactorize();
+            ScaledJ.markRefactorize();
             recalculateScales = false;
         }
     }
@@ -1144,6 +1145,6 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public enum SolverType {
-        DIRECT, BICGSTAB
+        DIRECT, BICGSTAB, GMRES
     }
 }

@@ -44,6 +44,7 @@ public class DynamicallyTypedMatrix {
     private boolean sparse;
     private boolean solverValid;
     private Solver solverType;
+    private boolean refactorize;
 
     public DynamicallyTypedMatrix(int rows, int cols) {
         this(rows, cols, Solver.CHOLESKY);
@@ -198,6 +199,7 @@ public class DynamicallyTypedMatrix {
             solverValid = solver.setA(prepareDenseA(solver.modifiesA()));
             this.solver = solver;
         }
+        refactorize = false;
     }
 
     @SuppressWarnings("unchecked")
@@ -216,10 +218,11 @@ public class DynamicallyTypedMatrix {
             solverType = Solver.LU;
             makeSolver();
         }
+        refactorize = false;
     }
 
     public void solve(DMatrixRMaj b, DMatrixRMaj x) {
-        if(solver == null)
+        if(solver == null || refactorize)
             refactorize();
         if(!solverValid) {
             x.zero();
@@ -313,6 +316,10 @@ public class DynamicallyTypedMatrix {
 
     public State getState() {
         return sparse ? State.SPARSE : State.DENSE;
+    }
+
+    public void markRefactorize() {
+        refactorize = true;
     }
 
     public enum State {

@@ -15,10 +15,13 @@
  */
 package org.patryk3211.electricity;
 
+import org.ejml.data.DMatrixRMaj;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.solver.DynamicallyTypedMatrix;
+import org.patryk3211.powergrid.electricity.sim.solver.GMRESSolver;
 import org.patryk3211.powergrid.electricity.sim.special.GeneratorCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.IRotor;
 
@@ -178,5 +181,32 @@ public class SolverTests extends TestHelper {
                     rotor2.getAngularVelocity(), V2.getCurrent(), deltaE2, Pe2, Pe2 * 0.05f);
             System.out.printf("  E_system = %g\n", rotor1.energy() + rotor2.energy());
         }
+    }
+
+    @Test
+    void testGmres() {
+        var solver = new GMRESSolver(1e-7f, 1e-7f, 5);
+
+        var A = new DynamicallyTypedMatrix(3, 3);
+        A.set(0, 0, 2);
+        A.set(1, 1, 2);
+        A.set(2, 2, 2);
+        A.set(0, 1, 1);
+        A.set(1, 0, 1);
+        A.set(1, 2, 1);
+        A.set(2, 1, 1);
+
+        var b = new DMatrixRMaj(3, 1);
+        b.set(0, 0, 4);
+        b.set(1, 0, 2);
+        b.set(2, 0, 1);
+
+        solver.setStateSize(3);
+        var x = solver.solve(A, b, false);
+
+        Assertions.assertNotNull(x);
+        Assertions.assertEquals(9.0 / 4.0, x.get(0, 0), 1e-7);
+        Assertions.assertEquals(-1.0 / 2.0, x.get(1, 0), 1e-7);
+        Assertions.assertEquals(3.0 / 4.0, x.get(2, 0), 1e-7);
     }
 }

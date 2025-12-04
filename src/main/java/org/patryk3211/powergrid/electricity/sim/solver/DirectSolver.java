@@ -17,12 +17,18 @@ package org.patryk3211.powergrid.electricity.sim.solver;
 
 import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 
 public class DirectSolver implements ISolver {
     private static final PerformanceCounter PERF = new PerformanceCounter("DirectSolve");
 
     private DMatrixRMaj x;
+
+    @Override
+    public ElectricalNetwork.SolverType type() {
+        return ElectricalNetwork.SolverType.DIRECT;
+    }
 
     @Override
     public void setStateSize(int size) {
