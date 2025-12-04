@@ -28,6 +28,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     private final double idealityFactor;
     private double G = ElectricalNetwork.G_MIN;
     private double Ieq = 0;
+    private double prevV;
 
     public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -82,6 +83,9 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
         double n = idealityFactor;
         double V = potentialDifference();
+        var dV = V - prevV;
+        V = prevV + softDelta(dV, 0.8);
+        prevV = V;
         double I_s1 = reverseSaturationCurrent;
         double E_g = 1.12; // Silicon bandgap energy in eV
         double T_1 = 22 + 273.15; // Reference temperature in K

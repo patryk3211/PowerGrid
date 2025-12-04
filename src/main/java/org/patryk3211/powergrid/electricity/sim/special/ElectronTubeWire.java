@@ -65,10 +65,6 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         this.saturationCurrent = saturationCurrent;
     }
 
-    private static double limit(double dX, double a) {
-        return Math.min(a * Math.log1p(dX), dX);
-    }
-
     @Override
     public void startIteration() {
         // Implementation adapted from Falstad https://www.falstad.com/circuit-java/
@@ -78,9 +74,9 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         var dVc = vCathode - prevCathode;
         var dVg = vGrid - prevGrid;
         var dVa = vAnode - prevAnode;
-        vCathode = prevCathode + limit(Math.abs(dVc), 1.2) * Math.signum(dVc);
-        vGrid = prevGrid + limit(Math.abs(dVg), 1.2) * Math.signum(dVg);
-        vAnode = prevAnode + limit(Math.abs(dVa), 1.0) * Math.signum(dVa);
+        vCathode = prevCathode + softDelta(Math.abs(dVc), 1.2) * Math.signum(dVc);
+        vGrid = prevGrid + softDelta(Math.abs(dVg), 1.2) * Math.signum(dVg);
+        vAnode = prevAnode + softDelta(Math.abs(dVa), 1.0) * Math.signum(dVa);
         prevAnode = vAnode;
         prevCathode = vCathode;
         prevGrid = vGrid;
