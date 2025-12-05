@@ -102,7 +102,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     @Override
     public void lineDisconnected(TransmissionLine line) {
         transmissionLines.remove(line.getId());
-        if(line.getNetwork() != null)
+        if(line.getNetwork() != null && !runningDiscovery)
             islandDiscoveryQueue.add(line.getNetwork());
         setDirty();
     }
