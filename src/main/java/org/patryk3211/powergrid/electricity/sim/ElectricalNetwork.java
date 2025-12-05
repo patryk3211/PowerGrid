@@ -859,7 +859,7 @@ public class ElectricalNetwork implements IStamped {
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix(true);
             scalesAge = MAX_SCALE_REUSE_COUNT + 1;
-        } else if(conductanceUpdates >= reducedCount * 40 || conductanceDelta > 1000 || eliminatedUpdates >= eliminatedCount * 40) {
+        } else if(conductanceUpdates >= reducedCount * 40 || conductanceDelta > 1000 || (eliminatedUpdates >= eliminatedCount * 40 && eliminatedCount != 0)) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
             currentMultiTick = multiTicks;
