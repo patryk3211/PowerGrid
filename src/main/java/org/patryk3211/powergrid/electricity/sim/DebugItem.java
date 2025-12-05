@@ -70,7 +70,9 @@ public class DebugItem extends Item {
         user.sendSystemMessage(Component.literal(" - " + wire)
                 .withStyle(ChatFormatting.BLUE));
         if(!user.level().isClientSide && wire instanceof TransmissionLinePart part) {
-            user.sendSystemMessage(Component.literal("    " + part.getLine())
+            var line = part.getLine();
+            var R = line == null ? 0 : line.getResistance();
+            user.sendSystemMessage(Component.literal(String.format("    %s R=%f", line, R))
                     .withStyle(ChatFormatting.GRAY));
         }
     }
