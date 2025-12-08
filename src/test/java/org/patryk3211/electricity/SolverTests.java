@@ -185,7 +185,7 @@ public class SolverTests extends TestHelper {
 
     @Test
     void testGmres() {
-        var solver = new GMRESSolver(1e-7f, 1e-7f, 5);
+        var solver = new GMRESSolver(1e-7f, 5);
 
         var A = new DynamicallyTypedMatrix(3, 3);
         A.set(0, 0, 2);
@@ -208,5 +208,68 @@ public class SolverTests extends TestHelper {
         Assertions.assertEquals(9.0 / 4.0, x.get(0, 0), 1e-7);
         Assertions.assertEquals(-1.0 / 2.0, x.get(1, 0), 1e-7);
         Assertions.assertEquals(3.0 / 4.0, x.get(2, 0), 1e-7);
+    }
+
+    @Test
+    void testRowSolve() {
+        var b = new DMatrixRMaj(1, 3);
+        b.set(0, 0, 1);
+        b.set(0, 1, 2);
+        b.set(0, 2, 3);
+
+        var x = new DMatrixRMaj(1, 3);
+        {
+            var U = new DynamicallyTypedMatrix(3, 3, DynamicallyTypedMatrix.Solver.LU);
+            U.set(0, 0, 1);
+            U.set(0, 1, 0);
+            U.set(0, 2, 1);
+            U.set(1, 1, 2);
+            U.set(1, 2, 4);
+            U.set(2, 2, 3);
+            U.convert(DynamicallyTypedMatrix.State.SPARSE);
+            U.refactorize();
+
+            U.solveRow(b, x);
+
+            Assertions.assertEquals(1, x.get(0, 0));
+            Assertions.assertEquals(1, x.get(0, 1));
+            Assertions.assertEquals(-2.0 / 3.0, x.get(0, 2));
+        }
+
+        {
+            var L = new DynamicallyTypedMatrix(3, 3, DynamicallyTypedMatrix.Solver.LU);
+            L.set(0, 0, 1);
+            L.set(1, 1, 1);
+            L.set(2, 2, 1);
+            L.set(1, 0, 3);
+            L.set(2, 0, 4);
+            L.set(2, 1, 2);
+            L.convert(DynamicallyTypedMatrix.State.SPARSE);
+            L.refactorize();
+
+            L.solveRow(b, x);
+
+            Assertions.assertEquals( 1, x.get(0, 0));
+            Assertions.assertEquals(-4, x.get(0, 1));
+            Assertions.assertEquals( 3, x.get(0, 2));
+        }
+
+        {
+            var L = new DynamicallyTypedMatrix(3, 3, DynamicallyTypedMatrix.Solver.LU);
+            L.set(0, 0, 1);
+            L.set(1, 1, 1);
+            L.set(2, 2, 1);
+            L.set(1, 0, 3);
+            L.set(2, 0, 4);
+            L.set(2, 1, 2);
+            L.convert(DynamicallyTypedMatrix.State.DENSE);
+            L.refactorize();
+
+            L.solveRow(b, x);
+
+            Assertions.assertEquals( 1, x.get(0, 0));
+            Assertions.assertEquals(-4, x.get(0, 1));
+            Assertions.assertEquals( 3, x.get(0, 2));
+        }
     }
 }

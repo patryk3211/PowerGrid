@@ -26,8 +26,7 @@ public class GMRESSolver implements ISolver {
     private static final PerformanceCounter PERF = new PerformanceCounter("GMRES");
 
     private double targetPrecision;
-    private final double maxAllowed;
-    private int m;
+    private final int m;
 
     private DMatrixRMaj guess;
     private DMatrixRMaj residual;
@@ -41,9 +40,8 @@ public class GMRESSolver implements ISolver {
     private double[] g;
     private double[] y;
 
-    public GMRESSolver(double targetPrecision, double maxAllowed, int m) {
+    public GMRESSolver(double targetPrecision, int m) {
         this.targetPrecision = targetPrecision;
-        this.maxAllowed = maxAllowed;
         this.m = m;
     }
 
@@ -66,7 +64,7 @@ public class GMRESSolver implements ISolver {
             w1 = new DMatrixRMaj(newSize, 1);
 
             Q = new DMatrixRMaj(newSize, m + 1);
-            H = new DMatrixRMaj(m + 1, m);
+            H = new DMatrixRMaj(m, m);
 
             sinm = new double[m];
             cosm = new double[m];
@@ -91,11 +89,22 @@ public class GMRESSolver implements ISolver {
     public boolean gmres(DynamicallyTypedMatrix A, DMatrixRMaj b) {
         A.mult(guess, residual);
         CommonOps_DDRM.subtract(b, residual, residual);
+        // Diagonal preconditioning
+        for(int i = 0; i < A.getNumRows(); ++i) {
+            var x = residual.unsafe_get(i, 0);
+            var k = A.unsafe_get(i, i);
+            residual.unsafe_set(i, 0, k == 0 ? x : x / k);
+        }
         var beta = NormOps_DDRM.normP2(residual);
         if(beta < targetPrecision)
             return false;
 
-        final var w1Dat = w1.getData();
+        q.zero();
+        w1.zero();
+        Q.zero();
+        H.zero();
+
+        final double[] w1Dat = w1.getData();
 
         g[0] = beta;
         CommonOps_DDRM.scale(1 / beta, residual, q);
@@ -104,6 +113,12 @@ public class GMRESSolver implements ISolver {
         for(i = 0; i < m; ++i) {
             // Arnoldi
             A.mult(q, w1);
+            for(int j = 0; j < A.getNumRows(); ++j) {
+                var x = w1Dat[j];
+                var k = A.unsafe_get(j, j);
+                w1Dat[j] = k == 0 ? x : x / k;
+            }
+
             for(int j = 0; j <= i; ++j) {
                 // H(j, i) = q^T * Q(:, j)
                 double sum = 0;
@@ -116,9 +131,10 @@ public class GMRESSolver implements ISolver {
                     w1Dat[k] -= sum * Q.unsafe_get(k, j);
                 }
             }
+            double H1 = 0;
             var qNorm = NormOps_DDRM.normP2(w1);
             if(qNorm > 0) {
-                H.unsafe_set(i + 1, i, qNorm);
+                H1 = qNorm;
                 CommonOps_DDRM.scale(1 / qNorm, w1, q);
                 Qn(i + 1);
             }
@@ -130,13 +146,12 @@ public class GMRESSolver implements ISolver {
                 H.unsafe_set(j + 1, i, -sinm[j] * h1 + cosm[j] * h2);
             }
             // Next Givens rotation
-            double hi = H.unsafe_get(i, i), hi1 = H.unsafe_get(i + 1, i);
-            var t = Math.sqrt(hi * hi + hi1 * hi1);
+            double hi = H.unsafe_get(i, i);
+            var t = Math.sqrt(hi * hi + H1 * H1);
             cosm[i] = hi / t;
-            sinm[i] = hi1 / t;
+            sinm[i] = H1 / t;
             // Eliminate H(i + 1, i)
-            H.unsafe_set(i, i, cosm[i] * hi + sinm[i] * hi1);
-            H.unsafe_set(i + 1, i, 0);
+            H.unsafe_set(i, i, cosm[i] * hi + sinm[i] * H1);
 
             // Extend g
             g[i + 1] = -sinm[i] * g[i];
@@ -153,9 +168,9 @@ public class GMRESSolver implements ISolver {
         for(int j = i - 1; j >= 0; --j) {
             double v = g[j];
             for(int k = j + 1; k < i; ++k) {
-                v -= y[k] * H.get(j, k);
+                v -= y[k] * H.unsafe_get(j, k);
             }
-            y[j] = v / H.get(j, j);
+            y[j] = v / H.unsafe_get(j, j);
         }
         var x = guess.getData();
         for(int k = 0; k < b.getNumRows(); ++k) {
@@ -168,10 +183,12 @@ public class GMRESSolver implements ISolver {
 
     @Override
     public @Nullable DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll) {
+        PERF.start();
         for(int i = 0; i < 10; ++i) {
             if(!gmres(A, b))
                 break;
         }
+        PERF.end();
         return guess;
     }
 

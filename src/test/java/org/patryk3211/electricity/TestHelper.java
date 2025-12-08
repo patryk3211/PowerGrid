@@ -15,10 +15,13 @@
  */
 package org.patryk3211.electricity;
 
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
+
+import java.util.List;
 
 public abstract class TestHelper {
     public static class VoltageSourceNodePair extends FloatingNode {
@@ -145,4 +148,35 @@ public abstract class TestHelper {
             network.calculate(multiTicks);
         }
     }
+
+    protected static FloatingNode[] buildGrid(Network Net, int size, @Nullable List<ElectricWire> wiresOut) {
+        var nodes = new FloatingNode[size * size];
+        for(int i = 0; i < size * size; ++i) {
+            nodes[i] = Net.N();
+        }
+
+        float r = 1.0f;
+        for(int x = 0; x < size; ++x) {
+            for(int y = 0; y < size; ++y) {
+                var origin = nodes[x + y * size];
+                if(x < size - 1) {
+                    // Horizontal
+                    var wire = Net.W(r, origin, nodes[x + 1 + y * size]);
+                    if(wiresOut != null)
+                        wiresOut.add(wire);
+                    r += 1.0f;
+                }
+                if(y < size - 1) {
+                    // Vertical
+                    var wire = Net.W(r, origin, nodes[x + (y + 1) * size]);
+                    if(wiresOut != null)
+                        wiresOut.add(wire);
+                    r += 1.0f;
+                }
+            }
+        }
+
+        return nodes;
+    }
+
 }

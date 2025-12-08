@@ -37,6 +37,7 @@ public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
     private static final int MAX_SCALE_REUSE_COUNT = 50;
+    private static final boolean SCALING = false;
 
     private final boolean addGMin;
     protected final Set<AbstractElectricWire> wires = new HashSet<>();
@@ -49,6 +50,8 @@ public class ElectricalNetwork implements IStamped {
     private final Set<ISolverHook> leafInnerHooks = new HashSet<>();
     private final Set<IStaticResidual> residuals = new HashSet<>();
     protected final Map<IElectricNode, IElectricNode> leafNodes = new Reference2ReferenceOpenHashMap<>();
+
+    private final List<ExchangeRow> changedRows = new ArrayList<>();
 
     private double minimumAllowedPrecision = 1e-6;
     private double absoluteStoppingCriterion = 1e-7;
@@ -64,6 +67,7 @@ public class ElectricalNetwork implements IStamped {
     private DynamicallyTypedMatrix JacobianEliminated;
     private DynamicallyTypedMatrix JacobianRight;
     private DynamicallyTypedMatrix JacobianBottom;
+    private DynamicallyTypedMatrix A0;
 
     private DMatrixRMaj ReducedRHSVector;
     private DMatrixRMaj EliminatedRHSVector;
@@ -93,6 +97,7 @@ public class ElectricalNetwork implements IStamped {
     protected int warmUpTicks = 0;
     protected int stamp;
     private int currentMultiTick = 1;
+    private boolean enableRowExchange = false;
 
     private boolean recalculateScales;
     private boolean eliminatedChanged;
@@ -104,7 +109,7 @@ public class ElectricalNetwork implements IStamped {
     public Function<Boolean, Integer> maxIterations = b -> 200;
 
     public ElectricalNetwork(boolean addGMin) {
-        this(addGMin, SolverType.DIRECT);
+        this(addGMin, SolverType.GMRES);
     }
 
     public ElectricalNetwork(boolean addGMin, SolverType solver) {
@@ -123,7 +128,7 @@ public class ElectricalNetwork implements IStamped {
         solver = switch(type) {
             case DIRECT -> new DirectSolver();
             case BICGSTAB -> new BiCGSTABSolver(absoluteStoppingCriterion, 0.001f);
-            case GMRES -> new GMRESSolver(absoluteStoppingCriterion, 0.001f, 30);
+            case GMRES -> new GMRESSolver(1e-8, 30);
         };
         if(nodes.isEmpty())
             return;
@@ -387,6 +392,16 @@ public class ElectricalNetwork implements IStamped {
         return StateVector;
     }
 
+    private ExchangeRow getOrCreateRow(int row) {
+        for(var rowObj : changedRows) {
+            if(rowObj.index == row)
+                return rowObj;
+        }
+        var rowObj = new ExchangeRow(row, ReducedJacobian != null ? ReducedJacobian : JacobianKept);
+        changedRows.add(rowObj);
+        return rowObj;
+    }
+
     protected void jacobianAdd(int row, int column, double value) {
         if(value == 0)
             return;
@@ -394,6 +409,10 @@ public class ElectricalNetwork implements IStamped {
             throw new IllegalArgumentException("Provided entry lays outside of the allocated matrices.");
         recalculateScales = true;
         if(row < eliminatedStart && column < eliminatedStart) {
+            if(enableRowExchange) {
+                var e = getOrCreateRow(row);
+                e.update(column, value);
+            }
             JacobianKept.add(row, column, value);
             if(ReducedJacobian != null)
                 ReducedJacobian.add(row, column, value);
@@ -425,6 +444,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     protected void populateConductanceMatrix(boolean withEliminated) {
+        enableRowExchange = false;
         conductanceDelta = 0;
         conductanceUpdates = 0;
 
@@ -532,6 +552,10 @@ public class ElectricalNetwork implements IStamped {
             ReducedJacobian.optimize();
         }
         recalculateScales = true;
+
+        changedRows.clear();
+        enableRowExchange = true;
+        A0.setTo(getWorkMatrix());
     }
 
     private void calculateEliminatedMatrices() {
@@ -815,7 +839,8 @@ public class ElectricalNetwork implements IStamped {
             }
 
             // Kept Jacobian
-            JacobianKept = new DynamicallyTypedMatrix(reducedCount, reducedCount);
+            JacobianKept = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
+            A0 = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
             if(eliminatedCount != 0) {
                 // Eliminated Jacobian
                 JacobianEliminated = new DynamicallyTypedMatrix(eliminatedCount, eliminatedCount);
@@ -826,7 +851,7 @@ public class ElectricalNetwork implements IStamped {
 
                 WMatrix = new DynamicallyTypedMatrix(eliminatedCount, reducedCount);
                 ReducedCorrection = new DynamicallyTypedMatrix(reducedCount, reducedCount);
-                ReducedJacobian = new DynamicallyTypedMatrix(reducedCount, reducedCount);
+                ReducedJacobian = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
 
                 EliminatedRHSVector = new DMatrixRMaj(eliminatedCount, 1);
                 EliminatedSolved = new DMatrixRMaj(eliminatedCount, 1);
@@ -844,13 +869,16 @@ public class ElectricalNetwork implements IStamped {
 
             ReducedRHSVector = new DMatrixRMaj(reducedCount, 1);
 
-            ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
+            if(SCALING)
+                ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
             ResidualVector = new DMatrixRMaj(reducedCount, 1);
             AuxiliaryVector = new DMatrixRMaj(reducedCount, 1);
             StateVector = NewState;
 
-            columnScales = new double[reducedCount];
-            rowScales = new double[reducedCount];
+            if(SCALING) {
+                columnScales = new double[reducedCount];
+                rowScales = new double[reducedCount];
+            }
             solver.setStateSize(reducedCount);
             dirty = false;
 
@@ -1075,6 +1103,13 @@ public class ElectricalNetwork implements IStamped {
             return;
         }
 
+        // Verify possession of nodes
+//        for(var node : nodes) {
+//            if(node.getNetwork() != this) {
+//                PowerGrid.LOGGER.warn("INVALID NODE POSSESSION {}", node);
+//            }
+//        }
+
         prepareMatrices(multiTicks);
     }
 
@@ -1113,18 +1148,32 @@ public class ElectricalNetwork implements IStamped {
                 if(!converged)
                     convergenceProblems(norm, AuxiliaryVector);
             }
-            prepareScaled(workMatrix);
 
-            // Perform Newton iterations
-            CommonOps_DDRM.multRows(rowScales, ResidualVector);
+            var rowRecalc = A0.isMarked();
+            for(var row : changedRows) {
+                row.solveRow(A0, rowRecalc, changedRows);
+            }
+            for(int j = changedRows.size() - 1; j >= 0; --j) {
+                changedRows.get(j).apply(ResidualVector);
+            }
 
-            var deltaX = solver.solve(ScaledJ, ResidualVector, false);
+            if(SCALING) {
+                prepareScaled(workMatrix);
+                CommonOps_DDRM.multRows(rowScales, ResidualVector);
+                workMatrix = ScaledJ;
+            } else if(recalculateScales) {
+                workMatrix.markRefactorize();
+                recalculateScales = false;
+            }
+
+            var deltaX = solver.solve(A0, ResidualVector, false);
             if (deltaX == null)
                 continue;
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
             if (valid) {
-                CommonOps_DDRM.multRows(columnScales, deltaX);
+                if(SCALING)
+                    CommonOps_DDRM.multRows(columnScales, deltaX);
                 StateVector.setTo(deltaX);
             } else {
                 StateVector.zero();
@@ -1146,5 +1195,60 @@ public class ElectricalNetwork implements IStamped {
 
     public enum SolverType {
         DIRECT, BICGSTAB, GMRES
+    }
+
+    private static class ExchangeRow {
+        private final int index;
+        private final DMatrixRMaj changedRow;
+        private final DMatrixRMaj temporaryRow;
+        private final DMatrixRMaj solvedCoefficients;
+        private boolean recalculate;
+
+        public ExchangeRow(int index, DynamicallyTypedMatrix rowSource) {
+            this.index = index;
+            int size = rowSource.getNumRows();
+            changedRow = new DMatrixRMaj(1, size);
+            for(int i = 0; i < size; ++i) {
+                changedRow.unsafe_set(0, i, rowSource.get(index, i));
+            }
+            temporaryRow = new DMatrixRMaj(1, size);
+            solvedCoefficients = new DMatrixRMaj(1, size);
+            recalculate = true;
+        }
+
+        public void update(int index, double change) {
+            changedRow.add(0, index, change);
+            recalculate = true;
+        }
+
+        public boolean solveRow(DynamicallyTypedMatrix A0, boolean force, List<ExchangeRow> allRows) {
+            if(!recalculate && !force)
+                return false;
+            A0.solveRow(changedRow, solvedCoefficients);
+            // Apply rows up to this row (assumes that the collection has fixed ordering)
+            var vec = solvedCoefficients.getData();
+            for(var row : allRows) {
+                if(row == this)
+                    break;
+                var x = vec[row.index] / row.solvedCoefficients.unsafe_get(0, row.index);
+                vec[row.index] = x;
+                for(int i = 0; i < temporaryRow.getNumCols(); ++i) {
+                    if(i == row.index)
+                        continue;
+                    vec[i] -= x * row.solvedCoefficients.unsafe_get(0, i);
+                }
+            }
+            recalculate = false;
+            return true;
+        }
+
+        public void apply(DMatrixRMaj residuals) {
+            double x = residuals.unsafe_get(index, 0);
+            for(int i = 0; i < solvedCoefficients.getNumCols(); ++i) {
+                if(i != index)
+                    x -= residuals.unsafe_get(i, 0) * solvedCoefficients.unsafe_get(0, i);
+            }
+            residuals.unsafe_set(index, 0, x / solvedCoefficients.unsafe_get(0, index));
+        }
     }
 }
