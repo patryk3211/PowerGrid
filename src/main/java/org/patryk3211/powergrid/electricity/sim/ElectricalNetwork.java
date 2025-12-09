@@ -109,7 +109,7 @@ public class ElectricalNetwork implements IStamped {
     public Function<Boolean, Integer> maxIterations = b -> 200;
 
     public ElectricalNetwork(boolean addGMin) {
-        this(addGMin, SolverType.GMRES);
+        this(addGMin, SolverType.DIRECT);
     }
 
     public ElectricalNetwork(boolean addGMin, SolverType solver) {
@@ -300,6 +300,7 @@ public class ElectricalNetwork implements IStamped {
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
         }
+        enableRowExchange = false;
         wire.setNetwork(this);
         wires.add(wire);
         if(wire.isSource())
@@ -348,12 +349,16 @@ public class ElectricalNetwork implements IStamped {
     public void alterConductanceMatrix(int row, int column, double change) {
         if(JacobianKept == null || dirty)
             return;
+        var restore = enableRowExchange;
+        enableRowExchange = false;
         jacobianAdd(row, column, change);
+        enableRowExchange = restore;
     }
 
     public void removeWire(AbstractElectricWire wire) {
         if(!wires.contains(wire))
             return;
+        enableRowExchange = false;
         wires.remove(wire);
         wire.setNetwork(null);
         if(wire.isSource())
@@ -412,6 +417,9 @@ public class ElectricalNetwork implements IStamped {
             if(enableRowExchange) {
                 var e = getOrCreateRow(row);
                 e.update(column, value);
+            } else {
+                A0.add(row, column, value);
+                A0.markRefactorize();
             }
             JacobianKept.add(row, column, value);
             if(ReducedJacobian != null)
@@ -1149,24 +1157,29 @@ public class ElectricalNetwork implements IStamped {
                     convergenceProblems(norm, AuxiliaryVector);
             }
 
-            var rowRecalc = A0.isMarked();
-            for(var row : changedRows) {
-                row.solveRow(A0, rowRecalc, changedRows);
-            }
-            for(int j = changedRows.size() - 1; j >= 0; --j) {
-                changedRows.get(j).apply(ResidualVector);
+            if(enableRowExchange) {
+                var rowRecalc = A0.isMarked();
+                for (var row : changedRows) {
+                    rowRecalc = row.solveRow(A0, rowRecalc, changedRows);
+                }
+                for (int j = changedRows.size() - 1; j >= 0; --j) {
+                    changedRows.get(j).apply(ResidualVector);
+                }
+                workMatrix = A0;
+            } else {
+                workMatrix.markRefactorize();
+                changedRows.clear();
+                A0.setTo(workMatrix);
+                enableRowExchange = true;
             }
 
             if(SCALING) {
                 prepareScaled(workMatrix);
                 CommonOps_DDRM.multRows(rowScales, ResidualVector);
                 workMatrix = ScaledJ;
-            } else if(recalculateScales) {
-                workMatrix.markRefactorize();
-                recalculateScales = false;
             }
 
-            var deltaX = solver.solve(A0, ResidualVector, false);
+            var deltaX = solver.solve(workMatrix, ResidualVector, false);
             if (deltaX == null)
                 continue;
 
