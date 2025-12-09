@@ -333,7 +333,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void updateConductance(AbstractElectricWire wire, double change) {
-        if(JacobianKept == null || dirty || change == 0)
+        if(JacobianKept == null || dirty || Math.abs(change) < G_MIN * 0.1)
             return;
         if(leafNodes.containsKey(wire.node1) || leafNodes.containsKey(wire.node2))
             return;
