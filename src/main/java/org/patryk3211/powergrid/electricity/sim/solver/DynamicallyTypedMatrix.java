@@ -161,6 +161,8 @@ public class DynamicallyTypedMatrix {
             resultMatrix = null;
             solver = null;
             sparse = false;
+        } else if(sparse && to == State.SPARSE) {
+            CommonOps_DSCC.removeZeros((DMatrixSparseCSC) matrix, G_THRESHOLD);
         }
     }
 

@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
+public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
 
     public GraphedElectricalNetwork(boolean addGMin) {
@@ -176,13 +176,19 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         }
     }
 
-    @Override
-    protected boolean canOptimize(INode node) {
-        if(node instanceof IElectricNode enode) {
-            return !graph.hasCouplings(enode);
-        }
-        return super.canOptimize(node);
-    }
+//    @Override
+//    protected boolean canOptimize(INode node) {
+//        if(node instanceof IElectricNode enode) {
+//            if(graph.hasCouplings(enode))
+//                return false;
+//            for(var wire : graph.getWires(enode)) {
+//                if(wire instanceof SwitchedWire)
+//                    return false;
+//            }
+//            return true;
+//        }
+//        return super.canOptimize(node);
+//    }
 
     @Override
     public void addWire(AbstractElectricWire wire) {

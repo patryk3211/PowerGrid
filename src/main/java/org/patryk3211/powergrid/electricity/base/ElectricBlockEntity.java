@@ -60,8 +60,9 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
         return null;
     }
 
-    protected void applyPower(AbstractElectricWire wire) {
-        power += wire.power();
+    protected void applyPower(@Nullable AbstractElectricWire wire) {
+        if(wire != null)
+            power += wire.power();
         if(thermalBehaviour != null)
             thermalBehaviour.applyWirePower(wire);
     }

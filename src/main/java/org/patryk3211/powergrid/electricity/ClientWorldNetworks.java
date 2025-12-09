@@ -50,6 +50,9 @@ public class ClientWorldNetworks extends WorldNetworks {
     }
 
     @Override
+    public void scheduleIslandDiscovery(ElectricalNetwork network) { }
+
+    @Override
     public @Nullable ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, PartId id) {
         var node1 = endpoint1.getNode(world);
         var node2 = endpoint2.getNode(world);

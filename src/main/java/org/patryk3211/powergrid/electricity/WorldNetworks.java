@@ -112,10 +112,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 line.getResistance() > ModdedConfigs.server().electricity.solver.transmissionLineThreshold.getF();
     }
 
+    public void scheduleIslandDiscovery(ElectricalNetwork network) {
+        if(network != null)
+            islandDiscoveryQueue.add(network);
+    }
+
     private void runIslandDiscoveryFor(ElectricalNetwork network) {
         var visited = new HashSet<IElectricNode>();
         var islands = new ArrayList<Island>();
         var couplings = new HashMap<CouplingKey, Set<TransmissionLine>>();
+        if(ModdedConfigs.logsEnabled())
+            PowerGrid.LOGGER.debug("Running island discovery for {}", network);
 
         var queue = new ArrayList<>(network.getNodes());
         queue.addAll(network.getLeafs());

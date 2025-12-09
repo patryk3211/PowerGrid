@@ -302,7 +302,9 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         }
     }
 
-    public void applyWirePower(AbstractElectricWire wire) {
+    public void applyWirePower(@Nullable AbstractElectricWire wire) {
+        if(wire == null)
+            return;
         if(wire.isConverged())
             applyTickPower(wire.power());
     }

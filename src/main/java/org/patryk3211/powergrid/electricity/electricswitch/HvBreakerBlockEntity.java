@@ -33,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
@@ -41,12 +42,14 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
+    @Nullable
     private SwitchedWire wire;
     private ScrollValueBehaviour setting;
 
     protected LerpedFloat charge;
     protected boolean prevState, state;
     private boolean redstoneState;
+    private int splitCooldown;
 
     public HvBreakerBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -91,7 +94,11 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
         var redstone = level.getBestNeighborSignal(worldPosition) > 0;
         if(redstone && !redstoneState && (charge.getValue() == 1 || state)) {
             state = !state;
-            wire.setState(state);
+            if(wire != null) {
+                wire.setState(state);
+            } else {
+                electricBehaviour.rebuildCircuit(false);
+            }
             charge.setValueNoUpdate(state ? 1 : 0);
             (state ? ModdedSoundEvents.BREAKER_ON : ModdedSoundEvents.BREAKER_OFF)
                     .playOnServer(level, worldPosition);
@@ -121,13 +128,19 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
                     .25f, 1.5f);
         }
 
-        if(state && setting.getValue() != 0 && !level.isClientSide && wire.isConverged()) {
-            if(Math.abs(wire.current()) > setting.getValue()) {
-                state = false;
-                wire.setState(false);
-                charge.setValueNoUpdate(0);
-                ModdedSoundEvents.BREAKER_OFF.playOnServer(level, worldPosition);
-                notifyUpdate();
+        if(wire != null) {
+            if (state && setting.getValue() != 0 && !level.isClientSide && wire.isConverged()) {
+                if (Math.abs(wire.current()) > setting.getValue()) {
+                    state = false;
+                    wire.setState(false);
+                    charge.setValueNoUpdate(0);
+                    ModdedSoundEvents.BREAKER_OFF.playOnServer(level, worldPosition);
+                    notifyUpdate();
+                }
+            }
+            if (!state && splitCooldown++ >= 100) {
+                GlobalElectricNetworks.getWorldNetworks(level).scheduleIslandDiscovery(wire.getNetwork());
+                electricBehaviour.rebuildCircuit(false);
             }
         }
     }
@@ -147,13 +160,22 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
         if(compound.contains("Charge"))
             charge.setValueNoUpdate(compound.getCompound("Charge").getFloat("Value"));
         state = compound.getBoolean("State");
-        wire.setState(state);
+        if(wire != null) {
+            wire.setState(state);
+        } else {
+            electricBehaviour.rebuildCircuit(false);
+        }
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        wire = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), state);
+        if(state) {
+            splitCooldown = 0;
+            wire = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), state);
+        } else {
+            wire = null;
+        }
     }
 
     @Override

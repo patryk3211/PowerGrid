@@ -57,6 +57,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     private byte rebuildOnClient = 0;
     private boolean removed = false;
     private boolean paused = true;
+    private boolean reducedSync = false;
 
     private SyncAppender syncAppender;
 
@@ -71,6 +72,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
             var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
             element.buildCircuit(builder);
         }
+    }
+
+    public void reducedSync() {
+        reducedSync = true;
     }
 
     public void joinNetwork(@NotNull ElectricalNetwork network, int externalIndex) {
@@ -408,21 +413,23 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         if(thermal != null) {
             buffer.writeFloat(thermal.getTemperature());
         }
-        for(var node : externalNodes) {
-            if(node.getNetwork() == null) {
-                // Potentially part of a transmission line.
-                var line = lineGetter.apply(node);
-                buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
-            } else {
+            for (var node : externalNodes) {
+                if (node.getNetwork() == null) {
+                    // Potentially part of a transmission line.
+                    var line = lineGetter.apply(node);
+                    buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
+                } else {
+                    buffer.writeFloat((float) node.getStateValue());
+                }
+            }
+        if(!reducedSync) {
+            for (var node : internalNodes) {
                 buffer.writeFloat((float) node.getStateValue());
             }
-        }
-        for(var node : internalNodes) {
-            buffer.writeFloat((float) node.getStateValue());
-        }
-        for(var wire : internalWires) {
-            if(wire instanceof SwitchedWire switched)
-                buffer.writeBoolean(switched.getState());
+            for (var wire : internalWires) {
+                if (wire instanceof SwitchedWire switched)
+                    buffer.writeBoolean(switched.getState());
+            }
         }
         if(syncAppender != null)
             syncAppender.writeToSync(buffer);
@@ -434,15 +441,17 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         if(thermal != null) {
             thermal.setTemperature(buffer.readFloat());
         }
-        for(var node : externalNodes) {
+        for (var node : externalNodes) {
             node.setStateValue(buffer.readFloat());
         }
-        for(var node : internalNodes) {
-            node.setStateValue(buffer.readFloat());
-        }
-        for(var wire : internalWires) {
-            if(wire instanceof SwitchedWire switched)
-                switched.setState(buffer.readBoolean());
+        if(!reducedSync) {
+            for (var node : internalNodes) {
+                node.setStateValue(buffer.readFloat());
+            }
+            for (var wire : internalWires) {
+                if (wire instanceof SwitchedWire switched)
+                    switched.setState(buffer.readBoolean());
+            }
         }
         if(syncAppender != null)
             syncAppender.readFromSync(buffer);

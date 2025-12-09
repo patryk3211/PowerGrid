@@ -34,13 +34,12 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
-    public void calculate(int multiTicks) {
+    public void prepare(int multiTicks) {
         if(optimizerCounter++ >= 5) {
             optimizerCounter = 0;
             optimizerRoutine();
         }
-
-        super.calculate(multiTicks);
+        super.prepare(multiTicks);
     }
 
     @Override
@@ -48,7 +47,7 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
         super.addNode(node);
         if(node instanceof FloatingNode) {
             // Only floating nodes get scores.
-//            optimizerScores.put(node, 10);
+            optimizerScores.put(node, 10);
         } else if(node instanceof ICouplingNode coupling) {
             for(var coupled : coupling.coupledNodes()) {
                 unoptimizeNode(coupled);

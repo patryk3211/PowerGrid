@@ -23,6 +23,7 @@ import org.ejml.dense.row.MatrixFeatures_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.calculation.IStamped;
 import org.patryk3211.powergrid.electricity.sim.node.*;
@@ -422,8 +423,11 @@ public class ElectricalNetwork implements IStamped {
                 A0.markRefactorize();
             }
             JacobianKept.add(row, column, value);
-            if(ReducedJacobian != null)
+            JacobianKept.markRefactorize();
+            if(ReducedJacobian != null) {
                 ReducedJacobian.add(row, column, value);
+                ReducedJacobian.markRefactorize();
+            }
         } else if(!lockEliminated) {
             if(row < eliminatedStart) {
                 JacobianRight.add(row, column - eliminatedStart, value);
@@ -576,13 +580,14 @@ public class ElectricalNetwork implements IStamped {
             WMatrix.convert(ReducedCorrection.getState());
 
             // Prepare reduced jacobian correction matrix.
-            JacobianEliminated.refactorize();
+            JacobianEliminated.markRefactorize();
             JacobianEliminated.solve(JacobianBottom, WMatrix);
             JacobianRight.mult(WMatrix, ReducedCorrection);
 
             JacobianKept.subtract(ReducedCorrection, ReducedJacobian);
             ReducedJacobian.optimize();
 
+            enableRowExchange = false;
             recalculateScales = true;
         }
         eliminatedChanged = false;
@@ -1112,11 +1117,11 @@ public class ElectricalNetwork implements IStamped {
         }
 
         // Verify possession of nodes
-//        for(var node : nodes) {
-//            if(node.getNetwork() != this) {
-//                PowerGrid.LOGGER.warn("INVALID NODE POSSESSION {}", node);
-//            }
-//        }
+        for(var node : nodes) {
+            if(node.getNetwork() != this) {
+                PowerGrid.LOGGER.warn("INVALID NODE POSSESSION {}", node);
+            }
+        }
 
         prepareMatrices(multiTicks);
     }
@@ -1213,7 +1218,6 @@ public class ElectricalNetwork implements IStamped {
     private static class ExchangeRow {
         private final int index;
         private final DMatrixRMaj changedRow;
-        private final DMatrixRMaj temporaryRow;
         private final DMatrixRMaj solvedCoefficients;
         private boolean recalculate;
 
@@ -1224,7 +1228,6 @@ public class ElectricalNetwork implements IStamped {
             for(int i = 0; i < size; ++i) {
                 changedRow.unsafe_set(0, i, rowSource.get(index, i));
             }
-            temporaryRow = new DMatrixRMaj(1, size);
             solvedCoefficients = new DMatrixRMaj(1, size);
             recalculate = true;
         }
@@ -1245,7 +1248,7 @@ public class ElectricalNetwork implements IStamped {
                     break;
                 var x = vec[row.index] / row.solvedCoefficients.unsafe_get(0, row.index);
                 vec[row.index] = x;
-                for(int i = 0; i < temporaryRow.getNumCols(); ++i) {
+                for(int i = 0; i < changedRow.getNumCols(); ++i) {
                     if(i == row.index)
                         continue;
                     vec[i] -= x * row.solvedCoefficients.unsafe_get(0, i);
