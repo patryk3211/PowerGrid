@@ -54,10 +54,16 @@ import static org.patryk3211.powergrid.utility.DataProviderUtility.barrier;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParent;
 
 public class ModdedItems {
+    public static final ItemEntry<WireItem> R_WIRE = REGISTRATE.item("r_wire", WireItem::new)
+            .transform(CWire.set(0.05f, 32, 2.0f, 160))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f))
+            .tag(ModdedTags.Item.WIRES.tag)
+            .register();
+
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
             .transform(CWire.set(0.0015f, 16, 1.0f, 80))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
-            .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
+            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(CWire.set(0.005f, 32, 2.0f, 160))

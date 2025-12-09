@@ -22,6 +22,7 @@ import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.api.contraption.BlockMovementChecks.CheckResult;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
+import com.simibubi.create.content.decoration.encasing.EncasedCTBehaviour;
 import com.simibubi.create.content.decoration.encasing.EncasingRegistry;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
@@ -103,6 +104,8 @@ import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
+import static com.simibubi.create.foundation.data.CreateRegistrate.casingConnectivity;
+import static com.simibubi.create.foundation.data.CreateRegistrate.connectedTextures;
 import static com.simibubi.create.foundation.data.TagGen.*;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -147,6 +150,8 @@ public class ModdedBlocks {
             .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry()))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .onRegister(connectedTextures(() -> new EncasedCTBehaviour(ModdedPartialModels.CONDUCTIVE_CASING)))
+            .onRegister(casingConnectivity((block, cc) -> cc.makeCasing(block, ModdedPartialModels.CONDUCTIVE_CASING)))
             .simpleItem()
             .register();
 

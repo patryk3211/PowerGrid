@@ -15,6 +15,9 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.foundation.block.connected.AllCTTypes;
+import com.simibubi.create.foundation.block.connected.CTSpriteShiftEntry;
+import com.simibubi.create.foundation.block.connected.CTSpriteShifter;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.render.SpriteShiftEntry;
 import net.createmod.catnip.render.SpriteShifter;
@@ -69,6 +72,10 @@ public class ModdedPartialModels {
     public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(
             PowerGrid.asResource("block/plotter_paper"),
             PowerGrid.asResource("block/plotter_paper_shift"));
+    public static final CTSpriteShiftEntry CONDUCTIVE_CASING = CTSpriteShifter.getCT(
+            AllCTTypes.OMNIDIRECTIONAL,
+            PowerGrid.asResource("block/conductive_casing"),
+            PowerGrid.asResource("block/conductive_casing_connected"));
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));
