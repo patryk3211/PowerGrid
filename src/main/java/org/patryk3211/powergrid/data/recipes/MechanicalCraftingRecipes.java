@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
-import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.MechanicalCraftingRecipeGen;
 import net.minecraft.data.PackOutput;
@@ -24,17 +23,19 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
+import static org.patryk3211.powergrid.data.recipes.RecipeTags.*;
+
 @SuppressWarnings("unused")
 public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
     GeneratedRecipe
 
     ELECTRIC_MOTOR = create(ModdedBlocks.ELECTRIC_MOTOR::get)
             .recipe(b -> b
-                    .key('C', ModdedItems.COPPER_COIL)
+                    .key('C', copperCoil())
                     .key('M', ModdedItems.MAGNET)
-                    .key('I', RecipeTags.ironSheet())
-                    .key('S', AllBlocks.SHAFT)
-                    .key('E', RecipeTags.conductiveCasing())
+                    .key('I', ironSheet())
+                    .key('S', shaft())
+                    .key('E', conductiveCasing())
                     .patternLine(" ICI ")
                     .patternLine("CMSMC")
                     .patternLine(" ICI ")
@@ -53,9 +54,9 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
 
     GENERATOR_INDUCTION_ROTOR = create(ModdedBlocks.GENERATOR_INDUCTION_ROTOR::get)
             .recipe(b -> b
-                    .key('A', AllItems.ANDESITE_ALLOY)
-                    .key('M', RecipeTags.copperCoil())
-                    .key('S', AllBlocks.SHAFT)
+                    .key('A', andesiteAlloy())
+                    .key('M', copperCoil())
+                    .key('S', shaft())
                     .patternLine("AMA")
                     .patternLine("MSM")
                     .patternLine("AMA")
@@ -63,12 +64,12 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
 
     GENERATOR_COMMUTATOR = create(ModdedBlocks.GENERATOR_COMMUTATOR::get)
             .recipe(b -> b
-                    .key('A', AllItems.ANDESITE_ALLOY)
-                    .key('S', AllBlocks.SHAFT)
-                    .key('C', AllBlocks.ANDESITE_CASING)
-                    .key('M', RecipeTags.copperSheet())
-                    .key('G', RecipeTags.coal())
-                    .key('N', RecipeTags.copperNugget())
+                    .key('A', andesiteAlloy())
+                    .key('S', shaft())
+                    .key('C', andesiteCasing())
+                    .key('M', copperSheet())
+                    .key('G', coal())
+                    .key('N', copperNugget())
                     .patternLine("N N")
                     .patternLine("GMG")
                     .patternLine("ASA")
@@ -89,11 +90,11 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
     ELECTROZAPPER = create(ModdedItems.ELECTROZAPPER::get)
             .recipe(b -> b
                     .key('G', ModdedItems.ELECTRICAL_GIZMO)
-                    .key('Z', RecipeTags.zincIngot())
-                    .key('C', RecipeTags.copperCoil())
-                    .key('N', RecipeTags.copperNugget())
-                    .key('S', RecipeTags.copperSheet())
-                    .key('A', AllItems.ANDESITE_ALLOY)
+                    .key('Z', zincIngot())
+                    .key('C', copperCoil())
+                    .key('N', copperNugget())
+                    .key('S', copperSheet())
+                    .key('A', andesiteAlloy())
                     .patternLine("GCZZSN")
                     .patternLine(" A    ")
             ),
@@ -101,9 +102,9 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
     ELECTROBATON = create(ModdedItems.ELECTROBATON::get)
             .recipe(b -> b
                     .key('G', ModdedItems.ELECTRICAL_GIZMO)
-                    .key('Z', RecipeTags.zincIngot())
-                    .key('A', AllItems.ANDESITE_ALLOY)
-                    .key('C', RecipeTags.copperCoil())
+                    .key('Z', zincIngot())
+                    .key('A', andesiteAlloy())
+                    .key('C', copperCoil())
                     .patternLine("C")
                     .patternLine("G")
                     .patternLine("Z")
@@ -113,19 +114,19 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
 
     BASIN_HEATER = create(ModdedBlocks.BASIN_HEATER::get)
             .recipe(b -> b
-                    .key('R', RecipeTags.resistiveCoil())
-                    .key('E', RecipeTags.conductiveCasing())
-                    .key('C', RecipeTags.copperSheet())
+                    .key('R', resistiveCoil())
+                    .key('E', conductiveCasing())
+                    .key('C', copperSheet())
                     .patternLine("RRRRR")
                     .patternLine(" C C ")
                     .patternLine(" CEC ")),
 
     CARBON_PILE_COIL = create(ModdedBlocks.CARBON_PILE_COIL::get)
             .recipe(b -> b
-                    .key('C', RecipeTags.copperCoil())
-                    .key('E', RecipeTags.conductiveCasing())
-                    .key('Z', RecipeTags.zincSheet())
-                    .key('I', RecipeTags.ironSheet())
+                    .key('C', copperCoil())
+                    .key('E', conductiveCasing())
+                    .key('Z', zincSheet())
+                    .key('I', ironSheet())
                     .patternLine("  I  ")
                     .patternLine("CCICC")
                     .patternLine(" ZEZ ")),
@@ -133,10 +134,10 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
 
     CRT = create(ModdedBlocks.CRT::get)
             .recipe(b -> b
-                    .key('G', RecipeTags.glass())
-                    .key('C', RecipeTags.copperCoil())
-                    .key('E', RecipeTags.electronTube())
-                    .key('g', RecipeTags.glowstoneDust())
+                    .key('G', glass())
+                    .key('C', copperCoil())
+                    .key('E', electronTube())
+                    .key('g', glowstoneDust())
                     .patternLine("  g  ")
                     .patternLine(" GGG ")
                     .patternLine("CCGCC")

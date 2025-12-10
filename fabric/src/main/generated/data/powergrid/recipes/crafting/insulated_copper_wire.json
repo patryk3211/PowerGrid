@@ -3,7 +3,7 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "powergrid:wire"
+      "tag": "c:copper_wires"
     },
     {
       "item": "minecraft:dried_kelp"

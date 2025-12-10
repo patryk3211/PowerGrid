@@ -9,7 +9,7 @@
       "tag": "forge:plates/iron"
     },
     "W": {
-      "item": "powergrid:iron_wire"
+      "tag": "forge:wires/iron"
     }
   },
   "pattern": [

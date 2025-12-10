@@ -3,7 +3,7 @@
   "acceptMirrored": true,
   "key": {
     "C": {
-      "item": "powergrid:copper_coil"
+      "tag": "forge:copper_coils"
     },
     "E": {
       "item": "powergrid:conductive_casing"

@@ -12,7 +12,7 @@
       "item": "minecraft:quartz"
     },
     "W": {
-      "item": "powergrid:iron_wire"
+      "tag": "c:iron_wires"
     }
   },
   "pattern": [

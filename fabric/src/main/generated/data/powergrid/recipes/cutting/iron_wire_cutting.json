@@ -2,14 +2,14 @@
   "type": "create:cutting",
   "ingredients": [
     {
-      "item": "create:golden_sheet"
+      "tag": "c:iron_plates"
     }
   ],
   "processingTime": 50,
   "results": [
     {
       "count": 4,
-      "item": "powergrid:golden_wire"
+      "item": "powergrid:iron_wire"
     }
   ]
 }
