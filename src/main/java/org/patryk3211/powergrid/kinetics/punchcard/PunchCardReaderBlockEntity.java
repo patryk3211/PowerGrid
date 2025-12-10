@@ -40,6 +40,7 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
 
     public PunchCardReaderBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+        progress.chase(0, 0, LerpedFloat.Chaser.LINEAR);
     }
 
     public ItemStack currentItem() {
