@@ -343,7 +343,7 @@ public class ModdedBlockEntities {
                     .register();
 
     public static final BlockEntityEntry<PunchCardReaderBlockEntity> PUNCH_CARD_READER =
-            REGISTRATE.blockEntity("punch_card_reader", PunchCardReaderBlockEntity::new)
+            REGISTRATE.blockEntity("punch_card_reader", SubstituteBlockEntityProvider.INSTANCE.get(PunchCardReaderBlockEntity.class))
                     .visual(() -> ShaftVisual::new)
                     .validBlock(ModdedBlocks.PUNCH_CARD_READER)
                     .renderer(() -> PunchCardReaderRenderer::new)

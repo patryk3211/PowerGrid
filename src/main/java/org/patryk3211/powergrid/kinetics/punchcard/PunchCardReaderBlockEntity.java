@@ -19,9 +19,13 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
@@ -31,11 +35,15 @@ import java.util.List;
 public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
     private SwitchedWire[] wires;
 
-    private LerpedFloat progress;
+    protected final LerpedFloat progress = LerpedFloat.linear();
     private int oldIndex = -1;
 
     public PunchCardReaderBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+    }
+
+    public ItemStack currentItem() {
+        return ItemStack.EMPTY;
     }
 
     @Override
@@ -44,8 +52,13 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
         electricBehaviour.reducedSync();
     }
 
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return ThermalBehaviour.fromConfig(this);
+    }
+
     private float getChaseSpeed() {
-        return Mth.clamp(Math.abs(getSpeed()) / 80 / 20, 0, 1);
+        return Mth.clamp(Math.abs(getSpeed()) / (80 * 10 * 16), 0, 1);
     }
 
     @Override
@@ -60,17 +73,43 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
-    public void tick() {
-        super.tick();
-
-        progress.tickChaser();
-        var index = Math.round(progress.getValue() * 16);
+    public void electricalTick() {
+        super.electricalTick();
+        for(int i = 0; i < 8; ++i)
+            applyPower(wires[i]);
+        var index = Math.round(progress.getValue() * 15);
         if(index != oldIndex) {
+            var item = currentItem();
+            byte value = 0;
+            if(!item.isEmpty() && item.hasTag()) {
+                var data = item.getTag().getByteArray("Data");
+                if(data.length == 16) {
+                    value = data[index];
+                }
+            }
             for (int i = 0; i < 8; ++i) {
-                wires[i].setState((index & (1 << i)) != 0);
+                wires[i].setState((value & (1 << i)) != 0);
             }
             oldIndex = index;
         }
+    }
+
+    @Override
+    public void tick() {
+        progress.tickChaser();
+        super.tick();
+    }
+
+    @Override
+    protected void read(CompoundTag compound, boolean clientPacket) {
+        super.read(compound, clientPacket);
+        progress.readNBT(compound.getCompound("Progress"), clientPacket);
+    }
+
+    @Override
+    protected void write(CompoundTag compound, boolean clientPacket) {
+        super.write(compound, clientPacket);
+        compound.put("Progress", progress.writeNBT());
     }
 
     @Override

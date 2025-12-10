@@ -20,6 +20,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -35,10 +37,14 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 import org.patryk3211.powergrid.utility.Lang;
 
-public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<PunchCardReaderBlockEntity> {
+import java.util.List;
+
+public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<PunchCardReaderBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private static Component bit(int i) {
@@ -104,5 +110,10 @@ public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<Pu
     @Override
     public BlockEntityType<? extends PunchCardReaderBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.PUNCH_CARD_READER.get();
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Resistance.switchResistance(resistance(), player, tooltip);
     }
 }

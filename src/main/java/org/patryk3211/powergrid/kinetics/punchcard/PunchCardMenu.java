@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 
 public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
     public static PunchCardMenuConstructors CONSTRUCTORS;
-    public final byte[] data = new byte[16];
+    public byte[] data;
 
     public PunchCardMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
@@ -36,6 +36,8 @@ public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
     @Override
     protected void init(Inventory inv, ItemStack stack) {
         super.init(inv, stack);
+        if(data == null)
+            data = new byte[16];
         if(!stack.hasTag())
             return;
         var bytes = stack.getTag().getByteArray("Data");

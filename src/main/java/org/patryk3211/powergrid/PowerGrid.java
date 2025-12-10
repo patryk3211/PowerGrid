@@ -42,6 +42,7 @@ import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingReci
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;
 import org.slf4j.Logger;
@@ -102,6 +103,7 @@ public class PowerGrid {
 		HeaterFanProcessingTypes.register();
 
 		SubstituteBlockEntityProvider.INSTANCE.registerDefault(DeviceConnectorBlockEntity.class, DeviceConnectorBlockEntity::new);
+		SubstituteBlockEntityProvider.INSTANCE.registerDefault(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntity::new);
 		SubstituteBlockEntityProvider.INSTANCE.lock();
 
 		ModdedDisplaySources.register();
