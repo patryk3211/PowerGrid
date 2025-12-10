@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.kinetics.punchcard.forge;
 
+import com.simibubi.create.foundation.item.ItemHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -66,6 +67,19 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity {
                 }
             }
         }
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        capability.invalidate();
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        ItemHelper.dropContents(level, worldPosition, inputInventory);
+        ItemHelper.dropContents(level, worldPosition, outputInventory);
     }
 
     @Override

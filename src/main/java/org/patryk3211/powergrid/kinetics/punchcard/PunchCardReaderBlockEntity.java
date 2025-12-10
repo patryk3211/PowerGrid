@@ -77,7 +77,7 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
         super.electricalTick();
         for(int i = 0; i < 8; ++i)
             applyPower(wires[i]);
-        var index = Math.round(progress.getValue() * 15);
+        var index = Math.min(Mth.floor(progress.getValue() * 16), 15);
         if(index != oldIndex) {
             var item = currentItem();
             byte value = 0;
