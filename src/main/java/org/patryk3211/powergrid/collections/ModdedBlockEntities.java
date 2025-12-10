@@ -74,6 +74,8 @@ import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterRenderer;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderRenderer;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
@@ -338,6 +340,13 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("crt", CRTBlockEntity::new)
                     .validBlocks(ModdedBlocks.CRT, ModdedBlocks.ANDESITE_CRT)
                     .renderer(() -> CRTRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<PunchCardReaderBlockEntity> PUNCH_CARD_READER =
+            REGISTRATE.blockEntity("punch_card_reader", PunchCardReaderBlockEntity::new)
+                    .visual(() -> ShaftVisual::new)
+                    .validBlock(ModdedBlocks.PUNCH_CARD_READER)
+                    .renderer(() -> PunchCardReaderRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

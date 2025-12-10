@@ -57,6 +57,8 @@ import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
+import org.patryk3211.powergrid.kinetics.punchcard.forge.PunchCardMenuImpl;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
@@ -83,6 +85,7 @@ public class PowerGridImpl {
             ProxyProvider.add(TFMGProxy.class, new TFMGProxyImpl());
         }
 
+        PunchCardMenu.CONSTRUCTORS = PunchCardMenuImpl.constructors();
         PowerGrid.init();
 
         TABS.register("main", () -> CreativeModeTab.builder()

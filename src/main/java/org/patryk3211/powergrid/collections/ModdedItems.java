@@ -44,6 +44,7 @@ import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
 
 import java.util.function.Supplier;
 
@@ -201,6 +202,9 @@ public class ModdedItems {
     public static final ItemEntry<MultimeterItem> MULTIMETER = REGISTRATE.item("multimeter", MultimeterItem::new)
             .model(itemWithParent("item/multimeter/base"))
             .transform(customRenderer(() -> MultimeterItemRenderer::new))
+            .register();
+
+    public static final ItemEntry<PunchCardItem> PUNCH_CARD = REGISTRATE.item("punch_card", PunchCardItem::new)
             .register();
 
     @SuppressWarnings("EmptyMethod")

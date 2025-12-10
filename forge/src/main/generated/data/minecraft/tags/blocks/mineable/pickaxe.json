@@ -51,6 +51,7 @@
     "powergrid:carbon_pile_coil",
     "powergrid:carbon_pile",
     "powergrid:crt",
-    "powergrid:andesite_encased_crt"
+    "powergrid:andesite_encased_crt",
+    "powergrid:punch_card_reader"
   ]
 }

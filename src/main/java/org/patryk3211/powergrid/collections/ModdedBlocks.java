@@ -100,6 +100,7 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlock;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlock;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
@@ -722,6 +723,16 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .properties(p -> p.mapColor(MapColor.PODZOL))
             .transform(EncasingRegistry.addVariantTo(CRT))
+            .register();
+
+    public static BlockEntry<PunchCardReaderBlock> PUNCH_CARD_READER = REGISTRATE.block("punch_card_reader", PunchCardReaderBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(horizontalBlock("block/punch_card_reader/block"))
+            .addLayer(() -> RenderType::cutoutMipped)
+            .transform(pickaxeOnly())
+            .item()
+                .model(itemWithParent("block/punch_card_reader/item"))
+                .build()
             .register();
 
     public static void register() {

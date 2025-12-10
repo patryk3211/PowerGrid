@@ -47,6 +47,8 @@ import org.patryk3211.powergrid.collections.fabric.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
+import org.patryk3211.powergrid.kinetics.punchcard.fabric.PunchCardMenuImpl;
 
 public class PowerGridImpl implements ModInitializer {
     public void onInitialize() {
@@ -66,6 +68,7 @@ public class PowerGridImpl implements ModInitializer {
                 PerformanceCommand.PerformanceCounterArgument.class,
                 SingletonArgumentInfo.contextFree(PerformanceCommand.PerformanceCounterArgument::new));
 
+        PunchCardMenu.CONSTRUCTORS = PunchCardMenuImpl.constructors();
         PowerGrid.init();
 
         ModdedSoundEventsImpl.register();
