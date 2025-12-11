@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
 import org.patryk3211.powergrid.network.SimplePacket;
 
@@ -24,19 +26,23 @@ import java.util.function.Supplier;
 
 public class SaveCardC2SPacket implements SimplePacket {
     private final byte[] data;
+    private final String name;
 
-    public SaveCardC2SPacket(byte[] data) {
+    public SaveCardC2SPacket(byte[] data, @NotNull String name) {
         this.data = data;
+        this.name = name;
     }
 
     public SaveCardC2SPacket(FriendlyByteBuf buf) {
         data = new byte[16];
         buf.readBytes(data);
+        name = buf.readUtf(35);
     }
 
     @Override
     public void encode(FriendlyByteBuf buf) {
         buf.writeBytes(data);
+        buf.writeUtf(name);
     }
 
     @Override
@@ -48,6 +54,11 @@ public class SaveCardC2SPacket implements SimplePacket {
             if(!(stack.getItem() instanceof PunchCardItem))
                 return;
             stack.getOrCreateTag().putByteArray("Data", data);
+            if(name.isEmpty()) {
+                stack.resetHoverName();
+            } else {
+                stack.setHoverName(Component.literal(name));
+            }
         });
     }
 }

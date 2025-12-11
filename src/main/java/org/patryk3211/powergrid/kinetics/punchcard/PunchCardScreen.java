@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.kinetics.punchcard;
 
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,7 +36,8 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
     private static final int WIDTH = 226;
     private static final int HEIGHT = 128;
 
-    private PunchCardBigButton accept;
+    private EditBox nameField;
+
     private final List<Particle> particles = new ArrayList<>();
 
     public PunchCardScreen(PunchCardMenu container, Inventory inv, Component title) {
@@ -53,7 +55,16 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
 
         super.init();
 
-        accept = new PunchCardBigButton(leftPos + 201, topPos + 105);
+        var name = menu.contentHolder.getHoverName();
+        nameField = new EditBox(font, leftPos + 60, topPos + 4, 107, 9, Component.empty());
+        nameField.setValue(name.getString());
+        nameField.setTextColor(0xffa6937d);
+        nameField.setTextColorUneditable(0xffa6937d);
+        nameField.setBordered(false);
+        nameField.setMaxLength(35);
+        nameField.setEditable(true);
+
+        var accept = new PunchCardBigButton(leftPos + 201, topPos + 105);
         accept.withCallback(this::onClose);
 
         for(int c = 0; c < 16; ++c) {
@@ -67,6 +78,7 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
             }
         }
 
+        addRenderableWidget(nameField);
         addRenderableWidget(accept);
     }
 
@@ -99,7 +111,10 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
     @Override
     public void onClose() {
         super.onClose();
-        ModdedPackets.sendToServer(new SaveCardC2SPacket(menu.data));
+        var name = nameField.getValue();
+        if(name.equals(menu.contentHolder.getItem().getName(menu.contentHolder).getString()) || name.isEmpty())
+            name = "";
+        ModdedPackets.sendToServer(new SaveCardC2SPacket(menu.data, name));
     }
 
     private static class Particle {
