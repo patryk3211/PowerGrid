@@ -84,7 +84,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double n = idealityFactor;
         double V = potentialDifference();
         var dV = V - prevV;
-        V = prevV + softDelta(dV, 0.8);
+        V = prevV + softDelta(Math.abs(dV), 0.8) * Math.signum(dV);
         prevV = V;
         double I_s1 = reverseSaturationCurrent;
         double E_g = 1.12; // Silicon bandgap energy in eV
