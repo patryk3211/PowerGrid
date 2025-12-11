@@ -47,6 +47,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntit
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 import java.util.Optional;
@@ -932,6 +933,81 @@ public class DeviceScenes {
         scene.electric().addSource(crt, 2, -3.5f);
         scene.idle(120);
 
+        scene.markAsFinished();
+    }
+
+    public static void punchCardReader(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("punch_card_reader", "Punch Cards");
+        scene.configureBasePlate(0, 0, 5);
+
+        var reader = util.grid().at(2, 1, 2);
+        var bulb = util.grid().at(2, 2, 4);
+        var conn1 = util.grid().at(0, 2, 3);
+        var conn2 = util.grid().at(4, 2, 3);
+
+        scene.world().setKineticSpeed(util.select().position(reader), 0);
+
+        scene.world().showSection(util.select().fromTo(0, 0, 0, 4, 0, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(reader), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().fromTo(0, 1, 3, 4, 2, 4), Direction.DOWN);
+        scene.idle(10);
+
+        scene.electric().connect(conn1, 0, bulb, 0);
+        scene.electric().connect(bulb, 1, reader, 1);
+        scene.electric().connect(reader, 0, conn2, 0);
+        scene.electric().addSource(conn1, 0, 125);
+        scene.electric().addSource(conn2, 0, 0);
+        scene.electric().tickForever();
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("The Punch Card Reader is a device that can be used to playback a sequence of signals.")
+                .pointAt(util.vector().blockSurface(reader, Direction.NORTH))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.rotateCameraY(-90);
+        scene.overlay().showText(80)
+                .text("It will connect the common terminal to an output pin when a hole is read from the card.")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+        scene.rotateCameraY(90);
+        scene.idle(20);
+
+        scene.world().showSection(util.select().position(5, 0, 3), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(3, 1, 2, 5, 1, 2), Direction.DOWN);
+        scene.idle(10);
+        scene.world().setKineticSpeed(util.select().position(reader), -128);
+
+        scene.overlay().showText(80)
+                .text("To work, the device needs a kinetic input. Rotation speed controls the read speed.")
+                .pointAt(util.vector().of(3.5, 1.5, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(80)
+                .text("Punch Cards can be inserted manually or automatically.")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(60);
+
+        var card = ModdedItems.PUNCH_CARD.asStack();
+        card.getOrCreateTag().putByteArray("Data", new byte[] { 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0 });
+        scene.overlay()
+                .showControls(util.vector().topOf(reader), Pointing.DOWN, 30)
+                .withItem(card).rightClick();
+
+        scene.idle(20);
+        scene.world().modifyBlockEntity(reader, PunchCardReaderBlockEntity.class,
+                be -> be.insertCard(card, Direction.UP));
+
+        scene.idle(100);
         scene.markAsFinished();
     }
 }

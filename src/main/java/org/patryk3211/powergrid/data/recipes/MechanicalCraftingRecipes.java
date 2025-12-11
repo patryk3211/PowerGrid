@@ -149,6 +149,9 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .key('n', RecipeTags.copperNugget())
                     .key('S', RecipeTags.shaft())
                     .key('G', RecipeTags.smallCog())
+                    .key('Z', RecipeTags.zincSheet())
+                    .key('M', RecipeTags.precisionMechanism())
+                    .patternLine(" ZMZ ")
                     .patternLine("nnCnn")
                     .patternLine(" GSG "))
         ;

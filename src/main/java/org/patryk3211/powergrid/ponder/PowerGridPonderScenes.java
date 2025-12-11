@@ -115,6 +115,8 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.SOCKET, "wire/cord_socket", WireScenes::cordSocket, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.addStoryBoard(ModdedBlocks.CRT, "crt", DeviceScenes::crt, PowerGridPonderTags.ELECTRIC_DEVICES);
+        HELPER.forComponents(ModdedBlocks.PUNCH_CARD_READER, ModdedItems.PUNCH_CARD)
+                .addStoryBoard("punch_cards", DeviceScenes::punchCardReader, PowerGridPonderTags.ELECTRIC_DEVICES, AllCreatePonderTags.KINETIC_APPLIANCES);
 
         HELPER.addStoryBoard(ModdedItems.RESISTOR, "circuit/resistor", CircuitScenes::resistor, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "circuit/voltage", CircuitScenes::voltageGauge, PowerGridPonderTags.CIRCUIT_COMPONENTS);

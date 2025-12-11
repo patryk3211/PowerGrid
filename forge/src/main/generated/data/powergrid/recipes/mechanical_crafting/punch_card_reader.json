@@ -8,14 +8,21 @@
     "G": {
       "item": "create:cogwheel"
     },
+    "M": {
+      "item": "create:precision_mechanism"
+    },
     "S": {
       "item": "create:shaft"
+    },
+    "Z": {
+      "tag": "forge:plates/zinc"
     },
     "n": {
       "tag": "forge:nuggets/copper"
     }
   },
   "pattern": [
+    " ZMZ ",
     "nnCnn",
     " GSG "
   ],

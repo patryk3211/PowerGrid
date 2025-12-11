@@ -125,7 +125,7 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
         wires = new SwitchedWire[8];
         var common = builder.terminalNode(0);
         for(int i = 0; i < 8; ++i) {
-            wires[i] = builder.connectSwitch(resistance(), common, builder.terminalNode(i + 1));
+            wires[i] = builder.connectSwitch(resistance(), common, builder.terminalNode(i + 1), false);
         }
     }
 
