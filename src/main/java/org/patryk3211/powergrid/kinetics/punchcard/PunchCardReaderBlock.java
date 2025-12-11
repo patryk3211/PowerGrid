@@ -20,9 +20,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -30,6 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
@@ -115,5 +119,29 @@ public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<Pu
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.switchResistance(resistance(), player, tooltip);
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return onBlockEntityUse(level, pos, be -> {
+            var side = hit.getDirection();
+            if(side != Direction.UP && side != state.getValue(HORIZONTAL_FACING))
+                return InteractionResult.PASS;
+            var stack = player.getItemInHand(hand);
+            if(stack.isEmpty()) {
+                var extracted = be.extractCard();
+                player.setItemInHand(hand, extracted);
+                return InteractionResult.SUCCESS;
+            } else if(stack.getItem() instanceof PunchCardItem) {
+                if(be.insertCard(stack, side)) {
+                    stack.shrink(1);
+                    return InteractionResult.SUCCESS;
+                } else {
+                    return InteractionResult.FAIL;
+                }
+            } else {
+                return InteractionResult.FAIL;
+            }
+        });
     }
 }

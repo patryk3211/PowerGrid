@@ -20,6 +20,8 @@ import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -75,12 +77,13 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
 
     @Override
     public void electricalTick() {
+        assert level != null;
         super.electricalTick();
         for(int i = 0; i < 8; ++i)
             applyPower(wires[i]);
-        var index = Math.min(Mth.floor(progress.getValue() * 16), 15);
+        var item = currentItem();
+        var index = item.isEmpty() ? -1 : Math.min(Mth.floor(progress.getValue() * 16), 15);
         if(index != oldIndex) {
-            var item = currentItem();
             byte value = 0;
             if(!item.isEmpty() && item.hasTag()) {
                 var data = item.getTag().getByteArray("Data");
@@ -91,6 +94,8 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
             for (int i = 0; i < 8; ++i) {
                 wires[i].setState((value & (1 << i)) != 0);
             }
+            level.playSound(null, worldPosition, SoundEvents.WOODEN_BUTTON_CLICK_OFF,
+                    SoundSource.BLOCKS, 0.25f, 1.5f);
             oldIndex = index;
         }
     }
@@ -104,7 +109,8 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
     @Override
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
-        progress.readNBT(compound.getCompound("Progress"), clientPacket);
+        // Always sync
+        progress.readNBT(compound.getCompound("Progress"), false);
     }
 
     @Override
@@ -121,5 +127,13 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
         for(int i = 0; i < 8; ++i) {
             wires[i] = builder.connectSwitch(resistance(), common, builder.terminalNode(i + 1));
         }
+    }
+
+    public boolean insertCard(ItemStack stack, Direction side) {
+        throw new AssertionError("Implementation dependent");
+    }
+
+    public ItemStack extractCard() {
+        throw new AssertionError("Implementation dependent");
     }
 }

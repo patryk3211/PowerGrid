@@ -730,6 +730,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/punch_card_reader/block"))
             .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
+            .transform(CStress.setImpact(2))
             .transform(CResistance.setResistance(1f))
             .transform(CThermal.maxPower(10, 0.2f))
             .item()
