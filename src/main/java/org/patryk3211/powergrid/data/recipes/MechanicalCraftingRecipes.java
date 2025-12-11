@@ -140,7 +140,16 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine("  g  ")
                     .patternLine(" GGG ")
                     .patternLine("CCGCC")
-                    .patternLine("  E  "))
+                    .patternLine("  E  ")),
+
+    PUNCH_CARD_READER = create(ModdedBlocks.PUNCH_CARD_READER::get)
+            .recipe(b -> b
+                    .key('C', RecipeTags.conductiveCasing())
+                    .key('n', RecipeTags.copperNugget())
+                    .key('S', RecipeTags.shaft())
+                    .key('G', RecipeTags.smallCog())
+                    .patternLine("nnCnn")
+                    .patternLine(" GSG "))
         ;
 
 

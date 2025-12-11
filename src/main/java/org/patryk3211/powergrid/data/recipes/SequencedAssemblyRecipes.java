@@ -61,6 +61,15 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.EMPTY_CIRCUIT))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.DOUGH))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
+            .addStep(PressingRecipe::new, rb -> rb)),
+
+    PUNCH_CARD = create("punch_card", b -> b.require(Items.PAPER)
+            .transitionTo(ModdedItems.INCOMPLETE_PUNCH_CARD)
+            .addOutput(ModdedItems.PUNCH_CARD, 100)
+            .addOutput(Items.PAPER, 5)
+            .addOutput(AllItems.CARDBOARD, 5)
+            .loops(2)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.PAPER))
             .addStep(PressingRecipe::new, rb -> rb))
 
             ;

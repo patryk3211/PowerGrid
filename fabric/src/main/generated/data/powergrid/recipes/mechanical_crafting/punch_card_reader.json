@@ -1,0 +1,25 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "C": {
+      "item": "powergrid:conductive_casing"
+    },
+    "G": {
+      "item": "create:cogwheel"
+    },
+    "S": {
+      "item": "create:shaft"
+    },
+    "n": {
+      "tag": "c:copper_nuggets"
+    }
+  },
+  "pattern": [
+    "nnCnn",
+    " GSG "
+  ],
+  "result": {
+    "item": "powergrid:punch_card_reader"
+  }
+}

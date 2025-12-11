@@ -143,4 +143,8 @@ public class RecipeTags {
     public static ItemLike precisionMechanism() {
         return AllItems.PRECISION_MECHANISM;
     }
+
+    public static ItemLike smallCog() {
+        return AllBlocks.COGWHEEL.get();
+    }
 }

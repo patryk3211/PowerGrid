@@ -170,6 +170,7 @@ public class ModdedItems {
             .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
             .register();
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BATTERY = sequencedIngredient("incomplete_battery");
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_PUNCH_CARD = sequencedIngredient("incomplete_punch_card");
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
             .transform(customRenderer(() -> ElectroZapperItemRenderer::new))
