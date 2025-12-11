@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "C": {
-      "item": "powergrid:copper_coil"
+      "tag": "c:copper_coils"
     },
     "E": {
       "item": "powergrid:conductive_casing"

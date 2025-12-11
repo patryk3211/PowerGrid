@@ -2,14 +2,14 @@
   "type": "create:cutting",
   "ingredients": [
     {
-      "item": "create:copper_sheet"
+      "tag": "forge:plates/gold"
     }
   ],
   "processingTime": 50,
   "results": [
     {
       "count": 4,
-      "item": "powergrid:wire"
+      "item": "powergrid:golden_wire"
     }
   ]
 }

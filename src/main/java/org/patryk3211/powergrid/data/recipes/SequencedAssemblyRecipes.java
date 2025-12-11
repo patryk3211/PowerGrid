@@ -49,7 +49,7 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .addOutput(AllItems.COPPER_NUGGET, 2)
             .addOutput(Items.REPEATER, 3)
             .loops(1)
-            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.COPPER_COIL))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperCoil()))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.ELECTRON_TUBE))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.INTEGRATED_CIRCUIT))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.GOLD_NUGGET))),

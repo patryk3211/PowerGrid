@@ -348,7 +348,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void alterConductanceMatrix(int row, int column, double change) {
-        if(JacobianKept == null || dirty)
+        if(JacobianKept == null || dirty || Math.abs(change) < G_MIN * 0.1)
             return;
         var restore = enableRowExchange;
         enableRowExchange = false;
