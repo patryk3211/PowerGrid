@@ -1,6 +1,5 @@
 {
   "values": [
-    "powergrid:r_wire",
     "powergrid:wire",
     "powergrid:iron_wire",
     "powergrid:golden_wire",
