@@ -159,4 +159,8 @@ public class RecipeTags {
     public static ItemLike smallCog() {
         return AllBlocks.COGWHEEL.get();
     }
+
+    public static ItemLike quartz() {
+        return Items.QUARTZ;
+    }
 }

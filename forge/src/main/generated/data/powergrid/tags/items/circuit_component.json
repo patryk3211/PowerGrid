@@ -3,6 +3,7 @@
     "powergrid:potentiometer",
     "powergrid:neon_bulb",
     "powergrid:current_gauge",
+    "powergrid:barretter_tube",
     "powergrid:copper_coil",
     "create:electron_tube",
     "powergrid:relay",

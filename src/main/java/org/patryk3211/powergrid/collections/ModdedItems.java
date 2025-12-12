@@ -153,6 +153,7 @@ public class ModdedItems {
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
     public static final ItemEntry<Item> REGULATOR_TUBE = ingredient("regulator_tube");
     public static final ItemEntry<Item> NEON_BULB = ingredient("neon_bulb");
+    public static final ItemEntry<Item> BARRETTER_TUBE = ingredient("barretter_tube");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");

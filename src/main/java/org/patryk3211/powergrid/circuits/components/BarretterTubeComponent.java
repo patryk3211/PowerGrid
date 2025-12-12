@@ -21,48 +21,56 @@ import com.simibubi.create.foundation.render.RenderTypes;
 import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
+import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.special.BarretterWire;
 
-public class LightBulbComponent extends OrientableComponent implements IRenderedComponent, IGoggleLabel {
-    public LightBulbComponent(ComponentFootprint footprint) {
+import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
+
+public class BarretterTubeComponent extends OrientableComponent implements IRenderedComponent {
+    public static final FloatProperty MINIMUM_RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "barretter_resistance", 10, 10, 1000);
+    public static final FloatProperty HOLDING_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "barretter_current", 0.1f, 0.01f, 2);
+
+    public BarretterTubeComponent(ComponentFootprint footprint) {
         super(footprint);
     }
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(LABEL, voltage(12), power(3f));
+        properties.add(HOLDING_CURRENT, MINIMUM_RESISTANCE, power(50));
     }
 
     @Override
-    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var wire = new ElectricWire(20f, builder.terminalNode(0), builder.terminalNode(1));
-        builder.add(wire);
-        placed.add(wire);
+    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, @NotNull ThermalBuilder.IEmitter thermals) {
+        final var Ih = placed.get(HOLDING_CURRENT);
+        final var Rmin = placed.get(MINIMUM_RESISTANCE);
+        var tube = new BarretterWire(Ih, Rmin, builder.terminalNode(0), builder.terminalNode(1));
+        builder.add(tube);
 
-        final float R_max = 12 * 12 / 3.0f;
+        placed.add(tube);
+
         var data = new FloatPair();
         placed.customData = data;
+
+        final var operatingTemperature = 1400f;
+        final var dissipationFactor = 50 / (operatingTemperature - BASE_TEMPERATURE);
         thermals.builder()
-                .addHeatSource(wire)
-                .setThermalMass(0.001f)
-                .setMaxPower(3.0f, 1450f)
+                .addHeatSource(tube)
+                .setThermalMass(0.05f)
                 .setOverheatTemperature(1850f)
-                .withTemperatureCallback(T -> {
-                    wire.setResistance(20f + (R_max - 20f) / 1450f * T);
-                    var x = Mth.clamp((T - 600f) / (1400f - 600f), 0, 1);
-                    data.current = x * x;
-                });
+                .setDissipationFactor(dissipationFactor)
+                .withTemperatureCallback(T ->
+                    data.current = Mth.clamp((T - 600f) / (1400f - 600f), 0, 1));
     }
 
     @Override
@@ -75,26 +83,17 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
 
     @Override
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
-        // Render the bulb here to avoid adding all circuit board quads to cutout layer.
-        var bulb = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_BULB, be.getBlockState());
-        bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
-
         int a = 0;
-        if(placed.customData instanceof FloatPair temps) {
-            a = (int) (temps.lerped(partialTicks) * 128);
+        if(placed.customData instanceof FloatPair data) {
+            a = (int) (data.lerped(partialTicks) * 64);
         }
-        var center = 1.5f / 16f;
-        var orientation = placed.get(ORIENTATION);
-        if(a != 0) {
-            var buffer = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_GLOW, be.getBlockState());
-            buffer
-                    .disableDiffuse()
-                    .color(a, a, a, 255)
-                    .light(LightTexture.FULL_BRIGHT)
-                    .translate(center, center, center)
-                    .rotateYDegrees(orientation.ordinal() * 90)
-                    .translateBack(center, center, center)
-                    .renderInto(ms, bufferSource.getBuffer(RenderTypes.additive()));
-        }
+        if(a == 0)
+            return;
+        var buffer = CachedBuffers.partial(ModdedPartialModels.BARRETTER_GLOW, be.getBlockState());
+        buffer
+                .disableDiffuse()
+                .color(a, a, a, 255)
+                .light(LightTexture.FULL_BRIGHT)
+                .renderInto(ms, bufferSource.getBuffer(RenderTypes.additive()));
     }
 }

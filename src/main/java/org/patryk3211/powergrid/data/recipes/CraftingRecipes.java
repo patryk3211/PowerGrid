@@ -351,6 +351,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('G', glowstoneDust())
                     .define('I', ironSheet())),
 
+    BARRETTER_TUBE = create(ModdedItems.BARRETTER_TUBE)
+            .unlockedBy(() -> Items.QUARTZ)
+            .viaShaped(b -> b
+                    .pattern("Q")
+                    .pattern("I")
+                    .pattern("P")
+                    .define('Q', quartz())
+                    .define('I', ironWire())
+                    .define('P', ironSheet())),
+
     POTENTIOMETER = create(ModdedItems.POTENTIOMETER)
             .unlockedBy(() -> ModdedItems.RESISTOR)
             .viaShaped(b -> b

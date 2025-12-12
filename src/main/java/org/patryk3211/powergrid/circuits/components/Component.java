@@ -22,6 +22,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -151,5 +152,17 @@ public abstract class Component {
         if(placed.y == 16 - placed.footprint().getHeight())
             return Orientation.DOWN;
         return null;
+    }
+
+    public static void renderDataTick(@NotNull PlacedComponent placed) {
+        placed.data(FloatPair.class).ifPresent(data -> data.prev = data.current);
+    }
+
+    public static class FloatPair {
+        float prev, current;
+
+        public float lerped(float partial) {
+            return Mth.lerp(partial, prev, current);
+        }
     }
 }

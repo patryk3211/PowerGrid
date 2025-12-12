@@ -166,6 +166,7 @@ public class PowerGridImpl {
             provideDefaultLang("interface", langConsumer);
             provideDefaultLang("messages", langConsumer);
             provideDefaultLang("tooltips", langConsumer);
+            provideDefaultLang("components", langConsumer);
 
             providePonderLang(langConsumer);
             ModdedSoundEvents.provideLang(langConsumer);

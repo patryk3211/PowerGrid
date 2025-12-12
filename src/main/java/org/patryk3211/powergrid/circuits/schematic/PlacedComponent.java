@@ -31,6 +31,7 @@ import org.patryk3211.powergrid.network.packets.UpdateComponentBiPacket;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -260,5 +261,16 @@ public class PlacedComponent {
 
     public BlockPos getPos() {
         return pos;
+    }
+
+    public <T> T data() {
+        return (T) customData;
+    }
+
+    public <T> Optional<T> data(Class<T> type) {
+        if(type.isInstance(customData)) {
+            return Optional.of((T) customData);
+        }
+        return Optional.empty();
     }
 }

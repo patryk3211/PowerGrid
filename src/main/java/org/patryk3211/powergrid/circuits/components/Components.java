@@ -48,6 +48,14 @@ public class Components {
             .item(ModdedItems.REGULATOR_TUBE)
             .register();
 
+    public static final RegistryEntry<BarretterTubeComponent> BARRETTER_TUBE = REGISTRATE.component("barretter_tube", BarretterTubeComponent::new)
+            .footprint(2, 2, b -> b
+                    .addPad(0, 0, 0)
+                    .addPad(1, 1, 1)
+                    .withItem().withOutline())
+            .item(ModdedItems.BARRETTER_TUBE)
+            .register();
+
     public static final RegistryEntry<NeonBulbComponent> NEON_BULB = REGISTRATE.component("neon_bulb", NeonBulbComponent::new)
             .footprint(2, 2, b -> b
                     .addPad(0, 0, 0)
