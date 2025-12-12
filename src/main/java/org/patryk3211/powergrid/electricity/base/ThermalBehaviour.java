@@ -213,7 +213,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
 
         var world = getWorld();
         var pos = getPos();
-        if(!world.isClientSide) {
+        if(!world.isClientSide || blockEntity.isVirtual()) {
             var tracked = trackedBehaviour != null ? get(world, trackedBehaviour, TYPE) : null;
             if (tracked != null) {
                 this.temperature = tracked.temperature;

@@ -152,7 +152,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     public void tick() {
         super.tick();
         if(recalculateStress) {
-            if(hasNetwork() && (!level.isClientSide || isVirtual())) {
+            if(hasNetwork() && !level.isClientSide) {
                 var network = getOrCreateNetwork();
                 network.updateStressFor(this, calculateStressApplied());
                 network.updateCapacityFor(this, calculateAddedStressCapacity());

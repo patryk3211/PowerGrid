@@ -155,7 +155,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 wires.forEach(TransmissionLinePart::refreshEndpointNodes);
             }
         }
-        if(!level.isClientSide) {
+        if(!level.isClientSide || isVirtual()) {
             float totalField = 0;
             if (source != null) {
                 for (var rotor : rotors) {

@@ -286,7 +286,7 @@ public class GeneratorScenes {
                 .attachKeyFrame();
         scene.idle(60);
         scene.world().modifyBlockEntityNBT(util.select().fromTo(4, 1, 3, 6, 2, 4), WindingBlockEntity.class,
-                tag -> tag.putFloat("Field", 3.0f));
+                tag -> tag.putFloat("Current", 2.0f));
         scene.electric().tickFor(60);
         scene.idle(60);
         scene.effects().indicateSuccess(meter);
