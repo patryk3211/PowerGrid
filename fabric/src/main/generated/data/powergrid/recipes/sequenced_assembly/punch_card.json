@@ -1,7 +1,7 @@
 {
   "type": "create:sequenced_assembly",
   "ingredient": {
-    "item": "minecraft:paper"
+    "item": "create:cardboard"
   },
   "loops": 2,
   "results": [

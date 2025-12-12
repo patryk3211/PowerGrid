@@ -63,7 +63,7 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
             .addStep(PressingRecipe::new, rb -> rb)),
 
-    PUNCH_CARD = create("punch_card", b -> b.require(Items.PAPER)
+    PUNCH_CARD = create("punch_card", b -> b.require(AllItems.CARDBOARD)
             .transitionTo(ModdedItems.INCOMPLETE_PUNCH_CARD)
             .addOutput(ModdedItems.PUNCH_CARD, 100)
             .addOutput(Items.PAPER, 5)
