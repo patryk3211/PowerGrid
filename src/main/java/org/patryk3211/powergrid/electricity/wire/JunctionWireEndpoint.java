@@ -116,6 +116,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             if(entity.level().isClientSide)
                 return;
             // Two holders remaining, we can merge them.
+            entry.lock();
             BlockWireEntity wire1 = null, wire2 = null;
             for(var holder : entry.holders) {
                 if(wire1 == null) {
@@ -204,7 +205,10 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             var worldNodeMap = JUNCTION_NODES.get(world);
             if(worldNodeMap == null)
                 return null;
-            return worldNodeMap.nodes.get(id);
+            var entry = worldNodeMap.nodes.get(id);
+            if(entry == null || entry.locked)
+                return null;
+            return entry;
         }
     }
 
@@ -271,6 +275,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         public final OwnedFloatingNode node;
         public final Set<BaseWireEntity> holders = new HashSet<>();
         private final UUID id;
+        private boolean locked = false;
 
         public NodeEntry(IWireEndpoint endpoint, UUID id) {
             node = new OwnedFloatingNode(endpoint);
@@ -299,6 +304,10 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         @Override
         public StateS2CPacket.Key getKey() {
             return new StateS2CPacket.UUIDKey(id);
+        }
+
+        public void lock() {
+            locked = true;
         }
     }
 

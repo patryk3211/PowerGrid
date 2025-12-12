@@ -332,8 +332,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             syncStates.computeIfAbsent(player, $ -> new HashMap<>())
                                     .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
                         } else if(endpoint instanceof JunctionWireEndpoint je) {
-                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
-                                    .put(je.makeSyncEntry(world), new SyncState((int) (je.getExactPosition(world).distanceTo(player.position()) / 16 + 1)));
+                            var syncEntry = je.makeSyncEntry(world);
+                            if(syncEntry != null)
+                                syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                        .put(syncEntry, new SyncState((int) (je.getExactPosition(world).distanceTo(player.position()) / 16 + 1)));
                         }
                     }
                 }
