@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.kinetics.plotter;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import net.createmod.catnip.animation.AnimationTickHolder;
-import net.createmod.catnip.math.VecHelper;
 import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -49,10 +48,17 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
         var dest = new Vector3d();
         GRAPH_ROTATION.transform(v * VOLTAGE_SPAN * 0.5f, t * TIME_SPAN, 0, dest);
         var out = new Vec3(
-                dest.x + pos.getX() + GRAPH_ORIGIN.x,
-                dest.y + pos.getY() + GRAPH_ORIGIN.y,
-                dest.z + pos.getZ() + GRAPH_ORIGIN.z);
-        return VecHelper.rotateCentered(out, (2 - facing.get2DDataValue()) * 180, Direction.Axis.Y);
+                dest.x + GRAPH_ORIGIN.x,
+                dest.y + GRAPH_ORIGIN.y,
+                dest.z + GRAPH_ORIGIN.z);
+        out = switch(facing) {
+            case NORTH -> out;
+            case SOUTH -> new Vec3(out.x, out.y, 1 - out.z);
+            case EAST -> new Vec3(1 - out.z, out.y, out.x);
+            case WEST -> new Vec3(out.z, out.y, 1 - out.x);
+            default -> Vec3.ZERO;
+        };
+        return out.add(pos.getX(), pos.getY(), pos.getZ());
     }
 
     @Override
