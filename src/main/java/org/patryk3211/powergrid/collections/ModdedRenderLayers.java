@@ -48,8 +48,8 @@ public class ModdedRenderLayers {
                     .createCompositeState(false)
     );
 
-    private static final RenderType ADDITIVE_COLOR = RenderType.create(
-            "powergrid_additive_color",
+    private static final RenderType ADDITIVE_CRT = RenderType.create(
+            "powergrid_additive_crt",
             DefaultVertexFormat.POSITION_COLOR,
             VertexFormat.Mode.TRIANGLES,
             256,
@@ -59,6 +59,20 @@ public class ModdedRenderLayers {
                     .setCullState(RenderStateShard.NO_CULL)
                     .setTransparencyState(RenderStateShard.ADDITIVE_TRANSPARENCY)
                     .setWriteMaskState(RenderStateShard.COLOR_WRITE)
+                    .setOutputState(RenderStateShard.PARTICLES_TARGET)
+                    .createCompositeState(false)
+    );
+
+    private static final RenderType ADDITIVE_COLOR = RenderType.create(
+            "powergrid_additive_color",
+            DefaultVertexFormat.POSITION_COLOR,
+            VertexFormat.Mode.QUADS,
+            256,
+            false, false,
+            RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
+                    .setCullState(RenderStateShard.NO_CULL)
+                    .setTransparencyState(RenderStateShard.ADDITIVE_TRANSPARENCY)
                     .setOutputState(RenderStateShard.PARTICLES_TARGET)
                     .createCompositeState(false)
     );
@@ -80,6 +94,10 @@ public class ModdedRenderLayers {
 
     public static RenderType getColor() {
         return COLOR;
+    }
+
+    public static RenderType getAdditiveCrt() {
+        return ADDITIVE_CRT;
     }
 
     public static RenderType getAdditiveColor() {

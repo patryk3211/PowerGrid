@@ -29,20 +29,21 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.config.CWire;
-import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.light.bulb.LvLightBulb;
-import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
-import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
-import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
+import org.patryk3211.powergrid.electricity.wire.powercord.StringLightCordItem;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
+import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
+import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
+import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
 
@@ -77,6 +78,10 @@ public class ModdedItems {
     public static final ItemEntry<CordItem> CORD = REGISTRATE.item("copper_cord", CordItem::new)
             .transform(CWire.set(0.0015f, 8, 2.0f, 60))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f, true))
+            .register();
+    public static final ItemEntry<StringLightCordItem> STRING_LIGHT_CORD = REGISTRATE.item("string_light_cord", StringLightCordItem::new)
+            .transform(CWire.set(0.0015f, 8, 2.0f, 60))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f))
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)

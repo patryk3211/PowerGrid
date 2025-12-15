@@ -46,7 +46,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.fabric.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.fabric.PunchCardMenuImpl;
@@ -79,7 +79,7 @@ public class PowerGridImpl implements ModInitializer {
         PowerGrid.REGISTRATE.addLang("itemGroup", PowerGrid.asResource("main"), "Power Grid");
 
         // Register platform events
-        ServerEntityEvents.ENTITY_UNLOAD.register(WireEntity::entityUnload);
+        ServerEntityEvents.ENTITY_UNLOAD.register(BaseWireEntity::entityUnload);
         ServerChunkEvents.CHUNK_LOAD.register(PowerGridImpl::chunkLoad);
         CommandRegistrationEvent.EVENT.register(ModdedCommands::register);
     }

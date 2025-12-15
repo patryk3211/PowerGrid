@@ -670,6 +670,22 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Nullable
+    public ElectricWire makeSimpleWire(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
+        var network = prepareForConnection(endpoint1, endpoint2);
+        if(network == null)
+            return null;
+
+        var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
+
+        var wire = new ElectricWire(resistance, node1, node2);
+        network.addWire(wire);
+
+        setDirty();
+        return wire;
+    }
+
+    @Nullable
     public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, PartId id) {
         add(endpoint1);
         add(endpoint2);

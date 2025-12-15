@@ -27,6 +27,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -64,7 +65,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
 
     @NotNull
     private WireItem item;
-    private int itemCount;
+    protected int itemCount;
     private int color;
 
     protected float overheatTemperature = 175f;
@@ -463,5 +464,12 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         if(item.canBeColored())
             return color;
         return -1;
+    }
+
+    protected abstract void unloaded();
+
+    public static void entityUnload(Entity entity, ServerLevel world) {
+        if(entity instanceof BaseWireEntity wire)
+            wire.unloaded();
     }
 }

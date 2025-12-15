@@ -39,6 +39,7 @@ import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
@@ -53,8 +54,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     public Vec3 terminalPos1;
     public Vec3 terminalPos2;
 
-    private ElectricWire wire1;
-    private ElectricWire wire2;
+    protected ElectricWire wire1;
+    protected ElectricWire wire2;
 
     public Object renderParams;
     private boolean particlesSpawned;
@@ -166,17 +167,13 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
     @Override
     public void makeWire() {
-        // Client doesn't make a wire, connections are handled differently.
-        var world = level();
-//        if(world.isClientSide && !(world instanceof PonderLevel))
-//            return;
-
         dropWire();
 
         // Cannot make a wire unless both endpoints are valid.
         if(endpoint1 == null || endpoint2 == null)
             return;
 
+        var world = level();
         if(!endpoint1.isValid(world) || !endpoint2.isValid(world))
             return;
 
@@ -393,5 +390,22 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             }
         }
         return null;
+    }
+
+    @Override
+    protected void unloaded() {
+        if(wire1 instanceof TransmissionLinePart part1 && wire2 instanceof TransmissionLinePart part2) {
+            var reason = getRemovalReason();
+            if(reason != null && reason.shouldDestroy()) {
+                dropWire();
+            } else {
+                part1.unload();
+                part2.unload();
+                wire1 = null;
+                wire2 = null;
+            }
+        } else {
+            dropWire();
+        }
     }
 }

@@ -22,11 +22,11 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.utility.Lang;
@@ -43,8 +43,19 @@ public class CordItem extends WireItem {
         PLACEMENT_HANDLERS.add(new IAcceptCord.Handler());
     }
 
+    public interface CordEntityFactory {
+        CordEntity create(ServerLevel level, ICordEndpoint endpoint1, ICordEndpoint endpoint2, ItemStack items, @Nullable Float resistance);
+    }
+
+    private final CordEntityFactory factory;
+
     public CordItem(Properties settings) {
+        this(settings, CordEntity::create);
+    }
+
+    public CordItem(Properties settings, CordEntityFactory factory) {
         super(settings);
+        this.factory = factory;
     }
 
     private static InteractionResult connect(ICordEndpoint endpoint1, ICordEndpoint endpoint2, UseOnContext context) {
@@ -101,8 +112,8 @@ public class CordItem extends WireItem {
         var terminal2Pos = endpoint2.getExactPosition(level);
 
         var stack = context.getItemInHand();
-        assert stack.getItem() instanceof IWire;
-        var item = (IWire) stack.getItem();
+        assert stack.getItem() instanceof CordItem;
+        var item = (CordItem) stack.getItem();
         var tag = stack.getTag();
         assert tag != null;
 
@@ -123,7 +134,8 @@ public class CordItem extends WireItem {
             return InteractionResult.SUCCESS;
         ServerLevel serverWorld = (ServerLevel) level;
 
-        var entity = CordEntity.create(serverWorld, endpoint1, endpoint2, new ItemStack(stack.getItemHolder(), requiredItemCount), null);
+        var entity = item.factory.create(serverWorld, endpoint1, endpoint2,
+                new ItemStack(stack.getItemHolder(), requiredItemCount), null);
 
         if(context.getPlayer() != null) {
             var offItem = context.getPlayer().getOffhandItem();

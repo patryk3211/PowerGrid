@@ -118,6 +118,10 @@ public class GlobalElectricNetworks {
         return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity, id);
     }
 
+    public static ElectricWire makeSimpleConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
+        return getWorldNetworks(world).makeSimpleWire(endpoint1, endpoint2, resistance);
+    }
+
     private static Component display(IElectricNode node) {
         MutableComponent line;
         if(node instanceof OwnedFloatingNode ofn) {

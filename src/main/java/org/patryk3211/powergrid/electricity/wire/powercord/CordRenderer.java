@@ -38,14 +38,14 @@ import org.patryk3211.powergrid.electricity.wire.CurveParameters;
 import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.renderSegment;
 
 @Environment(EnvType.CLIENT)
-public class CordRenderer extends EntityRenderer<CordEntity> {
+public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
     public CordRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
     }
 
     @NotNull
     @Override
-    public ResourceLocation getTextureLocation(CordEntity entity) {
+    public ResourceLocation getTextureLocation(T entity) {
         return entity.getWireItem().getWireTexture();
     }
 
@@ -66,8 +66,12 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                 .renderInto(matrices, consumers.getBuffer(RenderType.solid()));
     }
 
+    protected void segmentRenderHook(T entity, PoseStack matrices, MultiBufferSource vertexConsumers,
+                                     float x1, float y1, float z1, float x2, float y2, float z2,
+                                     float offset, float length, boolean first, boolean last, int light) { }
+
     @Override
-    public void render(CordEntity entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
+    public void render(T entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
         if(entity.renderParams == null)
             return;
 
@@ -75,7 +79,6 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
             // Don't render since it's dead and only there to spawn particles.
             return;
 
-        var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
         assert entity.renderParams instanceof CurveParameters;
         CurveParameters rp = (CurveParameters) entity.renderParams;
 
@@ -87,6 +90,7 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
         var pos = entity.position();
         var world = entity.level();
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length, first, last) -> {
+            var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
             var sky = world.getBrightness(LightLayer.SKY, blockPos);
             var block = world.getBrightness(LightLayer.BLOCK, blockPos);
@@ -178,6 +182,7 @@ public class CordRenderer extends EntityRenderer<CordEntity> {
                     }
                 }
             }
+            segmentRenderHook(entity, matrices, vertexConsumers, x1, y1, z1, x2, y2, z2, offset, length, first, last, currentLight);
             renderSegment(matrices, vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity))),
                     x1, y1, z1,
                     x2, y2, z2,

@@ -49,7 +49,7 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
         final int R = ModdedConfigs.client().crtRed.get(),
                 G = ModdedConfigs.client().crtGreen.get(),
                 B = ModdedConfigs.client().crtBlue.get();
-        var consumer = buffer.getBuffer(ModdedRenderLayers.getAdditiveColor());
+        var consumer = buffer.getBuffer(ModdedRenderLayers.getAdditiveCrt());
 
         ms.pushPose();
         ms.rotateAround(new Quaternionf().rotateY(0.5f * (float) Math.PI * (2 - facing.get2DDataValue())), 0.5f, 0.5f, 0.5f);

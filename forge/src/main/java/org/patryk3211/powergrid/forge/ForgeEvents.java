@@ -22,13 +22,13 @@ import net.minecraftforge.event.level.ChunkTicketLevelUpdatedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.wire.WireEntity;
+import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 
 public class ForgeEvents {
     @SubscribeEvent
     public static void entityUnloadEvent(EntityLeaveLevelEvent event) {
         if(event.getLevel() instanceof ServerLevel world) {
-            WireEntity.entityUnload(event.getEntity(), world);
+            BaseWireEntity.entityUnload(event.getEntity(), world);
         }
     }
 
