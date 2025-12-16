@@ -311,6 +311,8 @@
   "powergrid.gui.plotter.header": "Voltage at T-",
   "powergrid.gui.potentiometer.setting": "Setting",
   "powergrid.gui.power_meter.title": "Measured power",
+  "powergrid.gui.punch_card.author": "by ",
+  "powergrid.gui.punch_card.sign": "Sign",
   "powergrid.gui.rheostat.info_header": "Rheostat information",
   "powergrid.gui.rheostat.ratio": "Resistance ratio",
   "powergrid.gui.switch.overvolted": "This switch has been overvolted",

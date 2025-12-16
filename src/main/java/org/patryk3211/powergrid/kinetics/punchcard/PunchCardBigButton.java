@@ -22,8 +22,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 
 public class PunchCardBigButton extends AbstractSimiWidget {
-    public PunchCardBigButton(int x, int y) {
+    private final int u, v;
+
+    public PunchCardBigButton(int x, int y, int u, int v) {
         super(x, y, 18, 18);
+        this.u = u;
+        this.v = v;
     }
 
     @Override
@@ -33,11 +37,11 @@ public class PunchCardBigButton extends AbstractSimiWidget {
 
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             if(isHovered && AllKeys.isMouseButtonDown(0)) {
-                graphics.blit(PunchCardScreen.BACKGROUND, getX(), getY(), 228, 37, 18, 18);
+                graphics.blit(PunchCardScreen.BACKGROUND, getX(), getY(), u, v, 18, 18);
             } else if(isHovered) {
-                graphics.blit(PunchCardScreen.BACKGROUND, getX(), getY(), 228, 75, 18, 18);
+                graphics.blit(PunchCardScreen.BACKGROUND, getX(), getY(), u, v + 38, 18, 18);
             } else {
-                graphics.blit(PunchCardScreen.BACKGROUND, getX(), getY(), 228, 56, 18, 18);
+                graphics.blit(PunchCardScreen.BACKGROUND, getX(), getY(), u, v + 19, 18, 18);
             }
         }
     }

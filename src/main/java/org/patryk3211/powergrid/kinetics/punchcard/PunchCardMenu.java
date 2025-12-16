@@ -44,6 +44,18 @@ public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
         System.arraycopy(bytes, 0, data, 0, Math.min(data.length, bytes.length));
     }
 
+    public boolean isLocked() {
+        if(!contentHolder.hasTag())
+            return false;
+        return contentHolder.getTag().getBoolean("Locked");
+    }
+
+    public String getAuthor() {
+        if(!contentHolder.hasTag())
+            return "";
+        return contentHolder.getTag().getString("Author");
+    }
+
     @Override
     protected boolean allowRepeats() {
         return false;

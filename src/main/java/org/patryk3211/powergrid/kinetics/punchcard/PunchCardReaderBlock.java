@@ -61,17 +61,17 @@ public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<Pu
     private static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.COMMON, 7, 12, 11, 9, 14, 13),
 
-            new TerminalBoundingBox(bit(0), 4, 11.5, 12, 6, 13.5, 13.5),
-            new TerminalBoundingBox(bit(1), 10, 11.5, 12, 12, 13.5, 13.5),
+            new TerminalBoundingBox(bit(1), 4, 11.5, 12, 6, 13.5, 13.5),
+            new TerminalBoundingBox(bit(2), 10, 11.5, 12, 12, 13.5, 13.5),
 
-            new TerminalBoundingBox(bit(2), 4, 8.75, 13, 6, 10.75, 14.5),
-            new TerminalBoundingBox(bit(3), 10, 8.75, 13, 12, 10.75, 14.5),
+            new TerminalBoundingBox(bit(3), 4, 8.75, 13, 6, 10.75, 14.5),
+            new TerminalBoundingBox(bit(4), 10, 8.75, 13, 12, 10.75, 14.5),
 
-            new TerminalBoundingBox(bit(4), 4, 6, 14, 6, 8, 15.5),
-            new TerminalBoundingBox(bit(5), 10, 6, 14, 12, 8, 15.5),
+            new TerminalBoundingBox(bit(5), 4, 6, 14, 6, 8, 15.5),
+            new TerminalBoundingBox(bit(6), 10, 6, 14, 12, 8, 15.5),
 
-            new TerminalBoundingBox(bit(6), 4, 3, 15, 6, 5, 16.5),
-            new TerminalBoundingBox(bit(7), 10, 3, 15, 12, 5, 16.5),
+            new TerminalBoundingBox(bit(7), 4, 3, 15, 6, 5, 16.5),
+            new TerminalBoundingBox(bit(8), 10, 3, 15, 12, 5, 16.5),
     };
 
     private static final VoxelShape SHAPE = Shapes.or(

@@ -18,6 +18,8 @@ package org.patryk3211.powergrid.kinetics.punchcard;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -26,8 +28,10 @@ import org.joml.Quaternionf;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.SaveCardC2SPacket;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -62,24 +66,60 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
         nameField.setTextColorUneditable(0xffa6937d);
         nameField.setBordered(false);
         nameField.setMaxLength(35);
-        nameField.setEditable(true);
 
-        var accept = new PunchCardBigButton(leftPos + 201, topPos + 105);
+        var accept = new PunchCardBigButton(leftPos + 201, topPos + 105, 1, 130);
         accept.withCallback(this::onClose);
+
+        addRenderableWidgets(nameField, accept);
+
+        var lock = menu.isLocked();
+        if(!lock) {
+            var reset = new PunchCardBigButton(leftPos + 179, topPos + 105, 20, 130);
+            reset.withCallback(this::reset);
+            var sign = new PunchCardBigButton(leftPos + 7, topPos + 105, 39, 130);
+            sign.setTooltip(Tooltip.create(Lang.translateDirect("gui.punch_card.sign")));
+            sign.withCallback(this::sign);
+            nameField.setEditable(true);
+
+            addRenderableWidgets(reset, sign);
+        } else {
+            var author = new StringWidget(Lang.translate("gui.punch_card.author")
+                    .add(Component.literal(menu.getAuthor()))
+                    .component(), font);
+            author.setColor(0xffa6937d);
+            author.setX(leftPos + 7);
+            author.setY(topPos + 109);
+
+            nameField.setEditable(false);
+            addRenderableWidget(author);
+        }
 
         for(int c = 0; c < 16; ++c) {
             for(int r = 0; r < 8; ++r) {
-                int x = 8 + c * 13 + (c / 4) * 2;
+                int x = 14 + c * 13;
                 int y = 20 + r * 9 + (r / 4) * 5;
 
-                var btn = new PunchCardButton(leftPos + x, topPos + y, r, c, menu.data);
+                var btn = new PunchCardButton(leftPos + x, topPos + y, r, c, menu.data, lock);
                 btn.withCallback(this::spawnParticle);
                 addRenderableWidget(btn);
             }
         }
+    }
 
-        addRenderableWidget(nameField);
-        addRenderableWidget(accept);
+    private void reset() {
+        Arrays.fill(menu.data, (byte) 0);
+    }
+
+    private void sendData(boolean lock) {
+        var name = nameField.getValue();
+        if(name.equals(menu.contentHolder.getItem().getName(menu.contentHolder).getString()) || name.isEmpty())
+            name = "";
+        ModdedPackets.sendToServer(new SaveCardC2SPacket(menu.data, name, lock));
+    }
+
+    private void sign() {
+        sendData(true);
+        super.onClose();
     }
 
     @Override
@@ -111,10 +151,8 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
     @Override
     public void onClose() {
         super.onClose();
-        var name = nameField.getValue();
-        if(name.equals(menu.contentHolder.getItem().getName(menu.contentHolder).getString()) || name.isEmpty())
-            name = "";
-        ModdedPackets.sendToServer(new SaveCardC2SPacket(menu.data, name));
+        if(!menu.isLocked())
+            sendData(false);
     }
 
     private static class Particle {

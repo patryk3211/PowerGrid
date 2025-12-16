@@ -22,12 +22,14 @@ import net.minecraft.client.gui.GuiGraphics;
 public class PunchCardButton extends AbstractSimiWidget {
     private final byte[] dataRef;
     private final int row, column;
+    private final boolean locked;
 
-    public PunchCardButton(int x, int y, int r, int c, byte[] dataRef) {
+    public PunchCardButton(int x, int y, int r, int c, byte[] dataRef, boolean locked) {
         super(x, y, 10, 7);
         this.row = r;
         this.column = c;
         this.dataRef = dataRef;
+        this.locked = locked;
     }
 
     public boolean getState() {
@@ -42,6 +44,8 @@ public class PunchCardButton extends AbstractSimiWidget {
     public void doRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
         if(visible) {
             isHovered = mouseX >= getX() && mouseY >= getY() && mouseX < getX() + width && mouseY < getY() + height;
+            if(locked)
+                isHovered = false;
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             if(!getState()) {
                 if (isHovered) {
@@ -61,6 +65,8 @@ public class PunchCardButton extends AbstractSimiWidget {
 
     @Override
     public void onClick(double mouseX, double mouseY) {
+        if(locked)
+            return;
         flipState();
         if(getState())
             runCallback(mouseX, mouseY);

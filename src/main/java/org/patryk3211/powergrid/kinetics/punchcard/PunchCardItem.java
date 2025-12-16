@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.kinetics.punchcard;
 
 import dev.architectury.registry.menu.MenuRegistry;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -27,10 +28,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedMenus;
+import org.patryk3211.powergrid.utility.Lang;
+
+import java.util.List;
 
 public class PunchCardItem extends Item implements MenuProvider {
     public PunchCardItem(Properties properties) {
@@ -58,6 +63,21 @@ public class PunchCardItem extends Item implements MenuProvider {
     @Override
     public Component getDisplayName() {
         return Component.literal("Punch Card");
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
+        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+        if(!stack.hasTag())
+            return;
+        if(stack.getTag().getBoolean("Locked")) {
+            var author = stack.getTag().getString("Author");
+            if(author.isEmpty())
+                return;
+            var line = Lang.translate("gui.punch_card.author")
+                    .add(Component.literal(author)).style(ChatFormatting.GRAY);
+            tooltipComponents.add(line.component());
+        }
     }
 
     @Override

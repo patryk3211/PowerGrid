@@ -27,22 +27,26 @@ import java.util.function.Supplier;
 public class SaveCardC2SPacket implements SimplePacket {
     private final byte[] data;
     private final String name;
+    private final boolean lock;
 
-    public SaveCardC2SPacket(byte[] data, @NotNull String name) {
+    public SaveCardC2SPacket(byte[] data, @NotNull String name, boolean lock) {
         this.data = data;
         this.name = name;
+        this.lock = lock;
     }
 
     public SaveCardC2SPacket(FriendlyByteBuf buf) {
         data = new byte[16];
         buf.readBytes(data);
         name = buf.readUtf(35);
+        lock = buf.readBoolean();
     }
 
     @Override
     public void encode(FriendlyByteBuf buf) {
         buf.writeBytes(data);
         buf.writeUtf(name);
+        buf.writeBoolean(lock);
     }
 
     @Override
@@ -53,11 +57,18 @@ public class SaveCardC2SPacket implements SimplePacket {
             var stack = player.getMainHandItem();
             if(!(stack.getItem() instanceof PunchCardItem))
                 return;
-            stack.getOrCreateTag().putByteArray("Data", data);
+            if(stack.hasTag() && stack.getTag().getBoolean("Locked"))
+                return;
+            var tag = stack.getOrCreateTag();
+            tag.putByteArray("Data", data);
             if(name.isEmpty()) {
                 stack.resetHoverName();
             } else {
                 stack.setHoverName(Component.literal(name));
+            }
+            if(lock) {
+                tag.putBoolean("Locked", true);
+                tag.putString("Author", player.getDisplayName().getString());
             }
         });
     }
