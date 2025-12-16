@@ -30,6 +30,12 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
             .require(ModdedItems.CIRCUIT_SCHEMATIC)
             .toolNotConsumed()
             .output(ModdedItems.CIRCUIT_SCHEMATIC)
+    ),
+
+    STRING_LIGHT_CORD = create("string_light_cord", b -> b
+            .require(ModdedItems.CORD)
+            .require(ModdedItems.LIGHT_BULB)
+            .output(ModdedItems.STRING_LIGHT_CORD)
     );
 
     public DeployerApplicationRecipes(PackOutput generator) {
