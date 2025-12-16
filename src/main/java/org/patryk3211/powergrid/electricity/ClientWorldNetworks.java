@@ -29,6 +29,7 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
 import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
 
 import java.util.ArrayList;
@@ -201,5 +202,18 @@ public class ClientWorldNetworks extends WorldNetworks {
         }
 
         return network;
+    }
+
+    @Override
+    public void preTick() {
+        deferredRewireEntities.removeIf(part -> {
+            part.refreshEndpointNodes();
+            return true;
+        });
+        JunctionWireEndpoint.processNewNodes(world);
+
+        perf.start();
+        network.calculate(1);
+        perf.end();
     }
 }

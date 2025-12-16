@@ -62,7 +62,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
 
-    private final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
+    protected final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
     protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
     private boolean runningDiscovery = false;
     private int syncTicks = 0;
