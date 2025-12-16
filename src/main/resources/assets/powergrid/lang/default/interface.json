@@ -105,6 +105,8 @@
   "powergrid.tooltip.crt.anode": "Anode voltage:",
   "powergrid.tooltip.crt.grid": "Grid voltage:",
 
+  "powergrid.tooltip.string_light_cord_pattern": "Pattern: ",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",

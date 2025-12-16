@@ -603,6 +603,7 @@
   "powergrid.tooltip.resistance.coil": "Coil resistance:",
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
+  "powergrid.tooltip.string_light_cord_pattern": "Pattern: ",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
   "powergrid.tooltip.voltage.rated": "Rated voltage:",

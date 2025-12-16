@@ -15,11 +15,17 @@
  */
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Voltage;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
@@ -33,5 +39,22 @@ public class StringLightCordItem extends CordItem {
         super.appendProperties(stack, player, tooltip);
         Voltage.rated(120, player, tooltip);
         Power.rated(3, player, tooltip);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
+        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+        if(!stack.hasTag())
+            return;
+        var pattern = stack.getTag().getByteArray("Pattern");
+        if(pattern.length == 0)
+            return;
+        var line = Lang.translate("tooltip.string_light_cord_pattern")
+                .style(ChatFormatting.GRAY);
+        for(var b : pattern) {
+            var color = DyeColor.byId(b);
+            line.text(color.getTextColor(), "O");
+        }
+        tooltipComponents.add(line.component());
     }
 }

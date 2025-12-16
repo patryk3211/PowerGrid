@@ -50,9 +50,12 @@ public class StringLightCordRenderer extends CordRenderer<StringLightCordEntity>
         var power = Mth.lerp(AnimationTickHolder.getPartialTicks(), entity.prevPower, entity.power);
         int color = entity.nextColor();
 
-        int r = (int) (((color >> 16) & 0xFF) * 0.80f + 64);
-        int g = (int) (((color >> 8) & 0xFF) * 0.85f + 48);
+        int r = (int) (((color >> 16) & 0xFF) * 0.85f + 48);
+        int g = (int) (((color >> 8) & 0xFF) * 0.85f + 32);
         int b = (int) ((color & 0xFF) * 0.70f);
+        if(r > 255) r = 255;
+        if(g > 255) g = 255;
+        if(b > 255) b = 255;
 
         int bulbColor = ((int) (r * (power * 0.75f + 0.25f)) << 16)
                 | ((int) (g * (power * 0.75f + 0.25f)) << 8)

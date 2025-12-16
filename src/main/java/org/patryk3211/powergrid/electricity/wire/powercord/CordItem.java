@@ -135,7 +135,7 @@ public class CordItem extends WireItem {
         ServerLevel serverWorld = (ServerLevel) level;
 
         var entity = item.factory.create(serverWorld, endpoint1, endpoint2,
-                new ItemStack(stack.getItemHolder(), requiredItemCount), null);
+                stack.copyWithCount(requiredItemCount), null);
 
         if(context.getPlayer() != null) {
             var offItem = context.getPlayer().getOffhandItem();
@@ -158,19 +158,19 @@ public class CordItem extends WireItem {
 
     private static InteractionResult addEndpoint(UseOnContext context, ICordEndpoint endpoint) {
         var stack = context.getItemInHand();
-        var firstPoint = WireEndpointType.deserialize(stack.getTag());
+        var firstPoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
         if(firstPoint == null) {
-            stack.setTag(endpoint.serialize());
+            stack.getOrCreateTag().put("Connection", endpoint.serialize());
             IElectric.sendMessage(context, Lang.translate("message.cord_next").style(ChatFormatting.GRAY).component());
             return InteractionResult.SUCCESS;
         } else if(firstPoint instanceof ICordEndpoint firstCordPoint) {
             // Both endpoints specified
             var result = connect(firstCordPoint, endpoint, context);
-            stack.setTag(null);
+            stack.removeTagKey("Connection");
             return result;
         } else {
             IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
-            stack.setTag(null);
+            stack.removeTagKey("Connection");
             return InteractionResult.FAIL;
         }
     }
