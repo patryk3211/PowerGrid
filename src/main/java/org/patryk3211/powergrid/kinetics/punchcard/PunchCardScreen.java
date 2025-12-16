@@ -60,17 +60,10 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
         super.init();
 
         var name = menu.contentHolder.getHoverName();
-        nameField = new EditBox(font, leftPos + 60, topPos + 4, 107, 9, Component.empty());
-        nameField.setValue(name.getString());
-        nameField.setTextColor(0xffa6937d);
-        nameField.setTextColorUneditable(0xffa6937d);
-        nameField.setBordered(false);
-        nameField.setMaxLength(35);
-
         var accept = new PunchCardBigButton(leftPos + 201, topPos + 105, 1, 130);
         accept.withCallback(this::onClose);
 
-        addRenderableWidgets(nameField, accept);
+        addRenderableWidget(accept);
 
         var lock = menu.isLocked();
         if(!lock) {
@@ -79,19 +72,29 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
             var sign = new PunchCardBigButton(leftPos + 7, topPos + 105, 39, 130);
             sign.setTooltip(Tooltip.create(Lang.translateDirect("gui.punch_card.sign")));
             sign.withCallback(this::sign);
+
+            nameField = new EditBox(font, leftPos + 60, topPos + 4, 157, 9, Component.empty());
+            nameField.setValue(name.getString());
+            nameField.setTextColor(0xffa6937d);
+            nameField.setTextColorUneditable(0xffa6937d);
+            nameField.setBordered(false);
+            nameField.setMaxLength(26);
             nameField.setEditable(true);
 
-            addRenderableWidgets(reset, sign);
+            addRenderableWidgets(reset, sign, nameField);
         } else {
             var author = new StringWidget(Lang.translate("gui.punch_card.author")
                     .add(Component.literal(menu.getAuthor()))
                     .component(), font);
             author.setColor(0xffa6937d);
-            author.setX(leftPos + 7);
-            author.setY(topPos + 109);
+            author.setPosition(leftPos + 7, topPos + 109);
 
-            nameField.setEditable(false);
-            addRenderableWidget(author);
+            var nameWidget = new StringWidget(Component.literal(name.getString()), font);
+            nameWidget.setColor(0xffa6937d);
+            nameWidget.setPosition(leftPos + 60, topPos + 4);
+
+            nameField = null;
+            addRenderableWidgets(author, nameWidget);
         }
 
         for(int c = 0; c < 16; ++c) {
@@ -111,6 +114,8 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
     }
 
     private void sendData(boolean lock) {
+        if(nameField == null)
+            return;
         var name = nameField.getValue();
         if(name.equals(menu.contentHolder.getItem().getName(menu.contentHolder).getString()) || name.isEmpty())
             name = "";
@@ -119,7 +124,8 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
 
     private void sign() {
         sendData(true);
-        super.onClose();
+        menu.lock();
+        rebuildWidgets();
     }
 
     @Override
@@ -132,6 +138,8 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
             if(particle.ttl <= 0)
                 iter.remove();
         }
+        if(nameField != null)
+            nameField.tick();
     }
 
     @Override

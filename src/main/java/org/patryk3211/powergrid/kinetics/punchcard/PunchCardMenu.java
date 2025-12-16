@@ -76,6 +76,12 @@ public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
 
     }
 
+    public void lock() {
+        var tag = contentHolder.getOrCreateTag();
+        tag.putBoolean("Locked", true);
+        tag.putString("Author", player.getDisplayName().getString());
+    }
+
     public interface PunchCardMenuConstructors {
         PunchCardMenu create(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf buf);
         PunchCardMenu create(MenuType<?> type, int id, Inventory inv, ItemStack holder);
