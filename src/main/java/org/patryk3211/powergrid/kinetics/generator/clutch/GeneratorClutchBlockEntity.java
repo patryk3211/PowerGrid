@@ -113,7 +113,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
 
     @Override
     public float getGeneratedSpeed() {
-        return convertToDirection(generatedSpeed, getBlockState().getValue(GeneratorClutchBlock.FACING));
+        return generatedSpeed;
     }
 
     @Override
