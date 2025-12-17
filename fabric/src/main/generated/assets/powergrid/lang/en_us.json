@@ -50,6 +50,7 @@
   "block.powergrid.servo": "Servo",
   "block.powergrid.socket": "Socket",
   "block.powergrid.spark_gap": "Spark Gap",
+  "block.powergrid.string_light_block": "String Light Block",
   "block.powergrid.thermometer": "Thermometer",
   "block.powergrid.thermometer.tooltip.behaviour1": "Measures the temperature of the device it is pointed at",
   "block.powergrid.thermometer.tooltip.behaviour2": "Measures current and maximum temperature of the device it is placed on over time",

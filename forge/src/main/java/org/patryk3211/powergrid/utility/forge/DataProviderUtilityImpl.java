@@ -545,6 +545,11 @@ public class DataProviderUtilityImpl {
                 });
     }
 
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> air() {
+        return (ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
+                prov.models().getExistingFile(prov.mcLoc("block/air")));
+    }
+
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {
         return (ctx, prov) -> prov
                 .generated(ctx.lazy());

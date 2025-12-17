@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.wire.powercord;
+package org.patryk3211.powergrid.electricity.light.string;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -25,6 +25,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordRenderer;
 
 import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.quad;
 

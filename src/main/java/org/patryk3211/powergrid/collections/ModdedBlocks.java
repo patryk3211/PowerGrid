@@ -77,6 +77,7 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
@@ -736,6 +737,10 @@ public class ModdedBlocks {
             .item()
                 .model(itemWithParent("block/punch_card_reader/item"))
                 .build()
+            .register();
+
+    public static BlockEntry<StringLightBlock> STRING_LIGHT_BLOCK = REGISTRATE.block("string_light_block", StringLightBlock::new)
+            .blockstate(air())
             .register();
 
     public static void register() {

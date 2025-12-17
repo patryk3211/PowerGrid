@@ -185,4 +185,9 @@ public class DataProviderUtility {
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> northFacing(String name) {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> air() {
+        throw new AssertionError();
+    }
 }

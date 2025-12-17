@@ -36,7 +36,7 @@ import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
-import org.patryk3211.powergrid.electricity.wire.powercord.StringLightCordItem;
+import org.patryk3211.powergrid.electricity.light.string.StringLightCordItem;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
 import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;

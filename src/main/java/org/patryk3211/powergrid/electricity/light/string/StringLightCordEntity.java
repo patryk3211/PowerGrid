@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.electricity.wire.powercord;
+package org.patryk3211.powergrid.electricity.light.string;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -24,13 +25,21 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
+import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
 
 public class StringLightCordEntity extends CordEntity {
     protected static final EntityDataAccessor<Float> POWER = SynchedEntityData.defineId(StringLightCordEntity.class, EntityDataSerializers.FLOAT);
@@ -41,6 +50,7 @@ public class StringLightCordEntity extends CordEntity {
     private ElectricWire pWire2;
     private float filamentTemperature;
     private boolean broken;
+    private int lazyTick = 0;
 
     // Client rendering stuff
     private int renderIndex;
@@ -176,6 +186,47 @@ public class StringLightCordEntity extends CordEntity {
         } else {
             prevPower = power;
             power = entityData.get(POWER);
+        }
+
+        if(lazyTick++ >= 5) {
+            lazyTick = 0;
+            lazyTick();
+        }
+    }
+
+    public void setLightBlocks(BlockState state) {
+        var pos1 = endpoint1.getExactPosition(level());
+        var pos2 = endpoint2.getExactPosition(level());
+        var delta = pos2.subtract(pos1);
+        var length = delta.length();
+        int count = (int) (length / 0.9f) + 1;
+        for(int i = 0; i < count; ++i) {
+            var lightPos = BlockPos.containing(pos1.add(delta.scale((float) (i + 1) / count)));
+            var current = level().getBlockState(lightPos);
+            if(current.is(Blocks.AIR) || current.is(ModdedBlocks.STRING_LIGHT_BLOCK.get()))
+                level().setBlock(lightPos, state, Block.UPDATE_ALL);
+        }
+    }
+
+    public void lazyTick() {
+        if(!level().isClientSide) {
+            var x = Mth.clamp((filamentTemperature - 600f) / (1400f - 600f), 0, 1);
+            var power = x * x;
+            BlockState state;
+            if (power > 0.75f) {
+                state = ModdedBlocks.STRING_LIGHT_BLOCK.getDefaultState();
+            } else {
+                state = Blocks.AIR.defaultBlockState();
+            }
+            setLightBlocks(state);
+        }
+    }
+
+    @Override
+    public void remove(@NotNull RemovalReason reason) {
+        super.remove(reason);
+        if(reason.shouldDestroy()) {
+            setLightBlocks(Blocks.AIR.defaultBlockState());
         }
     }
 
