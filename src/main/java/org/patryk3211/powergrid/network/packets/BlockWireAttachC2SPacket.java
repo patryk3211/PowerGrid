@@ -75,7 +75,7 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 return;
             }
 
-            var existingEndpoint = WireEndpointType.deserialize(stack.getTag());
+            var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
 
             IWireEndpoint endpoint;
             if(gridPoint <= 1 && index == 0) {

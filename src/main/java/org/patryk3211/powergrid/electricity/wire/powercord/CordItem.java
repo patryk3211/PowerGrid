@@ -114,8 +114,6 @@ public class CordItem extends WireItem {
         var stack = context.getItemInHand();
         assert stack.getItem() instanceof CordItem;
         var item = (CordItem) stack.getItem();
-        var tag = stack.getTag();
-        assert tag != null;
 
         float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
         if(distance > item.getMaximumLength()) {
