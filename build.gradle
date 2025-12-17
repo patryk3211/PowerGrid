@@ -78,10 +78,10 @@ allprojects {
 			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
 		})
 
-		implementation(include("org.ejml:ejml-core:0.44.0"))
-		implementation(include("org.ejml:ejml-simple:0.44.0"))
-		implementation(include("org.ejml:ejml-ddense:0.44.0"))
-		implementation(include("org.ejml:ejml-dsparse:0.44.0"))
+		compileOnly("org.ejml:ejml-core:0.44.0")
+		compileOnly("org.ejml:ejml-simple:0.44.0")
+		compileOnly("org.ejml:ejml-ddense:0.44.0")
+		compileOnly("org.ejml:ejml-dsparse:0.44.0")
 	}
 
 	java {
@@ -122,6 +122,13 @@ subprojects {
 
 	architectury {
 		platformSetupLoomIde()
+	}
+
+	dependencies {
+		implementation(include("org.ejml:ejml-core:0.44.0"))
+		implementation(include("org.ejml:ejml-simple:0.44.0"))
+		implementation(include("org.ejml:ejml-ddense:0.44.0"))
+		implementation(include("org.ejml:ejml-dsparse:0.44.0"))
 	}
 
 	tasks.processResources {
@@ -237,22 +244,16 @@ subprojects {
 }
 
 // configure the maven publication
-//publishing {
-//	publications {
-//		create("mavenJava", MavenPublication) {
-//			artifactId = project.archives_base_name
-//			from components.java
-//		}
-//	}
-//
-//	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-//	repositories {
-//		// Add repositories to publish to here.
-//		// Notice: This block does NOT have the same function as the block in the top level.
-//		// The repositories here will be used for publishing your artifact, not for
-//		// retrieving dependencies.
-//	}
-//}
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
+	}
+
+	repositories { }
+}
 
 /*    -------========= COMMON PROJECT CONFIGURATION =========-------    */
 
@@ -277,6 +278,10 @@ dependencies {
 
 	// Support for unit tests
 	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+	testImplementation("org.ejml:ejml-core:0.44.0")
+	testImplementation("org.ejml:ejml-simple:0.44.0")
+	testImplementation("org.ejml:ejml-ddense:0.44.0")
+	testImplementation("org.ejml:ejml-dsparse:0.44.0")
 
 	modApi "dev.architectury:architectury:${project.architectury_api_version}"
 
