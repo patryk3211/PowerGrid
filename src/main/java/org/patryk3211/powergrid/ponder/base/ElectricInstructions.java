@@ -26,11 +26,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.PonderElectricNetwork;
+import org.patryk3211.powergrid.electricity.light.string.StringLightCordEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 public class ElectricInstructions {
@@ -98,6 +100,23 @@ public class ElectricInstructions {
         var link = new ElementLinkImpl<>(WireElement.class);
         var element = new WireElement(level -> {
             var wire = CordEntity.create(level, endpoint1, endpoint2, ModdedItems.CORD.asStack(), resistance);
+            wire.updateRenderParams();
+            return wire;
+        });
+        builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
+        builder.addInstruction(ponder -> ponder.linkElement(element, link));
+        return link;
+    }
+
+    public ElementLink<WireElement> connectLightCord(ICordEndpoint endpoint1, ICordEndpoint endpoint2, DyeColor[] colorPattern) {
+        var link = new ElementLinkImpl<>(WireElement.class);
+        var element = new WireElement(level -> {
+            var stack = ModdedItems.STRING_LIGHT_CORD.asStack();
+            if(colorPattern != null) {
+                stack.getOrCreateTag().putByteArray("Pattern", Arrays.stream(colorPattern)
+                        .map(color -> (byte) color.ordinal()).toList());
+            }
+            var wire = StringLightCordEntity.create(level, endpoint1, endpoint2, stack, null);
             wire.updateRenderParams();
             return wire;
         });

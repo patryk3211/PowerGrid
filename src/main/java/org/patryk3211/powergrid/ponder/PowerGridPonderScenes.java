@@ -55,11 +55,13 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("generator/rotor", GeneratorScenes::rotor, PowerGridPonderTags.GENERATOR_ASSEMBLY)
                 .addStoryBoard("generator/shunt_generator", GeneratorScenes::shuntGenerator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
+        HELPER.addStoryBoard(ModdedItems.STRING_LIGHT_CORD, "wire/string_lights", WireScenes::stringLights);
         HELPER.addStoryBoard(ModdedItems.INSULATED_COPPER_WIRE, "wire/insulated_wire", WireScenes::insulatedWire);
-        HELPER.addStoryBoard(ModdedItems.CORD, "wire/cord", WireScenes::cord);
         HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE, ModdedItems.INSULATED_COPPER_WIRE)
                 .addStoryBoard("wire/simple", WireScenes::simple)
                 .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
+        HELPER.forComponents(ModdedItems.CORD, ModdedItems.STRING_LIGHT_CORD)
+                .addStoryBoard("wire/cord", WireScenes::cord);
 
         HELPER.forComponents(ModdedBlocks.GROUNDING_ROD)
                 .addStoryBoard("ground1", WireScenes::grounding, PowerGridPonderTags.ELECTRIC_RELAYS)

@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.light.string;
 
+import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -167,7 +168,7 @@ public class StringLightCordEntity extends CordEntity {
     @Override
     public void tick() {
         super.tick();
-        if(!level().isClientSide) {
+        if(!level().isClientSide || level() instanceof PonderLevel) {
             if(pWire1 != null && pWire2 != null && !broken) {
                 var power = (pWire1.power() + pWire2.power()) / Math.max(itemCount, 1);
                 filamentTemperature += (power - DISSIPATION_FACTOR * filamentTemperature) * 0.05f / THERMAL_MASS;
@@ -181,6 +182,10 @@ public class StringLightCordEntity extends CordEntity {
                 } else {
                     var x = Mth.clamp((filamentTemperature - 600f) / (1400f - 600f), 0, 1);
                     entityData.set(POWER, x * x);
+                    if(level() instanceof PonderLevel) {
+                        prevPower = this.power;
+                        this.power = x * x;
+                    }
                 }
             }
         } else {
