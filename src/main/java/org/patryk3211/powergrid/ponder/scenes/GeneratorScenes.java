@@ -19,6 +19,7 @@ import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
@@ -260,13 +261,13 @@ public class GeneratorScenes {
         var rheo = util.grid().at(7, 1, 1);
         var resistor = util.grid().at(5, 1, 1);
 
-        scene.electric().connect(meter, 0, commutator, 1);
-        scene.electric().connect(meter, 1, connector, 0);
-        scene.electric().connect(connector, 0, commutator, 0);
-        scene.electric().connect(winding, 0, connector, 0);
-        scene.electric().connect(winding, 1, rheo, 2);
-        scene.electric().connect(rheo, 1, resistor, 0);
-        scene.electric().connect(resistor, 1, commutator, 1);
+        scene.electric().connect(meter, 0, commutator, 1, DyeColor.BLACK);
+        scene.electric().connect(meter, 1, commutator, 0, DyeColor.BLACK);
+        scene.electric().connect(connector, 0, commutator, 0, DyeColor.RED);
+        scene.electric().connect(winding, 0, connector, 0, DyeColor.RED);
+        scene.electric().connect(winding, 1, rheo, 2, DyeColor.BLUE);
+        scene.electric().connect(rheo, 1, resistor, 0, DyeColor.BLUE);
+        scene.electric().connect(resistor, 1, commutator, 1, DyeColor.BLUE);
         scene.idle(20);
 
         scene.overlay().showText(80)
