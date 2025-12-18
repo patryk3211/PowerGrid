@@ -90,6 +90,27 @@ allprojects {
 		sourceCompatibility = JavaVersion.VERSION_17
 		targetCompatibility = JavaVersion.VERSION_17
 	}
+
+	var subname = "Common"
+	if(project != rootProject) {
+		subname = project.name
+		subname = subname.substring(0, 1).toUpperCase() + subname.substring(1)
+	}
+	// configure the maven publication
+	publishing {
+		publications {
+			create("maven${subname}", MavenPublication) {
+				artifactId = project.archives_base_name + "-" + subname.toLowerCase()
+
+				artifact remapJar
+				artifact(sourcesJar) {
+					classifier = "sources"
+				}
+			}
+		}
+
+		repositories { }
+	}
 }
 
 def getGitHash = { ->
@@ -241,18 +262,6 @@ subprojects {
 			skip()
 		}
 	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
-			from components.java
-		}
-	}
-
-	repositories { }
 }
 
 /*    -------========= COMMON PROJECT CONFIGURATION =========-------    */
