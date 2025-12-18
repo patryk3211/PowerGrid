@@ -19,6 +19,10 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.world.entity.Entity;
@@ -27,15 +31,18 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-import org.patryk3211.powergrid.electricity.sim.node.INode;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
+import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
+import java.util.function.Function;
 
-public class ElectricBehaviour extends BlockEntityBehaviour {
+public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchronizedElement {
     public static final BehaviourType<ElectricBehaviour> TYPE = new BehaviourType<>();
 
     private final IElectricEntity element;
@@ -47,9 +54,12 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
 
     private final Map<BlockWireEndpoint, Set<BaseWireEntity>> connections = new HashMap<>();
     private boolean destroying = false;
-    private boolean rebuildOnClient = false;
+    private byte rebuildOnClient = 0;
     private boolean removed = false;
     private boolean paused = true;
+    private boolean reducedSync = false;
+
+    private SyncAppender syncAppender;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
         this(be, true);
@@ -64,89 +74,71 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         }
     }
 
-    @Nullable
-    public ElectricalNetwork getNetwork() {
-        if(externalNodes.isEmpty()) {
-            if(internalNodes.isEmpty())
-                return null;
-            // Same as below, only the first node really matters.
-            for(var node : internalNodes) {
-                return node.getNetwork();
-            }
-        }
-        // Since every node has to have the same network we can
-        // just take the network of the first external node and
-        // assume that every other node belongs to it.
-        for(var node : externalNodes) {
-            if(node != null) {
-                return node.getNetwork();
-            }
-        }
-        return null;
+    public void reducedSync() {
+        reducedSync = true;
     }
 
-    public void joinNetwork(ElectricalNetwork network) {
-        if(externalNodes.isEmpty() && internalNodes.isEmpty())
-            throw new IllegalStateException("Cannot join a network if no nodes are defined");
-        if(getNetwork() == null) {
-            externalNodes.forEach(node -> {
-                if(node != null)
-                    network.addNode(node);
-            });
-            if(!paused) {
-                internalNodes.forEach(network::addNode);
-                internalWires.forEach(network::addWire);
-            }
-        } else {
-            externalNodes.forEach(node -> {
-                if(node != null && node.getNetwork() == null) {
-                    network.addNode(node);
-                }
-            });
-            if(!paused) {
-                internalNodes.forEach(node -> {
-                    if (node.getNetwork() == null)
-                        network.addNode(node);
-                });
-                internalWires.forEach(wire -> {
-                    if (wire.getNetwork() == null)
-                        network.addWire(wire);
-                });
-            }
-        }
+    public void joinNetwork(@NotNull ElectricalNetwork network, int externalIndex) {
+        if(externalIndex < 0 || externalIndex >= externalNodes.size())
+            return;
+        var node = externalNodes.get(externalIndex);
+        tracedAdd(network, node);
     }
 
-    public void rebuildCircuit() {
+    public void tracedAdd(ElectricalNetwork network, IElectricNode node) {
+        addOrMerge(node, network);
+        var list = new LinkedList<INode>();
+        list.add(node);
+        tracedAdd(list);
+    }
+
+    public void rebuildCircuit(boolean rebuildExternal) {
         var builder = new IElectricEntity.CircuitBuilder(getPos(), externalNodes, internalNodes, internalWires);
-        builder.with(getNetwork());
+        var networkList = externalNodes.stream().map(INode::getNetwork).toList();
+        if(rebuildExternal) {
+            for (var endpointConnections : connections.values()) {
+                for (var entity : endpointConnections) {
+                    entity.dropWire();
+                }
+            }
+        }
+        builder.rebuildExternal(rebuildExternal);
         if(paused)
             builder.paused();
         builder.clear();
         element.buildCircuit(builder);
-
-        // Break connections if external node was removed.
-        var iter = connections.entrySet().iterator();
-        while(iter.hasNext()) {
-            var entry = iter.next();
-            var endpoint = entry.getKey();
-            if(endpoint.getTerminal() < externalNodes.size() && externalNodes.get(endpoint.getTerminal()) != null) {
-                // Rewire
-                for(var entity : entry.getValue())
-                    entity.makeWire();
+        // Make sure external (and internal) nodes are in the correct networks.
+        for(int i = 0; i < networkList.size(); ++i) {
+            if(networkList.get(i) == null)
                 continue;
-            }
-            var connCopy = List.copyOf(entry.getValue());
-            for(BaseWireEntity entity : connCopy) {
-                entity.endpointRemoved(endpoint);
-            }
-            iter.remove();
+            joinNetwork(networkList.get(i), i);
         }
-        if(getWorld() != null)
-            GlobalElectricNetworks.nodeHolderAdded(this);
+
+        if(rebuildExternal) {
+            // Break connections if external node was removed.
+            var iter = connections.entrySet().iterator();
+            while (iter.hasNext()) {
+                var entry = iter.next();
+                var endpoint = entry.getKey();
+                if (endpoint.getTerminal() < externalNodes.size() && externalNodes.get(endpoint.getTerminal()) != null) {
+                    // Rewire
+                    for (var entity : entry.getValue())
+                        entity.makeWire();
+                    continue;
+                }
+                var connCopy = List.copyOf(entry.getValue());
+                for (BaseWireEntity entity : connCopy) {
+                    entity.endpointRemoved(endpoint);
+                }
+                iter.remove();
+            }
+            if(getWorld() != null)
+                GlobalElectricNetworks.nodeHolderAdded(this);
+        }
 
         var world = getWorld();
         if(world != null && !world.isClientSide)
-            rebuildOnClient = true;
+            rebuildOnClient = rebuildExternal ? (byte) 2 : (byte) 1;
     }
 
     public List<INode> getInternalNodes() {
@@ -157,22 +149,62 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
         return externalNodes;
     }
 
-    @Override
-    public boolean isSafeNBT() {
-        return true;
-    }
-
     public void pause() {
         if(!paused) {
             paused = true;
             element.paused();
             internalWires.forEach(AbstractElectricWire::remove);
-            var network = getNetwork();
-            if(network != null) {
-                // Remove nodes in reverse order.
-                for(int i = internalNodes.size() - 1; i >= 0; --i) {
-                    var node = internalNodes.get(i);
-                    network.removeNode(node);
+            // Remove nodes in reverse order.
+            for(int i = internalNodes.size() - 1; i >= 0; --i) {
+                var node = internalNodes.get(i);
+                node.remove();
+            }
+        }
+    }
+
+    private static void addOrMerge(IElectricNode node, ElectricalNetwork network) {
+        if(node.getNetwork() == network)
+            return;
+        if(node.getNetwork() == null)
+            network.addNode(node);
+        network.merge(node.getNetwork());
+    }
+
+    public void tracedAdd(List<INode> scanNodes) {
+        if(paused)
+            return;
+        var handled = new HashSet<INetworkElement>();
+        while(!scanNodes.isEmpty()) {
+            var node = scanNodes.remove(0);
+            var network = node.getNetwork();
+            if(network == null)
+                continue;
+            handled.add(node);
+            for(var wire : internalWires) {
+                if(wire.coupledNodes().contains(node)) {
+                    // Wire connects here
+                    if(handled.add(wire)) {
+                        wire.coupledNodes().forEach(other -> {
+                            addOrMerge(other, network);
+                            if(handled.add(other))
+                                scanNodes.add(other);
+                        });
+                        network.addWire(wire);
+                    }
+                }
+            }
+            for(var inode : internalNodes) {
+                if(!(inode instanceof ICouplingNode coupling))
+                    continue;
+                if(coupling.coupledNodes().contains(node)) {
+                    if(handled.add(coupling)) {
+                        coupling.coupledNodes().forEach(other -> {
+                            addOrMerge(other, network);
+                            if(handled.add(other))
+                                scanNodes.add(other);
+                        });
+                        network.addNode(coupling);
+                    }
                 }
             }
         }
@@ -181,14 +213,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void unpause() {
         if(paused) {
             paused = false;
-            var network = getNetwork();
-            if (network == null)
-                return;
             // External nodes weren't removed so they don't have to be added.
             if(hasInternals()) {
                 GlobalElectricNetworks.prepareUnpaused(this);
-                internalNodes.forEach(network::addNode);
-                internalWires.forEach(network::addWire);
+                tracedAdd(new LinkedList<>(externalNodes));
                 element.unpaused();
             }
         }
@@ -295,8 +323,17 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void read(CompoundTag nbt, boolean clientPacket) {
         super.read(nbt, clientPacket);
         if(clientPacket) {
-            if(nbt.getBoolean("Rebuild"))
-                rebuildCircuit();
+            var level = nbt.getByte("Rebuild");
+            if(level > 0)
+                rebuildCircuit(level > 1);
+            var list = nbt.getList("Nodes", Tag.TAG_FLOAT);
+            int index = 0;
+            for(var node : externalNodes) {
+                node.setStateValue(list.getFloat(index++) * 0.5f + node.getStateValue() * 0.5f);
+            }
+            for(var node : internalNodes) {
+                node.setStateValue(list.getFloat(index++) * 0.5f + node.getStateValue() * 0.5f);
+            }
         }
     }
 
@@ -304,10 +341,18 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
     public void write(CompoundTag nbt, boolean clientPacket) {
         super.write(nbt, clientPacket);
         if(clientPacket) {
-            if(rebuildOnClient) {
-                nbt.putBoolean("Rebuild", true);
-                rebuildOnClient = false;
+            if(rebuildOnClient != 0) {
+                nbt.putByte("Rebuild", rebuildOnClient);
+                rebuildOnClient = 0;
             }
+            var list = new ListTag();
+            for(var node : externalNodes) {
+                list.add(FloatTag.valueOf((float) node.getStateValue()));
+            }
+            for(var node : internalNodes) {
+                list.add(FloatTag.valueOf((float) node.getStateValue()));
+            }
+            nbt.put("Nodes", list);
         }
     }
 
@@ -360,5 +405,69 @@ public class ElectricBehaviour extends BlockEntityBehaviour {
                 }
             }
         }
+    }
+
+    @Override
+    public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineGetter) {
+        var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
+        if(thermal != null) {
+            buffer.writeFloat(thermal.getTemperature());
+        }
+            for (var node : externalNodes) {
+                if (node.getNetwork() == null) {
+                    // Potentially part of a transmission line.
+                    var line = lineGetter.apply(node);
+                    buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
+                } else {
+                    buffer.writeFloat((float) node.getStateValue());
+                }
+            }
+        if(!reducedSync) {
+            for (var node : internalNodes) {
+                buffer.writeFloat((float) node.getStateValue());
+            }
+            for (var wire : internalWires) {
+                if (wire instanceof SwitchedWire switched)
+                    buffer.writeBoolean(switched.getState());
+            }
+        }
+        if(syncAppender != null)
+            syncAppender.writeToSync(buffer);
+    }
+
+    @Override
+    public void readFromSync(FriendlyByteBuf buffer) {
+        var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
+        if(thermal != null) {
+            thermal.setTemperature(buffer.readFloat());
+        }
+        for (var node : externalNodes) {
+            node.setStateValue(buffer.readFloat());
+        }
+        if(!reducedSync) {
+            for (var node : internalNodes) {
+                node.setStateValue(buffer.readFloat());
+            }
+            for (var wire : internalWires) {
+                if (wire instanceof SwitchedWire switched)
+                    switched.setState(buffer.readBoolean());
+            }
+        }
+        if(syncAppender != null)
+            syncAppender.readFromSync(buffer);
+    }
+
+    @Override
+    public StateS2CPacket.Key getKey() {
+        return new StateS2CPacket.PosKey(getPos());
+    }
+
+    public void setSyncAppender(SyncAppender syncAppender) {
+        this.syncAppender = syncAppender;
+    }
+
+    public interface SyncAppender {
+        void writeToSync(FriendlyByteBuf buffer);
+        void readFromSync(FriendlyByteBuf buffer);
     }
 }

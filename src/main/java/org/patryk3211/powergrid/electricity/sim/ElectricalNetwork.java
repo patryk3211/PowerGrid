@@ -15,27 +15,30 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.createmod.catnip.data.Pair;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.MatrixFeatures_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.sim.calculation.IStamped;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.*;
-import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.function.Function;
 
-public class ElectricalNetwork {
+public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
-    private static final double PRECISION = 1e-7;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
-    private static final int MAX_SCALE_REUSE_COUNT = 20;
+    private static final int MAX_SCALE_REUSE_COUNT = 50;
+    private static final boolean SCALING = false;
 
     private final boolean addGMin;
     protected final Set<AbstractElectricWire> wires = new HashSet<>();
@@ -47,18 +50,25 @@ public class ElectricalNetwork {
     private final Set<ISolverHook> innerHooks = new HashSet<>();
     private final Set<ISolverHook> leafInnerHooks = new HashSet<>();
     private final Set<IStaticResidual> residuals = new HashSet<>();
-    protected final Map<IElectricNode, IElectricNode> leafNodes = new HashMap<>();
+    protected final Map<IElectricNode, IElectricNode> leafNodes = new Reference2ReferenceOpenHashMap<>();
 
-    private final ISolver solver;
+    private final List<ExchangeRow> changedRows = new ArrayList<>();
+
+    private double minimumAllowedPrecision = 1e-6;
+    private double absoluteStoppingCriterion = 1e-7;
+    private double relativeStoppingCriterion = 1e-12;
+
+    private ISolver solver;
     private int sourceCount;
     private int groundReferenceCount;
 
-    private DMatrixRMaj ResidualVector;
+    public DMatrixRMaj ResidualVector;
 
     private DynamicallyTypedMatrix JacobianKept;
     private DynamicallyTypedMatrix JacobianEliminated;
     private DynamicallyTypedMatrix JacobianRight;
     private DynamicallyTypedMatrix JacobianBottom;
+    private DynamicallyTypedMatrix A0;
 
     private DMatrixRMaj ReducedRHSVector;
     private DMatrixRMaj EliminatedRHSVector;
@@ -70,22 +80,25 @@ public class ElectricalNetwork {
     private DynamicallyTypedMatrix ReducedJacobian;
 
     private DynamicallyTypedMatrix ScaledJ;
-    private DMatrixRMaj StateVector;
-    private DMatrixRMaj AuxiliaryVector;
+    protected DMatrixRMaj StateVector;
+    protected DMatrixRMaj AuxiliaryVector;
     private DMatrixRMaj EliminatedSolved;
 
     private double[] columnScales;
     private double[] rowScales;
 
-    private boolean dirty;
+    protected boolean dirty;
     private double conductanceDelta = 0;
     private int conductanceUpdates = 0;
     private int eliminatedUpdates = 0;
     private int scalesAge = 0;
     private boolean countUpdates = true;
     private boolean lockEliminated = false;
-    private boolean converged;
-    private int warmUpTicks = 0;
+    protected boolean converged;
+    protected int warmUpTicks = 0;
+    protected int stamp;
+    private int currentMultiTick = 1;
+    private boolean enableRowExchange = false;
 
     private boolean recalculateScales;
     private boolean eliminatedChanged;
@@ -97,12 +110,38 @@ public class ElectricalNetwork {
     public Function<Boolean, Integer> maxIterations = b -> 200;
 
     public ElectricalNetwork(boolean addGMin) {
-        solver =
-                new DirectSolver();
-//                new BiCGSTABSolver(0.001, 0.1);
+        this(addGMin, SolverType.DIRECT);
+    }
+
+    public ElectricalNetwork(boolean addGMin, SolverType solver) {
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
+        setSolverType(solver);
+    }
+
+    public void setSolverType(SolverType type) {
+        if(solver != null) {
+            var currentType = solver.type();
+            if (currentType == type)
+                return;
+        }
+        solver = switch(type) {
+            case DIRECT -> new DirectSolver();
+            case BICGSTAB -> new BiCGSTABSolver(absoluteStoppingCriterion, 0.001f);
+            case GMRES -> new GMRESSolver(1e-8, 30);
+        };
+        if(nodes.isEmpty())
+            return;
+        var eliminatedCount = eliminatedNodeCount();
+        var reducedCount = nodes.size() - eliminatedCount;
+        solver.setStateSize(reducedCount);
+    }
+
+    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
+        this.absoluteStoppingCriterion = absoluteCriterion;
+        this.relativeStoppingCriterion = relativeCriterion;
+        this.minimumAllowedPrecision = minimumPrecision;
     }
 
     // Make sure all variables are completely rebuilt and repopulated.
@@ -114,6 +153,10 @@ public class ElectricalNetwork {
         return !innerHooks.isEmpty();
     }
 
+    public double getDeltaTime() {
+        return 0.05f / currentMultiTick;
+    }
+
     public void warmUp(int ticks) {
         if(ticks == -1 || warmUpTicks == -1) {
             warmUpTicks = -1;
@@ -121,6 +164,38 @@ public class ElectricalNetwork {
         }
         if(warmUpTicks < ticks)
             warmUpTicks = ticks;
+    }
+
+    public void addSegment(Collection<INetworkElement> elements) {
+        for(var element : elements) {
+            if(element instanceof INode node) {
+                addNode(node);
+            } else if(element instanceof AbstractElectricWire wire) {
+                addWire(wire);
+            }
+        }
+    }
+
+    public void fromElements(Collection<INetworkElement> elements) {
+        var values = new ArrayList<Pair<INode, Double>>();
+        for(var element : elements) {
+            if(element instanceof IElectricNode node) {
+                values.add(Pair.of(node, node.getStateValue()));
+                addNode(node);
+            }
+        }
+        for(var element : elements) {
+            if(element instanceof ICouplingNode node) {
+                values.add(Pair.of(node, node.getStateValue()));
+                addNode(node);
+            } else if(element instanceof AbstractElectricWire wire) {
+                addWire(wire);
+            }
+        }
+        prepareMatrices(currentMultiTick);
+        for(var pair : values) {
+            setValue(pair.getFirst(), pair.getSecond());
+        }
     }
 
     public void addNode(INode node) {
@@ -142,23 +217,12 @@ public class ElectricalNetwork {
             innerHooks.add(hook);
         if(node instanceof IStaticResidual residual)
             residuals.add(residual);
+        if(node.isSource())
+            ++sourceCount;
 
-        if(node instanceof IElectricNode enode)
-            addNode(enode);
         if(node instanceof ICouplingNode cnode)
-            addNode(cnode);
+            couplings.add(cnode);
         warmUp(5);
-    }
-
-    private void addNode(IElectricNode node) {
-        if(node instanceof CurrentSourceNode)
-            ++sourceCount;
-    }
-
-    private void addNode(ICouplingNode coupling) {
-        couplings.add(coupling);
-        if(coupling instanceof VoltageSourceCoupling)
-            ++sourceCount;
     }
 
     public void addNodes(INode... nodes) {
@@ -196,7 +260,7 @@ public class ElectricalNetwork {
 
         if(node instanceof ICouplingNode)
             couplings.remove(node);
-        if(node instanceof CurrentSourceNode || node instanceof VoltageSourceCoupling)
+        if(node.isSource())
             --sourceCount;
         if(node instanceof IOuterHook hook)
             outerHooks.remove(hook);
@@ -208,13 +272,6 @@ public class ElectricalNetwork {
         warmUp(3);
         node.setNetwork(null);
         setDirty();
-    }
-
-    public void removeNode(int index) {
-        if(nodes.size() <= index)
-            return;
-
-        removeNode(nodes.get(index));
     }
 
     public int size() {
@@ -244,9 +301,10 @@ public class ElectricalNetwork {
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
         }
+        enableRowExchange = false;
         wire.setNetwork(this);
         wires.add(wire);
-        if(wire instanceof CapacitorWire)
+        if(wire.isSource())
             ++sourceCount;
         if(wire.node1 == null || wire.node2 == null)
             ++groundReferenceCount;
@@ -275,7 +333,7 @@ public class ElectricalNetwork {
     }
 
     public void updateConductance(AbstractElectricWire wire, double change) {
-        if(JacobianKept == null || dirty || change == 0)
+        if(JacobianKept == null || dirty || Math.abs(change) < G_MIN * 0.1)
             return;
         if(leafNodes.containsKey(wire.node1) || leafNodes.containsKey(wire.node2))
             return;
@@ -290,17 +348,21 @@ public class ElectricalNetwork {
     }
 
     public void alterConductanceMatrix(int row, int column, double change) {
-        if(JacobianKept == null || dirty)
+        if(JacobianKept == null || dirty || Math.abs(change) < G_MIN * 0.1)
             return;
+        var restore = enableRowExchange;
+        enableRowExchange = false;
         jacobianAdd(row, column, change);
+        enableRowExchange = restore;
     }
 
     public void removeWire(AbstractElectricWire wire) {
         if(!wires.contains(wire))
             return;
+        enableRowExchange = false;
         wires.remove(wire);
         wire.setNetwork(null);
-        if(wire instanceof CapacitorWire)
+        if(wire.isSource())
             --sourceCount;
         if(wire.node1 == null || wire.node2 == null)
             --groundReferenceCount;
@@ -328,8 +390,22 @@ public class ElectricalNetwork {
         return nodes;
     }
 
+    public Collection<IElectricNode> getLeafs() {
+        return leafNodes.keySet();
+    }
+
     public DMatrixRMaj getStateVector() {
         return StateVector;
+    }
+
+    private ExchangeRow getOrCreateRow(int row) {
+        for(var rowObj : changedRows) {
+            if(rowObj.index == row)
+                return rowObj;
+        }
+        var rowObj = new ExchangeRow(row, ReducedJacobian != null ? ReducedJacobian : JacobianKept);
+        changedRows.add(rowObj);
+        return rowObj;
     }
 
     protected void jacobianAdd(int row, int column, double value) {
@@ -339,9 +415,19 @@ public class ElectricalNetwork {
             throw new IllegalArgumentException("Provided entry lays outside of the allocated matrices.");
         recalculateScales = true;
         if(row < eliminatedStart && column < eliminatedStart) {
+            if(enableRowExchange) {
+                var e = getOrCreateRow(row);
+                e.update(column, value);
+            } else {
+                A0.add(row, column, value);
+                A0.markRefactorize();
+            }
             JacobianKept.add(row, column, value);
-            if(ReducedJacobian != null)
+            JacobianKept.markRefactorize();
+            if(ReducedJacobian != null) {
                 ReducedJacobian.add(row, column, value);
+                ReducedJacobian.markRefactorize();
+            }
         } else if(!lockEliminated) {
             if(row < eliminatedStart) {
                 JacobianRight.add(row, column - eliminatedStart, value);
@@ -359,6 +445,8 @@ public class ElectricalNetwork {
     protected void rhsAdd(int row, double value) {
         if(value == 0)
             return;
+        if(row >= nodes.size())
+            throw new IllegalArgumentException("Provided entry lays outside of the allocated matrices.");
         if(row < eliminatedStart) {
             ReducedRHSVector.add(row, 0, value);
         } else {
@@ -368,6 +456,7 @@ public class ElectricalNetwork {
     }
 
     protected void populateConductanceMatrix(boolean withEliminated) {
+        enableRowExchange = false;
         conductanceDelta = 0;
         conductanceUpdates = 0;
 
@@ -440,6 +529,8 @@ public class ElectricalNetwork {
             for (var node : nodes) {
                 if (node instanceof CurrentSourceNode) {
                     shouldAnchor = false;
+                } else if (node instanceof TransmissionLinePort) {
+                    shouldAnchor = false;
                 } else if (node instanceof VoltageSourceCoupling source) {
                     if (anchor == null && source.getNegative() instanceof FloatingNode floating && floating.getIndex() < eliminatedStart) {
                         anchor = floating;
@@ -473,6 +564,10 @@ public class ElectricalNetwork {
             ReducedJacobian.optimize();
         }
         recalculateScales = true;
+
+        changedRows.clear();
+        enableRowExchange = true;
+        A0.setTo(getWorkMatrix());
     }
 
     private void calculateEliminatedMatrices() {
@@ -485,19 +580,22 @@ public class ElectricalNetwork {
             WMatrix.convert(ReducedCorrection.getState());
 
             // Prepare reduced jacobian correction matrix.
-            JacobianEliminated.refactorize();
+            JacobianEliminated.markRefactorize();
             JacobianEliminated.solve(JacobianBottom, WMatrix);
             JacobianRight.mult(WMatrix, ReducedCorrection);
 
             JacobianKept.subtract(ReducedCorrection, ReducedJacobian);
             ReducedJacobian.optimize();
 
+            enableRowExchange = false;
             recalculateScales = true;
         }
         eliminatedChanged = false;
     }
 
     public void merge(ElectricalNetwork other) {
+        if(other == this)
+            return;
         other.leafNodes.forEach((node, tracked) -> {
             node.setNetwork(this);
             leafNodes.put(node, tracked);
@@ -509,6 +607,18 @@ public class ElectricalNetwork {
     }
 
     public void clear() {
+        nodes.forEach(node -> {
+            if(node.getNetwork() == this)
+                node.setNetwork(null);
+        });
+        wires.forEach(wire -> {
+            if(wire.getNetwork() == this)
+                wire.setNetwork(null);
+        });
+        leafNodes.forEach((node, $) -> {
+            if(node.getNetwork() == this)
+                node.setNetwork(null);
+        });
         nodes.clear();
         wires.clear();
         couplings.clear();
@@ -533,16 +643,31 @@ public class ElectricalNetwork {
         if(index >= eliminatedStart) {
             if(WMatrix == null || index - eliminatedStart >= WMatrix.getNumRows())
                 return 0;
-            double value = eliminatedSolved ? EliminatedSolved.get(index - eliminatedStart, 0) : 0;
+            double value = eliminatedSolved ? EliminatedSolved.unsafe_get(index - eliminatedStart, 0) : 0;
             for(int i = 0; i < StateVector.getNumRows(); ++i) {
-                value -= WMatrix.get(index - eliminatedStart, i) * StateVector.get(i, 0);
+                value -= WMatrix.unsafe_get(index - eliminatedStart, i) * StateVector.unsafe_get(i, 0);
             }
             return value;
         }
         if(index >= StateVector.getNumRows())
-            return 0;
-        var value = StateVector.get(index);
+            return node.getSavedValue();
+        var value = StateVector.unsafe_get(index, 0);
         return Double.isFinite(value) ? value : 0;
+    }
+
+    public void setValue(INode node, double value) {
+        if(StateVector == null || dirty)
+            return;
+        if(leafNodes.containsKey(node))
+            return;
+        var index = node.getIndex();
+        if(index < 0 || index >= nodes.size())
+            return;
+        if(index >= eliminatedStart)
+            return;
+        if(index >= StateVector.getNumRows())
+            return;
+        StateVector.unsafe_set(index, 0, value);
     }
 
     private void validateJacobian(DynamicallyTypedMatrix jacobian, DMatrixRMaj residual) {
@@ -665,7 +790,7 @@ public class ElectricalNetwork {
         if(!nodes.contains(node)) {
             if(leafNodes.containsKey(node)) {
                 leafNodes.remove(node);
-                addNode((INode) node);
+                addNode(node);
 
                 var iter = leafInnerHooks.iterator();
                 while(iter.hasNext()) {
@@ -706,7 +831,7 @@ public class ElectricalNetwork {
         return nodes.size() - eliminatedStart;
     }
 
-    private void prepareMatrices() {
+    protected void prepareMatrices(int multiTicks) {
         ++scalesAge;
         var nodeCount = nodes.size();
         var eliminatedCount = eliminatedNodeCount();
@@ -722,12 +847,13 @@ public class ElectricalNetwork {
             // Use previous state matrix to accelerate warm up
             if(StateVector != null) {
                 for(int i = 0; i < reducedCount; ++i) {
-                    NewState.set(i, 0, getValue(nodes.get(i)));
+                    NewState.unsafe_set(i, 0, getValue(nodes.get(i)));
                 }
             }
 
             // Kept Jacobian
-            JacobianKept = new DynamicallyTypedMatrix(reducedCount, reducedCount);
+            JacobianKept = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
+            A0 = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
             if(eliminatedCount != 0) {
                 // Eliminated Jacobian
                 JacobianEliminated = new DynamicallyTypedMatrix(eliminatedCount, eliminatedCount);
@@ -738,7 +864,7 @@ public class ElectricalNetwork {
 
                 WMatrix = new DynamicallyTypedMatrix(eliminatedCount, reducedCount);
                 ReducedCorrection = new DynamicallyTypedMatrix(reducedCount, reducedCount);
-                ReducedJacobian = new DynamicallyTypedMatrix(reducedCount, reducedCount);
+                ReducedJacobian = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
 
                 EliminatedRHSVector = new DMatrixRMaj(eliminatedCount, 1);
                 EliminatedSolved = new DMatrixRMaj(eliminatedCount, 1);
@@ -756,26 +882,44 @@ public class ElectricalNetwork {
 
             ReducedRHSVector = new DMatrixRMaj(reducedCount, 1);
 
-            ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
+            if(SCALING)
+                ScaledJ = new DynamicallyTypedMatrix(reducedCount, reducedCount, DynamicallyTypedMatrix.Solver.LU);
             ResidualVector = new DMatrixRMaj(reducedCount, 1);
             AuxiliaryVector = new DMatrixRMaj(reducedCount, 1);
             StateVector = NewState;
 
-            columnScales = new double[reducedCount];
-            rowScales = new double[reducedCount];
+            if(SCALING) {
+                columnScales = new double[reducedCount];
+                rowScales = new double[reducedCount];
+            }
             solver.setStateSize(reducedCount);
             dirty = false;
 
+            currentMultiTick = multiTicks;
             // Conductance and coupling matrices need to be fully rebuild only after a state size change,
             // individual resistance and coupling value changes are handled by `updateResistance()` and `updateCoupling()` respectively.
             populateConductanceMatrix(true);
             scalesAge = MAX_SCALE_REUSE_COUNT + 1;
-        } else if(conductanceUpdates >= 500 || conductanceDelta > 1000 || eliminatedUpdates >= 100) {
+        } else if(conductanceUpdates >= reducedCount * 40 || conductanceDelta > 1000 || (eliminatedUpdates >= eliminatedCount * 40 && eliminatedCount != 0)) {
             // To prevent resistance from deviating due to floating point imprecision sometimes we rebuild
             // the matrices from scratch.
+            currentMultiTick = multiTicks;
             if(LOGGER != null && ModdedConfigs.logsEnabled())
-                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation");
-            populateConductanceMatrix(eliminatedUpdates >= 100);
+                LOGGER.debug("Cumulated conductance updates triggered admittance matrix recalculation ({} {} {})",
+                        conductanceUpdates, conductanceDelta, eliminatedUpdates);
+            populateConductanceMatrix(eliminatedUpdates >= eliminatedCount * 40);
+        } else if(currentMultiTick != multiTicks) {
+            var old = currentMultiTick;
+            for(var wire : wires) {
+                if(wire instanceof ITimeAwareWire) {
+                    var Gold = wire.conductance();
+                    currentMultiTick = multiTicks;
+                    var Gnew = wire.conductance();
+                    currentMultiTick = old;
+                    updateConductance(wire, Gnew - Gold);
+                }
+            }
+            currentMultiTick = multiTicks;
         }
     }
 
@@ -795,14 +939,14 @@ public class ElectricalNetwork {
     }
 
     private void prepareScaled(DynamicallyTypedMatrix workMatrix) {
-        if(scalesAge >= 20) {
+        if(scalesAge >= MAX_SCALE_REUSE_COUNT) {
             computeScales(workMatrix);
             recalculateScales = true;
         }
         if(recalculateScales) {
             workMatrix.multColumns(columnScales, ScaledJ);
             ScaledJ.multRows(rowScales, null);
-            ScaledJ.refactorize();
+            ScaledJ.markRefactorize();
             recalculateScales = false;
         }
     }
@@ -840,11 +984,13 @@ public class ElectricalNetwork {
     }
 
     public void computeResidual(DynamicallyTypedMatrix workMatrix, DMatrixRMaj state) {
-        workMatrix.mult(state, ResidualVector);
+//        workMatrix.mult(state, ResidualVector);
+        ResidualVector.zero();
         CommonOps_DDRM.subtract(ResidualVector, ReducedRHSVector, ResidualVector);
         for(var hook : innerHooks) {
             hook.addResidual(this::residualAdd);
         }
+        CommonOps_DDRM.changeSign(ResidualVector);
     }
 
     private void columnScales(DynamicallyTypedMatrix matrix) {
@@ -852,7 +998,7 @@ public class ElectricalNetwork {
         for(int i = 0; i < n; ++i) {
             double max = 0;
             for(int j = 0; j < n; ++j) {
-                var v = Math.abs(matrix.get(j, i));
+                var v = Math.abs(matrix.unsafe_get(j, i));
                 max += v * v;
             }
             if(max == 0) {
@@ -872,7 +1018,7 @@ public class ElectricalNetwork {
             }
             double max = 0;
             for(int j = 0; j < n; ++j)  {
-                var v = Math.abs(matrix.get(i, j));
+                var v = Math.abs(matrix.unsafe_get(i, j));
                 max += v * v;
             }
             if(max == 0) {
@@ -907,15 +1053,56 @@ public class ElectricalNetwork {
         if(hasHooks() && i < max - 10) {
             countUpdates = false;
             for(var hook : innerHooks) {
-                if(!(hook instanceof PNJunctionWire) && i % 2 != 0)
-                    continue;
                 hook.startIteration();
             }
             countUpdates = true;
         }
     }
 
-    public void calculate() {
+    protected void convergenceProblems(double residual, DMatrixRMaj ResidualVector) {
+
+    }
+
+    private void verifyConvergence(double norm, int i, int maxIterations, DMatrixRMaj ResidualVector) {
+        if (norm > minimumAllowedPrecision) {
+            if(converged)
+                convergenceProblems(norm, ResidualVector);
+            converged = false;
+            if (LOGGER != null) {
+                if (ModdedConfigs.logsEnabled()) {
+                    LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
+                }
+            } else {
+                System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
+            }
+        } else {
+            converged = i < maxIterations - 10;
+            if (!converged) {
+                if (LOGGER != null) {
+                    LOGGER.debug("Dirty converge at {} iterations", i);
+                } else {
+                    System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
+                }
+            } else {
+                if (LOGGER == null) {
+                    System.out.printf("Converged after %d iterations\n", i);
+                }
+            }
+            if (converged && warmUpTicks > 0) {
+                // This effectively freezes component states and allows the network
+                // to settle completely after a structure change (or world load).
+                --warmUpTicks;
+                converged = false;
+            }
+        }
+    }
+
+    @Override
+    public int getStamp() {
+        return stamp;
+    }
+
+    public void prepare(int multiTicks) {
         if(sourceCount == 0) {
             converged = true;
             for(var hook : outerHooks)
@@ -928,104 +1115,156 @@ public class ElectricalNetwork {
                 hook.postUpperSolve();
             return;
         }
-        for(var hook : outerHooks)
-            hook.preSolve();
 
-        prepareMatrices();
+        // Verify possession of nodes
+        for(var node : nodes) {
+            if(node.getNetwork() != this) {
+                PowerGrid.LOGGER.warn("INVALID NODE POSSESSION {}", node);
+            }
+        }
+
+        prepareMatrices(multiTicks);
+    }
+
+    public void singleTick() {
+        if(sourceCount == 0)
+            return;
+        ++stamp;
+        PERF.start();
+        for (var hook : outerHooks)
+            hook.preSolve();
         if(eliminatedChanged) {
-            // Make sure eliminated Jacobian is factorized for RHS compute
+            // Make sure eliminated Jacobian is factorized for the RHS compute
             calculateEliminatedMatrices();
         }
         computeRHS();
 
-        PERF.start();
         int maxIterations = this.maxIterations.apply(hasHooks());
         int i;
         double norm = 0;
-        for(i = 0; i < maxIterations; ++i) {
+        for (i = 0; i < maxIterations; ++i) {
             iterHooks(i, maxIterations, norm);
             var workMatrix = getWorkMatrix();
             computeResidual(workMatrix, StateVector);
-            norm = NormOps_DDRM.normP1(ResidualVector);
-            if(norm < PRECISION)
+
+            workMatrix.mult(StateVector, AuxiliaryVector);
+            CommonOps_DDRM.subtract(AuxiliaryVector, ResidualVector, AuxiliaryVector);
+            var nextNorm = NormOps_DDRM.normP1(AuxiliaryVector);
+            var dNorm = Math.abs(nextNorm - norm);
+            norm = nextNorm;
+            if (norm < absoluteStoppingCriterion || dNorm < relativeStoppingCriterion)
                 break;
-            prepareScaled(workMatrix);
+            if (converged && i >= maxIterations - 12) {
+                // Right before non-linear devices are disabled.
+                // Only append new problem frames if the network has been converging before.
+                converged = norm < minimumAllowedPrecision;
+                if(!converged)
+                    convergenceProblems(norm, AuxiliaryVector);
+            }
 
-            // Perform Newton iterations
-            AuxiliaryVector.setTo(ResidualVector);
-            CommonOps_DDRM.multRows(rowScales, AuxiliaryVector);
+            if(enableRowExchange) {
+                var rowRecalc = A0.isMarked();
+                for (var row : changedRows) {
+                    rowRecalc = row.solveRow(A0, rowRecalc, changedRows);
+                }
+                for (int j = changedRows.size() - 1; j >= 0; --j) {
+                    changedRows.get(j).apply(ResidualVector);
+                }
+                workMatrix = A0;
+            } else {
+                workMatrix.markRefactorize();
+                changedRows.clear();
+                A0.setTo(workMatrix);
+                enableRowExchange = true;
+            }
 
-            var deltaX = solver.solve(ScaledJ, AuxiliaryVector, false);
+            if(SCALING) {
+                prepareScaled(workMatrix);
+                CommonOps_DDRM.multRows(rowScales, ResidualVector);
+                workMatrix = ScaledJ;
+            }
+
+            var deltaX = solver.solve(workMatrix, ResidualVector, false);
             if (deltaX == null)
                 continue;
 
             var valid = !MatrixFeatures_DDRM.hasUncountable(deltaX);
-            if(valid) {
-                var alpha = i < 4 ? 0.75 : 1.0;
-                var applied = false;
-                CommonOps_DDRM.multRows(columnScales, deltaX);
-                var PrevState = StateVector;
-                StateVector = AuxiliaryVector;
-                while(alpha > 0.0001) {
-                    // Fully recompute the residual each time
-                    CommonOps_DDRM.add(PrevState, -alpha, deltaX, StateVector);
-                    iterHooks(i, maxIterations, norm);
-                    workMatrix = getWorkMatrix();
-                    computeResidual(workMatrix, StateVector);
-                    var newNorm = NormOps_DDRM.normP1(ResidualVector);
-                    if(newNorm < norm) {
-                        applied = true;
-                        PrevState.setTo(AuxiliaryVector);
-                        break;
-                    }
-                    if(alpha > 1) {
-                        alpha = 1;
-                    } else {
-                        alpha *= 0.5;
-                    }
-                }
-                StateVector = PrevState;
-                // If network has hooks they might alter the residual
-                // and still allow for convergence in the next iteration.
-                if(!applied && !hasHooks()) {
-                    break;
-                }
+            if (valid) {
+                if(SCALING)
+                    CommonOps_DDRM.multRows(columnScales, deltaX);
+                StateVector.setTo(deltaX);
             } else {
                 StateVector.zero();
                 solver.zero();
             }
         }
-        if(norm > PRECISION) {
-            converged = false;
-            if(LOGGER != null) {
-                if(ModdedConfigs.logsEnabled()) {
-                    LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
-                }
-            } else {
-                System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
-            }
-        } else {
-            converged = i < maxIterations - 10;
-            if(!converged) {
-                if(LOGGER != null) {
-                    LOGGER.debug("Dirty converge at {} iterations", i);
-                } else {
-                    System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
-                }
-            } else {
-                if(LOGGER == null) {
-                    System.out.printf("Converged after %d iterations\n", i);
-                }
-            }
-            if(converged && warmUpTicks > 0) {
-                // This effectively freezes component states and allows the network
-                // to settle completely after a structure change (or world load).
-                --warmUpTicks;
-                converged = false;
-            }
-        }
-        PERF.end();
-        for(var hook : outerHooks)
+        verifyConvergence(norm, i, maxIterations, AuxiliaryVector);
+        for (var hook : outerHooks)
             hook.postUpperSolve();
+        PERF.end();
+    }
+
+    public void calculate(int multiTicks) {
+        prepare(multiTicks);
+        for(int t = 0; t < multiTicks; ++t) {
+            singleTick();
+        }
+    }
+
+    public enum SolverType {
+        DIRECT, BICGSTAB, GMRES
+    }
+
+    private static class ExchangeRow {
+        private final int index;
+        private final DMatrixRMaj changedRow;
+        private final DMatrixRMaj solvedCoefficients;
+        private boolean recalculate;
+
+        public ExchangeRow(int index, DynamicallyTypedMatrix rowSource) {
+            this.index = index;
+            int size = rowSource.getNumRows();
+            changedRow = new DMatrixRMaj(1, size);
+            for(int i = 0; i < size; ++i) {
+                changedRow.unsafe_set(0, i, rowSource.get(index, i));
+            }
+            solvedCoefficients = new DMatrixRMaj(1, size);
+            recalculate = true;
+        }
+
+        public void update(int index, double change) {
+            changedRow.add(0, index, change);
+            recalculate = true;
+        }
+
+        public boolean solveRow(DynamicallyTypedMatrix A0, boolean force, List<ExchangeRow> allRows) {
+            if(!recalculate && !force)
+                return false;
+            A0.solveRow(changedRow, solvedCoefficients);
+            // Apply rows up to this row (assumes that the collection has fixed ordering)
+            var vec = solvedCoefficients.getData();
+            for(var row : allRows) {
+                if(row == this)
+                    break;
+                var x = vec[row.index] / row.solvedCoefficients.unsafe_get(0, row.index);
+                vec[row.index] = x;
+                for(int i = 0; i < changedRow.getNumCols(); ++i) {
+                    if(i == row.index)
+                        continue;
+                    vec[i] -= x * row.solvedCoefficients.unsafe_get(0, i);
+                }
+            }
+            recalculate = false;
+            return true;
+        }
+
+        public void apply(DMatrixRMaj residuals) {
+            double x = residuals.unsafe_get(index, 0);
+            for(int i = 0; i < solvedCoefficients.getNumCols(); ++i) {
+                if(i != index)
+                    x -= residuals.unsafe_get(i, 0) * solvedCoefficients.unsafe_get(0, i);
+            }
+            residuals.unsafe_set(index, 0, x / solvedCoefficients.unsafe_get(0, index));
+        }
     }
 }

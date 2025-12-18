@@ -25,7 +25,7 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class Voltage {
-    private static void voltage(String key, ChatFormatting color, float value, Player player, List<Component> tooltip) {
+    public static void voltage(String key, ChatFormatting color, float value, Player player, List<Component> tooltip) {
         boolean hasGoggles = GogglesItem.isWearingGoggles(player);
 
         Lang.translate(key)

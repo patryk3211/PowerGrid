@@ -29,18 +29,17 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
     private final Map<INode, Integer> optimizerScores = new HashMap<>();
     private boolean lockScores = false;
 
-    public OptimizingElectricalNetwork(boolean addGMin) {
-        super(addGMin);
+    public OptimizingElectricalNetwork(boolean addGMin, SolverType solver) {
+        super(addGMin, solver);
     }
 
     @Override
-    public void calculate() {
+    public void prepare(int multiTicks) {
         if(optimizerCounter++ >= 5) {
             optimizerCounter = 0;
             optimizerRoutine();
         }
-
-        super.calculate();
+        super.prepare(multiTicks);
     }
 
     @Override
@@ -48,7 +47,7 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
         super.addNode(node);
         if(node instanceof FloatingNode) {
             // Only floating nodes get scores.
-//            optimizerScores.put(node, 10);
+            optimizerScores.put(node, 10);
         } else if(node instanceof ICouplingNode coupling) {
             for(var coupled : coupling.coupledNodes()) {
                 unoptimizeNode(coupled);
@@ -131,6 +130,8 @@ public class OptimizingElectricalNetwork extends ElectricalNetwork {
 
     @Override
     public void merge(ElectricalNetwork other) {
+        if(other == this)
+            return;
         // This ensures proper (un)optimization
         other.nodes.forEach(node -> {
             if(node instanceof IElectricNode)

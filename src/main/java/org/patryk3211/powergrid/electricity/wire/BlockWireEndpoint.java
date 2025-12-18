@@ -21,6 +21,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectric;
@@ -75,6 +76,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
         return IElectric.getAt(world, pos);
     }
 
+    @Nullable
     public ElectricBehaviour getElectricBehaviour(Level world) {
         if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
             return null;
@@ -111,7 +113,7 @@ public class BlockWireEndpoint implements IWireEndpoint {
                 network.addNode(node);
             return;
         }
-        behaviour.joinNetwork(network);
+        behaviour.joinNetwork(network, terminal);
     }
 
     @Override

@@ -17,10 +17,8 @@ package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
-import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
@@ -38,14 +36,15 @@ public class DiodeComponent extends OrientableComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        // 1N4007 diode model
-        var pnJunctionWire = new PNJunctionWire(5.47e-9, 0.0414f,22, 1.783, builder.terminalNode(1), builder.terminalNode(0));
+        // Variation of 1N4007 diode model
+        var pnJunctionWire = new PNJunctionWire(5.47e-9, 0.075f,22, 1.783,
+                builder.terminalNode(1), builder.terminalNode(0));
         builder.add(pnJunctionWire);
         thermals.builder()
-                .setMaxPower(3, 175)
+                .setMaxPower(25, 175)
                 .setOverheatTemperature(175)
-                .setThermalMass(0.0025f)
-                .withTemperatureCallback(temperature -> { pnJunctionWire.setTemperatureCelsius(temperature); })
+                .setThermalMass(0.05f)
+                .withTemperatureCallback(pnJunctionWire::setTemperatureCelsius)
                 .addHeatSource(pnJunctionWire);
     }
 }

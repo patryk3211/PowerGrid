@@ -19,7 +19,10 @@ import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -46,7 +49,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
 
         if(bulbState != null) {
             bulbState.tick();
-            setChanged();
+            setUnsaved();
         }
     }
 
@@ -134,6 +137,9 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
                     var item = usedStack.getItem();
                     if(item instanceof ILightBulb bulb) {
                         bulbState = bulb.createState(this);
+                        if(bulb.canBeDyed() && player.getOffhandItem().getItem() instanceof DyeItem dye) {
+                            bulbState.setColor(dye.getDyeColor());
+                        }
                         if (!player.isCreative())
                             usedStack.shrink(1);
                     }
@@ -173,5 +179,15 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         if(bulbState != null)
             return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, bulbState.getItem());
         return ItemRequirement.NONE;
+    }
+
+    public InteractionResult setColor(DyeColor color) {
+        if(bulbState == null)
+            return InteractionResult.PASS;
+        if(bulbState.setColor(color)) {
+            notifyUpdate();
+            return InteractionResult.SUCCESS;
+        }
+        return InteractionResult.PASS;
     }
 }

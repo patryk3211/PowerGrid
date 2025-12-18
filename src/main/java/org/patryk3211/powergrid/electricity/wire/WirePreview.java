@@ -69,7 +69,7 @@ public class WirePreview {
     }
 
     private static void renderCord(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target, ItemStack wireStack) {
-        var endpoint = WireEndpointType.deserialize(wireStack.getTag());
+        var endpoint = WireEndpointType.deserialize(wireStack.getTagElement("Connection"));
         if(!(endpoint instanceof ICordEndpoint cordEndpoint))
             return;
         CordRenderer.renderPreview(cordEndpoint, player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
@@ -89,7 +89,7 @@ public class WirePreview {
         if(target.getType() != HitResult.Type.BLOCK)
             return;
 
-        var tag = wireStack.getTag();
+        var tag = wireStack.getTagElement("Connection");
         var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
         float thickness = wireItem.getWireThickness();
 
@@ -188,7 +188,7 @@ public class WirePreview {
         if(!(wireStack.getItem() instanceof WireItem wire))
             return null;
 
-        var tag = wireStack.getTag();
+        var tag = wireStack.getTagElement("Connection");
         var endpoint = WireEndpointType.deserialize(tag);
         if(endpoint == null)
             return null;

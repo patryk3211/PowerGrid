@@ -47,7 +47,7 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
     protected boolean updateAirFlow;
 
     private ElectricWire motor;
-    private float prevSpeed;
+    private int prevSpeed;
 
     public ElectricFanBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -153,7 +153,7 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
         super.tick();
 
         boolean server = !level.isClientSide || isVirtual();
-        var speed = getSpeed();
+        var speed = (int) getSpeed();
         if(speed != prevSpeed) {
             onSpeedChanged();
             prevSpeed = speed;

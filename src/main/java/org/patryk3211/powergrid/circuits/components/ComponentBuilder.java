@@ -23,10 +23,10 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
 public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Component, T, P, ComponentBuilder<T, P>> {
@@ -56,7 +56,8 @@ public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Co
     }
 
     public ComponentBuilder<T, P> item(ItemLike item) {
-        onRegisterAfter(Registries.ITEM, component -> component.setItem(item::asItem));
+        addMiscData(AbstractPowerGridRegistrate.COMPONENT_ITEMS, provider ->
+                provider.add(getName(), item));
         return this;
     }
 

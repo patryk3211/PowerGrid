@@ -29,27 +29,28 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
 import org.patryk3211.powergrid.config.CWire;
-import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.light.bulb.LvLightBulb;
-import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WireProperties;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
-import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
-import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
+import org.patryk3211.powergrid.electricity.light.string.StringLightCordItem;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
+import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
+import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
+import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
 
 import java.util.function.Supplier;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
-import static org.patryk3211.powergrid.collections.ModdedTags.forgeItemTag;
-import static org.patryk3211.powergrid.collections.ModdedTags.plates;
+import static org.patryk3211.powergrid.collections.ModdedTags.*;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.barrier;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParent;
 
@@ -57,17 +58,17 @@ public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
             .transform(CWire.set(0.0015f, 16, 1.0f, 80))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
-            .tag(ModdedTags.Item.COIL_WIRE.tag, ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
+            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag, wires("copper"))
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(CWire.set(0.005f, 32, 2.0f, 160))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f))
-            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.FUSE_RESETTING.tag)
+            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.FUSE_RESETTING.tag, wires("iron"))
             .register();
     public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
             .transform(CWire.set(0.003f, 8, 0.8f, 160))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f))
-            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
+            .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag, wires("gold"))
             .register();
     public static final ItemEntry<WireItem> INSULATED_COPPER_WIRE = REGISTRATE.item("insulated_copper_wire", WireItem::new)
             .transform(CWire.set(0.0015f, 16, 1.2f, 70))
@@ -77,6 +78,10 @@ public class ModdedItems {
     public static final ItemEntry<CordItem> CORD = REGISTRATE.item("copper_cord", CordItem::new)
             .transform(CWire.set(0.0015f, 8, 2.0f, 60))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f, true))
+            .register();
+    public static final ItemEntry<StringLightCordItem> STRING_LIGHT_CORD = REGISTRATE.item("string_light_cord", StringLightCordItem::new)
+            .transform(CWire.set(0.0015f, 8, 2.0f, 60))
+            .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f))
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
@@ -88,35 +93,49 @@ public class ModdedItems {
     public static final ItemEntry<DebugItem> DEBUG_ITEM = REGISTRATE.item("debug", DebugItem::new).register();
 
     public static final ItemEntry<LvLightBulb> LV_LIGHT_BULB = REGISTRATE.item("lv_light_bulb", LvLightBulb::new)
-            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
-                case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
-                case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
-                case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
-                case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
-            }))
+            .transform(LightBulb.setModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/light_bulb";
+                case LOW_POWER, ON -> "block/lamps/light_bulb_on";
+                case BROKEN -> "block/lamps/light_bulb_broken";
+                case LIGHT -> "block/lamps/light_bulb_light";
+            })))
+            .transform(LightBulb.setDyedModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/dyed_light_bulb";
+                case LOW_POWER, ON -> "block/lamps/dyed_light_bulb_on";
+                case BROKEN -> "block/lamps/dyed_light_bulb_broken";
+                case LIGHT -> "block/lamps/dyed_light_bulb_light";
+                case BULB -> "block/lamps/dyed_light_bulb_bulb";
+            })))
             .transform(LightBulb.setProperties(3, 12, 20, 0.001f))
             .model(itemWithParent("block/lamps/light_bulb"))
             .lang("LV Light Bulb")
             .register();
 
     public static final ItemEntry<LightBulb> LIGHT_BULB = REGISTRATE.item("light_bulb", LightBulb::new)
-            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
-                case OFF -> ModdedPartialModels.LIGHT_BULB_OFF;
-                case LOW_POWER, ON -> ModdedPartialModels.LIGHT_BULB_ON;
-                case BROKEN -> ModdedPartialModels.LIGHT_BULB_BROKEN;
-                case LIGHT -> ModdedPartialModels.LIGHT_BULB_LIGHT;
-            }))
+            .transform(LightBulb.setModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/light_bulb";
+                case LOW_POWER, ON -> "block/lamps/light_bulb_on";
+                case BROKEN -> "block/lamps/light_bulb_broken";
+                case LIGHT -> "block/lamps/light_bulb_light";
+            })))
+            .transform(LightBulb.setDyedModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/dyed_light_bulb";
+                case LOW_POWER, ON -> "block/lamps/dyed_light_bulb_on";
+                case BROKEN -> "block/lamps/dyed_light_bulb_broken";
+                case LIGHT -> "block/lamps/dyed_light_bulb_light";
+                case BULB -> "block/lamps/dyed_light_bulb_bulb";
+            })))
             .transform(LightBulb.setProperties(30, 120, 120, 0.005f))
             .model(itemWithParent("block/lamps/light_bulb"))
             .register();
 
     public static final ItemEntry<GrowthLamp> GROWTH_LAMP = REGISTRATE.item("growth_lamp", GrowthLamp::new)
-            .transform(LightBulb.setModelProvider(() -> state -> switch(state) {
-                case OFF -> ModdedPartialModels.GROWTH_LAMP_OFF;
-                case LOW_POWER, ON -> ModdedPartialModels.GROWTH_LAMP_ON;
-                case BROKEN -> ModdedPartialModels.GROWTH_LAMP_BROKEN;
-                case LIGHT -> ModdedPartialModels.GROWTH_LAMP_LIGHT;
-            }))
+            .transform(LightBulb.setModelNameProvider(() -> state -> PowerGrid.asResource(switch(state) {
+                case OFF -> "block/lamps/growth_lamp";
+                case LOW_POWER, ON -> "block/lamps/growth_lamp_on";
+                case BROKEN -> "block/lamps/growth_lamp_broken";
+                case LIGHT -> "block/lamps/growth_lamp_light";
+            })))
             .transform(LightBulb.setProperties(120, 240, 120, 0.01f))
             .model(itemWithParent("block/lamps/growth_lamp"))
             .register();
@@ -139,6 +158,7 @@ public class ModdedItems {
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
     public static final ItemEntry<Item> REGULATOR_TUBE = ingredient("regulator_tube");
     public static final ItemEntry<Item> NEON_BULB = ingredient("neon_bulb");
+    public static final ItemEntry<Item> BARRETTER_TUBE = ingredient("barretter_tube");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
@@ -149,6 +169,7 @@ public class ModdedItems {
             .tag(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)
             .register();
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BATTERY = sequencedIngredient("incomplete_battery");
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_PUNCH_CARD = sequencedIngredient("incomplete_punch_card");
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
             .transform(customRenderer(() -> ElectroZapperItemRenderer::new))
@@ -181,6 +202,9 @@ public class ModdedItems {
     public static final ItemEntry<MultimeterItem> MULTIMETER = REGISTRATE.item("multimeter", MultimeterItem::new)
             .model(itemWithParent("item/multimeter/base"))
             .transform(customRenderer(() -> MultimeterItemRenderer::new))
+            .register();
+
+    public static final ItemEntry<PunchCardItem> PUNCH_CARD = REGISTRATE.item("punch_card", PunchCardItem::new)
             .register();
 
     @SuppressWarnings("EmptyMethod")

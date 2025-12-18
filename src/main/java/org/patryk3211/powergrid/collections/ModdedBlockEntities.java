@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.content.kinetics.base.ShaftVisual;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardRenderer;
@@ -23,14 +24,15 @@ import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlockEntity;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlockEntity;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlockEntity;
 import org.patryk3211.powergrid.electricity.contactor.ContactorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
+import org.patryk3211.powergrid.electricity.crt.CRTBlockEntity;
+import org.patryk3211.powergrid.electricity.crt.CRTRenderer;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlockEntity;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchRenderer;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchVisual;
-import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlockEntity;
+import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
@@ -70,6 +72,10 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorRenderer;
+import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
+import org.patryk3211.powergrid.kinetics.plotter.PlotterRenderer;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderRenderer;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlockEntity;
 import org.patryk3211.powergrid.kinetics.servo.ServoRenderer;
@@ -115,6 +121,13 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("power_meter", PowerGaugeBlockEntity::new)
                     .validBlocks(ModdedBlocks.POWER_METER)
                     .renderer(() -> GaugeRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<PlotterBlockEntity> PLOTTER =
+            REGISTRATE.blockEntity("plotter", PlotterBlockEntity::new)
+                    .visual(() -> ShaftVisual::new)
+                    .validBlock(ModdedBlocks.PLOTTER)
+                    .renderer(() -> PlotterRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<HeaterBlockEntity> HEATING_COIL =
@@ -171,6 +184,13 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("spark_gap", SparkGapBlockEntity::new)
                     .validBlock(ModdedBlocks.SPARK_GAP)
                     .renderer(() -> SparkGapRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<HvBreakerBlockEntity> HV_BREAKER =
+            REGISTRATE.blockEntity("hv_breaker", HvBreakerBlockEntity::new)
+                    .visual(() -> ShaftVisual::new)
+                    .validBlock(ModdedBlocks.HV_BREAKER)
+                    .renderer(() -> HvBreakerRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<ContactorBlockEntity> CONTACTOR =
@@ -304,6 +324,29 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<SocketBlockEntity> SOCKET =
             REGISTRATE.blockEntity("socket", SocketBlockEntity::new)
                     .validBlock(ModdedBlocks.SOCKET)
+                    .register();
+
+    public static final BlockEntityEntry<CarbonPileCoilBlockEntity> CARBON_PILE_COIL =
+            REGISTRATE.blockEntity("carbon_pile_coil", CarbonPileCoilBlockEntity::new)
+                    .validBlock(ModdedBlocks.CARBON_PILE_COIL)
+                    .register();
+
+    public static final BlockEntityEntry<CarbonPileBlockEntity> CARBON_PILE =
+            REGISTRATE.blockEntity("carbon_pile", CarbonPileBlockEntity::new)
+                    .validBlock(ModdedBlocks.CARBON_PILE)
+                    .register();
+
+    public static final BlockEntityEntry<CRTBlockEntity> CRT =
+            REGISTRATE.blockEntity("crt", CRTBlockEntity::new)
+                    .validBlocks(ModdedBlocks.CRT, ModdedBlocks.ANDESITE_CRT)
+                    .renderer(() -> CRTRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<PunchCardReaderBlockEntity> PUNCH_CARD_READER =
+            REGISTRATE.blockEntity("punch_card_reader", SubstituteBlockEntityProvider.INSTANCE.get(PunchCardReaderBlockEntity.class))
+                    .visual(() -> ShaftVisual::new)
+                    .validBlock(ModdedBlocks.PUNCH_CARD_READER)
+                    .renderer(() -> PunchCardReaderRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

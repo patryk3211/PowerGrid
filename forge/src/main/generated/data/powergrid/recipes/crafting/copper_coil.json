@@ -3,16 +3,16 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "powergrid:wire"
+      "tag": "forge:wires/copper"
     },
     {
-      "item": "powergrid:wire"
+      "tag": "forge:wires/copper"
     },
     {
-      "item": "powergrid:wire"
+      "tag": "forge:wires/copper"
     },
     {
-      "item": "powergrid:wire"
+      "tag": "forge:wires/copper"
     },
     {
       "item": "minecraft:stick"

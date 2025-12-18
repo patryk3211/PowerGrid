@@ -22,11 +22,11 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.utility.Lang;
@@ -43,8 +43,19 @@ public class CordItem extends WireItem {
         PLACEMENT_HANDLERS.add(new IAcceptCord.Handler());
     }
 
+    public interface CordEntityFactory {
+        CordEntity create(ServerLevel level, ICordEndpoint endpoint1, ICordEndpoint endpoint2, ItemStack items, @Nullable Float resistance);
+    }
+
+    private final CordEntityFactory factory;
+
     public CordItem(Properties settings) {
+        this(settings, CordEntity::create);
+    }
+
+    public CordItem(Properties settings, CordEntityFactory factory) {
         super(settings);
+        this.factory = factory;
     }
 
     private static InteractionResult connect(ICordEndpoint endpoint1, ICordEndpoint endpoint2, UseOnContext context) {
@@ -101,10 +112,8 @@ public class CordItem extends WireItem {
         var terminal2Pos = endpoint2.getExactPosition(level);
 
         var stack = context.getItemInHand();
-        assert stack.getItem() instanceof IWire;
-        var item = (IWire) stack.getItem();
-        var tag = stack.getTag();
-        assert tag != null;
+        assert stack.getItem() instanceof CordItem;
+        var item = (CordItem) stack.getItem();
 
         float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
         if(distance > item.getMaximumLength()) {
@@ -123,7 +132,8 @@ public class CordItem extends WireItem {
             return InteractionResult.SUCCESS;
         ServerLevel serverWorld = (ServerLevel) level;
 
-        var entity = CordEntity.create(serverWorld, endpoint1, endpoint2, new ItemStack(stack.getItemHolder(), requiredItemCount), null);
+        var entity = item.factory.create(serverWorld, endpoint1, endpoint2,
+                stack.copyWithCount(requiredItemCount), null);
 
         if(context.getPlayer() != null) {
             var offItem = context.getPlayer().getOffhandItem();
@@ -146,19 +156,19 @@ public class CordItem extends WireItem {
 
     private static InteractionResult addEndpoint(UseOnContext context, ICordEndpoint endpoint) {
         var stack = context.getItemInHand();
-        var firstPoint = WireEndpointType.deserialize(stack.getTag());
+        var firstPoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
         if(firstPoint == null) {
-            stack.setTag(endpoint.serialize());
+            stack.getOrCreateTag().put("Connection", endpoint.serialize());
             IElectric.sendMessage(context, Lang.translate("message.cord_next").style(ChatFormatting.GRAY).component());
             return InteractionResult.SUCCESS;
         } else if(firstPoint instanceof ICordEndpoint firstCordPoint) {
             // Both endpoints specified
             var result = connect(firstCordPoint, endpoint, context);
-            stack.setTag(null);
+            stack.removeTagKey("Connection");
             return result;
         } else {
             IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
-            stack.setTag(null);
+            stack.removeTagKey("Connection");
             return InteractionResult.FAIL;
         }
     }

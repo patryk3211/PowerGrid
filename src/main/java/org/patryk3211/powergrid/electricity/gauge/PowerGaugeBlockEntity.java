@@ -58,6 +58,11 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
     }
 
     @Override
+    public void electricalTick() {
+        applyPower(series);
+    }
+
+    @Override
     public void tick() {
         var current = Math.abs(getValue());
         if(current > maxValue) {
@@ -66,7 +71,6 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
             dialTarget = current / maxValue;
         }
 
-        applyPower(series);
         super.tick();
     }
 

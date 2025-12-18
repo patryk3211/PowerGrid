@@ -21,6 +21,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.InteractionHand;
@@ -70,6 +71,8 @@ public class ClientWireInteractions {
                     point2 = segment.getB();
                 }
             }
+            index1 = Mth.clamp(index1, 0, currentEntity.segments.size() - 1);
+            index2 = Mth.clamp(index2, 0, currentEntity.segments.size() - 1);
             for(int i = index1; i <= index2; ++i) {
                 var wireSegment = currentEntity.segments.get(i);
                 Vec3 start = wireSegment.start, end = wireSegment.start.add(wireSegment.vector());

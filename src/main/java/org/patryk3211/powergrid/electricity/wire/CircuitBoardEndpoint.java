@@ -27,6 +27,8 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
+import java.util.Objects;
+
 public class CircuitBoardEndpoint implements IWireEndpoint {
     private BlockPos pos;
     private int x;
@@ -90,5 +92,20 @@ public class CircuitBoardEndpoint implements IWireEndpoint {
             var node = bundle.iterator().next();
             return baked.getNode(node);
         }).orElse(null);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == this)
+            return true;
+        if(obj instanceof CircuitBoardEndpoint other) {
+            return pos.equals(other.pos) && x == other.x && y == other.y;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos, x, y);
     }
 }

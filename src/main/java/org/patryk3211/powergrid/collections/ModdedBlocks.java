@@ -15,12 +15,15 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.api.contraption.BlockMovementChecks.CheckResult;
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.decoration.encasing.CasingBlock;
+import com.simibubi.create.content.decoration.encasing.EncasedCTBehaviour;
+import com.simibubi.create.content.decoration.encasing.EncasingRegistry;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
@@ -35,6 +38,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -55,14 +59,15 @@ import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
+import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlock;
 import org.patryk3211.powergrid.electricity.contactor.ContactorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlock;
 import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlock;
+import org.patryk3211.powergrid.electricity.crt.CRTBlock;
+import org.patryk3211.powergrid.electricity.crt.EncasedCRTBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.LvButtonBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.LvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.MvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
@@ -72,7 +77,7 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
-import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlock;
+import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
@@ -82,6 +87,7 @@ import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlock;
 import org.patryk3211.powergrid.electricity.wireconnector.HeavyConnectorBlock;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
@@ -94,10 +100,14 @@ import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommut
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlock;
 import org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock;
+import org.patryk3211.powergrid.kinetics.plotter.PlotterBlock;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlock;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlock;
 import org.patryk3211.powergrid.kinetics.servo.ServoBlock;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
+import static com.simibubi.create.foundation.data.CreateRegistrate.casingConnectivity;
+import static com.simibubi.create.foundation.data.CreateRegistrate.connectedTextures;
 import static com.simibubi.create.foundation.data.TagGen.*;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
@@ -142,6 +152,8 @@ public class ModdedBlocks {
             .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry()))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .onRegister(connectedTextures(() -> new EncasedCTBehaviour(ModdedPartialModels.CONDUCTIVE_CASING)))
+            .onRegister(casingConnectivity((block, cc) -> cc.makeCasing(block, ModdedPartialModels.CONDUCTIVE_CASING)))
             .simpleItem()
             .register();
 
@@ -218,6 +230,17 @@ public class ModdedBlocks {
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .item()
                 .model(gauge("block/gauge/item_power", "block/conductive_gauge"))
+                .build()
+            .register();
+
+    public static final BlockEntry<PlotterBlock> PLOTTER = REGISTRATE.block("plotter", PlotterBlock::new)
+            .blockstate(horizontalBlock("block/plotter/base"))
+            .initialProperties(SharedProperties::wooden)
+            .addLayer(() -> RenderType::translucent)
+            .transform(CStress.setImpact(2.0))
+            .transform(axeOrPickaxe())
+            .item()
+                .model(itemWithParent("block/plotter/item"))
                 .build()
             .register();
 
@@ -349,7 +372,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(2))
             .transform(CResistance.setResistance(0.1))
-            .transform(CThermal.maxPower(102.4, 2.0f))
+            .transform(CThermal.maxPower(153.6, 2.0f))
             .loot((tables, block) ->
                     tables.add(block, b -> LootTable.lootTable()
                             .withPool(LootPool.lootPool()
@@ -361,6 +384,19 @@ public class ModdedBlocks {
             .lang("HV Switch")
             .item()
                 .model(itemWithParent("block/switches/hv_switch"))
+                .build()
+            .register();
+
+    public static final BlockEntry<HvBreakerBlock> HV_BREAKER = REGISTRATE.block("hv_breaker", HvBreakerBlock::new)
+            .blockstate(horizontalBlock("block/switches/hv_breaker_block"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .transform(CStress.setImpact(2))
+            .transform(CResistance.setResistance(0.1))
+            .transform(CThermal.maxPower(102.4, 2.0f))
+            .lang("HV Breaker")
+            .item()
+                .model(itemWithParent("block/switches/hv_breaker_item"))
                 .build()
             .register();
 
@@ -648,6 +684,63 @@ public class ModdedBlocks {
             .blockstate(simple("block/grounding_rod"))
             .transform(pickaxeOnly())
             .simpleItem()
+            .register();
+
+    public static final BlockEntry<CarbonPileCoilBlock> CARBON_PILE_COIL = REGISTRATE.block("carbon_pile_coil", CarbonPileCoilBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(horizontalBlock("block/carbon_pile/coil"))
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(50))
+            .transform(CThermal.maxPower(100, 2.0f))
+            .item()
+                .model(itemWithParent("block/carbon_pile/coil"))
+                .build()
+            .register();
+
+    public static final BlockEntry<CarbonPileBlock> CARBON_PILE = REGISTRATE.block("carbon_pile", CarbonPileBlock::new)
+            .initialProperties(() -> Blocks.COAL_BLOCK)
+            .blockstate(carbonPile("block/carbon_pile"))
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(20))
+            .transform(CThermal.maxPower(1000, 2.0f))
+            .register();
+
+    public static final BlockEntry<CRTBlock> CRT = REGISTRATE.block("crt", CRTBlock::new)
+            .initialProperties(() -> Blocks.GLASS)
+            .lang("Cathode Ray Tube")
+            .blockstate(horizontalBlock("block/crt"))
+            .addLayer(() -> RenderType::translucent)
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistances("heater", 12, "coils", 40))
+            .transform(CThermal.maxPower(100, 3.0f))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<EncasedCRTBlock> ANDESITE_CRT = REGISTRATE.block("andesite_encased_crt", p -> new EncasedCRTBlock(p, AllBlocks.ANDESITE_CASING::get))
+            .initialProperties(SharedProperties::wooden)
+            .lang("Andesite Encased CRT")
+            .blockstate(horizontalBlock("block/crt_andesite"))
+            .addLayer(() -> RenderType::translucent)
+            .transform(axeOrPickaxe())
+            .properties(p -> p.mapColor(MapColor.PODZOL))
+            .transform(EncasingRegistry.addVariantTo(CRT))
+            .register();
+
+    public static BlockEntry<PunchCardReaderBlock> PUNCH_CARD_READER = REGISTRATE.block("punch_card_reader", PunchCardReaderBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(horizontalBlock("block/punch_card_reader/block"))
+            .addLayer(() -> RenderType::cutoutMipped)
+            .transform(pickaxeOnly())
+            .transform(CStress.setImpact(2))
+            .transform(CResistance.setResistance(1f))
+            .transform(CThermal.maxPower(10, 0.2f))
+            .item()
+                .model(itemWithParent("block/punch_card_reader/item"))
+                .build()
+            .register();
+
+    public static BlockEntry<StringLightBlock> STRING_LIGHT_BLOCK = REGISTRATE.block("string_light_block", StringLightBlock::new)
+            .blockstate(air())
             .register();
 
     public static void register() {

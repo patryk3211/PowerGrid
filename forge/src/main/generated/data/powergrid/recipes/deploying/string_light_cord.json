@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "powergrid:copper_cord"
+    },
+    {
+      "item": "powergrid:light_bulb"
+    }
+  ],
+  "results": [
+    {
+      "item": "powergrid:string_light_cord"
+    }
+  ]
+}

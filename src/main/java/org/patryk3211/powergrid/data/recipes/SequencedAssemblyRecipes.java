@@ -49,7 +49,7 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .addOutput(AllItems.COPPER_NUGGET, 2)
             .addOutput(Items.REPEATER, 3)
             .loops(1)
-            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.COPPER_COIL))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperCoil()))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.ELECTRON_TUBE))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.INTEGRATED_CIRCUIT))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.GOLD_NUGGET))),
@@ -61,6 +61,15 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(ModdedItems.EMPTY_CIRCUIT))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(AllItems.DOUGH))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
+            .addStep(PressingRecipe::new, rb -> rb)),
+
+    PUNCH_CARD = create("punch_card", b -> b.require(AllItems.CARDBOARD)
+            .transitionTo(ModdedItems.INCOMPLETE_PUNCH_CARD)
+            .addOutput(ModdedItems.PUNCH_CARD, 100)
+            .addOutput(Items.PAPER, 5)
+            .addOutput(AllItems.CARDBOARD, 5)
+            .loops(2)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.PAPER))
             .addStep(PressingRecipe::new, rb -> rb))
 
             ;

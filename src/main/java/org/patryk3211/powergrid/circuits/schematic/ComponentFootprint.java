@@ -21,15 +21,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.COLOR_COMPONENT_OUTLINE;
@@ -45,19 +44,18 @@ public class ComponentFootprint {
 
     private final SortedMap<Point, PadData> pads;
     private final boolean outline;
-    @Nullable
-    private final Supplier<Item> renderedItem;
+    private final boolean withItem;
     @Nullable
     private final Orientation arrow;
 
     private ItemStack renderedStack;
 
-    protected ComponentFootprint(int width, int height, SortedMap<Point, PadData> pads, boolean outline, @Nullable Supplier<Item> renderedItem, @Nullable Orientation arrow) {
+    protected ComponentFootprint(int width, int height, SortedMap<Point, PadData> pads, boolean outline, boolean withItem, @Nullable Orientation arrow) {
         this.width = width;
         this.height = height;
         this.pads = pads;
         this.outline = outline;
-        this.renderedItem = renderedItem;
+        this.withItem = withItem;
         this.arrow = arrow;
     }
 
@@ -75,7 +73,7 @@ public class ComponentFootprint {
     }
 
     @Environment(EnvType.CLIENT)
-    public void render(@NotNull GuiGraphics ctx, int x, int y, boolean hovering) {
+    public void render(@NotNull GuiGraphics ctx, @NotNull org.patryk3211.powergrid.circuits.components.Component component, int x, int y, boolean hovering) {
         var ms = ctx.pose();
         if(outline) {
             ms.pushPose();
@@ -85,7 +83,7 @@ public class ComponentFootprint {
         }
         renderPads(ctx, x, y);
 
-        if(renderedItem != null && !hovering) {
+        if(withItem && !hovering) {
             ms.pushPose();
             final int maxSize = 2;
             var scale = Math.min(Math.min(width, height), maxSize) / 16f * GRID_TO_GRID_SCALE;
@@ -103,7 +101,7 @@ public class ComponentFootprint {
                 ms.translate(0, offset, 0);
             }
             ms.scale(scale, scale, scale);
-            ctx.renderItem(getRenderedStack(), (int) (x / scale), (int) (y / scale));
+            ctx.renderItem(getRenderedStack(component), (int) (x / scale), (int) (y / scale));
             ms.popPose();
         }
         if(arrow != null) {
@@ -157,11 +155,11 @@ public class ComponentFootprint {
     }
 
     @Nullable
-    public ItemStack getRenderedStack() {
-        if(renderedItem == null)
+    public ItemStack getRenderedStack(org.patryk3211.powergrid.circuits.components.Component component) {
+        if(!withItem)
             return null;
         if(renderedStack == null)
-            renderedStack = renderedItem.get().getDefaultInstance();
+            renderedStack = ComponentRegistry.getItem(component).getDefaultInstance();
         return renderedStack;
     }
 
@@ -216,7 +214,7 @@ public class ComponentFootprint {
             pads.put(new Point(x, y), pad.getValue());
         }
 
-        var footprint = new ComponentFootprint(width, height, pads, this.outline, this.renderedItem, arrow == null ? null : arrow.rotate(orientation));
+        var footprint = new ComponentFootprint(width, height, pads, this.outline, withItem, arrow == null ? null : arrow.rotate(orientation));
         // Copy cached stack if one is available.
         footprint.renderedStack = this.renderedStack;
         return footprint;
@@ -225,7 +223,7 @@ public class ComponentFootprint {
     public static class Builder {
         private final int width, height;
         private final SortedMap<Point, PadData> pads = new TreeMap<>();
-        private Supplier<Item> itemSupplier;
+        private boolean withItem;
         private boolean outline = false;
         private Orientation arrow = null;
         @Nullable
@@ -278,8 +276,8 @@ public class ComponentFootprint {
             return this;
         }
 
-        public Builder withItem(Supplier<Item> itemSupplier) {
-            this.itemSupplier = itemSupplier;
+        public Builder withItem() {
+            this.withItem = true;
             return this;
         }
 
@@ -305,7 +303,7 @@ public class ComponentFootprint {
                 if (padIndices.last() != padIndices.size() - 1)
                     throw new IllegalStateException("Footprint pad indices must not contain any gaps");
             }
-            return new ComponentFootprint(width, height, pads, outline, itemSupplier, arrow);
+            return new ComponentFootprint(width, height, pads, outline, withItem, arrow);
         }
     }
 

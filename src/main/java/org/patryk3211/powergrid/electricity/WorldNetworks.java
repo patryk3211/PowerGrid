@@ -31,19 +31,17 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.*;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.node.INode;
-import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
-import org.patryk3211.powergrid.network.packets.TransmissionLineManagementS2CPacket;
-import org.patryk3211.powergrid.network.packets.TransmissionLineStateS2CPacket;
-import org.patryk3211.powergrid.utility.PlayerUtilities;
+import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,11 +61,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private final Map<OwnedFloatingNode, Set<TransmissionLinePart>> partNodeMap = new HashMap<>();
 
     private final Map<IWireEndpoint, Set<ServerPlayer>> trackers = new HashMap<>();
-    private final Set<IWireEndpoint> updatedEndpoints = new HashSet<>();
 
-    private final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
+    protected final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
     protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
+    private boolean runningDiscovery = false;
     private int syncTicks = 0;
+
+    private record SyncState(int lod) { }
+    private final Map<ServerPlayer, Map<ISynchronizedElement, SyncState>> syncStates = new HashMap<>();
 
     public WorldNetworks(Level world) {
         this.world = world;
@@ -84,10 +85,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void lineConnected(TransmissionLine line) {
         var id = line.getId();
         transmissionLines.put(id, line);
-        updatedEndpoints.add(line.getEndpoint1());
-        updatedEndpoints.add(line.getEndpoint2());
-        updatedEndpoints.add(line.getNode1().endpoint);
-        updatedEndpoints.add(line.getNode2().endpoint);
 
         var line1 = findLineMiddle(line.getNode1());
         if(line1 != null)
@@ -95,58 +92,192 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var line2 = findLineMiddle(line.getNode2());
         if(line2 != null)
             line2.splitAt(line.getNode2());
+        if(!runningDiscovery) {
+            islandDiscoveryQueue.add(line.getNode1().getNetwork());
+            islandDiscoveryQueue.add(line.getNode2().getNetwork());
+        }
         setDirty();
     }
 
     @Override
     public void lineDisconnected(TransmissionLine line) {
         transmissionLines.remove(line.getId());
-        islandDiscoveryQueue.add(line.getNetwork());
-        updatedEndpoints.add(line.getEndpoint1());
-        updatedEndpoints.add(line.getEndpoint2());
-        updatedEndpoints.add(line.getNode1().endpoint);
-        updatedEndpoints.add(line.getNode2().endpoint);
+        if(line.getNetwork() != null && !runningDiscovery)
+            islandDiscoveryQueue.add(line.getNetwork());
         setDirty();
     }
 
-    private void traceIsland(OwnedFloatingNode first) {
+    public static boolean canWeakCouple(TransmissionLine line) {
+        return ModdedConfigs.server().electricity.solver.splittingTransmissionLines.get() &&
+                line.getResistance() > ModdedConfigs.server().electricity.solver.transmissionLineThreshold.getF();
+    }
 
+    public void scheduleIslandDiscovery(ElectricalNetwork network) {
+        if(network != null)
+            islandDiscoveryQueue.add(network);
     }
 
     private void runIslandDiscoveryFor(ElectricalNetwork network) {
-        var visited = new HashSet<OwnedFloatingNode>();
-//        for(var node : network.getNodes()) {
-//            if(!(node instanceof OwnedFloatingNode owned))
-//                continue;
-//            if(visited.add(owned)) {
-//
-//            }
-//        }
+        var visited = new HashSet<IElectricNode>();
+        var islands = new ArrayList<Island>();
+        var couplings = new HashMap<CouplingKey, Set<TransmissionLine>>();
+        if(ModdedConfigs.logsEnabled())
+            PowerGrid.LOGGER.debug("Running island discovery for {}", network);
+
+        var queue = new ArrayList<>(network.getNodes());
+        queue.addAll(network.getLeafs());
+        while(!queue.isEmpty()) {
+            var node = queue.remove(0);
+            if(!(node instanceof IElectricNode enode))
+                continue;
+            if (!visited.add(enode))
+                continue;
+            Island island = null;
+            for(var otherIsland : islands) {
+                if(otherIsland.contains(node)) {
+                    island = otherIsland;
+                    break;
+                }
+            }
+            if(island == null) {
+                island = new Island(couplings);
+                islands.add(island);
+            }
+            island.add(enode);
+            for(var wire : globalGraph.getWires(enode)) {
+                if(wire instanceof TransmissionLine line && canWeakCouple(line)) {
+                    // Weak line can split islands.
+                    var otherNode = line.getNode1() == node ? line.getNode2() : line.getNode1();
+                    Island connectedIsland = null;
+                    for(var otherIsland : islands) {
+                        if(otherIsland.contains(otherNode)) {
+                            connectedIsland = otherIsland;
+                            break;
+                        }
+                    }
+                    if(connectedIsland == null) {
+                        connectedIsland = new Island(couplings);
+                        connectedIsland.add(otherNode);
+                        islands.add(connectedIsland);
+                    }
+                    if(connectedIsland != island) {
+                        island.addCoupling(connectedIsland, line);
+                        queue.add(otherNode);
+                        continue;
+                    }
+                }
+                for(var otherNode : wire.coupledNodes()) {
+                    if(otherNode == node)
+                        continue;
+                    island.add(otherNode);
+                    queue.add(otherNode);
+                    for(var otherIsland : islands) {
+                        if(otherIsland == island)
+                            continue;
+                        if(otherIsland.contains(otherNode)) {
+                            // Merge islands
+                            otherIsland.addAll(island);
+                            islands.remove(island);
+                            island = otherIsland;
+                            break;
+                        }
+                    }
+                }
+                island.add(wire);
+            }
+            var remove = new ArrayList<ICouplingNode>();
+            for(var coupling : globalGraph.getCouplings(enode)) {
+                if(coupling instanceof TransmissionLinePort) {
+                    // This should be handled by transmission lines above
+                    remove.add(coupling);
+                    continue;
+                }
+                for(var otherNode : coupling.coupledNodes()) {
+                    if(otherNode == node)
+                        continue;
+                    island.add(otherNode);
+                    queue.add(otherNode);
+                    for(var otherIsland : islands) {
+                        if(otherIsland == island)
+                            continue;
+                        if(otherIsland.contains(otherNode)) {
+                            // Merge islands
+                            otherIsland.addAll(island);
+                            islands.remove(island);
+                            island = otherIsland;
+                            break;
+                        }
+                    }
+                }
+                island.add(coupling);
+            }
+            remove.forEach(INode::remove);
+        }
+        if(islands.size() <= 1)
+            return;
+        for(var island : islands) {
+            var islandNetwork = newNetwork();
+            islandNetwork.fromElements(island.elements);
+        }
+        for(var lines : couplings.values()) {
+            for(var line : lines) {
+                line.setNetwork(null);
+                line.makePortPair();
+            }
+        }
+        network.clear();
+        subnetworks.remove(network);
     }
 
-    public void tick() {
+    public void preTick() {
         deferredRewireEntities.removeIf(part -> {
             part.refreshEndpointNodes();
             return true;
         });
         JunctionWireEndpoint.processNewNodes(world);
 
+        runningDiscovery = true;
         for(var network : islandDiscoveryQueue) {
             runIslandDiscoveryFor(network);
         }
         islandDiscoveryQueue.clear();
+        runningDiscovery = false;
+
+        var iter2 = transmissionLines.values().iterator();
+        var removed = new ArrayList<TransmissionLine>();
+        while(iter2.hasNext()) {
+            var line = iter2.next();
+            if(line.segments.isEmpty()) {
+                PowerGrid.LOGGER.warn("Empty transmission line {} dropped during tick", line);
+                removed.add(line);
+                iter2.remove();
+                continue;
+            }
+            line.tick();
+        }
+        removed.forEach(TransmissionLine::remove);
 
         perf.start();
+        int multiTick = ModdedConfigs.server().electricity.solver.multiTicks.get();
         var iter = subnetworks.iterator();
-        while(iter.hasNext()) {
+        while (iter.hasNext()) {
             var network = iter.next();
-            if(network.isEmpty()) {
+            if (network.isEmpty()) {
                 iter.remove();
                 continue;
             }
-            network.calculate();
+            network.prepare(multiTick);
+        }
+        for(int i = 0; i < multiTick; ++i) {
+            // I guess this could go on a thread-pool
+            for(var network : subnetworks) {
+                network.singleTick();
+            }
         }
         perf.end();
+    }
+
+    public void postTick() {
         if(world instanceof ServerLevel serverWorld) {
             // Check for line parts existence
             var checkIter = checkForExistence.entrySet().iterator();
@@ -188,66 +319,68 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     checkIter.remove();
                 }
             }
-            // Send lines to clients
-            for(var endpoint : updatedEndpoints) {
-                var players = trackers.get(endpoint);
-                if(players == null)
-                    continue;
-                var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
-                ModdedPackets.sendToClients(new TransmissionLineManagementS2CPacket(endpoint, lines), players);
-            }
-            updatedEndpoints.clear();
-            // Send partial lines to clients
-            var iter2 = transmissionLines.values().iterator();
-            var removed = new ArrayList<TransmissionLine>();
-            while(iter2.hasNext()) {
-                var line = iter2.next();
-                if(line.segments.isEmpty()) {
-                    PowerGrid.LOGGER.warn("Empty transmission line {} dropped during tick", line);
-                    removed.add(line);
-                    iter2.remove();
-                    continue;
-                }
-                if(Math.abs(line.current()) < 1e-5) {
-                    // Line is not carrying any major current so don't bother synchronizing it.
-                    continue;
-                }
-                var players = PlayerUtilities.partialTracking(serverWorld, line);
-                if(players.isEmpty())
-                    continue;
-                try {
-                    var packet = new TransmissionLineStateS2CPacket(line);
-                    ModdedPackets.sendToClients(packet, players);
-                } catch (RuntimeException e) {
-                    PowerGrid.LOGGER.error("Failed to send a transmission line packet", e);
-                }
-            }
-            removed.forEach(TransmissionLine::remove);
             // Synchronize state with clients
-            if(syncTicks++ >= 40) {
-                // TODO: Perhaps we should avoid sending ALL subnetworks at once and instead
-                //  split the sync up to avoid generating a lot of intermittent network traffic.
-                for(var network : subnetworks) {
-                    for(var node : network.getNodes()) {
-                        if(!(node instanceof OwnedFloatingNode owned))
-                            continue;
-                        if(!(owned.endpoint instanceof BlockWireEndpoint bwe))
-                            continue;
-                        var behaviour = bwe.getElectricBehaviour(world);
-                        if(behaviour != null)
-                            behaviour.blockEntity.sendData();
+            if(syncTicks % 5 == 0) {
+                syncStates.clear();
+                for (var entry : trackers.entrySet()) {
+                    for (var player : entry.getValue()) {
+                        var endpoint = entry.getKey();
+                        if(endpoint instanceof BlockWireEndpoint bwe) {
+                            var eb = bwe.getElectricBehaviour(world);
+                            if (eb == null)
+                                continue;
+                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                    .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
+                        } else if(endpoint instanceof JunctionWireEndpoint je) {
+                            var syncEntry = je.makeSyncEntry(world);
+                            if(syncEntry != null)
+                                syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                        .put(syncEntry, new SyncState((int) (je.getExactPosition(world).distanceTo(player.position()) / 16 + 1)));
+                        }
                     }
                 }
-                syncTicks = 0;
             }
+            for(var entry : syncStates.entrySet()) {
+                var packet = new StateS2CPacket();
+                var wrapper = packet.wrapper();
+                var behaviours = entry.getValue();
+                for(var pair : behaviours.entrySet()) {
+                    if(syncTicks % pair.getValue().lod() != 0)
+                        continue;
+                    packet.begin(pair.getKey());
+                    pair.getKey().writeToSync(wrapper, this::findLineMiddle);
+                    packet.end();
+                }
+                ModdedPackets.sendToClient(packet, entry.getKey());
+            }
+            final int syncInterval = ModdedConfigs.common().stateSynchronization.get();
+            if(syncInterval > 0) {
+                if (syncTicks >= syncInterval) {
+                    // TODO: Perhaps we should avoid sending ALL subnetworks at once and instead
+                    //  split the sync up to avoid generating a lot of intermittent network traffic.
+                    for (var network : subnetworks) {
+                        for (var node : network.getNodes()) {
+                            if (!(node instanceof OwnedFloatingNode owned))
+                                continue;
+                            if (!(owned.endpoint instanceof BlockWireEndpoint bwe))
+                                continue;
+                            var behaviour = bwe.getElectricBehaviour(world);
+                            if (behaviour != null)
+                                behaviour.blockEntity.sendData();
+                        }
+                    }
+                    syncTicks = 0;
+                }
+            }
+            ++syncTicks;
         }
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph, true);
+        var network = new GraphedElectricalNetwork(globalGraph, true, ModdedConfigs.server().electricity.solver.solverType.get());
         network.maxIterations = hooks -> hooks
-                ? ModdedConfigs.common().solverComplexMaxIterations.get()
-                : ModdedConfigs.common().solverSimpleMaxIterations.get();
+                ? ModdedConfigs.server().electricity.solver.solverComplexMaxIterations.get()
+                : ModdedConfigs.server().electricity.solver.solverSimpleMaxIterations.get();
         subnetworks.add(network);
         return network;
     }
@@ -276,12 +409,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
         }
         return null;
-    }
-
-    @Deprecated
-    public void assignTransmissionLine(OwnedFloatingNode node, @Nullable TransmissionLine line) {
-        // TODO: This is probably redundant
-        updatedEndpoints.add(node.endpoint);
     }
 
     @Nullable
@@ -332,6 +459,54 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             network = net1;
         }
 
+        return network;
+    }
+
+    public ElectricalNetwork prepareForTransmissionLine(@NotNull OwnedFloatingNode node1, @NotNull OwnedFloatingNode node2, TransmissionLine line, Runnable callback) {
+        var endpoint1 = node1.endpoint;
+        var endpoint2 = node2.endpoint;
+
+        if(node1 == node2)
+            return null;
+
+        add(endpoint1);
+        add(endpoint2);
+
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
+
+        ElectricalNetwork network = line.getNetwork();
+        if(network != null) {
+            inNetwork(network, node1);
+            inNetwork(network, node2);
+            callback.run();
+            return network;
+        }
+        if(net1 == null && net2 == null) {
+            network = newNetwork();
+            endpoint1.joinNetwork(world, network);
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 == null) {
+            network = net2;
+            endpoint1.joinNetwork(world, network);
+        } else if(net2 == null) {
+            network = net1;
+            endpoint2.joinNetwork(world, network);
+        } else if(net1 != net2) {
+            if(net1.size() >= net2.size()) {
+                network = net1;
+                network.merge(net2);
+            } else {
+                network = net2;
+                network.merge(net1);
+            }
+        } else {
+            network = net1;
+        }
+        // We must disconnect the line or else graph will be broken.
+        globalGraph.disconnect(line.getNode1(), line.getNode2(), line);
+        callback.run();
+        network.addWire(line);
         return network;
     }
 
@@ -424,8 +599,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
         int nConns1 = connectionCount(endpoint1);
         int nConns2 = connectionCount(endpoint2);
-        var connected1 = nConns1 == 1 ? globalGraph.getConnectedNodes(node1).get(0) : null;
-        var connected2 = nConns2 == 1 ? globalGraph.getConnectedNodes(node2).get(0) : null;
+        List<IElectricNode> nodes;
+        var connected1 = nConns1 == 1 ? !(nodes = globalGraph.getConnectedNodes(node1)).isEmpty() ? nodes.get(0) : null : null;
+        var connected2 = nConns2 == 1 ? !(nodes = globalGraph.getConnectedNodes(node2)).isEmpty() ? nodes.get(0) : null : null;
 
         TransmissionLine line1 = null, line2 = null;
         if(nConns1 == 1) {
@@ -491,6 +667,22 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
         setDirty();
         return true;
+    }
+
+    @Nullable
+    public ElectricWire makeSimpleWire(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
+        var network = prepareForConnection(endpoint1, endpoint2);
+        if(network == null)
+            return null;
+
+        var node1 = endpoint1.getNode(world);
+        var node2 = endpoint2.getNode(world);
+
+        var wire = new ElectricWire(resistance, node1, node2);
+        network.addWire(wire);
+
+        setDirty();
+        return wire;
     }
 
     @Nullable
@@ -566,7 +758,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             line.unresolve();
             setDirty();
             if(removeNode.getNetwork() != null) {
-                removeNode.getNetwork().removeNode(removeNode);
+                islandDiscoveryQueue.add(removeNode.getNetwork());
+                removeNode.remove();
             }
             globalExternalNodes.remove(removeNode.endpoint);
         }
@@ -586,7 +779,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
         }
         if(ownedNode.getNetwork() != null) {
-            ownedNode.getNetwork().removeNode(ownedNode);
+            islandDiscoveryQueue.add(ownedNode.getNetwork());
+            ownedNode.remove();
         }
         globalExternalNodes.remove(ownedNode.endpoint);
     }
@@ -669,10 +863,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void addAndMigrateNode(IWireEndpoint oldEndpoint, OwnedFloatingNode newNode) {
+        if(newNode == null)
+            return;
         var endpoint = newNode.endpoint;
         var oldNode = globalExternalNodes.put(endpoint, newNode);
         addAndMigrateNode(oldNode, newNode);
-        updatedEndpoints.add(oldEndpoint);
         var oldNode2 = globalExternalNodes.remove(oldEndpoint);
         addAndMigrateNode(oldNode2, newNode);
 
@@ -684,7 +879,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public void addAndMigrateNode(OwnedFloatingNode oldNode, OwnedFloatingNode newNode) {
         var endpoint = newNode.endpoint;
-        updatedEndpoints.add(endpoint);
         if(oldNode != null && oldNode != newNode) {
             // Migrate connections into the new node.
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
@@ -804,8 +998,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void tracking(ServerPlayer tracker, IWireEndpoint endpoint, boolean end) {
         if(!end) {
             trackers.computeIfAbsent(endpoint, $ -> new HashSet<>()).add(tracker);
-            var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
-            ModdedPackets.sendToClient(new TransmissionLineManagementS2CPacket(endpoint, lines), tracker);
+//            var lines = globalGraph.getConnectedLines(endpoint.getNode(world));
+//            ModdedPackets.sendToClient(new TransmissionLineManagementS2CPacket(endpoint, lines), tracker);
         } else {
             var list = trackers.get(endpoint);
             if(list == null)
@@ -914,7 +1108,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             var couplings = globalGraph.getCouplings(node);
             couplings.forEach(INode::remove);
             for(var connected : nodes) {
-                var wires = globalGraph.getWires(node, connected);
+                var wires = List.copyOf(globalGraph.getWires(node, connected));
                 for(var wire : wires)
                     wire.remove();
                 toCheck.add(connected);
@@ -959,6 +1153,87 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(entity instanceof BaseWireEntity wire)
                 return wire;
             return null;
+        }
+    }
+
+    public record CouplingKey(Island island1, Island island2) {
+        @Override
+        public boolean equals(Object obj) {
+            if(obj == this)
+                return true;
+            if(obj instanceof CouplingKey other) {
+                return (island1 == other.island1 && island2 == other.island2) ||
+                        (island1 == other.island2 && island2 == other.island1);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            // Symmetric hash code
+            return Objects.hashCode(island1) + Objects.hashCode(island2);
+        }
+
+        public boolean has(Island island) {
+            return island == island1 || island == island2;
+        }
+
+        public static CouplingKey of(Island island1, Island island2) {
+            return new CouplingKey(island1, island2);
+        }
+
+        public Island other(Island island) {
+            if(island == island1)
+                return island2;
+            if(island == island2)
+                return island1;
+            return null;
+        }
+    }
+
+    public static class Island {
+        private final Set<INetworkElement> elements = new HashSet<>();
+        private final Map<CouplingKey, Set<TransmissionLine>> couplings;
+
+        public Island(Map<CouplingKey, Set<TransmissionLine>> couplings) {
+            this.couplings = couplings;
+        }
+
+        public void addAll(Island island) {
+            elements.addAll(island.elements);
+            var merged = couplings.remove(CouplingKey.of(this, island));
+            if(merged != null) {
+                elements.addAll(merged);
+            }
+
+            var newlyAdded = new HashMap<CouplingKey, Set<TransmissionLine>>();
+            couplings.entrySet().removeIf(entry -> {
+                if(entry.getKey().has(island)) {
+                    var key = CouplingKey.of(this, entry.getKey().other(island));
+                    if(couplings.containsKey(key))  {
+                        couplings.get(key).addAll(entry.getValue());
+                    } else {
+                        // Avoid concurrent modification
+                        newlyAdded.put(key, entry.getValue());
+                    }
+                    return true;
+                }
+                return false;
+            });
+            couplings.putAll(newlyAdded);
+        }
+
+        public void add(INetworkElement element) {
+            elements.add(element);
+        }
+
+        public boolean contains(INetworkElement element) {
+            return elements.contains(element);
+        }
+
+        public void addCoupling(Island connectedIsland, TransmissionLine line) {
+            couplings.computeIfAbsent(CouplingKey.of(this, connectedIsland), $ -> new HashSet<>())
+                    .add(line);
         }
     }
 }

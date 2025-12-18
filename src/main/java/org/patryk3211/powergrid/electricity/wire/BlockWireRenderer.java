@@ -116,6 +116,7 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
 
     public static void renderSegment(PoseStack ms, VertexConsumer buffer, int light, int color,
                                      Vec3 start, Direction dir, float thickness, float length, int uvOffset) {
+        thickness *= 1.01f;
         if(dir.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
             length *= -1;
             thickness *= -1;

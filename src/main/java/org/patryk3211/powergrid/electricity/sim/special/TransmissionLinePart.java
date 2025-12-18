@@ -230,12 +230,12 @@ public class TransmissionLinePart extends ElectricWire {
 
     public void refreshEndpointNodes() {
         var node1 = endpoint1.getNode(global.world);
-        if(this.node1 != node1) {
+        if(this.node1 != node1 && node1 != null) {
             global.addAndMigrateNode(getNode1().endpoint, node1);
             setNode1(node1);
         }
         var node2 = endpoint2.getNode(global.world);
-        if(this.node2 != node2) {
+        if(this.node2 != node2 && node2 != null) {
             global.addAndMigrateNode(getNode2().endpoint, node2);
             setNode2(node2);
         }

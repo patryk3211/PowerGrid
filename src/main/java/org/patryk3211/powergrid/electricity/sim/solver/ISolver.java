@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.sim.solver;
 
 import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 
 public interface ISolver {
     void setTargetPrecision(double targetPrecision);
@@ -27,4 +28,6 @@ public interface ISolver {
     void zero();
 
     DMatrixRMaj getLastGuess();
+
+    ElectricalNetwork.SolverType type();
 }

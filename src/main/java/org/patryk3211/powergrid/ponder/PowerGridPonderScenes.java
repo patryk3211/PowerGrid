@@ -33,6 +33,8 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "gauges", GaugeScenes::current);
         HELPER.addStoryBoard(ModdedBlocks.POWER_METER, "power_gauge", GaugeScenes::power);
 
+        HELPER.addStoryBoard(ModdedBlocks.PLOTTER, "plotter", DeviceScenes::plotter);
+
         HELPER.forComponents(ModdedBlocks.HEATING_COIL)
                 .addStoryBoard("heating_coil/basic", DeviceScenes::heatingCoilBasic, PowerGridPonderTags.ELECTRIC_DEVICES)
                 .addStoryBoard("heating_coil/speed", DeviceScenes::heatingCoilSpeed, PowerGridPonderTags.ELECTRIC_DEVICES);
@@ -53,11 +55,13 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("generator/rotor", GeneratorScenes::rotor, PowerGridPonderTags.GENERATOR_ASSEMBLY)
                 .addStoryBoard("generator/shunt_generator", GeneratorScenes::shuntGenerator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
+        HELPER.addStoryBoard(ModdedItems.STRING_LIGHT_CORD, "wire/string_lights", WireScenes::stringLights);
         HELPER.addStoryBoard(ModdedItems.INSULATED_COPPER_WIRE, "wire/insulated_wire", WireScenes::insulatedWire);
-        HELPER.addStoryBoard(ModdedItems.CORD, "wire/cord", WireScenes::cord);
         HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE, ModdedItems.INSULATED_COPPER_WIRE)
                 .addStoryBoard("wire/simple", WireScenes::simple)
                 .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
+        HELPER.forComponents(ModdedItems.CORD, ModdedItems.STRING_LIGHT_CORD)
+                .addStoryBoard("wire/cord", WireScenes::cord);
 
         HELPER.forComponents(ModdedBlocks.GROUNDING_ROD)
                 .addStoryBoard("ground1", WireScenes::grounding, PowerGridPonderTags.ELECTRIC_RELAYS)
@@ -70,6 +74,7 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.RHEOSTAT, "rheostat", RelayScenes::rheostat, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.RESISTOR, "power_resistor", RelayScenes::powerResistor, PowerGridPonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.CARBON_PILE_COIL, "carbon_pile", RelayScenes::carbonPile, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB, ModdedItems.LV_LIGHT_BULB)
                 .addStoryBoard("lightbulb", DeviceScenes::light, PowerGridPonderTags.ELECTRIC_DEVICES);
@@ -94,6 +99,7 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.LV_BUTTON, "switch", RelayScenes.switchSceneFor(ModdedBlocks.LV_BUTTON, "lv_button"), PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.MV_SWITCH, "switch", RelayScenes.switchSceneFor(ModdedBlocks.MV_SWITCH, "mv_switch"), PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.HV_SWITCH, "hv_switch", RelayScenes::hvSwitch, PowerGridPonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.HV_BREAKER, "hv_breaker", RelayScenes::hvBreaker, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.forComponents(ModdedBlocks.CONTACTOR)
                 .addStoryBoard("contactor", RelayScenes::contactor, PowerGridPonderTags.ELECTRIC_RELAYS)
@@ -109,6 +115,10 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.CORD_JUNCTION, "wire/cord_junction", WireScenes::cordJunction, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.SOCKET, "wire/cord_socket", WireScenes::cordSocket, PowerGridPonderTags.ELECTRIC_RELAYS);
+
+        HELPER.addStoryBoard(ModdedBlocks.CRT, "crt", DeviceScenes::crt, PowerGridPonderTags.ELECTRIC_DEVICES);
+        HELPER.forComponents(ModdedBlocks.PUNCH_CARD_READER, ModdedItems.PUNCH_CARD)
+                .addStoryBoard("punch_cards", DeviceScenes::punchCardReader, PowerGridPonderTags.ELECTRIC_DEVICES, AllCreatePonderTags.KINETIC_APPLIANCES);
 
         HELPER.addStoryBoard(ModdedItems.RESISTOR, "circuit/resistor", CircuitScenes::resistor, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "circuit/voltage", CircuitScenes::voltageGauge, PowerGridPonderTags.CIRCUIT_COMPONENTS);

@@ -22,7 +22,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -38,18 +38,13 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 public abstract class Component {
     public static final StringProperty LABEL = new StringProperty(PowerGrid.MOD_ID, "label");
 
-    private static final Map<Item, Component> COMPONENT_MAP = new HashMap<>();
     public static final float BASE_Y = 2 / 16f;
 
-    private Supplier<? extends Item> item;
     private final ComponentFootprint footprint;
     private final ImmutableList<ComponentProperty<?>> properties;
 
@@ -122,16 +117,8 @@ public abstract class Component {
 
     }
 
-    void setItem(Supplier<? extends Item> item) {
-        this.item = item;
-    }
-
     public ComponentFootprint footprint(@Nullable PlacedComponent placed) {
         return footprint;
-    }
-
-    public Item getRequiredItem() {
-        return item.get();
     }
 
     public ImmutableList<ComponentProperty<?>> getProperties() {
@@ -154,19 +141,6 @@ public abstract class Component {
         return List.of(ComponentRegistry.getId(this));
     }
 
-    public static Component forItem(Item item) {
-        if(COMPONENT_MAP.containsKey(item))
-            return COMPONENT_MAP.get(item);
-        for(var entry : ComponentRegistry.entries()) {
-            if(entry.item.get() == item) {
-                COMPONENT_MAP.put(item, entry);
-                return entry;
-            }
-        }
-        COMPONENT_MAP.put(item, null);
-        return null;
-    }
-
     @Nullable
     public static Orientation getEdge(@NotNull PlacedComponent placed) {
         if(placed.x == 0)
@@ -178,5 +152,17 @@ public abstract class Component {
         if(placed.y == 16 - placed.footprint().getHeight())
             return Orientation.DOWN;
         return null;
+    }
+
+    public static void renderDataTick(@NotNull PlacedComponent placed) {
+        placed.data(FloatPair.class).ifPresent(data -> data.prev = data.current);
+    }
+
+    public static class FloatPair {
+        float prev, current;
+
+        public float lerped(float partial) {
+            return Mth.lerp(partial, prev, current);
+        }
     }
 }

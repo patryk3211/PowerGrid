@@ -37,6 +37,23 @@ public abstract class ElectricKineticBlockEntity extends KineticBlockEntity impl
         super(typeIn, pos, state);
     }
 
+    public void setUnsaved() {
+        if(level != null && !level.isClientSide) {
+            level.blockEntityChanged(worldPosition);
+        }
+    }
+
+    @Override
+    public void tick() {
+        if(!level.isClientSide || isVirtual())
+            electricalTick();
+        super.tick();
+    }
+
+    public void electricalTick() {
+
+    }
+
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);

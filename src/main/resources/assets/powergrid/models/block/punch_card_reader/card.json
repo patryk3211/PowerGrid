@@ -1,0 +1,25 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "powergrid:block/punch_card_reader",
+		"particle": "powergrid:block/punch_card_reader"
+	},
+	"elements": [
+		{
+			"from": [6, 15.875, 3],
+			"to": [10, 16.125, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6, 17, 3]},
+			"faces": {
+				"north": {"uv": [2.75, 6.25, 3, 7.25], "rotation": 90, "texture": "#0"},
+				"east": {"uv": [1.5, 7, 3, 7.25], "texture": "#0"},
+				"south": {"uv": [1.5, 7.25, 1.75, 6.25], "rotation": 90, "texture": "#0"},
+				"west": {"uv": [1.5, 6.25, 3, 6.5], "texture": "#0"},
+				"up": {"uv": [3, 7.25, 1.5, 6.25], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [1.5, 7.25, 3, 6.25], "rotation": 90, "texture": "#0"}
+			}
+		}
+	]
+}

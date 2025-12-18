@@ -118,9 +118,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     @Override
     public void tick() {
         assert level != null;
-        applyPower(coil);
-
         if(!level.isClientSide || isVirtual()) {
+            applyPower(coil);
             var speedFromPower = (coil.power() / torque()) * 60;
             avgSpeed += speedFromPower * Math.signum(coil.current());
         }

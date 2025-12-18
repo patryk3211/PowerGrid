@@ -50,4 +50,9 @@ public class ColdCathodeRegulatorTubeWire extends NeonBulbWire {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format("RegulatorTube(Vb=%g Vh=%g Ih=%g G=%g)", breakdownVoltage, holdingVoltage, holdingCurrent, dischargeConductance);
+    }
 }

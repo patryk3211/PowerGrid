@@ -28,6 +28,8 @@ public class HiddenItems {
             .add(ModdedItems.INCOMPLETE_ELECTRICAL_GIZMO)
             .add(ModdedItems.INCOMPLETE_UNETCHED_CIRCUIT)
             .add(ModdedItems.INCOMPLETE_TRANSFORMER_CORE)
+            .add(ModdedItems.INCOMPLETE_PUNCH_CARD)
+            .add(ModdedItems.INCOMPLETE_BATTERY)
             .add(ModdedItems.PORTABLE_BATTERY_PLACEABLE)
             .build();
 

@@ -32,7 +32,7 @@ public class CapacitorTest extends TestHelper {
         Net.network.addWire(C);
 
         // Simulate for 1 second
-        for(int i = 0; i < 20; ++i) {
+        for(int i = 0; i < 21; ++i) {
             Net.calculate();
             Assertions.assertEquals(V1.getCurrent(), C.current(), 1e-5f, "Capacitor current is incorrect");
         }
@@ -63,7 +63,7 @@ public class CapacitorTest extends TestHelper {
         V2.setVoltage(4);
 
         // Simulate for 1 second
-        for(int i = 0; i < 20; ++i) {
+        for(int i = 0; i < 21; ++i) {
             Net.calculate();
         }
 
@@ -86,5 +86,31 @@ public class CapacitorTest extends TestHelper {
             Net.calculate();
             Assertions.assertEquals(5.0f, C.potentialDifference(), 0.01f, "Capacitor voltage is incorrect");
         }
+    }
+
+    @Test
+    void testMultiTick() {
+        var Net = new Network();
+
+        var V1 = Net.V(1);
+        var N1 = Net.N();
+
+        Net.W(1f, V1, N1);
+        var C = new CapacitorWire(1f, N1, null);
+        Net.network.addWire(C);
+
+        // Simulate for 1 second
+        int mt = 1;
+        for(int i = 0; i < 21; ++i) {
+            if(i == 10)
+                mt = 2;
+            if(i == 15)
+                mt = 1;
+            Net.calculate(mt);
+            Assertions.assertEquals(V1.getCurrent(), C.current(), 1e-5f, "Capacitor current is incorrect");
+        }
+
+        Assertions.assertEquals(0.632f, C.potentialDifference(), 0.01f, "Capacitor voltage is incorrect");
+        Assertions.assertEquals(0.368f, V1.getCurrent(), 0.01f, "Voltage source current is incorrect");
     }
 }

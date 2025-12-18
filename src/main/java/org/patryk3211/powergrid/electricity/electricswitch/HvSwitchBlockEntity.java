@@ -25,15 +25,18 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     protected LerpedFloat rod;
+    @Nullable
     private SwitchedWire wire;
 
     private int state = 1;
+    private int splitCooldown;
 
     public HvSwitchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -60,12 +63,18 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         return Mth.clamp(Math.abs(getSpeed()) / 21 / 20, 0, 1);
     }
 
+    private boolean getSwitchState() {
+        return wire != null && wire.getState();
+    }
+
     @Override
     public void initialize() {
         super.initialize();
-        wire.setState(false);
-        wire.setResistance(getResistance());
-        wire.setState(isClosed());
+        if(wire != null) {
+            wire.setState(false);
+            wire.setResistance(getResistance());
+            wire.setState(isClosed());
+        }
     }
 
     @Override
@@ -78,11 +87,23 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         if(!rod.settled()) {
             // Setting switch to false is needed to prevent imprecision
             // messing with the conductance matrix.
-            if(wire.getState() != isClosed() || wire.getResistance() != getResistance()) {
-                wire.setState(false);
-                wire.setResistance(getResistance());
-                wire.setState(isClosed());
-                setChanged();
+            if(getSwitchState() != isClosed() || (wire != null && wire.getResistance() != getResistance())) {
+                if(isClosed()) {
+                    if(wire == null)
+                        electricBehaviour.rebuildCircuit(false);
+                    wire.setResistance(getResistance());
+                    wire.setState(isClosed());
+                } else {
+                    if(wire != null) {
+                        wire.setState(false);
+                    }
+                }
+                setUnsaved();
+            }
+        } else {
+            if(wire != null && !wire.getState() && splitCooldown++ >= 100) {
+                GlobalElectricNetworks.getWorldNetworks(level).scheduleIslandDiscovery(wire.getNetwork());
+                electricBehaviour.rebuildCircuit(false);
             }
         }
     }
@@ -148,6 +169,11 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        wire = builder.connectSwitch(getResistance(), builder.terminalNode(0), builder.terminalNode(1), isClosed());
+        if(isClosed()) {
+            splitCooldown = 0;
+            wire = builder.connectSwitch(getResistance(), builder.terminalNode(0), builder.terminalNode(1), isClosed());
+        } else {
+            wire = null;
+        }
     }
 }

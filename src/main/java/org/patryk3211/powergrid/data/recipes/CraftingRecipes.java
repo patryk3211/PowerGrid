@@ -24,6 +24,8 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.data.recipes.RecipeTags.*;
+
 @SuppressWarnings("unused")
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
@@ -33,8 +35,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .viaShaped(b -> b
                     .pattern(" C ")
                     .pattern("CAC")
-                    .define('C', RecipeTags.copperNugget())
-                    .define('A', AllItems.ANDESITE_ALLOY)
+                    .define('C', copperNugget())
+                    .define('A', andesiteAlloy())
             ),
 
     HEAVY_WIRE_CONNECTOR = create(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
@@ -43,7 +45,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" I ")
                     .pattern("ITI")
                     .pattern(" T ")
-                    .define('I', RecipeTags.ironNugget())
+                    .define('I', ironNugget())
                     .define('T', Items.TERRACOTTA)
             ),
 
@@ -53,8 +55,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("P")
                     .pattern("I")
                     .pattern("I")
-                    .define('P', RecipeTags.copperSheet())
-                    .define('I', RecipeTags.copperIngot())
+                    .define('P', copperSheet())
+                    .define('I', copperIngot())
             ),
 
     LV_LIGHT_BULB = create(ModdedItems.LV_LIGHT_BULB)
@@ -64,8 +66,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("GFG")
                     .pattern(" I ")
                     .define('G', Items.GLASS_PANE)
-                    .define('F', RecipeTags.coal())
-                    .define('I', RecipeTags.ironSheet())
+                    .define('F', coal())
+                    .define('I', ironSheet())
             ),
 
     LIGHT_BULB = create(ModdedItems.LIGHT_BULB)
@@ -75,8 +77,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("GWG")
                     .pattern(" I ")
                     .define('G', Items.GLASS_PANE)
-                    .define('W', ModdedItems.IRON_WIRE)
-                    .define('I', RecipeTags.ironSheet())
+                    .define('W', ironWire())
+                    .define('I', ironSheet())
             ),
 
     GROWTH_LAMP = create(ModdedItems.GROWTH_LAMP)
@@ -86,22 +88,28 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("GWG")
                     .pattern(" I ")
                     .define('G', Items.GLASS_PANE)
-                    .define('W', ModdedItems.IRON_WIRE)
+                    .define('W', ironWire())
                     .define('Q', Items.QUARTZ)
-                    .define('I', RecipeTags.ironSheet())
+                    .define('I', ironSheet())
             ),
 
     RESISTIVE_COIL = create(ModdedItems.RESISTIVE_COIL)
             .unlockedBy(ModdedItems.IRON_WIRE::get)
             .viaShapeless(b -> b
-                    .requires(ModdedItems.IRON_WIRE, 4)
+                    .requires(ironWire())
+                    .requires(ironWire())
+                    .requires(ironWire())
+                    .requires(ironWire())
                     .requires(Items.STICK, 1)
             ),
 
     COPPER_COIL = create(ModdedItems.COPPER_COIL)
             .unlockedBy(ModdedItems.WIRE::get)
             .viaShapeless(b -> b
-                    .requires(ModdedItems.WIRE, 4)
+                    .requires(copperWire())
+                    .requires(copperWire())
+                    .requires(copperWire())
+                    .requires(copperWire())
                     .requires(Items.STICK, 1)
             ),
 
@@ -111,9 +119,9 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("C C")
                     .pattern("IRI")
                     .pattern("IRI")
-                    .define('C', RecipeTags.copperNugget())
-                    .define('I', RecipeTags.ironSheet())
-                    .define('R', ModdedItems.RESISTIVE_COIL)
+                    .define('C', copperNugget())
+                    .define('I', ironSheet())
+                    .define('R', resistiveCoil())
             ),
 
     GENERATOR_CLUTCH = create(ModdedBlocks.GENERATOR_CLUTCH)
@@ -124,51 +132,62 @@ public class CraftingRecipes extends StandardRecipeProvider {
             ),
 
     VOLTAGE_GAUGE = create(ModdedBlocks.VOLTAGE_METER)
-            .unlockedBy(ModdedBlocks.CONDUCTIVE_CASING::get)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
             .viaShaped(b -> b
                     .pattern("C")
                     .pattern("c")
                     .pattern("A")
-                    .define('A', RecipeTags.conductiveCasing())
-                    .define('c', RecipeTags.copperCoil())
+                    .define('A', conductiveCasing())
+                    .define('c', copperCoil())
                     .define('C', Items.COMPASS)
+            ),
+    PLOTTER = create(ModdedBlocks.PLOTTER)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
+            .viaShaped(b -> b
+                    .pattern(" P")
+                    .pattern("SV")
+                    .pattern(" A")
+                    .define('P', paper())
+                    .define('S', shaft())
+                    .define('A', andesiteCasing())
+                    .define('V', ModdedBlocks.VOLTAGE_METER)
             ),
 
     GAUGE_CYCLE = conversionCycle(List.of(ModdedBlocks.VOLTAGE_METER, ModdedBlocks.CURRENT_METER)),
 
     POWER_GAUGE = create(ModdedBlocks.POWER_METER)
-            .unlockedBy(ModdedBlocks.CONDUCTIVE_CASING::get)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
             .viaShapeless(b -> b
                     .requires(ModdedBlocks.VOLTAGE_METER)
                     .requires(ModdedBlocks.CURRENT_METER)
             ),
 
     LIGHT_FIXTURE = create(ModdedBlocks.LIGHT_FIXTURE)
-            .unlockedBy(AllBlocks.ANDESITE_CASING::get)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
             .viaShaped(b -> b
                     .pattern(" I ")
                     .pattern("CZC")
-                    .define('I', RecipeTags.ironSheet())
-                    .define('C', RecipeTags.copperNugget())
-                    .define('Z', RecipeTags.zincSheet())
+                    .define('I', ironSheet())
+                    .define('C', copperNugget())
+                    .define('Z', zincSheet())
             ),
 
     ELECTROMAGNET = create(ModdedBlocks.ELECTROMAGNET)
-            .unlockedBy(() -> ModdedItems.COPPER_COIL)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
             .viaShaped(b -> b
                     .pattern(" E ")
                     .pattern("CIC")
                     .pattern("CCC")
-                    .define('E', RecipeTags.conductiveCasing())
-                    .define('C', ModdedItems.COPPER_COIL)
-                    .define('I', RecipeTags.ironSheet())),
+                    .define('E', conductiveCasing())
+                    .define('C', copperCoil())
+                    .define('I', ironSheet())),
 
     RELAY = create(ModdedItems.RELAY)
             .unlockedBy(() -> ModdedItems.COPPER_COIL)
             .viaShapeless(b -> b
-                    .requires(ModdedItems.COPPER_COIL)
-                    .requires(RecipeTags.ironSheet())
-                    .requires(AllItems.ANDESITE_ALLOY)),
+                    .requires(copperCoil())
+                    .requires(ironSheet())
+                    .requires(andesiteAlloy())),
 
     REDSTONE_RELAY = create(ModdedItems.REDSTONE_RELAY)
             .unlockedBy(() -> ModdedItems.RELAY)
@@ -179,8 +198,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
     RESISTOR = create(ModdedItems.RESISTOR)
             .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
             .viaShapeless(b -> b
-                    .requires(ModdedItems.RESISTIVE_COIL)
-                    .requires(RecipeTags.coal())),
+                    .requires(resistiveCoil())
+                    .requires(coal())),
 
     CIRCUIT_DESIGN_TABLE = create(ModdedBlocks.CIRCUIT_DESIGN_TABLE)
             .unlockedBy(() -> AllItems.EMPTY_SCHEMATIC)
@@ -190,16 +209,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("WW")
                     .define('E', AllItems.ELECTRON_TUBE)
                     .define('S', AllItems.EMPTY_SCHEMATIC)
-                    .define('W', RecipeTags.planks())),
+                    .define('W', planks())),
 
     GENERATOR_HOUSING = create(ModdedBlocks.GENERATOR_HOUSING)
-            .unlockedBy(() -> AllItems.IRON_SHEET)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
             .viaShaped(b -> b
                     .pattern("IC")
                     .pattern("EI")
-                    .define('I', RecipeTags.ironSheet())
-                    .define('C', RecipeTags.copperSheet())
-                    .define('E', RecipeTags.conductiveCasing())),
+                    .define('I', ironSheet())
+                    .define('C', copperSheet())
+                    .define('E', conductiveCasing())),
 
     LV_SWITCH = create(ModdedBlocks.LV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
@@ -207,8 +226,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" L ")
                     .pattern("CAC")
                     .define('L', Items.LEVER)
-                    .define('C', RecipeTags.copperNugget())
-                    .define('A', AllBlocks.ANDESITE_CASING)),
+                    .define('C', copperNugget())
+                    .define('A', andesiteCasing())),
 
     LV_BUTTON = create(ModdedBlocks.LV_BUTTON)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
@@ -216,8 +235,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" B ")
                     .pattern("CAC")
                     .define('B', Items.STONE_BUTTON)
-                    .define('C', RecipeTags.copperNugget())
-                    .define('A', AllBlocks.ANDESITE_CASING)),
+                    .define('C', copperNugget())
+                    .define('A', andesiteCasing())),
 
     MV_SWITCH = create(ModdedBlocks.MV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
@@ -225,19 +244,41 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" L ")
                     .pattern("SAS")
                     .define('L', Items.LEVER)
-                    .define('S', RecipeTags.copperSheet())
-                    .define('A', AllBlocks.ANDESITE_CASING)),
+                    .define('S', copperSheet())
+                    .define('A', andesiteCasing())),
+
+    HV_SWITCH = create(ModdedBlocks.HV_SWITCH::get)
+            .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
+            .viaShaped(b -> b
+                    .pattern("I  ")
+                    .pattern("I  ")
+                    .pattern("AGI")
+                    .define('I', ironSheet())
+                    .define('A', andesiteCasing())
+                    .define('G', AllBlocks.COGWHEEL)
+            ),
 
     CONTACTOR = create(ModdedBlocks.CONTACTOR)
-            .unlockedBy(() -> ModdedItems.COPPER_COIL)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
             .viaShaped(b -> b
                     .pattern("PCP")
                     .pattern("PIP")
                     .pattern(" E ")
-                    .define('P', RecipeTags.copperSheet())
-                    .define('C', RecipeTags.copperCoil())
-                    .define('I', RecipeTags.ironIngot())
-                    .define('E', RecipeTags.conductiveCasing())),
+                    .define('P', copperSheet())
+                    .define('C', copperCoil())
+                    .define('I', ironIngot())
+                    .define('E', conductiveCasing())),
+
+    HV_BREAKER = create(ModdedBlocks.HV_BREAKER)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
+            .viaShaped(b -> b
+                    .pattern("PMP")
+                    .pattern("PIP")
+                    .pattern(" E ")
+                    .define('P', copperSheet())
+                    .define('M', precisionMechanism())
+                    .define('I', ironIngot())
+                    .define('E', conductiveCasing())),
 
     SPARK_GAP = create(ModdedBlocks.SPARK_GAP)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
@@ -245,16 +286,39 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("C C")
                     .pattern("I I")
                     .pattern(" A ")
-                    .define('C', RecipeTags.copperNugget())
-                    .define('I', RecipeTags.ironSheet())
-                    .define('A', RecipeTags.andesiteCasing())),
+                    .define('C', copperNugget())
+                    .define('I', ironSheet())
+                    .define('A', andesiteCasing())),
+
+    VARIAC = create(ModdedBlocks.VARIAC::get)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
+            .viaShaped(b -> b
+                    .pattern("CS ")
+                    .pattern("WTW")
+                    .pattern("WEW")
+                    .define('C', coal())
+                    .define('T', transformerCore())
+                    .define('W', copperCoil())
+                    .define('E', conductiveCasing())
+                    .define('S', shaft())),
+
+    RHEOSTAT = create(ModdedBlocks.RHEOSTAT::get)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
+            .viaShaped(b -> b
+                    .pattern("CS ")
+                    .pattern("WWW")
+                    .pattern("WEW")
+                    .define('C', coal())
+                    .define('W', resistiveCoil())
+                    .define('E', conductiveCasing())
+                    .define('S', shaft())),
 
     DIODE = create(ModdedItems.DIODE)
             .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
             .viaShaped(b -> b
                     .pattern("RC")
                     .define('R', AllItems.POLISHED_ROSE_QUARTZ)
-                    .define('C', RecipeTags.copperSheet())),
+                    .define('C', copperSheet())),
 
     CAPACITOR = create(ModdedItems.CAPACITOR)
             .unlockedBy(() -> AllItems.IRON_SHEET)
@@ -262,10 +326,10 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" I ")
                     .pattern("ZPC")
                     .pattern(" I ")
-                    .define('Z', RecipeTags.zincSheet())
+                    .define('Z', zincSheet())
                     .define('P', Items.PAPER)
-                    .define('C', RecipeTags.copperSheet())
-                    .define('I', RecipeTags.ironSheet())),
+                    .define('C', copperSheet())
+                    .define('I', ironSheet())),
 
     NEON_BULB = create(ModdedItems.NEON_BULB)
             .unlockedBy(() -> Items.AMETHYST_SHARD)
@@ -273,9 +337,9 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("B")
                     .pattern("G")
                     .pattern("I")
-                    .define('B', RecipeTags.glass())
-                    .define('G', RecipeTags.glowstoneDust())
-                    .define('I', RecipeTags.ironSheet())),
+                    .define('B', glass())
+                    .define('G', glowstoneDust())
+                    .define('I', ironSheet())),
 
     REGULATOR_TUBE = create(ModdedItems.REGULATOR_TUBE)
             .unlockedBy(() -> Items.AMETHYST_SHARD)
@@ -283,9 +347,19 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("A")
                     .pattern("G")
                     .pattern("I")
-                    .define('A', RecipeTags.amethystShard())
-                    .define('G', RecipeTags.glowstoneDust())
-                    .define('I', RecipeTags.ironSheet())),
+                    .define('A', amethystShard())
+                    .define('G', glowstoneDust())
+                    .define('I', ironSheet())),
+
+    BARRETTER_TUBE = create(ModdedItems.BARRETTER_TUBE)
+            .unlockedBy(() -> Items.QUARTZ)
+            .viaShaped(b -> b
+                    .pattern("Q")
+                    .pattern("I")
+                    .pattern("P")
+                    .define('Q', quartz())
+                    .define('I', ironWire())
+                    .define('P', ironSheet())),
 
     POTENTIOMETER = create(ModdedItems.POTENTIOMETER)
             .unlockedBy(() -> ModdedItems.RESISTOR)
@@ -293,16 +367,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("A")
                     .pattern("N")
                     .pattern("C")
-                    .define('A', AllItems.ANDESITE_ALLOY)
-                    .define('N', RecipeTags.copperNugget())
-                    .define('C', RecipeTags.coal())),
+                    .define('A', andesiteAlloy())
+                    .define('N', copperNugget())
+                    .define('C', coal())),
 
     WIRE_CUTTER = create(ModdedItems.WIRE_CUTTER)
             .unlockedBy(() -> AllItems.IRON_SHEET)
             .viaShaped(b -> b
                     .pattern("I ")
                     .pattern(" I")
-                    .define('I', RecipeTags.ironSheet())),
+                    .define('I', ironSheet())),
 
     ELECTRIC_FAN = create(ModdedBlocks.ELECTRIC_FAN)
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
@@ -314,7 +388,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
             .viaShapeless(b -> b
                     .requires(ModdedBlocks.ELECTRIC_MOTOR)
-                    .requires(AllItems.PRECISION_MECHANISM)),
+                    .requires(precisionMechanism())),
 
     SERVO = create(ModdedBlocks.SERVO)
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
@@ -329,18 +403,18 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("I")
                     .pattern("A")
                     .pattern("C")
-                    .define('I', RecipeTags.ironSheet())
-                    .define('A', AllBlocks.ANDESITE_CASING)
-                    .define('C', RecipeTags.copperSheet())),
+                    .define('I', ironSheet())
+                    .define('A', andesiteCasing())
+                    .define('C', copperSheet())),
 
     DEVICE_CONNECTOR = create(ModdedBlocks.DEVICE_CONNECTOR)
             .unlockedBy(() -> AllItems.COPPER_SHEET)
             .viaShaped(b -> b
                     .pattern(" Z ")
                     .pattern("CAC")
-                    .define('C', RecipeTags.copperSheet())
-                    .define('Z', RecipeTags.zincSheet())
-                    .define('A', AllItems.ANDESITE_ALLOY)),
+                    .define('C', copperSheet())
+                    .define('Z', zincSheet())
+                    .define('A', andesiteAlloy())),
 
     ALARM_BELL = create(ModdedBlocks.ALARM_BELL)
             .unlockedBy(() -> AllItems.BRASS_SHEET)
@@ -348,17 +422,17 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" B ")
                     .pattern("BAB")
                     .pattern(" CI")
-                    .define('B', RecipeTags.brassSheet())
-                    .define('A', AllItems.ANDESITE_ALLOY)
-                    .define('C', RecipeTags.copperCoil())
-                    .define('I', RecipeTags.ironIngot())),
+                    .define('B', brassSheet())
+                    .define('A', andesiteAlloy())
+                    .define('C', copperCoil())
+                    .define('I', ironIngot())),
 
     POTATO_BATTERY = create(ModdedBlocks.POTATO_BATTERY)
             .unlockedBy(() -> Items.POTATO)
             .viaShapeless(b -> b
                     .requires(Items.POTATO)
-                    .requires(RecipeTags.zincSheet())
-                    .requires(RecipeTags.copperSheet())),
+                    .requires(zincSheet())
+                    .requires(copperSheet())),
 
     PORTABLE_BATTERY = create(ModdedItems.PORTABLE_BATTERY)
             .unlockedBy(() -> ModdedBlocks.BATTERY)
@@ -367,8 +441,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("ZDZ")
                     .pattern("ZBZ")
                     .define('C', ModdedBlocks.DEVICE_CONNECTOR)
-                    .define('Z', RecipeTags.zincSheet())
-                    .define('D', RecipeTags.electricalGizmo())
+                    .define('Z', zincSheet())
+                    .define('D', electricalGizmo())
                     .define('B', ModdedBlocks.BATTERY)),
 
     HOUSING_CYCLE = conversionCycle(List.of(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING)),
@@ -379,20 +453,20 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .viaShaped(b -> b
                     .pattern("CBC")
                     .pattern(" E ")
-                    .define('C', RecipeTags.copperSheet())
-                    .define('B', RecipeTags.coalBlock())
-                    .define('E', RecipeTags.conductiveCasing())),
+                    .define('C', copperSheet())
+                    .define('B', coalBlock())
+                    .define('E', conductiveCasing())),
 
     MULTIMETER = create(ModdedItems.MULTIMETER)
             .unlockedBy(() -> ModdedItems.ELECTRICAL_GIZMO)
             .viaShaped(b -> b
                     .pattern("WGW")
                     .pattern("CEV")
-                    .define('W', RecipeTags.copperWire())
-                    .define('E', RecipeTags.conductiveCasing())
-                    .define('G', RecipeTags.electricalGizmo())
-                    .define('C', RecipeTags.currentMeter())
-                    .define('V', RecipeTags.voltageMeter())),
+                    .define('W', copperWire())
+                    .define('E', conductiveCasing())
+                    .define('G', electricalGizmo())
+                    .define('C', currentMeter())
+                    .define('V', voltageMeter())),
 
     THERMOMETER = create(ModdedBlocks.THERMOMETER)
             .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
@@ -400,14 +474,14 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern(" R ")
                     .pattern("CSI")
                     .define('R', Items.COMPASS)
-                    .define('C', RecipeTags.copperSheet())
-                    .define('S', RecipeTags.resistiveCoil())
-                    .define('I', RecipeTags.ironSheet())),
+                    .define('C', copperSheet())
+                    .define('S', resistiveCoil())
+                    .define('I', ironSheet())),
 
     INSULATED_COPPER_WIRE = create(ModdedItems.INSULATED_COPPER_WIRE)
             .unlockedBy(() -> ModdedItems.WIRE)
             .viaShapeless(b -> b
-                    .requires(ModdedItems.WIRE)
+                    .requires(copperWire())
                     .requires(Items.DRIED_KELP)),
 
     COPPER_CORD = create(ModdedItems.CORD)
@@ -420,16 +494,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
     CORD_JUNCTION = create(ModdedBlocks.CORD_JUNCTION)
             .unlockedBy(() -> ModdedItems.CORD)
             .viaShapeless(b -> b
-                    .requires(RecipeTags.conductiveCasing())
-                    .requires(RecipeTags.ironNugget())
-                    .requires(RecipeTags.ironSheet())),
+                    .requires(conductiveCasing())
+                    .requires(ironNugget())
+                    .requires(ironSheet())),
 
     POWER_PLUG = create(ModdedBlocks.SOCKET)
             .unlockedBy(() -> ModdedItems.CORD)
             .viaShapeless(b -> b
-                    .requires(RecipeTags.copperSheet())
-                    .requires(RecipeTags.conductiveCasing())
-                    .requires(RecipeTags.brassSheet()))
+                    .requires(copperSheet())
+                    .requires(conductiveCasing())
+                    .requires(brassSheet()))
 
             ;
 

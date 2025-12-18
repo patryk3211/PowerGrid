@@ -36,7 +36,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.circuits.components.Component;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
@@ -228,7 +228,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     @Override
     protected List<net.minecraft.network.chat.Component> getTooltipFromContainerItem(ItemStack stack) {
         var lines = super.getTooltipFromContainerItem(stack);
-        if(Component.forItem(stack.getItem()) != null) {
+        if(ComponentRegistry.getComponent(stack.getItem()) != null) {
             lines.add(TOOLTIP_PLACEABLE);
         }
         return lines;
@@ -253,7 +253,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     }
 
     private void toolSelect(Slot slot) {
-        var component = Component.forItem(slot.getItem().getItem());
+        var component = ComponentRegistry.getComponent(slot.getItem().getItem());
         if(component == null)
             return;
         editWidget.cancelSelection();
@@ -268,7 +268,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     }
 
     public void toolSelect(Item item) {
-        var component = Component.forItem(item);
+        var component = ComponentRegistry.getComponent(item);
         if(component == null)
             return;
         editWidget.cancelSelection();
@@ -360,7 +360,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
                 ctx.blit(BACKGROUND, leftPos + slot.x - 1, topPos + slot.y - 1 , 232, 18, 18, 18);
                 continue;
             }
-            if(Component.forItem(slot.getItem().getItem()) == null)
+            if(ComponentRegistry.getComponent(slot.getItem().getItem()) == null)
                 continue;
             ctx.blit(BACKGROUND, leftPos + slot.x - 1, topPos + slot.y - 1 , 232, 0, 18, 18);
         }

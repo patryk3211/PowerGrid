@@ -33,6 +33,7 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
+import org.patryk3211.powergrid.utility.sound.SoundScapes;
 
 public class PowerGridClient {
 	public static final ElectroZapperRenderHandler ELECTRO_ZAPPER_RENDER_HANDLER = new ElectroZapperRenderHandler();
@@ -50,7 +51,7 @@ public class PowerGridClient {
 	}
 
 	public static void registerArchitecturyEvents() {
-		ClientTickEvent.CLIENT_LEVEL_PRE.register(GlobalElectricNetworks::tick);
+		ClientTickEvent.CLIENT_LEVEL_PRE.register(GlobalElectricNetworks::preTick);
 		ClientTickEvent.CLIENT_LEVEL_POST.register(TerminalHandler::tick);
 		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
 	}
@@ -58,6 +59,8 @@ public class PowerGridClient {
 	private static void clientTick(Minecraft client) {
 		if(client.level == null || client.player == null)
 			return;
+
+		SoundScapes.tick();
 
 		ELECTRO_ZAPPER_RENDER_HANDLER.tick();
 		CustomValueSettingsScreen.clientTick();

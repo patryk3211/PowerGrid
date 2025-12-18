@@ -46,6 +46,14 @@ public class WireElement extends AnimatedSceneElementBase {
     }
 
     @Override
+    public void tick(PonderScene scene) {
+        super.tick(scene);
+        if(wire != null) {
+            wire.tick();
+        }
+    }
+
+    @Override
     protected void renderLast(PonderLevel world, MultiBufferSource buffer, GuiGraphics graphics, float fade, float pt) {
         EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
         if(wire == null && isVisible()) {

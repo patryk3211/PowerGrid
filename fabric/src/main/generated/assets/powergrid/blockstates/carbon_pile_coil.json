@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/carbon_pile/coil",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/carbon_pile/coil"
+    },
+    "facing=south": {
+      "model": "powergrid:block/carbon_pile/coil",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/carbon_pile/coil",
+      "y": 270
+    }
+  }
+}

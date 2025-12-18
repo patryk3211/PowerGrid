@@ -47,6 +47,11 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
         setVoltage(voltage);
     }
 
+    @Override
+    public boolean isSource() {
+        return true;
+    }
+
     public void setVoltage(float voltage) {
         this.voltage = voltage;
     }
@@ -106,5 +111,12 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
         if(negative != null)
             return List.of(positive, negative);
         return List.of(positive);
+    }
+
+    @Override
+    public String toString() {
+        if(negative != null)
+            return String.format("VoltageSource(%s %s V=%g)", positive, negative, voltage);
+        return String.format("VoltageSource(%s V=%g)", positive, voltage);
     }
 }

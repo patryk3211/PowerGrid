@@ -68,7 +68,7 @@ public class CircuitSchematicRender {
         ms.translate(x, y, 0);
         ms.scale(scale, scale, scale);
         for(var placed : schematic.components()) {
-            placed.footprint().render(ctx, placed.x * GRID_TO_GRID_SCALE, placed.y * GRID_TO_GRID_SCALE, false);
+            placed.footprint().render(ctx, placed.component, placed.x * GRID_TO_GRID_SCALE, placed.y * GRID_TO_GRID_SCALE, false);
         }
         ms.popPose();
     }
@@ -82,7 +82,7 @@ public class CircuitSchematicRender {
         var mY = (mouseY - y) / scale;
         for(var placed : schematic.components()) {
             var hovering = mX >= placed.x && mY >= placed.y && mX < placed.x + placed.footprint().getWidth() && mY < placed.y + placed.footprint().getHeight();
-            placed.footprint().render(ctx, placed.x * GRID_TO_GRID_SCALE, placed.y * GRID_TO_GRID_SCALE, hovering);
+            placed.footprint().render(ctx, placed.component, placed.x * GRID_TO_GRID_SCALE, placed.y * GRID_TO_GRID_SCALE, hovering);
         }
         ms.popPose();
     }
