@@ -17,10 +17,14 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -173,6 +177,24 @@ public class CordItem extends WireItem {
         }
     }
 
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+        var stack = user.getItemInHand(hand);
+        if(stack.hasTag() && user.isShiftKeyDown()) {
+            stack.removeTagKey("Connection");
+            stack.removeTagKey("Half");
+            if(!world.isClientSide)
+                user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
+            return InteractionResultHolder.sidedSuccess(stack, true);
+        }
+        return InteractionResultHolder.pass(stack);
+    }
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return super.isFoil(stack) || (stack.hasTag() && stack.getTag().contains("Half"));
+    }
+
     @NotNull
     @Override
     public InteractionResult useOn(UseOnContext context) {
@@ -197,6 +219,7 @@ public class CordItem extends WireItem {
                         return InteractionResult.FAIL;
                     }
                     var splitEndpoint = new SplitCordEndpoint(bwe, endpoint2);
+                    stack.removeTagKey("Half");
                     return addEndpoint(context, splitEndpoint);
                 } else {
                     var endpoint = new BlockWireEndpoint(pos, terminal);
