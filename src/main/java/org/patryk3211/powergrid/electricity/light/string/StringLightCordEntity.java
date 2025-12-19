@@ -49,9 +49,10 @@ public class StringLightCordEntity extends CordEntity {
 
     private ElectricWire pWire1;
     private ElectricWire pWire2;
+    private float filamentPower;
     private float filamentTemperature;
-    private boolean broken;
     private int lazyTick = 0;
+    private boolean state;
 
     // Client rendering stuff
     private int renderIndex;
@@ -102,14 +103,12 @@ public class StringLightCordEntity extends CordEntity {
     protected void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
         nbt.putFloat("Filament", filamentTemperature);
-        nbt.putBoolean("Broken", broken);
         if(colorPattern != null)
             nbt.putIntArray("Pattern", colorPattern);
     }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag nbt) {
-        broken = nbt.getBoolean("Broken");
         super.readAdditionalSaveData(nbt);
         filamentTemperature = nbt.getFloat("Filament");
         if(nbt.contains("Pattern")) {
@@ -154,11 +153,9 @@ public class StringLightCordEntity extends CordEntity {
             wire1 = GlobalElectricNetworks.makeConnection(world, cordEnd1.getEndpoint1(), cordEnd2.getEndpoint1(), this, new WorldNetworks.ComplexId(getUUID(), 0));
             wire2 = GlobalElectricNetworks.makeConnection(world, cordEnd1.getEndpoint2(), cordEnd2.getEndpoint2(), this, new WorldNetworks.ComplexId(getUUID(), 1));
 
-            if(!broken) {
-                var parallelResistance = (576 * 8) / Math.max(itemCount, 1);
-                pWire1 = GlobalElectricNetworks.makeSimpleConnection(world, cordEnd1.getEndpoint1(), cordEnd1.getEndpoint2(), parallelResistance * 2);
-                pWire2 = GlobalElectricNetworks.makeSimpleConnection(world, cordEnd2.getEndpoint1(), cordEnd2.getEndpoint2(), parallelResistance * 2);
-            }
+            var parallelResistance = (576 * 8) / Math.max(itemCount, 1);
+            pWire1 = GlobalElectricNetworks.makeSimpleConnection(world, cordEnd1.getEndpoint1(), cordEnd1.getEndpoint2(), parallelResistance * 2);
+            pWire2 = GlobalElectricNetworks.makeSimpleConnection(world, cordEnd2.getEndpoint1(), cordEnd2.getEndpoint2(), parallelResistance * 2);
         } catch(RuntimeException e) {
             PowerGrid.LOGGER.error("Failed to create wire for entity", e);
             kill();
@@ -166,32 +163,35 @@ public class StringLightCordEntity extends CordEntity {
     }
 
     @Override
+    protected boolean testForOverheat(float temperature, float energy) {
+        return super.testForOverheat(temperature, energy) || filamentTemperature > 1800;
+    }
+
+    @Override
+    protected boolean testForCooling(float energy) {
+        return super.testForCooling(energy) && filamentPower <= 0;
+    }
+
+    @Override
     public void tick() {
-        super.tick();
         if(!level().isClientSide || level() instanceof PonderLevel) {
-            if(pWire1 != null && pWire2 != null && !broken) {
-                var power = (pWire1.power() + pWire2.power()) / Math.max(itemCount, 1);
-                filamentTemperature += (power - DISSIPATION_FACTOR * filamentTemperature) * 0.05f / THERMAL_MASS;
-                if(filamentTemperature > 1800) {
-                    entityData.set(POWER, 0f);
-                    pWire1.remove();
-                    pWire1 = null;
-                    pWire2.remove();
-                    pWire2 = null;
-                    broken = true;
-                } else {
-                    var x = Mth.clamp((filamentTemperature - 600f) / (1400f - 600f), 0, 1);
-                    entityData.set(POWER, x * x);
-                    if(level() instanceof PonderLevel) {
-                        prevPower = this.power;
-                        this.power = x * x;
-                    }
+            if(pWire1 != null && pWire2 != null) {
+                filamentPower = (pWire1.power() + pWire2.power()) / Math.max(itemCount, 1);
+                var power = filamentPower - DISSIPATION_FACTOR * filamentTemperature;
+                filamentTemperature += power * 0.05f / THERMAL_MASS;
+
+                var x = Mth.clamp((filamentTemperature - 600f) / (1400f - 600f), 0, 1);
+                entityData.set(POWER, x * x);
+                if(level() instanceof PonderLevel) {
+                    prevPower = this.power;
+                    this.power = x * x;
                 }
             }
         } else {
             prevPower = power;
             power = entityData.get(POWER);
         }
+        super.tick();
 
         if(lazyTick++ >= 5) {
             lazyTick = 0;
@@ -217,13 +217,15 @@ public class StringLightCordEntity extends CordEntity {
         if(!level().isClientSide) {
             var x = Mth.clamp((filamentTemperature - 600f) / (1400f - 600f), 0, 1);
             var power = x * x;
-            BlockState state;
             if (power > 0.75f) {
-                state = ModdedBlocks.STRING_LIGHT_BLOCK.getDefaultState();
-            } else {
-                state = Blocks.AIR.defaultBlockState();
+                var state = ModdedBlocks.STRING_LIGHT_BLOCK.getDefaultState();
+                this.state = true;
+                setLightBlocks(state);
+            } else if(this.state) {
+                var state = Blocks.AIR.defaultBlockState();
+                this.state = false;
+                setLightBlocks(state);
             }
-            setLightBlocks(state);
         }
     }
 

@@ -90,6 +90,14 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         entityData.define(OVERHEAT_TICKS, (byte) 0);
     }
 
+    protected boolean testForOverheat(float temperature, float energy) {
+        return temperature > overheatTemperature && energy > 0;
+    }
+
+    protected boolean testForCooling(float energy) {
+        return energy <= 0;
+    }
+
     private void temperatureUpdate() {
         if(!ModdedConfigs.server().electricity.wireOverheating.get()) {
             // No temperature updates when overheating is disabled.
@@ -97,7 +105,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         }
 
         float temperature = entityData.get(TEMPERATURE);
-        overheated = temperature >= overheatTemperature && entityData.get(OVERHEAT_TICKS) >= ThermalBehaviour.OVERHEAT_TICKS;
+        overheated = entityData.get(OVERHEAT_TICKS) >= ThermalBehaviour.OVERHEAT_TICKS;
         if(level().isClientSide && !(level() instanceof PonderLevel))
             return;
 
@@ -111,10 +119,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
             energy -= dissipationFactor * (temperature - BASE_TEMPERATURE) / 20f;
             temperature += energy / thermalMass;
 
-            if(temperature > overheatTemperature && energy > 0) {
+            if(testForOverheat(temperature, energy)) {
                 // Temperature is high and keeps rising.
                 entityData.set(OVERHEAT_TICKS, (byte) (entityData.get(OVERHEAT_TICKS) + 1));
-            } else if(energy <= 0) {
+            } else if(testForCooling(energy)) {
                 // Cooling down so it's fine.
                 entityData.set(OVERHEAT_TICKS, (byte) 0);
                 if(temperature > overheatTemperature + 10)
