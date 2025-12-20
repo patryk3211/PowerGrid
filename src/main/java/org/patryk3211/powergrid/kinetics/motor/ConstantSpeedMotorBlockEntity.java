@@ -56,7 +56,7 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
 
     public ConstantSpeedMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        setLazyTickRate(AVERAGING_TICKS);
+        setLazyTickRate(AVERAGING_TICKS - 1);
     }
 
     public float torque() {
