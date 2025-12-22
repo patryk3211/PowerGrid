@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.config;
 
 import net.createmod.catnip.config.ConfigBase;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 
 public class CSolver extends ConfigBase {
     public final ConfigFloat transmissionLineThreshold = f(0.2f, 0, "transmissionLineThreshold", Comments.transmissionLineThreshold);
@@ -31,7 +30,6 @@ public class CSolver extends ConfigBase {
     public final ConfigFloat solverAbsoluteMinimumPrecision = f(1e-6f, 0, "solverAbsoluteMinimumPrecision", Comments.solverAbsoluteMinimumPrecision);
 
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
-    public final ConfigEnum<ElectricalNetwork.SolverType> solverType = e(ElectricalNetwork.SolverType.DIRECT, "solverType", Comments.solverType);
 
     @Override
     public String getName() {
@@ -50,6 +48,5 @@ public class CSolver extends ConfigBase {
         public static final String solverSimpleMaxIterations = "Maximum solver iterations for networks without dynamic residuals";
         public static final String solverComplexMaxIterations = "Maximum solver iterations for networks with dynamic residuals";
         public static final String multiTicks = "Experimental! This option enables all electrical networks to tick multiple times per world tick. This allows for better simulation precision when reactive components are involved but can have a significant impact on performance.";
-        public static final String solverType = "Experimental! This option enables the use of an iterative linear equation solver which can be faster than the direct solver, however it can fail for certain networks.";
     }
 }

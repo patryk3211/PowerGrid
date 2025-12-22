@@ -133,8 +133,6 @@ public class GlobalElectricNetworks {
         if(node.getNetwork() != null) {
             if(node.getNetwork().isLeaf(node)) {
                 line.append(Component.literal(" -").withStyle(ChatFormatting.GREEN));
-            } else if(node.getNetwork().isOptimized(node)) {
-                line.append(Component.literal(" *").withStyle(ChatFormatting.GREEN));
             }
         }
         return line;
@@ -192,13 +190,11 @@ public class GlobalElectricNetworks {
     }
 
     public static void configsReloaded() {
-        var solverType = ModdedConfigs.server().electricity.solver.solverType.get();
         var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
         var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
         var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
         for(var networks : worldNetworks.values()) {
             networks.subnetworks.forEach(network -> {
-                network.setSolverType(solverType);
                 network.setPrecision(rA, rR, rM);
             });
         }

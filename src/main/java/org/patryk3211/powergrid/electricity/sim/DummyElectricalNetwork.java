@@ -15,34 +15,63 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
-import org.ejml.data.DMatrixRMaj;
-import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
+import org.patryk3211.powergrid.electricity.sim.solver.IMatrixAccess;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 public class DummyElectricalNetwork extends GraphedElectricalNetwork {
+    private double[] nodeValues;
+    private int warmUpTicks;
+    private boolean converged;
+
     public DummyElectricalNetwork(NetworkGraph graph) {
-        super(graph, false, SolverType.DIRECT);
+        super(graph, false, null);
+    }
+
+    @Override
+    public void warmUp(int ticks) {
+        if(ticks == -1 || warmUpTicks == -1) {
+            warmUpTicks = -1;
+            return;
+        }
+        converged = false;
+        if(warmUpTicks < ticks)
+            warmUpTicks = ticks;
+    }
+
+    @Override
+    public boolean isConverged() {
+        return converged;
+    }
+
+    @Override
+    public double getValue(INode node) {
+        if(nodeValues == null)
+            return 0;
+        var index = node.getIndex();
+        if(index < 0 || index >= nodeValues.length)
+            return 0 ;
+        return nodeValues[node.getIndex()];
+    }
+
+    @Override
+    public void setValue(INode node, double value) {
+        if(nodeValues == null)
+            return;
+        var index = node.getIndex();
+        if(index < 0 || index >= nodeValues.length)
+            return;
+        nodeValues[node.getIndex()] = value;
     }
 
     @Override
     public void updateConductance(AbstractElectricWire wire, double change) { }
     @Override
     public void alterConductanceMatrix(int row, int column, double change) { }
-    @Override
-    protected void jacobianAdd(int row, int column, double value) { }
-    @Override
-    protected void rhsAdd(int row, double value) { }
-    @Override
-    protected void residualAdd(int row, double value) { }
-    @Override
-    public void optimizeNode(@NotNull INode node) { }
-    @Override
-    public void unoptimizeNode(@NotNull INode node) { }
     @Override
     public void makeLeaf(IElectricNode node, IElectricNode tracked) { }
     @Override
@@ -51,11 +80,11 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
     protected void checkConnectivity(IElectricNode node, Set<IElectricNode> outerChecked) { }
 
     @Override
-    public List<INode> findProblematicNodes(DMatrixRMaj residual, double threshold) {
+    public List<INode> findProblematicNodes(IMatrixAccess residual, double threshold) {
         return List.of();
     }
     @Override
-    public Collection<AbstractElectricWire> findProblematicWires(DMatrixRMaj residual, double threshold) {
+    public Collection<AbstractElectricWire> findProblematicWires(IMatrixAccess residual, double threshold) {
         return List.of();
     }
 
@@ -64,18 +93,18 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
         // Client is not simulated so don't bother with allocating any other matrices.
         // The network is basically just there to hold the state vector and make all other code,
         // that expects a network to work.
-        var shouldReallocate = StateVector == null || dirty || StateVector.getNumRows() != nodes.size();
+        var shouldReallocate = dirty || nodeValues.length != nodes.size();
         if(shouldReallocate) {
             var count = nodes.size();
-            var NewState = new DMatrixRMaj(count, 1);
+            var NewState = new double[count];
             // Use previous state matrix to accelerate warm up
-            if(StateVector != null) {
+            if(nodeValues != null) {
                 for (int i = 0; i < count; ++i) {
-                    NewState.set(i, 0, getValue(nodes.get(i)));
+                    NewState[i] = getValue(nodes.get(i));
                 }
             }
 
-            StateVector = NewState;
+            nodeValues = NewState;
             dirty = false;
         }
     }

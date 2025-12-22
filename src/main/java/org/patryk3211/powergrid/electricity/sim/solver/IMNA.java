@@ -15,16 +15,22 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
-import org.ejml.data.DMatrixRMaj;
-import org.jetbrains.annotations.Nullable;
+public interface IMNA {
+    void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision);
+    void warmUp(int ticks);
 
-public interface ISolver {
-    void setTargetPrecision(double targetPrecision);
+    void jacobianAdd(int row, int column, double value);
+    void rhsAdd(int row, double value);
 
-    void setStateSize(int size);
-    @Nullable
-    DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll);
-    void zero();
+    void allocate(int size);
+    void singleTick();
 
-    DMatrixRMaj getLastGuess();
+    void zeroRHS();
+    void zeroState();
+    void jacobianPrepareForWrite();
+    void finishJacobianWrite();
+    void rowExchange(boolean state);
+    boolean rowExchange();
+    IMatrixAccess stateVector();
+    boolean isConverged();
 }

@@ -16,21 +16,18 @@
 package org.patryk3211.electricity;
 
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 
 import java.util.ArrayList;
 
 public class PerformanceTest extends TestHelper {
     public static void main(String[] args) {
-        var Net1 = new Network();
-        Net1.network.setSolverType(ElectricalNetwork.SolverType.GMRES);
-        var rep1 = buildGridTestNetwork(Net1, "GMRES");
+//        var Net1 = new Network();
+//        var rep1 = buildGridTestNetwork(Net1, "GMRES");
 
         var Net2 = new Network();
-        Net2.network.setSolverType(ElectricalNetwork.SolverType.DIRECT);
         var rep2 = buildGridTestNetwork(Net2, "Direct");
 
-        rep1.run();
+//        rep1.run();
         rep2.run();
     }
 

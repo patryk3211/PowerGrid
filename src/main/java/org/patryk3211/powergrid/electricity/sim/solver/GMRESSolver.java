@@ -19,7 +19,6 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 
 public class GMRESSolver implements ISolver {
@@ -43,11 +42,6 @@ public class GMRESSolver implements ISolver {
     public GMRESSolver(double targetPrecision, int m) {
         this.targetPrecision = targetPrecision;
         this.m = m;
-    }
-
-    @Override
-    public ElectricalNetwork.SolverType type() {
-        return ElectricalNetwork.SolverType.GMRES;
     }
 
     @Override

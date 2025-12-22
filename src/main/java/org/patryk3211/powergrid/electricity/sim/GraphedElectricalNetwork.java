@@ -16,11 +16,12 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.commands.DebugCommand;
 import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.solver.IMNA;
+import org.patryk3211.powergrid.electricity.sim.solver.IMatrixAccess;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,11 +31,16 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
 
     public GraphedElectricalNetwork(boolean addGMin) {
-        this(new NetworkGraph(), addGMin, SolverType.DIRECT);
+        this(new NetworkGraph(), addGMin);
     }
 
-    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, SolverType solver) {
-        super(addGMin, solver);
+    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin) {
+        super(addGMin);
+        this.graph = graph;
+    }
+
+    protected GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, IMNA mna) {
+        super(addGMin, mna);
         this.graph = graph;
     }
 
@@ -206,7 +212,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         checkConnectivity(wire.node2, null);
     }
 
-    public Collection<AbstractElectricWire> findProblematicWires(DMatrixRMaj residual, double threshold) {
+    public Collection<AbstractElectricWire> findProblematicWires(IMatrixAccess residual, double threshold) {
         var nodes = findProblematicNodes(residual, threshold);
         var wires = new HashSet<AbstractElectricWire>();
         for(var node1 : nodes) {
@@ -221,7 +227,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     }
 
     @Override
-    protected void convergenceProblems(double residual, DMatrixRMaj ResidualVector) {
+    public void convergenceProblems(double residual, IMatrixAccess ResidualVector) {
         DebugCommand.pushProblems(this, residual, findProblematicWires(ResidualVector, 1e-8f));
     }
 
