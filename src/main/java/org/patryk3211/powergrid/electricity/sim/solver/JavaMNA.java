@@ -372,13 +372,15 @@ public class JavaMNA implements IMNA {
 
     @Override
     public void zeroRHS() {
-        RHSVector.zero();
+        if(RHSVector != null)
+            RHSVector.zero();
     }
 
     @Override
     public void zeroState() {
         converged = true;
-        StateVector.zero();
+        if(StateVector != null)
+            StateVector.zero();
     }
 
     @Override

@@ -21,6 +21,7 @@ plugins {
 
 import org.gradle.internal.jvm.Jvm
 
+def includeDir = layout.projectDirectory.dir("src/powergridNative/include")
 model {
     platforms {
         x64 {
@@ -36,18 +37,22 @@ model {
                 if (targetPlatform.operatingSystem.macOsX) {
                     cppCompiler.args '-I', "${jvmHome}/include"
                     cppCompiler.args '-I', "${jvmHome}/include/darwin"
+                    cppCompiler.args '-I', "${includeDir}"
                     cppCompiler.args '-mmacosx-version-min=10.4'
                     linker.args '-mmacosx-version-min=10.4'
                 } else if (targetPlatform.operatingSystem.linux) {
                     cppCompiler.args '-I', "${jvmHome}/include"
                     cppCompiler.args '-I', "${jvmHome}/include/linux"
+                    cppCompiler.args '-I', "${includeDir}"
                     cppCompiler.args '-D_FILE_OFFSET_BITS=64'
                 } else if (targetPlatform.operatingSystem.windows) {
                     cppCompiler.args "-I${jvmHome}/include"
                     cppCompiler.args "-I${jvmHome}/include/win32"
+                    cppCompiler.args "-I${includeDir}"
                 } else if (targetPlatform.operatingSystem.freeBSD) {
                     cppCompiler.args '-I', "${jvmHome}/include"
                     cppCompiler.args '-I', "${jvmHome}/include/freebsd"
+                    cppCompiler.args '-I', "${includeDir}"
                 } else {
                     throw new IllegalStateException("Unknown operating system!")
                 }

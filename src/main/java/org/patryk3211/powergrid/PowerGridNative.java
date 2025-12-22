@@ -21,4 +21,6 @@ public class PowerGridNative {
     }
 
     public native void print();
+
+    public native void factorize(double[] A, double[] LU, int[] pvt);
 }
