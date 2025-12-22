@@ -184,7 +184,8 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
         while(ModdedBlocks.CARBON_PILE.has(state = level.getBlockState(pos))) {
             if(state.getValue(CarbonPileBlock.TOP)) {
                 var be = (CarbonPileBlockEntity) level.getBlockEntity(pos);
-                buffer.writeFloat(be.thermal.getTemperature());
+                if(be != null && be.thermal != null)
+                    buffer.writeFloat(be.thermal.getTemperature());
                 break;
             }
             pos = pos.above();
@@ -200,7 +201,8 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
         while(ModdedBlocks.CARBON_PILE.has(state = level.getBlockState(pos))) {
             if(state.getValue(CarbonPileBlock.TOP)) {
                 var be = (CarbonPileBlockEntity) level.getBlockEntity(pos);
-                be.thermal.setTemperature(buffer.readFloat());
+                if(be != null && be.thermal != null)
+                    be.thermal.setTemperature(buffer.readFloat());
                 break;
             }
             pos = pos.above();
