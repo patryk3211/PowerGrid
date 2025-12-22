@@ -43,11 +43,9 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
-import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.config.CResistance;
@@ -482,10 +480,7 @@ public class ModdedBlocks {
     public static final BlockEntry<TransformerMediumBlock> TRANSFORMER_MEDIUM = REGISTRATE.block("transformer_medium", TransformerMediumBlock::new)
             .initialProperties(TRANSFORMER_CORE)
             .blockstate(transformerMedium())
-            .loot((tables, block) ->
-                    tables.add(block, tables.createSingleItemTable(TRANSFORMER_CORE.get())
-                            .apply(SetItemCountFunction.setCount(ConstantValue.exactly(4)))
-                    ))
+            .loot((tables, block) -> tables.dropOther(block, TRANSFORMER_CORE.get()))
             .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
             .transform(pickaxeOnly())
             .transform(CThermal.maxPower(4000, 16.0f))
