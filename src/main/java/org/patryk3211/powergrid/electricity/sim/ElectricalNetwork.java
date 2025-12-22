@@ -38,7 +38,7 @@ public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
     private static final int MAX_SCALE_REUSE_COUNT = 50;
-    private static final boolean SCALING = false;
+    private static final boolean SCALING = true;
 
     private final boolean addGMin;
     protected final Set<AbstractElectricWire> wires = new HashSet<>();
@@ -403,7 +403,7 @@ public class ElectricalNetwork implements IStamped {
             if(rowObj.index == row)
                 return rowObj;
         }
-        var rowObj = new ExchangeRow(row, ReducedJacobian != null ? ReducedJacobian : JacobianKept);
+        var rowObj = new ExchangeRow(row, SCALING ? ScaledJ : ReducedJacobian != null ? ReducedJacobian : JacobianKept);
         changedRows.add(rowObj);
         return rowObj;
     }
@@ -413,14 +413,26 @@ public class ElectricalNetwork implements IStamped {
             return;
         if(row >= nodes.size() || column >= nodes.size())
             throw new IllegalArgumentException("Provided entry lays outside of the allocated matrices.");
-        recalculateScales = true;
         if(row < eliminatedStart && column < eliminatedStart) {
-            if(enableRowExchange) {
-                var e = getOrCreateRow(row);
-                e.update(column, value);
+            if(SCALING) {
+                var scaledValue = value * columnScales[column] * rowScales[row];
+                if (enableRowExchange) {
+                    var e = getOrCreateRow(row);
+                    e.update(column, scaledValue);
+                } else {
+                    A0.add(row, column, scaledValue);
+                    A0.markRefactorize();
+                }
+                ScaledJ.add(row, column, scaledValue);
+                ScaledJ.markRefactorize();
             } else {
-                A0.add(row, column, value);
-                A0.markRefactorize();
+                if (enableRowExchange) {
+                    var e = getOrCreateRow(row);
+                    e.update(column, value);
+                } else {
+                    A0.add(row, column, value);
+                    A0.markRefactorize();
+                }
             }
             JacobianKept.add(row, column, value);
             JacobianKept.markRefactorize();
@@ -947,6 +959,8 @@ public class ElectricalNetwork implements IStamped {
             workMatrix.multColumns(columnScales, ScaledJ);
             ScaledJ.multRows(rowScales, null);
             ScaledJ.markRefactorize();
+            // Make sure to drop all exchanged rows
+            enableRowExchange = false;
             recalculateScales = false;
         }
     }
@@ -1030,9 +1044,26 @@ public class ElectricalNetwork implements IStamped {
     }
 
     private void computeScales(DynamicallyTypedMatrix workMatrix) {
-        columnScales(workMatrix);
-        workMatrix.multColumns(columnScales, ScaledJ);
-        rowScales(ScaledJ);
+        int n = workMatrix.getNumRows();
+        for(int i = 0; i < n; ++i) {
+            if(nodes.get(i) instanceof ICouplingNode) {
+                columnScales[i] = rowScales[i] = 1;
+                continue;
+            }
+            double max = 0;
+            for(int j = 0; j < n; ++j)  {
+                var v = Math.abs(workMatrix.unsafe_get(i, j));
+                max += v * v;
+            }
+            if(max == 0) {
+                columnScales[i] = rowScales[i] = 1;
+                continue;
+            }
+            columnScales[i] = rowScales[i] = Math.sqrt(Math.min(1.0 / Math.sqrt(max), 2000));
+        }
+//        columnScales(workMatrix);
+//        workMatrix.multColumns(columnScales, ScaledJ);
+//        rowScales(ScaledJ);
         scalesAge = 0;
     }
 
@@ -1068,6 +1099,8 @@ public class ElectricalNetwork implements IStamped {
             if(converged)
                 convergenceProblems(norm, ResidualVector);
             converged = false;
+            // Drop exchanged rows since they might reduce precision
+            enableRowExchange = false;
             if (LOGGER != null) {
                 if (ModdedConfigs.logsEnabled()) {
                     LOGGER.warn("Solution possibly not converged after {} Newton iterations, final norm: {}", i, norm);
@@ -1162,26 +1195,40 @@ public class ElectricalNetwork implements IStamped {
                     convergenceProblems(norm, AuxiliaryVector);
             }
 
-            if(enableRowExchange) {
-                var rowRecalc = A0.isMarked();
-                for (var row : changedRows) {
-                    rowRecalc = row.solveRow(A0, rowRecalc, changedRows);
-                }
-                for (int j = changedRows.size() - 1; j >= 0; --j) {
-                    changedRows.get(j).apply(ResidualVector);
-                }
-                workMatrix = A0;
-            } else {
-                workMatrix.markRefactorize();
-                changedRows.clear();
-                A0.setTo(workMatrix);
-                enableRowExchange = true;
-            }
-
             if(SCALING) {
                 prepareScaled(workMatrix);
                 CommonOps_DDRM.multRows(rowScales, ResidualVector);
                 workMatrix = ScaledJ;
+            }
+
+            if(enableRowExchange) {
+                var valid = true;
+                var rowRecalc = A0.isMarked();
+                for (var row : changedRows) {
+                    var status = row.solveRow(A0, rowRecalc, changedRows);
+                    if(status == 2) {
+                        // Drop changed rows
+                        valid = false;
+                        break;
+                    } else if(status == 1) {
+                        rowRecalc = true;
+                    }
+                }
+                if(valid) {
+                    for (int j = changedRows.size() - 1; j >= 0; --j) {
+                        changedRows.get(j).apply(ResidualVector);
+                    }
+                    workMatrix = A0;
+                } else {
+                    changedRows.clear();
+                    A0.setTo(workMatrix);
+                    A0.markRefactorize();
+                }
+            } else {
+                changedRows.clear();
+                A0.setTo(workMatrix);
+                A0.markRefactorize();
+                enableRowExchange = true;
             }
 
             var deltaX = solver.solve(workMatrix, ResidualVector, false);
@@ -1220,6 +1267,7 @@ public class ElectricalNetwork implements IStamped {
         private final DMatrixRMaj changedRow;
         private final DMatrixRMaj solvedCoefficients;
         private boolean recalculate;
+        private int unmodifiedFor;
 
         public ExchangeRow(int index, DynamicallyTypedMatrix rowSource) {
             this.index = index;
@@ -1235,11 +1283,14 @@ public class ElectricalNetwork implements IStamped {
         public void update(int index, double change) {
             changedRow.add(0, index, change);
             recalculate = true;
+            unmodifiedFor = 0;
         }
 
-        public boolean solveRow(DynamicallyTypedMatrix A0, boolean force, List<ExchangeRow> allRows) {
-            if(!recalculate && !force)
-                return false;
+        public int solveRow(DynamicallyTypedMatrix A0, boolean force, List<ExchangeRow> allRows) {
+            if(!recalculate && !force) {
+                ++unmodifiedFor;
+                return 0;
+            }
             A0.solveRow(changedRow, solvedCoefficients);
             // Apply rows up to this row (assumes that the collection has fixed ordering)
             var vec = solvedCoefficients.getData();
@@ -1252,10 +1303,14 @@ public class ElectricalNetwork implements IStamped {
                     if(i == row.index)
                         continue;
                     vec[i] -= x * row.solvedCoefficients.unsafe_get(0, i);
+                    if(Math.abs(vec[i]) > 1e+6) {
+                        // The numerical errors might cause convergence issues
+                        return 2;
+                    }
                 }
             }
             recalculate = false;
-            return true;
+            return 1;
         }
 
         public void apply(DMatrixRMaj residuals) {
