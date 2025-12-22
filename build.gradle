@@ -297,6 +297,8 @@ dependencies {
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 }
 
+classes.dependsOn 'native:powergridNativeSharedLibrary'
+
 test {
 	useJUnitPlatform()
 }

@@ -13,3 +13,4 @@ rootProject.name = "Power Grid"
 
 include("fabric")
 include("forge")
+include("native")

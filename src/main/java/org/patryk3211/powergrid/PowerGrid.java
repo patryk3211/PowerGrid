@@ -64,6 +64,8 @@ public class PowerGrid {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
 		ElectricalNetwork.LOGGER = LOGGER;
 
+		new PowerGridNative().print();
+
 		ModdedSoundEvents.prepare();
 
 		REGISTRATE = createRegistrate();
