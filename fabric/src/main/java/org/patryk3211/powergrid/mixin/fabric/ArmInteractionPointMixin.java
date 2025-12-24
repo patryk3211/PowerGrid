@@ -64,7 +64,7 @@ public abstract class ArmInteractionPointMixin {
                 if(circuit.isOf(ModdedItems.INCOMPLETE_CIRCUIT.get())) {
                     if(handler.extract(view.getResource(), 1, ctx) == 0)
                         continue;
-                    var newCircuit = IncompleteCircuitItem.insert(circuit.toStack(), stack);
+                    var newCircuit = IncompleteCircuitItem.insert(getLevel(), circuit.toStack(), stack);
                     if(newCircuit != null) {
                         if(handler.insert(ItemVariant.of(newCircuit), 1, ctx) == 1) {
                             var result = ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - 1);
@@ -93,7 +93,7 @@ public abstract class ArmInteractionPointMixin {
         transport.handleCenteredProcessingOnAllItems(0.05f, tis -> {
             if(found.isFalse() && ModdedItems.INCOMPLETE_CIRCUIT.isIn(tis.stack)) {
                 found.setTrue();
-                var newCircuit = IncompleteCircuitItem.insert(tis.stack, stack);
+                var newCircuit = IncompleteCircuitItem.insert(getLevel(), tis.stack, stack);
                 if(newCircuit != null) {
                     inserted.setTrue();
                     TransactionCallback.onSuccess(ctx, () -> {

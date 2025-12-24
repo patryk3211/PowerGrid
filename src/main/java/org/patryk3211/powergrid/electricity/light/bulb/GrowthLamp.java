@@ -34,12 +34,14 @@ public class GrowthLamp extends LightBulb {
 
     @Override
     public LightBulbState createState(LightFixtureBlockEntity fixture) {
-        return new org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp.State(this, fixture, modelSupplier);
+        return new org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp.State(this, fixture, modelSupplier, dyedModelSupplier);
     }
 
     public static class State extends SimpleState {
-        public <T extends Item & ILightBulb> State(T bulb, LightFixtureBlockEntity fixture, Supplier<Function<LightBulb.State, PartialModel>> modelProviderSupplier) {
-            super(bulb, fixture, modelProviderSupplier);
+        public <T extends Item & ILightBulb> State(T bulb, LightFixtureBlockEntity fixture,
+                                                   Supplier<Function<LightBulb.State, PartialModel>> modelProviderSupplier,
+                                                   Supplier<Function<LightBulb.DyedState, PartialModel>> dyedModelProviderSupplier) {
+            super(bulb, fixture, modelProviderSupplier, dyedModelProviderSupplier);
         }
 
         @Override

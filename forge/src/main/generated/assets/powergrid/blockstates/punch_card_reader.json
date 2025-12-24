@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/punch_card_reader/block",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/punch_card_reader/block"
+    },
+    "facing=south": {
+      "model": "powergrid:block/punch_card_reader/block",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/punch_card_reader/block",
+      "y": 270
+    }
+  }
+}

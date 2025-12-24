@@ -38,7 +38,7 @@
           "item": "powergrid:incomplete_electrical_gizmo"
         },
         {
-          "item": "powergrid:copper_coil"
+          "tag": "forge:copper_coils"
         }
       ],
       "results": [

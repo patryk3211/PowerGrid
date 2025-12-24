@@ -103,7 +103,7 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
                 var lowR = ModdedConfigs.server().electricity.groundingLowestResistance.getF();
                 int maxBlocks = ModdedConfigs.server().electricity.groundingMaximumBlocks.get();
                 var delta = (highR - lowR) / maxBlocks;
-                var resistance = highR - delta * conductiveCount / maxBlocks;
+                var resistance = highR - delta * Math.min(conductiveCount, maxBlocks);
                 wire.setResistance(resistance);
                 wire.setState(true);
             }
@@ -145,8 +145,10 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if(tag.contains("Resistance")) {
-            wire.setResistance(tag.getFloat("Resistance"));
-            wire.setState(true);
+            var R = tag.getFloat("Resistance");
+            wire.setState(false);
+            wire.setResistance(R);
+            wire.setState(R > 0);
         } else {
             wire.setState(false);
         }

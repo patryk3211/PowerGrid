@@ -21,11 +21,16 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 
+import java.util.function.Function;
+
 public class VoltageSource extends PonderElementBase {
     private final IWireEndpoint target;
     private final float voltage;
 
     private VoltageSourceCoupling source;
+
+    private Function<Integer, Float> func;
+    private int time;
 
     public VoltageSource(IWireEndpoint target, float voltage) {
         this.target = target;
@@ -45,6 +50,9 @@ public class VoltageSource extends PonderElementBase {
             source = new VoltageSourceCoupling(node, null, 0, voltage);
             network.addNode(source);
         }
+        if(func != null) {
+            source.setVoltage(func.apply(time++));
+        }
     }
 
     @Override
@@ -53,11 +61,18 @@ public class VoltageSource extends PonderElementBase {
             source.getNetwork().removeNode(source);
             source = null;
         }
+        func = null;
     }
 
     public void setValue(float value) {
         if(source != null) {
             source.setVoltage(value);
         }
+        func = null;
+    }
+
+    public void setFunction(Function<Integer, Float> func) {
+        this.func = func;
+        this.time = 0;
     }
 }

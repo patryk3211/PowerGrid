@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 public class PerformanceCounter {
-    private static final DateFormat FORMAT = DateFormat.getDateTimeInstance();
+    public static final DateFormat FORMAT = DateFormat.getDateTimeInstance();
     public static final List<PerformanceCounter> COUNTERS = new ArrayList<>();
 
     private String name;

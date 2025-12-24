@@ -23,9 +23,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
@@ -44,6 +46,9 @@ public abstract class LightBulbState {
     protected boolean burned;
     private int overheatTicks;
     private boolean playEffect;
+
+    @Nullable
+    protected DyeColor color;
 
     public <T extends Item&ILightBulb> LightBulbState(T bulb, LightFixtureBlockEntity fixture) {
         this.item = bulb;
@@ -143,6 +148,9 @@ public abstract class LightBulbState {
 
     @Environment(EnvType.CLIENT)
     public abstract PartialModel getModel();
+    @Environment(EnvType.CLIENT)
+    public abstract PartialModel getDyedBulb();
+
     @NotNull
     @Environment(EnvType.CLIENT)
     public abstract PartialModel getLightModel();
@@ -161,6 +169,8 @@ public abstract class LightBulbState {
             nbt.putBoolean("Effect", true);
             playEffect = false;
         }
+        if(color != null)
+            nbt.putInt("Color", color.ordinal());
     }
 
     public void read(CompoundTag nbt) {
@@ -174,6 +184,12 @@ public abstract class LightBulbState {
         fixture.getFilament().setState(!burned);
         if(nbt.getBoolean("Effect")) {
             burnEffect();
+        }
+
+        if(bulb.canBeDyed() && nbt.contains("Color")) {
+            color = DyeColor.values()[nbt.getInt("Color")];
+        } else {
+            color = null;
         }
     }
 
@@ -190,5 +206,17 @@ public abstract class LightBulbState {
 
     public Item getItem() {
         return item;
+    }
+
+    public boolean setColor(DyeColor color) {
+        if(bulb.canBeDyed()) {
+            this.color = color;
+            return true;
+        }
+        return false;
+    }
+
+    public DyeColor getColor() {
+        return color;
     }
 }

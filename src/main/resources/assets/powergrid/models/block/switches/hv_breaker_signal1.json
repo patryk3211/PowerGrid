@@ -1,0 +1,21 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "powergrid:block/switches/hv_breaker",
+		"particle": "powergrid:block/switches/hv_breaker"
+	},
+	"elements": [
+		{
+			"name": "signal",
+			"from": [8, 11, 1],
+			"to": [12, 14, 2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11, 11, 0]},
+			"faces": {
+				"north": {"uv": [0, 7.5, 1, 8.25], "texture": "#0"}
+			}
+		}
+	]
+}

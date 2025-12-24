@@ -17,15 +17,17 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.ITimeAwareWire;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class InductorWire extends AbstractElectricWire implements ISolverHook, IOuterHook {
+public class InductorWire extends AbstractElectricWire implements ISolverHook, IOuterHook, ITimeAwareWire {
     private double inductance;
 
     private double Ieq;
     private double I;
+    private double Vprev;
 
     public InductorWire(double inductance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -34,7 +36,7 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
 
     @Override
     public double conductance() {
-        return 0.05 / (2 * inductance);
+        return getDeltaTime() / (2 * inductance);
     }
 
     @Override
@@ -44,23 +46,31 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
 
     public void setCurrent(float current) {
         valueChange(current, I);
-        if(Float.isFinite(current))
+        if(Float.isFinite(current)) {
+            Vprev = 0;
             I = current;
+        }
+    }
+
+    @Override
+    public void preSolve() {
+        Ieq = 0;
     }
 
     @Override
     public void postUpperSolve() {
-        if(isConverged())
-            I = current();
+        if(isConverged()) {
+            Vprev = inductance * (current() - I) / getDeltaTime();
+            // Save current with a bit of leakage
+            I = current() * 0.99999;
+        }
     }
 
     @Override
     public void startIteration() {
         var G = conductance();
-        var V = inductance * (current() - I) / 0.05f;
-
-        // Calculate current with a bit of leakage
-        Ieq = (V * G + I) * 0.99999;
+        var V = inductance * (current() - I) / getDeltaTime();
+        Ieq = (V * 0.05f + Vprev * 0.95f) * G + I;
     }
 
     @Override
@@ -76,5 +86,10 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
         this.inductance = inductance;
         if(network != null)
             network.updateConductance(this, conductance() - oldConductance);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Inductor(L=%g)", inductance);
     }
 }

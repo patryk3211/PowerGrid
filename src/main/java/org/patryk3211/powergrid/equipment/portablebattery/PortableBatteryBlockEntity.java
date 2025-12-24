@@ -52,9 +52,8 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         applyPower(wire);
-        super.tick();
         if(wire.getState()) {
             if(!level.isClientSide) {
                 int prevComparatorLevel = getComparatorOutput();
@@ -65,8 +64,6 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
                     level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
                     sendData();
                 }
-//                if(charge == maxCharge)
-//                    sendData();
             }
         }
         wire.setState(charge < maxCharge);

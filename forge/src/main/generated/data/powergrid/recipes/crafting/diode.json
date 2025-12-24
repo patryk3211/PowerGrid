@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "forge:plates/copper"
+    },
+    "R": {
+      "item": "create:polished_rose_quartz"
+    }
+  },
+  "pattern": [
+    "RC"
+  ],
+  "result": {
+    "item": "powergrid:diode"
+  },
+  "show_notification": true
+}

@@ -58,7 +58,7 @@ public class TransformerWindingC2SPacket implements SimplePacket {
                 stack.getTag().putInt("Turns", nTurns);
             } else {
                 // Create a new tag
-                var endpoint = WireEndpointType.deserialize(stack.getTag());
+                var endpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
                 if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
                     return;
                 var blockEndpoint = (BlockWireEndpoint) endpoint;

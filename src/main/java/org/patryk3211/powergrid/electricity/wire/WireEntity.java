@@ -15,9 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.createmod.ponder.api.level.PonderLevel;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
@@ -47,11 +44,16 @@ public abstract class WireEntity extends BaseWireEntity {
     }
 
     @Override
+    public float measuredCurrent() {
+        return Math.abs(current());
+    }
+
+    @Override
     public void makeWire() {
         // Client doesn't make a wire, connections are handled differently.
         var world = level();
-        if(world.isClientSide && !(world instanceof PonderLevel))
-            return;
+//        if(world.isClientSide && !(world instanceof PonderLevel))
+//            return;
 
         dropWire();
 
@@ -78,19 +80,18 @@ public abstract class WireEntity extends BaseWireEntity {
         }
     }
 
-    public static void entityUnload(Entity entity, ServerLevel world) {
-        if(!(entity instanceof WireEntity wire))
-            return;
-        if(wire.wire instanceof TransmissionLinePart part) {
-            var reason = wire.getRemovalReason();
+    @Override
+    protected void unloaded() {
+        if(wire instanceof TransmissionLinePart part) {
+            var reason = getRemovalReason();
             if(reason != null && reason.shouldDestroy()) {
-                wire.dropWire();
+                dropWire();
             } else {
                 part.unload();
-                wire.wire = null;
+                wire = null;
             }
         } else {
-            wire.dropWire();
+            dropWire();
         }
     }
 }

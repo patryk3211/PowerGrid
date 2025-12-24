@@ -19,7 +19,7 @@ import net.createmod.ponder.api.level.PonderLevel;
 
 public class PonderElectricNetwork extends GlobalElectricNetworks {
     public static void tickWorldNetworks(PonderLevel world) {
-        GlobalElectricNetworks.tick(world);
+        GlobalElectricNetworks.preTick(world);
     }
 
     public static void removeWorldEntry(PonderLevel world) {

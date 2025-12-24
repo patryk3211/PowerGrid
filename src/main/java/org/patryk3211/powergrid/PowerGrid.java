@@ -20,11 +20,17 @@ import com.simibubi.create.api.registry.CreateRegistries;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
+import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import dev.architectury.registry.registries.DeferredRegister;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
@@ -35,7 +41,10 @@ import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
+import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
+import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,9 +76,27 @@ public class PowerGrid {
 	}
 
 	public static void registerArchitecturyEvents() {
-		TickEvent.ServerLevelTick.SERVER_LEVEL_PRE.register(GlobalElectricNetworks::tick);
+		TickEvent.ServerLevelTick.SERVER_LEVEL_PRE.register(GlobalElectricNetworks::preTick);
+		TickEvent.ServerLevelTick.SERVER_LEVEL_POST.register(GlobalElectricNetworks::postTick);
 		LifecycleEvent.SERVER_LEVEL_UNLOAD.register(GlobalElectricNetworks::unloadWorld);
 		CommandRegistrationEvent.EVENT.register(ModdedCommands::register);
+		PlayerEvent.PLAYER_JOIN.register(PowerGrid::playerJoin);
+	}
+
+	private static void playerJoin(ServerPlayer player) {
+		if(player.hasPermissions(3) && !ModdedConfigs.server().isUpToDate()) {
+			player.sendSystemMessage(Lang.translateDirect("message.outdated_configs"));
+			player.sendSystemMessage(Component.empty()
+					.append(Lang.translateDirect("message.reset_configs")
+							.withStyle(Style.EMPTY.withColor(ChatFormatting.BLUE)
+									.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/powergrid reset_configs")))
+					).append(Component.literal(" "))
+					.append(Lang.translateDirect("message.disable_config_message")
+							.withStyle(Style.EMPTY.withColor(ChatFormatting.BLUE)
+									.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/powergrid ignore_configs")))
+					)
+			);
+		}
 	}
 
 	private static void register() {
@@ -77,6 +104,7 @@ public class PowerGrid {
 		HeaterFanProcessingTypes.register();
 
 		SubstituteBlockEntityProvider.INSTANCE.registerDefault(DeviceConnectorBlockEntity.class, DeviceConnectorBlockEntity::new);
+		SubstituteBlockEntityProvider.INSTANCE.registerDefault(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntity::new);
 		SubstituteBlockEntityProvider.INSTANCE.lock();
 
 		ModdedDisplaySources.register();
@@ -117,6 +145,8 @@ public class PowerGrid {
 		var magnetizing = MagnetizingRecipe.TYPE_INFO;
 		RECIPE_SERIALIZERS.register(magnetizing.getId(), magnetizing::getSerializer);
 		RECIPE_TYPES.register(magnetizing.getId(), magnetizing::getType);
+
+		RECIPE_SERIALIZERS.register("crafting_special_string_light_cord", () -> StringLightCordRecipe.SERIALIZER);
 	}
 
 	@ExpectPlatform

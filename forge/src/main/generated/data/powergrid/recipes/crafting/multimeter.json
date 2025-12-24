@@ -15,7 +15,7 @@
       "item": "powergrid:voltage_gauge"
     },
     "W": {
-      "item": "powergrid:wire"
+      "tag": "forge:wires/copper"
     }
   },
   "pattern": [

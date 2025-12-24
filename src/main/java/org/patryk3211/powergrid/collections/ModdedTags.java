@@ -24,10 +24,9 @@ public class ModdedTags {
     public static final String FORGE_NAMESPACE = PowerGrid.forPlatform("c", "forge");
 
     public enum Item {
-        COIL_WIRE("coil_wire"),
         RAW_ORES(FORGE_NAMESPACE, "raw_ores"),
         PLATES(FORGE_NAMESPACE, "plates"),
-        WIRES("wires"),
+        WIRES(FORGE_NAMESPACE, "wires"),
         LIGHT_WIRES("light_wires"),
         COILS(FORGE_NAMESPACE, "coils"),
         CIRCUIT_SCHEMATIC_HOLDER("circuit_schematic_holder"),
@@ -50,8 +49,8 @@ public class ModdedTags {
         SILVER_ORES(FORGE_NAMESPACE, "silver_ores"),
         AFFECTED_BY_LAMP("affected_by_lamp"),
         IGNORE_IN_ROTOR_ASSEMBLY_SIZE("ignore_in_rotor_assembly_size"),
-        CONDUCTIVE_GROUND("conductive_ground")
-        ;
+        CONDUCTIVE_GROUND("conductive_ground"),
+        CARBON_PILE_BLOCK("carbon_pile_block");
 
         public final TagKey<net.minecraft.world.level.block.Block> tag;
 
@@ -92,5 +91,9 @@ public class ModdedTags {
 
     public static TagKey<net.minecraft.world.item.Item> ingots(String ingot) {
         return forgeItemTag(PowerGrid.forPlatform(ingot + "_ingots", "ingots/" + ingot));
+    }
+
+    public static TagKey<net.minecraft.world.item.Item> wires(String ingot) {
+        return forgeItemTag(PowerGrid.forPlatform(ingot + "_wires", "wires/" + ingot));
     }
 }

@@ -1,0 +1,26 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "C": {
+      "tag": "c:copper_coils"
+    },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
+    "I": {
+      "tag": "c:iron_plates"
+    },
+    "Z": {
+      "tag": "c:zinc_plates"
+    }
+  },
+  "pattern": [
+    "  I  ",
+    "CCICC",
+    " ZEZ "
+  ],
+  "result": {
+    "item": "powergrid:carbon_pile_coil"
+  }
+}

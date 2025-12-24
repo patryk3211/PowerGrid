@@ -79,6 +79,7 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.LV_BUTTON)
                 .add(ModdedBlocks.MV_SWITCH)
                 .add(ModdedBlocks.HV_SWITCH)
+                .add(ModdedBlocks.HV_BREAKER)
                 .add(ModdedBlocks.CONTACTOR)
                 .add(ModdedBlocks.SPARK_GAP)
                 .add(ModdedBlocks.FUSE_HOLDER)
@@ -86,6 +87,7 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.VARIAC)
                 .add(ModdedBlocks.RHEOSTAT)
                 .add(ModdedBlocks.RESISTOR)
+                .add(ModdedBlocks.CARBON_PILE_COIL)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
                 .add(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
                 .add(ModdedBlocks.DEVICE_CONNECTOR)
@@ -102,7 +104,10 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.BASIN_HEATER)
                 .add(ModdedItems.LV_LIGHT_BULB)
                 .add(ModdedItems.LIGHT_BULB)
-                .add(ModdedItems.GROWTH_LAMP);
+                .add(ModdedItems.GROWTH_LAMP)
+                .add(ModdedBlocks.PLOTTER)
+                .add(ModdedBlocks.CRT)
+                .add(ModdedBlocks.PUNCH_CARD_READER);
 
         HELPER.addToTag(CIRCUIT_COMPONENTS)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
@@ -122,7 +127,9 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.CURRENT_METER);
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)
-                .add(ModdedBlocks.GENERATOR_CLUTCH);
+                .add(ModdedBlocks.GENERATOR_CLUTCH)
+                .add(ModdedBlocks.PLOTTER)
+                .add(ModdedBlocks.PUNCH_CARD_READER);
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_SOURCES)
                 .add(ModdedBlocks.ELECTRIC_MOTOR)

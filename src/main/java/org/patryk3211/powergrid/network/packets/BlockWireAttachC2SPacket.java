@@ -75,7 +75,7 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 return;
             }
 
-            var existingEndpoint = WireEndpointType.deserialize(stack.getTag());
+            var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
 
             IWireEndpoint endpoint;
             if(gridPoint <= 1 && index == 0) {
@@ -100,11 +100,11 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 endpoint = new DeferredJunctionWireEndpoint(wire, index, gridPoint);
             }
             if(endpoint != null && existingEndpoint == null) {
-                stack.setTag(endpoint.serialize());
+                stack.getOrCreateTag().put("Connection", endpoint.serialize());
             } else if(endpoint != null) {
                 var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
                 if(result.getResult().consumesAction()) {
-                    stack.setTag(null);
+                    stack.removeTagKey("Connection");
                 }
             }
         });

@@ -21,6 +21,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 
 import java.util.*;
 
@@ -171,6 +172,19 @@ public class NetworkGraph {
         return conn == null ? null : conn.isEmpty() ? null : conn.get(0);
     }
 
+    public Collection<AbstractElectricWire> getWires(IElectricNode node) {
+        if(!nodes.containsKey(node))
+            return List.of();
+
+        var object1 = nodes.get(node);
+        var allWires = new ArrayList<AbstractElectricWire>();
+        for(var wires : object1.connections.values()) {
+            allWires.addAll(wires);
+        }
+
+        return allWires;
+    }
+
     public Collection<AbstractElectricWire> getWires(IElectricNode node1, IElectricNode node2) {
         if(!nodes.containsKey(node1) || !nodes.containsKey(node2))
             return List.of();
@@ -210,7 +224,7 @@ public class NetworkGraph {
             return 0;
 
         var object = nodes.get(node);
-        int size = object.couplings.size();
+        int size = (int) object.couplings.stream().filter(cnode -> !(cnode instanceof TransmissionLinePort)).count();
         for(var list : object.connections.values())
             size += list.size();
         return size;

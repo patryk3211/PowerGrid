@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.contactor;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -37,8 +38,11 @@ import java.util.Set;
 public class ContactorBlockEntity extends ElectricBlockEntity {
     private ElectricWire coil;
 
+    @Nullable
     private SwitchedWire switch1;
     private SwitchedWire switch2;
+
+    private int splitCooldown;
 
     private boolean state;
     private final Set<ContactorBlockEntity> external = new HashSet<>();
@@ -50,6 +54,12 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        electricBehaviour.reducedSync();
     }
 
     private void checkPos(BlockPos pos, boolean newState, List<BlockPos> checkQueue) {
@@ -67,8 +77,12 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
 
     private void setState(boolean newState) {
         if(newState || external.isEmpty()) {
-            switch1.setState(newState);
-            switch2.setState(newState);
+            if(switch1 != null) {
+                switch1.setState(newState);
+                switch2.setState(newState);
+            } else if(newState) {
+                electricBehaviour.rebuildCircuit(false);
+            }
         }
         if(state != newState) {
             if(!level.isClientSide) {
@@ -107,14 +121,18 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     private void addExternal(ContactorBlockEntity be) {
         external.add(be);
         if(!state) {
-            switch1.setState(true);
-            switch2.setState(true);
+            if(switch1 == null) {
+                electricBehaviour.rebuildCircuit(true);
+            } else {
+                switch1.setState(true);
+                switch2.setState(true);
+            }
         }
     }
 
     private void removeExternal(ContactorBlockEntity be) {
         external.remove(be);
-        if(external.isEmpty() && !state) {
+        if(external.isEmpty() && !state && switch1 != null) {
             switch1.setState(false);
             switch2.setState(false);
         }
@@ -130,12 +148,10 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         applyPower(switch1);
         applyPower(switch2);
         applyPower(coil);
-
-        super.tick();
 
         var I = Math.abs(coil.current());
         if(coil.isConverged()) {
@@ -144,6 +160,9 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
             } else if (I < 2.0f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
                 setState(false);
             }
+        }
+        if(!state && external.isEmpty() && switch1 != null && splitCooldown++ >= 100) {
+            electricBehaviour.rebuildCircuit(false);
         }
     }
 
@@ -175,7 +194,13 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
         builder.setTerminalCount(6);
         coil = builder.connect(resistance("coil"), builder.terminalNode(0), builder.terminalNode(1));
 
-        switch1 = builder.connectSwitch(resistance("switch"), builder.terminalNode(2), builder.terminalNode(3), state);
-        switch2 = builder.connectSwitch(resistance("switch"), builder.terminalNode(4), builder.terminalNode(5), state);
+        if(state || (external != null && !external.isEmpty())) {
+            splitCooldown = 0;
+            switch1 = builder.connectSwitch(resistance("switch"), builder.terminalNode(2), builder.terminalNode(3), state);
+            switch2 = builder.connectSwitch(resistance("switch"), builder.terminalNode(4), builder.terminalNode(5), state);
+        } else {
+            switch1 = null;
+            switch2 = null;
+        }
     }
 }

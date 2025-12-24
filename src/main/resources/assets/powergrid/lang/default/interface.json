@@ -33,7 +33,23 @@
   "powergrid.gui.device_connector.buffered.unit": "FE",
   "powergrid.gui.device_connector.for": " for ",
 
+  "powergrid.gui.carbon_pile.trim": "Trim",
+  "powergrid.gui.carbon_pile.info_header": "Carbon pile information",
+  "powergrid.gui.carbon_pile.min_resistance": "Minimum resistance:",
+  "powergrid.gui.carbon_pile.max_resistance": "Maximum resistance:",
+  "powergrid.gui.carbon_pile.current_resistance": "Current resistance:",
+
+  "powergrid.gui.hv_breaker.setting": "Trip current",
+  "powergrid.gui.hv_breaker.status": "Status:",
+  "powergrid.gui.hv_breaker.open": "Open",
+  "powergrid.gui.hv_breaker.closed": "Closed",
+  "powergrid.gui.hv_breaker.charged": "Charged",
+
   "powergrid.gui.potentiometer.setting": "Setting",
+
+  "powergrid.gui.clutch_mode": "Clutch Mode",
+  "powergrid.gui.clutch_mode.generator": "Generator",
+  "powergrid.gui.clutch_mode.motor": "Motor",
 
   "powergrid.gui.damage_header": "Damaged",
   "powergrid.gui.circuit_board.damage_body": "This circuit board has damaged components",
@@ -46,6 +62,8 @@
 
   "powergrid.gui.rheostat.info_header": "Rheostat information",
   "powergrid.gui.rheostat.ratio": "Resistance ratio",
+
+  "powergrid.gui.plotter.header": "Voltage at T-",
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
@@ -82,6 +100,13 @@
   "powergrid.tooltip.multimeter.voltage": "Voltage: ",
   "powergrid.tooltip.multimeter.current": "Current: ",
 
+  "powergrid.tooltip.crt.deflection": "Deflection voltage:",
+  "powergrid.tooltip.crt.heater": "Heater voltage:",
+  "powergrid.tooltip.crt.anode": "Anode voltage:",
+  "powergrid.tooltip.crt.grid": "Grid voltage:",
+
+  "powergrid.tooltip.string_light_cord_pattern": "Pattern: ",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
@@ -97,6 +122,14 @@
   "powergrid.contactor.switch2": "Switch 2",
 
   "powergrid.variac.primary": "Primary",
+
+  "powergrid.crt.coil.x": "X Deflection",
+  "powergrid.crt.coil.y": "Y Deflection",
+  "powergrid.crt.coil.common": "Deflection Common",
+  "powergrid.crt.cathode": "Cathode",
+  "powergrid.crt.anode": "Anode",
+  "powergrid.crt.heater": "Heater",
+  "powergrid.crt.grid": "Grid",
 
   "powergrid.devices.creative.voltage": "Output voltage",
   "powergrid.devices.creative.current": "Output current",
@@ -133,53 +166,8 @@
   "powergrid.gui.circuit_designer.files": "Available Schematics",
   "powergrid.gui.circuit_designer.file_scroll": "Scroll to Select or Type in a Name",
 
-  "powergrid.component.property.power": "Power",
-  "powergrid.component.property.power.summary": "Maximum power that this component can handle for prolonged periods of time",
-  "powergrid.component.property.current": "Current",
-  "powergrid.component.property.current.summary": "Maximum current that this component can handle for prolonged periods of time",
-  "powergrid.component.property.voltage": "Voltage",
-  "powergrid.component.property.voltage.summary": "Maximum voltage that this component can handle",
-  "powergrid.component.property.label": "Label",
-
-  "powergrid.component.property.tube_gain": "Gain",
-  "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
-  "powergrid.component.property.tube_anode_resistance": "Anode Resistance",
-  "powergrid.component.property.tube_anode_resistance.summary": "Apparent anode resistance when grid voltage is zero and anode voltage is 1 V",
-  "powergrid.component.property.tube_saturation_current": "Saturation Current",
-  "powergrid.component.property.tube_saturation_current.summary": "Maximum current that can pass through the tube",
-  "powergrid.component.property.tube_heater_voltage": "Heater Voltage",
-  "powergrid.component.property.tube_heater_voltage.summary": "Voltage required to reach the rated heater power",
-  "powergrid.component.property.tube_heater_power": "Heater Power",
-  "powergrid.component.property.tube_heater_power.summary": "Power requirement for the given saturation current",
-
-  "powergrid.component.property.switch_state": "State",
-
-  "powergrid.component.property.relay_threshold": "Threshold Voltage",
-  "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
-  "powergrid.component.property.relay_state": "State",
-
-  "powergrid.component.property.resistor_value": "Resistance [Ω]",
-  "powergrid.component.property.capacitor_value": "Capacitance [mF]",
-  "powergrid.component.property.inductor_value": "Inductance [mH]",
-
-  "powergrid.component.property.redstone_emitter_digital": "Digital",
-
-  "powergrid.component.property.orientation": "Orientation",
-
-  "powergrid.component.property.potentiometer_resistance": "Resistance",
-  "powergrid.component.property.potentiometer_value": "Setting",
-
-  "powergrid.component.property.current_gauge_max": "Max Current",
-  "powergrid.component.property.voltage_gauge_max": "Max Voltage",
-
-  "powergrid.component.property.regulator_tube_vh": "Holding Voltage",
-  "powergrid.component.property.regulator_tube_vh.summary": "Regulated voltage held by the regulator tube when it is lit and current is steady",
-  "powergrid.component.property.neon_tube_vb": "Breakdown Voltage",
-  "powergrid.component.property.neon_tube_vb.summary": "Voltage needed to light up the tube",
-  "powergrid.component.property.neon_tube_ih": "Holding Current",
-  "powergrid.component.property.neon_tube_ih.summary": "Minimum current needed to keep the tube lit",
-  "powergrid.component.property.neon_tube_vh": "Holding Voltage",
-  "powergrid.component.property.neon_tube_vh.summary": "Approximate voltage held by the tube once lit",
+  "powergrid.gui.punch_card.author": "by ",
+  "powergrid.gui.punch_card.sign": "Sign",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",

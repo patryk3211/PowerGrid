@@ -78,10 +78,10 @@ allprojects {
 			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
 		})
 
-		implementation(include("org.ejml:ejml-core:0.44.0"))
-		implementation(include("org.ejml:ejml-simple:0.44.0"))
-		implementation(include("org.ejml:ejml-ddense:0.44.0"))
-		implementation(include("org.ejml:ejml-dsparse:0.44.0"))
+		compileOnly("org.ejml:ejml-core:0.44.0")
+		compileOnly("org.ejml:ejml-simple:0.44.0")
+		compileOnly("org.ejml:ejml-ddense:0.44.0")
+		compileOnly("org.ejml:ejml-dsparse:0.44.0")
 	}
 
 	java {
@@ -90,15 +90,41 @@ allprojects {
 		sourceCompatibility = JavaVersion.VERSION_17
 		targetCompatibility = JavaVersion.VERSION_17
 	}
+
+	var subname = "Common"
+	if(project != rootProject) {
+		subname = project.name
+		subname = subname.substring(0, 1).toUpperCase() + subname.substring(1)
+	}
+	// configure the maven publication
+	publishing {
+		publications {
+			create("maven${subname}", MavenPublication) {
+				artifactId = project.archives_base_name + "-" + subname.toLowerCase()
+
+				artifact remapJar
+				artifact(sourcesJar) {
+					classifier = "sources"
+				}
+			}
+		}
+
+		repositories { }
+	}
 }
 
 def getGitHash = { ->
-	def stdout = new ByteArrayOutputStream()
-	exec {
-		commandLine 'git', 'rev-parse', '--short', 'HEAD'
-		standardOutput = stdout
-	}
-	return stdout.toString().trim()
+	var headFile = new File("$projectDir/.git/HEAD");
+	if(!headFile.exists())
+		return null
+	var head = headFile.text.split(":")
+	def isCommit = head.length == 1
+	if(isCommit) return head[0].trim().take(8)
+
+	var ref = new File("$projectDir/.git/" + head[1].trim())
+	if(!ref.exists())
+		return null
+	return ref.text.trim().take(8)
 }
 
 var changelogFile = file('build/changelog.md')
@@ -117,6 +143,13 @@ subprojects {
 
 	architectury {
 		platformSetupLoomIde()
+	}
+
+	dependencies {
+		implementation(include("org.ejml:ejml-core:0.44.0"))
+		implementation(include("org.ejml:ejml-simple:0.44.0"))
+		implementation(include("org.ejml:ejml-ddense:0.44.0"))
+		implementation(include("org.ejml:ejml-dsparse:0.44.0"))
 	}
 
 	tasks.processResources {
@@ -148,9 +181,10 @@ subprojects {
 		common(project(path: rootProject.path, configuration: "namedElements")) { transitive false }
 	}
 
-	tasks.register("devBuild", {
-		version = "${project.mod_version}+${project.minecraft_version}-${getGitHash}"
-		dependsOn tasks.build
+	tasks.named("build", {
+		var hash = getGitHash()
+		if(hash != null)
+			version = "mc${project.minecraft_version}-${project.mod_version}-${hash}"
 	})
 
 	tasks.jar {
@@ -230,24 +264,6 @@ subprojects {
 	}
 }
 
-// configure the maven publication
-//publishing {
-//	publications {
-//		create("mavenJava", MavenPublication) {
-//			artifactId = project.archives_base_name
-//			from components.java
-//		}
-//	}
-//
-//	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-//	repositories {
-//		// Add repositories to publish to here.
-//		// Notice: This block does NOT have the same function as the block in the top level.
-//		// The repositories here will be used for publishing your artifact, not for
-//		// retrieving dependencies.
-//	}
-//}
-
 /*    -------========= COMMON PROJECT CONFIGURATION =========-------    */
 
 architectury {
@@ -270,6 +286,10 @@ dependencies {
 
 	// Support for unit tests
 	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+	testImplementation("org.ejml:ejml-core:0.44.0")
+	testImplementation("org.ejml:ejml-simple:0.44.0")
+	testImplementation("org.ejml:ejml-ddense:0.44.0")
+	testImplementation("org.ejml:ejml-dsparse:0.44.0")
 
 	modApi "dev.architectury:architectury:${project.architectury_api_version}"
 

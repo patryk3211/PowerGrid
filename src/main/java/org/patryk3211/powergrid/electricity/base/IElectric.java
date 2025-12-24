@@ -88,20 +88,20 @@ public interface IElectric extends IWrenchable {
                 sendMessage(context, Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component());
                 return InteractionResult.FAIL;
             }
-            if(stack.hasTag()) {
+            if(stack.hasTag() && stack.getTag().contains("Connection")) {
                 // Continuing a connection.
-                var endpoint = WireEndpointType.deserialize(stack.getTag());
+                var endpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
                 if(endpoint == null)
                     return InteractionResult.FAIL;
                 var result = makeConnection(context.getLevel(), endpoint, new BlockWireEndpoint(pos, terminal), context);
                 if(result.consumesAction())
-                    stack.setTag(null);
+                    stack.removeTagKey("Connection");
                 return result;
             } else {
                 // Must be first connection.
                 var endpoint = new BlockWireEndpoint(pos, terminal);
                 var tag = endpoint.serialize();
-                stack.setTag(tag);
+                stack.getOrCreateTag().put("Connection", tag);
                 sendMessage(context, Lang.translate("message.connection_next").style(ChatFormatting.GRAY).component());
                 return InteractionResult.SUCCESS;
             }
@@ -186,8 +186,6 @@ public interface IElectric extends IWrenchable {
         var stack = context.getItemInHand();
         assert stack.getItem() instanceof IWire;
         var item = (IWire) stack.getItem();
-        var tag = stack.getTag();
-        assert tag != null;
 
         float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
         if(distance > item.getMaximumLength()) {

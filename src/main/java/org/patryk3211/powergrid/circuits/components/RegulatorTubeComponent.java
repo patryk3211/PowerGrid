@@ -91,9 +91,12 @@ public class RegulatorTubeComponent extends OrientableComponent implements IRend
             state.tickChaser();
             state.updateChaseTarget(wire.isLit() ? 1 : 0);
         });
-        if(wire.isLit() != placed.get(LIT)) {
-            placed.set(LIT, wire.isLit());
-        }
+        placed.onServerWorld(() -> $ -> {
+            if(wire.isLit() != placed.get(LIT)) {
+                placed.set(LIT, wire.isLit());
+                placed.notifyClients(LIT);
+            }
+        });
         return true;
     }
 

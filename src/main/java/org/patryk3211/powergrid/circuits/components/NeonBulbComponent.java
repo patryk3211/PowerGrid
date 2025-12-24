@@ -121,9 +121,12 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
                 state.second.updateChaseTarget(0);
             }
         });
-        if(wire.isLit() != placed.get(LIT)) {
-            placed.set(LIT, wire.isLit());
-        }
+        placed.onServerWorld(() -> $ -> {
+            if(wire.isLit() != placed.get(LIT)) {
+                placed.set(LIT, wire.isLit());
+                placed.notifyClients(LIT);
+            }
+        });
         return true;
     }
 
@@ -138,23 +141,27 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
             a1 = (int) (pair.first.getValue(partialTicks) * 128);
             a2 = (int) (pair.second.getValue(partialTicks) * 128);
         }
+        var center = 1 / 16f;
+        var orientation = placed.get(ORIENTATION);
         if(a1 != 0) {
             var buffer = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_GLOW, be.getBlockState());
             buffer
                     .disableDiffuse()
                     .color(a1, a1, a1, 255)
                     .light(LightTexture.FULL_BRIGHT)
+                    .translate(center, center, center)
+                    .rotateYDegrees(orientation.ordinal() * 90)
+                    .translateBack(center, center, center)
                     .renderInto(ms, bufferSource.getBuffer(RenderTypes.additive()));
         }
         if(a2 != 0) {
             var buffer = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_GLOW, be.getBlockState());
-            var center = 1 / 16f;
             buffer
                     .disableDiffuse()
                     .color(a2, a2, a2, 255)
                     .light(LightTexture.FULL_BRIGHT)
                     .translate(center, center, center)
-                    .rotateYDegrees(180)
+                    .rotateYDegrees(180 + orientation.ordinal() * 90)
                     .translateBack(center, center, center)
                     .renderInto(ms, bufferSource.getBuffer(RenderTypes.additive()));
         }

@@ -51,12 +51,8 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         applyPower(wire);
-        super.tick();
-        if(level.isClientSide) {
-            tickAudio();
-        }
     }
 
     public float getVolume() {

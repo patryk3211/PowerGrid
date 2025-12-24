@@ -10,6 +10,7 @@
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
     "powergrid:power_gauge",
+    "powergrid:plotter",
     "powergrid:generator_induction_rotor",
     "powergrid:generator_commutator",
     "powergrid:generator_vertical_commutator",
@@ -20,6 +21,7 @@
     "powergrid:lv_button",
     "powergrid:mv_switch",
     "powergrid:hv_switch",
+    "powergrid:hv_breaker",
     "powergrid:spark_gap",
     "powergrid:contactor",
     "powergrid:creative_voltage_source",
@@ -45,6 +47,11 @@
     "powergrid:alarm_bell",
     "powergrid:thermometer",
     "powergrid:rheostat",
-    "powergrid:grounding_rod"
+    "powergrid:grounding_rod",
+    "powergrid:carbon_pile_coil",
+    "powergrid:carbon_pile",
+    "powergrid:crt",
+    "powergrid:andesite_encased_crt",
+    "powergrid:punch_card_reader"
   ]
 }

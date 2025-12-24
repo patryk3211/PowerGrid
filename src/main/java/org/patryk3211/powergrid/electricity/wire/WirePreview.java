@@ -69,7 +69,7 @@ public class WirePreview {
     }
 
     private static void renderCord(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target, ItemStack wireStack) {
-        var endpoint = WireEndpointType.deserialize(wireStack.getTag());
+        var endpoint = WireEndpointType.deserialize(wireStack.getTagElement("Connection"));
         if(!(endpoint instanceof ICordEndpoint cordEndpoint))
             return;
         CordRenderer.renderPreview(cordEndpoint, player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
@@ -89,7 +89,7 @@ public class WirePreview {
         if(target.getType() != HitResult.Type.BLOCK)
             return;
 
-        var tag = wireStack.getTag();
+        var tag = wireStack.getTagElement("Connection");
         var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
         float thickness = wireItem.getWireThickness();
 
@@ -127,13 +127,21 @@ public class WirePreview {
                 if(terminal != null) {
                     hitPoint = terminal.getOrigin().add(pos.getX(), pos.getY(), pos.getZ());
                     hitTerminal = terminal;
+                } else {
+                    hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
                 }
+            } else {
+                hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
             }
         }
 
-        float length = 0;
+        float length = (float) currentPos.distanceTo(hitPoint);
+        // Stop rendering the preview above a thousand blocks to stop the game from freezing
+        if(length > 1000)
+            return;
         boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
         if(isBlockWire || hitTerminal == null) {
+            length = 0;
             currentPos = BlockTrace.alignPosition(currentPos);
             var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
             if(output != null) {
@@ -163,7 +171,6 @@ public class WirePreview {
                 }
             }
         } else {
-            length = (float) currentPos.distanceTo(hitPoint);
             var color = length < wireItem.getMaximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
             HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightTexture.FULL_BRIGHT, color);
         }
@@ -181,7 +188,7 @@ public class WirePreview {
         if(!(wireStack.getItem() instanceof WireItem wire))
             return null;
 
-        var tag = wireStack.getTag();
+        var tag = wireStack.getTagElement("Connection");
         var endpoint = WireEndpointType.deserialize(tag);
         if(endpoint == null)
             return null;

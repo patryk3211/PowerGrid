@@ -20,11 +20,9 @@ import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -36,13 +34,15 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
+import org.patryk3211.powergrid.utility.sound.SoundScapes;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, TransformerVolumeProvider {
+public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     protected TransformerCoilParameters primaryCoil;
     protected TransformerCoilParameters secondaryCoil;
 
@@ -50,8 +50,10 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     protected ElectricWire mutualInductance;
     protected TransformerCoupling coupling;
 
+    protected VoltageSourceCoupling couplingV1;
+    protected VoltageSourceCoupling couplingV2;
+
     public float lastCurrent;
-    private boolean hasSoundSource;
 
     public TransformerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -81,34 +83,43 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             power += P3;
             lastCurrent += Math.abs(I3);
         }
-        if(thermalBehaviour != null)
+        if(thermalBehaviour != null && !level.isClientSide)
             thermalBehaviour.applyTickPower(power);
         super.tick();
-        if(level.isClientSide) {
-            tickAudio();
-        }
     }
 
     @Override
-    public float getVolume() {
-        var volume = lastCurrent / 80;
-        return Mth.clamp(volume * volume, 0, 0.333f);
+    public void electricalTick() {
+        if(couplingV1 != null) {
+            assert couplingV1.getNegative() != null && couplingV2.getNegative() != null;
+            var I = couplingV1.getCurrent() + couplingV2.getCurrent();
+            // Exchange port variables.
+            var V1 = couplingV1.getNetwork() == null ? couplingV1.getVoltage() :
+                    couplingV1.getPositive().getVoltage() - couplingV1.getNegative().getVoltage();
+            var V2 = couplingV2.getNetwork() == null ? couplingV2.getVoltage() :
+                    couplingV2.getPositive().getVoltage() - couplingV2.getNegative().getVoltage();
+            // No ratio multiplication since only 1:1 transformers are allowed here for now.
+            var U1 = V2 + couplingV1.getResistance() * I;
+            var U2 = V1 + couplingV2.getResistance() * I;
+//            if(Math.signum(couplingV1.getVoltage()) == Math.signum(couplingV1.getCurrent())) {
+//                U1 += couplingV1.getCurrent() * couplingV1.getResistance();
+//            }
+//            if(Math.signum(couplingV2.getVoltage()) == Math.signum(couplingV2.getCurrent())) {
+//                U2 += couplingV2.getCurrent() * couplingV2.getResistance();
+//            }
+
+            couplingV1.setVoltage(couplingV1.getVoltage() * 0.5f + U1 * 0.5f);
+            couplingV2.setVoltage(couplingV2.getVoltage() * 0.5f + U2 * 0.5f);
+        }
     }
 
     @Environment(EnvType.CLIENT)
-    protected void tickAudio() {
-        if(!hasSoundSource && getVolume() > 0) {
-            Minecraft.getInstance().getSoundManager().play(new TransformerSoundInstance(this));
-            hasSoundSource = true;
-        } else if(hasSoundSource && getVolume() <= 0) {
-            hasSoundSource = false;
-        }
+    public void tickAudio() {
+        SoundScapes.play(SoundScapes.AmbienceGroup.HUM, worldPosition, 1.0f, lastCurrent / 20);
     }
 
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
-
         boolean rebuild = false;
         if(tag.contains("Primary")) {
             var primary = tag.getCompound("Primary");
@@ -125,8 +136,11 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         }
 
         if(rebuild) {
-            electricBehaviour.rebuildCircuit();
+            electricBehaviour.rebuildCircuit(false);
+            tag.remove("Rebuild");
         }
+
+        super.read(tag, clientPacket);
     }
 
     @Override
@@ -192,7 +206,10 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     public void makePrimary(int terminal1, int terminal2, int turns, Item item) {
         primaryCoil.set(terminal1, terminal2, turns, item);
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(false);
+        if(level != null && !level.isClientSide) {
+            updateCoilBlockState();
+        }
         notifyUpdate();
     }
 
@@ -206,7 +223,10 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     public void makeSecondary(int terminal1, int terminal2, int turns, Item item) {
         secondaryCoil.set(terminal1, terminal2, turns, item);
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(false);
+        if(level != null && !level.isClientSide) {
+            updateCoilBlockState();
+        }
         notifyUpdate();
     }
 
@@ -220,13 +240,19 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     public void removeSecondary() {
         secondaryCoil.clear();
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(false);
+        if(level != null && !level.isClientSide) {
+            updateCoilBlockState();
+        }
         notifyUpdate();
     }
 
     public void removePrimary() {
         primaryCoil.clear();
-        electricBehaviour.rebuildCircuit();
+        electricBehaviour.rebuildCircuit(false);
+        if(level != null && !level.isClientSide) {
+            updateCoilBlockState();
+        }
         notifyUpdate();
     }
 
@@ -244,10 +270,9 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             primaryCoil = new TransformerCoilParameters();
             secondaryCoil = new TransformerCoilParameters();
         }
-
-        if(level != null && !level.isClientSide) {
-            updateCoilBlockState();
-        }
+        coupling = null;
+        couplingV1 = null;
+        couplingV2 = null;
 
         var coreAl = coreAl();
         var couplingFactor = couplingFactor();
@@ -286,7 +311,16 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
             this.primaryStray = builder.connect(primaryStray, P1, Tnode);
             this.mutualInductance = builder.connect((float) mutualInductance * mutualMultiplier(), Tnode, P2);
-            this.coupling = builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
+            if(primaryTurns == secondaryTurns && ModdedConfigs.server().electricity.solver.splittingTransformers.get()) {
+                // TODO: Consider allowing more variation in the ratio that splits networks.
+                this.couplingV1 = new VoltageSourceCoupling(P1, P2, secondaryStray * 100);
+                this.couplingV2 = new VoltageSourceCoupling(builder.terminalNode(secondaryCoil.getTerminal1()),
+                        builder.terminalNode(secondaryCoil.getTerminal2()), secondaryStray * 100);
+                builder.add(couplingV1);
+                builder.add(couplingV2);
+            } else {
+                this.coupling = builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
+            }
         } else if(primaryCoil.isDefined()) {
             this.primaryStray = builder.connect((float) primaryInductance * mutualMultiplier(), builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));
             this.mutualInductance = null;
@@ -324,7 +358,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
         ratio.style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         if(primaryStray != null && mutualInductance != null) {
             float primary = (float) primaryStray.getResistance();
-            float secondary = coupling.getResistance();
+            float secondary = coupling != null ? coupling.getResistance() : couplingV1.getResistance();// * 0.01f;
             if(primaryTurns > secondaryTurns) {
                 var r = primary;
                 primary = secondary;

@@ -403,4 +403,50 @@ public class WireScenes {
 
         scene.markAsFinished();
     }
+
+    public static void stringLights(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("string_lights", "String Lights");
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(10);
+        scene.world().showSection(util.select().fromTo(0, 1, 2, 4, 2, 2), Direction.DOWN);
+        scene.idle(10);
+        var cord = scene.electric().connectLightCord(
+                new AutoCordEndpoint(util.grid().at(0, 2, 2), 0, 1, util.vector().of(0.75, 2.125, 2.5), null),
+                new AutoCordEndpoint(util.grid().at(4, 2, 2), 0, 1, util.vector().of(4.25, 2.125, 2.5), null),
+                null
+        );
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("The String Light Cord is a decorative wire that will light up when powered")
+                .pointAt(util.vector().of(2.5, 2, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+
+        scene.electric().addSource(util.grid().at(0, 2, 2), 0, 0);
+        scene.electric().addSource(util.grid().at(0, 2, 2), 1, 120);
+        scene.electric().tickForever();
+        scene.idle(50);
+
+        scene.electric().removeWire(cord);
+        scene.idle(20);
+        cord = scene.electric().connectLightCord(
+                new AutoCordEndpoint(util.grid().at(0, 2, 2), 0, 1, util.vector().of(0.75, 2.125, 2.5), null),
+                new AutoCordEndpoint(util.grid().at(4, 2, 2), 0, 1, util.vector().of(4.25, 2.125, 2.5), null),
+                new DyeColor[] { DyeColor.RED, DyeColor.GREEN, DyeColor.BLUE }
+        );
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("Its pattern can be changed by combining it with any amount of dyes in the crafting table.")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
 }

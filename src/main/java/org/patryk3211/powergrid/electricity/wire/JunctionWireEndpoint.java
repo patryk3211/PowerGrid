@@ -16,16 +16,22 @@
 package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class JunctionWireEndpoint implements IWireEndpoint {
     private static final Map<Level, WorldEntry> JUNCTION_NODES = new HashMap<>();
@@ -110,6 +116,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             if(entity.level().isClientSide)
                 return;
             // Two holders remaining, we can merge them.
+            entry.lock();
             BlockWireEntity wire1 = null, wire2 = null;
             for(var holder : entry.holders) {
                 if(wire1 == null) {
@@ -125,7 +132,6 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             assert wire1.getWireItem() == wire2.getWireItem();
             var wire1End = this.equals(wire1.getEndpoint2());
             var wire2End = this.equals(wire2.getEndpoint2());
-            entry.holders.clear();
 
             boolean flipped = false, targetFlipped = false;
             BlockWireEntity target, source;
@@ -166,6 +172,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 target.extend(source.segments, source.getWireCount());
             }
             source.discard();
+            entry.holders.clear();
             removeEntry(entity.level(), this.id);
         } else if(entry.holders.size() == 1) {
             // One holder remaining, remove junction from it and drop the entry.
@@ -189,7 +196,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             var worldNodeMap = JUNCTION_NODES.computeIfAbsent(world, k -> new WorldEntry());
             var entry = worldNodeMap.nodes.get(id);
             if(entry == null) {
-                entry = new NodeEntry(endpoint);
+                entry = new NodeEntry(endpoint, id);
                 worldNodeMap.nodes.put(id, entry);
                 worldNodeMap.newNodes.add(entry.node);
             }
@@ -198,8 +205,19 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             var worldNodeMap = JUNCTION_NODES.get(world);
             if(worldNodeMap == null)
                 return null;
-            return worldNodeMap.nodes.get(id);
+            var entry = worldNodeMap.nodes.get(id);
+            if(entry == null || entry.locked)
+                return null;
+            return entry;
         }
+    }
+
+    @Nullable
+    public static ISynchronizedElement getSyncObject(Level world, UUID id) {
+        var worldNodeMap = JUNCTION_NODES.get(world);
+        if(worldNodeMap == null)
+            return null;
+        return worldNodeMap.nodes.get(id);
     }
 
     private static void removeEntry(Level world, UUID id) {
@@ -249,12 +267,47 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         return String.format("Junction(id=%s)", id);
     }
 
-    private static class NodeEntry {
+    public ISynchronizedElement makeSyncEntry(Level world) {
+        return getNode(world, id, true, this);
+    }
+
+    private static class NodeEntry implements ISynchronizedElement {
         public final OwnedFloatingNode node;
         public final Set<BaseWireEntity> holders = new HashSet<>();
+        private final UUID id;
+        private boolean locked = false;
 
-        public NodeEntry(IWireEndpoint endpoint) {
+        public NodeEntry(IWireEndpoint endpoint, UUID id) {
             node = new OwnedFloatingNode(endpoint);
+            this.id = id;
+        }
+
+        @Override
+        public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
+            float V = 0;
+            if (node.getNetwork() == null) {
+                var line = lineLookup.apply(node);
+                if (line != null)
+                    V = line.voltageFor(node);
+            } else {
+                V = node.getVoltage();
+            }
+            buffer.writeFloat(V);
+        }
+
+        @Override
+        public void readFromSync(FriendlyByteBuf buffer) {
+            var V = buffer.readFloat();
+            node.setStateValue(V);
+        }
+
+        @Override
+        public StateS2CPacket.Key getKey() {
+            return new StateS2CPacket.UUIDKey(id);
+        }
+
+        public void lock() {
+            locked = true;
         }
     }
 

@@ -21,7 +21,6 @@ import org.patryk3211.powergrid.circuits.circuitboard.BakedCircuit;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
@@ -54,12 +53,12 @@ public interface IElectricEntity {
     }
 
     class CircuitBuilder {
-        private ElectricalNetwork network;
         private final BlockPos pos;
         private final List<OwnedFloatingNode> externalNodes;
         private final Collection<INode> internalNodes;
         private final Collection<AbstractElectricWire> wires;
         private boolean paused = false;
+        private boolean rebuildExternal = true;
 
         public CircuitBuilder(BlockPos pos, List<OwnedFloatingNode> externalNodes, Collection<INode> internalNodes, Collection<AbstractElectricWire> wires) {
             this.pos = pos;
@@ -68,18 +67,14 @@ public interface IElectricEntity {
             this.wires = wires;
         }
 
-        public CircuitBuilder with(ElectricalNetwork network) {
-            this.network = network;
-            return this;
-        }
-
         public void clear() {
-            if(network != null) {
-                wires.forEach(network::removeWire);
-                internalNodes.forEach(network::removeNode);
-                externalNodes.forEach(network::removeNode);
-            }
-            externalNodes.clear();
+            wires.forEach(AbstractElectricWire::remove);
+            internalNodes.forEach(INode::remove);
+            if(rebuildExternal)
+                externalNodes.forEach(INode::remove);
+
+            if(rebuildExternal)
+                externalNodes.clear();
             internalNodes.clear();
             wires.clear();
         }
@@ -89,11 +84,11 @@ public interface IElectricEntity {
          * node bindings for electric block terminal indices.
          */
         protected void addExternalNode() {
+            if(!rebuildExternal)
+                return;
             int index = externalNodes.size();
             var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, index));
             externalNodes.add(node);
-            if(network != null)
-                network.addNode(node);
         }
 
         /**
@@ -162,8 +157,6 @@ public interface IElectricEntity {
                 } else {
                     for(int i = 0; i < currentCount - count; ++i) {
                         var node = externalNodes.remove(externalNodes.size() - 1);
-                        if(network != null)
-                            network.removeNode(node);
                     }
                 }
             }
@@ -198,14 +191,10 @@ public interface IElectricEntity {
 
         public void add(AbstractElectricWire wire) {
             wires.add(wire);
-            if(network != null && !paused)
-                network.addWire(wire);
         }
 
         public void add(INode node) {
             internalNodes.add(node);
-            if(network != null && !paused)
-                network.addNode(node);
         }
 
         /**
@@ -257,25 +246,18 @@ public interface IElectricEntity {
 
         public void setTo(BakedCircuit circuit) {
             clear();
-            for(var node : circuit.externalNodes) {
-                externalNodes.add(node);
-                if(network != null)
-                    network.addNode(node);
-            }
-            for(var node : circuit.internalNodes) {
-                internalNodes.add(node);
-                if(network != null && !paused)
-                    network.addNode(node);
-            }
-            for(var wire : circuit.wires) {
-                wires.add(wire);
-                if(network != null && !paused)
-                    network.addWire(wire);
-            }
+            if(rebuildExternal)
+                externalNodes.addAll(circuit.externalNodes);
+            internalNodes.addAll(circuit.internalNodes);
+            wires.addAll(circuit.wires);
         }
 
         public void paused() {
             paused = true;
+        }
+
+        public void rebuildExternal(boolean rebuildExternal) {
+            this.rebuildExternal = rebuildExternal;
         }
     }
 }

@@ -160,14 +160,14 @@ public abstract class TransformerBlock extends ElectricBlock {
         var result = super.onWire(state, context);
         if(result == InteractionResult.PASS) {
             // Not hit a terminal.
-            if(stack.hasTag()) {
+            if(stack.hasTag() && stack.getTag().contains("Connection")) {
                 if(!stack.is(ModdedItems.WIRE.get())) {
                     // Only copper wire can be used to wind transformers
                     return InteractionResult.FAIL;
                 }
                 // Has first terminal data.
                 return getBlockEntity(context.getLevel(), context.getClickedPos(), state).map(be -> {
-                    var nbt = stack.getTag();
+                    var nbt = stack.getTagElement("Connection");
                     var endpoint = WireEndpointType.deserialize(nbt);
                     if(endpoint.type() != WireEndpointType.BLOCK)
                         return InteractionResult.FAIL;

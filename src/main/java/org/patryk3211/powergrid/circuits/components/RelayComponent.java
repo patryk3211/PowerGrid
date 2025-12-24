@@ -76,21 +76,23 @@ public class RelayComponent extends OrientableComponent {
             return true;
 
         var coilWire = placed.wires.get(0);
-        var current = Math.abs(coilWire.current());
-        var NC = (SwitchedWire) placed.wires.get(1);
-        var NO = (SwitchedWire) placed.wires.get(2);
-        if(placed.get(STATE) && current < 0.1f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
-            // Below the set current the relay can turn off
-            NC.setState(true);
-            NO.setState(false);
-            placed.set(STATE, false);
-            placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
-        } else if(!placed.get(STATE) && current > 0.1f) {
-            // Above 100mA the relay can turn on
-            NC.setState(false);
-            NO.setState(true);
-            placed.set(STATE, true);
-            placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2.0f));
+        if(coilWire.isConverged()) {
+            var current = Math.abs(coilWire.current());
+            var NC = (SwitchedWire) placed.wires.get(1);
+            var NO = (SwitchedWire) placed.wires.get(2);
+            if(placed.get(STATE) && current < 0.1f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
+                // Below the set current the relay can turn off
+                NC.setState(true);
+                NO.setState(false);
+                placed.set(STATE, false);
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
+            } else if(!placed.get(STATE) && current > 0.1f) {
+                // Above 100mA the relay can turn on
+                NC.setState(false);
+                NO.setState(true);
+                placed.set(STATE, true);
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2.0f));
+            }
         }
 
         return true;

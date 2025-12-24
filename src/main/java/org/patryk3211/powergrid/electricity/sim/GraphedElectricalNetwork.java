@@ -19,21 +19,22 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.commands.DebugCommand;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
+public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
 
     public GraphedElectricalNetwork(boolean addGMin) {
-        this(new NetworkGraph(), addGMin);
+        this(new NetworkGraph(), addGMin, SolverType.DIRECT);
     }
 
-    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin) {
-        super(addGMin);
+    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, SolverType solver) {
+        super(addGMin, solver);
         this.graph = graph;
     }
 
@@ -55,8 +56,14 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
     public void removeNode(INode node) {
         super.removeNode(node);
         if(node instanceof IElectricNode enode) {
-            if(!graph.getConnectedLines(enode).isEmpty())
-                PowerGrid.LOGGER.warn("Removed a node which had connections", new Throwable());
+            var connections = graph.getConnectedLines(enode);
+            if(!connections.isEmpty()) {
+                PowerGrid.LOGGER.warn("Removed a node which had connections");
+                for(var conn : connections) {
+                    PowerGrid.LOGGER.warn(" - {}", conn);
+                }
+                PowerGrid.LOGGER.warn("Stack trace: ", new Throwable());
+            }
             graph.removeNode(enode);
         }
         if(node instanceof ICouplingNode cnode)
@@ -121,7 +128,7 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         }
     }
 
-    private void checkConnectivity(IElectricNode node, Set<IElectricNode> outerChecked) {
+    protected void checkConnectivity(IElectricNode node, Set<IElectricNode> outerChecked) {
         if(node == null)
             return;
         if(outerChecked == null)
@@ -169,13 +176,19 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         }
     }
 
-    @Override
-    protected boolean canOptimize(INode node) {
-        if(node instanceof IElectricNode enode) {
-            return !graph.hasCouplings(enode);
-        }
-        return super.canOptimize(node);
-    }
+//    @Override
+//    protected boolean canOptimize(INode node) {
+//        if(node instanceof IElectricNode enode) {
+//            if(graph.hasCouplings(enode))
+//                return false;
+//            for(var wire : graph.getWires(enode)) {
+//                if(wire instanceof SwitchedWire)
+//                    return false;
+//            }
+//            return true;
+//        }
+//        return super.canOptimize(node);
+//    }
 
     @Override
     public void addWire(AbstractElectricWire wire) {
@@ -193,7 +206,7 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         checkConnectivity(wire.node2, null);
     }
 
-    private Collection<AbstractElectricWire> findProblematicWires(DMatrixRMaj residual, double threshold) {
+    public Collection<AbstractElectricWire> findProblematicWires(DMatrixRMaj residual, double threshold) {
         var nodes = findProblematicNodes(residual, threshold);
         var wires = new HashSet<AbstractElectricWire>();
         for(var node1 : nodes) {
@@ -205,6 +218,11 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
             }
         }
         return wires;
+    }
+
+    @Override
+    protected void convergenceProblems(double residual, DMatrixRMaj ResidualVector) {
+        DebugCommand.pushProblems(this, residual, findProblematicWires(ResidualVector, 1e-8f));
     }
 
     public NetworkGraph getGraph() {
