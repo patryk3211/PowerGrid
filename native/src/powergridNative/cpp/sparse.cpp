@@ -19,6 +19,8 @@ SparseMatrix::~SparseMatrix() {
 }
 
 void SparseMatrix::resize(int size) {
+    if(m_size == size)
+        return;
     m_size = size;
     m_permC.resize(size);
     m_permR.resize(size);
@@ -39,7 +41,7 @@ void SparseMatrix::zero() {
 }
 
 double SparseMatrix::get(int row, int column) {
-    PG_ASSERT(row < m_size && column < m_size, "Out of bounds matrix access");
+    PG_ASSERT(row < m_size && column < m_size, "Out of bounds matrix access ({}, {})", row, column);
 
     int start = m_columns[column];
     int end = m_columns[column + 1];
@@ -53,7 +55,7 @@ double SparseMatrix::get(int row, int column) {
 }
 
 double& SparseMatrix::ref(int row, int column) {
-    PG_ASSERT(row < m_size && column < m_size, "Out of bounds matrix access");
+    PG_ASSERT(row < m_size && column < m_size, "Out of bounds matrix access ({}, {})", row, column);
 
     int start = m_columns[column];
     int end = m_columns[column + 1];

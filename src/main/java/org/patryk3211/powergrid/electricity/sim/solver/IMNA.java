@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.electricity.sim.solver;
 
 public interface IMNA {
+    void cleanup();
+
     void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision);
     void warmUp(int ticks);
 

@@ -49,7 +49,7 @@ if(hasCMake && hasNinja) {
 }
 
 tasks.register('cmakeBuild', Exec) {
-    enabled = hasCMake && hasNinja && false
+    enabled = hasCMake && hasNinja
 
     commandLine 'cmake', '--build', "${cmakeBuildDir}"
 }

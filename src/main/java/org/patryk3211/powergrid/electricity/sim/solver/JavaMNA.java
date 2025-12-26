@@ -72,6 +72,11 @@ public class JavaMNA implements IMNA {
     }
 
     @Override
+    public void cleanup() {
+
+    }
+
+    @Override
     public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
         this.absoluteStoppingCriterion = absoluteCriterion;
         this.relativeStoppingCriterion = relativeCriterion;

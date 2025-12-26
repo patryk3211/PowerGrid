@@ -194,9 +194,7 @@ public class GlobalElectricNetworks {
         var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
         var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
         for(var networks : worldNetworks.values()) {
-            networks.subnetworks.forEach(network -> {
-                network.setPrecision(rA, rR, rM);
-            });
+            networks.subnetworks.forEach(network -> network.setPrecision(rA, rR, rM));
         }
     }
 

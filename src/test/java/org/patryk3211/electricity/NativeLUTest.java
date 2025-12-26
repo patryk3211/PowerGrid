@@ -18,7 +18,9 @@ package org.patryk3211.electricity;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.decomposition.lu.LUDecompositionBase_DDRM;
 import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
-import org.patryk3211.powergrid.PowerGridNative;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
+import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 
 import java.util.Arrays;
 
@@ -49,11 +51,19 @@ public class NativeLUTest {
         var pvt = new int[3];
 
         System.out.println(x);
-        new PowerGridNative().factorize(RefA.data, LU, pvt);
+//        new PowerGridNative().factorize(RefA.data, LU, pvt);
 
         System.out.println(RefLU);
         System.out.println(Arrays.toString(RefDecomp.getPivot()));
         System.out.println(Arrays.toString(LU));
         System.out.println(Arrays.toString(pvt));
+
+        var net = new ElectricalNetwork(false);
+        var n1 = new FloatingNode();
+        var n2 = new FloatingNode();
+        net.addNode(new VoltageSourceCoupling(n1, n2, 1, 1));
+        net.addNode(n1);
+        net.addNode(n2);
+        net.calculate(1);
     }
 }

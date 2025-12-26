@@ -301,6 +301,7 @@ classes.dependsOn 'native:cmakeBuild'
 
 test {
 	useJUnitPlatform()
+	jvmArgs "-Djava.library.path=" + project(":native").layout.buildDirectory.dir("cmakeBuild").get()
 }
 
 sourceSets.main {

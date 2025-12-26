@@ -65,7 +65,7 @@ public class ElectricalNetwork implements IStamped {
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
-        this.mna = new JavaMNA(this);
+        this.mna = new NativeMNA(this);
     }
 
     protected ElectricalNetwork(boolean addGMin, IMNA mna) {
@@ -73,6 +73,10 @@ public class ElectricalNetwork implements IStamped {
         sourceCount = 0;
         this.addGMin = addGMin;
         this.mna = mna;
+    }
+
+    public void cleanup() {
+        mna.cleanup();
     }
 
     public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {

@@ -227,6 +227,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
         network.clear();
         subnetworks.remove(network);
+        network.cleanup();
     }
 
     public void preTick() {
@@ -264,6 +265,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             var network = iter.next();
             if (network.isEmpty()) {
                 iter.remove();
+                network.cleanup();
                 continue;
             }
             network.prepare(multiTick);

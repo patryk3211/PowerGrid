@@ -7,6 +7,8 @@ set(SOURCES
     src/powergridNative/cpp/dense.cpp
     src/powergridNative/cpp/operations.cpp
     src/powergridNative/cpp/sparse.cpp
+    src/powergridNative/cpp/solver.cpp
+    src/powergridNative/cpp/mna.cpp
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
