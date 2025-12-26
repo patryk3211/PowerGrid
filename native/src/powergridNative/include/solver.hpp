@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sparse.hpp"
+#include <jni.h>
 
 namespace powergrid {
     struct RHSOp {
@@ -15,6 +16,12 @@ namespace powergrid {
     }__attribute__((packed));
         
     class Solver {
+        JNIEnv *m_env;
+        jobject m_mnaObject;
+
+        jmethodID m_iterHookMethod;
+        jmethodID m_residualAddMethod;
+
         SparseMatrix m_A;
         int m_size;
 
@@ -36,7 +43,7 @@ namespace powergrid {
         JacobianOp *m_jacobianOpBuffer;
 
     public:
-        Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount);
+        Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount, JNIEnv *env, jobject mnaObj);
         ~Solver();
 
         void resize(int size);
@@ -48,7 +55,7 @@ namespace powergrid {
         void processJacobianBuffer();
         void processRHSBuffer();
 
-        void *singleTick();
+        void *singleTick(int maxIters, jobject mnaObj);
         void swapBuffers();
 
         int size() const {

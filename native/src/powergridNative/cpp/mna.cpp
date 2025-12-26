@@ -1,6 +1,5 @@
 #include <jni.h>
 #include <cstdint>
-#include <iostream>
 
 #include "solver.hpp"
 
@@ -13,10 +12,10 @@ static_assert(sizeof(jlong) == sizeof(uintptr_t));
 #define SOLVER(intptr) ((Solver *) (intptr))
 
 extern "C" {
-    JNIEXPORT jlong JNICALL MANGLE(allocateNativeObject)(JNIEnv *env, jobject obj, jobject rhsOpBuf, jobject jOpBuf, jint maxCmdCount) {
+    JNIEXPORT jlong JNICALL MANGLE(allocateNativeObject)(JNIEnv *env, jobject obj, jobject rhsOpBuf, jobject jOpBuf, jint maxCmdCount, jobject mnaObj) {
         void *rhs = env->GetDirectBufferAddress(rhsOpBuf);
         void *j = env->GetDirectBufferAddress(jOpBuf);
-        return (uintptr_t) new Solver(rhs, j, maxCmdCount);
+        return (uintptr_t) new Solver(rhs, j, maxCmdCount, env, mnaObj);
     }
 
     JNIEXPORT void JNICALL MANGLE(deallocateNativeObject)(JNIEnv *env, jobject obj, jlong intptr) {
@@ -47,9 +46,11 @@ extern "C" {
         SOLVER(ptr)->processRHSBuffer();
     }
 
-    JNIEXPORT jobject JNICALL MANGLE(singleTick)(JNIEnv *env, jobject obj, jlong ptr) {
+    JNIEXPORT jobject JNICALL MANGLE(singleTick)(JNIEnv *env, jobject mnaObj, jlong ptr, jint maxIters) {
         Solver *solver = SOLVER(ptr);
-        void *state = solver->singleTick();
+        void *state = solver->singleTick(maxIters, mnaObj);
+        if(state == 0)
+            return 0;
         return env->NewDirectByteBuffer(state, solver->size() * sizeof(double));
     }
 }

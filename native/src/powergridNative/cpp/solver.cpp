@@ -3,8 +3,10 @@
 
 using namespace powergrid;
 
-Solver::Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount)
-    : m_vec1()
+Solver::Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount, JNIEnv *env, jobject mnaObj)
+    : m_env(env)
+    , m_mnaObject(mnaObj)
+    , m_vec1()
     , m_vec2()
     , m_rhs()
     , m_maxCmdCount(cmdCount)
@@ -21,6 +23,10 @@ Solver::Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount)
     m_B.Dtype = SLU_D;
     m_B.Mtype = SLU_GE;
     m_B.Store = &m_Bstore;
+
+    jclass clazz = env->GetObjectClass(mnaObj);
+    m_iterHookMethod = env->GetMethodID(clazz, "runIterHooks", "(Ljava/nio/ByteBuffer;)V");
+    m_residualAddMethod = env->GetMethodID(clazz, "runAddResidual", "(Ljava/nio/ByteBuffer;)V");
 }
 
 Solver::~Solver() {
@@ -84,17 +90,33 @@ void Solver::processRHSBuffer() {
     }
 }
 
-void *Solver::singleTick() {
+void *Solver::singleTick(int maxIters, jobject mnaObj) {
     processJacobianBuffer();
     processRHSBuffer();
 
-    // Compute residual vector
-    memcpy(m_residual, m_rhs.data(), sizeof(double) * m_size);
+    std::cout << mnaObj << std::endl;
+    for(int i = 0; i < maxIters; ++i) {
+        // TODO: Improve this naive approach
+        jobject stateBuffer = m_env->NewDirectByteBuffer(m_state, m_size * sizeof(double));
+        jobject residualBuffer = m_env->NewDirectByteBuffer(m_residual, m_size * sizeof(double));
 
-    // Solve A * x = b
-    m_A.solve(&m_B);
-    // B is now the state vector
-    swapBuffers();
+        // Run inner hooks
+        m_env->CallVoidMethod(mnaObj, m_iterHookMethod, stateBuffer);
+
+        // Compute residual vector
+        for(int i = 0; i < m_size; ++i) {
+            m_residual[i] = -m_rhs[i];
+        }
+        m_env->CallVoidMethod(mnaObj, m_residualAddMethod, residualBuffer);
+        for(int i = 0; i < m_size; ++i) {
+            m_residual[i] = -m_residual[i];
+        }
+
+        // Solve A * x = b
+        m_A.solve(&m_B);
+        // B is now the state vector
+        swapBuffers();
+    }
 
     return m_state;
 }

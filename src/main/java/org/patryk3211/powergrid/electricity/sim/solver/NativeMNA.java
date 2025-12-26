@@ -54,7 +54,7 @@ public class NativeMNA implements IMNA {
         // Jacobian operation buffer = (int + int + double -> row + column + change)
         jacobianOps = ByteBuffer.allocateDirect((4 + 4 + 8) * OPERATION_BUFFER_COMMAND_LENGTH);
         jacobianOps.order(ByteOrder.LITTLE_ENDIAN);
-        nativePtr = allocateNativeObject(rhsOps, jacobianOps, OPERATION_BUFFER_COMMAND_LENGTH);
+        nativePtr = allocateNativeObject(rhsOps, jacobianOps, OPERATION_BUFFER_COMMAND_LENGTH, this);
     }
 
     @Override
@@ -116,16 +116,56 @@ public class NativeMNA implements IMNA {
         return stateAccess;
     }
 
+    private void runIterHooks(ByteBuffer state) {
+        // Run hooks
+        this.stateBuffer = state;
+        this.stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        for(var hook : network.innerHooks) {
+            hook.startIteration();
+        }
+
+        if(jacobianOps.position() != 0) {
+            // Finalize buffer and send it.
+            jacobianOps.putInt(-1);
+            processJacobianBuffer(nativePtr);
+        }
+
+        // Rewind modification buffer.
+        jacobianOps.position(0);
+    }
+
+    private void runAddResidual(ByteBuffer residualBuffer) {
+        // Run hooks
+        residualBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        for(var hook : network.innerHooks) {
+            hook.addResidual((row, change) -> {
+                var offset = row * 8;
+                double current = residualBuffer.getDouble(offset);
+                residualBuffer.putDouble(offset, current + change);
+            });
+        }
+    }
+
     @Override
     public void singleTick() {
+        // Finalize modification buffers.
         rhsOps.putInt(-1);
         jacobianOps.putInt(-1);
 
-        stateBuffer = singleTick(nativePtr);
-        stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
-
+        // Rewind modification buffers.
         rhsOps.position(0);
         jacobianOps.position(0);
+
+        // Run native solve routine.
+        int maxIterations = network.maxIterations.apply(network.hasHooks());
+        var buffer = singleTick(nativePtr, maxIterations, this);
+        if(buffer != null) {
+            stateBuffer = buffer;
+            stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            converged = true;
+        } else {
+            converged = false;
+        }
     }
 
     @Override
@@ -199,7 +239,7 @@ public class NativeMNA implements IMNA {
         }
     }
 
-    private static native long allocateNativeObject(Buffer rhsOpBuffer, Buffer jOpBuffer, int cmdCount);
+    private static native long allocateNativeObject(Buffer rhsOpBuffer, Buffer jOpBuffer, int cmdCount, NativeMNA javaObj);
     private static native void setStateSize(long ptr, int size);
     private static native void deallocateNativeObject(long ptr);
     private static native void zeroRHS(long ptr);
@@ -207,5 +247,5 @@ public class NativeMNA implements IMNA {
     private static native void zeroJacobian(long ptr);
     private static native void processJacobianBuffer(long ptr);
     private static native void processRHSBuffer(long ptr);
-    private static native ByteBuffer singleTick(long ptr);
+    private native ByteBuffer singleTick(long ptr, int maxIters, NativeMNA javaObj);
 }
