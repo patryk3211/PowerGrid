@@ -1,3 +1,5 @@
+import org.gradle.internal.jvm.Jvm
+
 /*
  * Copyright 2025 patryk3211
  *
@@ -19,44 +21,35 @@ plugins {
     id 'java'
 }
 
-import org.gradle.internal.jvm.Jvm
+// Beware! Things here might not work in different build environments.
 
-def includeDir = layout.projectDirectory.dir("src/powergridNative/include")
-model {
-    platforms {
-        x64 {
-            architecture "x86_64"
-        }
-    }
+def isAvailable = { String... cmdLine ->
+    return providers.exec {
+        commandLine cmdLine
+    }.getResult().map { result -> result.getExitValue() == 0 }.orElse(false).get()
+}
 
-    components {
-        powergridNative(NativeLibrarySpec) {
-            targetPlatform "x64"
-            binaries.all {
-                def jvmHome = Jvm.current().javaHome
-                if (targetPlatform.operatingSystem.macOsX) {
-                    cppCompiler.args '-I', "${jvmHome}/include"
-                    cppCompiler.args '-I', "${jvmHome}/include/darwin"
-                    cppCompiler.args '-I', "${includeDir}"
-                    cppCompiler.args '-mmacosx-version-min=10.4'
-                    linker.args '-mmacosx-version-min=10.4'
-                } else if (targetPlatform.operatingSystem.linux) {
-                    cppCompiler.args '-I', "${jvmHome}/include"
-                    cppCompiler.args '-I', "${jvmHome}/include/linux"
-                    cppCompiler.args '-I', "${includeDir}"
-                    cppCompiler.args '-D_FILE_OFFSET_BITS=64'
-                } else if (targetPlatform.operatingSystem.windows) {
-                    cppCompiler.args "-I${jvmHome}/include"
-                    cppCompiler.args "-I${jvmHome}/include/win32"
-                    cppCompiler.args "-I${includeDir}"
-                } else if (targetPlatform.operatingSystem.freeBSD) {
-                    cppCompiler.args '-I', "${jvmHome}/include"
-                    cppCompiler.args '-I', "${jvmHome}/include/freebsd"
-                    cppCompiler.args '-I', "${includeDir}"
-                } else {
-                    throw new IllegalStateException("Unknown operating system!")
-                }
-            }
-        }
+def hasCMake = isAvailable 'cmake', '--version'
+def hasNinja = isAvailable 'ninja', '--version'
+
+def jvmHome = Jvm.current().javaHome
+def cmakeBuildDir = project.layout.buildDirectory.dir('cmakeBuild').get()
+if(hasCMake && hasNinja) {
+    def cmakeConf = providers.exec {
+        commandLine 'cmake', '-S', "${project.layout.projectDirectory}",
+                '-B', "${cmakeBuildDir}",
+                '-D', "JVM_INCLUDE=${jvmHome}/include;${jvmHome}/include/linux",
+                '-D', 'CMAKE_EXPORT_COMPILE_COMMANDS=true',
+                '-G', 'Ninja'
     }
+    providers.exec {
+        commandLine 'ln', '-s', "${cmakeBuildDir.dir('compile_commands.json')}"
+    }
+    System.out.println(cmakeConf.standardOutput.getAsText().get())
+}
+
+tasks.register('cmakeBuild', Exec) {
+    enabled = hasCMake && hasNinja && false
+
+    commandLine 'cmake', '--build', "${cmakeBuildDir}"
 }

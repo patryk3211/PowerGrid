@@ -182,20 +182,6 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         }
     }
 
-//    @Override
-//    protected boolean canOptimize(INode node) {
-//        if(node instanceof IElectricNode enode) {
-//            if(graph.hasCouplings(enode))
-//                return false;
-//            for(var wire : graph.getWires(enode)) {
-//                if(wire instanceof SwitchedWire)
-//                    return false;
-//            }
-//            return true;
-//        }
-//        return super.canOptimize(node);
-//    }
-
     @Override
     public void addWire(AbstractElectricWire wire) {
         graph.connect(wire.node1, wire.node2, wire);

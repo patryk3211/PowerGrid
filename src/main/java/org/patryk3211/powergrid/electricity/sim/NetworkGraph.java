@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 
@@ -217,6 +218,24 @@ public class NetworkGraph {
             }
         }
         return eNodes;
+    }
+
+    public List<INode> matrixConnectedNodes(IElectricNode node, @NotNull ElectricalNetwork network) {
+        if(!nodes.containsKey(node))
+            return List.of();
+        var aNodes = new ArrayList<INode>();
+        var object = nodes.get(node);
+        for(var otherNode : object.connections.keySet()) {
+            if(aNodes.contains(otherNode.node) || otherNode.node.getNetwork() != network)
+                continue;
+            aNodes.add(otherNode.node);
+        }
+        for(var coupling : object.couplings) {
+            if(aNodes.contains(coupling) || coupling.getNetwork() != network)
+                continue;
+            aNodes.add(coupling);
+        }
+        return aNodes;
     }
 
     public int connectionCount(IElectricNode node) {

@@ -48,6 +48,7 @@ public class NativeLUTest {
         var LU = new double[9];
         var pvt = new int[3];
 
+        System.out.println(x);
         new PowerGridNative().factorize(RefA.data, LU, pvt);
 
         System.out.println(RefLU);

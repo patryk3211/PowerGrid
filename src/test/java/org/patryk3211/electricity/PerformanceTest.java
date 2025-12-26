@@ -16,6 +16,7 @@
 package org.patryk3211.electricity;
 
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.GraphedElectricalNetwork;
 
 import java.util.ArrayList;
 
@@ -25,17 +26,36 @@ public class PerformanceTest extends TestHelper {
 //        var rep1 = buildGridTestNetwork(Net1, "GMRES");
 
         var Net2 = new Network();
+        Net2.network = new GraphedElectricalNetwork(false);
         var rep2 = buildGridTestNetwork(Net2, "Direct");
 
 //        rep1.run();
         rep2.run();
     }
 
+//    private static void savePattern(IMatrixAccess matrix, String name) {
+//        var image = new BufferedImage(matrix.numCols(), matrix.numRows(), BufferedImage.TYPE_INT_ARGB);
+//        for(int x = 0; x < matrix.numCols(); ++x) {
+//            for(int y = 0; y < matrix.numRows(); ++y) {
+//                var val = matrix.get(y, x);
+//                int r = Math.max(Math.min((int) (val * 255), 255), 0);
+//                int g = val != 0 ? 0x40 : 0;
+//                int b = Math.max(Math.min((int) (-val * 255), 255), 0);
+//                image.setRGB(x, y, 0xFF000000 | (r << 16) | b | (g << 8));
+//            }
+//        }
+//        try {
+//            ImageIO.write(image, "png", Files.newOutputStream(Path.of(name + ".png")));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
     private static Runnable buildGridTestNetwork(Network Net, String prefix) {
         // Simulate a NxN grid of nodes connected by resistors
         final int SIZE = 32; // 32 * 32 = 1024 nodes
         var wires = new ArrayList<ElectricWire>();
-        var nodes = buildGrid(Net, SIZE, wires);
+        var nodes = buildGrid(Net, SIZE, 1.0f, wires);
 
         // Connect sources at corners
         var V1 = Net.V(5);
@@ -50,6 +70,15 @@ public class PerformanceTest extends TestHelper {
             wires.get(0).setResistance(wires.get(0).getResistance() * (i % 2 == 0 ? 2.0f : 0.5f));
             var start = System.nanoTime();
             Net.calculate();
+
+//            // Save Jacobian sparsity pattern
+//            var jacobian = Net.network.mnaImpl().jacobianMatrix();
+//            var lu = Net.network.mnaImpl().lu();
+//            savePattern(jacobian, "J" + i);
+//            savePattern(lu, "LU" + i);
+//            if(i >= 3)
+//                break;
+
             var end = System.nanoTime();
             var duration = end - start;
             if(i % 10 == 9)

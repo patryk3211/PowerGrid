@@ -1,0 +1,4 @@
+[submodule "native/superlu"]
+	path = native/superlu
+	url = https://github.com/xiaoyeli/superlu.git
+    shallow = true

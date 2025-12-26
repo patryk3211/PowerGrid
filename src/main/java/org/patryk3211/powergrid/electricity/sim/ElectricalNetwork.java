@@ -462,7 +462,7 @@ public class ElectricalNetwork implements IStamped {
         StateVector.set(index, 0, value);
     }
 
-    private void swapNodes(INode node1, INode node2) {
+    public void swapNodes(INode node1, INode node2) {
         var index1 = node1.getIndex();
         var index2 = node2.getIndex();
 
