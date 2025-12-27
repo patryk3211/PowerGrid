@@ -15,11 +15,14 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
+import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
 public class NativeMNA implements IMNA {
     private static final int OPERATION_BUFFER_COMMAND_LENGTH = 128;
@@ -28,13 +31,10 @@ public class NativeMNA implements IMNA {
 
     private final long nativePtr;
 
+    private boolean hooksChanged = true;
     protected boolean converged;
     protected int warmUpTicks = 0;
     private int size;
-
-    private double minimumAllowedPrecision = 1e-6;
-    private double absoluteStoppingCriterion = 1e-7;
-    private double relativeStoppingCriterion = 1e-12;
 
     private final ByteBuffer rhsOps;
     private final ByteBuffer jacobianOps;
@@ -64,9 +64,12 @@ public class NativeMNA implements IMNA {
 
     @Override
     public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
-        this.absoluteStoppingCriterion = absoluteCriterion;
-        this.relativeStoppingCriterion = relativeCriterion;
-        this.minimumAllowedPrecision = minimumPrecision;
+        setPrecision(nativePtr, absoluteCriterion, relativeCriterion, minimumPrecision);
+    }
+
+    @Override
+    public void hooksChanged() {
+        hooksChanged = true;
     }
 
     @Override
@@ -141,9 +144,40 @@ public class NativeMNA implements IMNA {
             hook.addResidual((row, change) -> {
                 var offset = row * 8;
                 double current = residualBuffer.getDouble(offset);
-                residualBuffer.putDouble(offset, current + change);
+                residualBuffer.putDouble(offset, current - change);
             });
         }
+    }
+
+    private void reportConvergenceProblems(double norm, int i, ByteBuffer residualBuffer) {
+        if (LOGGER != null) {
+            if (ModdedConfigs.logsEnabled()) {
+                LOGGER.warn("Convergence problems after {} solver iterations, final norm: {}", i, norm);
+            }
+        } else {
+            System.out.printf("Convergence problems after %d solver iterations, final norm: %g\n", i, norm);
+        }
+        network.convergenceProblems(norm, new IMatrixAccess() {
+            @Override
+            public void set(int row, int column, double value) {
+                throw new IllegalCallerException("Cannot modify residual");
+            }
+
+            @Override
+            public double get(int row, int column) {
+                return residualBuffer.getDouble(row * 8);
+            }
+
+            @Override
+            public int numRows() {
+                return size;
+            }
+
+            @Override
+            public int numCols() {
+                return 1;
+            }
+        });
     }
 
     @Override
@@ -156,6 +190,11 @@ public class NativeMNA implements IMNA {
         rhsOps.position(0);
         jacobianOps.position(0);
 
+        if(hooksChanged) {
+            // Negotiate native accelerated hook implementations.
+            hooksChanged = false;
+        }
+
         // Run native solve routine.
         int maxIterations = network.maxIterations.apply(network.hasHooks());
         var buffer = singleTick(nativePtr, maxIterations, this);
@@ -164,6 +203,11 @@ public class NativeMNA implements IMNA {
             stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
             converged = true;
         } else {
+            converged = false;
+        }
+
+        if(converged && warmUpTicks > 0) {
+            --warmUpTicks;
             converged = false;
         }
     }
@@ -185,7 +229,7 @@ public class NativeMNA implements IMNA {
 
     @Override
     public void finishJacobianWrite() {
-
+        finishJacobianWrite(nativePtr);
     }
 
     @Override
@@ -211,6 +255,7 @@ public class NativeMNA implements IMNA {
 
         @Override
         public double get(int row, int column) {
+            // TODO: This seems slow for some reason?
             return stateBuffer.getDouble(row * 8);
         }
 
@@ -245,7 +290,9 @@ public class NativeMNA implements IMNA {
     private static native void zeroRHS(long ptr);
     private static native void zeroState(long ptr);
     private static native void zeroJacobian(long ptr);
+    private static native void finishJacobianWrite(long ptr);
     private static native void processJacobianBuffer(long ptr);
     private static native void processRHSBuffer(long ptr);
+    private static native void setPrecision(long ptr, double absoluteCriterion, double relativeCriterion, double minimumPrecision);
     private native ByteBuffer singleTick(long ptr, int maxIters, NativeMNA javaObj);
 }

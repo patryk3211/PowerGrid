@@ -40,6 +40,7 @@ if(hasCMake && hasNinja) {
                 '-B', "${cmakeBuildDir}",
                 '-D', "JVM_INCLUDE=${jvmHome}/include;${jvmHome}/include/linux",
                 '-D', 'CMAKE_EXPORT_COMPILE_COMMANDS=true',
+                '-D', 'CMAKE_BUILD_TYPE=Release',
                 '-G', 'Ninja'
     }
     providers.exec {

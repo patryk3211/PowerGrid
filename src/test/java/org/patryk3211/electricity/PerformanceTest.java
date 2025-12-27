@@ -16,20 +16,23 @@
 package org.patryk3211.electricity;
 
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.GraphedElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.solver.JavaMNA;
+import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
 
 import java.util.ArrayList;
 
 public class PerformanceTest extends TestHelper {
     public static void main(String[] args) {
-//        var Net1 = new Network();
-//        var rep1 = buildGridTestNetwork(Net1, "GMRES");
-
         var Net2 = new Network();
-        Net2.network = new GraphedElectricalNetwork(false);
-        var rep2 = buildGridTestNetwork(Net2, "Direct");
+        Net2.network = new ElectricalNetwork(false, NativeMNA::new);
+        var rep2 = buildGridTestNetwork(Net2, "Native");
 
-//        rep1.run();
+        var Net1 = new Network();
+        Net1.network = new ElectricalNetwork(false, JavaMNA::new);
+        var rep1 = buildGridTestNetwork(Net1, "Java");
+
+        rep1.run();
         rep2.run();
     }
 
@@ -64,7 +67,8 @@ public class PerformanceTest extends TestHelper {
         Net.W(0.1f, GND, nodes[SIZE * SIZE - 1]);
 
         long micros = 0;
-        for(int i = 0; i < 100; ++i) {
+        final int solveCount = 100;
+        for(int i = 0; i < solveCount; ++i) {
             V1.setVoltage(-V1.getVoltage());
             // Forces refactorization to happen
             wires.get(0).setResistance(wires.get(0).getResistance() * (i % 2 == 0 ? 2.0f : 0.5f));
@@ -96,7 +100,7 @@ public class PerformanceTest extends TestHelper {
 
         var finalTime = micros;
         return () -> {
-            System.out.printf("[%s] 100 solves took an average of %.3fµs per solve\n", prefix, finalTime / 100.0);
+            System.out.printf("[%s] %d solves took an average of %.3fµs per solve\n", prefix, solveCount, (double) finalTime / solveCount);
             System.out.printf("[%s] Result fetch took %.3fµs\n", prefix, (end - start) / 1000.0);
         };
     }

@@ -35,6 +35,7 @@ public class JavaMNA implements IMNA {
     private static final PerformanceCounter PERF = new PerformanceCounter("JavaMNA");
     private static final int MAX_SCALE_REUSE_COUNT = 50;
     private static final boolean SCALING = true;
+    private static final boolean ROW_EXCHANGE = false;
 
     public final ElectricalNetwork network;
 
@@ -77,6 +78,11 @@ public class JavaMNA implements IMNA {
     }
 
     @Override
+    public void hooksChanged() {
+
+    }
+
+    @Override
     public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
         this.absoluteStoppingCriterion = absoluteCriterion;
         this.relativeStoppingCriterion = relativeCriterion;
@@ -113,22 +119,26 @@ public class JavaMNA implements IMNA {
             throw new IllegalArgumentException("Provided entry lays outside of the allocated matrices.");
         if(SCALING) {
             var scaledValue = value * columnScales[column] * rowScales[row];
-            if (enableRowExchange) {
-                var e = getOrCreateRow(row);
-                e.update(column, scaledValue);
-            } else {
-                A0.add(row, column, scaledValue);
-                A0.markRefactorize();
+            if(ROW_EXCHANGE) {
+                if (enableRowExchange) {
+                    var e = getOrCreateRow(row);
+                    e.update(column, scaledValue);
+                } else {
+                    A0.add(row, column, scaledValue);
+                    A0.markRefactorize();
+                }
             }
             ScaledJ.add(row, column, scaledValue);
             ScaledJ.markRefactorize();
         } else {
-            if (enableRowExchange) {
-                var e = getOrCreateRow(row);
-                e.update(column, value);
-            } else {
-                A0.add(row, column, value);
-                A0.markRefactorize();
+            if(ROW_EXCHANGE) {
+                if (enableRowExchange) {
+                    var e = getOrCreateRow(row);
+                    e.update(column, value);
+                } else {
+                    A0.add(row, column, value);
+                    A0.markRefactorize();
+                }
             }
         }
         Jacobian.add(row, column, value);
@@ -179,7 +189,8 @@ public class JavaMNA implements IMNA {
         }
 
         Jacobian= new DynamicallyTypedMatrix(size, size, DynamicallyTypedMatrix.Solver.LU);
-        A0 = new DynamicallyTypedMatrix(size, size, DynamicallyTypedMatrix.Solver.LU);
+        if(ROW_EXCHANGE)
+            A0 = new DynamicallyTypedMatrix(size, size, DynamicallyTypedMatrix.Solver.LU);
         RHSVector = new DMatrixRMaj(size, 1);
 
         if(SCALING)
@@ -332,34 +343,36 @@ public class JavaMNA implements IMNA {
                 workMatrix = ScaledJ;
             }
 
-            if(enableRowExchange) {
-                var valid = true;
-                var rowRecalc = A0.isMarked();
-                for (var row : changedRows) {
-                    var status = row.solveRow(A0, rowRecalc, changedRows);
-                    if(status == 2) {
-                        // Drop changed rows
-                        valid = false;
-                        break;
-                    } else if(status == 1) {
-                        rowRecalc = true;
+            if(ROW_EXCHANGE) {
+                if (enableRowExchange) {
+                    var valid = true;
+                    var rowRecalc = A0.isMarked();
+                    for (var row : changedRows) {
+                        var status = row.solveRow(A0, rowRecalc, changedRows);
+                        if (status == 2) {
+                            // Drop changed rows
+                            valid = false;
+                            break;
+                        } else if (status == 1) {
+                            rowRecalc = true;
+                        }
                     }
-                }
-                if(valid) {
-                    for (int j = changedRows.size() - 1; j >= 0; --j) {
-                        changedRows.get(j).apply(ResidualVector);
+                    if (valid) {
+                        for (int j = changedRows.size() - 1; j >= 0; --j) {
+                            changedRows.get(j).apply(ResidualVector);
+                        }
+                        workMatrix = A0;
+                    } else {
+                        changedRows.clear();
+                        A0.setTo(workMatrix);
+                        A0.markRefactorize();
                     }
-                    workMatrix = A0;
                 } else {
                     changedRows.clear();
                     A0.setTo(workMatrix);
                     A0.markRefactorize();
+                    enableRowExchange = true;
                 }
-            } else {
-                changedRows.clear();
-                A0.setTo(workMatrix);
-                A0.markRefactorize();
-                enableRowExchange = true;
             }
 
             workMatrix.solve(ResidualVector, StateVector);
@@ -397,10 +410,13 @@ public class JavaMNA implements IMNA {
     @Override
     public void finishJacobianWrite() {
         recalculateScales = true;
+        Jacobian.optimize();
 
         changedRows.clear();
         enableRowExchange = true;
-        A0.setTo(Jacobian);
+        if(ROW_EXCHANGE && !SCALING) {
+            A0.setTo(Jacobian);
+        }
     }
 
     @Override

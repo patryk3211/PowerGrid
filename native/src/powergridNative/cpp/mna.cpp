@@ -38,6 +38,10 @@ extern "C" {
         SOLVER(ptr)->zeroJacobian();
     }
 
+    JNIEXPORT void JNICALL MANGLE(finishJacobianWrite)(JNIEnv *env, jobject obj, jlong ptr) {
+        SOLVER(ptr)->finishJacobianWrite();
+    }
+
     JNIEXPORT void JNICALL MANGLE(processJacobianBuffer)(JNIEnv *env, jobject obj, jlong ptr) {
         SOLVER(ptr)->processJacobianBuffer();
     }
@@ -48,10 +52,11 @@ extern "C" {
 
     JNIEXPORT jobject JNICALL MANGLE(singleTick)(JNIEnv *env, jobject mnaObj, jlong ptr, jint maxIters) {
         Solver *solver = SOLVER(ptr);
-        void *state = solver->singleTick(maxIters, mnaObj);
-        if(state == 0)
-            return 0;
-        return env->NewDirectByteBuffer(state, solver->size() * sizeof(double));
+        return solver->singleTick(maxIters, mnaObj);
+    }
+
+    JNIEXPORT void JNICALL MANGLE(setPrecision)(JNIEnv *env, jobject obj, jlong ptr, jdouble absolute, jdouble relative, jdouble minimum) {
+        SOLVER(ptr)->setPrecision(absolute, relative, minimum);
     }
 }
 

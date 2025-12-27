@@ -31,8 +31,6 @@ import java.util.function.Function;
 public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
-    private static final int MAX_SCALE_REUSE_COUNT = 50;
-    private static final boolean SCALING = true;
 
     private final boolean addGMin;
     protected final Set<AbstractElectricWire> wires = new HashSet<>();
@@ -68,11 +66,11 @@ public class ElectricalNetwork implements IStamped {
         this.mna = new NativeMNA(this);
     }
 
-    protected ElectricalNetwork(boolean addGMin, IMNA mna) {
+    public ElectricalNetwork(boolean addGMin, Function<ElectricalNetwork, IMNA> mna) {
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
-        this.mna = mna;
+        this.mna = mna.apply(this);
     }
 
     public void cleanup() {
@@ -142,8 +140,10 @@ public class ElectricalNetwork implements IStamped {
 
         if(node instanceof IOuterHook hook)
             outerHooks.add(hook);
-        if(node instanceof ISolverHook hook)
+        if(node instanceof ISolverHook hook) {
             innerHooks.add(hook);
+            mna.hooksChanged();
+        }
         if(node instanceof IStaticResidual residual)
             residuals.add(residual);
         if(node.isSource())
@@ -189,8 +189,10 @@ public class ElectricalNetwork implements IStamped {
             --sourceCount;
         if(node instanceof IOuterHook hook)
             outerHooks.remove(hook);
-        if(node instanceof ISolverHook hook)
+        if(node instanceof ISolverHook hook) {
             innerHooks.remove(hook);
+            mna.hooksChanged();
+        }
         if(node instanceof IStaticResidual residual)
             residuals.remove(residual);
 
@@ -247,6 +249,7 @@ public class ElectricalNetwork implements IStamped {
             }
             if(isFull) {
                 innerHooks.add(hook);
+                mna.hooksChanged();
             } else {
                 leafInnerHooks.add(hook);
             }
@@ -295,6 +298,7 @@ public class ElectricalNetwork implements IStamped {
         if(wire instanceof ISolverHook hook) {
             innerHooks.remove(hook);
             leafInnerHooks.remove(hook);
+            mna.hooksChanged();
         }
         if(wire instanceof IStaticResidual residual)
             residuals.remove(residual);
@@ -360,6 +364,7 @@ public class ElectricalNetwork implements IStamped {
             if(wire instanceof ISolverHook hook) {
                 innerHooks.remove(hook);
                 leafInnerHooks.remove(hook);
+                mna.hooksChanged();
             }
             if(wire instanceof IStaticResidual residual)
                 residuals.remove(residual);
@@ -436,6 +441,7 @@ public class ElectricalNetwork implements IStamped {
         innerHooks.clear();
         residuals.clear();
         leafNodes.clear();
+        mna.hooksChanged();
     }
 
     public double getValue(INode node) {
@@ -526,6 +532,7 @@ public class ElectricalNetwork implements IStamped {
                     if(isFull) {
                         // Enable hook since all nodes are simulate
                         innerHooks.add(hook);
+                        mna.hooksChanged();
                         iter.remove();
                     }
                 }

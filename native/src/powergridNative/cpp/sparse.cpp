@@ -4,7 +4,8 @@
 
 using namespace powergrid;
 
-SparseMatrix::SparseMatrix() {
+SparseMatrix::SparseMatrix()
+    : m_GLU() {
     set_default_options(&m_opts);
     m_A.Store = 0;
     m_L.Store = 0;
@@ -28,6 +29,7 @@ void SparseMatrix::resize(int size) {
 }
 
 void SparseMatrix::zero() {
+    m_opts.Fact = DOFACT;
     m_columns.clear();
     m_rowIndices.clear();
     m_elements.clear();
@@ -88,11 +90,45 @@ void SparseMatrix::add(int row, int column, double value) {
     m_refactorize = true;
 }
 
+void SparseMatrix::sortRows() {
+    for(int c = 0; c < m_size; ++c) {
+        int start = m_columns[c];
+        int end = m_columns[c + 1];
+
+        // Simple selection sort.
+        for(int i = start; i < end; ++i) {
+            int minIndex = i;
+            int minValue = m_rowIndices[i];
+            for(int j = i + 1; j < end; ++j) {
+                if(m_rowIndices[j] < minValue) {
+                    minIndex = j;
+                    minValue = m_rowIndices[j];
+                }
+            }
+            if(minIndex != i) {
+                // Swap indices
+                double bufD = m_elements[i];
+                int bufR = m_rowIndices[i];
+                m_elements[i] = m_elements[minIndex];
+                m_rowIndices[i] = m_rowIndices[minIndex];
+                m_elements[minIndex] = bufD;
+                m_rowIndices[minIndex] = bufR;
+            }
+        }
+    }
+}
+
 void SparseMatrix::formLogicalA() {
     freeMatrices();
     dCreate_CompCol_Matrix(&m_A, m_size, m_size, m_elements.size(), m_elements.data(), m_rowIndices.data(), m_columns.data(), SLU_NC, SLU_D, SLU_GE);
     m_aStore = (NCformat *) m_A.Store;
     m_structureModified = false;
+}
+
+SuperMatrix *SparseMatrix::superMatrix() {
+    if(m_structureModified)
+        formLogicalA();
+    return &m_A;
 }
 
 void SparseMatrix::freeMatrices() {
@@ -130,8 +166,7 @@ void SparseMatrix::factorize() {
      *   permc_spec = MY_PERMC: the ordering already supplied in perm_c[]
      */
     int permc_spec = m_opts.ColPerm;
-    if(permc_spec != MY_PERMC && m_opts.Fact == DOFACT)
-      get_perm_c(permc_spec, &m_A, m_permC.data());
+    get_perm_c(permc_spec, &m_A, m_permC.data());
 
     int *etree = int32Malloc(m_A.ncol);
 
@@ -142,10 +177,9 @@ void SparseMatrix::factorize() {
     int relax = sp_ienv(2);
 
     /* Compute the LU factorization of A. */
-    GlobalLU_t Glu {};
     int info;
     freeLU();
-    dgstrf(&m_opts, &AC, relax, panel_size, etree, NULL, 0, m_permC.data(), m_permR.data(), &m_L, &m_U, &Glu, &m_stats, &info);
+    dgstrf(&m_opts, &AC, relax, panel_size, etree, NULL, 0, m_permC.data(), m_permR.data(), &m_L, &m_U, &m_GLU, &m_stats, &info);
 
     SUPERLU_FREE(etree);
     Destroy_CompCol_Permuted(&AC);
@@ -157,5 +191,9 @@ void SparseMatrix::solve(SuperMatrix *B) {
         factorize();
     int info;
     dgstrs(NOTRANS, &m_L, &m_U, m_permC.data(), m_permR.data(), B, &m_stats, &info);
+}
+
+void SparseMatrix::samePattern(bool value) {
+    m_opts.Fact = value ? SamePattern_SameRowPerm : DOFACT;
 }
 

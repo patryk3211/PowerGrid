@@ -20,6 +20,8 @@ namespace powergrid {
         SuperMatrix m_L;
         SuperMatrix m_U;
 
+        GlobalLU_t m_GLU;
+
         std::vector<int> m_permC;
         std::vector<int> m_permR;
 
@@ -35,7 +37,11 @@ namespace powergrid {
         void add(int row, int column, double value);
 
         void formLogicalA();
+        SuperMatrix *superMatrix();
         void factorize();
+        void sortRows();
+
+        void samePattern(bool value);
 
         void solve(SuperMatrix *B);
 

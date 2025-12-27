@@ -27,6 +27,8 @@ public interface IMNA {
     void allocate(int size);
     void singleTick();
 
+    void hooksChanged();
+
     void zeroRHS();
     void zeroState();
     void jacobianPrepareForWrite();

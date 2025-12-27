@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.electricity.sim.solver.IMatrixAccess;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
@@ -39,7 +40,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         this.graph = graph;
     }
 
-    protected GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, IMNA mna) {
+    protected GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, Function<ElectricalNetwork, IMNA> mna) {
         super(addGMin, mna);
         this.graph = graph;
     }
