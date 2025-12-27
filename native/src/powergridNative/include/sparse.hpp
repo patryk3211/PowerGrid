@@ -24,6 +24,7 @@ namespace powergrid {
 
         std::vector<int> m_permC;
         std::vector<int> m_permR;
+        std::vector<int> m_etree;
 
       public:
         SparseMatrix();

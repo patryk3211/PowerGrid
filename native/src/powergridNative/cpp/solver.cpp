@@ -34,6 +34,8 @@ Solver::Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount, JNIEnv *env, j
     m_residualAddMethod = env->GetMethodID(clazz, "runAddResidual", "(Ljava/nio/ByteBuffer;)V");
     m_reportProblemsMethod = env->GetMethodID(clazz, "reportConvergenceProblems", "(DILjava/nio/ByteBuffer;)V");
 
+    m_state = nullptr;
+    m_b = nullptr;
     m_stateBuffer = nullptr;
     m_bBuffer = nullptr;
 }
@@ -74,6 +76,8 @@ void Solver::resize(int size) {
 }
 
 void Solver::zeroState() {
+    if(m_state == nullptr)
+        return;
     memset(m_state, 0, sizeof(double) * m_size);
 }
 
@@ -163,6 +167,8 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj) {
         m_A.solve(&m_B);
         // B is now the state vector
         swapBuffers();
+
+        // m_A.samePattern(true);
     }
 
     if(norm > m_minimumAllowedPrecision) {

@@ -70,7 +70,7 @@ public class ElectricalNetwork implements IStamped {
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
-        this.mna = mna.apply(this);
+        this.mna = mna != null ? mna.apply(this) : null;
     }
 
     public void cleanup() {
@@ -142,7 +142,8 @@ public class ElectricalNetwork implements IStamped {
             outerHooks.add(hook);
         if(node instanceof ISolverHook hook) {
             innerHooks.add(hook);
-            mna.hooksChanged();
+            if(mna != null)
+                mna.hooksChanged();
         }
         if(node instanceof IStaticResidual residual)
             residuals.add(residual);
@@ -175,11 +176,13 @@ public class ElectricalNetwork implements IStamped {
             // This node is not actually in this network.
             return;
 
-        var StateVector = mna.stateVector();
-        for(int i = node.getIndex() + 1; i < nodes.size(); ++i) {
-            // Move back all nodes by one.
-            nodes.get(i).assignIndex(i - 1);
-            StateVector.safe_set(i - 1, 0, StateVector.safe_get(i, 0));
+        if(mna != null) {
+            var StateVector = mna.stateVector();
+            for (int i = node.getIndex() + 1; i < nodes.size(); ++i) {
+                // Move back all nodes by one.
+                nodes.get(i).assignIndex(i - 1);
+                StateVector.safe_set(i - 1, 0, StateVector.safe_get(i, 0));
+            }
         }
         nodes.remove(node.getIndex());
 
@@ -191,7 +194,8 @@ public class ElectricalNetwork implements IStamped {
             outerHooks.remove(hook);
         if(node instanceof ISolverHook hook) {
             innerHooks.remove(hook);
-            mna.hooksChanged();
+            if(mna != null)
+                mna.hooksChanged();
         }
         if(node instanceof IStaticResidual residual)
             residuals.remove(residual);
@@ -228,7 +232,8 @@ public class ElectricalNetwork implements IStamped {
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
         }
-        mna.rowExchange(false);
+        if(mna != null)
+            mna.rowExchange(false);
         wire.setNetwork(this);
         wires.add(wire);
         if(wire.isSource())
@@ -249,7 +254,8 @@ public class ElectricalNetwork implements IStamped {
             }
             if(isFull) {
                 innerHooks.add(hook);
-                mna.hooksChanged();
+                if(mna != null)
+                    mna.hooksChanged();
             } else {
                 leafInnerHooks.add(hook);
             }
@@ -284,7 +290,8 @@ public class ElectricalNetwork implements IStamped {
     public void removeWire(AbstractElectricWire wire) {
         if(!wires.contains(wire))
             return;
-        mna.rowExchange(false);
+        if(mna != null)
+            mna.rowExchange(false);
         wires.remove(wire);
         wire.setNetwork(null);
         if(wire.isSource())
@@ -298,7 +305,8 @@ public class ElectricalNetwork implements IStamped {
         if(wire instanceof ISolverHook hook) {
             innerHooks.remove(hook);
             leafInnerHooks.remove(hook);
-            mna.hooksChanged();
+            if(mna != null)
+                mna.hooksChanged();
         }
         if(wire instanceof IStaticResidual residual)
             residuals.remove(residual);
@@ -441,7 +449,8 @@ public class ElectricalNetwork implements IStamped {
         innerHooks.clear();
         residuals.clear();
         leafNodes.clear();
-        mna.hooksChanged();
+        if(mna != null)
+            mna.hooksChanged();
     }
 
     public double getValue(INode node) {

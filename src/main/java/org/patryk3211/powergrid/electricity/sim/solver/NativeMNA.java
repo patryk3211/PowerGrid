@@ -157,6 +157,7 @@ public class NativeMNA implements IMNA {
         } else {
             System.out.printf("Convergence problems after %d solver iterations, final norm: %g\n", i, norm);
         }
+        residualBuffer.order(ByteOrder.LITTLE_ENDIAN);
         network.convergenceProblems(norm, new IMatrixAccess() {
             @Override
             public void set(int row, int column, double value) {
@@ -203,6 +204,7 @@ public class NativeMNA implements IMNA {
             stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
             converged = true;
         } else {
+            stateBuffer = null;
             converged = false;
         }
 
@@ -220,6 +222,7 @@ public class NativeMNA implements IMNA {
     @Override
     public void zeroState() {
         zeroState(nativePtr);
+        converged = true;
     }
 
     @Override
@@ -261,7 +264,7 @@ public class NativeMNA implements IMNA {
 
         @Override
         public double safe_get(int row, int column) {
-            if(stateBuffer == null)
+            if(stateBuffer == null || row * 8 >= stateBuffer.capacity())
                 return 0;
             return IMatrixAccess.super.safe_get(row, column);
         }

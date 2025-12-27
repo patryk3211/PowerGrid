@@ -16,7 +16,8 @@
 package org.patryk3211.electricity;
 
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.GraphedElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.NetworkGraph;
 import org.patryk3211.powergrid.electricity.sim.solver.JavaMNA;
 import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
 
@@ -25,11 +26,11 @@ import java.util.ArrayList;
 public class PerformanceTest extends TestHelper {
     public static void main(String[] args) {
         var Net2 = new Network();
-        Net2.network = new ElectricalNetwork(false, NativeMNA::new);
+        Net2.network = new GraphedElectricalNetwork(new NetworkGraph(), false, NativeMNA::new);
         var rep2 = buildGridTestNetwork(Net2, "Native");
 
         var Net1 = new Network();
-        Net1.network = new ElectricalNetwork(false, JavaMNA::new);
+        Net1.network = new GraphedElectricalNetwork(new NetworkGraph(), false, JavaMNA::new);
         var rep1 = buildGridTestNetwork(Net1, "Java");
 
         rep1.run();

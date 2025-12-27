@@ -33,6 +33,11 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
     }
 
     @Override
+    public void cleanup() { }
+    @Override
+    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) { }
+
+    @Override
     public void warmUp(int ticks) {
         if(ticks == -1 || warmUpTicks == -1) {
             warmUpTicks = -1;

@@ -25,6 +25,7 @@ void SparseMatrix::resize(int size) {
     m_size = size;
     m_permC.resize(size);
     m_permR.resize(size);
+    m_etree.resize(size);
     zero();
 }
 
@@ -123,6 +124,7 @@ void SparseMatrix::formLogicalA() {
     dCreate_CompCol_Matrix(&m_A, m_size, m_size, m_elements.size(), m_elements.data(), m_rowIndices.data(), m_columns.data(), SLU_NC, SLU_D, SLU_GE);
     m_aStore = (NCformat *) m_A.Store;
     m_structureModified = false;
+    m_opts.Fact = DOFACT;
 }
 
 SuperMatrix *SparseMatrix::superMatrix() {
@@ -143,6 +145,7 @@ void SparseMatrix::freeMatrices() {
 }
 
 void SparseMatrix::freeLU() {
+    m_opts.Fact = DOFACT;
     if(m_L.Store != 0) {
         Destroy_SuperNode_Matrix(&m_L);
         m_L.Store = 0;
@@ -166,22 +169,21 @@ void SparseMatrix::factorize() {
      *   permc_spec = MY_PERMC: the ordering already supplied in perm_c[]
      */
     int permc_spec = m_opts.ColPerm;
-    get_perm_c(permc_spec, &m_A, m_permC.data());
-
-    int *etree = int32Malloc(m_A.ncol);
+    if(m_opts.Fact == DOFACT)
+        get_perm_c(permc_spec, &m_A, m_permC.data());
 
     SuperMatrix AC;
-    sp_preorder(&m_opts, &m_A, m_permC.data(), etree, &AC);
+    sp_preorder(&m_opts, &m_A, m_permC.data(), m_etree.data(), &AC);
 
     int panel_size = sp_ienv(1);
     int relax = sp_ienv(2);
 
     /* Compute the LU factorization of A. */
     int info;
-    freeLU();
-    dgstrf(&m_opts, &AC, relax, panel_size, etree, NULL, 0, m_permC.data(), m_permR.data(), &m_L, &m_U, &m_GLU, &m_stats, &info);
+    if(m_opts.Fact != SamePattern_SameRowPerm)
+        freeLU();
+    dgstrf(&m_opts, &AC, relax, panel_size, m_etree.data(), NULL, 0, m_permC.data(), m_permR.data(), &m_L, &m_U, &m_GLU, &m_stats, &info);
 
-    SUPERLU_FREE(etree);
     Destroy_CompCol_Permuted(&AC);
     m_refactorize = false;
 }

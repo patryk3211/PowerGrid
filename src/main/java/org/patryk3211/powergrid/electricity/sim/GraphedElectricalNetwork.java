@@ -40,7 +40,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         this.graph = graph;
     }
 
-    protected GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, Function<ElectricalNetwork, IMNA> mna) {
+    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, Function<ElectricalNetwork, IMNA> mna) {
         super(addGMin, mna);
         this.graph = graph;
     }
