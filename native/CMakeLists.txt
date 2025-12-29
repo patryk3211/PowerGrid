@@ -25,7 +25,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx2")
 add_library(powergridNative SHARED ${SOURCES})
 
 target_include_directories(powergridNative PUBLIC src/powergridNative/include ${JVM_INCLUDE})
-target_include_directories(powergridNative PRIVATE superlu/CBLAS)
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 target_compile_definitions(powergridNative PRIVATE DEBUG)
@@ -37,7 +36,20 @@ endif()
 
 set_target_properties(powergridNative PROPERTIES CXX_STANDARD 20)
 
-set(enable_internal_blaslib ON)
+set(BUILD_STATIC_LIBS ON)
+set(BUILD_WITHOUT_LAPACK ON)
+set(BUILD_TESTING OFF)
+set(BUILD_SINGLE true)
+set(BUILD_DOUBLE true)
+set(BUILD_COMPLEX false)
+set(BUILD_COMPLEX16 false)
+set(BUILD_MATGEN false)
+set(USE_THREAD false)
+add_subdirectory(OpenBLAS)
+
+export(TARGETS openblas_static FILE "staticblas.cmake")
+set(TPL_BLAS_LIBRARIES "openblas")
+set(enable_internal_blaslib OFF)
 set(enable_single OFF)
 set(enable_double ON)
 set(enable_complex OFF)
@@ -49,4 +61,7 @@ set(enable_fortran OFF)
 set(enable_tests OFF)
 add_subdirectory(superlu)
 
-target_link_libraries(powergridNative PUBLIC superlu)
+target_link_libraries(powergridNative PUBLIC superlu openblas_static)
+target_include_directories(powergridNative PRIVATE OpenBLAS)
+target_include_directories(powergridNative PRIVATE ${CMAKE_BINARY_DIR}/OpenBLAS)
+
