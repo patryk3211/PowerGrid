@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 
 project(PowerGridNative VERSION 1.0.0 LANGUAGES CXX)
 
+option(PG_TRACE "Enable tracing in native backend code" false)
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -25,11 +27,13 @@ add_library(powergridNative SHARED ${SOURCES})
 target_include_directories(powergridNative PUBLIC src/powergridNative/include ${JVM_INCLUDE})
 target_include_directories(powergridNative PRIVATE superlu/CBLAS)
 
-if(CMAKE_BUILD_TYPE EQUAL "Debug")
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 target_compile_definitions(powergridNative PRIVATE DEBUG)
 endif()
 
-# target_compile_definitions(powergridNative PRIVATE TRACE)
+if(PG_TRACE)
+target_compile_definitions(powergridNative PRIVATE TRACE)
+endif()
 
 set_target_properties(powergridNative PROPERTIES CXX_STANDARD 20)
 

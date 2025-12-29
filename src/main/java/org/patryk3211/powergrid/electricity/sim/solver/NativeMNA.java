@@ -54,6 +54,7 @@ public class NativeMNA implements IMNA {
         try {
             System.loadLibrary("powergridNative");
             supported = true;
+            PowerGrid.LOGGER.info("Native backend loaded successfully");
         } catch(Exception|Error e) {
             PowerGrid.LOGGER.error("Native backend failed to load. Accelerated solver will not be available!", e);
         }

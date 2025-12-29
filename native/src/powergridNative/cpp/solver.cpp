@@ -129,11 +129,9 @@ void Solver::finishJacobianWrite(int cmdCount) {
 
 void Solver::processJacobianBuffer(int cmdCount) {
     PG_TRACE("[Solver::processJacobianBuffer] entering");
-    PG_ASSERT(cmdCount < m_maxCmdCount, "Command buffer overrun");
+    PG_ASSERT(cmdCount <= m_maxCmdCount, "Command buffer overrun");
     for(int i = 0; i < cmdCount; ++i) {
         JacobianOp& op = m_jacobianOpBuffer[i];
-        if(op.row == -1)
-            break;
         PG_ASSERT(op.row >= 0 && op.column >= 0 && op.row < m_size && op.column < m_size, "Out of bounds Jacobian write ({}, {})", op.row, op.column);
         PG_TRACE("[Solver::processJacobianBuffer] adding {} to J({}, {})", op.change, op.row, op.column);
         m_A.add(op.row, op.column, op.change);
@@ -200,7 +198,7 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         // B is now the state vector
         swapBuffers();
 
-        // m_A.samePattern(true);
+        m_A.samePattern(true);
     }
     PG_TRACE("[Solver::singleTick] post loop");
 

@@ -1,3 +1,5 @@
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+
 plugins {
 	id 'maven-publish'
 	id 'architectury-plugin' version '3.4-SNAPSHOT'
@@ -297,11 +299,22 @@ dependencies {
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 }
 
-classes.dependsOn 'native:cmakeBuild'
+
+def os = DefaultNativePlatform.currentOperatingSystem
+String libDir = null
+if(os.isWindows()) {
+	libDir = project(':native').layout.buildDirectory.dir("cmake/windows").get()
+	classes.dependsOn 'native:buildWindows'
+} else if(os.isLinux()) {
+	libDir = project(':native').layout.buildDirectory.dir("cmake/linux").get()
+	classes.dependsOn 'native:buildLinux'
+}
+
+ext.nativeLibDir = libDir
 
 test {
 	useJUnitPlatform()
-	jvmArgs "-Djava.library.path=" + project(":native").layout.buildDirectory.dir("cmakeBuild").get()
+	jvmArgs "-Djava.library.path=" + libDir
 }
 
 sourceSets.main {

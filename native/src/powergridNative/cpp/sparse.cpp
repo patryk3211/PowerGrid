@@ -8,7 +8,7 @@ SparseMatrix::SparseMatrix()
     : m_GLU{}, m_opts{} {
     PG_TRACE("[SparseMatrix::SparseMatrix] entering");
     set_default_options(&m_opts);
-    // // m_opts.ColPerm = NATURAL;
+    // m_opts.ColPerm = NATURAL;
 
     m_A.Store = &m_Astore;
     m_A.Stype = SLU_NC;

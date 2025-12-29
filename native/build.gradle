@@ -1,5 +1,4 @@
 import org.gradle.internal.jvm.Jvm
-
 /*
  * Copyright 2025 patryk3211
  *
@@ -24,34 +23,51 @@ plugins {
 // Beware! Things here might not work in different build environments.
 
 def isSuccessful = { String... cmdLine ->
-    return providers.exec {
-        commandLine cmdLine
-    }.getResult().map { result -> result.getExitValue() == 0 }.getOrElse(false)
+    try {
+        return providers.exec {
+            commandLine cmdLine
+        }.getResult().map { result -> result.getExitValue() == 0 }.getOrElse(false)
+    } catch(ignored) {
+        return false
+    }
 }
-
-def hasCMake = isSuccessful "${project.cmakeExecutable}", '--version'
-def buildAvailable = false;
 
 def jvmHome = Jvm.current().javaHome
-def cmakeBuildDir = project.layout.buildDirectory.dir('cmakeBuild').get()
-if(hasCMake) {
-    def cmakeConf = providers.exec {
-        commandLine 'cmake', '-S', "${project.layout.projectDirectory}",
-                '-B', "${cmakeBuildDir}",
-                '-D', "JVM_INCLUDE=${jvmHome}/include;${jvmHome}/include/linux",
-                '-D', 'CMAKE_EXPORT_COMPILE_COMMANDS=true',
-                '-D', "CMAKE_BUILD_TYPE=${project.cmakeBuildType}",
-                '-G', "${project.cmakeGenerator}"
+
+def configureTask = { String platform, String taskName ->
+    def platformProperty = { String name ->
+        return project.property("${platform}.${name}")
     }
-    providers.exec {
-        commandLine 'ln', '-s', "${cmakeBuildDir.dir('compile_commands.json')}"
+
+    def hasCMake = isSuccessful "${platformProperty('cmakeExecutable')}", '--version'
+    def cmakeBuildDir = project.layout.buildDirectory.dir("cmake/${platform}").get()
+    def buildAvailable = false
+    if(hasCMake) {
+        def cmakeConf = providers.exec {
+            commandLine "${platformProperty('cmakeExecutable')}", '-S', "${project.layout.projectDirectory}",
+                    '-B', "${cmakeBuildDir}",
+                    "-DJVM_INCLUDE=${jvmHome}/include;${jvmHome}/include/${platform}",
+                    '-DCMAKE_EXPORT_COMPILE_COMMANDS=true',
+                    "-DCMAKE_BUILD_TYPE=${platformProperty('cmakeBuildType')}",
+                    "-DPG_TRACE=${project.nativeTrace}",
+                    '-G', "${platformProperty('cmakeGenerator')}"
+        }
+        System.out.println(cmakeConf.standardOutput.getAsText().get())
+        buildAvailable = cmakeConf.result.map { r -> r.exitValue == 0 }.getOrElse(false)
     }
-    System.out.println(cmakeConf.standardOutput.getAsText().get())
-    buildAvailable = cmakeConf.result.map { r -> r.exitValue == 0 }.getOrElse(false)
+
+    if(buildAvailable) {
+        System.out.println("Native build for platform '${platform}' configured successfully.")
+    } else {
+        System.out.println("Configuring native build for platform '${platform}' has failed. Task will be skipped.")
+    }
+
+    tasks.register(taskName, Exec) {
+        enabled = buildAvailable
+
+        commandLine "${platformProperty('cmakeExecutable')}", '--build', "${cmakeBuildDir}"
+    }
 }
 
-tasks.register('cmakeBuild', Exec) {
-    enabled = buildAvailable
-
-    commandLine 'cmake', '--build', "${cmakeBuildDir}"
-}
+configureTask("linux", "buildLinux")
+configureTask("windows", "buildWindows")

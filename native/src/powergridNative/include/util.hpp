@@ -4,7 +4,7 @@
 #include <format>
 
 #if DEBUG
-#define PG_ASSERT(x, args...) if(!(x)) std::cerr << std::format(args) << std::endl
+#define PG_ASSERT(x, args...) if(!(x)) std::cerr << "!ASSERTION FAILED!" << std::format(args) << std::endl
 #else
 #define PG_ASSERT(x, args...)
 #endif
