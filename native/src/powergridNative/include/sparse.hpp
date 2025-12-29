@@ -2,6 +2,7 @@
 
 #include <slu_ddefs.h>
 #include <vector>
+#include <string>
 
 namespace powergrid {
     class SparseMatrix {
@@ -15,8 +16,9 @@ namespace powergrid {
 
         bool m_structureModified, m_refactorize;
         SuperMatrix m_A;
-        NCformat *m_aStore;
+        NCformat m_Astore;
 
+        SuperMatrix m_AC;
         SuperMatrix m_L;
         SuperMatrix m_U;
 
@@ -45,6 +47,8 @@ namespace powergrid {
         void samePattern(bool value);
 
         void solve(SuperMatrix *B);
+
+        std::string printMatrix();
 
       private:
         double& ref(int row, int column);

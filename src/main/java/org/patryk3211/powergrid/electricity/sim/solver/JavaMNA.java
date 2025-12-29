@@ -21,6 +21,7 @@ import org.ejml.dense.row.MatrixFeatures_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 import org.patryk3211.powergrid.electricity.sim.node.*;
@@ -70,6 +71,11 @@ public class JavaMNA implements IMNA {
 
     public JavaMNA(ElectricalNetwork network) {
         this.network = network;
+    }
+
+    @Override
+    public CSolver.SolverBackend type() {
+        return CSolver.SolverBackend.JAVA;
     }
 
     @Override
@@ -188,7 +194,7 @@ public class JavaMNA implements IMNA {
             }
         }
 
-        Jacobian= new DynamicallyTypedMatrix(size, size, DynamicallyTypedMatrix.Solver.LU);
+        Jacobian = new DynamicallyTypedMatrix(size, size, DynamicallyTypedMatrix.Solver.LU);
         if(ROW_EXCHANGE)
             A0 = new DynamicallyTypedMatrix(size, size, DynamicallyTypedMatrix.Solver.LU);
         RHSVector = new DMatrixRMaj(size, 1);

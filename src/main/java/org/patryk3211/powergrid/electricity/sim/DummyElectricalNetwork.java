@@ -55,22 +55,12 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
 
     @Override
     public double getValue(INode node) {
-        if(nodeValues == null)
-            return 0;
-        var index = node.getIndex();
-        if(index < 0 || index >= nodeValues.length)
-            return 0 ;
-        return nodeValues[node.getIndex()];
+        return node.getSavedValue();
     }
 
     @Override
     public void setValue(INode node, double value) {
-        if(nodeValues == null)
-            return;
-        var index = node.getIndex();
-        if(index < 0 || index >= nodeValues.length)
-            return;
-        nodeValues[node.getIndex()] = value;
+        node.setSavedValue(value);
     }
 
     @Override
@@ -104,7 +94,7 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
             var NewState = new double[count];
             // Use previous state matrix to accelerate warm up
             if(nodeValues != null) {
-                for (int i = 0; i < count; ++i) {
+                for(int i = 0; i < count; ++i) {
                     NewState[i] = getValue(nodes.get(i));
                 }
             }
@@ -116,13 +106,8 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
 
     @Override
     public void calculate(int multiTicks) {
-        prepareMatrices(multiTicks);
-        if(warmUpTicks > 0) {
-            converged = false;
-            warmUpTicks = 0;
-        } else {
-            converged = true;
-        }
+        prepare(multiTicks);
+        singleTick();
     }
 
     @Override
@@ -132,11 +117,11 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
 
     @Override
     public void singleTick() {
-        if(warmUpTicks > 0) {
-            converged = false;
-            warmUpTicks = 0;
-        } else {
+//        if(warmUpTicks > 0) {
+//            converged = false;
+//            warmUpTicks = 0;
+//        } else {
             converged = true;
-        }
+//        }
     }
 }

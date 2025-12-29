@@ -63,11 +63,11 @@ namespace powergrid {
         void zeroRHS();
         void zeroJacobian();
 
-        void finishJacobianWrite();
-        void processJacobianBuffer();
+        void finishJacobianWrite(int cmdCount);
+        void processJacobianBuffer(int cmdCount);
         void processRHSBuffer();
 
-        jobject singleTick(int maxIters, jobject mnaObj);
+        jobject singleTick(int maxIters, jobject mnaObj, int cmdCount);
         void swapBuffers();
 
         void setPrecision(double absolute, double relative, double minimum);

@@ -13,13 +13,23 @@ set(SOURCES
     src/powergridNative/cpp/solver.cpp
     src/powergridNative/cpp/mna.cpp
 )
+
+set(CMAKE_C_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
+set(CMAKE_C_FLAGS_RELEASE "-O3 -mavx2")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx2")
 
 add_library(powergridNative SHARED ${SOURCES})
 
 target_include_directories(powergridNative PUBLIC src/powergridNative/include ${JVM_INCLUDE})
 target_include_directories(powergridNative PRIVATE superlu/CBLAS)
+
+if(CMAKE_BUILD_TYPE EQUAL "Debug")
+target_compile_definitions(powergridNative PRIVATE DEBUG)
+endif()
+
+# target_compile_definitions(powergridNative PRIVATE TRACE)
 
 set_target_properties(powergridNative PROPERTIES CXX_STANDARD 20)
 

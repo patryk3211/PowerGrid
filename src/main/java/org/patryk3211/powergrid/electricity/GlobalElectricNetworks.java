@@ -27,7 +27,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -190,11 +192,21 @@ public class GlobalElectricNetworks {
     }
 
     public static void configsReloaded() {
+        var backend = ModdedConfigs.server().electricity.solver.solverBackend.get();
         var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
         var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
         var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
+        if(!backend.isSupported()) {
+            PowerGrid.LOGGER.error("Selected backend '{}' is not supported! Using Java backend instead", backend);
+            backend = CSolver.SolverBackend.JAVA;
+            ModdedConfigs.server().electricity.solver.solverBackend.set(CSolver.SolverBackend.JAVA);
+        }
+        final var selectedBackend = backend;
         for(var networks : worldNetworks.values()) {
-            networks.subnetworks.forEach(network -> network.setPrecision(rA, rR, rM));
+            networks.subnetworks.forEach(network -> {
+                network.switchBackend(selectedBackend);
+                network.setPrecision(rA, rR, rM);
+            });
         }
     }
 

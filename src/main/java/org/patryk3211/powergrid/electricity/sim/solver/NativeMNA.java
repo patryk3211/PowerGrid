@@ -15,7 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 
 import java.nio.Buffer;
@@ -26,6 +28,8 @@ import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
 public class NativeMNA implements IMNA {
     private static final int OPERATION_BUFFER_COMMAND_LENGTH = 128;
+    private static final int JACOBIAN_COMMAND_SIZE = 4 + 4 + 8;
+    private static boolean supported = false;
 
     public final ElectricalNetwork network;
 
@@ -42,8 +46,17 @@ public class NativeMNA implements IMNA {
     private ByteBuffer stateBuffer;
     private final StateAccess stateAccess = new StateAccess();
 
-    static {
-        System.loadLibrary("powergridNative");
+    public static boolean isSupported() {
+        return supported;
+    }
+
+    public static void tryLoad() {
+        try {
+            System.loadLibrary("powergridNative");
+            supported = true;
+        } catch(Exception|Error e) {
+            PowerGrid.LOGGER.error("Native backend failed to load. Accelerated solver will not be available!", e);
+        }
     }
 
     public NativeMNA(ElectricalNetwork network) {
@@ -52,14 +65,21 @@ public class NativeMNA implements IMNA {
         rhsOps = ByteBuffer.allocateDirect((4 + 8) * OPERATION_BUFFER_COMMAND_LENGTH);
         rhsOps.order(ByteOrder.LITTLE_ENDIAN);
         // Jacobian operation buffer = (int + int + double -> row + column + change)
-        jacobianOps = ByteBuffer.allocateDirect((4 + 4 + 8) * OPERATION_BUFFER_COMMAND_LENGTH);
+        jacobianOps = ByteBuffer.allocateDirect(JACOBIAN_COMMAND_SIZE * OPERATION_BUFFER_COMMAND_LENGTH);
         jacobianOps.order(ByteOrder.LITTLE_ENDIAN);
         nativePtr = allocateNativeObject(rhsOps, jacobianOps, OPERATION_BUFFER_COMMAND_LENGTH, this);
     }
 
     @Override
+    public CSolver.SolverBackend type() {
+        return CSolver.SolverBackend.NATIVE;
+    }
+
+    @Override
     public void cleanup() {
         deallocateNativeObject(nativePtr);
+        // State buffer is NOT valid after destructors of native solver have been called.
+        stateBuffer = null;
     }
 
     @Override
@@ -87,17 +107,25 @@ public class NativeMNA implements IMNA {
     public void allocate(int size) {
         this.size = size;
         setStateSize(nativePtr, size);
+        // We need to wait until the backend gives us a handle to the newly allocated buffer.
+        stateBuffer = null;
+
+        // Reset modification buffers
+        jacobianOps.position(0);
+        rhsOps.position(0);
     }
 
     @Override
     public void jacobianAdd(int row, int column, double value) {
+        if(value == 0)
+            return;
         jacobianOps.putInt(row);
         jacobianOps.putInt(column);
         jacobianOps.putDouble(value);
 
         if(jacobianOps.position() == jacobianOps.capacity()) {
             // Ran out of space, send buffer to native for processing.
-            processJacobianBuffer(nativePtr);
+            processJacobianBuffer(nativePtr, OPERATION_BUFFER_COMMAND_LENGTH);
             jacobianOps.position(0);
         }
     }
@@ -119,7 +147,7 @@ public class NativeMNA implements IMNA {
         return stateAccess;
     }
 
-    private void runIterHooks(ByteBuffer state) {
+    private int runIterHooks(ByteBuffer state) {
         // Run hooks
         this.stateBuffer = state;
         this.stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -127,14 +155,10 @@ public class NativeMNA implements IMNA {
             hook.startIteration();
         }
 
-        if(jacobianOps.position() != 0) {
-            // Finalize buffer and send it.
-            jacobianOps.putInt(-1);
-            processJacobianBuffer(nativePtr);
-        }
-
+        int pos = jacobianOps.position();
         // Rewind modification buffer.
         jacobianOps.position(0);
+        return pos / JACOBIAN_COMMAND_SIZE;
     }
 
     private void runAddResidual(ByteBuffer residualBuffer) {
@@ -185,11 +209,9 @@ public class NativeMNA implements IMNA {
     public void singleTick() {
         // Finalize modification buffers.
         rhsOps.putInt(-1);
-        jacobianOps.putInt(-1);
 
         // Rewind modification buffers.
         rhsOps.position(0);
-        jacobianOps.position(0);
 
         if(hooksChanged) {
             // Negotiate native accelerated hook implementations.
@@ -198,7 +220,9 @@ public class NativeMNA implements IMNA {
 
         // Run native solve routine.
         int maxIterations = network.maxIterations.apply(network.hasHooks());
-        var buffer = singleTick(nativePtr, maxIterations, this);
+        int ops = jacobianOps.position() / JACOBIAN_COMMAND_SIZE;
+        jacobianOps.position(0);
+        var buffer = singleTick(nativePtr, maxIterations, ops);
         if(buffer != null) {
             stateBuffer = buffer;
             stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -227,12 +251,14 @@ public class NativeMNA implements IMNA {
 
     @Override
     public void jacobianPrepareForWrite() {
+        jacobianOps.position(0);
         zeroJacobian(nativePtr);
     }
 
     @Override
     public void finishJacobianWrite() {
-        finishJacobianWrite(nativePtr);
+        finishJacobianWrite(nativePtr, jacobianOps.position() / JACOBIAN_COMMAND_SIZE);
+        jacobianOps.position(0);
     }
 
     @Override
@@ -293,9 +319,9 @@ public class NativeMNA implements IMNA {
     private static native void zeroRHS(long ptr);
     private static native void zeroState(long ptr);
     private static native void zeroJacobian(long ptr);
-    private static native void finishJacobianWrite(long ptr);
-    private static native void processJacobianBuffer(long ptr);
+    private static native void finishJacobianWrite(long ptr, int cmdCount);
+    private static native void processJacobianBuffer(long ptr, int cmdCount);
     private static native void processRHSBuffer(long ptr);
     private static native void setPrecision(long ptr, double absoluteCriterion, double relativeCriterion, double minimumPrecision);
-    private native ByteBuffer singleTick(long ptr, int maxIters, NativeMNA javaObj);
+    private native ByteBuffer singleTick(long ptr, int maxIters, int jacobianCmdCount);
 }

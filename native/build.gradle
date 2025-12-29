@@ -23,34 +23,35 @@ plugins {
 
 // Beware! Things here might not work in different build environments.
 
-def isAvailable = { String... cmdLine ->
+def isSuccessful = { String... cmdLine ->
     return providers.exec {
         commandLine cmdLine
-    }.getResult().map { result -> result.getExitValue() == 0 }.orElse(false).get()
+    }.getResult().map { result -> result.getExitValue() == 0 }.getOrElse(false)
 }
 
-def hasCMake = isAvailable 'cmake', '--version'
-def hasNinja = isAvailable 'ninja', '--version'
+def hasCMake = isSuccessful "${project.cmakeExecutable}", '--version'
+def buildAvailable = false;
 
 def jvmHome = Jvm.current().javaHome
 def cmakeBuildDir = project.layout.buildDirectory.dir('cmakeBuild').get()
-if(hasCMake && hasNinja) {
+if(hasCMake) {
     def cmakeConf = providers.exec {
         commandLine 'cmake', '-S', "${project.layout.projectDirectory}",
                 '-B', "${cmakeBuildDir}",
                 '-D', "JVM_INCLUDE=${jvmHome}/include;${jvmHome}/include/linux",
                 '-D', 'CMAKE_EXPORT_COMPILE_COMMANDS=true',
-                '-D', 'CMAKE_BUILD_TYPE=Release',
-                '-G', 'Ninja'
+                '-D', "CMAKE_BUILD_TYPE=${project.cmakeBuildType}",
+                '-G', "${project.cmakeGenerator}"
     }
     providers.exec {
         commandLine 'ln', '-s', "${cmakeBuildDir.dir('compile_commands.json')}"
     }
     System.out.println(cmakeConf.standardOutput.getAsText().get())
+    buildAvailable = cmakeConf.result.map { r -> r.exitValue == 0 }.getOrElse(false)
 }
 
 tasks.register('cmakeBuild', Exec) {
-    enabled = hasCMake && hasNinja
+    enabled = buildAvailable
 
     commandLine 'cmake', '--build', "${cmakeBuildDir}"
 }

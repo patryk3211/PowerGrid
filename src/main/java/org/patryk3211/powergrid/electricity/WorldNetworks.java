@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.*;
@@ -379,10 +380,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph, true);
+        var backend = ModdedConfigs.server().electricity.solver.solverBackend.get();
+        if(!backend.isSupported())
+            backend = CSolver.SolverBackend.JAVA;
+        var network = new GraphedElectricalNetwork(globalGraph, true, backend::create);
         network.maxIterations = hooks -> hooks
                 ? ModdedConfigs.server().electricity.solver.solverComplexMaxIterations.get()
                 : ModdedConfigs.server().electricity.solver.solverSimpleMaxIterations.get();
+        var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
+        var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
+        var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
+        network.setPrecision(rA, rR, rM);
         subnetworks.add(network);
         return network;
     }

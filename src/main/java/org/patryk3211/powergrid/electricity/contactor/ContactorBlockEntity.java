@@ -124,6 +124,7 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
             if(switch1 == null) {
                 electricBehaviour.rebuildCircuit(true);
             } else {
+                splitCooldown = 0;
                 switch1.setState(true);
                 switch2.setState(true);
             }
@@ -157,6 +158,7 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
         if(coil.isConverged()) {
             if (I > 2.0f) {
                 setState(true);
+                splitCooldown = 0;
             } else if (I < 2.0f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
                 setState(false);
             }

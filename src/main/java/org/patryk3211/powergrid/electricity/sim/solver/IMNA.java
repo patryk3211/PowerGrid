@@ -15,7 +15,11 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
+import org.patryk3211.powergrid.config.CSolver;
+
 public interface IMNA {
+    CSolver.SolverBackend type();
+
     void cleanup();
 
     void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision);

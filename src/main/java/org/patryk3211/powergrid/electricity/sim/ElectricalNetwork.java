@@ -19,6 +19,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.createmod.catnip.data.Pair;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.sim.calculation.IStamped;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.solver.*;
@@ -57,7 +58,7 @@ public class ElectricalNetwork implements IStamped {
 
     public Function<Boolean, Integer> maxIterations = b -> 200;
 
-    private final IMNA mna;
+    private IMNA mna;
 
     public ElectricalNetwork(boolean addGMin) {
         dirty = true;
@@ -73,8 +74,23 @@ public class ElectricalNetwork implements IStamped {
         this.mna = mna != null ? mna.apply(this) : null;
     }
 
+    public void switchBackend(CSolver.SolverBackend backend) {
+        if(mna == null)
+            return;
+        if(mna.type() == backend)
+            return;
+        if(!backend.isSupported())
+            return;
+        mna.cleanup();
+        dirty = true;
+        mna = backend.create(this);
+        warmUp(1);
+    }
+
     public void cleanup() {
         mna.cleanup();
+        // We must not use the backend after it has been cleaned up.
+        mna = null;
     }
 
     public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
@@ -95,7 +111,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void warmUp(int ticks) {
-        mna.warmUp(ticks);
+        mna.warmUp(1);
     }
 
     public void addSegment(Collection<INetworkElement> elements) {
@@ -478,7 +494,7 @@ public class ElectricalNetwork implements IStamped {
         var StateVector = mna.stateVector();
         if(index >= StateVector.numRows())
             return;
-        StateVector.set(index, 0, value);
+        StateVector.safe_set(index, 0, value);
     }
 
     public void swapNodes(INode node1, INode node2) {

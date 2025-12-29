@@ -38,21 +38,21 @@ extern "C" {
         SOLVER(ptr)->zeroJacobian();
     }
 
-    JNIEXPORT void JNICALL MANGLE(finishJacobianWrite)(JNIEnv *env, jobject obj, jlong ptr) {
-        SOLVER(ptr)->finishJacobianWrite();
+    JNIEXPORT void JNICALL MANGLE(finishJacobianWrite)(JNIEnv *env, jobject obj, jlong ptr, jint cmdCount) {
+        SOLVER(ptr)->finishJacobianWrite(cmdCount);
     }
 
-    JNIEXPORT void JNICALL MANGLE(processJacobianBuffer)(JNIEnv *env, jobject obj, jlong ptr) {
-        SOLVER(ptr)->processJacobianBuffer();
+    JNIEXPORT void JNICALL MANGLE(processJacobianBuffer)(JNIEnv *env, jobject obj, jlong ptr, jint cmdCount) {
+        SOLVER(ptr)->processJacobianBuffer(cmdCount);
     }
 
     JNIEXPORT void JNICALL MANGLE(processRHSBuffer)(JNIEnv *env, jobject obj, jlong ptr) {
         SOLVER(ptr)->processRHSBuffer();
     }
 
-    JNIEXPORT jobject JNICALL MANGLE(singleTick)(JNIEnv *env, jobject mnaObj, jlong ptr, jint maxIters) {
+    JNIEXPORT jobject JNICALL MANGLE(singleTick)(JNIEnv *env, jobject mnaObj, jlong ptr, jint maxIters, jint jCmdCount) {
         Solver *solver = SOLVER(ptr);
-        return solver->singleTick(maxIters, mnaObj);
+        return solver->singleTick(maxIters, mnaObj, jCmdCount);
     }
 
     JNIEXPORT void JNICALL MANGLE(setPrecision)(JNIEnv *env, jobject obj, jlong ptr, jdouble absolute, jdouble relative, jdouble minimum) {
