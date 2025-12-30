@@ -1303,7 +1303,7 @@ public class ElectricalNetwork implements IStamped {
                     if(i == row.index)
                         continue;
                     vec[i] -= x * row.solvedCoefficients.unsafe_get(0, i);
-                    if(Math.abs(vec[i]) > 1e+6) {
+                    if(Math.abs(vec[i]) > 1e+6 || !Double.isFinite(vec[i])) {
                         // The numerical errors might cause convergence issues
                         return 2;
                     }

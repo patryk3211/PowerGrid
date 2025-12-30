@@ -19,6 +19,7 @@ import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.data.Iterate;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -27,6 +28,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -43,8 +46,11 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
@@ -128,5 +134,16 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
         var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
         var maxPower = ServoBlockEntity.MAX_SPEED * torque / 60;
         Voltage.max((int) Math.sqrt(maxPower * resistance("on")), player, tooltip);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
     }
 }
