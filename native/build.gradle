@@ -34,7 +34,7 @@ def isSuccessful = { String... cmdLine ->
 
 def jvmHome = Jvm.current().javaHome
 
-def configureTask = { String platform, String taskName ->
+def configureTask = { String platform, String taskName, String libName ->
     def platformProperty = { String name ->
         return project.property("${platform}.${name}")
     }
@@ -43,17 +43,24 @@ def configureTask = { String platform, String taskName ->
     def cmakeBuildDir = project.layout.buildDirectory.dir("cmake/${platform}").get()
     def buildAvailable = false
     if(hasCMake) {
-        def cmakeConf = providers.exec {
-            commandLine "${platformProperty('cmakeExecutable')}", '-S', "${project.layout.projectDirectory}",
-                    '-B', "${cmakeBuildDir}",
-                    "-DJVM_INCLUDE=${jvmHome}/include;${jvmHome}/include/${platform}",
-                    '-DCMAKE_EXPORT_COMPILE_COMMANDS=true',
-                    "-DCMAKE_BUILD_TYPE=${platformProperty('cmakeBuildType')}",
-                    "-DPG_TRACE=${project.nativeTrace}",
-                    '-G', "${platformProperty('cmakeGenerator')}"
+        try {
+            def args = [ "${platformProperty('cmakeExecutable')}", '-S', "${project.layout.projectDirectory}",
+                '-B', "${cmakeBuildDir}",
+                '-D', "JVM_INCLUDE=\'${jvmHome}/include;${jvmHome}/include/${platform}\'",
+                '-D', 'CMAKE_EXPORT_COMPILE_COMMANDS=true',
+                '-D', "CMAKE_BUILD_TYPE=${platformProperty('cmakeBuildType')}",
+                '-D', "PG_TRACE=${project.nativeTrace}",
+                '-D', "PG_MULTITARGET=${project.multiArch}",
+                '-G', "${platformProperty('cmakeGenerator')}" ]
+            System.out.println(args);
+            def cmakeConf = providers.exec {
+                commandLine args
+            }
+            buildAvailable = cmakeConf.getResult().map { r -> r.exitValue == 0 }.getOrElse(false)
+            System.out.println(cmakeConf.standardOutput.getAsText().get())
+        } catch(ignored) {
+
         }
-        System.out.println(cmakeConf.standardOutput.getAsText().get())
-        buildAvailable = cmakeConf.result.map { r -> r.exitValue == 0 }.getOrElse(false)
     }
 
     if(buildAvailable) {
@@ -66,8 +73,10 @@ def configureTask = { String platform, String taskName ->
         enabled = buildAvailable
 
         commandLine "${platformProperty('cmakeExecutable')}", '--build', "${cmakeBuildDir}"
+
+        outputs.file(cmakeBuildDir.file(libName))
     }
 }
 
-configureTask("linux", "buildLinux")
-configureTask("windows", "buildWindows")
+configureTask("linux", "buildLinux", "libpowergridNative.so")
+configureTask("windows", "buildWindows", "libpowergridNative.dll")

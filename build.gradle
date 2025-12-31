@@ -133,6 +133,8 @@ var changelogFile = file('build/changelog.md')
 changelogFile.parentFile.mkdir()
 changelogFile.createNewFile()
 subprojects {
+	if(project.name == 'native')
+		return;
 	apply plugin: "com.github.johnrengelman.shadow"
 	apply plugin: "me.modmuss50.mod-publish-plugin"
 
@@ -189,6 +191,7 @@ subprojects {
 			version = "mc${project.minecraft_version}-${project.mod_version}-${hash}"
 	})
 
+	def projNative = project(':native')
 	tasks.jar {
 		inputs.property "archivesName", project.base.archivesName
 
@@ -207,6 +210,13 @@ subprojects {
 		inputFile.set shadowJar.archiveFile
 		dependsOn shadowJar
 		archiveClassifier = null
+
+		from({ -> projNative.tasks.buildLinux.outputs }) {
+			into('native/linux')
+		}
+		from({ -> projNative.tasks.buildWindows.outputs }) {
+			into('native/windows')
+		}
 	}
 
 	tasks.named("shadowJar") {

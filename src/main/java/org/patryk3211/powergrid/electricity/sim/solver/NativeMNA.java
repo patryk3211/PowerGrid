@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
+import net.minecraft.Util;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.CSolver;
@@ -23,6 +24,8 @@ import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
@@ -30,6 +33,9 @@ public class NativeMNA implements IMNA {
     private static final int OPERATION_BUFFER_COMMAND_LENGTH = 128;
     private static final int JACOBIAN_COMMAND_SIZE = 4 + 4 + 8;
     private static boolean supported = false;
+
+    private static final String MESSAGE_OK = "Native backend loaded successfully";
+    private static final String MESSAGE_FAIL = "Native backend failed to load. Accelerated solver will not be available!";
 
     public final ElectricalNetwork network;
 
@@ -52,11 +58,42 @@ public class NativeMNA implements IMNA {
 
     public static void tryLoad() {
         try {
+            // Try load from path first
             System.loadLibrary("powergridNative");
+            PowerGrid.LOGGER.info(MESSAGE_OK);
             supported = true;
-            PowerGrid.LOGGER.info("Native backend loaded successfully");
-        } catch(Exception|Error e) {
-            PowerGrid.LOGGER.error("Native backend failed to load. Accelerated solver will not be available!", e);
+        } catch (Throwable e) {
+            // Try extracting the embedded files
+            var platformFolder = switch(Util.getPlatform()) {
+                case LINUX -> "linux";
+                case WINDOWS -> "windows";
+                default -> null;
+            };
+            if(platformFolder == null) {
+                // Platform not available in jar
+                PowerGrid.LOGGER.error(MESSAGE_FAIL, e);
+                return;
+            }
+            try {
+                var dir = Files.createDirectories(Paths.get(".pg-native"));
+                var loader = NativeMNA.class.getClassLoader();
+                var libName = switch(Util.getPlatform()) {
+                    case LINUX -> "libpowergridNative.so";
+                    case WINDOWS -> "libpowergridNative.dll";
+                    default -> throw new IllegalArgumentException("Unsupported platform!");
+                };
+                var stream = loader.getResourceAsStream("native/" + platformFolder + "/" + libName);
+                if(stream != null) {
+                    Files.copy(stream, dir.resolve(libName));
+                    System.load(dir.resolve(libName).toAbsolutePath().toString());
+                    PowerGrid.LOGGER.info(MESSAGE_OK);
+                    supported = true;
+                } else {
+                    PowerGrid.LOGGER.error(MESSAGE_FAIL);
+                }
+            } catch (Throwable e2) {
+                PowerGrid.LOGGER.error(MESSAGE_FAIL, e2);
+            }
         }
     }
 
