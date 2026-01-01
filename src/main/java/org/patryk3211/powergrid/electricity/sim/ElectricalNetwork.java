@@ -1160,9 +1160,9 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void singleTick() {
+        ++stamp;
         if(sourceCount == 0)
             return;
-        ++stamp;
         PERF.start();
         for (var hook : outerHooks)
             hook.preSolve();
