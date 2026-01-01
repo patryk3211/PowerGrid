@@ -49,6 +49,8 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
+
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEntity>, IHaveElectricProperties {
@@ -132,7 +134,7 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance("on"), player, tooltip);
         var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
-        var maxPower = ServoBlockEntity.MAX_SPEED * torque / 60;
+        var maxPower = ServoBlockEntity.MAX_SPEED * torque / CONVERSION_CONSTANT;
         Voltage.max((int) Math.sqrt(maxPower * resistance("on")), player, tooltip);
     }
 
