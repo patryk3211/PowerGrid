@@ -780,6 +780,7 @@ public class ElectricalNetwork implements IStamped {
         if(nodes.contains(node)) {
             internalRemoveNode(node);
             leafNodes.put(node, tracked);
+            node.assignIndex(-1);
             node.setNetwork(this);
 
             var iter = innerHooks.iterator();

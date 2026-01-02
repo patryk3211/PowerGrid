@@ -165,8 +165,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     private static void addOrMerge(IElectricNode node, ElectricalNetwork network) {
         if(node.getNetwork() == network)
             return;
-        if(node.getNetwork() == null)
+        if(node.getNetwork() == null) {
             network.addNode(node);
+            return;
+        }
         network.merge(node.getNetwork());
     }
 
