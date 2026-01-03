@@ -7,7 +7,12 @@ using namespace powergrid;
 
 #define MANGLE(methodName) Java_org_patryk3211_powergrid_electricity_sim_solver_NativeMNA_##methodName
 
+// The code assumes that these assumptions are valid.
 static_assert(sizeof(jlong) == sizeof(uintptr_t));
+static_assert(sizeof(double) == 8)
+static_assert(sizeof(int) == 4)
+static_assert(sizeof(jdouble) == sizeof(double))
+static_assert(sizeof(jint) == sizeof(int))
 
 #define SOLVER(intptr) ((Solver *) (intptr))
 
