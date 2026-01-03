@@ -53,6 +53,11 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
     public void setComponent(@Nullable PlacedComponent component) {
         this.component = component;
 
+        // Accept inputs on all property widgets
+        for(var widget : propertyWidgets) {
+            widget.setFocused(false);
+        }
+
         propertyWidgets.clear();
         if(component != null) {
             var properties = component.component.getProperties();
