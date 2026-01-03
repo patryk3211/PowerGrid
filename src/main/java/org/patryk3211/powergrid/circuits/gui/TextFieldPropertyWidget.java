@@ -92,6 +92,8 @@ public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends Prop
 
     @Override
     public void setFocused(boolean focused) {
+        if(!focused)
+            acceptInput();
         widget.setFocused(focused);
     }
 

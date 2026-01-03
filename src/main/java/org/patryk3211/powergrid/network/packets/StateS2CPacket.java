@@ -41,6 +41,7 @@ public class StateS2CPacket implements SimplePacket {
     private FriendlyByteBuf wrapper;
     private int lengthPosition;
 
+    // Typically the server side constructor
     public StateS2CPacket() {
         this.data = PooledByteBufAllocator.DEFAULT.buffer();
     }
@@ -51,6 +52,7 @@ public class StateS2CPacket implements SimplePacket {
         return wrapper;
     }
 
+    // Typically the client side constructor
     public StateS2CPacket(FriendlyByteBuf buf) {
         int count = buf.readInt();
         for(int i = 0; i < count; ++i) {
@@ -69,6 +71,8 @@ public class StateS2CPacket implements SimplePacket {
         }
         buf.writeInt(data.writerIndex());
         buf.writeBytes(data, data.writerIndex());
+        // Data is not needed after it has been encoded so it's released.
+        data.release();
     }
 
     @Override
@@ -94,6 +98,8 @@ public class StateS2CPacket implements SimplePacket {
                     }
                 }
             }
+            // Data is not needed after it has been handled so it's released.
+            data.release();
         });
     }
 

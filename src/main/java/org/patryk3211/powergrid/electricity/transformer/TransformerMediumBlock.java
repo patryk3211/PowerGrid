@@ -123,9 +123,9 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
                 y = -1;
                 break;
         }
-        world.destroyBlock(pos.relative(axis, x), false);
-        world.destroyBlock(pos.relative(Direction.Axis.Y, y), false);
-        world.destroyBlock(pos.relative(axis, x).relative(Direction.Axis.Y, y), false);
+        world.destroyBlock(pos.relative(axis, x), true);
+        world.destroyBlock(pos.relative(Direction.Axis.Y, y), true);
+        world.destroyBlock(pos.relative(axis, x).relative(Direction.Axis.Y, y), true);
     }
 
     @Override
@@ -189,13 +189,14 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
                     y = -1;
                     break;
             }
-            if (player != null && !player.isCreative()) {
-                Block.getDrops(state, serverLevel, pos, world.getBlockEntity(pos), player, context.getItemInHand()).forEach((itemStack) -> player.getInventory().placeItemBackInInventory(itemStack));
-            }
-            state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
-
             BiConsumer<Integer, Integer> processOffset = (offsetX, offsetY) -> {
                 var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
+                var offsetState = world.getBlockState(offsetPos);
+                if (player != null && !player.isCreative()) {
+                    Block.getDrops(offsetState, serverLevel, offsetPos, world.getBlockEntity(offsetPos), player, context.getItemInHand())
+                            .forEach((itemStack) -> player.getInventory().placeItemBackInInventory(itemStack));
+                }
+                offsetState.spawnAfterBreak(serverLevel, offsetPos, ItemStack.EMPTY, true);
                 world.destroyBlock(offsetPos, false);
             };
             processOffset.accept(0, 0);

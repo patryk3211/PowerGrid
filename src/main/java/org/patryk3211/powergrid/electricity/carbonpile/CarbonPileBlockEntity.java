@@ -80,7 +80,7 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
             return;
         }
         this.coil = coil.get();
-        trim.setValue((int) ((this.coil.getTrim() - 1.0f) * 100));
+        trim.setValue((int) ((this.coil.getTrim() - 1.0f) * 200));
         if(thermal != null) {
             thermal.setThermalMass(ThermalValues.getMass(getBlockState().getBlock()) * size);
             thermal.setDissipationFactor(

@@ -65,6 +65,8 @@
 
   "powergrid.gui.plotter.header": "Voltage at T-",
 
+  "powergrid.gui.invalid_equation": "Invalid display equation",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
@@ -72,6 +74,12 @@
   "powergrid.generic.unit.temperature": "°C",
   "powergrid.generic.unit.block": "blocks",
   "powergrid.generic.unit.charge": "Wh",
+
+  "powergrid.generic.unit.volt.name": "Volt",
+  "powergrid.generic.unit.amp.name": "Ampere",
+  "powergrid.generic.unit.ohm.name": "Ohm",
+  "powergrid.generic.unit.watt.name": "Watt",
+  "powergrid.generic.unit.temperature.name": "Celsius",
 
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
@@ -169,6 +177,11 @@
   "powergrid.gui.punch_card.author": "by ",
   "powergrid.gui.punch_card.sign": "Sign",
 
+  "powergrid.gui.custom_display.title": "Gauge custom display",
+  "powergrid.gui.custom_display.expr": "Display expression",
+  "powergrid.gui.custom_display.unit": "Display unit",
+  "powergrid.gui.custom_display.prefix": "Auto unit prefix",
+
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
 
@@ -184,6 +197,7 @@
   "powergrid.display_source.electric_gauge.progress_bar": "Progress bar",
   "powergrid.display_source.electric_gauge.absolute": "Absolute value",
   "powergrid.display_source.electric_gauge.polarized": "Polarized value",
+  "powergrid.display_source.electric_gauge.custom": "Custom expression",
 
   "powergrid.display_source.generator_clutch": "Generator Clutch",
   "powergrid.display_source.generator_clutch.load_bar": "Load progress bar",
