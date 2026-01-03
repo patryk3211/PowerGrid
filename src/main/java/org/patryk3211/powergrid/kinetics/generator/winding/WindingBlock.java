@@ -32,6 +32,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -416,5 +418,25 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     @Override
     public boolean isPolarized() {
         return true;
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        Direction.Axis axis = state.getValue(AXIS);
+        var rotatedFacing = rot.rotate(Direction.get(Direction.AxisDirection.POSITIVE, axis));
+        int part = state.getValue(PART);
+        if(part != 1) {
+            if(rotatedFacing.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
+                part = 2 - part;
+            }
+        }
+        return state.setValue(AXIS, rotatedFacing.getAxis())
+                .setValue(PART, part);
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        Direction.Axis axis = state.getValue(AXIS);
+        return state.rotate(mirrorIn.getRotation(Direction.get(Direction.AxisDirection.POSITIVE, axis)));
     }
 }

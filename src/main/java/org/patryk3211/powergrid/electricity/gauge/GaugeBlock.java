@@ -18,10 +18,15 @@ package org.patryk3211.powergrid.electricity.gauge;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
@@ -40,6 +45,13 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends Horizontal
     public GaugeBlock(Properties settings) {
         super(settings);
         setTerminalCollection(horizontalNorthTerminals(this, TERMINALS_NORTH, SHAPE));
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(CustomDisplayBehaviour.use(level, pos, player, hand))
+            return InteractionResult.SUCCESS;
+        return super.use(state, level, pos, player, hand, hit);
     }
 
     @Override

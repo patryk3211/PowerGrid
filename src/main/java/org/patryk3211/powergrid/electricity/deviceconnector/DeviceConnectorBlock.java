@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.deviceconnector;
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.createmod.catnip.math.VoxelShaper;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -25,13 +26,12 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.base.ElectricBlock;
+import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
@@ -49,8 +49,11 @@ import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
 
-public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceConnectorBlockEntity>, IAcceptCord {
-    public static final DirectionProperty FACING = BlockStateProperties.FACING;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public class DeviceConnectorBlock extends DirectionalElectricBlock implements IBE<DeviceConnectorBlockEntity>, IAcceptCord {
     public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;
     public static final BooleanProperty POLARIZED = BooleanProperty.create("polarized");
 
@@ -107,7 +110,7 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(FACING, ROTATION, POLARIZED);
+        builder.add(ROTATION, POLARIZED);
     }
 
     @Override
@@ -216,5 +219,19 @@ public class DeviceConnectorBlock extends ElectricBlock implements IBE<DeviceCon
 
         return new AutoCordEndpoint(context.getClickedPos(), 0, 1, point,
                 renderPlug() ? context.getClickedFace() : null);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        if(state.getValue(FACING).getAxis() == Direction.Axis.Y) {
+            int rotation = (state.getValue(ROTATION) + switch(rot) {
+                case NONE -> 0;
+                case CLOCKWISE_90 -> 1;
+                case CLOCKWISE_180 -> 2;
+                case COUNTERCLOCKWISE_90 -> 3;
+            } % 4);
+            return state.setValue(ROTATION, rotation);
+        }
+        return super.rotate(state, rot);
     }
 }

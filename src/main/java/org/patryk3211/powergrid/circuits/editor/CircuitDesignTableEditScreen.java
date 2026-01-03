@@ -444,7 +444,6 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
             }
             return true;
         }
-        // TODO: Add key binds for tools
         // Prevent closing on Inventory Key and ESC
         var focused = getFocused();
         var handled = focused != null && focused.keyPressed(keyCode, scanCode, modifiers);
@@ -452,7 +451,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
             return true;
 
         if(selectedComponent != null || focused instanceof EditBox)
-            return false;
+            return true;
 
         // Hotbar as component quick select
         var hotbar = minecraft.options.keyHotbarSlots;
@@ -474,27 +473,22 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
                 }
                 currentComponent.set(Orientation.PROPERTY, current);
                 playSound(ModdedSoundEvents.UI_COMPONENT_ROTATE);
-                return true;
             }
         } else if(ModdedKeys.PLACE_TRACE.matchesKey(keyCode, scanCode)) {
             toolSelect(Tool.CONNECT);
             playSound(ModdedSoundEvents.UI_PLACE_TRACE);
-            return true;
         } else if(ModdedKeys.DELETE_AREA.matchesKey(keyCode, scanCode)) {
             toolSelect(Tool.DELETE);
             playSound(ModdedSoundEvents.UI_DELETE_AREA);
-            return true;
         } else if(ModdedKeys.PICK_COMPONENT.matchesKey(keyCode, scanCode)) {
             toolSelect(Tool.SELECT);
             playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
-            return true;
         } else if(ModdedKeys.SWITCH_LAYER.matchesKey(keyCode, scanCode)) {
             flipLayer();
             playSound(ModdedSoundEvents.UI_CLICK);
-            return true;
         }
 
-        return false;
+        return true;
     }
 
     @Override

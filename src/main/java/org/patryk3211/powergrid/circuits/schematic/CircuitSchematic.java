@@ -146,15 +146,21 @@ public class CircuitSchematic {
 
     @Nullable
     public PlacedComponent getComponent(int x, int y) {
+        PlacedComponent component = null;
+        int area = GRID_SIZE * GRID_SIZE;
         for(var placed : components) {
             if(x < placed.x || y < placed.y)
                 continue;
             var footprint = placed.footprint();
             if(x >= placed.x + footprint.getWidth() || y >= placed.y + footprint.getHeight())
                 continue;
-            return placed;
+            int thisArea = footprint.getWidth() * footprint.getHeight();
+            if(thisArea < area) {
+                component = placed;
+                area = thisArea;
+            }
         }
-        return null;
+        return component;
     }
 
     public boolean isPad(int x, int y) {

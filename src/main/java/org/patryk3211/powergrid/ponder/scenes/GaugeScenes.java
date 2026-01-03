@@ -22,6 +22,7 @@ import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
@@ -128,7 +129,7 @@ public class GaugeScenes {
         }
 
         scene.overlay().showText(60)
-                .text("You can change the gauge's range by clicking on top of it")
+                .sharedText("gauge_range")
                 .attachKeyFrame()
                 .pointAt(util.vector().topOf(gaugePos))
                 .placeNearTarget();
@@ -138,11 +139,21 @@ public class GaugeScenes {
         scene.overlay().showControls(blockSurface, Pointing.RIGHT, 80).withItem(AllItems.GOGGLES.asStack());
         scene.idle(7);
         scene.overlay().showText(80)
-                .text("When wearing Engineers' Goggles, the player can get more detailed information from the Gauge")
+                .sharedText("gauge_goggles")
                 .attachKeyFrame()
                 .colored(PonderPalette.MEDIUM)
                 .pointAt(blockSurface)
                 .placeNearTarget();
+        scene.idle(90);
+
+        scene.overlay().showControls(blockSurface, Pointing.RIGHT, 80)
+                        .withItem(Items.NAME_TAG.getDefaultInstance()).rightClick();
+        scene.idle(7);
+        scene.overlay().showText(80)
+                .sharedText("gauge_customize")
+                .pointAt(blockSurface)
+                .placeNearTarget()
+                .attachKeyFrame();
         scene.idle(90);
 
         scene.markAsFinished();
@@ -189,7 +200,7 @@ public class GaugeScenes {
         scene.idle(20);
 
         scene.overlay().showText(60)
-                .text("You can change the gauge's range by clicking on top of it")
+                .sharedText("gauge_range")
                 .attachKeyFrame()
                 .pointAt(util.vector().topOf(gauge))
                 .placeNearTarget();
@@ -199,11 +210,21 @@ public class GaugeScenes {
         scene.overlay().showControls(blockSurface, Pointing.RIGHT, 80).withItem(AllItems.GOGGLES.asStack());
         scene.idle(7);
         scene.overlay().showText(80)
-                .text("When wearing Engineers' Goggles, the player can get more detailed information from the Gauge")
+                .sharedText("gauge_goggles")
                 .attachKeyFrame()
                 .colored(PonderPalette.MEDIUM)
                 .pointAt(blockSurface)
                 .placeNearTarget();
+        scene.idle(90);
+
+        scene.overlay().showControls(blockSurface, Pointing.RIGHT, 80)
+                .withItem(Items.NAME_TAG.getDefaultInstance()).rightClick();
+        scene.idle(7);
+        scene.overlay().showText(80)
+                .sharedText("gauge_customize")
+                .pointAt(blockSurface)
+                .placeNearTarget()
+                .attachKeyFrame();
         scene.idle(90);
 
         scene.markAsFinished();

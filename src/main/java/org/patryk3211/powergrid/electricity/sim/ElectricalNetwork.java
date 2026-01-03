@@ -780,6 +780,7 @@ public class ElectricalNetwork implements IStamped {
         if(nodes.contains(node)) {
             internalRemoveNode(node);
             leafNodes.put(node, tracked);
+            node.assignIndex(-1);
             node.setNetwork(this);
 
             var iter = innerHooks.iterator();
@@ -1160,9 +1161,9 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void singleTick() {
+        ++stamp;
         if(sourceCount == 0)
             return;
-        ++stamp;
         PERF.start();
         for (var hook : outerHooks)
             hook.preSolve();
@@ -1303,7 +1304,7 @@ public class ElectricalNetwork implements IStamped {
                     if(i == row.index)
                         continue;
                     vec[i] -= x * row.solvedCoefficients.unsafe_get(0, i);
-                    if(Math.abs(vec[i]) > 1e+6) {
+                    if(Math.abs(vec[i]) > 1e+6 || !Double.isFinite(vec[i])) {
                         // The numerical errors might cause convergence issues
                         return 2;
                     }

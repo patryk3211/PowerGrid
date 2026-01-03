@@ -143,6 +143,14 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
     }
 
     @Override
+    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
+        var result = super.keyPressed(pKeyCode, pScanCode, pModifiers);
+        if(getFocused() == nameField)
+            return true;
+        return result;
+    }
+
+    @Override
     protected void renderBg(@NotNull GuiGraphics ctx, float partialTick, int mouseX, int mouseY) {
         int bgX = getLeftOfCentered(WIDTH);
         ctx.blit(BACKGROUND, bgX, topPos, 0, 0, WIDTH, HEIGHT);

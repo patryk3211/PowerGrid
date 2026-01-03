@@ -77,6 +77,16 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
     }
 
     @Override
+    public float getMaxValue() {
+        return maxValue;
+    }
+
+    @Override
+    public ChatFormatting getColor(float value) {
+        return measurementColor(value, maxValue);
+    }
+
+    @Override
     public float getValue() {
         return node1.getVoltage() - node2.getVoltage();
     }
@@ -104,6 +114,9 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
 
         potential = Math.round(potential * 100f) / 100f;
         var voltageText = String.format("%.2f", potential);
+        if(potential >= 0) {
+            voltageText = " " + voltageText;
+        }
         if(Math.abs(potential) > maxValue) {
             if(potential > 0)
                 voltageText = String.format("> %.2f", maxValue);
@@ -122,7 +135,11 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        addTooltip(tooltip, getValue(), maxValue);
+        Lang.builder().translate("gui.voltage_meter.title")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        display.format(getValue()).forGoggles(tooltip, 1);
         return true;
     }
 }
