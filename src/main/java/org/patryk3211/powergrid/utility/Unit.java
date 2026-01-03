@@ -39,6 +39,10 @@ public enum Unit {
         return Lang.unit(this);
     }
 
+    public Component getName() {
+        return Lang.translateDirect(translationKey + ".name");
+    }
+
     public String string() {
         return get().string();
     }

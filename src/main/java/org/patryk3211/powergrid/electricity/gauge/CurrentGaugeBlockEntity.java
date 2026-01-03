@@ -82,6 +82,16 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
     }
 
     @Override
+    public float getMaxValue() {
+        return maxValue;
+    }
+
+    @Override
+    public ChatFormatting getColor(float value) {
+        return measurementColor(value, maxValue);
+    }
+
+    @Override
     public float getValue() {
         return wire.current();
     }
@@ -140,7 +150,11 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        addTooltip(tooltip, getValue(), maxValue, gaugeValue.getValue() <= 1);
+        Lang.builder().translate("gui.current_meter.title")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        display.format(getValue()).forGoggles(tooltip, 1);
         return true;
     }
 }
