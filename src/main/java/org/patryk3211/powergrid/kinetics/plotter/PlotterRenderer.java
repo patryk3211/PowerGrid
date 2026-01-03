@@ -53,7 +53,7 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
                 dest.z + GRAPH_ORIGIN.z);
         out = switch(facing) {
             case NORTH -> out;
-            case SOUTH -> new Vec3(out.x, out.y, 1 - out.z);
+            case SOUTH -> new Vec3(1 - out.x, out.y, 1 - out.z);
             case EAST -> new Vec3(1 - out.z, out.y, out.x);
             case WEST -> new Vec3(out.z, out.y, 1 - out.x);
             default -> Vec3.ZERO;

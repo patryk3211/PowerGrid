@@ -19,6 +19,7 @@ import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -28,6 +29,9 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 
@@ -84,5 +88,15 @@ public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
         return defaultBlockState()
                 .setValue(FACING, facing)
                 .setValue(ALONG_FIRST_AXIS, along);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        if(state.getValue(FACING).getAxis() == Direction.Axis.Y) {
+            if(rot == Rotation.NONE || rot == Rotation.CLOCKWISE_180)
+                return state;
+            return state.setValue(ALONG_FIRST_AXIS, !state.getValue(ALONG_FIRST_AXIS));
+        }
+        return super.rotate(state, rot);
     }
 }

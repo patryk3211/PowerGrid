@@ -520,6 +520,7 @@ public class ElectricalNetwork implements IStamped {
         if(nodes.contains(node)) {
             internalRemoveNode(node);
             leafNodes.put(node, tracked);
+            node.assignIndex(-1);
             node.setNetwork(this);
 
             var iter = innerHooks.iterator();
@@ -660,9 +661,9 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void singleTick() {
+        ++stamp;
         if(sourceCount == 0)
             return;
-        ++stamp;
         PERF.start();
         for (var hook : outerHooks)
             hook.preSolve();
