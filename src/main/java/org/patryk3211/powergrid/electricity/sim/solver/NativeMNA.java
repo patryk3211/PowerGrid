@@ -25,17 +25,21 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
 public class NativeMNA implements IMNA {
-    private static final int OPERATION_BUFFER_COMMAND_LENGTH = 128;
-    private static final int JACOBIAN_COMMAND_SIZE = 4 + 4 + 8;
+    private static final int OPERATION_BUFFER_COMMAND_LENGTH = 256;
+    private static final int JACOBIAN_COMMAND_SIZE = Integer.BYTES * 2 + Double.BYTES;
+    private static final int RHS_COMMAND_SIZE = Integer.BYTES + Double.BYTES;
     private static boolean supported = false;
 
     private static final String MESSAGE_OK = "Native backend loaded successfully";
     private static final String MESSAGE_FAIL = "Native backend failed to load. Accelerated solver will not be available!";
+
+    private static final Path NATIVES_DIR = Paths.get(".pg-native");
 
     public final ElectricalNetwork network;
 
@@ -63,33 +67,41 @@ public class NativeMNA implements IMNA {
             PowerGrid.LOGGER.info(MESSAGE_OK);
             supported = true;
         } catch (Throwable e) {
-            // Try extracting the embedded files
-            var platformFolder = switch(Util.getPlatform()) {
-                case LINUX -> "linux";
-                case WINDOWS -> "windows";
-                default -> null;
-            };
-            if(platformFolder == null) {
-                // Platform not available in jar
-                PowerGrid.LOGGER.error(MESSAGE_FAIL, e);
-                return;
-            }
             try {
-                var dir = Files.createDirectories(Paths.get(".pg-native"));
-                var loader = NativeMNA.class.getClassLoader();
+                Files.createDirectories(NATIVES_DIR);
                 var libName = switch(Util.getPlatform()) {
                     case LINUX -> "libpowergridNative.so";
                     case WINDOWS -> "libpowergridNative.dll";
                     default -> throw new IllegalArgumentException("Unsupported platform!");
                 };
-                var stream = loader.getResourceAsStream("native/" + platformFolder + "/" + libName);
-                if(stream != null) {
-                    Files.copy(stream, dir.resolve(libName));
-                    System.load(dir.resolve(libName).toAbsolutePath().toString());
+                var libPath = NATIVES_DIR.resolve(libName);
+                var loaded = true;
+                if(!Files.exists(libPath)) {
+                    // Try extracting the embedded files
+                    var platformFolder = switch(Util.getPlatform()) {
+                        case LINUX -> "linux";
+                        case WINDOWS -> "windows";
+                        default -> null;
+                    };
+                    if(platformFolder == null) {
+                        // Platform not available in jar
+                        PowerGrid.LOGGER.error(MESSAGE_FAIL, e);
+                        return;
+                    }
+                    var loader = NativeMNA.class.getClassLoader();
+                    var stream = loader.getResourceAsStream("native/" + platformFolder + "/" + libName);
+                    if (stream != null) {
+                        Files.copy(stream, libPath);
+                        PowerGrid.LOGGER.info("Extracted native binary '{}' from jar", libName);
+                    } else {
+                        PowerGrid.LOGGER.error(MESSAGE_FAIL);
+                        loaded = false;
+                    }
+                }
+                if(loaded) {
+                    System.load(libPath.toAbsolutePath().toString());
                     PowerGrid.LOGGER.info(MESSAGE_OK);
                     supported = true;
-                } else {
-                    PowerGrid.LOGGER.error(MESSAGE_FAIL);
                 }
             } catch (Throwable e2) {
                 PowerGrid.LOGGER.error(MESSAGE_FAIL, e2);
@@ -100,11 +112,11 @@ public class NativeMNA implements IMNA {
     public NativeMNA(ElectricalNetwork network) {
         this.network = network;
         // RHS operation buffer (int + double -> row + change)
-        rhsOps = ByteBuffer.allocateDirect((4 + 8) * OPERATION_BUFFER_COMMAND_LENGTH);
-        rhsOps.order(ByteOrder.LITTLE_ENDIAN);
+        rhsOps = ByteBuffer.allocateDirect(RHS_COMMAND_SIZE * OPERATION_BUFFER_COMMAND_LENGTH);
+        rhsOps.order(ByteOrder.nativeOrder());
         // Jacobian operation buffer = (int + int + double -> row + column + change)
         jacobianOps = ByteBuffer.allocateDirect(JACOBIAN_COMMAND_SIZE * OPERATION_BUFFER_COMMAND_LENGTH);
-        jacobianOps.order(ByteOrder.LITTLE_ENDIAN);
+        jacobianOps.order(ByteOrder.nativeOrder());
         nativePtr = allocateNativeObject(rhsOps, jacobianOps, OPERATION_BUFFER_COMMAND_LENGTH, this);
     }
 
@@ -185,10 +197,11 @@ public class NativeMNA implements IMNA {
         return stateAccess;
     }
 
+    @SuppressWarnings("unused")
     private int runIterHooks(ByteBuffer state) {
         // Run hooks
         this.stateBuffer = state;
-        this.stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        this.stateBuffer.order(ByteOrder.nativeOrder());
         for(var hook : network.innerHooks) {
             hook.startIteration();
         }
@@ -199,18 +212,20 @@ public class NativeMNA implements IMNA {
         return pos / JACOBIAN_COMMAND_SIZE;
     }
 
+    @SuppressWarnings("unused")
     private void runAddResidual(ByteBuffer residualBuffer) {
         // Run hooks
-        residualBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        residualBuffer.order(ByteOrder.nativeOrder());
         for(var hook : network.innerHooks) {
             hook.addResidual((row, change) -> {
-                var offset = row * 8;
+                var offset = row * Double.BYTES;
                 double current = residualBuffer.getDouble(offset);
                 residualBuffer.putDouble(offset, current - change);
             });
         }
     }
 
+    @SuppressWarnings("unused")
     private void reportConvergenceProblems(double norm, int i, ByteBuffer residualBuffer) {
         if (LOGGER != null) {
             if (ModdedConfigs.logsEnabled()) {
@@ -219,7 +234,7 @@ public class NativeMNA implements IMNA {
         } else {
             System.out.printf("Convergence problems after %d solver iterations, final norm: %g\n", i, norm);
         }
-        residualBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        residualBuffer.order(ByteOrder.nativeOrder());
         network.convergenceProblems(norm, new IMatrixAccess() {
             @Override
             public void set(int row, int column, double value) {
@@ -228,7 +243,7 @@ public class NativeMNA implements IMNA {
 
             @Override
             public double get(int row, int column) {
-                return residualBuffer.getDouble(row * 8);
+                return residualBuffer.getDouble(row * Double.BYTES);
             }
 
             @Override
@@ -250,6 +265,8 @@ public class NativeMNA implements IMNA {
 
         // Rewind modification buffers.
         rhsOps.position(0);
+        int ops = jacobianOps.position() / JACOBIAN_COMMAND_SIZE;
+        jacobianOps.position(0);
 
         if(hooksChanged) {
             // Negotiate native accelerated hook implementations.
@@ -258,12 +275,10 @@ public class NativeMNA implements IMNA {
 
         // Run native solve routine.
         int maxIterations = network.maxIterations.apply(network.hasHooks());
-        int ops = jacobianOps.position() / JACOBIAN_COMMAND_SIZE;
-        jacobianOps.position(0);
         var buffer = singleTick(nativePtr, maxIterations, ops);
         if(buffer != null) {
             stateBuffer = buffer;
-            stateBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            stateBuffer.order(ByteOrder.nativeOrder());
             converged = true;
         } else {
             stateBuffer = null;
@@ -317,18 +332,18 @@ public class NativeMNA implements IMNA {
     private class StateAccess implements IMatrixAccess {
         @Override
         public void set(int row, int column, double value) {
-            stateBuffer.putDouble(row * 8, value);
+            stateBuffer.putDouble(row * Double.BYTES, value);
         }
 
         @Override
         public double get(int row, int column) {
             // TODO: This seems slow for some reason?
-            return stateBuffer.getDouble(row * 8);
+            return stateBuffer.getDouble(row * Double.BYTES);
         }
 
         @Override
         public double safe_get(int row, int column) {
-            if(stateBuffer == null || row * 8 >= stateBuffer.capacity())
+            if(stateBuffer == null || row * Double.BYTES >= stateBuffer.capacity())
                 return 0;
             return IMatrixAccess.super.safe_get(row, column);
         }
