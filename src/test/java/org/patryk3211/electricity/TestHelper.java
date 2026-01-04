@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Random;
 
 public abstract class TestHelper {
+    static {
+        System.loadLibrary("powergridNative");
+    }
+
     public static class VoltageSourceNodePair extends FloatingNode {
         public VoltageSourceCoupling coupling;
 
