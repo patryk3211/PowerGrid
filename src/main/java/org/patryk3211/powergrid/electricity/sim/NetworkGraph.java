@@ -281,6 +281,8 @@ public class NetworkGraph {
             for(var wire : wires) {
                 if(wire.node1 == null || wire.node2 == null)
                     return true;
+                if(wire.isSource())
+                    return true;
             }
         }
         return false;

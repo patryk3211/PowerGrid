@@ -104,22 +104,8 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
             return false;
         } else if(nodes.size() >= 3) {
             // Connecting into a tie
-//            if(isLeaf(node)) {
-//                checked.add(node);
-//                // We must trace further
-////                for(var node2 : nodes) {
-////                    if(checked.contains(node2))
-////                        continue;
-////                    var subtrace = new HashSet<IElectricNode>();
-////                    subtrace.add(node);
-////                    if(circularCheck(node2, subtrace, null)) {
-////                        checked.addAll(subtrace);
-////                    }
-////                }
-//            } else {
             if (track != null)
                 track.setValue(node);
-//            }
             return true;
         } else { // nodes.size() == 2
             // Check both sides
