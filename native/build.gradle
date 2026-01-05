@@ -74,6 +74,9 @@ def configureTask = { String platform, String taskName, String libName ->
 
         commandLine "${platformProperty('cmakeExecutable')}", '--build', "${cmakeBuildDir}"
 
+        inputs.files(
+                layout.projectDirectory.dir("src/powergridNative/cpp").getAsFileTree()
+        )
         outputs.file(cmakeBuildDir.file(libName))
     }
 }

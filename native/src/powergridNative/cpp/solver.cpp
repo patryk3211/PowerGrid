@@ -158,6 +158,8 @@ void Solver::convergenceProblems(jobject mnaObj, double norm, int i) {
 }
 
 jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
+    if(m_size == 0)
+        return nullptr;
     PG_TRACE("[Solver::singleTick] entering");
     processJacobianBuffer(cmdCount);
     processRHSBuffer();
