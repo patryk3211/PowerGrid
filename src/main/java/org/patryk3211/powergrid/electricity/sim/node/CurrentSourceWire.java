@@ -34,7 +34,7 @@ public class CurrentSourceWire extends AbstractElectricWire implements IStaticRe
         this.conductance = conductance.doubleValue();
     }
 
-    public void setConductance(float conductance) {
+    public void setConductance(double conductance) {
         if(network != null) {
             network.updateConductance(this, conductance - this.conductance);
         }
