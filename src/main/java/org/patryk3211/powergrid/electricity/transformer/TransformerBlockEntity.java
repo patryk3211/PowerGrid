@@ -101,7 +101,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
     @Override
     public void electricalTick() {
-        if(couplingI1 != null) {
+        if(couplingI1 != null && couplingI1.isConverged() && couplingI2.isConverged()) {
             assert couplingI1.getNode2() != null && couplingI2.getNode2() != null;
             double V1 = couplingI1.getNetwork() != null
                     ? couplingI1.potentialDifference()
