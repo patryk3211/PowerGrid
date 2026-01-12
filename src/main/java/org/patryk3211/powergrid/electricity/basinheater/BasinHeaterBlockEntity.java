@@ -15,9 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.basinheater;
 
-import com.simibubi.create.content.kinetics.mixer.MechanicalMixerBlockEntity;
-import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
+import com.simibubi.create.api.boiler.BoilerHeater;
+import com.simibubi.create.content.processing.burner.BlazeBurnerBlock.HeatLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -27,16 +28,18 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
+
 public class BasinHeaterBlockEntity extends ElectricBlockEntity {
     private ElectricWire coil;
-    private BlazeBurnerBlock.HeatLevel state;
+    private HeatLevel state;
 
     public BasinHeaterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         this.state = state.getValue(BasinHeaterBlock.HEAT_LEVEL);
     }
 
-    public void setState(BlazeBurnerBlock.HeatLevel newState) {
+    public void setState(HeatLevel newState) {
         assert level != null;
         if(state != newState) {
             state = newState;
@@ -44,19 +47,15 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
         }
     }
 
-    @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        var I = ModdedConfigs.server().electricity.basinHeaterCurrent.get();
-        var power = I * I * resistance("idle");
-        float factor = (float) (power / (600 - 22));
-        return ThermalBehaviour.always(this, 2.0f, factor, 1400);
+    public static float power() {
+        // 16384 SU is what the heater outputs if it's used to power a steam engine
+        return 256 * 64 * ModdedConfigs.server().kinetics.torqueForStress.getF() / CONVERSION_CONSTANT;
     }
 
-    public boolean mixerRunning() {
-        var be = level.getBlockEntity(worldPosition.above(3));
-        if(!(be instanceof MechanicalMixerBlockEntity mixer))
-            return false;
-        return mixer.running;
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        float factor = power() / (600 - 22);
+        return ThermalBehaviour.always(this, 2.0f, factor, 1600);
     }
 
     @Override
@@ -66,27 +65,30 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
             PowerGrid.LOGGER.warn("Basin heater should always have a thermal behaviour");
             return;
         }
-        coil.setResistance(mixerRunning() ? resistance("mixing") : resistance("idle"));
         var T = thermalBehaviour.getTemperature();
-        var dissipation = 0.005625f * T - 1.625f;
-        if(mixerRunning()) {
-            var I = ModdedConfigs.server().electricity.basinHeaterCurrent.get() * 2;
-            var power = I * I * (resistance("idle") - resistance("mixing"));
-            dissipation += (float) (power / (1000 - 22));
-        }
-        thermalBehaviour.setDissipationFactor(dissipation);
         if(T < 600) {
-            setState(BlazeBurnerBlock.HeatLevel.NONE);
-        } else if(T < 1000) {
-            setState(BlazeBurnerBlock.HeatLevel.KINDLED);
+            setState(HeatLevel.NONE);
+        } else if(T < 1200) {
+            setState(HeatLevel.KINDLED);
         } else {
-            setState(BlazeBurnerBlock.HeatLevel.SEETHING);
+            setState(HeatLevel.SEETHING);
         }
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        coil = builder.connect(resistance("idle"), builder.terminalNode(0), builder.terminalNode(1));
+        coil = builder.connect(resistance(), builder.terminalNode(0), builder.terminalNode(1));
+    }
+
+    public static int boilerHeater(Level level, BlockPos pos, BlockState state) {
+        HeatLevel value = state.getValue(BasinHeaterBlock.HEAT_LEVEL);
+        if (value == HeatLevel.SEETHING) {
+            return 2;
+        }
+        if (value.isAtLeast(HeatLevel.FADING)) {
+            return 1;
+        }
+        return BoilerHeater.NO_HEAT;
     }
 }
