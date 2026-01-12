@@ -17,6 +17,13 @@ package org.patryk3211.powergrid.config;
 
 import net.createmod.catnip.config.ConfigBase;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.solver.IMNA;
+import org.patryk3211.powergrid.electricity.sim.solver.JavaMNA;
+import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
+
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class CSolver extends ConfigBase {
     public final ConfigFloat transmissionLineThreshold = f(0.2f, 0, "transmissionLineThreshold", Comments.transmissionLineThreshold);
@@ -31,11 +38,33 @@ public class CSolver extends ConfigBase {
     public final ConfigFloat solverAbsoluteMinimumPrecision = f(1e-6f, 0, "solverAbsoluteMinimumPrecision", Comments.solverAbsoluteMinimumPrecision);
 
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
-    public final ConfigEnum<ElectricalNetwork.SolverType> solverType = e(ElectricalNetwork.SolverType.DIRECT, "solverType", Comments.solverType);
+
+    public final ConfigEnum<SolverBackend> solverBackend = e(SolverBackend.NATIVE, "solverBackend", Comments.solverBackend);
 
     @Override
     public String getName() {
         return "solver";
+    }
+
+    public enum SolverBackend {
+        JAVA(() -> true, () -> JavaMNA::new),
+        NATIVE(NativeMNA::isSupported, () -> NativeMNA::new);
+
+        final BooleanSupplier checkSupport;
+        final Supplier<Function<ElectricalNetwork, IMNA>> constructor;
+
+        SolverBackend(BooleanSupplier checkSupport, Supplier<Function<ElectricalNetwork, IMNA>> constructor) {
+            this.checkSupport = checkSupport;
+            this.constructor = constructor;
+        }
+
+        public boolean isSupported() {
+            return checkSupport.getAsBoolean();
+        }
+
+        public IMNA create(ElectricalNetwork network) {
+            return constructor.get().apply(network);
+        }
     }
 
     private static class Comments {
@@ -50,6 +79,7 @@ public class CSolver extends ConfigBase {
         public static final String solverSimpleMaxIterations = "Maximum solver iterations for networks without dynamic residuals";
         public static final String solverComplexMaxIterations = "Maximum solver iterations for networks with dynamic residuals";
         public static final String multiTicks = "Experimental! This option enables all electrical networks to tick multiple times per world tick. This allows for better simulation precision when reactive components are involved but can have a significant impact on performance.";
-        public static final String solverType = "Experimental! This option enables the use of an iterative linear equation solver which can be faster than the direct solver, however it can fail for certain networks.";
+
+        public static final String solverBackend = "Solver MNA backend. The native backend can provide platform-specific acceleration which usually improves performance, however it isn't portable and needs a special binary which might not be available for all platforms. Java backend is portable and always available as fallback.";
     }
 }

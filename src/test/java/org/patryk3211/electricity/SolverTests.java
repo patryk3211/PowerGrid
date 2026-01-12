@@ -18,6 +18,7 @@ package org.patryk3211.electricity;
 import org.ejml.data.DMatrixRMaj;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.solver.DynamicallyTypedMatrix;
@@ -94,6 +95,21 @@ public class SolverTests extends TestHelper {
 
         Assertions.assertEquals(-2.5, V.getCurrent(), 1e-6, "Voltage source current is incorrect");
         Assertions.assertEquals(2.5, N1.getVoltage() - N2.getVoltage(), 1e-6, "Wire voltage is incorrect");
+    }
+
+    @Test
+    void testCurrentWire() {
+        var Net  = new Network(true);
+
+        var N1 = Net.N();
+        var N2 = Net.N();
+        var I = new CurrentSourceWire(N1, N2, 0.5f);
+        I.setCurrent(0.5f);
+        Net.network.addWire(I);
+
+        Net.calculate();
+
+        Assertions.assertEquals(1, I.potentialDifference(), 1e-6, "Current source voltage is incorrect");
     }
 
     private static class Rotor implements IRotor {

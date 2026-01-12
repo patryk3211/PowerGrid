@@ -36,7 +36,11 @@ public interface INode extends INetworkElement {
             getNetwork().removeNode(this);
     }
 
-    default float getSavedValue() {
+    default double getSavedValue() {
         return 0;
+    }
+
+    default void setSavedValue(double value) {
+
     }
 }

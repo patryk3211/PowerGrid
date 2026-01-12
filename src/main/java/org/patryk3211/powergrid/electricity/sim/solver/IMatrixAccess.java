@@ -15,16 +15,26 @@
  */
 package org.patryk3211.powergrid.electricity.sim.solver;
 
-import org.ejml.data.DMatrixRMaj;
-import org.jetbrains.annotations.Nullable;
+public interface IMatrixAccess {
+    void set(int row, int column, double value);
+    double get(int row, int column);
 
-public interface ISolver {
-    void setTargetPrecision(double targetPrecision);
+    default void add(int row, int column, double value) {
+        set(row, column, get(row, column) + value);
+    }
 
-    void setStateSize(int size);
-    @Nullable
-    DMatrixRMaj solve(DynamicallyTypedMatrix A, DMatrixRMaj b, boolean acceptAll);
-    void zero();
+    int numRows();
+    int numCols();
 
-    DMatrixRMaj getLastGuess();
+    default double safe_get(int row, int column) {
+        if(row >= numRows() || column >= numCols())
+            return 0;
+        return get(row, column);
+    }
+
+    default void safe_set(int row, int column, double value) {
+        if(row >= numRows() || column >= numCols())
+            return;
+        set(row, column, value);
+    }
 }

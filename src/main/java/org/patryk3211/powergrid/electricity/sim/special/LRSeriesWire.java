@@ -64,7 +64,7 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
 
     @Override
     public void postUpperSolve() {
-        if(isConverged()) {
+       if(isConverged()) {
             Vprev = inductance * (current() - I) / getDeltaTime();
             I = current() * 0.99999;
         }
