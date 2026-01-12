@@ -35,6 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -57,15 +58,18 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 4, 12, 14, 6, 14, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 4, 12.5, 14, 6, 13.5, 16)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 10, 12, 14, 12, 14, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 10, 12.5, 14, 12, 13.5, 16)
                     .withColor(IDecoratedTerminal.BLUE),
-            new TerminalBoundingBox(IDecoratedTerminal.CONTROL, 7, 12, 14, 9, 14, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.CONTROL, 7, 12.5, 14, 9, 13.5, 16)
                     .withColor(IDecoratedTerminal.GREEN)
     };
 
-    private static final VoxelShape NORTH_SHAPE = box(2, 3, 1, 14, 13, 15);
+    private static final VoxelShape NORTH_SHAPE = Shapes.or(
+            box(3, 3, 0.5, 13, 13, 15.5),
+            box(2.5, 2.5, 0.5, 13.5, 13.5, 3.5)
+    );
 
     public ServoBlock(Properties properties) {
         super(properties);
