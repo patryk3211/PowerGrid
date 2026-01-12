@@ -70,7 +70,7 @@ public class CSolver extends ConfigBase {
     private static class Comments {
         public static final String transmissionLineThreshold = "Threshold resistance for a transmission line to be able to split the grid into island networks. Lines with resistance above this value have a propagation delay of roughly 1 tick, and can improve performance by simulating small segments of the grid separately.";
         public static final String splittingTransmissionLines = "Experimental! Allows transmission lines to split large grid into smaller networks. This option should improve performance for large grids but it will result in transmission lines having a propagation delay and capacitance.";
-        public static final String splittingTransformers = "Experimental! Allows transformers to split the grid. This option should improve performance but it will result in transformers having some capacitance and delay.";
+        public static final String splittingTransformers = "Allows transformers to split the grid. This option should improve performance but it will result in transformers having some capacitance and delay.";
 
         public static final String solverAbsolutePrecision = "Absolute stopping criterion";
         public static final String solverRelativePrecision = "Relative stopping criterion";
