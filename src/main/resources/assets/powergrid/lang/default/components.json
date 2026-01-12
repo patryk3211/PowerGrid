@@ -22,7 +22,8 @@
 
   "powergrid.component.property.relay_threshold": "Threshold Voltage",
   "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
-  "powergrid.component.property.relay_state": "State",
+  "powergrid.component.property.relay_current": "Threshold Current",
+  "powergrid.component.property.relay_current.summary": "Current needed to trigger the relay (calculated from the threshold voltage)",
 
   "powergrid.component.property.resistor_value": "Resistance [Ω]",
   "powergrid.component.property.capacitor_value": "Capacitance [mF]",

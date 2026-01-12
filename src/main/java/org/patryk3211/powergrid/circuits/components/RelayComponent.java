@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
+import org.patryk3211.powergrid.circuits.components.properties.CalculatedProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
@@ -28,10 +29,14 @@ import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.utility.Unit;
 
 public class RelayComponent extends OrientableComponent {
-    public static final FloatProperty THRESHOLD_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "relay_threshold", 12, 1, 48);
-    public static final BooleanProperty STATE = (BooleanProperty) new BooleanProperty(PowerGrid.MOD_ID, "relay_state").hidden();
+    public static final FloatProperty THRESHOLD_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "relay_threshold", 12, 1, 120);
+    public static final BooleanProperty STATE = new BooleanProperty(PowerGrid.MOD_ID, "relay_state").hidden().cast();
+    public static final CalculatedProperty<Float> THRESHOLD_CURRENT = new CalculatedProperty<>(PowerGrid.MOD_ID, "relay_current",
+            c -> 1.2f / c.get(THRESHOLD_VOLTAGE),
+            v -> Unit.CURRENT.formatWithPrefixes(v).string());
 
     public RelayComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -40,13 +45,14 @@ public class RelayComponent extends OrientableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(THRESHOLD_VOLTAGE, STATE, current(32));
+        properties.add(THRESHOLD_VOLTAGE, STATE, THRESHOLD_CURRENT, current(32));
     }
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        // Target current is 100mA
-        var resistance = placed.get(THRESHOLD_VOLTAGE) / 0.1f;
+        // Target power is 1.2 W
+        var current = placed.get(THRESHOLD_CURRENT);
+        var resistance = placed.get(THRESHOLD_VOLTAGE) / current;
         var coilWire = builder.connect(resistance, builder.terminalNode(0), builder.terminalNode(1));
 
         final var switchResistance = 0.05f;
@@ -60,7 +66,7 @@ public class RelayComponent extends OrientableComponent {
         placed.add(normallyOpen);
 
         thermals.builder()
-                .setMaxCurrent(0.2f, resistance, 125f)
+                .setMaxCurrent(current * 2, resistance, 125f)
                 .setThermalMass(0.02f)
                 .addHeatSource(coilWire);
         thermals.builder()
@@ -77,17 +83,18 @@ public class RelayComponent extends OrientableComponent {
 
         var coilWire = placed.wires.get(0);
         if(coilWire.isConverged()) {
+            var confCurrent = placed.get(THRESHOLD_CURRENT);
             var current = Math.abs(coilWire.current());
             var NC = (SwitchedWire) placed.wires.get(1);
             var NO = (SwitchedWire) placed.wires.get(2);
-            if(placed.get(STATE) && current < 0.1f * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
+            if(placed.get(STATE) && current < confCurrent * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
                 // Below the set current the relay can turn off
                 NC.setState(true);
                 NO.setState(false);
                 placed.set(STATE, false);
                 placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
-            } else if(!placed.get(STATE) && current > 0.1f) {
-                // Above 100mA the relay can turn on
+            } else if(!placed.get(STATE) && current > confCurrent) {
+                // Above the threshold current the relay can turn on
                 NC.setState(false);
                 NO.setState(true);
                 placed.set(STATE, true);
