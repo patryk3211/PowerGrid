@@ -35,6 +35,11 @@ public class EndpointTrackingC2SPacket implements SimplePacket {
         this.end = end;
     }
 
+    public EndpointTrackingC2SPacket(IWireEndpoint endpoint, boolean end) {
+        this.endpoint = endpoint;
+        this.end = end;
+    }
+
     public EndpointTrackingC2SPacket(FriendlyByteBuf buf) {
         endpoint = WireEndpointType.deserialize(buf.readNbt());
         end = buf.readBoolean();

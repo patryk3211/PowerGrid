@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -49,6 +50,8 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.wire.CircuitBoardEndpoint;
+import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -242,6 +245,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public void initialize() {
         super.initialize();
         edgeConnect();
+        if(level.isClientSide) {
+            // Layer position doesn't matter here.
+            ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(new CircuitBoardEndpoint(worldPosition, 0, 0), false));
+        }
     }
 
     @Override
@@ -363,6 +370,15 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         }
         componentCache.put(ofClass, components);
         return components;
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        if(level.isClientSide) {
+            // Layer position doesn't matter here.
+            ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(new CircuitBoardEndpoint(worldPosition, 0, 0), true));
+        }
     }
 
     @Override

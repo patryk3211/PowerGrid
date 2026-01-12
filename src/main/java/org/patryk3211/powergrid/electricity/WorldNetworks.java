@@ -37,10 +37,7 @@ import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
-import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
@@ -336,6 +333,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             if(syncEntry != null)
                                 syncStates.computeIfAbsent(player, $ -> new HashMap<>())
                                         .put(syncEntry, new SyncState((int) (je.getExactPosition(world).distanceTo(player.position()) / 16 + 1)));
+                        } else if(endpoint instanceof CircuitBoardEndpoint cbe) {
+                            // Circuits might not have external terminals so they need a special tracking entry
+                            var eb = cbe.getElectricBehaviour(world);
+                            if (eb == null)
+                                continue;
+                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                    .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
                         }
                     }
                 }
