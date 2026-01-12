@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -29,6 +30,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     private double G = ElectricalNetwork.G_MIN;
     private double Ieq = 0;
     private double prevV;
+    private double intDelta;
 
     public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -84,8 +86,9 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double n = idealityFactor;
         double V = potentialDifference();
         var dV = V - prevV;
-        V = prevV + softDelta(Math.abs(dV), 0.8) * Math.signum(dV);
+        V = prevV + softDelta(Math.abs(dV), Math.abs(dV) < 1 ? 0.1 : 1) * Math.signum(dV);
         prevV = V;
+        intDelta = intDelta * 0.999 + Math.abs(dV);
         double I_s1 = reverseSaturationCurrent;
         double E_g = 1.12; // Silicon bandgap energy in eV
         double T_1 = 22 + 273.15; // Reference temperature in K
@@ -99,11 +102,13 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double WTerm = WrightOmega(Omega_arg);
         double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
         // Adding a resistor across the diode helps with convergence in certain cases.
-        G += 1e-6; // 1 MOhm
+        double R = 1e-4f; // 10 kOhm
+        R = Mth.clamp(intDelta * 1e-3, 1e-5, 1e-4);
+        G += R;
         network.updateConductance(this, G - this.G);
         this.G = G;
         double I = V_T * n * WTerm / R_s - I_s2;
-        this.Ieq = I - (G - 1e-6) * V;
+        this.Ieq = I - (G - R) * V;
     }
 
     @Override
