@@ -34,7 +34,7 @@ public class ResistorComponent extends OrientableComponent {
     public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 1f, 1000_000f);
 
     private static final ComponentFootprint VERTICAL_FOOTPRINT = new ComponentFootprint.Builder(3, 3)
-            .addPad(0, 1).addPad(2, 1).withItem().withOutline().build();
+            .addPad(0, 1, 0).addPad(2, 1, 1).withItem().withOutline().build();
     private static final ResourceLocation MODEL_DEFAULT = PowerGrid.asResource("resistor");
     private static final ResourceLocation MODEL_VERTICAL = PowerGrid.asResource("resistor_vertical");
 
