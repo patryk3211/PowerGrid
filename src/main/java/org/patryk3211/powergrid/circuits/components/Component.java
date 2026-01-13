@@ -121,6 +121,10 @@ public abstract class Component {
 
     }
 
+    public boolean rotate(@NotNull PlacedComponent placed, boolean counterClockwise) {
+        return false;
+    }
+
     public ComponentFootprint footprint(@Nullable PlacedComponent placed) {
         return footprint;
     }

@@ -203,6 +203,7 @@
   "powergrid.component.property.tube_heater_voltage.summary": "Voltage required to reach the rated heater power",
   "powergrid.component.property.tube_saturation_current": "Saturation Current",
   "powergrid.component.property.tube_saturation_current.summary": "Maximum current that can pass through the tube",
+  "powergrid.component.property.vertical": "Vertical",
   "powergrid.component.property.voltage": "Voltage",
   "powergrid.component.property.voltage.summary": "Maximum voltage that this component can handle",
   "powergrid.component.property.voltage_gauge_max": "Max Voltage",

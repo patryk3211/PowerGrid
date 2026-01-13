@@ -32,6 +32,7 @@
   "powergrid.component.property.redstone_emitter_digital": "Digital",
 
   "powergrid.component.property.orientation": "Orientation",
+  "powergrid.component.property.vertical": "Vertical",
 
   "powergrid.component.property.potentiometer_resistance": "Resistance",
   "powergrid.component.property.potentiometer_value": "Setting",

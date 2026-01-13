@@ -203,6 +203,7 @@
   "powergrid.component.property.tube_heater_voltage.summary": "ɹǝʍod ɹǝʇɐǝɥ pǝʇɐɹ ǝɥʇ ɥɔɐǝɹ oʇ pǝɹınbǝɹ ǝbɐʇןoΛ",
   "powergrid.component.property.tube_saturation_current": "ʇuǝɹɹnƆ uoıʇɐɹnʇɐS",
   "powergrid.component.property.tube_saturation_current.summary": "ǝqnʇ ǝɥʇ ɥbnoɹɥʇ ssɐd uɐɔ ʇɐɥʇ ʇuǝɹɹnɔ ɯnɯıxɐW",
+  "powergrid.component.property.vertical": "ןɐɔıʇɹǝΛ",
   "powergrid.component.property.voltage": "ǝbɐʇןoΛ",
   "powergrid.component.property.voltage.summary": "ǝןpuɐɥ uɐɔ ʇuǝuodɯoɔ sıɥʇ ʇɐɥʇ ǝbɐʇןoʌ ɯnɯıxɐW",
   "powergrid.component.property.voltage_gauge_max": "ǝbɐʇןoΛ xɐW",

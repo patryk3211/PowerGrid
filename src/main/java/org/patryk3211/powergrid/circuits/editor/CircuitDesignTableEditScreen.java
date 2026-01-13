@@ -37,7 +37,6 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
-import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -464,16 +463,20 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
         // Other tool keybinds
         if(ModdedKeys.ROTATE_COMPONENT.matchesKey(keyCode, scanCode)) {
-            if(currentComponent != null && currentComponent.has(Orientation.PROPERTY)) {
-                var current = currentComponent.get(Orientation.PROPERTY);
-                if(Screen.hasShiftDown()) {
-                    current = current.getCounterClockwise();
-                } else {
-                    current = current.getClockwise();
+            if(currentComponent != null) {
+                if(currentComponent.component.rotate(currentComponent, Screen.hasShiftDown())) {
+                    playSound(ModdedSoundEvents.UI_COMPONENT_ROTATE);
                 }
-                currentComponent.set(Orientation.PROPERTY, current);
-                playSound(ModdedSoundEvents.UI_COMPONENT_ROTATE);
             }
+//            if(currentComponent != null && currentComponent.has(Orientation.PROPERTY)) {
+//                var current = currentComponent.get(Orientation.PROPERTY);
+//                if(Screen.hasShiftDown()) {
+//                    current = current.getCounterClockwise();
+//                } else {
+//                    current = current.getClockwise();
+//                }
+//                currentComponent.set(Orientation.PROPERTY, current);
+//            }
         } else if(ModdedKeys.PLACE_TRACE.matchesKey(keyCode, scanCode)) {
             toolSelect(Tool.CONNECT);
             playSound(ModdedSoundEvents.UI_PLACE_TRACE);
