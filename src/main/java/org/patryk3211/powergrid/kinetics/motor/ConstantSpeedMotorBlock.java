@@ -34,8 +34,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
@@ -49,15 +47,12 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock.NORTH_SHAPE;
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock.UP_SHAPE;
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
 
 public class ConstantSpeedMotorBlock extends ElectricKineticBlock implements IBE<ConstantSpeedMotorBlockEntity>, IHaveElectricProperties, IAcceptCord {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
-
-    private static final VoxelShape NORTH_SHAPE = Shapes.or(
-            box(3, 3, 0.5, 13, 13, 15.5),
-            box(2.5, 2.5, 10.5, 13.5, 13.5, 15.5)
-    );
 
     private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5, 13, 14, 7, 14, 16)
@@ -68,7 +63,7 @@ public class ConstantSpeedMotorBlock extends ElectricKineticBlock implements IBE
 
     public ConstantSpeedMotorBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE));
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE, UP_SHAPE));
     }
 
     @Override

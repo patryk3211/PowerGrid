@@ -1,5 +1,5 @@
 {
-	"format_version": "1.21.6",
+	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
@@ -10,7 +10,7 @@
 			"name": "shaft",
 			"from": [6, 6, -1.5],
 			"to": [10, 10, 0.5],
-			"rotation": {"angle": 25, "axis": "z", "origin": [8, 8, -0.5]},
+			"rotation": {"angle": 22.5, "axis": "z", "origin": [8, 8, -0.5]},
 			"faces": {
 				"north": {"uv": [7, 8.5, 8, 9.5], "texture": "#1"},
 				"east": {"uv": [2.5, 7.5, 3, 8.5], "texture": "#1"},

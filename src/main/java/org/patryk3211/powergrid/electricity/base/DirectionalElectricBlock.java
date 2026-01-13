@@ -54,7 +54,12 @@ public abstract class DirectionalElectricBlock extends ElectricBlock {
     }
 
     public static BlockStateTerminalCollection directionalNorthTerminals(Block block, TerminalBoundingBox[] terminals, VoxelShape northShape) {
+        return directionalNorthTerminals(block, terminals, northShape, null);
+    }
+
+    public static BlockStateTerminalCollection directionalNorthTerminals(Block block, TerminalBoundingBox[] terminals, VoxelShape northShape, @Nullable VoxelShape upShape) {
         var shaper = VoxelShaper.forDirectional(northShape, Direction.NORTH);
+        if(upShape != null) shaper.withVerticalShapes(upShape);
         return BlockStateTerminalCollection.builder(block)
                 .forAllStates(state -> BlockStateTerminalCollection.each(terminals, terminal -> switch(state.getValue(FACING)) {
                     case NORTH -> terminal;

@@ -54,9 +54,13 @@ import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.C
 public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties, IAcceptCord {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
-    private static final VoxelShape NORTH_SHAPE = Shapes.or(
+    public static final VoxelShape NORTH_SHAPE = Shapes.or(
             box(3, 3, 0.5, 13, 13, 15.5),
             box(2.5, 2.5, 10.5, 13.5, 13.5, 15.5)
+    );
+    public static final VoxelShape UP_SHAPE = Shapes.or(
+            box(3, 0.5, 3, 13, 15.5, 13),
+            box(2.5, 0.5, 2.5, 13.5, 5.5, 13.5)
     );
 
     private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {
@@ -68,7 +72,7 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
 
     public ElectricMotorBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE));
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE, UP_SHAPE));
     }
 
     @Override

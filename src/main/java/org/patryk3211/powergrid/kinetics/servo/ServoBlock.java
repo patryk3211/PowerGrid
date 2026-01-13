@@ -70,10 +70,14 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
             box(3, 3, 0.5, 13, 13, 15.5),
             box(2.5, 2.5, 0.5, 13.5, 13.5, 3.5)
     );
+    private static final VoxelShape UP_SHAPE = Shapes.or(
+            box(3, 0.5, 3, 13, 15.5, 13),
+            box(2.5, 12.5, 2.5, 13.5, 15.5, 13.5)
+    );
 
     public ServoBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, TERMINALS_NORTH, NORTH_SHAPE));
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, TERMINALS_NORTH, NORTH_SHAPE, UP_SHAPE));
     }
 
     @Override
