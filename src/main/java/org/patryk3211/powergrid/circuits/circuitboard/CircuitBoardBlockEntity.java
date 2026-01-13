@@ -21,6 +21,8 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.math.VecHelper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -68,6 +70,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     private AirCurrent coolingAir;
     protected float coolingFactorMultiplier = 1;
+
+    @Nullable
+    @Environment(EnvType.CLIENT)
+    public CircuitBoardModelQuads quads;
 
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);

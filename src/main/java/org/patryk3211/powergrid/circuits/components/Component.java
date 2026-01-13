@@ -26,6 +26,7 @@ import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ConstantProperty;
@@ -78,7 +79,10 @@ public abstract class Component {
 
     @Environment(EnvType.CLIENT)
     public static void modelChanged(BlockPos pos) {
+        var level = Minecraft.getInstance().level;
         var renderer = Minecraft.getInstance().levelRenderer;
+        if(level != null && level.getBlockEntity(pos) instanceof CircuitBoardBlockEntity circuit)
+            circuit.quads = null;
         renderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
 

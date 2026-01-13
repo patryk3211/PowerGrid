@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.components.forge;
 
 import com.mojang.math.Transformation;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -36,13 +37,13 @@ import net.minecraftforge.client.model.IQuadTransformer;
 import net.minecraftforge.client.model.QuadTransformers;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardModelQuads;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.circuits.components.IRenderedComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
@@ -51,12 +52,15 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.schematic.Point;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
 @OnlyIn(Dist.CLIENT)
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public class CircuitBoardModel implements BakedModel {
     public static final ModelResourceLocation MODEL_ID = new ModelResourceLocation(PowerGrid.asResource("circuit_board"), "");
     public static final ResourceLocation BASE_MODEL = PowerGrid.asResource("block/circuit_board");
@@ -64,6 +68,7 @@ public class CircuitBoardModel implements BakedModel {
     public static final Material COPPER_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_trace"));
     public static final Material PAD_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_pad"));
 
+    public static final ModelProperty<CircuitBoardBlockEntity> ENTITY = new ModelProperty<>();
     public static final ModelProperty<List<Area>> FRONT_LAYER = new ModelProperty<>();
     public static final ModelProperty<List<Point>> PADS = new ModelProperty<>();
     public static final ModelProperty<List<PlacedComponent>> COMPONENTS = new ModelProperty<>();
@@ -71,8 +76,8 @@ public class CircuitBoardModel implements BakedModel {
     private static final FaceBakery bakery = new FaceBakery();
 
     private final TextureAtlasSprite particleSprite;
-    private TextureAtlasSprite padSprite;
-    private TextureAtlasSprite copperSprite;
+    private final TextureAtlasSprite padSprite;
+    private final TextureAtlasSprite copperSprite;
     private final BakedModel baseModel;
 
     public CircuitBoardModel(BakedModel plateModel, TextureAtlasSprite padSprite, TextureAtlasSprite copperSprite) {
@@ -123,7 +128,7 @@ public class CircuitBoardModel implements BakedModel {
     }
 
     @Override
-    public @NotNull ModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ModelData modelData) {
+    public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData modelData) {
         var be = level.getBlockEntity(pos);
         if(be instanceof CircuitBoardBlockEntity circuit) {
             // Emit components
@@ -132,13 +137,24 @@ public class CircuitBoardModel implements BakedModel {
                     .with(FRONT_LAYER, schematic.calculateAreas(CircuitSchematic.Layer.FRONT))
                     .with(PADS, schematic.pads().calculatePoints())
                     .with(COMPONENTS, List.copyOf(schematic.components()))
+                    .with(ENTITY, circuit)
                     .build();
         }
         return modelData;
     }
 
     @Override
-    public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData data, @Nullable RenderType renderType) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data, @Nullable RenderType renderType) {
+        var circuit = data.get(ENTITY);
+        if(circuit != null) {
+            if(circuit.quads != null) {
+                var cached = circuit.quads.getQuads(side, renderType);
+                if (cached != null)
+                    return cached;
+            } else {
+                circuit.quads = new CircuitBoardModelQuads();
+            }
+        }
         var quads = new ArrayList<>(baseModel.getQuads(state, side, rand, data, renderType));
 
         if(data.has(COMPONENTS)) {
@@ -206,6 +222,8 @@ public class CircuitBoardModel implements BakedModel {
             ));
             return transformer.process(quads);
         }
+        if(circuit != null)
+            circuit.quads.putQuads(side, renderType, quads);
         return quads;
     }
 
