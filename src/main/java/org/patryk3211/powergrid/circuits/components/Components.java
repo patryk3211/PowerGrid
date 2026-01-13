@@ -42,8 +42,8 @@ public class Components {
 
     public static final RegistryEntry<RegulatorTubeComponent> REGULATOR_TUBE = REGISTRATE.component("regulator_tube", RegulatorTubeComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(0, 1, 0, "Anode", "+")
-                    .addPad(2, 1, 1, "Cathode", "-")
+                    .addPadSharedText(0, 1, 0, "generic.anode", "generic.anode.short")
+                    .addPadSharedText(2, 1, 1, "generic.cathode", "generic.cathode.short")
                     .withItem().withOutline())
             .item(ModdedItems.REGULATOR_TUBE)
             .register();
@@ -89,14 +89,29 @@ public class Components {
 
     public static final RegistryEntry<RelayComponent> RELAY = REGISTRATE.component("relay", RelayComponent::new)
             .footprint(4, 3, b -> b
-                    .addPad(0, 0, 0, "Coil", null)
-                    .addPad(0, 2, 1, "Coil", null)
-                    .addPad(2, 0, 2, "Normally Closed", "NC")
-                    .addPad(3, 1, 3, "Common", "CC")
-                    .addPad(2, 2, 4, "Normally Open", "NO")
+                    .addPadSharedText(0, 0, 0, "relay.coil", null)
+                    .addPadSharedText(0, 2, 1, "relay.coil", null)
+                    .addPadSharedText(2, 0, 2, "relay.nc", "relay.nc.short")
+                    .addPadSharedText(3, 1, 3, "relay.cc", "relay.cc.short")
+                    .addPadSharedText(2, 2, 4, "relay.no", "relay.no.short")
                     .withItem().withOutline()
             )
             .item(ModdedItems.RELAY)
+            .register();
+
+    public static final RegistryEntry<DoubleRelayComponent> RELAY_DPDT = REGISTRATE.component("relay_dpdt", DoubleRelayComponent::new)
+            .footprint(5, 3, b -> b
+                    .addPadSharedText(0, 0, 0, "relay.coil", null)
+                    .addPadSharedText(0, 2, 1, "relay.coil", null)
+                    .addPadSharedText(2, 0, 2, "relay.nc", "relay.nc.short")
+                    .addPadSharedText(2, 1, 3, "relay.cc", "relay.cc.short")
+                    .addPadSharedText(2, 2, 4, "relay.no", "relay.no.short")
+                    .addPadSharedText(4, 0, 5, "relay.nc", "relay.nc.short")
+                    .addPadSharedText(4, 1, 6, "relay.cc", "relay.cc.short")
+                    .addPadSharedText(4, 2, 7, "relay.no", "relay.no.short")
+                    .withItem().withOutline()
+            )
+            .item(ModdedItems.RELAY_DPDT)
             .register();
 
     public static final RegistryEntry<ResistorComponent> RESISTOR = REGISTRATE.component("resistor", ResistorComponent::new)
@@ -137,8 +152,8 @@ public class Components {
 
     public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
             .footprint(5, 3, b -> b
-                    .addPad(0, 1, 0, "Cathode", "-")
-                    .addPad(4, 1, 1, "Anode", "+")
+                    .addPad(0, 1, 0, "generic.cathode", "generic.cathode.short")
+                    .addPad(4, 1, 1, "generic.anode", "generic.anode.short")
                     .withItem().withOutline()
             )
             .item(ModdedItems.DIODE)

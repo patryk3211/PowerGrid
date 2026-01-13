@@ -151,6 +151,9 @@ public class ModdedItems {
     public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag, plates("zinc"));
 
     public static final ItemEntry<Item> RELAY = ingredient("relay");
+    public static final ItemEntry<Item> RELAY_DPDT = REGISTRATE.item("relay_dpdt", Item::new)
+            .lang("Double Pole Relay")
+            .register();
     public static final ItemEntry<Item> RESISTOR = ingredient("resistor");
     public static final ItemEntry<Item> REDSTONE_RELAY = ingredient("redstone_relay");
     public static final ItemEntry<Item> DIODE = ingredient("diode");

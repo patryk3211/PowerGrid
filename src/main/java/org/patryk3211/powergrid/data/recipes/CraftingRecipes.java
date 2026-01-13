@@ -189,6 +189,14 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .requires(ironSheet())
                     .requires(andesiteAlloy())),
 
+    RELAY_DPDT = create(ModdedItems.RELAY_DPDT)
+            .unlockedBy(() -> ModdedItems.COPPER_COIL)
+            .viaShapeless(b -> b
+                    .requires(copperCoil())
+                    .requires(ironSheet())
+                    .requires(ironSheet())
+                    .requires(andesiteAlloy())),
+
     REDSTONE_RELAY = create(ModdedItems.REDSTONE_RELAY)
             .unlockedBy(() -> ModdedItems.RELAY)
             .viaShapeless(b -> b

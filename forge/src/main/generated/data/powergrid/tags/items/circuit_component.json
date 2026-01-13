@@ -16,6 +16,7 @@
     "powergrid:redstone_relay",
     "powergrid:regulator_tube",
     "powergrid:voltage_gauge",
+    "powergrid:relay_dpdt",
     "powergrid:diode",
     "powergrid:lv_light_bulb",
     "powergrid:resistor"

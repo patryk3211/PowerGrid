@@ -228,16 +228,19 @@ public class ComponentFootprint {
         private Orientation arrow = null;
         @Nullable
         private final String translationKey;
+        @Nullable
+        private final String sharedKeyBase;
         public final Map<String, String> translatedPads = new HashMap<>();
 
         public Builder(int width, int height) {
-            this(width, height, null);
+            this(width, height, null, null);
         }
 
-        public Builder(int width, int height, String translationKeyBase) {
+        public Builder(int width, int height, @Nullable String translationKeyBase, @Nullable String sharedKeyBase) {
             this.width = width;
             this.height = height;
             this.translationKey = translationKeyBase;
+            this.sharedKeyBase = sharedKeyBase;
         }
 
         private void validatePad(int x, int y) {
@@ -261,7 +264,7 @@ public class ComponentFootprint {
             return this;
         }
 
-        public Builder addPad(int x, int y, int nodeIndex, String defaultLang, String defaultShort) {
+        public Builder addPad(int x, int y, int nodeIndex, String defaultLang, @Nullable String defaultShort) {
             if(translationKey == null)
                 throw new IllegalCallerException("This method may only be used when the translation key base is set");
             var key = translationKey + "." + nodeIndex;
@@ -269,6 +272,14 @@ public class ComponentFootprint {
             if(defaultShort != null)
                 translatedPads.put(key + ".short", defaultShort);
             return addPad(x, y, nodeIndex, Component.translatable(key), defaultShort == null ? null : Component.translatable(key + ".short"));
+        }
+
+        public Builder addPadSharedText(int x, int y, int nodeIndex, @NotNull String key, @Nullable String keyShort) {
+            if(sharedKeyBase == null)
+                throw new IllegalCallerException("This method may only be used when the translation key base is set");
+            return addPad(x, y, nodeIndex,
+                    Component.translatable(sharedKeyBase + "." + key),
+                    keyShort == null ? null : Component.translatable(sharedKeyBase + "." + keyShort));
         }
 
         public Builder withOutline() {

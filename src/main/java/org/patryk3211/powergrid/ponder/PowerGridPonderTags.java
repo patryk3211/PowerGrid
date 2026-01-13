@@ -117,6 +117,7 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.CAPACITOR)
                 .add(ModdedItems.COPPER_COIL)
                 .add(ModdedItems.RELAY)
+                .add(ModdedItems.RELAY_DPDT)
                 .add(ModdedItems.REDSTONE_RELAY)
                 .add(AllItems.ELECTRON_TUBE)
                 .add(ModdedItems.REGULATOR_TUBE)
@@ -124,9 +125,11 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.NEON_BULB)
                 .add(ModdedBlocks.LV_SWITCH)
                 .add(ModdedBlocks.LV_BUTTON)
+                .add(ModdedItems.LV_LIGHT_BULB)
                 .add(ModdedItems.POTENTIOMETER)
                 .add(ModdedBlocks.VOLTAGE_METER)
-                .add(ModdedBlocks.CURRENT_METER);
+                .add(ModdedBlocks.CURRENT_METER)
+                .add(ModdedItems.VARISTOR);
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)
