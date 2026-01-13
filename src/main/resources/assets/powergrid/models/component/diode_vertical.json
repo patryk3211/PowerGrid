@@ -2,7 +2,7 @@
 	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
 	"textures": {
-		"1": "powergrid:block/component/resistor"
+		"1": "powergrid:block/component/diode"
 	},
 	"elements": [
 		{
@@ -10,10 +10,10 @@
 			"to": [3, 5, 2.5],
 			"rotation": {"angle": 0, "axis": "z", "origin": [1, 2.5, 0.5]},
 			"faces": {
-				"north": {"uv": [2, 2, 6, 4], "rotation": 270, "texture": "#1"},
-				"east": {"uv": [6, 2, 2, 0], "rotation": 90, "texture": "#1"},
-				"south": {"uv": [8, 2, 12, 4], "rotation": 90, "texture": "#1"},
-				"west": {"uv": [10, 0, 6, 2], "rotation": 90, "texture": "#1"},
+				"north": {"uv": [6, 2, 2, 4], "rotation": 270, "texture": "#1"},
+				"east": {"uv": [2, 2, 6, 0], "rotation": 90, "texture": "#1"},
+				"south": {"uv": [12, 2, 8, 4], "rotation": 90, "texture": "#1"},
+				"west": {"uv": [6, 0, 10, 2], "rotation": 90, "texture": "#1"},
 				"up": {"uv": [6, 2, 8, 4], "rotation": 90, "texture": "#1"},
 				"down": {"uv": [0, 2, 2, 4], "rotation": 90, "texture": "#1"}
 			}
@@ -21,7 +21,7 @@
 		{
 			"from": [1.5, 0, 1],
 			"to": [2.5, 1, 2],
-			"rotation": {"angle": 0, "axis": "y", "origin": [2, 0, 1]},
+			"rotation": {"angle": 0, "axis": "y", "origin": [4, 0, 1]},
 			"faces": {
 				"north": {"uv": [1, 6, 2, 7], "texture": "#1"},
 				"east": {"uv": [0, 6, 1, 7], "texture": "#1"},
@@ -59,8 +59,7 @@
 			"name": "resistor",
 			"origin": [8, 8, 8],
 			"color": 0,
-			"children": [0, 1, 2]
-		},
-		3
+			"children": [0, 1, 2, 3]
+		}
 	]
 }

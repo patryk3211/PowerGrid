@@ -35,7 +35,7 @@ public class Components {
                     .addPad(1, 1, 0, "Cathode", "C")
                     .addPad(2, 0, 1, "Grid", "G")
                     .addPad(0, 2, 3, "Heater", "H")
-                    .addPad(2, 2, 4, "Heater", "H")
+                    .addPadSharedText(2, 2, 4, "electron_tube.3", "electron_tube.3.short")
                     .withItem().withOutline())
             .item(AllItems.ELECTRON_TUBE)
             .register();
@@ -152,8 +152,8 @@ public class Components {
 
     public static final RegistryEntry<DiodeComponent> DIODE = REGISTRATE.component("diode", DiodeComponent::new)
             .footprint(5, 3, b -> b
-                    .addPad(0, 1, 0, "generic.cathode", "generic.cathode.short")
-                    .addPad(4, 1, 1, "generic.anode", "generic.anode.short")
+                    .addPadSharedText(0, 1, 0, "generic.cathode", "generic.cathode.short")
+                    .addPadSharedText(4, 1, 1, "generic.anode", "generic.anode.short")
                     .withItem().withOutline()
             )
             .item(ModdedItems.DIODE)
