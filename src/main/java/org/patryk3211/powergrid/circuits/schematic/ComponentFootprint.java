@@ -42,6 +42,8 @@ public class ComponentFootprint {
     private final int width;
     private final int height;
 
+    public final int originalWidth, originalHeight;
+
     private final SortedMap<Point, PadData> pads;
     private final boolean outline;
     private final boolean withItem;
@@ -50,9 +52,11 @@ public class ComponentFootprint {
 
     private ItemStack renderedStack;
 
-    protected ComponentFootprint(int width, int height, SortedMap<Point, PadData> pads, boolean outline, boolean withItem, @Nullable Orientation arrow) {
+    protected ComponentFootprint(int width, int height, int originalWidth, int originalHeight, SortedMap<Point, PadData> pads, boolean outline, boolean withItem, @Nullable Orientation arrow) {
         this.width = width;
         this.height = height;
+        this.originalWidth = originalWidth;
+        this.originalHeight = originalHeight;
         this.pads = pads;
         this.outline = outline;
         this.withItem = withItem;
@@ -171,6 +175,14 @@ public class ComponentFootprint {
         return height;
     }
 
+    public int getOriginalWidth() {
+        return originalWidth;
+    }
+
+    public int getOriginalHeight() {
+        return originalHeight;
+    }
+
     public Map<Point, PadData> getPads() {
         return pads;
     }
@@ -214,7 +226,7 @@ public class ComponentFootprint {
             pads.put(new Point(x, y), pad.getValue());
         }
 
-        var footprint = new ComponentFootprint(width, height, pads, this.outline, withItem, arrow == null ? null : arrow.rotate(orientation));
+        var footprint = new ComponentFootprint(width, height, originalWidth, originalHeight, pads, this.outline, withItem, arrow == null ? null : arrow.rotate(orientation));
         // Copy cached stack if one is available.
         footprint.renderedStack = this.renderedStack;
         return footprint;
@@ -314,7 +326,7 @@ public class ComponentFootprint {
                 if (padIndices.last() != padIndices.size() - 1)
                     throw new IllegalStateException("Footprint pad indices must not contain any gaps");
             }
-            return new ComponentFootprint(width, height, pads, outline, withItem, arrow);
+            return new ComponentFootprint(width, height, width, height, pads, outline, withItem, arrow);
         }
     }
 

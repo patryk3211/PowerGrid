@@ -164,11 +164,10 @@ public class CircuitBoardModel implements BakedModel {
                     continue;
                 var model = ComponentModels.getModel(placed);
 
-                IQuadTransformer transformer = QuadTransformers.empty();
+                IQuadTransformer transformer;
                 if(placed.has(Orientation.PROPERTY)) {
                     var orientation = placed.get(Orientation.PROPERTY);
-                    // We need the raw footprint dimensions (without rotations)
-                    var footprint = placed.component.footprint(null);
+                    var footprint = placed.component.footprint(placed);
                         transformer = QuadTransformers.applying(new Transformation(
                                 new Vector3f(placed.x / 16f - 0.5f, 2 / 16f - 0.5f, placed.y / 16f - 0.5f),
                                 new Quaternionf().rotationY(orientation.ordinal() * (float) Math.PI * 0.5f),
@@ -177,9 +176,9 @@ public class CircuitBoardModel implements BakedModel {
                     if(orientation != Orientation.RIGHT) {
                         transformer = transformer.andThen(QuadTransformers.applying(new Transformation(
                                 switch(orientation) {
-                                    case DOWN -> new Vector3f(footprint.getHeight() / 16f, 0, 0);
-                                    case LEFT -> new Vector3f(footprint.getWidth() / 16f, 0, footprint.getHeight() / 16f);
-                                    case UP -> new Vector3f(0, 0, footprint.getWidth() / 16f);
+                                    case DOWN -> new Vector3f(footprint.getOriginalHeight() / 16f, 0, 0);
+                                    case LEFT -> new Vector3f(footprint.getOriginalWidth() / 16f, 0, footprint.getOriginalHeight() / 16f);
+                                    case UP -> new Vector3f(0, 0, footprint.getOriginalWidth() / 16f);
                                     case RIGHT -> throw new IllegalStateException();
                                 }, null, null, null
                         )));
