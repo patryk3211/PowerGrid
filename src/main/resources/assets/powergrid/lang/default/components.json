@@ -51,5 +51,8 @@
 
   "powergrid.component.property.barretter_current": "Holding Current",
   "powergrid.component.property.barretter_current.summary": "Constant current held by the tube",
-  "powergrid.component.property.barretter_resistance": "Minimum Resistance"
+  "powergrid.component.property.barretter_resistance": "Minimum Resistance",
+
+  "powergrid.component.property.varistor_voltage": "Threshold Voltage",
+  "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current"
 }

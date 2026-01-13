@@ -163,4 +163,8 @@ public class RecipeTags {
     public static ItemLike quartz() {
         return Items.QUARTZ;
     }
+
+    public static ItemLike redstone() {
+        return Items.REDSTONE;
+    }
 }

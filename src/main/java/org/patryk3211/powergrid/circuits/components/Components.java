@@ -180,6 +180,15 @@ public class Components {
             .item(ModdedItems.POTENTIOMETER)
             .register();
 
+    public static final RegistryEntry<VaristorComponent> VARISTOR = REGISTRATE.component("varistor", VaristorComponent::new)
+            .footprint(4, 4, b -> b
+                    .addPad(0, 1, 0)
+                    .addPad(3, 2, 1)
+                    .withItem().withOutline()
+            )
+            .item(ModdedItems.VARISTOR)
+            .register();
+
     @SuppressWarnings("EmptyMethod")
     public static void register() { /* Initialize static fields. */ }
 }

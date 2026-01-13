@@ -193,13 +193,20 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .unlockedBy(() -> ModdedItems.RELAY)
             .viaShapeless(b -> b
                     .requires(ModdedItems.RELAY)
-                    .requires(Items.REDSTONE)),
+                    .requires(redstone())),
 
     RESISTOR = create(ModdedItems.RESISTOR)
             .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
             .viaShapeless(b -> b
                     .requires(resistiveCoil())
                     .requires(coal())),
+
+    VARISTOR = create(ModdedItems.VARISTOR)
+            .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
+            .viaShapeless(b -> b
+                    .requires(resistiveCoil())
+                    .requires(coal())
+                    .requires(redstone())),
 
     CIRCUIT_DESIGN_TABLE = create(ModdedBlocks.CIRCUIT_DESIGN_TABLE)
             .unlockedBy(() -> AllItems.EMPTY_SCHEMATIC)
@@ -332,7 +339,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('I', ironSheet())),
 
     NEON_BULB = create(ModdedItems.NEON_BULB)
-            .unlockedBy(() -> Items.AMETHYST_SHARD)
+            .unlockedBy(() -> AllItems.IRON_SHEET)
             .viaShaped(b -> b
                     .pattern("B")
                     .pattern("G")
@@ -342,7 +349,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('I', ironSheet())),
 
     REGULATOR_TUBE = create(ModdedItems.REGULATOR_TUBE)
-            .unlockedBy(() -> Items.AMETHYST_SHARD)
+            .unlockedBy(() -> AllItems.IRON_SHEET)
             .viaShaped(b -> b
                     .pattern("A")
                     .pattern("G")
@@ -362,7 +369,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('P', ironSheet())),
 
     POTENTIOMETER = create(ModdedItems.POTENTIOMETER)
-            .unlockedBy(() -> ModdedItems.RESISTOR)
+            .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
             .viaShaped(b -> b
                     .pattern("A")
                     .pattern("N")
