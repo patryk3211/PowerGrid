@@ -148,6 +148,8 @@ public class ElectricalNetwork implements IStamped {
 
     // This method should be much faster than ArrayList.contains()
     protected boolean hasNode(INode node) {
+        if(node == null)
+            return false;
         int index = node.getIndex();
         if(index < 0 || index >= nodes.size())
             return false;
