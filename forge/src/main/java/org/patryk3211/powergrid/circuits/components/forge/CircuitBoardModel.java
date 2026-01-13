@@ -220,7 +220,10 @@ public class CircuitBoardModel implements BakedModel {
                             .rotateX((float) Math.PI * CircuitBoardBlock.getAngleX(state) / 180f),
                     null, null
             ));
-            return transformer.process(quads);
+            var trQuads = transformer.process(quads);
+            if(circuit != null)
+                circuit.quads.putQuads(side, renderType, trQuads);
+            return trQuads;
         }
         if(circuit != null)
             circuit.quads.putQuads(side, renderType, quads);
