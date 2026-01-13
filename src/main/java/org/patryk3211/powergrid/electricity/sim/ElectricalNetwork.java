@@ -300,6 +300,8 @@ public class ElectricalNetwork implements IStamped {
             return;
         if(leafNodes.containsKey(wire.node1) || leafNodes.containsKey(wire.node2))
             return;
+        if(!hasNode(wire.node1) || !hasNode(wire.node2))
+            return;
 
         conductanceDelta += Math.abs(change);
         if(countUpdates) {
