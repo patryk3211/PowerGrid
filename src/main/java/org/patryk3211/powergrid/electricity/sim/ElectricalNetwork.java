@@ -146,8 +146,17 @@ public class ElectricalNetwork implements IStamped {
         }
     }
 
+    // This method should be much faster than ArrayList.contains()
+    protected boolean hasNode(INode node) {
+        int index = node.getIndex();
+        if(index < 0 || index >= nodes.size())
+            return false;
+        // If this network owns this node it will be at the recorded index.
+        return nodes.get(index) == node;
+    }
+
     public void addNode(INode node) {
-        if(nodes.contains(node) || leafNodes.containsKey(node))
+        if(hasNode(node) || leafNodes.containsKey(node))
             return;
         node.assignIndex(nodes.size());
         node.setNetwork(this);
@@ -199,6 +208,11 @@ public class ElectricalNetwork implements IStamped {
                 nodes.get(i).assignIndex(i - 1);
                 StateVector.safe_set(i - 1, 0, StateVector.safe_get(i, 0));
             }
+        } else {
+            for (int i = node.getIndex() + 1; i < nodes.size(); ++i) {
+                // Move back all nodes by one.
+                nodes.get(i).assignIndex(i - 1);
+            }
         }
         nodes.remove(node.getIndex());
 
@@ -238,12 +252,12 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void addWire(AbstractElectricWire wire) {
-        if(wire.node1 != null && !nodes.contains(wire.node1) && !leafNodes.containsKey(wire.node1)) {
+        if(wire.node1 != null && !hasNode(wire.node1) && !leafNodes.containsKey(wire.node1)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node1.getNetwork() == null ? "no network" : "different network";
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 " + wire.node1 + " isn't - " + suffix + ")");
         }
-        if(wire.node2 != null && !nodes.contains(wire.node2) && !leafNodes.containsKey(wire.node2)) {
+        if(wire.node2 != null && !hasNode(wire.node2) && !leafNodes.containsKey(wire.node2)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
@@ -361,7 +375,7 @@ public class ElectricalNetwork implements IStamped {
                     break;
                 }
                 if(node != null) {
-                    if(nodes.contains(node)) {
+                    if(hasNode(node)) {
                         if(node.getIndex() >= nodes.size()) {
                             if(LOGGER != null)
                                 LOGGER.warn("Node {} has an index outside of the allocated matrix size, skipping", node);
@@ -517,7 +531,7 @@ public class ElectricalNetwork implements IStamped {
 
     public void makeLeaf(IElectricNode node, IElectricNode tracked) {
         assert node != tracked;
-        if(nodes.contains(node)) {
+        if(hasNode(node)) {
             internalRemoveNode(node);
             leafNodes.put(node, tracked);
             node.assignIndex(-1);
@@ -540,7 +554,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void removeLeaf(IElectricNode node) {
-        if(!nodes.contains(node)) {
+        if(!hasNode(node)) {
             if(leafNodes.containsKey(node)) {
                 leafNodes.remove(node);
                 addNode(node);

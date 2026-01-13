@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -30,6 +31,7 @@ import java.util.function.Function;
 
 public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
+    private final Set<IElectricNode> deferredNodeCheck = new ReferenceOpenHashSet<>();
 
     public GraphedElectricalNetwork(boolean addGMin) {
         this(new NetworkGraph(), addGMin);
@@ -53,7 +55,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         if(node instanceof ICouplingNode coupling) {
             graph.couple(coupling);
             for(var coupled : coupling.coupledNodes()) {
-                checkConnectivity(coupled, null);
+                deferredNodeCheck.add(coupled);
                 removeLeaf(coupled);
             }
         }
@@ -63,6 +65,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     public void removeNode(INode node) {
         super.removeNode(node);
         if(node instanceof IElectricNode enode) {
+            deferredNodeCheck.remove(enode);
             var connections = graph.getConnectedLines(enode);
             if(!connections.isEmpty()) {
                 PowerGrid.LOGGER.warn("Removed a node which had connections");
@@ -159,30 +162,20 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         }
     }
 
-    public void graphCheck() {
-        var checked = new HashSet<IElectricNode>();
-        for(var node : nodes) {
-            if(!(node instanceof FloatingNode)) {
-                // Only floating nodes are checked for continuity
-                continue;
-            }
-        }
-    }
-
     @Override
     public void addWire(AbstractElectricWire wire) {
         graph.connect(wire.node1, wire.node2, wire);
         super.addWire(wire);
-        checkConnectivity(wire.node1, null);
-        checkConnectivity(wire.node2, null);
+        deferredNodeCheck.add(wire.node1);
+        deferredNodeCheck.add(wire.node2);
     }
 
     @Override
     public void removeWire(AbstractElectricWire wire) {
         graph.disconnect(wire.node1, wire.node2, wire);
         super.removeWire(wire);
-        checkConnectivity(wire.node1, null);
-        checkConnectivity(wire.node2, null);
+        deferredNodeCheck.add(wire.node1);
+        deferredNodeCheck.add(wire.node2);
     }
 
     public Collection<AbstractElectricWire> findProblematicWires(IMatrixAccess residual, double threshold) {
@@ -206,5 +199,20 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
 
     public NetworkGraph getGraph() {
         return graph;
+    }
+
+    @Override
+    public void prepare(int multiTicks) {
+        for(var node : deferredNodeCheck) {
+            checkConnectivity(node, null);
+        }
+        deferredNodeCheck.clear();
+        super.prepare(multiTicks);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        deferredNodeCheck.clear();
     }
 }
