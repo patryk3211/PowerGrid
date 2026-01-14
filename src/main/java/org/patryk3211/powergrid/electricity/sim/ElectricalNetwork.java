@@ -264,10 +264,11 @@ public class ElectricalNetwork implements IStamped {
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
             throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
         }
+        if(!wires.add(wire))
+            return;
         if(mna != null)
             mna.rowExchange(false);
         wire.setNetwork(this);
-        wires.add(wire);
         if(wire.isSource())
             ++sourceCount;
         if(wire.node1 == null || wire.node2 == null)
