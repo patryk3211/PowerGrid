@@ -40,6 +40,15 @@ public class Components {
             .item(AllItems.ELECTRON_TUBE)
             .register();
 
+    public static final RegistryEntry<VFETComponent> VFET = REGISTRATE.component("vfet", VFETComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(0, 0, 0, "Drain", "D")
+                    .addPad(2, 0, 1, "Source", "S")
+                    .addPad(1, 2, 2, "Gate", "G")
+                    .withItem().withOutline())
+            .item(ModdedItems.VFET)
+            .register();
+
     public static final RegistryEntry<RegulatorTubeComponent> REGULATOR_TUBE = REGISTRATE.component("regulator_tube", RegulatorTubeComponent::new)
             .footprint(3, 3, b -> b
                     .addPadSharedText(0, 1, 0, "generic.anode", "generic.anode.short")

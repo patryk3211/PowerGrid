@@ -335,6 +335,14 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('R', AllItems.POLISHED_ROSE_QUARTZ)
                     .define('C', copperSheet())),
 
+    VFET = create(ModdedItems.VFET)
+            .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
+            .viaShaped(b -> b
+                    .pattern("IRC")
+                    .define('R', AllItems.POLISHED_ROSE_QUARTZ)
+                    .define('I', ironSheet())
+                    .define('C', copperSheet())),
+
     CAPACITOR = create(ModdedItems.CAPACITOR)
             .unlockedBy(() -> AllItems.IRON_SHEET)
             .viaShaped(b -> b

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "forge:plates/copper"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    },
+    "R": {
+      "item": "create:polished_rose_quartz"
+    }
+  },
+  "pattern": [
+    "IRC"
+  ],
+  "result": {
+    "item": "powergrid:vfet"
+  },
+  "show_notification": true
+}

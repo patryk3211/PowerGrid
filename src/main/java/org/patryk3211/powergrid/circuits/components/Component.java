@@ -21,6 +21,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
@@ -164,6 +165,14 @@ public abstract class Component {
 
     public static void renderDataTick(@NotNull PlacedComponent placed) {
         placed.data(FloatPair.class).ifPresent(data -> data.prev = data.current);
+    }
+
+    /**
+     * Data fixer, handles changes between updates.
+     * @param tag Tag to modify
+     */
+    public void dataFixup(@NotNull CompoundTag tag) {
+
     }
 
     public static class FloatPair {
