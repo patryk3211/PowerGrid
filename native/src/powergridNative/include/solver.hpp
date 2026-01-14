@@ -14,6 +14,10 @@ namespace powergrid {
         int column;
         double change;
     }__attribute__((packed));
+
+    struct AuxBuf {
+        uint8_t status;
+    }__attribute((packed));
         
     class Solver {
         JNIEnv *m_env;
@@ -51,10 +55,12 @@ namespace powergrid {
         RHSOp *m_rhsOpBuffer;
         JacobianOp *m_jacobianOpBuffer;
 
+        AuxBuf *m_aux;
+
         bool m_converged;
 
     public:
-        Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount, JNIEnv *env, jobject mnaObj);
+        Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount, void *auxBuf, JNIEnv *env, jobject mnaObj);
         ~Solver();
 
         void resize(int size);

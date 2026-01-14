@@ -67,10 +67,13 @@ double SparseMatrix::get(int row, int column) {
     int start = m_columns[column];
     int end = m_columns[column + 1];
     
+    // TODO: Since row indices should always be sorted we could use binary search here.
     for(int i = start; i < end; ++i) {
         if(m_rowIndices[i] == row) {
             return m_elements[i];
         }
+        if(m_rowIndices[i] > row)
+            break;
     }
     return 0;
 }
@@ -81,17 +84,29 @@ double& SparseMatrix::ref(int row, int column) {
     int start = m_columns[column];
     int end = m_columns[column + 1];
     
+    int insertPos = start;
     for(int i = start; i < end; ++i) {
-        if(m_rowIndices[i] == row) {
+        int index = m_rowIndices[i];
+        if(index == row) {
             return m_elements[i];
         }
+        // If the first row index is larger,
+        //  loop will break with insertPos = start
+        // If all row indices are smaller,
+        //  loop will end with insertPos = i + 1 (end)
+        // If start = end, insertPos = start
+        if(index > row) {
+            insertPos = i;
+            break;
+        }
+        insertPos = i + 1;
     }
     
     m_structureModified = true;
     // Not found in existing allocations
-    // Append after the last column entry
-    m_rowIndices.insert(m_rowIndices.begin() + end, row);
-    auto iter = m_elements.insert(m_elements.begin() + end, 0);
+    // Append in position which preserves ordering.
+    m_rowIndices.insert(m_rowIndices.begin() + insertPos, row);
+    auto iter = m_elements.insert(m_elements.begin() + insertPos, 0);
     // Offset all columns after the modified index
     for(int i = column + 1; i < m_columns.size(); ++i) {
         ++m_columns[i];

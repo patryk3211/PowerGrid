@@ -17,10 +17,11 @@ static_assert(sizeof(jint) == sizeof(int));
 #define SOLVER(intptr) ((Solver *) (intptr))
 
 extern "C" {
-    JNIEXPORT jlong JNICALL MANGLE(allocateNativeObject)(JNIEnv *env, jobject obj, jobject rhsOpBuf, jobject jOpBuf, jint maxCmdCount, jobject mnaObj) {
+    JNIEXPORT jlong JNICALL MANGLE(allocateNativeObject)(JNIEnv *env, jobject mnaObj, jobject rhsOpBuf, jobject jOpBuf, jint maxCmdCount, jobject auxBuf) {
         void *rhs = env->GetDirectBufferAddress(rhsOpBuf);
         void *j = env->GetDirectBufferAddress(jOpBuf);
-        return (uintptr_t) new Solver(rhs, j, maxCmdCount, env, mnaObj);
+        void *aux = env->GetDirectBufferAddress(auxBuf);
+        return (uintptr_t) new Solver(rhs, j, maxCmdCount, aux, env, mnaObj);
     }
 
     JNIEXPORT void JNICALL MANGLE(deallocateNativeObject)(JNIEnv *env, jobject obj, jlong intptr) {

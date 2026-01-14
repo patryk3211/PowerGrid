@@ -4,12 +4,13 @@
 
 using namespace powergrid;
 
-Solver::Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount, JNIEnv *env, jobject mnaObj)
+Solver::Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount, void *aux, JNIEnv *env, jobject mnaObj)
     : m_env(env)
     , m_mnaObject(mnaObj)
     , m_maxCmdCount(cmdCount)
     , m_rhsOpBuffer((RHSOp *) rhsOpBuf)
-    , m_jacobianOpBuffer((JacobianOp *) jacobianOpBuf) {
+    , m_jacobianOpBuffer((JacobianOp *) jacobianOpBuf)
+    , m_aux((AuxBuf *) aux) {
     PG_TRACE("[Solver::Solver] entering");
     m_X.ncol = 1;
     m_X.Stype = SLU_DN;
@@ -123,8 +124,7 @@ void Solver::finishJacobianWrite(int cmdCount) {
         return;
     PG_TRACE("[Solver::finishJacobianWrite] finishing Jacobian write");
     processJacobianBuffer(cmdCount);
-    m_A.sortRows();
-    PG_TRACE("[Solver::finishJacobianWrite] Jacobian sorted");
+    PG_TRACE("[Solver::finishJacobianWrite] returning");
 }
 
 void Solver::processJacobianBuffer(int cmdCount) {
@@ -212,8 +212,9 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         m_converged = i < maxIters - 10;
     }
 
+    m_aux->status = m_converged ? 1 : 0;
     PG_TRACE("[Solver::singleTick] returning");
-    return m_converged ? m_stateBuffer : nullptr;
+    return m_stateBuffer;
 }
 
 void Solver::setPrecision(double absolute, double relative, double minimum) {

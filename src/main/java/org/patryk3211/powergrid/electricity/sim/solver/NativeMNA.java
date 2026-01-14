@@ -50,6 +50,7 @@ public class NativeMNA implements IMNA {
     protected int warmUpTicks = 0;
     private int size;
 
+    private final ByteBuffer auxBuf;
     private final ByteBuffer rhsOps;
     private final ByteBuffer jacobianOps;
 
@@ -111,13 +112,15 @@ public class NativeMNA implements IMNA {
 
     public NativeMNA(ElectricalNetwork network) {
         this.network = network;
+        // Auxiliary status buffer.
+        auxBuf = ByteBuffer.allocateDirect(1);
         // RHS operation buffer (int + double -> row + change)
         rhsOps = ByteBuffer.allocateDirect(RHS_COMMAND_SIZE * OPERATION_BUFFER_COMMAND_LENGTH);
         rhsOps.order(ByteOrder.nativeOrder());
         // Jacobian operation buffer = (int + int + double -> row + column + change)
         jacobianOps = ByteBuffer.allocateDirect(JACOBIAN_COMMAND_SIZE * OPERATION_BUFFER_COMMAND_LENGTH);
         jacobianOps.order(ByteOrder.nativeOrder());
-        nativePtr = allocateNativeObject(rhsOps, jacobianOps, OPERATION_BUFFER_COMMAND_LENGTH, this);
+        nativePtr = allocateNativeObject(rhsOps, jacobianOps, OPERATION_BUFFER_COMMAND_LENGTH, auxBuf);
     }
 
     @Override
@@ -275,15 +278,10 @@ public class NativeMNA implements IMNA {
 
         // Run native solve routine.
         int maxIterations = network.maxIterations.apply(network.hasHooks());
-        var buffer = singleTick(nativePtr, maxIterations, ops);
-        if(buffer != null) {
-            stateBuffer = buffer;
-            stateBuffer.order(ByteOrder.nativeOrder());
-            converged = true;
-        } else {
-            stateBuffer = null;
-            converged = false;
-        }
+        stateBuffer = singleTick(nativePtr, maxIterations, ops);
+        stateBuffer.order(ByteOrder.nativeOrder());
+        byte status = auxBuf.get(0);
+        converged = (status & 1) != 0;
 
         if(converged && warmUpTicks > 0) {
             --warmUpTicks;
@@ -366,7 +364,7 @@ public class NativeMNA implements IMNA {
         }
     }
 
-    private static native long allocateNativeObject(Buffer rhsOpBuffer, Buffer jOpBuffer, int cmdCount, NativeMNA javaObj);
+    private native long allocateNativeObject(Buffer rhsOpBuffer, Buffer jOpBuffer, int cmdCount, Buffer auxBuffer);
     private static native void setStateSize(long ptr, int size);
     private static native void deallocateNativeObject(long ptr);
     private static native void zeroRHS(long ptr);
