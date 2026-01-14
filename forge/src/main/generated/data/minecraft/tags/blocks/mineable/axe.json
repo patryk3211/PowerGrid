@@ -1,5 +1,6 @@
 {
   "values": [
+    "powergrid:plotter",
     "powergrid:generator_clutch",
     "powergrid:lv_switch",
     "powergrid:lv_button",
@@ -9,6 +10,7 @@
     "powergrid:light_fixture",
     "powergrid:electric_fan",
     "powergrid:circuit_design_table",
-    "powergrid:fuse_holder"
+    "powergrid:fuse_holder",
+    "powergrid:andesite_encased_crt"
   ]
 }

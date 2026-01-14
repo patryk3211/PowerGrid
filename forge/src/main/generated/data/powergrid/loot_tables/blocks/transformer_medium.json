@@ -1,12 +1,5 @@
 {
   "type": "minecraft:block",
-  "functions": [
-    {
-      "add": false,
-      "count": 4.0,
-      "function": "minecraft:set_count"
-    }
-  ],
   "pools": [
     {
       "bonus_rolls": 0.0,

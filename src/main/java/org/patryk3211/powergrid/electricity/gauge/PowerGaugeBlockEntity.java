@@ -58,6 +58,11 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
     }
 
     @Override
+    public void electricalTick() {
+        applyPower(series);
+    }
+
+    @Override
     public void tick() {
         var current = Math.abs(getValue());
         if(current > maxValue) {
@@ -66,7 +71,6 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
             dialTarget = current / maxValue;
         }
 
-        applyPower(series);
         super.tick();
     }
 
@@ -81,6 +85,16 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
         builder.setTerminalCount(3);
         series = builder.connect(resistance, builder.terminalNode(0), builder.terminalNode(1));
         shunt = builder.connect(20e3f, builder.terminalNode(0), builder.terminalNode(2));
+    }
+
+    @Override
+    public float getMaxValue() {
+        return maxValue;
+    }
+
+    @Override
+    public ChatFormatting getColor(float value) {
+        return measurementColor(value, maxValue);
     }
 
     @Override
@@ -129,7 +143,11 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        addTooltip(tooltip, getValue(), maxValue);
+        Lang.builder().translate("gui.power_meter.title")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        display.format(getValue()).forGoggles(tooltip, 1);
         return true;
     }
 }

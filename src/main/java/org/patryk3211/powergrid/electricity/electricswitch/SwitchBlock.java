@@ -15,7 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -38,8 +40,11 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity>, IHaveElectricProperties {
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 
@@ -64,18 +69,20 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(!player.isShiftKeyDown()) {
-            if(!IWire.holdsWire(player)) {
+            if(!IWire.holdsWire(player) && !AllItems.WRENCH.isIn(player.getItemInHand(hand))) {
                 var isOpen = !state.getValue(OPEN);
                 if(!isButton) {
                     world.setBlockAndUpdate(pos, state.setValue(OPEN, isOpen));
-                    withBlockEntityDo(world, pos, be -> be.setState(!isOpen));
+                    if(!world.isClientSide)
+                        withBlockEntityDo(world, pos, be -> be.setState(!isOpen));
                     useSound(world, pos, isOpen);
                 } else {
                     if(!isOpen) {
                         world.setBlockAndUpdate(pos, state.setValue(OPEN, false));
                         useSound(world, pos, false);
                     }
-                    withBlockEntityDo(world, pos, be -> be.setState(true));
+                    if(!world.isClientSide)
+                        withBlockEntityDo(world, pos, be -> be.setState(true));
                 }
                 return InteractionResult.SUCCESS;
             }

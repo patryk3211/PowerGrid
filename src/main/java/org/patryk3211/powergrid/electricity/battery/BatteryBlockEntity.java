@@ -43,6 +43,11 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
+    public boolean isNoisy() {
+        return false;
+    }
+
+    @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
     }
@@ -64,14 +69,13 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         if(sourceCoupling != null) {
             // Internal resistive losses
             var I = sourceCoupling.getCurrent();
             if(thermalBehaviour != null && sourceCoupling.isConverged())
                 thermalBehaviour.applyTickPower(I * I * sourceCoupling.getResistance());
         }
-        super.tick();
 
         if(sourceCoupling == null)
             return;

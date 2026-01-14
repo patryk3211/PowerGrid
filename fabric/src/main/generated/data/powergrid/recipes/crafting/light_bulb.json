@@ -9,7 +9,7 @@
       "tag": "c:iron_plates"
     },
     "W": {
-      "item": "powergrid:iron_wire"
+      "tag": "c:iron_wires"
     }
   },
   "pattern": [

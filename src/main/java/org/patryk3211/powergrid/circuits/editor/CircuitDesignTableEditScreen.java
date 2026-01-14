@@ -36,8 +36,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.circuits.components.Component;
-import org.patryk3211.powergrid.circuits.components.properties.Orientation;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -228,7 +227,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     @Override
     protected List<net.minecraft.network.chat.Component> getTooltipFromContainerItem(ItemStack stack) {
         var lines = super.getTooltipFromContainerItem(stack);
-        if(Component.forItem(stack.getItem()) != null) {
+        if(ComponentRegistry.getComponent(stack.getItem()) != null) {
             lines.add(TOOLTIP_PLACEABLE);
         }
         return lines;
@@ -253,7 +252,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     }
 
     private void toolSelect(Slot slot) {
-        var component = Component.forItem(slot.getItem().getItem());
+        var component = ComponentRegistry.getComponent(slot.getItem().getItem());
         if(component == null)
             return;
         editWidget.cancelSelection();
@@ -268,7 +267,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     }
 
     public void toolSelect(Item item) {
-        var component = Component.forItem(item);
+        var component = ComponentRegistry.getComponent(item);
         if(component == null)
             return;
         editWidget.cancelSelection();
@@ -360,7 +359,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
                 ctx.blit(BACKGROUND, leftPos + slot.x - 1, topPos + slot.y - 1 , 232, 18, 18, 18);
                 continue;
             }
-            if(Component.forItem(slot.getItem().getItem()) == null)
+            if(ComponentRegistry.getComponent(slot.getItem().getItem()) == null)
                 continue;
             ctx.blit(BACKGROUND, leftPos + slot.x - 1, topPos + slot.y - 1 , 232, 0, 18, 18);
         }
@@ -444,7 +443,6 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
             }
             return true;
         }
-        // TODO: Add key binds for tools
         // Prevent closing on Inventory Key and ESC
         var focused = getFocused();
         var handled = focused != null && focused.keyPressed(keyCode, scanCode, modifiers);
@@ -452,7 +450,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
             return true;
 
         if(selectedComponent != null || focused instanceof EditBox)
-            return false;
+            return true;
 
         // Hotbar as component quick select
         var hotbar = minecraft.options.keyHotbarSlots;
@@ -465,36 +463,35 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
         // Other tool keybinds
         if(ModdedKeys.ROTATE_COMPONENT.matchesKey(keyCode, scanCode)) {
-            if(currentComponent != null && currentComponent.has(Orientation.PROPERTY)) {
-                var current = currentComponent.get(Orientation.PROPERTY);
-                if(Screen.hasShiftDown()) {
-                    current = current.getCounterClockwise();
-                } else {
-                    current = current.getClockwise();
+            if(currentComponent != null) {
+                if(currentComponent.component.rotate(currentComponent, Screen.hasShiftDown())) {
+                    playSound(ModdedSoundEvents.UI_COMPONENT_ROTATE);
                 }
-                currentComponent.set(Orientation.PROPERTY, current);
-                playSound(ModdedSoundEvents.UI_COMPONENT_ROTATE);
-                return true;
             }
+//            if(currentComponent != null && currentComponent.has(Orientation.PROPERTY)) {
+//                var current = currentComponent.get(Orientation.PROPERTY);
+//                if(Screen.hasShiftDown()) {
+//                    current = current.getCounterClockwise();
+//                } else {
+//                    current = current.getClockwise();
+//                }
+//                currentComponent.set(Orientation.PROPERTY, current);
+//            }
         } else if(ModdedKeys.PLACE_TRACE.matchesKey(keyCode, scanCode)) {
             toolSelect(Tool.CONNECT);
             playSound(ModdedSoundEvents.UI_PLACE_TRACE);
-            return true;
         } else if(ModdedKeys.DELETE_AREA.matchesKey(keyCode, scanCode)) {
             toolSelect(Tool.DELETE);
             playSound(ModdedSoundEvents.UI_DELETE_AREA);
-            return true;
         } else if(ModdedKeys.PICK_COMPONENT.matchesKey(keyCode, scanCode)) {
             toolSelect(Tool.SELECT);
             playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
-            return true;
         } else if(ModdedKeys.SWITCH_LAYER.matchesKey(keyCode, scanCode)) {
             flipLayer();
             playSound(ModdedSoundEvents.UI_CLICK);
-            return true;
         }
 
-        return false;
+        return true;
     }
 
     @Override

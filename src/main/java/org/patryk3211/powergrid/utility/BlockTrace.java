@@ -25,6 +25,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -337,6 +338,19 @@ public class BlockTrace {
             return offset;
         }
 
+        public boolean insideShape(Vec3i cellPos) {
+            var pos = BlockPos.containing(transform(cellPos));
+            var isInside = new MutableBoolean(false);
+            var local = transform(cellPos).subtract(pos.getX(), pos.getY(), pos.getZ());
+            world.getBlockState(pos)
+                    .getCollisionShape(world, pos)
+                    .toAabbs().forEach(aabb -> {
+                        if (aabb.contains(local))
+                            isInside.setTrue();
+                    });
+            return isInside.getValue();
+        }
+
         @Nullable
         public Vec3i raycastNextPosition(TraceCell currentCell, Direction dir) {
             var axis = dir.getAxis();
@@ -361,10 +375,17 @@ public class BlockTrace {
             if (hit.isInside()) {
                 var axisCoordinate = currentPos.get(axis);
                 int offset = offsetToFullBlock(axisCoordinate, dir.getAxisDirection());
-                if (Math.abs(offset) > GRID_SIZE / 2)
-                    return null;
+
                 // Try to move outside the block.
-                return currentPos.relative(axis, offset);
+                var outside = currentPos.relative(axis, offset);
+                if (Math.abs(offset) > GRID_SIZE / 2) {
+                    if(insideShape(outside))
+                        return null;
+                } else {
+                    if(insideShape(outside))
+                        return outside.relative(dir, 1);
+                }
+                return outside;
             }
             var cellPos = transform(hit.getLocation());
             if(hit.getType() != HitResult.Type.MISS && hit.getDirection().getAxisDirection() == Direction.AxisDirection.NEGATIVE) {

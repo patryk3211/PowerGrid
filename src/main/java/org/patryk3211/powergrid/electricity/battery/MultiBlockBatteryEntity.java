@@ -147,8 +147,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public void electricalTick() {
+        super.electricalTick();
         if (lastKnownPos == null)
             lastKnownPos = getBlockPos();
         else if (!lastKnownPos.equals(worldPosition)) {

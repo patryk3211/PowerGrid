@@ -102,11 +102,16 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     }
 
     public float getCurrent() {
-        return -getAssemblySource().getCurrent();
+        var source = getAssemblySource();
+        if(source == null)
+            return 0;
+        return -source.getCurrent();
     }
 
     public float getPower() {
         var source = getAssemblySource();
+        if(source == null)
+            return 0;
         return -source.getCurrent() * source.getVoltage();
     }
 
@@ -140,6 +145,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
             } else {
                 electricBehaviour = new ElectricBehaviour(this);
             }
+            electricBehaviour.setSyncAppender(rotorBehaviour);
             if(oldBehaviour != null)
                 electricBehaviour.inheritConnections(oldBehaviour);
             attachBehaviourLate(electricBehaviour);
@@ -149,14 +155,15 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 wires.forEach(TransmissionLinePart::refreshEndpointNodes);
             }
         }
-        float totalField = 0;
-        if(source != null) {
-            for (var rotor : rotors) {
-                totalField += rotor.calculateField();
+        if(!level.isClientSide || isVirtual()) {
+            float totalField = 0;
+            if (source != null) {
+                for (var rotor : rotors) {
+                    totalField += rotor.calculateField();
+                }
+                source.tick(totalField);
             }
-            source.tick(totalField);
-        }
-        if(level.isClientSide) {
+        } else {
             var angular = rotorBehaviour.getAngularVelocityRadians();
             var current = getCurrent();
             // Max 5 particles per tick

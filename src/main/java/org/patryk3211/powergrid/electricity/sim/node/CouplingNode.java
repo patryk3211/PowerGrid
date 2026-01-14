@@ -21,9 +21,27 @@ public abstract class CouplingNode implements ICouplingNode {
     protected ElectricalNetwork network;
     protected int index;
 
+    protected double savedStateValue = 0;
+
     @Override
     public void setNetwork(ElectricalNetwork network) {
         this.network = network;
+    }
+
+    @Override
+    public void setStateValue(double value) {
+        this.savedStateValue = value;
+        ICouplingNode.super.setStateValue(value);
+    }
+
+    @Override
+    public double getSavedValue() {
+        return savedStateValue;
+    }
+
+    @Override
+    public void setSavedValue(double value) {
+        this.savedStateValue = value;
     }
 
     @Override

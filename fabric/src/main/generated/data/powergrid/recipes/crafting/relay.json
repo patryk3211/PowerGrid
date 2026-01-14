@@ -3,7 +3,7 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "powergrid:copper_coil"
+      "tag": "c:copper_coils"
     },
     {
       "tag": "c:iron_plates"

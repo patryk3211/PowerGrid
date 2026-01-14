@@ -65,11 +65,11 @@ public class WireItem extends Item implements IWire {
             if(result != InteractionResult.PASS)
                 return result;
         }
-        var tag = context.getItemInHand().getTag();
+        var stack = context.getItemInHand();
+        var tag = stack.getTagElement("Connection");
         if(tag != null) {
             // This will result in the connection being a block wire (instead of a hanging wire)
             var world = context.getLevel();
-            var stack = context.getItemInHand();
             var endpoint = WireEndpointType.deserialize(tag);
             if(endpoint == null)
                 return InteractionResult.FAIL;
@@ -80,7 +80,7 @@ public class WireItem extends Item implements IWire {
             if(result.getResult().consumesAction()) {
                 var entity = result.getObject();
                 if(entity != null) {
-                    stack.setTag(new BlockWireEntityEndpoint(entity, true).serialize());
+                    stack.getOrCreateTag().put("Connection", new BlockWireEntityEndpoint(entity, true).serialize());
                     var player = context.getPlayer();
                     if(player != null)
                         player.setItemInHand(context.getHand(), stack);
@@ -94,6 +94,12 @@ public class WireItem extends Item implements IWire {
     public static InteractionResultHolder<BlockWireEntity> connect(Level world, ItemStack stack, Player player, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
         if(endpoint1.type() == WireEndpointType.BLOCK_WIRE && endpoint2.type() == WireEndpointType.BLOCK_WIRE)
             return mergeWires(world, stack, player, (BlockWireEntityEndpoint) endpoint1, (BlockWireEntityEndpoint) endpoint2);
+
+        if(endpoint1.type() == WireEndpointType.BLOCK && endpoint2.type() == WireEndpointType.BLOCK_WIRE) {
+            var e = endpoint1;
+            endpoint1 = endpoint2;
+            endpoint2 = e;
+        }
 
         var lastPoint = endpoint1.getExactPosition(world);
         if(endpoint1.type() != WireEndpointType.BLOCK_WIRE)
@@ -273,14 +279,14 @@ public class WireItem extends Item implements IWire {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return super.isFoil(stack) || stack.hasTag();
+        return super.isFoil(stack) || (stack.hasTag() && stack.getTag().contains("Connection"));
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
         if(stack.hasTag() && user.isShiftKeyDown()) {
-            stack.setTag(null);
+            stack.removeTagKey("Connection");
             if(!world.isClientSide)
                 user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
             return InteractionResultHolder.sidedSuccess(stack, true);

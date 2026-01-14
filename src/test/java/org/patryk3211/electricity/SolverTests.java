@@ -15,10 +15,14 @@
  */
 package org.patryk3211.electricity;
 
+import org.ejml.data.DMatrixRMaj;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.solver.DynamicallyTypedMatrix;
+import org.patryk3211.powergrid.electricity.sim.solver.GMRESSolver;
 import org.patryk3211.powergrid.electricity.sim.special.GeneratorCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.IRotor;
 
@@ -91,6 +95,21 @@ public class SolverTests extends TestHelper {
 
         Assertions.assertEquals(-2.5, V.getCurrent(), 1e-6, "Voltage source current is incorrect");
         Assertions.assertEquals(2.5, N1.getVoltage() - N2.getVoltage(), 1e-6, "Wire voltage is incorrect");
+    }
+
+    @Test
+    void testCurrentWire() {
+        var Net  = new Network(true);
+
+        var N1 = Net.N();
+        var N2 = Net.N();
+        var I = new CurrentSourceWire(N1, N2, 0.5f);
+        I.setCurrent(0.5f);
+        Net.network.addWire(I);
+
+        Net.calculate();
+
+        Assertions.assertEquals(1, I.potentialDifference(), 1e-6, "Current source voltage is incorrect");
     }
 
     private static class Rotor implements IRotor {
@@ -177,6 +196,96 @@ public class SolverTests extends TestHelper {
             System.out.printf("  ω2 = %g\n    I_gen2 = %g\n    ΔE_gen2 = %g\n    P_gen2 = %g, E = %g\n",
                     rotor2.getAngularVelocity(), V2.getCurrent(), deltaE2, Pe2, Pe2 * 0.05f);
             System.out.printf("  E_system = %g\n", rotor1.energy() + rotor2.energy());
+        }
+    }
+
+    @Test
+    void testGmres() {
+        var solver = new GMRESSolver(1e-7f, 5);
+
+        var A = new DynamicallyTypedMatrix(3, 3);
+        A.set(0, 0, 2);
+        A.set(1, 1, 2);
+        A.set(2, 2, 2);
+        A.set(0, 1, 1);
+        A.set(1, 0, 1);
+        A.set(1, 2, 1);
+        A.set(2, 1, 1);
+
+        var b = new DMatrixRMaj(3, 1);
+        b.set(0, 0, 4);
+        b.set(1, 0, 2);
+        b.set(2, 0, 1);
+
+        solver.setStateSize(3);
+        var x = solver.solve(A, b, false);
+
+        Assertions.assertNotNull(x);
+        Assertions.assertEquals(9.0 / 4.0, x.get(0, 0), 1e-7);
+        Assertions.assertEquals(-1.0 / 2.0, x.get(1, 0), 1e-7);
+        Assertions.assertEquals(3.0 / 4.0, x.get(2, 0), 1e-7);
+    }
+
+    @Test
+    void testRowSolve() {
+        var b = new DMatrixRMaj(1, 3);
+        b.set(0, 0, 1);
+        b.set(0, 1, 2);
+        b.set(0, 2, 3);
+
+        var x = new DMatrixRMaj(1, 3);
+        {
+            var U = new DynamicallyTypedMatrix(3, 3, DynamicallyTypedMatrix.Solver.LU);
+            U.set(0, 0, 1);
+            U.set(0, 1, 0);
+            U.set(0, 2, 1);
+            U.set(1, 1, 2);
+            U.set(1, 2, 4);
+            U.set(2, 2, 3);
+            U.convert(DynamicallyTypedMatrix.State.SPARSE);
+            U.refactorize();
+
+            U.solveRow(b, x);
+
+            Assertions.assertEquals(1, x.get(0, 0));
+            Assertions.assertEquals(1, x.get(0, 1));
+            Assertions.assertEquals(-2.0 / 3.0, x.get(0, 2));
+        }
+
+        {
+            var L = new DynamicallyTypedMatrix(3, 3, DynamicallyTypedMatrix.Solver.LU);
+            L.set(0, 0, 1);
+            L.set(1, 1, 1);
+            L.set(2, 2, 1);
+            L.set(1, 0, 3);
+            L.set(2, 0, 4);
+            L.set(2, 1, 2);
+            L.convert(DynamicallyTypedMatrix.State.SPARSE);
+            L.refactorize();
+
+            L.solveRow(b, x);
+
+            Assertions.assertEquals( 1, x.get(0, 0));
+            Assertions.assertEquals(-4, x.get(0, 1));
+            Assertions.assertEquals( 3, x.get(0, 2));
+        }
+
+        {
+            var L = new DynamicallyTypedMatrix(3, 3, DynamicallyTypedMatrix.Solver.LU);
+            L.set(0, 0, 1);
+            L.set(1, 1, 1);
+            L.set(2, 2, 1);
+            L.set(1, 0, 3);
+            L.set(2, 0, 4);
+            L.set(2, 1, 2);
+            L.convert(DynamicallyTypedMatrix.State.DENSE);
+            L.refactorize();
+
+            L.solveRow(b, x);
+
+            Assertions.assertEquals( 1, x.get(0, 0));
+            Assertions.assertEquals(-4, x.get(0, 1));
+            Assertions.assertEquals( 3, x.get(0, 2));
         }
     }
 }

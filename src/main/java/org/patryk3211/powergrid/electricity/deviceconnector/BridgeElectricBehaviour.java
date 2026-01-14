@@ -37,6 +37,7 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
     private boolean fetched = false;
     private final Supplier<SwitchedWire> converterWire;
     private boolean isProxy = false;
+    protected int cooldownTicks = 0;
 
     public <T extends SmartBlockEntity & IElectricEntity> BridgeElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<SwitchedWire> converterWire) {
         super(be, true, () -> behaviourPosition);
@@ -55,7 +56,11 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
         }
         bridgeBehaviour = makeFEHandler(blockEntity);
         if(bridgeBehaviour == null) {
-            world.destroyBlock(getPos(), true);
+            if(cooldownTicks >= 5) {
+                world.destroyBlock(getPos(), true);
+            } else {
+                fetched = false;
+            }
             return;
         }
         bridgeBehaviour.setAmount(readEnergy);
@@ -132,8 +137,11 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
     public void tick() {
         super.tick();
         var energyStorage = getBridgeBehaviour();
-        if(energyStorage == null)
+        if(energyStorage == null) {
+            if(!isProxy)
+                ++cooldownTicks;
             return;
+        }
 
         var wire = converterWire.get();
         var world = getWorld();

@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -48,21 +49,30 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
+
 public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<ElectricMotorBlockEntity>, IHaveElectricProperties, IAcceptCord {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
-    private static final VoxelShape NORTH_SHAPE = box(3, 3, 0, 13, 13, 16);
+    public static final VoxelShape NORTH_SHAPE = Shapes.or(
+            box(3, 3, 0.5, 13, 13, 15.5),
+            box(2.5, 2.5, 10.5, 13.5, 13.5, 15.5)
+    );
+    public static final VoxelShape UP_SHAPE = Shapes.or(
+            box(3, 0.5, 3, 13, 15.5, 13),
+            box(2.5, 0.5, 2.5, 13.5, 5.5, 13.5)
+    );
 
     private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 2.5, 11.5, 6.5, 4.5, 13.5, 9.5)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5, 13, 14, 7, 14, 16)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 11.5, 11.5, 6.5, 13.5, 13.5, 9.5)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 9, 13, 14, 11, 14, 16)
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
     public ElectricMotorBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE));
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, NORTH_TERMINALS, NORTH_SHAPE, UP_SHAPE));
     }
 
     @Override
@@ -127,7 +137,7 @@ public class ElectricMotorBlock extends ElectricKineticBlock implements IBE<Elec
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
         var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
-        var maxPower = 256 * torque / 60;
+        var maxPower = 256 * torque / CONVERSION_CONSTANT;
         Voltage.max((int) Math.sqrt(maxPower * resistance()), player, tooltip);
     }
 

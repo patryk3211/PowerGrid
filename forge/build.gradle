@@ -65,6 +65,7 @@ loom {
         named("client") {
             vmArg("-enableassertions")
             vmArg("-XX:+AllowEnhancedClassRedefinition")
+            vmArg("-Djava.library.path=" + rootProject.nativeLibDir)
         }
 
         create("data") {

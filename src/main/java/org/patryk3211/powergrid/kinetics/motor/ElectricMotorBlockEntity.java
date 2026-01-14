@@ -36,6 +36,8 @@ import java.util.List;
 public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     public static final int AVERAGING_TICKS = 5;
 
+    public static final float CONVERSION_CONSTANT = (float) (60 * Math.PI / 2);
+
     protected ElectricBehaviour electricBehaviour;
     @Nullable
     protected ThermalBehaviour thermalBehaviour;
@@ -48,11 +50,15 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     public ElectricMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        setLazyTickRate(AVERAGING_TICKS);
+        setLazyTickRate(AVERAGING_TICKS - 1);
     }
 
     public float torque() {
         return (float) (BlockStressValues.getCapacity(getBlockState().getBlock()) * ModdedConfigs.server().kinetics.torqueForStress.getF());
+    }
+
+    public static float calculateSpeed(float power, float torque) {
+        return power / torque * CONVERSION_CONSTANT;
     }
 
     @Override
@@ -61,7 +67,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxPower = 256 * torque() / 60;
+        var maxPower = 256 * torque() / CONVERSION_CONSTANT;
         var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
@@ -118,11 +124,9 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     @Override
     public void tick() {
         assert level != null;
-        applyPower(coil);
-
         if(!level.isClientSide || isVirtual()) {
-            var speedFromPower = (coil.power() / torque()) * 60;
-            avgSpeed += speedFromPower * Math.signum(coil.current());
+            applyPower(coil);
+            avgSpeed += calculateSpeed(coil.power(), torque()) * Math.signum(coil.current());
         }
         super.tick();
     }

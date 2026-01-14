@@ -65,39 +65,4 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         }
         return field;
     }
-
-    public float step(float current) {
-        assert level != null;
-        var state = getBlockState();
-        for(var dir : Direction.values()) {
-            if(dir.getAxis() == state.getValue(InductionRotorBlock.AXIS))
-                continue;
-            var otherState = level.getBlockState(worldPosition.relative(dir));
-            if(otherState.getBlock() instanceof WindingBlock winding) {
-                var magnetic = winding.getMagneticAxis(otherState);
-                if(magnetic != dir.getAxis())
-                    continue;
-                var be = level.getBlockEntity(worldPosition.relative(dir));
-                if(be instanceof WindingBlockEntity wbe) {
-                    // Average field around 4 sides of the rotor.
-                    field += wbe.fieldStrength() * 0.25f;
-                }
-            }
-        }
-
-        var voltage = field * rotorBehaviour.getAngularVelocityRadians();
-        float torque = -field * current;
-        float Pe = current * voltage;
-        if (Pe > 0) {
-            // Generator is sourcing power
-            torque = rotorBehaviour.limitForce(torque);
-        } else {
-            // Generator is sinking power
-            // Reduce torque to account for losses
-            torque *= 0.9f;
-        }
-        rotorBehaviour.applyTickForce(torque);
-
-        return voltage;
-    }
 }

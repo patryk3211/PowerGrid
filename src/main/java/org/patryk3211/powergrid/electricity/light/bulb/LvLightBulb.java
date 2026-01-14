@@ -29,12 +29,14 @@ public class LvLightBulb extends LightBulb {
 
     @Override
     public LightBulbState createState(LightFixtureBlockEntity fixture) {
-        return new State(this, fixture, modelSupplier);
+        return new State(this, fixture, modelSupplier, dyedModelSupplier);
     }
 
     public static class State extends LightBulb.SimpleState {
-        public <T extends Item & ILightBulb> State(T bulb, LightFixtureBlockEntity fixture, Supplier<Function<LightBulb.State, PartialModel>> modelProviderSupplier) {
-            super(bulb, fixture, modelProviderSupplier);
+        public <T extends Item & ILightBulb> State(T bulb, LightFixtureBlockEntity fixture,
+                                                   Supplier<Function<LightBulb.State, PartialModel>> modelProviderSupplier,
+                                                   Supplier<Function<DyedState, PartialModel>> dyedModelProviderSupplier) {
+            super(bulb, fixture, modelProviderSupplier, dyedModelProviderSupplier);
         }
 
         @Override

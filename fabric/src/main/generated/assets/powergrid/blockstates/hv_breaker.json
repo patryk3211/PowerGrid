@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/switches/hv_breaker_block",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/switches/hv_breaker_block"
+    },
+    "facing=south": {
+      "model": "powergrid:block/switches/hv_breaker_block",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/switches/hv_breaker_block",
+      "y": 270
+    }
+  }
+}

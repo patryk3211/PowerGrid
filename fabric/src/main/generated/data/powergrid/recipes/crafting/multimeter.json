@@ -15,7 +15,7 @@
       "item": "powergrid:voltage_gauge"
     },
     "W": {
-      "item": "powergrid:wire"
+      "tag": "c:copper_wires"
     }
   },
   "pattern": [

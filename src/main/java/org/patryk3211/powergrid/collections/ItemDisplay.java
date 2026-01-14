@@ -67,36 +67,12 @@ public class ItemDisplay {
                     ModdedItems.INCOMPLETE_CIRCUIT,
                     ModdedItems.INCOMPLETE_ELECTRICAL_GIZMO,
                     ModdedItems.INCOMPLETE_UNETCHED_CIRCUIT,
+                    ModdedItems.INCOMPLETE_PUNCH_CARD,
                     ModdedItems.PORTABLE_BATTERY_PLACEABLE,
                     ModdedItems.CIRCUIT_SCHEMATIC,
                     ModdedItems.UNETCHED_CIRCUIT,
                     ModdedBlocks.CIRCUIT_BOARD
-//                    AllItems.INCOMPLETE_PRECISION_MECHANISM,
-//                    AllItems.INCOMPLETE_REINFORCED_SHEET,
-//                    AllItems.INCOMPLETE_TRACK,
-//                    AllItems.CHROMATIC_COMPOUND,
-//                    AllItems.SHADOW_STEEL,
-//                    AllItems.REFINED_RADIANCE,
-//                    AllItems.COPPER_BACKTANK_PLACEABLE,
-//                    AllItems.NETHERITE_BACKTANK_PLACEABLE,
-//                    AllItems.MINECART_CONTRAPTION,
-//                    AllItems.FURNACE_MINECART_CONTRAPTION,
-//                    AllItems.CHEST_MINECART_CONTRAPTION,
-//                    AllItems.SCHEMATIC,
-//                    AllItems.SHOPPING_LIST,
-//                    AllBlocks.ANDESITE_ENCASED_SHAFT,
-//                    AllBlocks.BRASS_ENCASED_SHAFT,
-//                    AllBlocks.ANDESITE_ENCASED_COGWHEEL,
-//                    AllBlocks.BRASS_ENCASED_COGWHEEL,
-//                    AllBlocks.ANDESITE_ENCASED_LARGE_COGWHEEL,
-//                    AllBlocks.BRASS_ENCASED_LARGE_COGWHEEL,
-//                    AllBlocks.MYSTERIOUS_CUCKOO_CLOCK,
-//                    AllBlocks.ELEVATOR_CONTACT,
-//                    AllBlocks.SHADOW_STEEL_CASING,
-//                    AllBlocks.REFINED_RADIANCE_CASING
             );
-
-//            exclusions.addAll(PackageStyles.RARE_BOXES);
 
             for (ItemProviderEntry<?> entry : simpleExclusions) {
                 exclusions.add(entry.asItem());

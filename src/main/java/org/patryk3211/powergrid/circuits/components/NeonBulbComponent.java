@@ -121,9 +121,12 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
                 state.second.updateChaseTarget(0);
             }
         });
-        if(wire.isLit() != placed.get(LIT)) {
-            placed.set(LIT, wire.isLit());
-        }
+        placed.onServerWorld(() -> $ -> {
+            if(wire.isLit() != placed.get(LIT)) {
+                placed.set(LIT, wire.isLit());
+                placed.notifyClients(LIT);
+            }
+        });
         return true;
     }
 

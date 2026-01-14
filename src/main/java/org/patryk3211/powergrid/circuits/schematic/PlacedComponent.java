@@ -31,6 +31,7 @@ import org.patryk3211.powergrid.network.packets.UpdateComponentBiPacket;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -55,6 +56,7 @@ public class PlacedComponent {
 
     public PlacedComponent(CompoundTag tag) {
         this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUUID("UUID"));
+        component.dataFixup(tag);
         var propertyMap = tag.getCompound("Properties");
         for(var entry : properties) {
             entry.read(propertyMap);
@@ -101,6 +103,10 @@ public class PlacedComponent {
 
     public Level getWorld() {
         return worldSupplier.get();
+    }
+
+    public boolean isClient() {
+        return getWorld().isClientSide;
     }
 
     public void onClientWorld(Supplier<Consumer<Level>> callback) {
@@ -256,5 +262,16 @@ public class PlacedComponent {
 
     public BlockPos getPos() {
         return pos;
+    }
+
+    public <T> T data() {
+        return (T) customData;
+    }
+
+    public <T> Optional<T> data(Class<T> type) {
+        if(type.isInstance(customData)) {
+            return Optional.of((T) customData);
+        }
+        return Optional.empty();
     }
 }

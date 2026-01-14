@@ -51,6 +51,9 @@ public class ModIcons extends AllIcons {
     public static final ModIcons I_TOGGLE = next();
 
     public static final ModIcons I_UPLOAD = newRow();
+    public static final ModIcons I_MOTOR = next();
+    public static final ModIcons I_GENERATOR = next();
+    public static final ModIcons I_PREFIXES = next();
 
     // Unfortunately we need these since AllIcons has them private, and we need them in render function.
     private final int iconX;

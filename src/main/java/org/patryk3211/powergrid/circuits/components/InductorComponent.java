@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.sim.special.InductorWire;
+import org.patryk3211.powergrid.electricity.sim.special.LRSeriesWire;
 
 public class InductorComponent extends OrientableComponent {
     public static final FloatProperty INDUCTANCE = new FloatProperty(PowerGrid.MOD_ID, "inductor_value", 0.1f, 1e-4f, 1000.0f);
@@ -43,7 +44,8 @@ public class InductorComponent extends OrientableComponent {
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var L = placed.get(INDUCTANCE) / 1000;
-        var wire = new InductorWire(L, builder.terminalNode(0), builder.terminalNode(1));
+        var R = L * 1.2; // 1.2 Ω/H
+        var wire = new LRSeriesWire(L, R, builder.terminalNode(0), builder.terminalNode(1));
         wire.setCurrent(placed.get(CURRENT));
         builder.add(wire);
         placed.add(wire);

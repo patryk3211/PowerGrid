@@ -16,9 +16,12 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import net.createmod.catnip.math.VoxelShaper;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -27,6 +30,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public abstract class HorizontalAxisElectricBlock extends ElectricBlock {
     public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
 
@@ -58,5 +65,17 @@ public abstract class HorizontalAxisElectricBlock extends ElectricBlock {
                 }))
                 .withShapeMapper(state -> shaper.get(state.getValue(HORIZONTAL_AXIS)))
                 .build();
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        Direction.Axis axis = state.getValue(HORIZONTAL_AXIS);
+        return state.setValue(HORIZONTAL_AXIS,
+                rot.rotate(Direction.get(Direction.AxisDirection.POSITIVE, axis)).getAxis());
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        return state;
     }
 }

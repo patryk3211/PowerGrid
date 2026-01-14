@@ -17,15 +17,17 @@ package org.patryk3211.powergrid.electricity.sim.special;
 
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.ITimeAwareWire;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-public class CapacitorWire extends AbstractElectricWire implements ISolverHook, IOuterHook {
+public class CapacitorWire extends AbstractElectricWire implements ISolverHook, IOuterHook, ITimeAwareWire {
     private double capacitance;
     private double Ieq;
 
     private double V;
+    private double Iprev;
 
     public CapacitorWire(double capacitance, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -33,15 +35,22 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
     }
 
     @Override
+    public boolean isSource() {
+        return true;
+    }
+
+    @Override
     public double conductance() {
         // dt = 50ms (1 tick)
-        return 2 * capacitance / 0.05f;
+        return 2 * capacitance / getDeltaTime();
     }
 
     public void setVoltage(float voltage) {
         valueChange(voltage, V);
-        if(Float.isFinite(voltage))
+        if(Float.isFinite(voltage)) {
+            Iprev = 0;
             V = voltage;
+        }
     }
 
     @Override
@@ -51,17 +60,18 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
 
     @Override
     public void postUpperSolve() {
-        if(isConverged())
-            V = potentialDifference();
+        if(isConverged()) {
+            Iprev = (potentialDifference() - V) * capacitance / getDeltaTime();
+            // Save voltage with a bit of leakage
+            V = potentialDifference() * 0.99999;
+        }
     }
 
     @Override
     public void startIteration() {
         var G = conductance();
-        var I = capacitance * (potentialDifference() - V) / 0.05f;
-
-        // Calculate current with a bit of leakage
-        Ieq = (-G * V - I) * 0.99999;
+        var I = capacitance * (potentialDifference() - V) / getDeltaTime();
+        Ieq = -G * V - (I * 0.05f + Iprev * 0.95f);
     }
 
     @Override
@@ -70,5 +80,10 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
             residual.add(node1.getIndex(),  Ieq);
         if(node2 != null)
             residual.add(node2.getIndex(), -Ieq);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Capacitor(C=%g)", capacitance);
     }
 }

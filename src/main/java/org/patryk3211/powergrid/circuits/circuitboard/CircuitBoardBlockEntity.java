@@ -17,13 +17,17 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.math.VecHelper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -38,6 +42,7 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -47,6 +52,8 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.wire.CircuitBoardEndpoint;
+import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -55,7 +62,7 @@ import java.util.*;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.HORIZONTAL_FACING;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.ROTATION;
 
-public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation, ISchematicHolder {
+public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IElectric, IHaveGoggleInformation, ISchematicHolder, ElectricBehaviour.SyncAppender {
     private CircuitSchematic schematic = new CircuitSchematic();
     private BakedCircuit baked;
     private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
@@ -64,8 +71,18 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     private AirCurrent coolingAir;
     protected float coolingFactorMultiplier = 1;
 
+    @Nullable
+    @Environment(EnvType.CLIENT)
+    public CircuitBoardModelQuads quads;
+
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        electricBehaviour.setSyncAppender(this);
     }
 
     @Override
@@ -111,20 +128,20 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         return null;
     }
 
-    private ElectricalNetwork unifyNetwork(ElectricBehaviour other) {
-        var net1 = electricBehaviour.getNetwork();
-        var net2 = other.getNetwork();
+    private ElectricalNetwork unifyNetwork(ElectricBehaviour eb1, IElectricNode node1, ElectricBehaviour eb2, IElectricNode node2) {
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
         ElectricalNetwork network;
         if(net1 == null && net2 == null) {
             network = GlobalElectricNetworks.getWorldNetworks(level).newNetwork();
-            electricBehaviour.joinNetwork(network);
-            other.joinNetwork(network);
+            eb1.tracedAdd(network, node1);
+            eb2.tracedAdd(network, node2);
         } else if(net1 == null) {
             network = net2;
-            electricBehaviour.joinNetwork(network);
+            eb1.tracedAdd(net2, node1);
         } else if(net2 == null) {
             network = net1;
-            other.joinNetwork(network);
+            eb2.tracedAdd(net1, node2);
         } else if(net1 != net2) {
             if(net1.size() >= net2.size()) {
                 network = net1;
@@ -139,49 +156,46 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         return network;
     }
 
-    private ElectricWire makeWire(ElectricBehaviour eb2, IElectricNode node1, IElectricNode node2) {
-        var wire = new ElectricWire(0.002f, node1, node2);
+    private ElectricWire makeWire(ElectricBehaviour eb2, IElectricNode outNode, IElectricNode hereNode) {
+        var wire = new ElectricWire(0.002f, outNode, hereNode);
         if(!electricBehaviour.isPaused() && !eb2.isPaused()) {
-            var network = unifyNetwork(eb2);
+            var network = unifyNetwork(electricBehaviour, hereNode, eb2, outNode);
             network.addWire(wire);
         }
         return wire;
     }
 
+    private void processViaOrientation(@NotNull CircuitBoardBlockEntity be, Orientation expectedOrientation, PlacedComponent placed, Orientation edge, int position) {
+        if(edge != expectedOrientation)
+            return;
+        var dir = CircuitBoardBlock.getDirection(getBlockState(), edge);
+        var viaNode = be.getViaAt(dir.getOpposite(), position, edge);
+        var thisViaNode = baked.getNode(new CircuitSchematic.Node(placed, 0));
+        if(viaNode == null)
+            return;
+        if(thisViaNode == null)
+            return;
+
+        var wire = makeWire(be.electricBehaviour, viaNode, thisViaNode);
+        edgeViadWires.computeIfAbsent(be, $ -> new ArrayList<>()).add(wire);
+        be.edgeViadWires.computeIfAbsent(this, $ -> new ArrayList<>()).add(wire);
+    }
+
     private void processNeighbor(@NotNull CircuitBoardBlockEntity be, Orientation expectedOrientation) {
         for(var placed : getComponents(ViaComponent.class)) {
-            // Which edge
-            Orientation edge;
-            int position;
+            // This must also take corners into account (a via on two edges)
             if(placed.x == 0) {
-                edge = Orientation.LEFT;
-                position = placed.y;
-            } else if(placed.y == 0) {
-                edge = Orientation.UP;
-                position = placed.x;
-            } else if(placed.x == 15) {
-                edge = Orientation.RIGHT;
-                position = placed.y;
-            } else if(placed.y == 15) {
-                edge = Orientation.DOWN;
-                position = placed.x;
-            } else {
-                // Not on edge
-                continue;
+                processViaOrientation(be, expectedOrientation, placed, Orientation.LEFT, placed.y);
             }
-            if(edge != expectedOrientation)
-                continue;
-            var dir = CircuitBoardBlock.getDirection(getBlockState(), edge);
-            var viaNode = be.getViaAt(dir.getOpposite(), position, edge);
-            var thisViaNode = baked.getNode(new CircuitSchematic.Node(placed, 0));
-            if(viaNode == null)
-                continue;
-            if(thisViaNode == null)
-                continue;
-
-            var wire = makeWire(be.electricBehaviour, viaNode, thisViaNode);
-            edgeViadWires.computeIfAbsent(be, $ -> new ArrayList<>()).add(wire);
-            be.edgeViadWires.computeIfAbsent(this, $ -> new ArrayList<>()).add(wire);
+            if(placed.y == 0) {
+                processViaOrientation(be, expectedOrientation, placed, Orientation.UP, placed.x);
+            }
+            if(placed.x == 15) {
+                processViaOrientation(be, expectedOrientation, placed, Orientation.RIGHT, placed.y);
+            }
+            if(placed.y == 15) {
+                processViaOrientation(be, expectedOrientation, placed, Orientation.DOWN, placed.x);
+            }
         }
     }
 
@@ -200,7 +214,12 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         for(var placed : schematic.components()) {
             placed.withWorld(this::getLevel, worldPosition);
         }
-        electricBehaviour.rebuildCircuit();
+        if(level != null) {
+            var changedExternal = electricBehaviour.getExternalNodes().size() != baked.externalNodes.size();
+            if (changedExternal)
+                electricBehaviour.breakConnections();
+        }
+        electricBehaviour.rebuildCircuit(true);
         if(level != null) {
             if(level.isClientSide)
                 Component.modelChanged(worldPosition);
@@ -232,6 +251,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public void initialize() {
         super.initialize();
         edgeConnect();
+        if(level.isClientSide) {
+            // Layer position doesn't matter here.
+            ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(new CircuitBoardEndpoint(worldPosition, 0, 0), false));
+        }
     }
 
     @Override
@@ -242,8 +265,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         }
         if(baked != null) {
             baked.tick();
-            if(!level.isClientSide)
-                setChanged();
+            setUnsaved();
         }
     }
 
@@ -264,8 +286,19 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             var other = entry.getKey().electricBehaviour;
             if(!other.isPaused()) {
                 // Both are unpaused, can add shared wires.
-                var network = unifyNetwork(other);
-                entry.getValue().forEach(network::addWire);
+                for(var wire : entry.getValue()) {
+                    var node1 = wire.getNode1();
+                    var node2 = wire.getNode2();
+                    ElectricalNetwork network;
+                    if(electricBehaviour.getInternalNodes().contains(node1)) {
+                        // Node1 is hereNode
+                        network = unifyNetwork(electricBehaviour, node1, other, node2);
+                    } else {
+                        // Node2 is hereNode
+                        network = unifyNetwork(electricBehaviour, node2, other, node1);
+                    }
+                    network.addWire(wire);
+                }
             }
         }
     }
@@ -346,6 +379,15 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     @Override
+    public void invalidate() {
+        super.invalidate();
+        if(level.isClientSide) {
+            // Layer position doesn't matter here.
+            ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(new CircuitBoardEndpoint(worldPosition, 0, 0), true));
+        }
+    }
+
+    @Override
     public void remove() {
         disconnectViad();
         super.remove();
@@ -416,6 +458,24 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             // This repairs all components
             bakeCircuit();
             notifyUpdate();
+        }
+    }
+
+    @Override
+    public void writeToSync(FriendlyByteBuf buffer) {
+        if(baked == null)
+            return;
+        for(var unit : baked.thermalUnits) {
+            buffer.writeFloat(unit.getTemperature());
+        }
+    }
+
+    @Override
+    public void readFromSync(FriendlyByteBuf buffer) {
+        if(baked == null)
+            return;
+        for(var unit : baked.thermalUnits) {
+            unit.setTemperature(buffer.readFloat());
         }
     }
 }

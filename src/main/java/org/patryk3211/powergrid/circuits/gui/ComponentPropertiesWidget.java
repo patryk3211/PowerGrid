@@ -23,6 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.components.properties.IntProperty;
@@ -52,10 +53,15 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
     public void setComponent(@Nullable PlacedComponent component) {
         this.component = component;
 
+        // Accept inputs on all property widgets
+        for(var widget : propertyWidgets) {
+            widget.setFocused(false);
+        }
+
         propertyWidgets.clear();
         if(component != null) {
             var properties = component.component.getProperties();
-            var title = Component.translatable(component.component.getRequiredItem().getDescriptionId());
+            var title = Component.translatable(ComponentRegistry.getItem(component.component).getDescriptionId());
             int titleWidth = textRenderer.width(title);
             int maxTextLength = 0;
             for(var property : properties) {
@@ -109,7 +115,7 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         }
         ctx.blit(PROPERTIES, 60 + centerSliceSize, 0, 92, 0, 60, 16);
 
-        var key = component.component.getRequiredItem().getDescriptionId();
+        var key = ComponentRegistry.getItem(component.component).getDescriptionId();
         ctx.drawCenteredString(textRenderer, Component.translatable(key), getWidth() / 2, 5, 0xFFFFFFFF);
 
         // Draw common background for each property
@@ -147,7 +153,7 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         }
         ctx.blit(PROPERTIES, 60 + centerSliceSize, 0, 92, 50, 60, 6);
 
-        var stack = component.footprint().getRenderedStack();
+        var stack = component.footprint().getRenderedStack(component.component);
         if(stack != null) {
             ctx.blit(PROPERTIES, getWidth() / 2 - 8, 4, 240, 0, 16, 10);
 

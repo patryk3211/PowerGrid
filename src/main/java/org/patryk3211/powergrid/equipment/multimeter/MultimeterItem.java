@@ -40,13 +40,10 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
-import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Voltage;
-import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.MultimeterDataC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -150,50 +147,20 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                         data.remove("Neg");
                     }
                 }
-                if(!level.isClientSide) {
-                    // If the node is in the middle of a transmission line, the client might not have the data
-                    // to show a correct reading so we send the server simulated node voltage as a substitute.
-                    boolean posRem = true, negRem = true;
-                    if(pos != null && pos.type() == WireEndpointType.BLOCK && pos.isValid(level)) {
-                        var node = pos.getNode(level);
-                        var line = GlobalElectricNetworks.getWorldNetworks(level).findLineMiddle(node);
-                        if(line != null) {
-                            var V = line.voltageFor(node);
-                            data.putFloat("PosV", V);
-                            posRem = false;
-                        } else {
-                            data.putFloat("PosV", node.getVoltage());
-                        }
-                    }
-                    if(neg != null && neg.type() == WireEndpointType.BLOCK && neg.isValid(level)) {
-                        var node = neg.getNode(level);
-                        var line = GlobalElectricNetworks.getWorldNetworks(level).findLineMiddle(node);
-                        if(line != null) {
-                            var V = line.voltageFor(node);
-                            data.putFloat("NegV", V);
-                            negRem = false;
-                        } else {
-                            data.putFloat("NegV", node.getVoltage());
-                        }
-                    }
-                    // The client can only provide a good reading if it is simulating both nodes.
-                    if(posRem && negRem) {
-                        data.remove("PosV");
-                        data.remove("NegV");
-                    }
-                }
             }
             case 1 -> {
                 if(!level.isClientSide) {
                     if(data.contains("UUID")) {
                         var genericEntity = ((ServerLevel) level).getEntity(data.getUUID("UUID"));
-                        if (genericEntity instanceof WireEntity wireEntity) {
-                            var wire = wireEntity.getWire();
-                            if (wire instanceof TransmissionLinePart part && part.getLine() != null) {
-                                var lineId = part.getLine().getId();
-                                if (data.getInt("LineId") != lineId)
-                                    data.putInt("LineId", lineId);
-                            }
+                        if(genericEntity != null) {
+                            data.putInt("EID", genericEntity.getId());
+                        } else {
+                            if(entity instanceof Player player)
+                                player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
+                                        .style(ChatFormatting.GRAY)
+                                        .component(), true);
+                            // Wipe all data
+                            stack.getOrCreateTag().remove("ModeData");
                         }
                     }
                 }
@@ -303,8 +270,12 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 yield posV - negV;
             }
             case 1 -> {
-                var lineId = data.getInt("LineId");
-                yield  ClientElectricNetwork.getWorldNetworks().tryGetCurrent(lineId);
+                var lineId = data.getInt("EID");
+                var entity = level.getEntity(lineId);
+                if(entity instanceof BaseWireEntity wire) {
+                    yield wire.measuredCurrent();
+                }
+                yield 0;
             }
             default -> 0;
         };

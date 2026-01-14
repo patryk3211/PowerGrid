@@ -15,14 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.sim.node;
 
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
-
-public interface INode {
+public interface INode extends INetworkElement {
     void assignIndex(int index);
     int getIndex();
-
-    void setNetwork(ElectricalNetwork network);
-    ElectricalNetwork getNetwork();
 
     default double getStateValue() {
         if(getNetwork() != null)
@@ -30,15 +25,22 @@ public interface INode {
         return 0;
     }
 
-    default boolean isConverged() {
-        var network = getNetwork();
-        if(network == null)
-            return false;
-        return network.isConverged();
+    default void setStateValue(double value) {
+        if(getNetwork() == null)
+            return;
+        getNetwork().setValue(this, value);
     }
 
     default void remove() {
         if(getNetwork() != null)
             getNetwork().removeNode(this);
+    }
+
+    default double getSavedValue() {
+        return 0;
+    }
+
+    default void setSavedValue(double value) {
+
     }
 }

@@ -79,7 +79,7 @@ public class BasinHeaterBlock extends ElectricBlock implements IBE<BasinHeaterBl
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Resistance.series(resistance("idle"), player, tooltip);
-        Voltage.min(100, player, tooltip);
+        Resistance.series(resistance(), player, tooltip);
+        Voltage.min((int) Math.sqrt(BasinHeaterBlockEntity.power() * resistance()), player, tooltip);
     }
 }

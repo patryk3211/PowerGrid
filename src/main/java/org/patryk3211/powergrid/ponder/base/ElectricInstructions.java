@@ -16,17 +16,24 @@
 package org.patryk3211.powergrid.ponder.base;
 
 import net.createmod.ponder.api.element.ElementLink;
+import net.createmod.ponder.api.element.PonderElement;
 import net.createmod.ponder.api.scene.SceneBuilder;
+import net.createmod.ponder.foundation.PonderScene;
 import net.createmod.ponder.foundation.element.ElementLinkImpl;
 import net.createmod.ponder.foundation.instruction.FadeOutOfSceneInstruction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.PonderElectricNetwork;
+import org.patryk3211.powergrid.electricity.light.string.StringLightCordEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
+
+import java.util.Arrays;
+import java.util.function.Function;
 
 public class ElectricInstructions {
     public static final float DEFAULT_RESISTANCE = 0.005f;
@@ -43,6 +50,25 @@ public class ElectricInstructions {
 
     public void tickFor(int ticks) {
         builder.addInstruction(new ElectricityTickInstruction(ticks));
+    }
+
+    public void tickForever() {
+        builder.addInstruction(scene -> scene.addElement(new PonderElement() {
+            @Override
+            public void tick(PonderScene scene) {
+                PonderElectricNetwork.tickWorldNetworks(scene.getWorld());
+            }
+
+            @Override
+            public boolean isVisible() {
+                return false;
+            }
+
+            @Override
+            public void setVisible(boolean visible) {
+
+            }
+        }));
     }
 
     public ElementLink<WireElement> connect(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
@@ -74,6 +100,23 @@ public class ElectricInstructions {
         var link = new ElementLinkImpl<>(WireElement.class);
         var element = new WireElement(level -> {
             var wire = CordEntity.create(level, endpoint1, endpoint2, ModdedItems.CORD.asStack(), resistance);
+            wire.updateRenderParams();
+            return wire;
+        });
+        builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
+        builder.addInstruction(ponder -> ponder.linkElement(element, link));
+        return link;
+    }
+
+    public ElementLink<WireElement> connectLightCord(ICordEndpoint endpoint1, ICordEndpoint endpoint2, DyeColor[] colorPattern) {
+        var link = new ElementLinkImpl<>(WireElement.class);
+        var element = new WireElement(level -> {
+            var stack = ModdedItems.STRING_LIGHT_CORD.asStack();
+            if(colorPattern != null) {
+                stack.getOrCreateTag().putByteArray("Pattern", Arrays.stream(colorPattern)
+                        .map(color -> (byte) color.ordinal()).toList());
+            }
+            var wire = StringLightCordEntity.create(level, endpoint1, endpoint2, stack, null);
             wire.updateRenderParams();
             return wire;
         });
@@ -121,6 +164,14 @@ public class ElectricInstructions {
             var element = scene.resolve(source);
             if(element != null)
                 element.setValue(value);
+        });
+    }
+
+    public void setSource(ElementLink<VoltageSource> source, Function<Integer, Float> func) {
+        builder.addInstruction(scene -> {
+            var element = scene.resolve(source);
+            if(element != null)
+                element.setFunction(func);
         });
     }
 

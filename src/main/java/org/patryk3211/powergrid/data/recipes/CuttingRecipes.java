@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
-import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
@@ -28,14 +27,14 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 public class CuttingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
-    COPPER_WIRE = create(AllItems.COPPER_SHEET::get, b ->
-            b.duration(50).output(ModdedItems.WIRE.get(), 4)),
+    COPPER_WIRE = create("copper_wire_cutting", b ->
+            b.require(RecipeTags.copperSheet()).duration(50).output(ModdedItems.WIRE.get(), 4)),
 
-    IRON_WIRE = create(AllItems.IRON_SHEET::get, b ->
-            b.duration(50).output(ModdedItems.IRON_WIRE.get(), 4)),
+    IRON_WIRE = create("iron_wire_cutting", b ->
+            b.require(RecipeTags.ironSheet()).duration(50).output(ModdedItems.IRON_WIRE.get(), 4)),
 
-    GOLD_WIRE = create(AllItems.GOLDEN_SHEET::get, b ->
-            b.duration(50).output(ModdedItems.GOLDEN_WIRE.get(), 4)),
+    GOLD_WIRE = create("gold_wire_cutting", b ->
+            b.require(RecipeTags.goldSheet()).duration(50).output(ModdedItems.GOLDEN_WIRE.get(), 4)),
 
     EMPTY_CIRCUIT = create("empty_circuit_slabs", b -> b
             .output(ModdedItems.EMPTY_CIRCUIT, 2)

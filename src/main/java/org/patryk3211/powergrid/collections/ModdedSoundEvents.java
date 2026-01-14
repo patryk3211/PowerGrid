@@ -65,6 +65,15 @@ public class ModdedSoundEvents {
             .category(SoundSource.BLOCKS)
             .build(),
 
+    BREAKER_ON = create("breaker_on").subtitle("Breaker connects")
+            .playExisting(CONTACTOR_ON::getMainEvent, 1, 1)
+            .category(SoundSource.BLOCKS)
+            .build(),
+
+    BREAKER_OFF = create("breaker_off").subtitle("Breaker disconnects")
+            .playExisting(CONTACTOR_OFF::getMainEvent, 1, 1)
+            .build(),
+
     WIRE_CUT = create("wire_cut").subtitle("Wire cut")
             .playExisting(SoundEvents.SHEEP_SHEAR, 0.75f, 1.25f)
             .category(SoundSource.BLOCKS)

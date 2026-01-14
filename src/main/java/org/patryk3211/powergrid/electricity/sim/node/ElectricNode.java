@@ -20,19 +20,29 @@ import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 public abstract class ElectricNode implements IElectricNode {
     private int matrixIndex;
 
-    protected float voltage;
-    protected float current;
+    protected double savedStateValue = 0;
 
     protected ElectricalNetwork network;
 
-    public ElectricNode() {
-        voltage = 0;
-        current = 0;
+    @Override
+    public void setStateValue(double value) {
+        this.savedStateValue = value;
+        IElectricNode.super.setStateValue(value);
     }
 
     @Override
     public void setNetwork(ElectricalNetwork network) {
         this.network = network;
+    }
+
+    @Override
+    public double getSavedValue() {
+        return savedStateValue;
+    }
+
+    @Override
+    public void setSavedValue(double value) {
+        this.savedStateValue = value;
     }
 
     @Override
@@ -50,19 +60,19 @@ public abstract class ElectricNode implements IElectricNode {
 
     @Override
     public float getVoltage() {
-        return voltage;
+        return 0;
     }
 
     @Override
     public float getCurrent() {
-        return current;
+        return 0;
     }
 
     public void setVoltage(float voltage) {
-        this.voltage = voltage;
+
     }
 
     public void setCurrent(float current) {
-        this.current = current;
+
     }
 }

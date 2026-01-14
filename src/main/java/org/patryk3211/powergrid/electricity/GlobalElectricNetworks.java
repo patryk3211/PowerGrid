@@ -27,6 +27,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -43,11 +46,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GlobalElectricNetworks {
     protected static final Map<Level, WorldNetworks> worldNetworks = new ConcurrentHashMap<>();
 
-    public static void tick(Level world) {
+    public static void preTick(Level world) {
         var networks = worldNetworks.get(world);
         if(networks == null)
             return;
-        networks.tick();
+        networks.preTick();
+    }
+
+    public static void postTick(Level world) {
+        var networks = worldNetworks.get(world);
+        if(networks == null)
+            return;
+        networks.postTick();
     }
 
     public static void unloadWorld(ServerLevel world) {
@@ -110,6 +120,10 @@ public class GlobalElectricNetworks {
         return getWorldNetworks(world).makeTransmissionLine(endpoint1, endpoint2, forEntity, id);
     }
 
+    public static ElectricWire makeSimpleConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
+        return getWorldNetworks(world).makeSimpleWire(endpoint1, endpoint2, resistance);
+    }
+
     private static Component display(IElectricNode node) {
         MutableComponent line;
         if(node instanceof OwnedFloatingNode ofn) {
@@ -121,8 +135,6 @@ public class GlobalElectricNetworks {
         if(node.getNetwork() != null) {
             if(node.getNetwork().isLeaf(node)) {
                 line.append(Component.literal(" -").withStyle(ChatFormatting.GREEN));
-            } else if(node.getNetwork().isOptimized(node)) {
-                line.append(Component.literal(" *").withStyle(ChatFormatting.GREEN));
             }
         }
         return line;
@@ -178,4 +190,24 @@ public class GlobalElectricNetworks {
             worldNetworks.prepareUnpaused(node);
         }
     }
+
+    public static void configsReloaded() {
+        var backend = ModdedConfigs.server().electricity.solver.solverBackend.get();
+        var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
+        var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
+        var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
+        if(!backend.isSupported()) {
+            PowerGrid.LOGGER.error("Selected backend '{}' is not supported! Using Java backend instead", backend);
+            backend = CSolver.SolverBackend.JAVA;
+            ModdedConfigs.server().electricity.solver.solverBackend.set(CSolver.SolverBackend.JAVA);
+        }
+        final var selectedBackend = backend;
+        for(var networks : worldNetworks.values()) {
+            networks.subnetworks.forEach(network -> {
+                network.switchBackend(selectedBackend);
+                network.setPrecision(rA, rR, rM);
+            });
+        }
+    }
+
 }

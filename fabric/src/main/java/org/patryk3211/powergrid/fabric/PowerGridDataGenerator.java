@@ -59,6 +59,8 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 			provideDefaultLang("interface", langConsumer);
 			provideDefaultLang("messages", langConsumer);
 			provideDefaultLang("tooltips", langConsumer);
+			provideDefaultLang("components", langConsumer);
+			provideDefaultLang("pads", langConsumer);
 
 			providePonderLang(langConsumer);
 			ModdedSoundEvents.provideLang(langConsumer);

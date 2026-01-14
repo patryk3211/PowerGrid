@@ -38,8 +38,6 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigFloat acidBatteryInitialCharge = f(0.9f, 0, 1.0f, "acidBatteryInitialCharge", Comments.acidBatteryInitialCharge);
 
-    public final ConfigFloat basinHeaterCurrent = f(10, 1, "basinHeaterCurrent", Comments.basinHeaterCurrent);
-
     public final ConfigFloat transformerMutualInductanceMultiplier = f(10, 1, "transformerMutualInductanceMultiplier", Comments.transformerMutualInductanceMultiplier);
 
     public final ConfigFloat holdingCurrentPercent = f(0.9f, 0.01f, 0.99f, "holdingCurrentPercent", Comments.holdingCurrentPercent);
@@ -49,6 +47,10 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat groundingHighestResistance = f(5000, 0.001f, "groundingHighestResistance", Comments.groundingHighestResistance);
     public final ConfigFloat groundingLowestResistance = f(1, 0.001f, "groundingLowestResistance", Comments.groundingLowestResistance);
 
+    public final ConfigInt carbonPileMaxHeight = i(5, 1, "carbonPileMaxHeight", Comments.carbonPileMaxHeight);
+    public final ConfigFloat carbonPileGain = f(10, 0, "carbonPileGain", Comments.carbonPileGain);
+
+    public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
     public final CWire wires = nested(1, CWire::new, Comments.wires);
@@ -59,6 +61,7 @@ public class CElectricity extends ConfigBase {
     }
 
     private static class Comments {
+        public static final String solver = "Things related to how the simulation is handled (probably shouldn't be altered unless you know what you are doing)";
         public static final String resistance = "Resistance values for all devices";
         public static final String thermal = "Thermal properties for all devices";
         public static final String wires = "Configuration of server-side wire properties";
@@ -83,8 +86,6 @@ public class CElectricity extends ConfigBase {
 
         public static final String acidBatteryInitialCharge = "Initial charge of the acid battery";
 
-        public static final String basinHeaterCurrent = "Current required for normal level of heating with the basin heater";
-
         public static final String transformerMutualInductanceMultiplier = "Multiplies the mutual inductance of transformers to get a resistance. Bigger values make transformers use less electricity.";
 
         public static final String holdingCurrentPercent = "Percent of the turn-on current required for on state to be kept by relays and conductors";
@@ -93,5 +94,8 @@ public class CElectricity extends ConfigBase {
         public static final String groundingMaximumBlocks = "Maximum conductive blocks needed for a grounding rod to reach its lowest resistance";
         public static final String groundingHighestResistance = "Highest resistance of the grounding rod";
         public static final String groundingLowestResistance = "Lowest resistance of the grounding rod";
+
+        public static final String carbonPileMaxHeight = "Maximum block height of the carbon pile structure";
+        public static final String carbonPileGain = "Carbon pile \"gain\", controls how much the coil current affects the resistance";
     }
 }

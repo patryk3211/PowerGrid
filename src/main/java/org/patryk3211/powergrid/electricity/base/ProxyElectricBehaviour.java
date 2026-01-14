@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.base;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.core.BlockPos;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -50,14 +51,14 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
     }
 
     @Override
-    public void joinNetwork(ElectricalNetwork network) {
+    public void joinNetwork(@NotNull ElectricalNetwork network, int externalIndex) {
         if(hasInternals()) {
             getMainBehaviour().ifPresentOrElse(
-                    b -> b.joinNetwork(network),
-                    () -> super.joinNetwork(network)
+                    b -> b.joinNetwork(network, externalIndex),
+                    () -> super.joinNetwork(network, externalIndex)
             );
         } else {
-            getMainBehaviour().ifPresent(b -> b.joinNetwork(network));
+            getMainBehaviour().ifPresent(b -> b.joinNetwork(network, externalIndex));
         }
     }
 

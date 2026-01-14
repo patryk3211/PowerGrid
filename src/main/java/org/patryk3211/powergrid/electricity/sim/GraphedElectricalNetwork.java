@@ -15,18 +15,23 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.ejml.data.DMatrixRMaj;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.commands.DebugCommand;
 import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.solver.IMNA;
+import org.patryk3211.powergrid.electricity.sim.solver.IMatrixAccess;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
-public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
+public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
+    private final Set<IElectricNode> deferredNodeCheck = new ReferenceOpenHashSet<>();
 
     public GraphedElectricalNetwork(boolean addGMin) {
         this(new NetworkGraph(), addGMin);
@@ -34,6 +39,11 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
 
     public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin) {
         super(addGMin);
+        this.graph = graph;
+    }
+
+    public GraphedElectricalNetwork(NetworkGraph graph, boolean addGMin, Function<ElectricalNetwork, IMNA> mna) {
+        super(addGMin, mna);
         this.graph = graph;
     }
 
@@ -45,7 +55,7 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         if(node instanceof ICouplingNode coupling) {
             graph.couple(coupling);
             for(var coupled : coupling.coupledNodes()) {
-                checkConnectivity(coupled, null);
+                deferredNodeCheck.add(coupled);
                 removeLeaf(coupled);
             }
         }
@@ -55,8 +65,15 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
     public void removeNode(INode node) {
         super.removeNode(node);
         if(node instanceof IElectricNode enode) {
-            if(!graph.getConnectedLines(enode).isEmpty())
-                PowerGrid.LOGGER.warn("Removed a node which had connections", new Throwable());
+            deferredNodeCheck.remove(enode);
+            var connections = graph.getConnectedLines(enode);
+            if(!connections.isEmpty()) {
+                PowerGrid.LOGGER.warn("Removed a node which had connections");
+                for(var conn : connections) {
+                    PowerGrid.LOGGER.warn(" - {}", conn);
+                }
+                PowerGrid.LOGGER.warn("Stack trace: ", new Throwable());
+            }
             graph.removeNode(enode);
         }
         if(node instanceof ICouplingNode cnode)
@@ -90,22 +107,8 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
             return false;
         } else if(nodes.size() >= 3) {
             // Connecting into a tie
-//            if(isLeaf(node)) {
-//                checked.add(node);
-//                // We must trace further
-////                for(var node2 : nodes) {
-////                    if(checked.contains(node2))
-////                        continue;
-////                    var subtrace = new HashSet<IElectricNode>();
-////                    subtrace.add(node);
-////                    if(circularCheck(node2, subtrace, null)) {
-////                        checked.addAll(subtrace);
-////                    }
-////                }
-//            } else {
             if (track != null)
                 track.setValue(node);
-//            }
             return true;
         } else { // nodes.size() == 2
             // Check both sides
@@ -121,7 +124,7 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         }
     }
 
-    private void checkConnectivity(IElectricNode node, Set<IElectricNode> outerChecked) {
+    protected void checkConnectivity(IElectricNode node, Set<IElectricNode> outerChecked) {
         if(node == null)
             return;
         if(outerChecked == null)
@@ -159,41 +162,23 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         }
     }
 
-    public void graphCheck() {
-        var checked = new HashSet<IElectricNode>();
-        for(var node : nodes) {
-            if(!(node instanceof FloatingNode)) {
-                // Only floating nodes are checked for continuity
-                continue;
-            }
-        }
-    }
-
-    @Override
-    protected boolean canOptimize(INode node) {
-        if(node instanceof IElectricNode enode) {
-            return !graph.hasCouplings(enode);
-        }
-        return super.canOptimize(node);
-    }
-
     @Override
     public void addWire(AbstractElectricWire wire) {
         graph.connect(wire.node1, wire.node2, wire);
         super.addWire(wire);
-        checkConnectivity(wire.node1, null);
-        checkConnectivity(wire.node2, null);
+        deferredNodeCheck.add(wire.node1);
+        deferredNodeCheck.add(wire.node2);
     }
 
     @Override
     public void removeWire(AbstractElectricWire wire) {
         graph.disconnect(wire.node1, wire.node2, wire);
         super.removeWire(wire);
-        checkConnectivity(wire.node1, null);
-        checkConnectivity(wire.node2, null);
+        deferredNodeCheck.add(wire.node1);
+        deferredNodeCheck.add(wire.node2);
     }
 
-    private Collection<AbstractElectricWire> findProblematicWires(DMatrixRMaj residual, double threshold) {
+    public Collection<AbstractElectricWire> findProblematicWires(IMatrixAccess residual, double threshold) {
         var nodes = findProblematicNodes(residual, threshold);
         var wires = new HashSet<AbstractElectricWire>();
         for(var node1 : nodes) {
@@ -207,7 +192,27 @@ public class GraphedElectricalNetwork extends OptimizingElectricalNetwork {
         return wires;
     }
 
+    @Override
+    public void convergenceProblems(double residual, IMatrixAccess ResidualVector) {
+        DebugCommand.pushProblems(this, residual, findProblematicWires(ResidualVector, 1e-8f));
+    }
+
     public NetworkGraph getGraph() {
         return graph;
+    }
+
+    @Override
+    public void prepare(int multiTicks) {
+        for(var node : deferredNodeCheck) {
+            checkConnectivity(node, null);
+        }
+        deferredNodeCheck.clear();
+        super.prepare(multiTicks);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        deferredNodeCheck.clear();
     }
 }

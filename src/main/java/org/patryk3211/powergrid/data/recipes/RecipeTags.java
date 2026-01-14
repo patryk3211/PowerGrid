@@ -44,6 +44,10 @@ public class RecipeTags {
         return ingots("copper");
     }
 
+    public static TagKey<Item> copperWire() {
+        return wires("copper");
+    }
+
     public static TagKey<Item> ironNugget() {
         return nuggets("iron");
     }
@@ -52,12 +56,20 @@ public class RecipeTags {
         return ingots("iron");
     }
 
+    public static TagKey<Item> ironWire() {
+        return wires("iron");
+    }
+
     public static TagKey<Item> zincSheet() {
         return plates("zinc");
     }
 
     public static TagKey<Item> zincIngot() {
         return ingots("zinc");
+    }
+
+    public static TagKey<Item> goldSheet() {
+        return plates("gold");
     }
 
     public static TagKey<Item> copperCoil() {
@@ -88,6 +100,10 @@ public class RecipeTags {
         return AllBlocks.SHAFT;
     }
 
+    public static ItemLike andesiteAlloy() {
+        return AllItems.ANDESITE_ALLOY;
+    }
+
     public static ItemLike andesiteCasing() {
         return AllBlocks.ANDESITE_CASING;
     }
@@ -102,10 +118,6 @@ public class RecipeTags {
 
     public static ItemLike coalBlock() {
         return Items.COAL_BLOCK;
-    }
-
-    public static ItemLike copperWire() {
-        return ModdedItems.WIRE;
     }
 
     public static ItemLike voltageMeter() {
@@ -130,5 +142,29 @@ public class RecipeTags {
 
     public static ItemLike glass() {
         return Items.GLASS;
+    }
+
+    public static ItemLike paper() {
+        return Items.PAPER;
+    }
+
+    public static ItemLike electronTube() {
+        return AllItems.ELECTRON_TUBE.get();
+    }
+
+    public static ItemLike precisionMechanism() {
+        return AllItems.PRECISION_MECHANISM;
+    }
+
+    public static ItemLike smallCog() {
+        return AllBlocks.COGWHEEL.get();
+    }
+
+    public static ItemLike quartz() {
+        return Items.QUARTZ;
+    }
+
+    public static ItemLike redstone() {
+        return Items.REDSTONE;
     }
 }

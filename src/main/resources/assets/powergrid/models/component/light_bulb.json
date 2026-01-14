@@ -1,0 +1,22 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"0": "powergrid:block/component/light_bulb",
+		"particle": "powergrid:block/component/light_bulb"
+	},
+	"elements": [
+		{
+			"from": [0.5, 0, 0.5],
+			"to": [2.5, 1, 2.5],
+			"faces": {
+				"north": {"uv": [2, 0, 0, 1], "texture": "#0"},
+				"east": {"uv": [0, 0, 2, 1], "texture": "#0"},
+				"south": {"uv": [2, 0, 0, 1], "texture": "#0"},
+				"west": {"uv": [0, 0, 2, 1], "texture": "#0"},
+				"up": {"uv": [0, 1, 2, 3], "texture": "#0"}
+			}
+		}
+	]
+}

@@ -67,8 +67,7 @@ public class ResistorBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void tick() {
+    public void electricalTick() {
         applyPower(wire);
-        super.tick();
     }
 }

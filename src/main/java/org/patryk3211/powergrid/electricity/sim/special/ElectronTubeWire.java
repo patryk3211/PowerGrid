@@ -21,6 +21,7 @@ import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
+import java.util.Collection;
 import java.util.List;
 
 public class ElectronTubeWire extends CompoundWire implements ISolverHook {
@@ -34,6 +35,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
     private double prevGrid;
     private double prevCathode;
+    private double prevAnode;
 
     private double Ia;
     private float Itube;
@@ -53,13 +55,14 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         this.saturationCurrent = saturationCurrent;
     }
 
+    @Override
+    public Collection<IElectricNode> coupledNodes() {
+        return List.of(node1, node2, grid);
+    }
+
     public void setSaturationCurrent(float saturationCurrent) {
         valueChange(saturationCurrent, this.saturationCurrent);
         this.saturationCurrent = saturationCurrent;
-    }
-
-    private static double limit(double dX) {
-        return Math.min(1.2 * Math.log1p(dX), dX);
     }
 
     @Override
@@ -70,8 +73,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         double vAnode = node2.getVoltage();
         var dVc = vCathode - prevCathode;
         var dVg = vGrid - prevGrid;
-        vCathode = prevCathode + limit(Math.abs(dVc)) * Math.signum(dVc);
-        vGrid = prevGrid + limit(Math.abs(dVg)) * Math.signum(dVg);
+        var dVa = vAnode - prevAnode;
+        vCathode = prevCathode + softDelta(Math.abs(dVc), 1.2) * Math.signum(dVc);
+        vGrid = prevGrid + softDelta(Math.abs(dVg), 1.2) * Math.signum(dVg);
+        vAnode = prevAnode + softDelta(Math.abs(dVa), 1.0) * Math.signum(dVa);
+        prevAnode = vAnode;
         prevCathode = vCathode;
         prevGrid = vGrid;
         vGrid -= vCathode;
@@ -126,6 +132,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         return (float) (anodeCurrent / Math.pow(anodeVoltage / gain, 3 / 2f));
     }
 
+    @Override
+    public String toString() {
+        return String.format("ElectronTube(mu=%g G=%g Is=%g)", gain, perveance, saturationCurrent);
+    }
+
     private static class GMStamp extends ConductanceWire {
         private final IElectricNode node3;
 
@@ -149,6 +160,11 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         @Override
         public List<IElectricNode> coupledNodes() {
             return List.of(node1, node2, node3);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("ElectronTube#GM(gm=%g)", conductance());
         }
     }
 }

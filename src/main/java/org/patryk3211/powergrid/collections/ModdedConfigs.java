@@ -21,7 +21,6 @@ import net.createmod.catnip.config.ConfigBase;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import org.apache.commons.lang3.tuple.Pair;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.config.*;
 
 import java.util.EnumMap;
@@ -36,6 +35,7 @@ public class ModdedConfigs {
 
     private static CServer server;
     private static CCommon common;
+    private static CClient client;
 
     public static CServer server() {
         return server;
@@ -43,6 +43,10 @@ public class ModdedConfigs {
 
     public static CCommon common() {
         return common;
+    }
+
+    public static CClient client() {
+        return client;
     }
 
     public static ConfigBase byType(ModConfig.Type type) {
@@ -70,6 +74,7 @@ public class ModdedConfigs {
     public static void register() {
         server = register(CServer::new, ModConfig.Type.SERVER);
         common = register(CCommon::new, ModConfig.Type.COMMON);
+        client = register(CClient::new, ModConfig.Type.CLIENT);
 
         registerPlatform();
 
@@ -92,8 +97,6 @@ public class ModdedConfigs {
         for(ConfigBase config : CONFIGS.values())
             if(config.specification == modConfig.getSpec())
                 config.onReload();
-        if(modConfig.getType() == ModConfig.Type.SERVER)
-            PowerGrid.LOGGER.warn("Server config reloaded, this can cause unexpected behaviour if done during gameplay!");
     }
 
     public static boolean logsEnabled() {

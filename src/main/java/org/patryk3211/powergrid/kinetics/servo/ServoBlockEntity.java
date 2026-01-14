@@ -35,7 +35,7 @@ import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
 
 import java.util.List;
 
-import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.AVERAGING_TICKS;
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.*;
 
 public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     public static final float MAX_SPEED = 32.0f;
@@ -66,7 +66,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxPower = MAX_SPEED * torque() / 60;
+        var maxPower = MAX_SPEED * torque() / CONVERSION_CONSTANT;
         var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
@@ -84,9 +84,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
             return;
 
         // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
-        float newTarget = Mth.clamp((avgTarget / AVERAGING_TICKS) / 5.0f * 360.0f, -360f, 360f);
-//        newTarget = prevTarget * 0.5f + newTarget * 0.5f;
-        currentTarget = newTarget;
+        currentTarget = Mth.clamp((avgTarget / AVERAGING_TICKS) / 5.0f * 360.0f, -360f, 360f);
         avgTarget = 0;
 
         maxSpeed = Math.min(avgSpeed / AVERAGING_TICKS, MAX_SPEED);
@@ -100,10 +98,9 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
 
     @Override
     public void tick() {
-        applyPower(coil);
         if(!level.isClientSide || isVirtual()) {
-            var speedFromPower = (coil.power() / torque()) * 60;
-            avgSpeed += speedFromPower;
+            applyPower(coil);
+            avgSpeed += calculateSpeed(coil.power(), torque());
             avgTarget += control.potentialDifference();
         }
         super.tick();

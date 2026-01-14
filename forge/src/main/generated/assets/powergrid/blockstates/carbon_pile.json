@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "top=false": {
+      "model": "powergrid:block/carbon_pile/center"
+    },
+    "top=true": {
+      "model": "powergrid:block/carbon_pile/top"
+    }
+  }
+}

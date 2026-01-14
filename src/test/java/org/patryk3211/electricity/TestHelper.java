@@ -15,12 +15,20 @@
  */
 package org.patryk3211.electricity;
 
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 
+import java.util.List;
+import java.util.Random;
+
 public abstract class TestHelper {
+    static {
+        System.loadLibrary("powergridNative");
+    }
+
     public static class VoltageSourceNodePair extends FloatingNode {
         public VoltageSourceCoupling coupling;
 
@@ -138,7 +146,49 @@ public abstract class TestHelper {
         }
 
         public void calculate() {
-            network.calculate();
+            network.calculate(1);
+        }
+
+        public void calculate(int multiTicks) {
+            network.calculate(multiTicks);
         }
     }
+
+    protected static FloatingNode[] buildGrid(Network Net, int size, float density, @Nullable List<ElectricWire> wiresOut) {
+        var nodes = new FloatingNode[size * size];
+        for(int i = 0; i < size * size; ++i) {
+            nodes[i] = Net.N();
+        }
+
+        var random = new Random();
+
+        float r = 1.0f;
+        float dR = 1.0f / (size * size);
+        for(int x = 0; x < size; ++x) {
+            for(int y = 0; y < size; ++y) {
+                var origin = nodes[x + y * size];
+                if(x < size - 1) {
+                    // Horizontal
+                    if(random.nextFloat() < density) {
+                        var wire = Net.W(r, origin, nodes[x + 1 + y * size]);
+                        if (wiresOut != null)
+                            wiresOut.add(wire);
+                    }
+                    r += dR;
+                }
+                if(y < size - 1) {
+                    // Vertical
+                    if(random.nextFloat() < density) {
+                        var wire = Net.W(r, origin, nodes[x + (y + 1) * size]);
+                        if (wiresOut != null)
+                            wiresOut.add(wire);
+                    }
+                    r += dR;
+                }
+            }
+        }
+
+        return nodes;
+    }
+
 }
