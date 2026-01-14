@@ -60,24 +60,24 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
             var checkPos = queue.remove(0);
             if(!scanned.add(checkPos))
                 continue;
+            var state = level.getBlockState(checkPos);
+            if(state.is(ModdedTags.Block.CONDUCTIVE_GROUND.tag)) {
+                ++conductiveCount;
+            } else if(groundCount >= minBlocks()) {
+                // Avoid running the test below
+                continue;
+            } else if(state.isRedstoneConductor(level, checkPos)) {
+                // Stop scanning normal blocks if the threshold has been reached
+                if(++groundCount >= minBlocks())
+                    continue;
+            }
             for(var dir : Direction.values()) {
                 var nextPos = checkPos.relative(dir);
                 if(scanned.contains(nextPos))
                     continue;
-                var state = level.getBlockState(nextPos);
-                if(state.is(ModdedTags.Block.CONDUCTIVE_GROUND.tag)) {
-                    ++conductiveCount;
-                } else if(groundCount >= minBlocks()) {
-                    // Avoid running the test below
-                    continue;
-                } else if(state.isRedstoneConductor(level, nextPos)) {
-                    // Stop scanning normal blocks if the threshold has been reached
-                    if(++groundCount >= minBlocks())
-                        continue;
-                }
                 // Limit search to 10 blocks away from starting position,
                 // this should result in about 1000 blocks checked.
-                if(nextPos.distManhattan(pos) < 10)
+                if(nextPos.distManhattan(pos) < 10 && !level.isEmptyBlock(nextPos))
                     queue.add(nextPos);
             }
             if(conductiveCount >= ModdedConfigs.server().electricity.groundingMaximumBlocks.get() &&
@@ -92,7 +92,7 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
         super.lazyTick();
         if(!level.isClientSide) {
             var prevConductiveCount = conductiveCount;
-            groundCount = 1;
+            groundCount = 0;
             conductiveCount = 0;
             scan(getBlockPos().below());
             var prevState = wire.getState();
