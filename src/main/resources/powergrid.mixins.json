@@ -11,6 +11,7 @@
     "EntityMixin",
     "FanProcessingMixin",
     "KineticBlockEntityAccessor",
+    "LevelEntitiesAccessor",
     "LightningAccessor",
     "RecipeApplierMixin",
     "SoundEntryBuilderMixin"

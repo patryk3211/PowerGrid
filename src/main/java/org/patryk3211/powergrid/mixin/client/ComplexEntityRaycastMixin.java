@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.mixin.client;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
@@ -22,6 +23,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.mixin.LevelEntitiesAccessor;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -72,7 +74,17 @@ public abstract class ComplexEntityRaycastMixin {
             currentHitDistance = startVec.distanceToSqr(currentHitPoint);
         }
 
-        for(Entity potentialHitEntity : world.getEntities(shooter, boundingBox, testEntity -> !testEntity.isSpectator() && testEntity instanceof IComplexRaycast)) {
+        for(var potentialHitEntity : ((LevelEntitiesAccessor) world).getEntities().getAll()) {
+            if(potentialHitEntity.isSpectator() || !(potentialHitEntity instanceof IComplexRaycast))
+                continue;
+            // Perform a cheap bounding box distance check first before going for the complex cast.
+            var bb = potentialHitEntity.getBoundingBox();
+            // Closest point to start in bounding box
+            var cX = Mth.clamp(startVec.x, bb.minX, bb.maxX);
+            var cY = Mth.clamp(startVec.y, bb.minY, bb.maxY);
+            var cZ = Mth.clamp(startVec.z, bb.minZ, bb.maxZ);
+            if(startVec.distanceToSqr(cX, cY, cZ) >= currentHitDistance)
+                continue;
             Vec3 hit = powerGrid$complexRaycast(potentialHitEntity, startVec, endVec, currentHitDistance);
             if(hit != null) {
                 double hitSquaredDistance = startVec.distanceToSqr(hit);
