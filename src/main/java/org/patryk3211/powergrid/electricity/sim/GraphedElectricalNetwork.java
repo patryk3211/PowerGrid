@@ -50,14 +50,16 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     @Override
     public void addNode(INode node) {
         super.addNode(node);
-        if(node instanceof IElectricNode enode)
+        if(node instanceof IElectricNode enode) {
             graph.addNode(enode);
+            deferredNodeCheck.add(enode);
+        }
         if(node instanceof ICouplingNode coupling) {
-            graph.couple(coupling);
             for(var coupled : coupling.coupledNodes()) {
-                deferredNodeCheck.add(coupled);
+                deferredNodeCheck.addAll(graph.getConnectedNodes(coupled));
                 removeLeaf(coupled);
             }
+            graph.couple(coupling);
         }
     }
 
@@ -208,6 +210,12 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         }
         deferredNodeCheck.clear();
         super.prepare(multiTicks);
+    }
+
+    @Override
+    public void merge(ElectricalNetwork other) {
+        super.merge(other);
+        deferredNodeCheck.addAll(other.leafNodes.keySet());
     }
 
     @Override
