@@ -24,7 +24,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
-import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -335,11 +335,12 @@ public class JavaMNA implements IMNA {
             norm = nextNorm;
             if (norm < absoluteStoppingCriterion || dNorm < relativeStoppingCriterion)
                 break;
-            if (converged && i >= maxIterations - 12) {
+            if (i >= maxIterations - 11) {
                 // Right before non-linear devices are disabled.
                 // Only append new problem frames if the network has been converging before.
-                converged = norm < minimumAllowedPrecision;
-                if(!converged)
+                var wasConverged = converged;
+                converged = false;
+                if(wasConverged && !converged)
                     network.convergenceProblems(norm, residualAccess);
             }
 
