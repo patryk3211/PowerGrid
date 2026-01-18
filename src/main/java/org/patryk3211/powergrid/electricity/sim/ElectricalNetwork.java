@@ -64,7 +64,7 @@ public class ElectricalNetwork implements IStamped {
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
-        this.mna = new NativeMNA(this);
+        this.mna = new JavaMNA(this);
     }
 
     public ElectricalNetwork(boolean addGMin, Function<ElectricalNetwork, IMNA> mna) {

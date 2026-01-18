@@ -40,7 +40,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         this.idealityFactor = idealityFactor;
     }
 
-    private static double WrightOmega(double z)
+    public static double WrightOmega(double z)
     {
         // D'Angelo, Gabrielli and Turchet (2019) approximation
         double x1 = -3.341459552768620;

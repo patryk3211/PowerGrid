@@ -160,6 +160,9 @@ public class ModdedItems {
     public static final ItemEntry<Item> VFET = REGISTRATE.item("vfet", Item::new)
             .lang("Static Induction Transistor")
             .register();
+    public static final ItemEntry<Item> BJT_NPN = REGISTRATE.item("bjt_npn", Item::new)
+            .lang("NPN BJT")
+            .register();
     public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
     public static final ItemEntry<Item> REGULATOR_TUBE = ingredient("regulator_tube");

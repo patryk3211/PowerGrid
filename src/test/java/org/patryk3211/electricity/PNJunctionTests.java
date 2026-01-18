@@ -16,6 +16,7 @@
 package org.patryk3211.electricity;
 
 import org.junit.jupiter.api.Test;
+import org.patryk3211.powergrid.electricity.sim.special.BJTWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 
 public class PNJunctionTests extends TestHelper {
@@ -44,6 +45,41 @@ public class PNJunctionTests extends TestHelper {
             System.out.printf("Diode current: %f\n", D.current());
 
             System.out.printf("V1 current: %f\n", V1.getCurrent());
+            System.out.printf("GND current %f\n\n", GND.getCurrent());
+        }
+    }
+
+    @Test
+    void simpleNPNTest() {
+        var Net = new Network();
+
+        var V1 = Net.V(3.3f);
+        var V2 = Net.V(0.8f);
+        var GND = Net.V(0);
+
+        var Collector = Net.N();
+        var Base = Net.N();
+        var Emitter = Net.N();
+
+        var T = new BJTWire(Collector, Base, Emitter, 5.47e-12, 10, 0.05);
+
+        Net.W(10.0f, V1, Collector);
+        Net.W(100.0f, V2, Base);
+        Net.W(10.0f, GND, Emitter);
+        Net.network.addWire(T);
+
+        for(int i = 0; i < 20; ++i) {
+            Net.calculate();
+
+            System.out.printf("Iteration %d:\n", i);
+            System.out.printf("Collector voltage: %f\n", Collector.getVoltage());
+            System.out.printf("Base voltage: %f\n", Base.getVoltage());
+            System.out.printf("Emitter voltage: %f\n", Emitter.getVoltage());
+
+//            System.out.printf("Diode current: %f\n", D.current());
+
+            System.out.printf("V1 current: %f\n", V1.getCurrent());
+            System.out.printf("V2 current: %f\n", V2.getCurrent());
             System.out.printf("GND current %f\n\n", GND.getCurrent());
         }
     }

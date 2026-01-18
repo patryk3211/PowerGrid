@@ -8,6 +8,7 @@
     "create:electron_tube",
     "powergrid:relay",
     "powergrid:vfet",
+    "powergrid:bjt_npn",
     "powergrid:varistor",
     "create:copper_nugget",
     "powergrid:lv_switch",
