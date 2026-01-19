@@ -10,6 +10,7 @@
     "powergrid:vfet",
     "powergrid:bjt_npn",
     "powergrid:varistor",
+    "powergrid:bjt_pnp",
     "create:copper_nugget",
     "powergrid:lv_switch",
     "powergrid:capacitor",

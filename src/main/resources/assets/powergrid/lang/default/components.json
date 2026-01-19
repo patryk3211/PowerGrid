@@ -25,6 +25,8 @@
   "powergrid.component.property.vfet_isat": "Saturation current",
   "powergrid.component.property.vfet_isat.summary": "Maximum current that can pass through the transistor without distortion",
 
+  "powergrid.component.property.bjt_gain": "Gain",
+
   "powergrid.component.property.switch_state": "State",
 
   "powergrid.component.property.relay_threshold": "Threshold Voltage",

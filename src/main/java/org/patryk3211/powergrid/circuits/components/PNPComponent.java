@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.circuits.components;
 
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 
-public class NPNComponent extends BJTComponent {
-    public NPNComponent(ComponentFootprint footprint) {
-        super(footprint, false);
+public class PNPComponent extends BJTComponent {
+    public PNPComponent(ComponentFootprint footprint) {
+        super(footprint, true);
     }
 }

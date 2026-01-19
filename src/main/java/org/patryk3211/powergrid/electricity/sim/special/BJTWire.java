@@ -31,13 +31,14 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
     private final IElectricNode collector;
 
-    private final ConductanceWire collectorBase;
+    protected final ConductanceWire collectorBase;
     private final CrossWire collectorEmitter;
     private final CrossWire emitterCollector;
 
     private final double forwardGain, reverseGain;
     private final double saturationCurrent;
     private final double seriesResistance;
+    private final int pnp;
 
     private final double OmegaLog;
 
@@ -47,7 +48,7 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
     private double Ic, Ib, Ie;
 
-    public BJTWire(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs) {
+    public BJTWire(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs, boolean pnp) {
         super(base, emitter);
         this.collector = collector;
         // alpha = beta / (beta + 1)
@@ -55,6 +56,7 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         reverseGain = 1 / 2f;
         saturationCurrent = Is;
         seriesResistance = Rs;
+        this.pnp = pnp ? -1 : 1;
 
         OmegaLog = Math.log(saturationCurrent * seriesResistance / V_T);
 
@@ -82,13 +84,13 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double Vbe = Vb - Ve, Vbc = Vb - Vc;
 
         double IsRs = saturationCurrent * seriesResistance;
-        double WbeTerm = WrightOmega(OmegaLog + (IsRs + Vbe) / V_T);
-        double WbcTerm = WrightOmega(OmegaLog + (IsRs + Vbc) / V_T);
+        double WbeTerm = WrightOmega(OmegaLog + (IsRs + pnp * Vbe) / V_T);
+        double WbcTerm = WrightOmega(OmegaLog + (IsRs + pnp * Vbc) / V_T);
         double Ebe = V_T * WbeTerm / seriesResistance - saturationCurrent;
         double Ebc = V_T * WbcTerm / seriesResistance - saturationCurrent;
 
-        double Ie = Ebc * reverseGain - Ebe;
-        double Ic = Ebe * forwardGain - Ebc;
+        double Ie = pnp * (Ebc * reverseGain - Ebe);
+        double Ic = pnp * (Ebe * forwardGain - Ebc);
         double Ib = -Ie - Ic;
 
         double Gee = Math.max(WbeTerm / (seriesResistance * (1 + WbeTerm)), G_MIN);
