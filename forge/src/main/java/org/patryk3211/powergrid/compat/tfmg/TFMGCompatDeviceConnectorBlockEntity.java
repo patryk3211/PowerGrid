@@ -69,9 +69,8 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
         var resistance = voltage * voltage / power;
         if(power > 0 && resistance > 0) {
             converterWire.setResistance(resistance);
-            converterWire.setState(true);
         } else {
-            converterWire.setState(false);
+            converterWire.setResistance(1e+6);
         }
     }
 

@@ -23,7 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -31,7 +31,7 @@ import java.util.List;
 
 public class DeviceConnectorBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     protected BridgeElectricBehaviour proxyBehaviour;
-    protected SwitchedWire converterWire;
+    protected ElectricWire converterWire;
 
     public DeviceConnectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -51,7 +51,7 @@ public class DeviceConnectorBlockEntity extends ElectricBlockEntity implements I
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        converterWire = builder.connectSwitch(100, builder.terminalNode(0), builder.terminalNode(1));
+        converterWire = builder.connect(100, builder.terminalNode(0), builder.terminalNode(1));
     }
 
     @Override
