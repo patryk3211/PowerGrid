@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
@@ -25,6 +26,7 @@ import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
 import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.WrightOmega;
+import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.pnLim;
 
 public class BJTWire extends CompoundWire implements ISolverHook {
     private static final double V_T = 0.025;
@@ -35,22 +37,25 @@ public class BJTWire extends CompoundWire implements ISolverHook {
     private final CrossWire collectorEmitter;
     private final CrossWire emitterCollector;
 
+    private final double beta;
     private final double forwardGain, reverseGain;
     private final double saturationCurrent;
     private final double seriesResistance;
     private final int pnp;
+    private final double Vcrit;
 
     private final double OmegaLog;
 
     private double prevCollector;
     private double prevEmitter;
-    private double prevBase;
+    private double intDelta;
 
     private double Ic, Ib, Ie;
 
     public BJTWire(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs, boolean pnp) {
         super(base, emitter);
         this.collector = collector;
+        this.beta = fBeta;
         // alpha = beta / (beta + 1)
         forwardGain = fBeta / (fBeta + 1);
         reverseGain = 1 / 2f;
@@ -63,6 +68,7 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         collectorBase = addDynamicWire(collector, base);
         collectorEmitter = addInternalWire(new CrossWire(base, collector, emitter));
         emitterCollector = addInternalWire(new CrossWire(base, emitter, collector));
+        Vcrit = V_T * Math.log(V_T / (Is * Math.sqrt(2)));
     }
 
     @Override
@@ -71,17 +77,12 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double Vc = collector.getVoltage();
         double Vb = node1.getVoltage();
         double Ve = node2.getVoltage();
-        var dVc = Vc - prevCollector;
-        var dVb = Vb - prevBase;
-        var dVe = Ve - prevEmitter;
-        Vc = prevCollector + softDelta(Math.abs(dVc), 0.1) * Math.signum(dVc);
-        Vb = prevBase + softDelta(Math.abs(dVb), 0.1) * Math.signum(dVb);
-        Ve = prevEmitter + softDelta(Math.abs(dVe), 0.1) * Math.signum(dVe);
-        prevEmitter = Ve;
-        prevCollector = Vc;
-        prevBase = Vb;
-
         double Vbe = Vb - Ve, Vbc = Vb - Vc;
+        var dVbc = Vbc - prevCollector;
+        var dVbe = Vbe - prevEmitter;
+        Vbc = prevCollector = pnp * pnLim(pnp * Vbc, pnp * prevCollector, Vcrit);
+        Vbe = prevEmitter = pnp * pnLim(pnp * Vbe, pnp * prevEmitter, Vcrit);
+        intDelta = intDelta * 0.999 + Math.abs(dVbc) + Math.abs(dVbe);
 
         double IsRs = saturationCurrent * seriesResistance;
         double WbeTerm = WrightOmega(OmegaLog + (IsRs + pnp * Vbe) / V_T);
@@ -98,7 +99,8 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double Gce = -Gee * forwardGain;
         double Gec = -Gcc * reverseGain;
 
-        double G_add = 1e-5;
+//        double G_add = 1e-5;
+        double G_add = Mth.clamp(intDelta * 1e-3 * 0.5, 1e-5, 1e-4);
 
         // Base - Emitter, simple wire
         setConductance(Gee + G_add);
@@ -126,6 +128,11 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         return List.of(collector, node1, node2);
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s-BJT(Is=%g, beta=%g)", pnp == -1 ? "P" : "N", saturationCurrent, beta);
+    }
+
     private static class CrossWire extends ConductanceWire {
         private final IElectricNode base;
 
@@ -145,6 +152,11 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         @Override
         public Collection<IElectricNode> coupledNodes() {
             return List.of(base, node1, node2);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("BJT$CrossWire(G=%g)", conductance());
         }
     }
 }

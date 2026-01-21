@@ -63,6 +63,13 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         }
     }
 
+    public static double pnLim(double V1, double V0, double Vcrit) {
+        if(V1 < Vcrit && V0 < Vcrit)
+            return V1;
+        var dV = V1 - V0;
+        return V0 + softDelta(Math.abs(dV), 0.1) * Math.signum(dV);
+    }
+
     public void setTemperatureCelsius(double temperatureCelsius) {
         this.temperatureCelsius = temperatureCelsius;
     }
@@ -85,9 +92,9 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
         double n = idealityFactor;
         double V = potentialDifference();
+        double Vcrit = n * V_T * Math.log(V_T / (reverseSaturationCurrent * Math.sqrt(2)));
         var dV = V - prevV;
-        V = prevV + softDelta(Math.abs(dV), Math.abs(dV) < 1 ? 0.1 : 1) * Math.signum(dV);
-        prevV = V;
+        prevV = V = pnLim(V, prevV, Vcrit);
         intDelta = intDelta * 0.999 + Math.abs(dV);
         double I_s1 = reverseSaturationCurrent;
         double E_g = 1.12; // Silicon bandgap energy in eV

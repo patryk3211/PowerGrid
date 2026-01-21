@@ -47,6 +47,7 @@ public class PNJunctionTests extends TestHelper {
 
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("GND current %f\n\n", GND.getCurrent());
+            Assertions.assertTrue(Net.network.isConverged(), "PN junction failed to converge");
         }
     }
 
@@ -80,6 +81,7 @@ public class PNJunctionTests extends TestHelper {
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("V2 current: %f\n", V2.getCurrent());
             System.out.printf("GND current %f\n\n", GND.getCurrent());
+            Assertions.assertTrue(Net.network.isConverged(), "NPN failed to converge");
         }
 
         Assertions.assertEquals(V2.getCurrent(), V1.getCurrent() / 10, 1e-6, "Collector current is invalid with respect to base");
@@ -116,6 +118,7 @@ public class PNJunctionTests extends TestHelper {
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("V2 current: %f\n", V2.getCurrent());
             System.out.printf("GND current %f\n\n", GND.getCurrent());
+            Assertions.assertTrue(Net.network.isConverged(), "PNP failed to converge");
         }
 
         Assertions.assertEquals(V2.getCurrent(), GND.getCurrent() / 10, 1e-6, "Collector current is invalid with respect to base");
