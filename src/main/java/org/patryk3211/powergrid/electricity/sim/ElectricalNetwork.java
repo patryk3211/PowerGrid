@@ -64,7 +64,7 @@ public class ElectricalNetwork implements IStamped {
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
-        this.mna = new NativeMNA(this);
+        this.mna = new JavaMNA(this);
     }
 
     public ElectricalNetwork(boolean addGMin, Function<ElectricalNetwork, IMNA> mna) {
@@ -111,7 +111,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void warmUp(int ticks) {
-        mna.warmUp(1);
+        mna.warmUp(ticks > 0 ? 1 : ticks);
     }
 
     public void addSegment(Collection<INetworkElement> elements) {

@@ -338,7 +338,9 @@ public class CraftingRecipes extends StandardRecipeProvider {
     VFET = create(ModdedItems.VFET)
             .unlockedBy(() -> AllItems.POLISHED_ROSE_QUARTZ)
             .viaShaped(b -> b
-                    .pattern("IRC")
+                    .pattern("C")
+                    .pattern("R")
+                    .pattern("I")
                     .define('R', AllItems.POLISHED_ROSE_QUARTZ)
                     .define('I', ironSheet())
                     .define('C', copperSheet())),

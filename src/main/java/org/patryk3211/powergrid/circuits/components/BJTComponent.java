@@ -20,38 +20,36 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
-import org.patryk3211.powergrid.circuits.components.properties.ConstantProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
-import org.patryk3211.powergrid.electricity.sim.special.ElectronTubeWire;
-import org.patryk3211.powergrid.utility.Unit;
+import org.patryk3211.powergrid.electricity.sim.special.BJTWire;
 
-public class VFETComponent extends OrientableComponent {
-    public static final FloatProperty GAIN = new FloatProperty(PowerGrid.MOD_ID, "vfet_gain", 10, 1, 100);
-    public static final FloatProperty K_G = new FloatProperty(PowerGrid.MOD_ID, "vfet_kg", 250, 10, 500);
-    public static final ConstantProperty SATURATION_CURRENT = new ConstantProperty(PowerGrid.MOD_ID, "vfet_isat",
-            Unit.CURRENT.formatWithPrefixes(0.5).component());
+public abstract class BJTComponent extends OrientableComponent {
+    public static final FloatProperty GAIN = new FloatProperty(PowerGrid.MOD_ID, "bjt_gain", 20, 5, 100);
 
-    public VFETComponent(ComponentFootprint footprint) {
+    private final boolean pnp;
+
+    public BJTComponent(ComponentFootprint footprint, boolean pnp) {
         super(footprint);
+        this.pnp = pnp;
     }
 
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(GAIN, K_G, SATURATION_CURRENT, power(10), voltage(60));
+        properties.add(GAIN, power(20), voltage(60));
     }
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var wire = new VFETWire(
-                placed.get(GAIN), 1 / placed.get(K_G), 0.5f,
-                builder.terminalNode(1), // Source
-                builder.terminalNode(0), // Drain
-                builder.terminalNode(2)  // Gate
+        var wire = new VLimBJT(
+                builder.terminalNode(0), // Collector
+                builder.terminalNode(1), // Base
+                builder.terminalNode(2), // Emitter
+                5.47e-12, placed.get(GAIN), 0.05, pnp
         );
         builder.add(wire);
         placed.add(wire);
@@ -59,19 +57,19 @@ public class VFETComponent extends OrientableComponent {
         thermals.builder()
                 .addHeatSource(wire)
                 .setThermalMass(0.01f)
-                .setMaxPower(10, 125);
+                .setMaxPower(20, 125);
     }
 
-    public static class VFETWire extends ElectronTubeWire {
-        public VFETWire(float gain, float perveance, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
-            super(gain, perveance, saturationCurrent, cathode, anode, grid);
+    public static class VLimBJT extends BJTWire {
+        public VLimBJT(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs, boolean pnp) {
+            super(collector, base, emitter, Is, fBeta, Rs, pnp);
         }
 
         @Override
         public float power() {
             var power = super.power();
-            if(Math.abs(potentialDifference()) > 60)
-                power += 20;
+            if(Math.abs(potentialDifference()) > 60 || Math.abs(collectorBase.potentialDifference()) > 60)
+                power += 40;
             return power;
         }
     }

@@ -70,6 +70,28 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .addOutput(AllItems.CARDBOARD, 5)
             .loops(2)
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(Items.PAPER))
+            .addStep(PressingRecipe::new, rb -> rb)),
+
+    BJT_NPN = create("bjt_npn", b -> b.require(RecipeTags.ironSheet())
+            .transitionTo(ModdedItems.INCOMPLETE_BJT_NPN)
+            .addOutput(ModdedItems.BJT_NPN, 100)
+            .addOutput(ModdedItems.BJT_PNP, 10)
+            .addOutput(AllItems.IRON_SHEET, 3)
+            .addOutput(AllItems.ELECTRON_TUBE, 3)
+            .loops(1)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.polishedRoseQuartz()))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.goldWire()))
+            .addStep(PressingRecipe::new, rb -> rb)),
+
+    BJT_PNP = create("bjt_pnp", b -> b.require(RecipeTags.ironSheet())
+            .transitionTo(ModdedItems.INCOMPLETE_BJT_PNP)
+            .addOutput(ModdedItems.BJT_PNP, 100)
+            .addOutput(ModdedItems.BJT_NPN, 10)
+            .addOutput(AllItems.IRON_SHEET, 3)
+            .addOutput(AllItems.ELECTRON_TUBE, 3)
+            .loops(1)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.goldWire()))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.polishedRoseQuartz()))
             .addStep(PressingRecipe::new, rb -> rb))
 
             ;
