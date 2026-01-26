@@ -178,7 +178,7 @@
   "item.powergrid.varistor": "Varistor",
   "item.powergrid.vfet": "Static Induction Transistor",
   "item.powergrid.wire": "Wire",
-  "item.powergrid.wire_cutter": "Wire Cutter",
+  "item.powergrid.wire_cutter": "Wire Cutters",
   "item.powergrid.zinc_sheet": "Zinc Sheet",
   "itemGroup.powergrid.main": "Power Grid",
   "powergrid.circuit_board.tooltip.schematic": "Schematic: ",

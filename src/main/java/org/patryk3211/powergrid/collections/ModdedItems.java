@@ -85,6 +85,7 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
+            .lang("Wire Cutters")
             .register();
 
     public static final ItemEntry<Item> EMPTY_CIRCUIT = REGISTRATE.item("empty_circuit", Item::new)
