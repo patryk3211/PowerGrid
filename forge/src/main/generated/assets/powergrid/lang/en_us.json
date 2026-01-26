@@ -139,6 +139,8 @@
   "item.powergrid.golden_wire": "Golden Wire",
   "item.powergrid.growth_lamp": "Growth Lamp",
   "item.powergrid.incomplete_battery": "Incomplete Battery",
+  "item.powergrid.incomplete_bjt_npn": "Incomplete NPN BJT",
+  "item.powergrid.incomplete_bjt_pnp": "Incomplete PNP BJT",
   "item.powergrid.incomplete_circuit": "Incomplete Circuit",
   "item.powergrid.incomplete_circuit.tooltip.summary": "Use _Mechanical Arms_ to insert used components and complete the circuit",
   "item.powergrid.incomplete_electrical_gizmo": "Incomplete Electrical Gizmo",

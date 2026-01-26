@@ -13,7 +13,9 @@
     }
   },
   "pattern": [
-    "IRC"
+    "C",
+    "R",
+    "I"
   ],
   "result": {
     "item": "powergrid:vfet"
