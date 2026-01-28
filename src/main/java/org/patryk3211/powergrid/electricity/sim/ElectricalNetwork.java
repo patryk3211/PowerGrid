@@ -250,7 +250,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public boolean isConverged() {
-        return mna.isConverged();
+        return mna != null ? mna.isConverged() : false;
     }
 
     public void addWire(AbstractElectricWire wire) {
