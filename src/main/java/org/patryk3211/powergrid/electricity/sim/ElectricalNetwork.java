@@ -472,7 +472,8 @@ public class ElectricalNetwork implements IStamped {
         other.nodes.forEach(this::addNode);
         other.wires.forEach(wire -> {
             // Drop stale wires
-            if((wire.node1 == null || hasNode(wire.node1)) && (wire.node2 == null || hasNode(wire.node2))) {
+            if((wire.node1 == null || hasNode(wire.node1) || leafNodes.containsKey(wire.node1)) &&
+                    (wire.node2 == null || hasNode(wire.node2) || leafNodes.containsKey(wire.node2))) {
                 addWire(wire);
             } else if(LOGGER != null) {
                 LOGGER.warn("Dropped stale wire {} between {} and {}", wire, wire.node1, wire.node2);
