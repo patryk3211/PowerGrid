@@ -44,7 +44,17 @@ public class ElectricGaugeDisplaySource extends PercentOrProgressBarDisplaySourc
                 if (getMode(context) == 1) {
                     value = Math.abs(value);
                 }
-                return Lang.numberConstant(value)
+                var prefix = " ";
+                var max = gauge.getMaxValue();
+                if(value > max) {
+                    value = max;
+                    prefix = "> ";
+                } else if(value < -max) {
+                    value = -max;
+                    prefix = "< ";
+                }
+                return Lang.text(prefix)
+                        .add(Lang.numberConstant(value))
                         .add(Component.literal(" "))
                         .add(gauge.getUnit().get())
                         .component();
