@@ -52,6 +52,7 @@
     "powergrid:carbon_pile",
     "powergrid:crt",
     "powergrid:andesite_encased_crt",
-    "powergrid:punch_card_reader"
+    "powergrid:punch_card_reader",
+    "powergrid:phone_dial"
   ]
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 patryk3211
+ * Copyright 2026 patryk3211
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.base;
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+package org.patryk3211.powergrid.electricity.base;
 
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
-
-public class CustomProperties {
-    public static final BooleanProperty ALONG_FIRST_AXIS = BooleanProperty.create("axis_along_first");
-    public static final IntegerProperty ROTATION_4 = IntegerProperty.create("rotation", 0, 3);
-    public static final IntegerProperty ROTATION_3 = IntegerProperty.create("rotation", 0, 2);
-}
+import net.minecraft.MethodsReturnNonnullByDefault;
+import javax.annotation.ParametersAreNonnullByDefault;

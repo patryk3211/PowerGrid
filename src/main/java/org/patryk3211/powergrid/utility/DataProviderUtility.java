@@ -190,4 +190,9 @@ public class DataProviderUtility {
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> air() {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> rotation12(String model) {
+        throw new AssertionError();
+    }
 }

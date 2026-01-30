@@ -78,6 +78,7 @@ import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
+import org.patryk3211.powergrid.electricity.phonedial.PhoneDialBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
@@ -736,6 +737,18 @@ public class ModdedBlocks {
             .transform(CThermal.maxPower(10, 0.2f))
             .item()
                 .model(itemWithParent("block/punch_card_reader/item"))
+                .build()
+            .register();
+
+    public static BlockEntry<PhoneDialBlock> PHONE_DIAL = REGISTRATE.block("phone_dial", PhoneDialBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(rotation12("block/phone_dial/block"))
+            .addLayer(() -> RenderType::cutoutMipped)
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(1f))
+            .transform(CThermal.maxPower(10, 0.2f))
+            .item()
+                .model(itemWithParent("block/phone_dial/item"))
                 .build()
             .register();
 

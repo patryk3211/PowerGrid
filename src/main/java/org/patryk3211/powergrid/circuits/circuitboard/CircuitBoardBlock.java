@@ -52,6 +52,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.circuits.components.IInteractableComponent;
 import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
@@ -69,7 +70,7 @@ import java.util.List;
 @MethodsReturnNonnullByDefault
 public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoardBlockEntity> {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
-    public static final IntegerProperty ROTATION = IntegerProperty.create("rotation", 0, 2);
+    public static final IntegerProperty ROTATION = CustomProperties.ROTATION_3;
 
     private static final VoxelShape SHAPE_PLATE = box(0, 0, 0, 16, 2, 16);
 

@@ -48,8 +48,7 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import java.util.function.Function;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.*;
-import static org.patryk3211.powergrid.base.CustomProperties.ALONG_FIRST_AXIS;
-import static org.patryk3211.powergrid.base.CustomProperties.ROTATION_4;
+import static org.patryk3211.powergrid.base.CustomProperties.*;
 
 @SuppressWarnings("unused")
 public class DataProviderUtilityImpl {
@@ -548,6 +547,32 @@ public class DataProviderUtilityImpl {
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> air() {
         return (ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                 prov.models().getExistingFile(prov.mcLoc("block/air")));
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> rotation12(String model) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            builder.modelFile(modModel(prov, model));
+            int y = switch(state.getValue(HORIZONTAL_FACING)) {
+                case NORTH -> 0;
+                case SOUTH -> 180;
+                case EAST -> 90;
+                case WEST -> -90;
+                default -> throw new IllegalStateException();
+            };
+            int x = switch(state.getValue(ROTATION_3)) {
+                case 0 -> 0;
+                case 1 -> -90;
+                case 2 -> {
+                    y -= 180;
+                    if(y < -90)
+                        y += 360;
+                    yield 180;
+                }
+                default -> throw new IllegalStateException();
+            };
+            return builder.rotationX(x).rotationY(y).build();
+        });
     }
 
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> generated() {

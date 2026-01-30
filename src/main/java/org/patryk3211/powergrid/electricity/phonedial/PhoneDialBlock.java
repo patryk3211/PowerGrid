@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 patryk3211
+ * Copyright 2026 patryk3211
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.base;
+package org.patryk3211.powergrid.electricity.phonedial;
 
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import org.patryk3211.powergrid.electricity.base.Rotation12ElectricBlock;
 
-public class CustomProperties {
-    public static final BooleanProperty ALONG_FIRST_AXIS = BooleanProperty.create("axis_along_first");
-    public static final IntegerProperty ROTATION_4 = IntegerProperty.create("rotation", 0, 3);
-    public static final IntegerProperty ROTATION_3 = IntegerProperty.create("rotation", 0, 2);
+public class PhoneDialBlock extends Rotation12ElectricBlock {
+    public PhoneDialBlock(Properties settings) {
+        super(settings);
+    }
 }
