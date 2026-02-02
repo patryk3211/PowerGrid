@@ -64,10 +64,12 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     }
 
     public static double pnLim(double V1, double V0, double Vcrit) {
-        if(V1 < Vcrit && V0 < Vcrit)
-            return V1;
         var dV = V1 - V0;
-        return V0 + softDelta(Math.abs(dV), 0.1) * Math.signum(dV);
+        var adV = Math.abs(dV);
+        var sdV = Math.signum(dV);
+        if(V1 < Vcrit && V0 < Vcrit)
+            return V0 + 0.5 * (adV + 0.5) * Math.log1p(adV) * sdV;
+        return V0 + 0.1 * (adV + 0.5) * Math.log1p(adV) * sdV;
     }
 
     public void setTemperatureCelsius(double temperatureCelsius) {

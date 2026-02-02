@@ -97,5 +97,10 @@ public abstract class CompoundWire extends AbstractElectricWire {
             }
             this.conductance = conductance;
         }
+
+        @Override
+        public String toString() {
+            return String.format("ConductanceWire(G=%g)", conductance);
+        }
     }
 }

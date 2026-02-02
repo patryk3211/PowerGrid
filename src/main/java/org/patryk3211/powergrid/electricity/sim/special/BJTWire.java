@@ -99,8 +99,7 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double Gce = -Gee * forwardGain;
         double Gec = -Gcc * reverseGain;
 
-//        double G_add = 1e-5;
-        double G_add = Mth.clamp(intDelta * 1e-3 * 0.5, 1e-5, 1e-4);
+        double G_add = Mth.clamp(intDelta * 1e-3 * 0.5, 1e-5, 1e-3);
 
         // Base - Emitter, simple wire
         setConductance(Gee + G_add);

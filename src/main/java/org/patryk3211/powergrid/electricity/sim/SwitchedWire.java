@@ -72,4 +72,9 @@ public class SwitchedWire extends ElectricWire {
     public double conductance() {
         return state ? super.conductance() : OFF_CONDUCTANCE;
     }
+
+    @Override
+    public String toString() {
+        return String.format("SwitchedWire(R=%g,%s)", resistance, state ? "ON" : "OFF");
+    }
 }
