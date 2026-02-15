@@ -47,12 +47,10 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;

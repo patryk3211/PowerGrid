@@ -21,6 +21,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -310,14 +311,14 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     }
 
     @Override
-    public void read(CompoundTag nbt, boolean clientPacket) {
-        super.read(nbt, clientPacket);
+    public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(nbt, registries, clientPacket);
         temperature = nbt.getFloat("Temperature");
     }
 
     @Override
-    public void write(CompoundTag nbt, boolean clientPacket) {
-        super.write(nbt, clientPacket);
+    public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(nbt, registries, clientPacket);
         nbt.putFloat("Temperature", temperature);
     }
 

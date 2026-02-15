@@ -31,9 +31,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public abstract class ElectricBlock extends Block implements IElectric {
     private BlockStateTerminalCollection terminals = null;

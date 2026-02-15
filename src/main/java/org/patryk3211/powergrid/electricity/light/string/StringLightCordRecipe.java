@@ -15,15 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.light.string;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CustomRecipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -36,11 +34,12 @@ public class StringLightCordRecipe extends CustomRecipe {
         super(id, category);
     }
 
+
     @Override
-    public boolean matches(CraftingContainer container, Level level) {
+    public boolean matches(CraftingInput input, Level level) {
         var hasCord = false;
 
-        for(var stack : container.getItems()) {
+        for(var stack : input.items()) {
             if(ModdedItems.STRING_LIGHT_CORD.isIn(stack)) {
                 if(hasCord)
                     return false;
@@ -54,11 +53,11 @@ public class StringLightCordRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingContainer container, RegistryAccess registryAccess) {
+    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
         var result = ModdedItems.STRING_LIGHT_CORD.asStack();
         var colors = new ArrayList<Byte>();
 
-        for(var stack : container.getItems()) {
+        for(var stack : input.items()) {
             if(stack.getItem() instanceof DyeItem dye) {
                 colors.add((byte) dye.getDyeColor().ordinal());
             }
@@ -70,7 +69,7 @@ public class StringLightCordRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess registryAccess) {
+    public ItemStack getResultItem(HolderLookup.Provider registries) {
         return ModdedItems.STRING_LIGHT_CORD.asStack();
     }
 

@@ -83,7 +83,7 @@ public class PlacedComponent {
     }
 
     private static Component get(String id) {
-        return ComponentRegistry.get(new ResourceLocation(id));
+        return ComponentRegistry.get(ResourceLocation.parse(id));
     }
 
     public PlacedComponent(Component component, int x, int y, UUID uuid) {

@@ -23,8 +23,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -262,7 +262,7 @@ public class CustomConnectivityHandler {
 
     // tryReconnect helps whenever only a few tanks have been removed
     private static <T extends BlockEntity & IMultiBlockBattery> void splitMultiAndInvalidate(T be,
-                                                                                                     @Nullable SearchCache<T> cache, boolean tryReconnect) {
+                                                                                                @Nullable SearchCache<T> cache, boolean tryReconnect) {
         Level level = be.getLevel();
         if (level == null)
             return;

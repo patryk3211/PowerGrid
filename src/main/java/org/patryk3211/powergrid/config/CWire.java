@@ -20,9 +20,9 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import net.createmod.catnip.config.ConfigBase;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
@@ -36,10 +36,10 @@ public class CWire extends ConfigBase implements WireValues.Provider {
 
     private static final Object2DoubleMap<ResourceLocation> DEFAULT_VALUES = new Object2DoubleOpenHashMap<>();
 
-    protected final Map<ResourceLocation, ForgeConfigSpec.ConfigValue<Double>> values = new HashMap<>();
+    protected final Map<ResourceLocation, ModConfigSpec.ConfigValue<Double>> values = new HashMap<>();
 
     @Override
-    public void registerAll(ForgeConfigSpec.Builder builder) {
+    public void registerAll(ModConfigSpec.Builder builder) {
         builder.comment(".")
                 .push("wire");
         DEFAULT_VALUES.forEach((id, value) -> this.values.put(id, builder.define(id.getPath(), value)));
@@ -53,7 +53,7 @@ public class CWire extends ConfigBase implements WireValues.Provider {
 
     @Nullable
     public DoubleSupplier get(WireItem item, String suffix) {
-        var id = BuiltInRegistries.ITEM.getKey(item).withSuffix("." + suffix);
+        var id = RegisteredObjectsHelper.getKeyOrThrow(item).withSuffix("." + suffix);
         var entry = values.get(id);
         return entry == null ? null : entry::get;
     }

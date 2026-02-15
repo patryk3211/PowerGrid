@@ -20,10 +20,10 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import net.createmod.catnip.config.ConfigBase;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -44,11 +44,11 @@ public class CStress extends ConfigBase {
     private static final Object2DoubleMap<ResourceLocation> DEFAULT_IMPACTS = new Object2DoubleOpenHashMap<>();
     private static final Object2DoubleMap<ResourceLocation> DEFAULT_CAPACITIES = new Object2DoubleOpenHashMap<>();
 
-    protected final Map<ResourceLocation, ForgeConfigSpec.ConfigValue<Double>> capacities = new HashMap<>();
-    protected final Map<ResourceLocation, ForgeConfigSpec.ConfigValue<Double>> impacts = new HashMap<>();
+    protected final Map<ResourceLocation, ModConfigSpec.ConfigValue<Double>> capacities = new HashMap<>();
+    protected final Map<ResourceLocation, ModConfigSpec.ConfigValue<Double>> impacts = new HashMap<>();
 
     @Override
-    public void registerAll(ForgeConfigSpec.Builder builder) {
+    public void registerAll(ModConfigSpec.Builder builder) {
         builder.comment(".", Comments.su, Comments.impact)
                 .push("impact");
         DEFAULT_IMPACTS.forEach((id, value) -> this.impacts.put(id, builder.define(id.getPath(), value)));
@@ -68,15 +68,15 @@ public class CStress extends ConfigBase {
 
     @Nullable
     public DoubleSupplier getImpact(Block block) {
-        ResourceLocation id = CatnipServices.REGISTRIES.getKeyOrThrow(block);
-        ForgeConfigSpec.ConfigValue<Double> value = this.impacts.get(id);
+        ResourceLocation id = RegisteredObjectsHelper.getKeyOrThrow(block);
+        ModConfigSpec.ConfigValue<Double> value = this.impacts.get(id);
         return value == null ? null : value::get;
     }
 
     @Nullable
     public DoubleSupplier getCapacity(Block block) {
-        ResourceLocation id = CatnipServices.REGISTRIES.getKeyOrThrow(block);
-        ForgeConfigSpec.ConfigValue<Double> value = this.capacities.get(id);
+        ResourceLocation id = RegisteredObjectsHelper.getKeyOrThrow(block);
+        ModConfigSpec.ConfigValue<Double> value = this.capacities.get(id);
         return value == null ? null : value::get;
     }
 

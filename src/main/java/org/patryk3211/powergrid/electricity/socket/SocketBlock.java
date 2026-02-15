@@ -37,9 +37,6 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class SocketBlock extends DirectionalElectricBlock implements IBE<SocketBlockEntity>, ISocketElectric {
     public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;

@@ -43,7 +43,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
+import net.minecraft.world.level.storage.loot.functions.CopyCustomDataFunction;
 import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
@@ -129,17 +129,17 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock(state -> state.getValue(PotatoBatteryBlock.BAKED) ? "block/baked_potato_battery" : "block/potato_battery"))
             .initialProperties(() -> Blocks.NETHER_WART)
             .loot((tables, block) ->
-                    tables.add(block, b -> LootTable.lootTable()
+                    tables.add(block, LootTable.lootTable()
                             .withPool(LootPool.lootPool()
                                     .when(ExplosionCondition.survivesExplosion())
-                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
+                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                             .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PotatoBatteryBlock.BAKED, false)))
-                                    .add(LootItem.lootTableItem(b))
-                                    .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                            .copy("Energy", "Energy", CopyNbtFunction.MergeStrategy.REPLACE)))
+                                    .add(LootItem.lootTableItem(block))
+                                    .apply(CopyCustomDataFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                            .copy("Energy", "Energy", CopyCustomDataFunction.MergeStrategy.REPLACE)))
                             .withPool(LootPool.lootPool()
                                     .when(ExplosionCondition.survivesExplosion())
-                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
+                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                             .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PotatoBatteryBlock.BAKED, true)))
                                     .add(LootItem.lootTableItem(Items.BAKED_POTATO)))
                     ))
@@ -377,10 +377,10 @@ public class ModdedBlocks {
             .transform(CResistance.setResistance(0.1))
             .transform(CThermal.maxPower(153.6, 2.0f))
             .loot((tables, block) ->
-                    tables.add(block, b -> LootTable.lootTable()
+                    tables.add(block, LootTable.lootTable()
                             .withPool(LootPool.lootPool()
                                     .when(ExplosionCondition.survivesExplosion())
-                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
+                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                             .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(HvSwitchBlock.PART, 0)))
                                     .add(LootItem.lootTableItem(block)))
                     ))
@@ -583,8 +583,8 @@ public class ModdedBlocks {
                     .withPool(LootPool.lootPool()
                             .when(ExplosionCondition.survivesExplosion())
                             .add(LootItem.lootTableItem(ModdedItems.PORTABLE_BATTERY)))
-                    .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                            .copy("Charge", "Charge", CopyNbtFunction.MergeStrategy.REPLACE))
+                    .apply(CopyCustomDataFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                            .copy("Charge", "Charge", CopyCustomDataFunction.MergeStrategy.REPLACE))
             ))
             .register();
 
@@ -605,9 +605,9 @@ public class ModdedBlocks {
                         .withPool(LootPool.lootPool()
                                 .when(ExplosionCondition.survivesExplosion())
                                 .add(LootItem.lootTableItem(ModdedBlocks.CIRCUIT_BOARD)))
-                        .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                .copy("Schematic", "Schematic", CopyNbtFunction.MergeStrategy.REPLACE)
-                                .copy("Thermal", "Thermal", CopyNbtFunction.MergeStrategy.REPLACE))
+                        .apply(CopyCustomDataFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                .copy("Schematic", "Schematic", CopyCustomDataFunction.MergeStrategy.REPLACE)
+                                .copy("Thermal", "Thermal", CopyCustomDataFunction.MergeStrategy.REPLACE))
             ))
             .item()
                 .defaultModel()

@@ -37,10 +37,8 @@ import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.utility.Lang;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> implements IAcceptConnector, IHaveElectricProperties {
     protected BatterySpec spec;

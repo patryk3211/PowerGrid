@@ -37,9 +37,6 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public abstract class AbstractRotorBlock extends Block implements IRotorAssemblyPart, IWrenchable, IRotate {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;

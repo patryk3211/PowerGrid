@@ -17,7 +17,7 @@ package org.patryk3211.powergrid.collections.forge;
 
 import com.simibubi.create.AllSoundEvents;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 public class ModdedSoundEventsImpl {

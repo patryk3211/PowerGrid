@@ -29,9 +29,6 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 public abstract class SurfaceElectricBlock extends DirectionalElectricBlock {
     public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
 

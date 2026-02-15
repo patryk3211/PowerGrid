@@ -287,6 +287,7 @@ architectury {
 
 dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.neoforged:neoforge:${neoforge_version}"
 
 	modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
 	modImplementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_forge_version}")

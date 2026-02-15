@@ -16,7 +16,8 @@
 package org.patryk3211.powergrid.collections.forge;
 
 import net.createmod.catnip.config.ConfigBase;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfig;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.forge.PowerGridImpl;
 
 import java.util.Map;
@@ -25,7 +26,12 @@ import static org.patryk3211.powergrid.collections.ModdedConfigs.CONFIGS;
 
 public class ModdedConfigsImpl {
     public static void registerPlatform() {
-        for(Map.Entry<ModConfig.Type, ConfigBase> pair : CONFIGS.entrySet())
-            PowerGridImpl.context.registerConfig(pair.getKey(), pair.getValue().specification);
+        for(Map.Entry<ModdedConfigs.Type, ConfigBase> pair : CONFIGS.entrySet()) {
+            PowerGridImpl.container.registerConfig(switch(pair.getKey()) {
+                case CLIENT -> ModConfig.Type.CLIENT;
+                case COMMON -> ModConfig.Type.COMMON;
+                case SERVER -> ModConfig.Type.SERVER;
+            }, pair.getValue().specification);
+        }
     }
 }

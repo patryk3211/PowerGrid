@@ -27,6 +27,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -85,9 +86,9 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     public abstract float measuredCurrent();
 
     @Override
-    protected void defineSynchedData() {
-        entityData.define(TEMPERATURE, BASE_TEMPERATURE);
-        entityData.define(OVERHEAT_TICKS, (byte) 0);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(TEMPERATURE, BASE_TEMPERATURE);
+        builder.define(OVERHEAT_TICKS, (byte) 0);
     }
 
     protected boolean testForOverheat(float temperature, float energy) {
@@ -258,10 +259,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
+    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity entity) {
         var extra = createExtraDataPacket();
         ModdedPackets.sendToClientsTracking(extra, this);
-        return super.getAddEntityPacket();
+        return super.getAddEntityPacket(entity);
     }
 
     @Override
@@ -284,7 +285,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     protected void readAdditionalSaveData(CompoundTag nbt) {
         if(nbt.contains("Item")) {
             var itemTag = nbt.getCompound("Item");
-            var readItem = BuiltInRegistries.ITEM.get(new ResourceLocation(itemTag.getString("Id")));
+            var readItem = BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemTag.getString("Id")));
             if(!(readItem instanceof WireItem wireItem))
                 throw new IllegalStateException("WireEntity item must be a WireItem");
             setItem(wireItem, itemTag.getInt("Count"));
@@ -296,7 +297,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
 
         BlockPos lastPos = null;
         if(nbt.contains("LastKnownPos")) {
-            lastPos = NbtUtils.readBlockPos(nbt.getCompound("LastKnownPos"));
+            lastPos = NbtUtils.readBlockPos(nbt, "LastKnownPos").orElse(null);
         }
 
         IWireEndpoint endpoint1 = null, endpoint2 = null;
@@ -328,8 +329,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     public void setColor(DyeColor color) {
-        var rgb = color.getTextureDiffuseColors();
-        this.color = ((int) (rgb[0] * 255) << 16) | ((int) (rgb[1] * 255) << 8) | (int) (rgb[2] * 255);
+        this.color = color.getTextureDiffuseColor();
     }
 
     public void setItem(WireItem item, int count) {

@@ -18,8 +18,7 @@ package org.patryk3211.powergrid.collections;
 import com.simibubi.create.api.stress.BlockStressValues;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.createmod.catnip.config.ConfigBase;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 import org.patryk3211.powergrid.config.*;
 
@@ -31,7 +30,11 @@ import java.util.function.Supplier;
  * @see com.simibubi.create.infrastructure.config.AllConfigs
  */
 public class ModdedConfigs {
-    public static final Map<ModConfig.Type, ConfigBase> CONFIGS = new EnumMap<>(ModConfig.Type.class);
+    public enum Type {
+        CLIENT, COMMON, SERVER
+    }
+
+    public static final Map<Type, ConfigBase> CONFIGS = new EnumMap<>(Type.class);
 
     private static CServer server;
     private static CCommon common;
@@ -49,12 +52,12 @@ public class ModdedConfigs {
         return client;
     }
 
-    public static ConfigBase byType(ModConfig.Type type) {
+    public static ConfigBase byType(Type type) {
         return CONFIGS.get(type);
     }
 
-    private static <T extends ConfigBase> T register(Supplier<T> factory, ModConfig.Type side) {
-        Pair<T, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(builder -> {
+    private static <T extends ConfigBase> T register(Supplier<T> factory, Type side) {
+        Pair<T, ModConfigSpec> specPair = new ModConfigSpec.Builder().configure(builder -> {
             T config = factory.get();
             config.registerAll(builder);
             return config;
@@ -72,9 +75,9 @@ public class ModdedConfigs {
     }
 
     public static void register() {
-        server = register(CServer::new, ModConfig.Type.SERVER);
-        common = register(CCommon::new, ModConfig.Type.COMMON);
-        client = register(CClient::new, ModConfig.Type.CLIENT);
+        server = register(CServer::new, Type.SERVER);
+        common = register(CCommon::new, Type.COMMON);
+        client = register(CClient::new, Type.CLIENT);
 
         registerPlatform();
 
@@ -85,18 +88,6 @@ public class ModdedConfigs {
         ResistanceValues.register(server.electricity.resistance);
         ThermalValues.register(server.electricity.thermal);
         WireValues.register(server.electricity.wires);
-    }
-
-    public static void onLoad(ModConfig modConfig) {
-        for(ConfigBase config : CONFIGS.values())
-            if(config.specification == modConfig.getSpec())
-                config.onLoad();
-    }
-
-    public static void onReload(ModConfig modConfig) {
-        for(ConfigBase config : CONFIGS.values())
-            if(config.specification == modConfig.getSpec())
-                config.onReload();
     }
 
     public static boolean logsEnabled() {

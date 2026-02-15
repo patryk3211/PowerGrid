@@ -40,10 +40,8 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlockEntity>, IHaveElectricProperties {
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;

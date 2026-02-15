@@ -22,7 +22,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import net.createmod.catnip.config.ui.ConfigHelper;
 import net.createmod.catnip.data.Pair;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.CServer;
 import org.patryk3211.powergrid.utility.Lang;
@@ -60,8 +60,8 @@ public class ConfigCommand {
             if (obj instanceof AbstractConfig) {
                 resetConfig((UnmodifiableConfig) obj);
             } else if (obj instanceof ForgeConfigSpec.ConfigValue) {
-                ForgeConfigSpec.ConfigValue<Object> configValue = (ForgeConfigSpec.ConfigValue<Object>) obj;
-                ForgeConfigSpec.ValueSpec valueSpec = ModdedConfigs.server().specification.getRaw(configValue.getPath());
+                ModConfigSpec.ConfigValue<Object> configValue = (ModConfigSpec.ConfigValue<Object>) obj;
+                ModConfigSpec.ValueSpec valueSpec = ModdedConfigs.server().specification.getRaw(configValue.getPath());
 
                 List<String> comments = new ArrayList<>();
 

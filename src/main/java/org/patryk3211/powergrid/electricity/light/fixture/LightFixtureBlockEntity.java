@@ -20,6 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -181,13 +182,13 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         return ItemRequirement.NONE;
     }
 
-    public InteractionResult setColor(DyeColor color) {
+    public ItemInteractionResult setColor(DyeColor color) {
         if(bulbState == null)
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if(bulbState.setColor(color)) {
             notifyUpdate();
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 }

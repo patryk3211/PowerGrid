@@ -30,10 +30,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 @MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public abstract class DirectionalElectricBlock extends ElectricBlock {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 

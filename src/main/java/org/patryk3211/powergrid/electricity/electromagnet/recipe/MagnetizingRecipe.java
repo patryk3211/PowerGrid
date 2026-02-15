@@ -15,15 +15,15 @@
  */
 package org.patryk3211.powergrid.electricity.electromagnet.recipe;
 
-import com.simibubi.create.compat.recipeViewerCommon.SequencedAssemblySubCategoryType;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
+import com.simibubi.create.compat.jei.category.sequencedAssembly.SequencedAssemblySubCategory;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
+import com.simibubi.create.content.processing.recipe.StandardProcessingRecipe;
 import com.simibubi.create.content.processing.sequenced.IAssemblyRecipe;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
@@ -31,11 +31,12 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
-public class MagnetizingRecipe extends ProcessingRecipe<Container> implements IAssemblyRecipe {
+public class MagnetizingRecipe extends StandardProcessingRecipe<RecipeInput> implements IAssemblyRecipe {
     public static final TypeInfo TYPE_INFO = new TypeInfo();
 
-    public MagnetizingRecipe(ProcessingRecipeBuilder.ProcessingRecipeParams params) {
+    public MagnetizingRecipe(ProcessingRecipeParams params) {
         super(TYPE_INFO, params);
     }
 
@@ -66,14 +67,14 @@ public class MagnetizingRecipe extends ProcessingRecipe<Container> implements IA
     }
 
     @Override
-    public SequencedAssemblySubCategoryType getJEISubCategory() {
+    public Supplier<Supplier<SequencedAssemblySubCategory>> getJEISubCategory() {
         return null;
     }
 
     @Override
-    public boolean matches(Container inventory, Level world) {
-        if(inventory.isEmpty())
+    public boolean matches(RecipeInput input, Level level) {
+        if(input.isEmpty())
             return false;
-        return ingredients.get(0).test(inventory.getItem(0));
+        return ingredients.get(0).test(input.getItem(0));
     }
 }

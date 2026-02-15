@@ -132,7 +132,7 @@ public class PowerGrid {
 	}
 
 	public static ResourceLocation asResource(String path) {
-		return new ResourceLocation(MOD_ID, path);
+		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 
 	public static ResourceLocation texture(String path) {
@@ -160,7 +160,7 @@ public class PowerGrid {
 	private static Platform platform = null;
 
 	public enum Platform {
-		FABRIC, FORGE
+		FABRIC, NEOFORGE
 	}
 
 	public static Platform getPlatform() {
@@ -168,10 +168,10 @@ public class PowerGrid {
 			var str = System.getProperty("powergrid.platform", "auto");
 			platform = switch(str.toLowerCase()) {
 				case "fabric" -> Platform.FABRIC;
-				case "forge" -> Platform.FORGE;
+				case "forge" -> Platform.NEOFORGE;
 				case "auto" -> {
-					if(dev.architectury.platform.Platform.isForge())
-						yield Platform.FORGE;
+					if(dev.architectury.platform.Platform.isNeoForge())
+						yield Platform.NEOFORGE;
 					if(dev.architectury.platform.Platform.isFabric())
 						yield Platform.FABRIC;
 					throw new IllegalStateException("Cannot detect current platform");
@@ -185,7 +185,7 @@ public class PowerGrid {
 	public static <T> T forPlatform(T fabric, T forge) {
 		return switch(getPlatform()) {
 			case FABRIC -> fabric;
-			case FORGE -> forge;
+			case NEOFORGE -> forge;
 		};
 	}
 }

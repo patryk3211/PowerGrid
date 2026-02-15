@@ -48,10 +48,8 @@ import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;

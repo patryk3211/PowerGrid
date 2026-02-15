@@ -44,7 +44,8 @@ public class MagnetizingRecipes extends ProcessingRecipeGen {
     )
             ;
 
-    protected <T extends ProcessingRecipe<?>> GeneratedRecipe create(Supplier<ItemLike> singleIngredient, UnaryOperator<ProcessingRecipeBuilder<T>> transform) {
+
+    protected <T extends ProcessingRecipe<?>> GeneratedRecipe create(Supplier<ItemLike> singleIngredient, UnaryOperator transform) {
         return super.create(PowerGrid.MOD_ID, singleIngredient, transform);
     }
 

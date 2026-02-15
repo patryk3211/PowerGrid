@@ -20,6 +20,7 @@ import com.google.gson.JsonObject;
 import com.simibubi.create.api.data.recipe.BaseRecipeProvider;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
@@ -64,7 +65,7 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		return new GeneratedRecipeBuilder(currentFolder, result);
 	}
 
-	GeneratedRecipeBuilder create(ItemProviderEntry<? extends ItemLike> result) {
+	GeneratedRecipeBuilder create(ItemProviderEntry<? extends ItemLike, ? extends ItemLike> result) {
 		return create(result::get);
 	}
 
@@ -77,11 +78,11 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		});
 	}
 
-	GeneratedRecipe conversionCycle(List<ItemProviderEntry<? extends ItemLike>> cycle) {
+	GeneratedRecipe conversionCycle(List<ItemProviderEntry<? extends ItemLike, ? extends ItemLike>> cycle) {
 		GeneratedRecipe result = null;
 		for (int i = 0; i < cycle.size(); i++) {
-			ItemProviderEntry<? extends ItemLike> currentEntry = cycle.get(i);
-			ItemProviderEntry<? extends ItemLike> nextEntry = cycle.get((i + 1) % cycle.size());
+			ItemProviderEntry<? extends ItemLike, ? extends ItemLike> currentEntry = cycle.get(i);
+			ItemProviderEntry<? extends ItemLike, ? extends ItemLike> nextEntry = cycle.get((i + 1) % cycle.size());
 			result = create(nextEntry).withSuffix("_from_conversion")
 				.unlockedBy(currentEntry::get)
 				.viaShapeless(b -> b.requires(currentEntry.get()));
@@ -89,7 +90,7 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		return result;
 	}
 
-	GeneratedRecipe clearData(ItemProviderEntry<? extends ItemLike> item) {
+	GeneratedRecipe clearData(ItemProviderEntry<? extends ItemLike, ? extends ItemLike> item) {
 		return create(item).withSuffix("_clear")
 			.unlockedBy(item::get)
 			.viaShapeless(b -> b.requires(item.get()));
@@ -198,7 +199,7 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		}
 
 		private ResourceLocation getRegistryName() {
-			return compatDatagenOutput == null ? CatnipServices.REGISTRIES.getKeyOrThrow(result.get()
+			return compatDatagenOutput == null ? RegisteredObjectsHelper.getKeyOrThrow(result.get()
 				.asItem()) : compatDatagenOutput;
 		}
 

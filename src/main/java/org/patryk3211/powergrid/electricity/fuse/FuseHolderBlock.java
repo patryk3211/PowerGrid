@@ -36,9 +36,6 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.SurfaceElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 public class FuseHolderBlock extends SurfaceElectricBlock implements IBE<FuseHolderBlockEntity> {
     public static final EnumProperty<FuseState> STATE = EnumProperty.create("state", FuseState.class);
 

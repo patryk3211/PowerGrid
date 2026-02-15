@@ -42,9 +42,6 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class CordJunctionBlock extends DirectionalElectricBlock implements IBE<CordJunctionBlockEntity>, IAcceptCord {
     private static final VoxelShaper SHAPER = VoxelShaper.forDirectional(box(4, 0, 4, 12, 3, 12), Direction.DOWN);

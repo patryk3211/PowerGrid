@@ -49,9 +49,6 @@ import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class DeviceConnectorBlock extends DirectionalElectricBlock implements IBE<DeviceConnectorBlockEntity>, IAcceptCord {
     public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;

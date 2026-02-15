@@ -29,7 +29,7 @@ dependencies {
     modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_forge_version}")
     modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
 
-    modImplementation "dev.architectury:architectury-forge:${architectury_api_version}"
+    modImplementation "dev.architectury:architectury-neoforge:${architectury_api_version}"
 
     // Just Enough Items
     modCompileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
@@ -41,7 +41,7 @@ dependencies {
     modCompileOnly "maven.modrinth:create-tfmg:1.0.2c"
 
     compileOnly("io.github.llamalad7:mixinextras-common:${mixin_extras_version}")
-    annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")))
+    annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-neoforge:${mixin_extras_version}")))
 
     shadowCommon(project(path: rootProject.path, configuration: "transformProductionNeoForge")) { transitive false }
 

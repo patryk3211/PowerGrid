@@ -15,15 +15,17 @@
  */
 package org.patryk3211.powergrid.electricity.electromagnet.recipe;
 
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeSerializer;
+import com.simibubi.create.content.processing.recipe.StandardProcessingRecipe;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class TypeInfo implements IRecipeTypeInfo {
-    public static final ResourceLocation ID = new ResourceLocation(PowerGrid.MOD_ID, "magnetization");
+    public static final ResourceLocation ID = PowerGrid.asResource("magnetization");
     public static final RecipeType<MagnetizingRecipe> TYPE = new RecipeType<>() {
         @Override
         public String toString() {
@@ -31,7 +33,7 @@ public class TypeInfo implements IRecipeTypeInfo {
         }
     };
 
-    public static final RecipeSerializer<MagnetizingRecipe> SERIALIZER = new ProcessingRecipeSerializer<>(MagnetizingRecipe::new);
+    public static final RecipeSerializer<MagnetizingRecipe> SERIALIZER = new StandardProcessingRecipe.Serializer<>(MagnetizingRecipe::new);
 
     TypeInfo() { }
 
@@ -46,7 +48,7 @@ public class TypeInfo implements IRecipeTypeInfo {
     }
 
     @Override
-    public <T extends RecipeType<?>> T getType() {
-        return (T) TYPE;
+    public <I extends RecipeInput, R extends Recipe<I>> RecipeType<R> getType() {
+        return (RecipeType<R>) TYPE;
     }
 }

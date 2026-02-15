@@ -24,6 +24,7 @@ import dev.architectury.platform.Platform;
 import dev.architectury.platform.forge.EventBuses;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.createmod.catnip.config.ConfigBase;
 import net.createmod.catnip.lang.FontHelper;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
@@ -32,17 +33,22 @@ import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.*;
+import net.minecraft.world.level.ItemLike;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
+import net.neoforged.fml.javafmlmod.FMLJavaModLanguageProvider;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.Component;
@@ -72,14 +78,16 @@ import java.util.function.BiConsumer;
 @Mod(PowerGrid.MOD_ID)
 public class PowerGridImpl {
     public static ModLoadingContext context;
+    public static ModContainer container;
     public static IEventBus bus;
 
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, PowerGrid.MOD_ID);
     public static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, PowerGrid.MOD_ID);
 
-    public PowerGridImpl() {
+    public PowerGridImpl(IEventBus modEventBus, ModContainer modContainer) {
         context = ModLoadingContext.get();
-        bus = FMLJavaModLoadingContext.get().getModEventBus();
+        bus = modEventBus;
+        container = modContainer;
         bus.register(PowerGridImpl.class);
         EventBuses.registerModEventBus(PowerGrid.MOD_ID, bus);
 
@@ -93,7 +101,7 @@ public class PowerGridImpl {
         PowerGrid.init();
 
         TABS.register("main", () -> CreativeModeTab.builder()
-                .icon(() -> new ItemStack(ModdedItems.WIRE))
+                .icon(() -> new ItemStack((ItemLike) ModdedItems.WIRE))
                 .displayItems(new ItemDisplay.BaseItemDisplay(true))
                 .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
                 .build());
@@ -105,7 +113,7 @@ public class PowerGridImpl {
         TABS.register(bus);
         COMMAND_ARGUMENT_TYPES.register(bus);
 
-        MinecraftForge.EVENT_BUS.register(ForgeEvents.class);
+        NeoForge.EVENT_BUS.register(ForgeEvents.class);
 
         // Client init
         EnvExecutor.runInEnv(Env.CLIENT, () -> PowerGridClientImpl::init);
@@ -126,12 +134,16 @@ public class PowerGridImpl {
 
     @SubscribeEvent
     public static void configLoad(ModConfigEvent.Loading event) {
-        ModdedConfigs.onLoad(event.getConfig());
+        for(ConfigBase config : ModdedConfigs.CONFIGS.values())
+            if(config.specification == event.getConfig().getSpec())
+                config.onLoad();
     }
 
     @SubscribeEvent
     public static void configReload(ModConfigEvent.Reloading event) {
-        ModdedConfigs.onReload(event.getConfig());
+        for(ConfigBase config : ModdedConfigs.CONFIGS.values())
+            if(config.specification == event.getConfig().getSpec())
+                config.onReload();
     }
 
     @SubscribeEvent

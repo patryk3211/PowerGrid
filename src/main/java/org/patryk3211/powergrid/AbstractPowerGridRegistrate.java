@@ -43,12 +43,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentBuilder;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.utility.SimpleBlockEntityVisualFactory;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -122,12 +122,12 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
             return super.createEntry();
         }
 
-        public PowerGridBlockEntityBuilder<T, P> displaySource(RegistryEntry<? extends DisplaySource> source) {
+        public PowerGridBlockEntityBuilder<T, P> displaySource(RegistryEntry<DisplaySource, ? extends DisplaySource> source) {
             this.onRegisterAfter(CreateRegistries.DISPLAY_SOURCE, type -> DisplaySource.BY_BLOCK_ENTITY.add(type, source.get()));
             return this;
         }
 
-        public PowerGridBlockEntityBuilder<T, P> displayTarget(RegistryEntry<? extends DisplayTarget> target) {
+        public PowerGridBlockEntityBuilder<T, P> displayTarget(RegistryEntry<DisplayTarget, ? extends DisplayTarget> target) {
             this.onRegisterAfter(CreateRegistries.DISPLAY_TARGET, type -> DisplayTarget.BY_BLOCK_ENTITY.register(type, target.get()));
             return this;
         }

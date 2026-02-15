@@ -31,10 +31,8 @@ import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class HeaterBlock extends HorizontalElectricBlock implements IBE<HeaterBlockEntity>, IHaveElectricProperties, IAcceptCord {
     private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {

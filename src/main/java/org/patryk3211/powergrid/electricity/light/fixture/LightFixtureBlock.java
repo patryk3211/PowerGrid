@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
@@ -58,11 +59,9 @@ import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class LightFixtureBlock extends DirectionalElectricBlock implements IBE<LightFixtureBlockEntity>, IAcceptCord {
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 2);
@@ -162,20 +161,27 @@ public class LightFixtureBlock extends DirectionalElectricBlock implements IBE<L
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        return onBlockEntityUse(level, pos, be ->
+                be.replaceBulb(player, InteractionHand.MAIN_HAND, player.getMainHandItem())
+                        ? InteractionResult.SUCCESS
+                        : InteractionResult.FAIL);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if(hand != InteractionHand.MAIN_HAND)
-            return InteractionResult.PASS;
-        var stack = player.getItemInHand(hand);
-        if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
-            return onBlockEntityUse(world, pos, be ->
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        if(stack.getItem() instanceof ILightBulb) {
+            return onBlockEntityUseItemOn(level, pos, be ->
                     be.replaceBulb(player, hand, stack)
-                            ? InteractionResult.SUCCESS
-                            : InteractionResult.FAIL);
+                            ? ItemInteractionResult.SUCCESS
+                            : ItemInteractionResult.FAIL);
         } else if(stack.getItem() instanceof DyeItem dye) {
-            return onBlockEntityUse(world, pos, be -> be.setColor(dye.getDyeColor()));
+            return onBlockEntityUseItemOn(level, pos, be -> be.setColor(dye.getDyeColor()));
         } else {
             // Holding something else.
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
     }
 

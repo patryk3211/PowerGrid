@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "${neoforge_version_range}"
+loaderVersion = "[1,)"
 issueTrackerURL = "https://github.com/patryk3211/PowerGrid/issues"
 license = "Apache-2.0"
 

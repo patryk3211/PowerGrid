@@ -35,9 +35,6 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.kinetics.generator.winding.IWindingConnectable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class GeneratorHousing extends Block implements IWrenchable, IWindingConnectable {
     public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;

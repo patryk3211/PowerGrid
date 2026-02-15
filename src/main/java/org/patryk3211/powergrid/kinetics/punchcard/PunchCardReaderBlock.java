@@ -49,10 +49,8 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 import org.patryk3211.powergrid.utility.Lang;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<PunchCardReaderBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;

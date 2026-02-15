@@ -23,7 +23,7 @@ import net.createmod.catnip.config.ConfigBase;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 
@@ -36,10 +36,10 @@ public class CResistance extends ConfigBase implements ResistanceValues.Provider
 
     private static final Object2DoubleMap<ResourceLocation> DEFAULT_RESISTANCES = new Object2DoubleOpenHashMap<>();
 
-    protected final Map<ResourceLocation, ForgeConfigSpec.ConfigValue<Double>> resistances = new HashMap<>();
+    protected final Map<ResourceLocation, ModConfigSpec.ConfigValue<Double>> resistances = new HashMap<>();
 
     @Override
-    public void registerAll(ForgeConfigSpec.Builder builder) {
+    public void registerAll(ModConfigSpec.Builder builder) {
         builder.comment(".", Comments.ohm, Comments.resistance)
                 .push("resistance");
         DEFAULT_RESISTANCES.forEach((id, value) -> this.resistances.put(id, builder.define(id.getPath(), value)));

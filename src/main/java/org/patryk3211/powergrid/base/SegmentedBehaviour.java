@@ -19,6 +19,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
@@ -154,8 +155,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     }
 
     @Override
-    public void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
+    public void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
         if(compound.contains("LastKnownPos")) {
             var posArray = compound.getIntArray("LastKnownPos");
             lastKnownPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
@@ -178,8 +179,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     }
 
     @Override
-    public void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
+    public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
         if(lastKnownPos != null) {
             compound.putIntArray("LastKnownPos", new int[]{lastKnownPos.getX(), lastKnownPos.getY(), lastKnownPos.getZ()});
         }

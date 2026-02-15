@@ -29,9 +29,6 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public abstract class AbstractConnectorBlock extends DirectionalElectricBlock implements IBE<ConnectorBlockEntity> {
     public AbstractConnectorBlock(Properties settings) {
