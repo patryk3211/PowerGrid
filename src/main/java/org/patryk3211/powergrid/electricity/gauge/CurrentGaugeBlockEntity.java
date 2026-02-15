@@ -36,6 +36,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
 
     public CurrentGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        maxValue = MAX_VALUES[0];
     }
 
     @Override

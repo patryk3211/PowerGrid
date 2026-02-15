@@ -169,7 +169,9 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
     double norm = 0;
     for(i = 0; i < maxIters; ++i) {
         // Run inner hooks
-        int cmdCount = m_env->CallIntMethod(mnaObj, m_iterHookMethod, m_stateBuffer);
+        int cmdCount = 0;
+        if(i < maxIters - 10)
+            m_env->CallIntMethod(mnaObj, m_iterHookMethod, m_stateBuffer);
         if(cmdCount != 0)
             processJacobianBuffer(cmdCount);
 
@@ -187,10 +189,10 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         norm = nextNorm;
         if(norm < m_absoluteStoppingCriterion || dNorm < m_relativeStoppingCriterion)
             break;
-        if(m_converged && i >= maxIters - 12) {
+        if(m_converged && i >= maxIters - 11) {
             // Right before non-linear devices are disabled.
             // Only append new problem frames if the network has been converging before.
-            m_converged = norm < m_minimumAllowedPrecision;
+            m_converged = false; // norm < m_minimumAllowedPrecision;
             if(!m_converged)
                 convergenceProblems(mnaObj, norm, i);
         }

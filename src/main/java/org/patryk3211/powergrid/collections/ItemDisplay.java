@@ -68,6 +68,8 @@ public class ItemDisplay {
                     ModdedItems.INCOMPLETE_ELECTRICAL_GIZMO,
                     ModdedItems.INCOMPLETE_UNETCHED_CIRCUIT,
                     ModdedItems.INCOMPLETE_PUNCH_CARD,
+                    ModdedItems.INCOMPLETE_BJT_NPN,
+                    ModdedItems.INCOMPLETE_BJT_PNP,
                     ModdedItems.PORTABLE_BATTERY_PLACEABLE,
                     ModdedItems.CIRCUIT_SCHEMATIC,
                     ModdedItems.UNETCHED_CIRCUIT,

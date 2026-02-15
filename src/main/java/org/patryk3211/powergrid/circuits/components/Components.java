@@ -49,6 +49,24 @@ public class Components {
             .item(ModdedItems.VFET)
             .register();
 
+    public static final RegistryEntry<NPNComponent> BJT_NPN = REGISTRATE.component("bjt_npn", NPNComponent::new)
+            .footprint(3, 2, b -> b
+                    .addPad(0, 0, 0, "Collector", "C")
+                    .addPad(2, 0, 2, "Emitter", "E")
+                    .addPad(1, 1, 1, "Base", "B")
+                    .withItem().withOutline())
+            .item(ModdedItems.BJT_NPN)
+            .register();
+
+    public static final RegistryEntry<PNPComponent> BJT_PNP = REGISTRATE.component("bjt_pnp", PNPComponent::new)
+            .footprint(3, 2, b -> b
+                    .addPad(2, 0, 0, "Collector", "C")
+                    .addPad(0, 0, 2, "Emitter", "E")
+                    .addPad(1, 1, 1, "Base", "B")
+                    .withItem().withOutline())
+            .item(ModdedItems.BJT_PNP)
+            .register();
+
     public static final RegistryEntry<RegulatorTubeComponent> REGULATOR_TUBE = REGISTRATE.component("regulator_tube", RegulatorTubeComponent::new)
             .footprint(3, 3, b -> b
                     .addPadSharedText(0, 1, 0, "generic.anode", "generic.anode.short")

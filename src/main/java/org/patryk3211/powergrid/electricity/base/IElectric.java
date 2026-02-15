@@ -226,7 +226,7 @@ public interface IElectric extends IWrenchable {
         }
 
         if(context.getPlayer() == null || !context.getPlayer().isCreative())
-            stack.shrink(requiredItemCount);
+            PlayerUtilities.removeItems(context.getPlayer(), stack, requiredItemCount);
 
         return InteractionResult.SUCCESS;
     }

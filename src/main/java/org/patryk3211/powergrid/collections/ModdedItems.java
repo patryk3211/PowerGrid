@@ -85,6 +85,7 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
+            .lang("Wire Cutters")
             .register();
 
     public static final ItemEntry<Item> EMPTY_CIRCUIT = REGISTRATE.item("empty_circuit", Item::new)
@@ -160,6 +161,12 @@ public class ModdedItems {
     public static final ItemEntry<Item> VFET = REGISTRATE.item("vfet", Item::new)
             .lang("Static Induction Transistor")
             .register();
+    public static final ItemEntry<Item> BJT_NPN = REGISTRATE.item("bjt_npn", Item::new)
+            .lang("NPN BJT")
+            .register();
+    public static final ItemEntry<Item> BJT_PNP = REGISTRATE.item("bjt_pnp", Item::new)
+            .lang("PNP BJT")
+            .register();
     public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
     public static final ItemEntry<Item> REGULATOR_TUBE = ingredient("regulator_tube");
@@ -177,6 +184,12 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BATTERY = sequencedIngredient("incomplete_battery");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_PUNCH_CARD = sequencedIngredient("incomplete_punch_card");
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BJT_NPN = sequencedIngredientBuilder("incomplete_bjt_npn")
+            .lang("Incomplete NPN BJT")
+            .register();
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BJT_PNP = sequencedIngredientBuilder("incomplete_bjt_pnp")
+            .lang("Incomplete PNP BJT")
+            .register();
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
             .transform(customRenderer(() -> ElectroZapperItemRenderer::new))

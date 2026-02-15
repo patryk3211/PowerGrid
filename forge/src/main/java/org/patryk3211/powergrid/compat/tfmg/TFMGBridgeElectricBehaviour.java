@@ -21,12 +21,12 @@ import net.minecraft.core.BlockPos;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.deviceconnector.BridgeElectricBehaviour;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
-import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 import java.util.function.Supplier;
 
 public class TFMGBridgeElectricBehaviour extends BridgeElectricBehaviour {
-    public <T extends SmartBlockEntity & IElectricEntity> TFMGBridgeElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<SwitchedWire> converterWire) {
+    public <T extends SmartBlockEntity & IElectricEntity> TFMGBridgeElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<ElectricWire> converterWire) {
         super(be, behaviourPosition, converterWire);
     }
 

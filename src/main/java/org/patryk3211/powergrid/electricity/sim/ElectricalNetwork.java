@@ -64,7 +64,7 @@ public class ElectricalNetwork implements IStamped {
         dirty = true;
         sourceCount = 0;
         this.addGMin = addGMin;
-        this.mna = new NativeMNA(this);
+        this.mna = new JavaMNA(this);
     }
 
     public ElectricalNetwork(boolean addGMin, Function<ElectricalNetwork, IMNA> mna) {
@@ -111,7 +111,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void warmUp(int ticks) {
-        mna.warmUp(1);
+        mna.warmUp(ticks > 0 ? 1 : ticks);
     }
 
     public void addSegment(Collection<INetworkElement> elements) {
@@ -250,19 +250,29 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public boolean isConverged() {
-        return mna.isConverged();
+        return mna != null ? mna.isConverged() : false;
     }
 
     public void addWire(AbstractElectricWire wire) {
         if(wire.node1 != null && !hasNode(wire.node1) && !leafNodes.containsKey(wire.node1)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node1.getNetwork() == null ? "no network" : "different network";
-            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 " + wire.node1 + " isn't - " + suffix + ")");
+            if(LOGGER == null) {
+                throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node1 " + wire.node1 + " isn't - " + suffix + ")");
+            } else {
+                LOGGER.error("Both nodes of a wire must be part of the network (node1 {} isn't - {})", wire.node1, suffix);
+                LOGGER.error("Stack trace", new Throwable());
+            }
         }
         if(wire.node2 != null && !hasNode(wire.node2) && !leafNodes.containsKey(wire.node2)) {
             // If node of a wire is not null it must be in the network's node set.
             var suffix = wire.node2.getNetwork() == null ? "no network" : "different network";
-            throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
+            if(LOGGER == null) {
+                throw new IllegalArgumentException("Both nodes of a wire must be part of the network (node2 " + wire.node2 + " isn't - " + suffix + ")");
+            } else {
+                LOGGER.error("Both nodes of a wire must be part of the network (node2 {} isn't - {})", wire.node2, suffix);
+                LOGGER.error("Stack trace", new Throwable());
+            }
         }
         if(!wires.add(wire))
             return;
@@ -460,7 +470,15 @@ public class ElectricalNetwork implements IStamped {
             leafNodes.put(node, tracked);
         });
         other.nodes.forEach(this::addNode);
-        other.wires.forEach(this::addWire);
+        other.wires.forEach(wire -> {
+            // Drop stale wires
+            if((wire.node1 == null || hasNode(wire.node1) || leafNodes.containsKey(wire.node1)) &&
+                    (wire.node2 == null || hasNode(wire.node2) || leafNodes.containsKey(wire.node2))) {
+                addWire(wire);
+            } else if(LOGGER != null) {
+                LOGGER.warn("Dropped stale wire {} between {} and {}", wire, wire.node1, wire.node2);
+            }
+        });
         // Make the other network empty.
         other.clear();
     }

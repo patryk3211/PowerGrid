@@ -32,6 +32,7 @@ import java.util.function.Function;
 public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
     private final Set<IElectricNode> deferredNodeCheck = new ReferenceOpenHashSet<>();
+    private boolean preparing = false;
 
     public GraphedElectricalNetwork(boolean addGMin) {
         this(new NetworkGraph(), addGMin);
@@ -47,17 +48,25 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         this.graph = graph;
     }
 
+    private void addToCheck(IElectricNode node) {
+        if(preparing)
+            return;
+        deferredNodeCheck.add(node);
+    }
+
     @Override
     public void addNode(INode node) {
         super.addNode(node);
-        if(node instanceof IElectricNode enode)
+        if(node instanceof IElectricNode enode) {
             graph.addNode(enode);
+            addToCheck(enode);
+        }
         if(node instanceof ICouplingNode coupling) {
-            graph.couple(coupling);
             for(var coupled : coupling.coupledNodes()) {
-                deferredNodeCheck.add(coupled);
+                deferredNodeCheck.addAll(graph.getConnectedNodes(coupled));
                 removeLeaf(coupled);
             }
+            graph.couple(coupling);
         }
     }
 
@@ -166,16 +175,16 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     public void addWire(AbstractElectricWire wire) {
         graph.connect(wire.node1, wire.node2, wire);
         super.addWire(wire);
-        deferredNodeCheck.add(wire.node1);
-        deferredNodeCheck.add(wire.node2);
+        addToCheck(wire.node1);
+        addToCheck(wire.node2);
     }
 
     @Override
     public void removeWire(AbstractElectricWire wire) {
         graph.disconnect(wire.node1, wire.node2, wire);
         super.removeWire(wire);
-        deferredNodeCheck.add(wire.node1);
-        deferredNodeCheck.add(wire.node2);
+        addToCheck(wire.node1);
+        addToCheck(wire.node2);
     }
 
     public Collection<AbstractElectricWire> findProblematicWires(IMatrixAccess residual, double threshold) {
@@ -203,11 +212,19 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
 
     @Override
     public void prepare(int multiTicks) {
+        preparing = true;
         for(var node : deferredNodeCheck) {
             checkConnectivity(node, null);
         }
         deferredNodeCheck.clear();
+        preparing = false;
         super.prepare(multiTicks);
+    }
+
+    @Override
+    public void merge(ElectricalNetwork other) {
+        super.merge(other);
+        deferredNodeCheck.addAll(other.leafNodes.keySet());
     }
 
     @Override

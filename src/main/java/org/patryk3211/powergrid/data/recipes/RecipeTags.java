@@ -72,6 +72,10 @@ public class RecipeTags {
         return plates("gold");
     }
 
+    public static TagKey<Item> goldWire() {
+        return wires("gold");
+    }
+
     public static TagKey<Item> copperCoil() {
         return forgeItemTag("copper_coils");
     }

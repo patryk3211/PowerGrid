@@ -36,6 +36,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
 
     public VoltageGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        maxValue = MAX_VALUES[0];
     }
 
     @Override

@@ -203,11 +203,13 @@ public class NativeMNA implements IMNA {
     @SuppressWarnings("unused")
     private int runIterHooks(ByteBuffer state) {
         // Run hooks
+        network.countUpdates = false;
         this.stateBuffer = state;
         this.stateBuffer.order(ByteOrder.nativeOrder());
         for(var hook : network.innerHooks) {
             hook.startIteration();
         }
+        network.countUpdates = true;
 
         int pos = jacobianOps.position();
         // Rewind modification buffer.

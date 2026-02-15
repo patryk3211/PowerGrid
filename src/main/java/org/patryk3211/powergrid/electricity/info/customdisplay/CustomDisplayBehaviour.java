@@ -89,8 +89,11 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
         }
         String line = "";
         if(Math.abs(value) > maxValue.get()) {
-            line += value >= 0 ? ">" : "<";
-            value = maxValue.get();
+            line += value >= 0 ? "> " : "< ";
+            if(value < 0)
+                value = -maxValue.get();
+            else
+                value = maxValue.get();
         }
         var evaluatedValue = expr.eval(value);
         if(evaluatedValue >= 0)
