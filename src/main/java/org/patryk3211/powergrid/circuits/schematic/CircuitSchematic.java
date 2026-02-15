@@ -15,11 +15,13 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -71,9 +73,9 @@ public class CircuitSchematic {
     }
 
     public static CircuitSchematic fromStack(ItemStack stack) {
-        if(stack.isEmpty() || !stack.hasTag())
+        if(stack.isEmpty() || !stack.has(DataComponents.CUSTOM_DATA))
             return null;
-        return fromNbt(stack.getTag().getCompound("Schematic"));
+        return fromNbt(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
     }
 
     public CompoundTag serializeNbt() {
@@ -195,9 +197,9 @@ public class CircuitSchematic {
         var stack = ModdedItems.CIRCUIT_SCHEMATIC.asStack();
         var tag = new CompoundTag();
         tag.put("Schematic", serializeNbt());
-        stack.setTag(tag);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         if(name != null)
-            stack.setHoverName(Component.literal(name));
+            stack.set(DataComponents.CUSTOM_NAME, Component.literal(name));
         return stack;
     }
 

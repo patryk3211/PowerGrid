@@ -24,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -54,8 +55,8 @@ public abstract class TransformerBlock extends ElectricBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
-        return ModdedBlocks.TRANSFORMER_CORE.get().getCloneItemStack(world, pos, state);
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        return ModdedBlocks.TRANSFORMER_CORE.get().getCloneItemStack(level, pos, state);
     }
 
     public abstract Optional<TransformerBlockEntity> getBlockEntity(Level world, BlockPos pos, BlockState state);

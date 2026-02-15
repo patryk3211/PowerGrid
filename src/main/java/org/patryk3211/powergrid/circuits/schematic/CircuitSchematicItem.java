@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.circuits.schematic;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -26,7 +27,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
@@ -41,8 +41,8 @@ public class CircuitSchematicItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if(user.isCreative() && user.isShiftKeyDown()) {
             var block = new ItemStack(ModdedBlocks.CIRCUIT_BOARD, 1);
-            block.setTag(user.getItemInHand(hand).getTag());
-            block.resetHoverName();
+            block.set(DataComponents.CUSTOM_DATA, user.getItemInHand(hand).get(DataComponents.CUSTOM_DATA));
+            block.remove(DataComponents.CUSTOM_NAME);
             return InteractionResultHolder.success(block);
         } else {
             return super.use(world, user, hand);
@@ -50,12 +50,12 @@ public class CircuitSchematicItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         var player = EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(Player::isCreative)
                 .orElse(false);
-        if(context.isCreative() || player) {
-            tooltip.add(Component.translatable(getDescriptionId() + ".tooltip.creative")
+        if(tooltipFlag.isCreative() || player) {
+            tooltipComponents.add(Component.translatable(getDescriptionId() + ".tooltip.creative")
                     .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
         }
     }

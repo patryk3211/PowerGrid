@@ -18,8 +18,8 @@ package org.patryk3211.powergrid.circuits.editor;
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -45,11 +45,12 @@ public class CircuitDesignTableBlock extends Block implements IBE<CircuitDesignT
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(world.isClientSide)
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if(level.isClientSide)
             return InteractionResult.SUCCESS;
-        withBlockEntityDo(world, pos, be -> MenuRegistry.openExtendedMenu((ServerPlayer) player, be, be::sendToMenu));
+        withBlockEntityDo(level, pos, be -> MenuRegistry.openExtendedMenu((ServerPlayer) player, be, buf -> {
+            be.sendToMenu(new RegistryFriendlyByteBuf(buf, level.registryAccess()));
+        }));
         return InteractionResult.SUCCESS;
-
     }
 }

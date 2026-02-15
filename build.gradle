@@ -210,6 +210,7 @@ subprojects {
 	tasks.named("remapJar") {
 		inputFile.set shadowJar.archiveFile
 		dependsOn shadowJar
+		injectAccessWidener = true
 		archiveClassifier = null
 
 		from({ -> projNative.tasks.buildLinux.outputs }) {
@@ -278,6 +279,9 @@ subprojects {
 }
 
 /*    -------========= COMMON PROJECT CONFIGURATION =========-------    */
+loom {
+	accessWidenerPath = file("src/main/resources/powergrid.accesswidener")
+}
 
 architectury {
 	common(project.enabled_platforms.split(',')) {
@@ -293,6 +297,7 @@ dependencies {
 	modImplementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_forge_version}")
 	modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_forge_version}")
 	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
+	modCompileOnly("com.electronwill.night-config:core:3.8.3")
 //	modCompileOnly("com.simibubi.create:create-fabric:${project.create_fabric_version}-mc${project.minecraft_version}")
 //	modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_fabric_version}")
 //	modCompileOnly("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_forge_version}")

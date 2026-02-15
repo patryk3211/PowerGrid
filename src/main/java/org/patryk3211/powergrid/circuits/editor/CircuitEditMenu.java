@@ -16,7 +16,7 @@
 package org.patryk3211.powergrid.circuits.editor;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -24,7 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 
 public abstract class CircuitEditMenu<T extends SmartBlockEntity & ISchematicHolder> extends AbstractCircuitDesignTableMenu<T> {
-    protected CircuitEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    protected CircuitEditMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 

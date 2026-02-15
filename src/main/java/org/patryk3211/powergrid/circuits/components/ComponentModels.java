@@ -29,11 +29,11 @@ import java.util.Set;
 @Environment(EnvType.CLIENT)
 public class ComponentModels {
     public static ModelResourceLocation modelId(ResourceLocation componentId) {
-        return new ModelResourceLocation(new ResourceLocation(componentId.getNamespace(), "component/" + componentId.getPath()), "component");
+        return new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(componentId.getNamespace(), "component/" + componentId.getPath()), "component");
     }
 
     public static ResourceLocation rawModelId(ResourceLocation componentId) {
-        return new ResourceLocation(componentId.getNamespace(), "component/" + componentId.getPath());
+        return ResourceLocation.fromNamespaceAndPath(componentId.getNamespace(), "component/" + componentId.getPath());
     }
 
     public static Set<ModelResourceLocation> collectIds() {

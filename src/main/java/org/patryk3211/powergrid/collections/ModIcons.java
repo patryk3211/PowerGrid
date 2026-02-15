@@ -35,7 +35,7 @@ import org.patryk3211.powergrid.PowerGrid;
  * @see AllIcons
  */
 public class ModIcons extends AllIcons {
-    public static final ResourceLocation ICON_ATLAS = new ResourceLocation(PowerGrid.MOD_ID, "textures/gui/icons.png");
+    public static final ResourceLocation ICON_ATLAS = PowerGrid.texture("gui/icons");
     public static final int ATLAS_SIZE = 64;
 
     private static int x = 0, y = -1;
@@ -109,10 +109,9 @@ public class ModIcons extends AllIcons {
 
     @Environment(EnvType.CLIENT)
     private void vertex(VertexConsumer builder, Matrix4f matrix, Vec3 vec, Color rgb, float u, float v, int light) {
-        builder.vertex(matrix, (float)vec.x, (float)vec.y, (float)vec.z)
-                .color(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 255)
-                .uv(u, v)
-                .uv2(light)
-                .endVertex();
+        builder.addVertex(matrix, (float)vec.x, (float)vec.y, (float)vec.z)
+                .setColor(rgb.getRed(), rgb.getGreen(), rgb.getBlue(), 255)
+                .setUv(u, v)
+                .setLight(light);
     }
 }

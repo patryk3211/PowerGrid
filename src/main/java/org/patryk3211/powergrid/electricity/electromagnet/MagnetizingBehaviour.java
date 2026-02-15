@@ -22,6 +22,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -81,8 +82,8 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
     }
 
     @Override
-    public void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
+    public void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
         running = compound.getBoolean("Running");
         mode = Mode.values()[compound.getInt("Mode")];
         prevRunningTicks = runningTicks = compound.getInt("Ticks");
@@ -96,8 +97,8 @@ public class MagnetizingBehaviour extends BeltProcessingBehaviour {
     }
 
     @Override
-    public void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
+    public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
         compound.putBoolean("Running", running);
         compound.putInt("Mode", mode.ordinal());
         compound.putInt("Ticks", runningTicks);

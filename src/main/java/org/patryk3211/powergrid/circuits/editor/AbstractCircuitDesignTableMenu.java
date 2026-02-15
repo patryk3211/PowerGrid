@@ -18,13 +18,13 @@ package org.patryk3211.powergrid.circuits.editor;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 
 public abstract class AbstractCircuitDesignTableMenu<T extends SmartBlockEntity> extends MenuBase<T> {
-    protected AbstractCircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    protected AbstractCircuitDesignTableMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
@@ -35,11 +35,11 @@ public abstract class AbstractCircuitDesignTableMenu<T extends SmartBlockEntity>
     protected abstract Class<T> clazz();
 
     @Override
-    protected T createOnClient(FriendlyByteBuf extraData) {
+    protected T createOnClient(RegistryFriendlyByteBuf extraData) {
         var world = Minecraft.getInstance().level;
         var be = world.getBlockEntity(extraData.readBlockPos());
         if(clazz().isInstance(be)) {
-            ((T) be).readClient(extraData.readNbt());
+            ((T) be).readClient(extraData.readNbt(), extraData.registryAccess());
             return (T) be;
         }
         return null;

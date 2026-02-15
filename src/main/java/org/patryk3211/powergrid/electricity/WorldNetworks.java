@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity;
 
 import com.google.common.collect.Sets;
 import io.netty.util.collection.IntObjectHashMap;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -71,7 +72,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public WorldNetworks(Level world) {
         this.world = world;
         this.globalGraph.hooks = this;
-        this.perf = new PerformanceCounter(world.dimensionTypeId().location().toString());
+        this.perf = new PerformanceCounter(world.dimension().location().toString());
     }
 
     public WorldNetworks(Level world, CompoundTag nbt) {
@@ -732,14 +733,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     @Override
-    @NotNull
-    public CompoundTag save(@NotNull CompoundTag nbt) {
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         var partList = new ListTag();
         for(var part : lineParts.values()) {
             partList.add(part.toNbt());
         }
-        nbt.put("Parts", partList);
-        return nbt;
+        tag.put("Parts", partList);
+        return tag;
     }
 
     protected void readNbt(CompoundTag nbt) {

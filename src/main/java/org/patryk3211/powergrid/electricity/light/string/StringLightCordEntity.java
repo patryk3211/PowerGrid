@@ -69,11 +69,7 @@ public class StringLightCordEntity extends CordEntity {
         if(item.hasTag() && (dyes = item.getTag().getByteArray("Pattern")).length > 0){
             entity.colorPattern = new int[dyes.length];
             for(int i = 0; i < dyes.length; ++i) {
-                var c = DyeColor.byId(dyes[i]).getTextureDiffuseColors();
-                int r = (int) (c[0] * 255);
-                int g = (int) (c[1] * 255);
-                int b = (int) (c[2] * 255);
-                entity.colorPattern[i] = (r << 16) | (g << 8) | b;
+                entity.colorPattern[i] = DyeColor.byId(dyes[i]).getTextureDiffuseColor();
             }
         }
 
@@ -94,9 +90,9 @@ public class StringLightCordEntity extends CordEntity {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        entityData.define(POWER, 0f);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(POWER, 0f);
     }
 
     @Override

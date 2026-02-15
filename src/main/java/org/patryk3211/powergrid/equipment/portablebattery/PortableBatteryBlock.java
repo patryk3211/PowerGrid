@@ -21,6 +21,8 @@ import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -31,9 +33,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -126,12 +130,15 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
         if(stack == null)
             return;
         withBlockEntityDo(worldIn, pos, be -> {
-            int level = EnchantmentHelper.getItemEnchantmentLevel(AllEnchantments.CAPACITY.get(), stack);
+            int level = EnchantmentHelper.getItemEnchantmentLevel(
+                    worldIn.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(AllEnchantments.CAPACITY),
+                    stack
+            );
             be.setCapacityEnchantLevel(level);
             be.setCharge(BatteryUtils.getCurrentCharge(stack));
 
             var vanillaTag = stack.getOrCreateTag();
-            if(stack.hasCustomHoverName())
+            if(stack.has(DataComponents.CUSTOM_NAME))
                 be.setName(stack.getHoverName());
 
             be.setTags(vanillaTag);
@@ -150,12 +157,12 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     }
 
     @Override
-    public boolean isPathfindable(BlockState state, BlockGetter world, BlockPos pos, PathComputationType type) {
+    protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
         return false;
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(LevelReader world, BlockPos pos, BlockState state) {
         var item = asItem();
         if(item instanceof BacktankItem.BacktankBlockItem placeable)
             item = placeable.getActualItem();
@@ -168,7 +175,7 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
 
         ItemStack stack = new ItemStack(item, 1);
         vanillaTag.putInt("Charge", charge);
-        stack.setTag(vanillaTag);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(vanillaTag));
         return stack;
     }
 

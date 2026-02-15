@@ -18,6 +18,8 @@ package org.patryk3211.powergrid.circuits.editor;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
@@ -54,14 +56,14 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         tag.put("Schematic", schematic.serializeNbt());
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         schematic.deserializeNbt(tag.getCompound("Schematic"));
         if(clientPacket)
             schematicChanged = true;
@@ -92,7 +94,7 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
 
     public void readFromItem() {
         var stack = inventory.getItem(0);
-        if(stack.isEmpty() || level.isClientSide || !stack.hasTag())
+        if(stack.isEmpty() || level.isClientSide || !stack.has(DataComponents.CUSTOM_DATA))
             return;
         if(inventory.getItem(1).isEmpty() && stack.is(ModdedItems.CIRCUIT_SCHEMATIC.get())) {
             // Move to save slot
@@ -100,7 +102,7 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
             inventory.setItem(1, stack);
         }
         try {
-            schematic.deserializeNbt(stack.getTag().getCompound("Schematic"));
+            schematic.deserializeNbt(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
         } catch(RuntimeException e) {
             PowerGrid.LOGGER.error("Failed to load schematic from item: ", e);
         }

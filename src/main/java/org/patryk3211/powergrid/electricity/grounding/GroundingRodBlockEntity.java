@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.grounding;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -142,8 +143,8 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         if(tag.contains("Resistance")) {
             var R = tag.getFloat("Resistance");
             wire.setState(false);
@@ -155,8 +156,8 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         if(wire.getState())
             tag.putFloat("Resistance", (float) wire.getResistance());
     }

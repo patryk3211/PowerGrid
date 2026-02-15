@@ -25,6 +25,7 @@ import net.createmod.catnip.theme.Color;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
@@ -114,8 +115,8 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
-    protected void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
+    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
         var samples = compound.getList("Samples", Tag.TAG_FLOAT);
         sampleBuffer = new float[samples.size()];
         for(int i = 0; i < sampleBuffer.length; ++i) {
@@ -127,14 +128,14 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
-    public void writeSafe(CompoundTag tag) {
-        super.writeSafe(tag);
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
         tag.putInt("Color", color.ordinal());
     }
 
     @Override
-    protected void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
+    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
         var samples = new ListTag();
         for(int i = 0; i < sampleBuffer.length; ++i) {
             samples.add(FloatTag.valueOf(sampleBuffer[i]));

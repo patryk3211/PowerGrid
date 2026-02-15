@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.kinetics.base;
 import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -79,22 +80,22 @@ public abstract class TunedBlockEntity extends ElectricKineticBlockEntity {
     }
 
     @Override
-    protected void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
+    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
         if(clientPacket)
             arm.forceNextSync();
         compound.put("Arm", arm.writeNBT());
     }
 
     @Override
-    public void writeSafe(CompoundTag tag) {
-        super.writeSafe(tag);
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
         tag.put("Arm", arm.writeNBT());
     }
 
     @Override
-    protected void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
+    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
         arm.readNBT(compound.getCompound("Arm"), clientPacket);
         refreshParameters();
     }

@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.circuits.gui;
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiSpriteManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -111,7 +112,7 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         int centerSliceSize = Math.max(width - 120, 0);
         ctx.blit(PROPERTIES, 0, 0, 0, 0, 60, 16);
         if(width > 120) {
-            ctx.blitRepeating(PROPERTIES, 60, 0, centerSliceSize, 16, 61, 0, 30, 16);
+            ctx.blitSprite(PROPERTIES, 60, 0, centerSliceSize, 16, 61, 0, 30, 16);
         }
         ctx.blit(PROPERTIES, 60 + centerSliceSize, 0, 92, 0, 60, 16);
 

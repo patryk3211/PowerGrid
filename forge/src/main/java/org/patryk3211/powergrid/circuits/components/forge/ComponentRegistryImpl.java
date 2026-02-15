@@ -15,15 +15,15 @@
  */
 package org.patryk3211.powergrid.circuits.components.forge;
 
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.IForgeRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.Component;
 
 import java.util.Objects;
 
 public class ComponentRegistryImpl {
-    public static IForgeRegistry<Component> REGISTRY;
+    public static Registry<Component> REGISTRY;
 
     public static Iterable<Component> entries() {
         return REGISTRY;
@@ -36,6 +36,6 @@ public class ComponentRegistryImpl {
 
     @NotNull
     public static Component get(@NotNull ResourceLocation id) {
-        return Objects.requireNonNull(REGISTRY.getValue(id), "This id doesn't exist");
+        return Objects.requireNonNull(REGISTRY.get(id), "This id doesn't exist");
     }
 }

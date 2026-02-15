@@ -21,7 +21,6 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 import com.simibubi.create.foundation.utility.FilesHelper;
 import com.tterrag.registrate.providers.ProviderType;
 import dev.architectury.platform.Platform;
-import dev.architectury.platform.forge.EventBuses;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.config.ConfigBase;
@@ -42,16 +41,11 @@ import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
-import net.neoforged.fml.javafmlmod.FMLJavaModLanguageProvider;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
-import net.neoforged.neoforge.registries.DataPackRegistryEvent;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NewRegistryEvent;
-import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.*;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
@@ -89,7 +83,6 @@ public class PowerGridImpl {
         bus = modEventBus;
         container = modContainer;
         bus.register(PowerGridImpl.class);
-        EventBuses.registerModEventBus(PowerGrid.MOD_ID, bus);
 
         if(Platform.isModLoaded("tfmg")) {
             TFMGBridge.init();
@@ -121,10 +114,7 @@ public class PowerGridImpl {
 
     @SubscribeEvent
     public static void newRegistryEvent(NewRegistryEvent event) {
-        event.<Component>create(
-                RegistryBuilder.of(ComponentRegistry.REGISTRY_KEY.location()),
-                registry -> ComponentRegistryImpl.REGISTRY = registry
-        );
+        ComponentRegistryImpl.REGISTRY = event.create(new RegistryBuilder<>(ComponentRegistry.REGISTRY_KEY));
     }
 
     @SubscribeEvent

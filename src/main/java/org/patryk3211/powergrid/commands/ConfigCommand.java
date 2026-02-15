@@ -39,7 +39,7 @@ public class ConfigCommand {
         return literal("reset_configs")
                 .requires(cs -> cs.hasPermission(3))
                 .executes(ctx -> {
-                    resetConfig(ModdedConfigs.server().specification);
+                    resetConfig(ModdedConfigs.server().specification.getValues());
                     ctx.getSource().sendSystemMessage(Lang.translateDirect("message.config_reset_ok"));
                     return Command.SINGLE_SUCCESS;
                 });
@@ -59,9 +59,9 @@ public class ConfigCommand {
         values.valueMap().forEach((key, obj) -> {
             if (obj instanceof AbstractConfig) {
                 resetConfig((UnmodifiableConfig) obj);
-            } else if (obj instanceof ForgeConfigSpec.ConfigValue) {
+            } else if (obj instanceof ModConfigSpec.ConfigValue) {
                 ModConfigSpec.ConfigValue<Object> configValue = (ModConfigSpec.ConfigValue<Object>) obj;
-                ModConfigSpec.ValueSpec valueSpec = ModdedConfigs.server().specification.getRaw(configValue.getPath());
+                ModConfigSpec.ValueSpec valueSpec = ModdedConfigs.server().specification.getValues().getRaw(configValue.getPath());
 
                 List<String> comments = new ArrayList<>();
 

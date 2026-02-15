@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.equipment.armor.BaseArmorItem;
-import com.simibubi.create.content.equipment.armor.CapacityEnchantment;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;

@@ -71,7 +71,7 @@ public class AutoCordEndpoint implements ICordEndpoint {
 
     @Override
     public void read(CompoundTag nbt) {
-        pos = NbtUtils.readBlockPos(nbt.getCompound("Position"));
+        pos = NbtUtils.readBlockPos(nbt, "Position").orElseThrow();
         terminal1 = nbt.getInt("Terminal1");
         terminal2 = nbt.getInt("Terminal2");
         placement = new Vec3(nbt.getFloat("X"), nbt.getFloat("Y"), nbt.getFloat("Z"));

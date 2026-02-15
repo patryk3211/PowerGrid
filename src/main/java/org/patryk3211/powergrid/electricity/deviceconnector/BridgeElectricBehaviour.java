@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.deviceconnector;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
@@ -112,8 +113,8 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
     }
 
     @Override
-    public void read(CompoundTag nbt, boolean clientPacket) {
-        super.read(nbt, clientPacket);
+    public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(nbt, registries, clientPacket);
         if(bridgeBehaviour != null) {
             bridgeBehaviour.setAmount(nbt.getLong("Energy"));
         } else {
@@ -124,8 +125,8 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
     }
 
     @Override
-    public void write(CompoundTag nbt, boolean clientPacket) {
-        super.write(nbt, clientPacket);
+    public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(nbt, registries, clientPacket);
         if(bridgeBehaviour != null) {
             nbt.putLong("Energy", bridgeBehaviour.getAmount());
             if(clientPacket)

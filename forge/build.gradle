@@ -35,7 +35,7 @@ dependencies {
     modCompileOnly "mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"
 
     // Roughly Enough Items - Forge
-    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
+//    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
 
     // Create: The Factory Must Grow
     modCompileOnly "maven.modrinth:create-tfmg:1.0.2c"

@@ -18,7 +18,7 @@ package org.patryk3211.powergrid.electricity.info.customdisplay;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -30,7 +30,7 @@ public class CustomDisplayMenu extends MenuBase<SmartBlockEntity> {
     protected Unit unit;
     protected boolean enablePrefixes;
 
-    public CustomDisplayMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public CustomDisplayMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
@@ -39,11 +39,11 @@ public class CustomDisplayMenu extends MenuBase<SmartBlockEntity> {
     }
 
     @Override
-    protected SmartBlockEntity createOnClient(FriendlyByteBuf extraData) {
+    protected SmartBlockEntity createOnClient(RegistryFriendlyByteBuf extraData) {
         var world = Minecraft.getInstance().level;
         var be = world.getBlockEntity(extraData.readBlockPos());
         if(be instanceof SmartBlockEntity sbe) {
-            sbe.readClient(extraData.readNbt());
+            sbe.readClient(extraData.readNbt(), extraData.registryAccess());
             return sbe;
         }
         return null;

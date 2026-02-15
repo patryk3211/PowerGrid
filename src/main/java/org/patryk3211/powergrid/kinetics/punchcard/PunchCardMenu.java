@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.kinetics.punchcard;
 
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +27,7 @@ public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
     public static PunchCardMenuConstructors CONSTRUCTORS;
     public byte[] data;
 
-    public PunchCardMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public PunchCardMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
@@ -62,8 +64,8 @@ public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
     }
 
     @Override
-    protected ItemStack createOnClient(FriendlyByteBuf extraData) {
-        return extraData.readItem();
+    protected ItemStack createOnClient(RegistryFriendlyByteBuf extraData) {
+        return ItemStack.STREAM_CODEC.decode(extraData);
     }
 
     @Override

@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
@@ -27,7 +27,7 @@ public class CircuitDesignTableLoadMenu extends AbstractCircuitDesignTableMenu<C
         super(type, id, inv, contentHolder);
     }
 
-    public CircuitDesignTableLoadMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public CircuitDesignTableLoadMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 

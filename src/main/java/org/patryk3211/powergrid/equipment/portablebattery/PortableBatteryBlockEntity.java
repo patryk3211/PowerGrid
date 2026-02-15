@@ -19,6 +19,7 @@ import com.simibubi.create.AllSoundEvents;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Nameable;
@@ -88,8 +89,8 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         int prev = charge;
         charge = tag.getInt("Charge");
         capacityLevel = tag.getInt("CapacityLevel");
@@ -106,8 +107,8 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         tag.putInt("Charge", charge);
         tag.putInt("CapacityLevel", capacityLevel);
         if(name != null)
