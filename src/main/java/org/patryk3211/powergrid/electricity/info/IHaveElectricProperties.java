@@ -22,7 +22,5 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 public interface IHaveElectricProperties {
-    boolean canBeDepleted();
-
     void appendProperties(ItemStack stack, Player player, List<Component> tooltip);
 }
