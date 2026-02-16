@@ -330,7 +330,7 @@ public class JavaMNA implements IMNA {
 
             workMatrix.mult(StateVector, AuxiliaryVector);
             CommonOps_DDRM.subtract(AuxiliaryVector, ResidualVector, AuxiliaryVector);
-            var nextNorm = NormOps_DDRM.normP1(AuxiliaryVector);
+            var nextNorm = CommonOps_DDRM.elementMaxAbs(AuxiliaryVector); //NormOps_DDRM.normP1(AuxiliaryVector);
             var dNorm = Math.abs(nextNorm - norm);
             norm = nextNorm;
             if (norm < absoluteStoppingCriterion || dNorm < relativeStoppingCriterion)

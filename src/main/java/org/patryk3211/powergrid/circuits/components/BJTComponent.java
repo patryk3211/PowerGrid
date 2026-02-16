@@ -49,7 +49,7 @@ public abstract class BJTComponent extends OrientableComponent {
                 builder.terminalNode(0), // Collector
                 builder.terminalNode(1), // Base
                 builder.terminalNode(2), // Emitter
-                5.47e-12, placed.get(GAIN), 0.05, pnp
+                5.47e-12, placed.get(GAIN), 0.1, pnp
         );
         builder.add(wire);
         placed.add(wire);

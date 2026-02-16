@@ -40,12 +40,13 @@ public class BJTWire extends CompoundWire implements ISolverHook {
     private final double beta;
     private final double forwardGain, reverseGain;
     private final double saturationCurrent;
-    private final double seriesResistance;
+    private final double emitterResistance, collectorResistance;
     private final int pnp;
     private final double Vcrit;
 
-    private final double OmegaLog;
+    private final double OmegaLogE, OmegaLogC;
 
+    private double Vbc0, Vbe0;
     private double prevCollector;
     private double prevEmitter;
     private double intDelta;
@@ -58,12 +59,14 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         this.beta = fBeta;
         // alpha = beta / (beta + 1)
         forwardGain = fBeta / (fBeta + 1);
-        reverseGain = 1 / 2f;
+        reverseGain = fBeta * 0.5 / (fBeta * 0.5 + 1);
         saturationCurrent = Is;
-        seriesResistance = Rs;
+        emitterResistance = Rs;
+        collectorResistance = Rs * 10;
         this.pnp = pnp ? -1 : 1;
 
-        OmegaLog = Math.log(saturationCurrent * seriesResistance / V_T);
+        OmegaLogE = Math.log(saturationCurrent * emitterResistance / V_T);
+        OmegaLogC = Math.log(saturationCurrent * collectorResistance / V_T);
 
         collectorBase = addDynamicWire(collector, base);
         collectorEmitter = addInternalWire(new CrossWire(base, collector, emitter));
@@ -82,20 +85,19 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         var dVbe = Vbe - prevEmitter;
         Vbc = prevCollector = pnp * pnLim(pnp * Vbc, pnp * prevCollector, Vcrit);
         Vbe = prevEmitter = pnp * pnLim(pnp * Vbe, pnp * prevEmitter, Vcrit);
-        intDelta = intDelta * 0.999 + Math.abs(dVbc) + Math.abs(dVbe);
+        intDelta = intDelta * 0.99 + Math.abs(dVbc) + Math.abs(dVbe);
 
-        double IsRs = saturationCurrent * seriesResistance;
-        double WbeTerm = WrightOmega(OmegaLog + (IsRs + pnp * Vbe) / V_T);
-        double WbcTerm = WrightOmega(OmegaLog + (IsRs + pnp * Vbc) / V_T);
-        double Ebe = V_T * WbeTerm / seriesResistance - saturationCurrent;
-        double Ebc = V_T * WbcTerm / seriesResistance - saturationCurrent;
+        double WbeTerm = WrightOmega(OmegaLogE + (saturationCurrent * emitterResistance + pnp * Vbe) / V_T);
+        double WbcTerm = WrightOmega(OmegaLogC + (saturationCurrent * collectorResistance + pnp * Vbc) / V_T);
+        double Ebe = V_T * WbeTerm / emitterResistance - saturationCurrent;
+        double Ebc = V_T * WbcTerm / collectorResistance - saturationCurrent;
 
         double Ie = pnp * (Ebc * reverseGain - Ebe);
         double Ic = pnp * (Ebe * forwardGain - Ebc);
         double Ib = -Ie - Ic;
 
-        double Gee = Math.max(WbeTerm / (seriesResistance * (1 + WbeTerm)), G_MIN);
-        double Gcc = Math.max(WbcTerm / (seriesResistance * (1 + WbcTerm)), G_MIN);
+        double Gee = Math.max(WbeTerm / (emitterResistance * (1 + WbeTerm)), G_MIN);
+        double Gcc = Math.max(WbcTerm / (collectorResistance * (1 + WbcTerm)), G_MIN);
         double Gce = -Gee * forwardGain;
         double Gec = -Gcc * reverseGain;
 

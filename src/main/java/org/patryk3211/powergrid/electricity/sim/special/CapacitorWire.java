@@ -71,7 +71,7 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
     public void startIteration() {
         var G = conductance();
         var I = capacitance * (potentialDifference() - V) / getDeltaTime();
-        Ieq = -G * V - (I * 0.05f + Iprev * 0.95f);
+        Ieq = -G * V - (I * 0.00f + Iprev * 1f);
     }
 
     @Override
