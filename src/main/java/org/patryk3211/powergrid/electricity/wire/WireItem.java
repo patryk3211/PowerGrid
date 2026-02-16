@@ -287,6 +287,9 @@ public class WireItem extends Item implements IWire {
         var stack = user.getItemInHand(hand);
         if(stack.hasTag() && user.isShiftKeyDown()) {
             stack.removeTagKey("Connection");
+            stack.removeTagKey("Turns");
+            stack.removeTagKey("Terminal");
+            stack.removeTagKey("Initiator");
             if(!world.isClientSide)
                 user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
             return InteractionResultHolder.sidedSuccess(stack, true);
