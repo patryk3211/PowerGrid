@@ -60,11 +60,6 @@ public class PortableBatteryItem extends BaseArmorItem implements IHaveElectricP
     }
 
     @Override
-    public boolean canBeDepleted() {
-        return false;
-    }
-
-    @Override
     public boolean isBarVisible(ItemStack stack) {
         return true;
     }
