@@ -17,11 +17,12 @@ package org.patryk3211.powergrid.electricity.sim.calculation;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 public class Precalculated<T, D extends IStamped> implements IStamped {
-    private final BiFunction<D, T, T> func;
+    private final BiConsumer<D, ValueHandler> func;
     @Nullable
     private D dependency;
     private int dependencyStamp = -1;
@@ -29,19 +30,15 @@ public class Precalculated<T, D extends IStamped> implements IStamped {
 
     private final T defaultValue;
     private T value = null;
+    private final List<Object> auxData = new ArrayList<>();
+    private final ValueHandler handler = new ValueHandler();
 
-    public Precalculated(Function<D, T> func) {
-        this.func = (dep, prev) -> func.apply(dep);
+    public Precalculated(BiConsumer<D, ValueHandler> func) {
+        this.func = func;
         this.defaultValue = null;
     }
 
-    public Precalculated(Function<D, T> func, T defaultValue) {
-        this.func = (dep, prev) -> func.apply(dep);
-        this.defaultValue = defaultValue;
-        this.value = defaultValue;
-    }
-
-    public Precalculated(BiFunction<D, T, T> func, T defaultValue) {
+    public Precalculated(BiConsumer<D, ValueHandler> func, T defaultValue) {
         this.func = func;
         this.defaultValue = defaultValue;
         this.value = defaultValue;
@@ -60,7 +57,7 @@ public class Precalculated<T, D extends IStamped> implements IStamped {
         } else if(dependencyStamp != dependency.getStamp()) {
             ++ourStamp;
             dependencyStamp = dependency.getStamp();
-            value = func.apply(dependency, value);
+            func.accept(dependency, handler);
         }
         return value;
     }
@@ -76,5 +73,35 @@ public class Precalculated<T, D extends IStamped> implements IStamped {
 
     public void invalidate() {
         --dependencyStamp;
+    }
+
+    public class ValueHandler {
+        public void emit(T value) {
+            Precalculated.this.value = value;
+        }
+
+        public <A> void store(int slot, A value) {
+            if(slot < auxData.size()) {
+                auxData.set(slot, value);
+            } else if(slot == auxData.size()) {
+                auxData.add(value);
+            } else {
+                throw new IndexOutOfBoundsException();
+            }
+        }
+
+        public T get() {
+            return Precalculated.this.value;
+        }
+
+        public <A> A get(int slot, Class<A> clazz) {
+            return get(slot, clazz, null);
+        }
+
+        public <A> A get(int slot, Class<A> clazz, A defaultValue) {
+            if(slot < 0 || slot >= auxData.size())
+                return defaultValue;
+            return clazz.cast(auxData.get(slot));
+        }
     }
 }

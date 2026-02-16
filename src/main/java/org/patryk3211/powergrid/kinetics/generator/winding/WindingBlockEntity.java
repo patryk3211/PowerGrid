@@ -82,12 +82,17 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return getBlockState().getValue(PART) == 0;
     }
 
-    private static float fieldCalc(LRSeriesWire coil, float Bprev) {
+    private static void fieldCalc(LRSeriesWire coil, Precalculated<Float, LRSeriesWire>.ValueHandler handler) {
         var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
         var current = coil.current();
         current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
         var B = current * coilConstant();
-        return (B + Bprev) * 0.5f + 0.001f;
+        var Bprev = handler.get();
+        if(Math.signum(Bprev) != Math.signum(B)) {
+            handler.emit(0.001f);
+        } else {
+            handler.emit(B + 0.001f);
+        }
     }
 
     public float fieldStrength() {
