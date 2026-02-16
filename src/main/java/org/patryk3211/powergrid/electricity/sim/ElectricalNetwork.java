@@ -315,6 +315,10 @@ public class ElectricalNetwork implements IStamped {
             return;
         if(!hasNode(wire.node1) || !hasNode(wire.node2))
             return;
+        if(wire.node1.getIndex() == -1 || wire.node2.getIndex() == -1) {
+            PowerGrid.LOGGER.error("Node index negative even though it shouldn't be?", new Throwable());
+            return;
+        }
 
         conductanceDelta += Math.abs(change);
         if(countUpdates) {
