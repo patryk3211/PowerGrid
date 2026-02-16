@@ -259,12 +259,16 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     posV = data.getFloat("PosV");
                 } else {
                     var posNode = pos instanceof CircuitBoardEndpoint e ? e.getGenericNode(level) : pos.getNode(level);
+                    if(posNode == null)
+                        yield 0;
                     posV = posNode.getVoltage();
                 }
                 if(data.contains("NegV")) {
                     negV = data.getFloat("NegV");
                 } else {
                     var negNode = neg instanceof CircuitBoardEndpoint e ? e.getGenericNode(level) : neg.getNode(level);
+                    if(negNode == null)
+                        yield 0;
                     negV = negNode.getVoltage();
                 }
                 yield posV - negV;
