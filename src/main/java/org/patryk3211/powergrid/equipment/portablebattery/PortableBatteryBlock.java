@@ -28,6 +28,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -99,27 +100,27 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     }
 
     /**
-     * @see com.simibubi.create.content.equipment.armor.BacktankBlock#use(BlockState, Level, BlockPos, Player, InteractionHand, BlockHitResult)
+     * @see com.simibubi.create.content.equipment.armor.BacktankBlock#useItemOn(ItemStack, BlockState, Level, BlockPos, Player, InteractionHand, BlockHitResult)
      */
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if(player == null)
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if(PlayerUtilities.isFake(player))
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if(player.isShiftKeyDown())
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         var heldItem = player.getMainHandItem().getItem();
         if(heldItem instanceof BlockItem || heldItem instanceof IWire)
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if(!player.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if(!world.isClientSide) {
             world.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .75f, 1);
             player.setItemSlot(EquipmentSlot.CHEST, getCloneItemStack(world, pos, state));
             world.destroyBlock(pos, false);
         }
-        return InteractionResult.SUCCESS;
+        return ItemInteractionResult.SUCCESS;
     }
 
     @Override
@@ -137,7 +138,7 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
             be.setCapacityEnchantLevel(level);
             be.setCharge(BatteryUtils.getCurrentCharge(stack));
 
-            var vanillaTag = stack.getOrCreateTag();
+            var vanillaTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
             if(stack.has(DataComponents.CUSTOM_NAME))
                 be.setName(stack.getHoverName());
 

@@ -28,8 +28,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.TooltipFlag;
@@ -66,6 +68,11 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
     @Override
     public int getDefaultProjectileRange() {
         return 15;
+    }
+
+    @Override
+    protected void shootProjectile(LivingEntity shooter, Projectile projectile, int index, float velocity, float inaccuracy, float angle, @Nullable LivingEntity target) {
+
     }
 
     @Override
@@ -124,12 +131,12 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         ModdedPackets.sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
         if(!BatteryUtils.drawEnergy(user, fePerUse()))
-            stack.hurtAndBreak(1, user, $ -> {});
+            stack.hurtAndBreak(1, user, EquipmentSlot.MAINHAND);
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.empty());
         tooltip.add(Component.translatable("powergrid.electrozapper.bolt").append(Component.literal(":"))
                 .withStyle(ChatFormatting.GRAY));
@@ -143,7 +150,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
 
         tooltip.add(spacing.plainCopy().append(Lang.translateDirect("electrozapper.bolt.damage", damage).withStyle(ChatFormatting.DARK_GREEN)));
         tooltip.add(spacing.plainCopy().append(Lang.translateDirect("electrozapper.bolt.reload", reloadTicks).withStyle(ChatFormatting.DARK_GREEN)));
-        super.appendHoverText(stack, world, tooltip, context);
+        super.appendHoverText(stack, context, tooltip, flag);
     }
 
     @Override

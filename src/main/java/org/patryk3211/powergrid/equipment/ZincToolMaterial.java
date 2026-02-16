@@ -16,8 +16,11 @@
 package org.patryk3211.powergrid.equipment;
 
 import com.simibubi.create.AllItems;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
 
 public class ZincToolMaterial implements Tier {
     public static final ZincToolMaterial INSTANCE = new ZincToolMaterial();
@@ -38,9 +41,14 @@ public class ZincToolMaterial implements Tier {
     }
 
     @Override
-    public int getLevel() {
-        return 1;
+    public TagKey<Block> getIncorrectBlocksForDrops() {
+        return null;
     }
+
+//    @Override
+//    public int getLevel() {
+//        return 1;
+//    }
 
     @Override
     public int getEnchantmentValue() {
@@ -50,5 +58,10 @@ public class ZincToolMaterial implements Tier {
     @Override
     public Ingredient getRepairIngredient() {
         return Ingredient.of(AllItems.ZINC_INGOT);
+    }
+
+    @Override
+    public Tool createToolProperties(TagKey<Block> block) {
+        return Tier.super.createToolProperties(block);
     }
 }

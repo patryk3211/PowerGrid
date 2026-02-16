@@ -97,7 +97,7 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
         maxCharge = BatteryUtils.getMaxCharge(capacityLevel);
 
         if(tag.contains("CustomName")) {
-            name = Component.Serializer.fromJson(tag.getString("CustomName"));
+            name = Component.Serializer.fromJson(tag.getString("CustomName"),registries);
         } else {
             name = null;
         }
@@ -112,7 +112,7 @@ public class PortableBatteryBlockEntity extends ElectricBlockEntity implements N
         tag.putInt("Charge", charge);
         tag.putInt("CapacityLevel", capacityLevel);
         if(name != null)
-            tag.putString("CustomName", Component.Serializer.toJson(name));
+            tag.putString("CustomName", Component.Serializer.toJson(name, registries));
         tag.put("VanillaTag", vanillaTag);
     }
 

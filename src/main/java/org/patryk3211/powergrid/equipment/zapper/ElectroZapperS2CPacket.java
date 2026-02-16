@@ -16,32 +16,38 @@
 package org.patryk3211.powergrid.equipment.zapper;
 
 import com.simibubi.create.content.equipment.potatoCannon.PotatoCannonPacket;
-import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.PowerGridClient;
-import org.patryk3211.powergrid.network.SimplePacket;
 
 import java.util.function.Supplier;
 
-public class ElectroZapperS2CPacket extends PotatoCannonPacket implements SimplePacket {
+public class ElectroZapperS2CPacket extends PotatoCannonPacket{
     public ElectroZapperS2CPacket(Vec3 location, Vec3 motion, ItemStack item, InteractionHand hand, float pitch, boolean self) {
         super(location, motion, item, hand, pitch, self);
     }
 
-    public ElectroZapperS2CPacket(FriendlyByteBuf buffer) {
-        super(buffer);
-    }
 
     @Override
     protected void handleAdditional() {
+        Entity renderViewEntity = Minecraft.getInstance()
+                .getCameraEntity();
+        if (renderViewEntity == null)
+            return;
+        if (renderViewEntity.position()
+                .distanceTo(location) > 100)
+            return;
 
+        var handler = getHandler();
+        if (self)
+            handler.shoot(hand, location);
+        else
+            handler.playSound(hand, location);
     }
 
     @Override
@@ -50,23 +56,22 @@ public class ElectroZapperS2CPacket extends PotatoCannonPacket implements Simple
         return PowerGridClient.ELECTRO_ZAPPER_RENDER_HANDLER;
     }
 
-    @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        context.get().queue(() -> {
-            Entity renderViewEntity = Minecraft.getInstance()
-                    .getCameraEntity();
-            if (renderViewEntity == null)
-                return;
-            if (renderViewEntity.position()
-                    .distanceTo(location) > 100)
-                return;
-
-            var handler = getHandler();
-            handleAdditional();
-            if (self)
-                handler.shoot(hand, location);
-            else
-                handler.playSound(hand, location);
-        });
-    }
+//    @Override
+//    public void handle(Supplier<NetworkManager.PacketContext> context) {
+//        context.get().queue(() -> {
+//            Entity renderViewEntity = Minecraft.getInstance()
+//                    .getCameraEntity();
+//            if (renderViewEntity == null)
+//                return;
+//            if (renderViewEntity.position()
+//                    .distanceTo(location) > 100)
+//                return;
+//
+//            var handler = getHandler();
+//            if (self)
+//                handler.shoot(hand, location);
+//            else
+//                handler.playSound(hand, location);
+//        });
+//    }
 }

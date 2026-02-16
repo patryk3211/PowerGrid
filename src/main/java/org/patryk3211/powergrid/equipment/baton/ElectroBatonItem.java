@@ -17,6 +17,9 @@ package org.patryk3211.powergrid.equipment.baton;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -39,15 +42,15 @@ public class ElectroBatonItem extends SwordItem {
     private final Multimap<Attribute, AttributeModifier> modifiers;
 
     public ElectroBatonItem(Properties settings) {
-        super(ZincToolMaterial.INSTANCE, -1, -2.6f, settings.durability(20));
+        super(ZincToolMaterial.INSTANCE, settings.attributes(SwordItem.createAttributes(ZincToolMaterial.INSTANCE, -1, -2.6f)));
 
-        float attackDamage = getDamage();
+        float attackDamage = -1;
         float attackSpeed = -2.6f;
         float knockback = 1.0f;
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-        builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", attackDamage, AttributeModifier.Operation.ADDITION));
-        builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", attackSpeed, AttributeModifier.Operation.ADDITION));
-        builder.put(Attributes.ATTACK_KNOCKBACK, new AttributeModifier(ATTACK_KNOCKBACK_MODIFIER_ID, "Weapon modifier", knockback, AttributeModifier.Operation.ADDITION));
+        builder.put(Attributes.ATTACK_DAMAGE.value(), new AttributeModifier(BASE_ATTACK_DAMAGE_ID, attackDamage, AttributeModifier.Operation.ADD_VALUE));
+        builder.put(Attributes.ATTACK_SPEED.value(), new AttributeModifier(BASE_ATTACK_SPEED_ID, attackSpeed, AttributeModifier.Operation.ADD_VALUE));
+        //builder.put(Attributes.ATTACK_KNOCKBACK.value(), new AttributeModifier(ATTACK_KNOCKBACK_MODIFIER_ID, knockback, AttributeModifier.Operation.ADD_VALUE));
         modifiers = builder.build();
     }
 
@@ -70,10 +73,10 @@ public class ElectroBatonItem extends SwordItem {
         return BatteryUtils.getBarWidth(stack, fePerUse());
     }
 
-    @Override
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
-        return slot == EquipmentSlot.MAINHAND ? modifiers : super.getDefaultAttributeModifiers(slot);
-    }
+//    @Override
+//    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot slot) {
+//        return slot == EquipmentSlot.MAINHAND ? modifiers : super.getDefaultAttributeModifiers(slot);
+//    }
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
@@ -87,7 +90,7 @@ public class ElectroBatonItem extends SwordItem {
                 return true;
             }
         }
-        stack.hurtAndBreak(1, attacker, (e) -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
         return true;
     }
 }

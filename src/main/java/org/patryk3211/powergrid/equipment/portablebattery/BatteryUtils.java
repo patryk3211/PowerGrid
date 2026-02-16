@@ -18,17 +18,24 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 import com.simibubi.create.AllEnchantments;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 public class BatteryUtils {
+
     public static int getMaxCharge(ItemStack stack) {
-        return getMaxCharge(EnchantmentHelper.getItemEnchantmentLevel(AllEnchantments.CAPACITY.get(), stack));
+        return getMaxCharge(EnchantmentHelper.getItemEnchantmentLevel((Holder<Enchantment>) BuiltInRegistries.REGISTRY.get(AllEnchantments.CAPACITY.registry()), stack));
     }
 
     public static int getMaxCharge(int level) {
@@ -37,10 +44,12 @@ public class BatteryUtils {
     }
 
     public static int getCurrentCharge(ItemStack stack) {
-        if(!stack.hasTag())
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        if(!data.isEmpty())
             return 0;
-        var nbt = stack.getTag();
-        return nbt.getInt("Charge");
+
+        CompoundTag tag = data.copyTag();
+        return tag.getInt("Charge");
     }
 
     public static boolean drawEnergy(Player player, int fe) {
@@ -52,7 +61,11 @@ public class BatteryUtils {
         var charge = getCurrentCharge(stack);
         if(charge < fe)
             return false;
-        stack.getTag().putInt("Charge", charge - fe);
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        CompoundTag newTag = data.copyTag();
+
+        newTag.putInt("Charge", charge - fe);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(newTag));
         return true;
     }
 

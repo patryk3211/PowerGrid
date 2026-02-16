@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.equipment.armor.BaseArmorItem;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -37,11 +38,11 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class PortableBatteryItem extends BaseArmorItem implements CapacityEnchantment.ICapacityEnchantable, IHaveElectricProperties {
+public class PortableBatteryItem extends BaseArmorItem implements IHaveElectricProperties {
     public static final int BAR_COLOR = 0xEFEFDE;
     private Supplier<BacktankItem.BacktankBlockItem> blockItem;
 
-    public PortableBatteryItem(ArmorMaterial material, Properties settings, ResourceLocation textureLoc, Supplier<BacktankItem.BacktankBlockItem> placeable) {
+    public PortableBatteryItem(Holder<ArmorMaterial> material, Properties settings, ResourceLocation textureLoc, Supplier<BacktankItem.BacktankBlockItem> placeable) {
         super(material, Type.CHESTPLATE, settings, textureLoc);
         this.blockItem = placeable;
     }

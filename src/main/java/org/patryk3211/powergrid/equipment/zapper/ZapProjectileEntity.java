@@ -30,6 +30,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -43,8 +45,8 @@ import org.patryk3211.powergrid.network.packets.ZapProjectileS2CPacket;
 
 import java.util.ArrayList;
 
-public class ZapProjectileEntity extends Projectile {
-    public ZapProjectileEntity(EntityType<? extends Projectile> type, Level world) {
+public class ZapProjectileEntity extends AbstractHurtingProjectile {
+    public ZapProjectileEntity(EntityType<? extends AbstractHurtingProjectile> type, Level world) {
         super(type, world);
     }
 
@@ -168,8 +170,8 @@ public class ZapProjectileEntity extends Projectile {
 //        }
 
         if(onServer && owner instanceof LivingEntity livingOwner) {
-            EnchantmentHelper.doPostHurtEffects(livingTarget, livingOwner);
-            EnchantmentHelper.doPostDamageEffects(livingOwner, livingTarget);
+
+            EnchantmentHelper.doPostAttackEffects(world.getServer().getLevel(livingTarget.level().dimension()), livingTarget, livingOwner.damageSources().playerAttack((Player) livingOwner));
         }
 
         if(livingTarget != owner && livingTarget instanceof Player && owner instanceof ServerPlayer ownerPlayer && !isSilent()) {
