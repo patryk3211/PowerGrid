@@ -113,6 +113,8 @@ public class WireItem extends Item implements IWire {
                 return InteractionResultHolder.fail(null);
             var segments = entity.segments;
             if(bwe.getEnd()) {
+                if(segments.size() == 0)
+                    return InteractionResultHolder.fail(null);
                 var last = segments.get(segments.size() - 1);
                 continueDir = last.direction;
             } else {
