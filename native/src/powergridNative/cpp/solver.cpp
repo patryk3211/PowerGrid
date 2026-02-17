@@ -171,7 +171,7 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         // Run inner hooks
         int cmdCount = 0;
         if(i < maxIters - 10)
-            m_env->CallIntMethod(mnaObj, m_iterHookMethod, m_stateBuffer);
+            cmdCount = m_env->CallIntMethod(mnaObj, m_iterHookMethod, m_stateBuffer);
         if(cmdCount != 0)
             processJacobianBuffer(cmdCount);
 
@@ -184,7 +184,8 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         char trans = 'N';
         // R = A * x - R
         sp_dgemv(&trans, 1.0, m_A.superMatrix(), m_state, 1, -1.0, m_residual.data(), 1);
-        double nextNorm = dasum_(&m_size, m_residual.data(), &inc);
+        int idxMax = idamax_(&m_size, m_residual.data(), &inc);
+        double nextNorm = abs(m_residual[idxMax - 1]);
         double dNorm = abs(nextNorm - norm);
         norm = nextNorm;
         if(norm < m_absoluteStoppingCriterion || dNorm < m_relativeStoppingCriterion)
