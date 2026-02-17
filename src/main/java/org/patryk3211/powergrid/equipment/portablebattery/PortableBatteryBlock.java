@@ -27,6 +27,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -75,6 +76,11 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
                                 .rotateAroundY((int) (180 - state.getValue(HORIZONTAL_FACING).toYRot()))))
                 .withShapeMapper(state -> SHAPE)
                 .build());
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResult.PASS;
     }
 
     public int capacity() {

@@ -21,6 +21,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -93,6 +94,11 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
     public CRTBlock(Properties settings) {
         super(settings);
         setTerminalCollection(horizontalNorthTerminals(this, TERMINALS, SHAPE));
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResult.PASS;
     }
 
     @Override

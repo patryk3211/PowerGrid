@@ -85,7 +85,7 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
                 return InteractionResult.SUCCESS;
             }
         }
-        return super.use(state, world, pos, player, hand, hit);
+        return InteractionResult.PASS;
     }
 
     public void useSound(Level world, BlockPos pos, boolean open) {

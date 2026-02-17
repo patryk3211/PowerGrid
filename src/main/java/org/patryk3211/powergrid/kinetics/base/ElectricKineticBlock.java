@@ -18,10 +18,14 @@ package org.patryk3211.powergrid.kinetics.base;
 import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.config.ResistanceValues;
@@ -81,4 +85,6 @@ public abstract class ElectricKineticBlock extends KineticBlock implements IElec
     public float resistance(String suffix) {
         return ResistanceValues.get(this, suffix);
     }
+
+    public abstract InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit);
 }

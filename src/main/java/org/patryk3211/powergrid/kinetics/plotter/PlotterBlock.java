@@ -87,7 +87,7 @@ public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlo
                 return InteractionResult.SUCCESS;
             }
         }
-        return super.use(state, level, pos, player, hand, hit);
+        return InteractionResult.PASS;
     }
 
     @Override
