@@ -65,8 +65,12 @@ public class NativeMNA implements IMNA {
         try {
             // Try load from path first
             System.loadLibrary("powergridNative");
-            PowerGrid.LOGGER.info(MESSAGE_OK);
-            supported = true;
+            if(verifySupport() == 0) {
+                PowerGrid.LOGGER.info(MESSAGE_OK);
+                supported = true;
+            } else {
+                PowerGrid.LOGGER.error(MESSAGE_FAIL);
+            }
         } catch (Throwable e) {
             try {
                 Files.createDirectories(NATIVES_DIR);
@@ -95,14 +99,18 @@ public class NativeMNA implements IMNA {
                         Files.copy(stream, libPath);
                         PowerGrid.LOGGER.info("Extracted native binary '{}' from jar", libName);
                     } else {
-                        PowerGrid.LOGGER.error(MESSAGE_FAIL);
+                        PowerGrid.LOGGER.error(MESSAGE_FAIL, e);
                         loaded = false;
                     }
                 }
                 if(loaded) {
                     System.load(libPath.toAbsolutePath().toString());
-                    PowerGrid.LOGGER.info(MESSAGE_OK);
-                    supported = true;
+                    if(verifySupport() == 0) {
+                        PowerGrid.LOGGER.info(MESSAGE_OK);
+                        supported = true;
+                    } else {
+                        PowerGrid.LOGGER.error(MESSAGE_FAIL);
+                    }
                 }
             } catch (Throwable e2) {
                 PowerGrid.LOGGER.error(MESSAGE_FAIL, e2);
@@ -377,4 +385,5 @@ public class NativeMNA implements IMNA {
     private static native void processRHSBuffer(long ptr);
     private static native void setPrecision(long ptr, double absoluteCriterion, double relativeCriterion, double minimumPrecision);
     private native ByteBuffer singleTick(long ptr, int maxIters, int jacobianCmdCount);
+    private static native int verifySupport();
 }

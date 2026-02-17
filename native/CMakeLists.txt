@@ -15,6 +15,7 @@ set(SOURCES
     src/powergridNative/cpp/sparse.cpp
     src/powergridNative/cpp/solver.cpp
     src/powergridNative/cpp/mna.cpp
+    src/powergridNative/cpp/exception_handler.cpp
 )
 
 set(CMAKE_C_FLAGS_DEBUG "-g")
