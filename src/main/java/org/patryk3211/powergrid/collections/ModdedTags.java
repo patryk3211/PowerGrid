@@ -41,7 +41,7 @@ public class ModdedTags {
         }
 
         Item(String namespace, String name) {
-            tag = itemTag(new ResourceLocation(namespace, name));
+            tag = itemTag(ResourceLocation.fromNamespaceAndPath(namespace, name));
         }
     }
 
@@ -59,7 +59,7 @@ public class ModdedTags {
         }
 
         Block(String namespace, String name) {
-            tag = blockTag(new ResourceLocation(namespace, name));
+            tag = blockTag(ResourceLocation.fromNamespaceAndPath(namespace, name));
         }
     }
 
@@ -74,11 +74,11 @@ public class ModdedTags {
     }
 
     public static TagKey<net.minecraft.world.item.Item> forgeItemTag(String path) {
-        return itemTag(new ResourceLocation(FORGE_NAMESPACE, path));
+        return itemTag(ResourceLocation.fromNamespaceAndPath(FORGE_NAMESPACE, path));
     }
 
     public static TagKey<net.minecraft.world.level.block.Block> forgeBlockTag(String path) {
-        return blockTag(new ResourceLocation(FORGE_NAMESPACE, path));
+        return blockTag(ResourceLocation.fromNamespaceAndPath(FORGE_NAMESPACE, path));
     }
 
     public static TagKey<net.minecraft.world.item.Item> plates(String ingot) {

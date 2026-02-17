@@ -17,12 +17,12 @@ package org.patryk3211.powergrid.electricity.transformer;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
@@ -92,7 +92,7 @@ public abstract class TransformerBlock extends ElectricBlock {
         var pos = context.getClickedPos();
         var terminal = terminalIndexAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
         var stack = context.getItemInHand();
-        var nbt = stack.getTag();
+        var nbt = stack.get(DataComponents.CUSTOM_DATA).copyTag();
         var turns = nbt.getInt("Turns");
         return getBlockEntity(context.getLevel(), context.getClickedPos(), state).map(be -> {
             if(terminal >= 0) {
@@ -128,7 +128,7 @@ public abstract class TransformerBlock extends ElectricBlock {
                         be.makePrimary(firstTerminal, terminal, turns, stack.getItem());
                     }
                     PlayerUtilities.removeItems(player, stack, turns);
-                    stack.setTag(null);
+                    stack.set(DataComponents.CUSTOM_DATA, null);
                 }
                 return InteractionResult.SUCCESS;
             } else {
@@ -146,8 +146,8 @@ public abstract class TransformerBlock extends ElectricBlock {
     public InteractionResult onWire(BlockState state, UseOnContext context) {
         var stack = context.getItemInHand();
         // Check if wire is in winding mode.
-        if(stack.hasTag()) {
-            var nbt = stack.getTag();
+        if(stack.has(DataComponents.CUSTOM_DATA)) {
+            var nbt = stack.get(DataComponents.CUSTOM_DATA).copyTag();
             if(nbt.contains("Turns")) {
                 var posArray = nbt.getIntArray("Initiator");
                 var initiatorPosition = new BlockPos(posArray[0], posArray[1], posArray[2]);
@@ -161,14 +161,14 @@ public abstract class TransformerBlock extends ElectricBlock {
         var result = super.onWire(state, context);
         if(result == InteractionResult.PASS) {
             // Not hit a terminal.
-            if(stack.hasTag() && stack.getTag().contains("Connection")) {
+            if(stack.has(DataComponents.CUSTOM_DATA) && stack.get(DataComponents.CUSTOM_DATA).contains("Connection")) {
                 if(!stack.is(ModdedItems.WIRE.get())) {
                     // Only copper wire can be used to wind transformers
                     return InteractionResult.FAIL;
                 }
                 // Has first terminal data.
                 return getBlockEntity(context.getLevel(), context.getClickedPos(), state).map(be -> {
-                    var nbt = stack.getTagElement("Connection");
+                    var nbt = stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection");
                     var endpoint = WireEndpointType.deserialize(nbt);
                     if(endpoint.type() != WireEndpointType.BLOCK)
                         return InteractionResult.FAIL;
@@ -225,7 +225,7 @@ public abstract class TransformerBlock extends ElectricBlock {
             }
             return InteractionResult.PASS;
         }
-        return super.use(state, world, pos, player, hand, hit);
+        return InteractionResult.PASS;
     }
 
     public int getMaxTurns() {
