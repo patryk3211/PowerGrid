@@ -16,9 +16,11 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.CustomData;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
@@ -51,14 +53,16 @@ public class TransformerWindingC2SPacket implements SimplePacket {
         var ctx = context.get();
         ctx.queue(() -> {
             var stack = ctx.getPlayer().getItemInHand(hand);
-            if(!(stack.getItem() instanceof IWire) || !stack.hasTag())
+            if(!(stack.getItem() instanceof IWire) || !stack.has(DataComponents.CUSTOM_DATA))
                 return;
-            if(stack.getTag().contains("Turns")) {
+            if(stack.get(DataComponents.CUSTOM_DATA).contains("Turns")) {
                 // Alter existing tag
-                stack.getTag().putInt("Turns", nTurns);
+                CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+                compoundTag.putInt("Turns", nTurns);
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
             } else {
                 // Create a new tag
-                var endpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+                var endpoint = WireEndpointType.deserialize(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection"));
                 if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
                     return;
                 var blockEndpoint = (BlockWireEndpoint) endpoint;
@@ -67,7 +71,7 @@ public class TransformerWindingC2SPacket implements SimplePacket {
                 var pos = blockEndpoint.getPos();
                 nbt.putIntArray("Initiator", new int[]{pos.getX(), pos.getY(), pos.getZ()});
                 nbt.putInt("Terminal", blockEndpoint.getTerminal());
-                stack.setTag(nbt);
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
             }
         });
     }

@@ -16,8 +16,10 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
 import org.patryk3211.powergrid.network.SimplePacket;
@@ -57,10 +59,11 @@ public class SaveCardC2SPacket implements SimplePacket {
             var stack = player.getMainHandItem();
             if(!(stack.getItem() instanceof PunchCardItem))
                 return;
-            if(stack.hasTag() && stack.getTag().getBoolean("Locked"))
+            if(stack.has(DataComponents.CUSTOM_DATA) && stack.get(DataComponents.CUSTOM_DATA).copyTag().getBoolean("Locked"))
                 return;
-            var tag = stack.getOrCreateTag();
+            var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             tag.putByteArray("Data", data);
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
             if(name.isEmpty()) {
                 stack.resetHoverName();
             } else {

@@ -16,8 +16,11 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.CustomData;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.SimplePacket;
@@ -75,7 +78,7 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 return;
             }
 
-            var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+            var existingEndpoint = WireEndpointType.deserialize(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection"));
 
             IWireEndpoint endpoint;
             if(gridPoint <= 1 && index == 0) {
@@ -100,11 +103,15 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 endpoint = new DeferredJunctionWireEndpoint(wire, index, gridPoint);
             }
             if(endpoint != null && existingEndpoint == null) {
-                stack.getOrCreateTag().put("Connection", endpoint.serialize());
+                CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+                compoundTag.put("Connection", endpoint.serialize());
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
             } else if(endpoint != null) {
                 var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
                 if(result.getResult().consumesAction()) {
-                    stack.removeTagKey("Connection");
+                    CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+                    compoundTag.remove("Connection");
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
                 }
             }
         });

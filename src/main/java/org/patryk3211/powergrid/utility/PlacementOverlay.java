@@ -25,6 +25,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -122,8 +123,8 @@ public class PlacementOverlay {
         if(wireStack == null)
             return null;
 
-        var tag = wireStack.getTag();
-        assert tag != null;
+        assert wireStack.has(DataComponents.CUSTOM_DATA);
+        var tag = wireStack.get(DataComponents.CUSTOM_DATA).copyTag();
         if(!tag.contains("Turns") || !tag.contains("Initiator"))
             return null;
 

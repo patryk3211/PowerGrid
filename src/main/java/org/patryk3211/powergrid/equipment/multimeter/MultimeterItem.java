@@ -233,7 +233,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
         if(player.isShiftKeyDown() && usedHand == InteractionHand.MAIN_HAND) {
-            player.getItemInHand(usedHand).set(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+            player.getItemInHand(usedHand).remove(DataComponents.CUSTOM_DATA);
             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                     .style(ChatFormatting.GRAY)
                     .component(), true);

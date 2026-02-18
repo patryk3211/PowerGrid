@@ -35,7 +35,7 @@ public class BlockStateBaseMixin {
             cancellable = true)
     private void beforeBlockUse(Level level, Player player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<InteractionResult> cir) {
         var item = player.getItemInHand(hand);
-        if(item.getItem() instanceof WireItem && !item.get(DataComponents.CUSTOM_DATA).copyTag().isEmpty() && item.get(DataComponents.CUSTOM_DATA).copyTag().get("Connection") != null) {
+        if(item.getItem() instanceof WireItem && !item.get(DataComponents.CUSTOM_DATA).copyTag().isEmpty() && item.get(DataComponents.CUSTOM_DATA).contains("Connection")) {
             cir.setReturnValue(InteractionResult.PASS);
         }
     }

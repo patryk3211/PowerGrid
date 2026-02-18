@@ -24,11 +24,14 @@ import net.createmod.ponder.foundation.PonderScene;
 import net.createmod.ponder.foundation.instruction.TickingInstruction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -230,7 +233,7 @@ public class DeviceScenes {
                 .placeNearTarget();
         scene.idle(90);
 
-        var stack = new ItemStack(ModdedItems.WIRE, 1);
+        var stack = new ItemStack(ModdedItems.WIRE.getDelegate(), 1);
         scene.overlay().showControls(util.vector().of(2.8, 1.9, 2.0), Pointing.RIGHT, 30).withItem(stack);
         scene.idle(30);
 
@@ -998,7 +1001,9 @@ public class DeviceScenes {
         scene.idle(60);
 
         var card = ModdedItems.PUNCH_CARD.asStack();
-        card.getOrCreateTag().putByteArray("Data", new byte[] { 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0 });
+        CompoundTag compoundTag = card.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        compoundTag.putByteArray("Data", new byte[] { 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0 });
+        card.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
         scene.overlay()
                 .showControls(util.vector().topOf(reader), Pointing.DOWN, 30)
                 .withItem(card).rightClick();

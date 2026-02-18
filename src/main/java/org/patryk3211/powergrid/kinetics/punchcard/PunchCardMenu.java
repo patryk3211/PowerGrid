@@ -16,12 +16,14 @@
 package org.patryk3211.powergrid.kinetics.punchcard;
 
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 
 public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
     public static PunchCardMenuConstructors CONSTRUCTORS;
@@ -40,22 +42,22 @@ public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
         super.init(inv, stack);
         if(data == null)
             data = new byte[16];
-        if(!stack.hasTag())
+        if(!stack.has(DataComponents.CUSTOM_DATA))
             return;
-        var bytes = stack.getTag().getByteArray("Data");
+        var bytes = stack.get(DataComponents.CUSTOM_DATA).copyTag().getByteArray("Data");
         System.arraycopy(bytes, 0, data, 0, Math.min(data.length, bytes.length));
     }
 
     public boolean isLocked() {
-        if(!contentHolder.hasTag())
+        if(!contentHolder.has(DataComponents.CUSTOM_DATA))
             return false;
-        return contentHolder.getTag().getBoolean("Locked");
+        return contentHolder.get(DataComponents.CUSTOM_DATA).copyTag().getBoolean("Locked");
     }
 
     public String getAuthor() {
-        if(!contentHolder.hasTag())
+        if(!contentHolder.has(DataComponents.CUSTOM_DATA))
             return "";
-        return contentHolder.getTag().getString("Author");
+        return contentHolder.get(DataComponents.CUSTOM_DATA).copyTag().getString("Author");
     }
 
     @Override
@@ -79,9 +81,10 @@ public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
     }
 
     public void lock() {
-        var tag = contentHolder.getOrCreateTag();
+        var tag = contentHolder.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         tag.putBoolean("Locked", true);
         tag.putString("Author", player.getDisplayName().getString());
+        contentHolder.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
     public interface PunchCardMenuConstructors {

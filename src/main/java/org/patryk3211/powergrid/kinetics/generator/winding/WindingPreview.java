@@ -21,6 +21,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -46,9 +47,9 @@ public class WindingPreview {
     public static ItemStack getUsedWireStack(Player player) {
         var stack1 = player.getMainHandItem();
         var stack2 = player.getOffhandItem();
-        if(stack1 != null && stack1.getItem() instanceof WindingItem && stack1.hasTag()) {
+        if(stack1 != null && stack1.getItem() instanceof WindingItem && stack1.has(DataComponents.CUSTOM_DATA)) {
             return stack1;
-        } else if(stack2 != null && stack2.getItem() instanceof WindingItem && stack2.hasTag()) {
+        } else if(stack2 != null && stack2.getItem() instanceof WindingItem && stack2.has(DataComponents.CUSTOM_DATA)) {
             return stack2;
         } else {
             return null;
@@ -64,7 +65,7 @@ public class WindingPreview {
         if(stack == null)
             return;
 
-        var tag = stack.getTag();
+        var tag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
         var posArray = tag.getIntArray("Position");
         if(posArray.length < 3)
             return;

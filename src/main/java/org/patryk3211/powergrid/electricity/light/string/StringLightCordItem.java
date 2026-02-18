@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.light.string;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -45,9 +46,9 @@ public class StringLightCordItem extends CordItem {
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
         super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
-        if(!stack.hasTag())
+        if(!stack.has(DataComponents.CUSTOM_DATA))
             return;
-        var pattern = stack.getTag().getByteArray("Pattern");
+        var pattern = stack.get(DataComponents.CUSTOM_DATA).copyTag().getByteArray("Pattern");
         if(pattern.length == 0)
             return;
         var line = Lang.translate("tooltip.string_light_cord_pattern")
