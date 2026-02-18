@@ -15,65 +15,26 @@
  */
 package org.patryk3211.powergrid.electricity.sim.calculation;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
 
-public class Precalculated<T, D extends IStamped> implements IStamped {
-    private final BiConsumer<D, ValueHandler> func;
-    @Nullable
-    private D dependency;
-    private int dependencyStamp = -1;
-    private int ourStamp = 0;
+public abstract class Precalculated<T> implements IStamped {
+    protected int ourStamp = 0;
 
-    private final T defaultValue;
-    private T value = null;
-    private final List<Object> auxData = new ArrayList<>();
-    private final ValueHandler handler = new ValueHandler();
+    protected final T defaultValue;
+    protected T value;
 
-    public Precalculated(BiConsumer<D, ValueHandler> func) {
-        this.func = func;
-        this.defaultValue = null;
-    }
+    protected final List<Object> auxData = new ArrayList<>();
+    protected final ValueHandler handler = new ValueHandler();
 
-    public Precalculated(BiConsumer<D, ValueHandler> func, T defaultValue) {
-        this.func = func;
+    public Precalculated(T defaultValue) {
         this.defaultValue = defaultValue;
         this.value = defaultValue;
     }
 
-    public void updateDependency(@Nullable D dependency) {
-        this.dependency = dependency;
-        if(dependency == null) {
-            this.dependencyStamp = -1;
-        }
-    }
-
-    public T get() {
-        if(dependency == null) {
-            value = defaultValue;
-        } else if(dependencyStamp != dependency.getStamp()) {
-            ++ourStamp;
-            dependencyStamp = dependency.getStamp();
-            func.accept(dependency, handler);
-        }
-        return value;
-    }
-
-    @Override
-    public int getStamp() {
-        if(dependency == null)
-            return -1;
-        if(dependencyStamp != dependency.getStamp())
-            return ourStamp + 1;
-        return ourStamp;
-    }
-
-    public void invalidate() {
-        --dependencyStamp;
-    }
+    public abstract T get();
+    public abstract int getStamp();
+    public abstract void invalidate();
 
     public class ValueHandler {
         public void emit(T value) {

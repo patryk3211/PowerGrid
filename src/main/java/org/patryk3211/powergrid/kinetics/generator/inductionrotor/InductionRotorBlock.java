@@ -16,6 +16,9 @@
 package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,6 +38,12 @@ public class InductionRotorBlock extends AbstractRotorBlock implements IBE<Induc
     @Override
     public BlockEntityType<? extends InductionRotorBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.GENERATOR_INDUCTION_ROTOR.get();
+    }
+
+    @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
+        withBlockEntityDo(level, pos, InductionRotorBlockEntity::neighborsChanged);
+        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
     }
 
     @Override
