@@ -136,7 +136,6 @@
   "powergrid.component.property.current": "Ток",
   "powergrid.component.property.current.summary": "Максимальный ток, который этот компонент может выдерживать в течение длительного периода времени",
   "powergrid.component.property.current_gauge_max": "Максимальная сила тока",
-  "powergrid.component.property.inductor_value": "Индуктивность [мГ]",
   "powergrid.component.property.label": "Название",
   "powergrid.component.property.neon_tube_ih": "Ток удержания",
   "powergrid.component.property.neon_tube_ih.summary": "Минимальная сила тока, необходимая для включения",
