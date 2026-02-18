@@ -15,7 +15,7 @@ with concepts like Ohm's law.
 </p>
 
 <p>
-You can join the [Community Discord Server](https://discord.gg/QQqqEnJqGz) if you want to discuss this mod or ask questions.
+You can join the <a href="https://discord.gg/QQqqEnJqGz">Community Discord Server</a> if you want to discuss this mod or ask questions.
 </p>
 
 ## Contributing
