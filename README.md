@@ -14,6 +14,10 @@ Create's in-game 'Ponder' documentation will walk you through the basic physics 
 with concepts like Ohm's law.
 </p>
 
+<p>
+You can join the [Community Discord Server](https://discord.gg/QQqqEnJqGz) if you want to discuss this mod or ask questions.
+</p>
+
 ## Contributing
 Want to help translate this mod to another language? You can do so with [CrowdIn](https://crowdin.com/project/create-power-grid)
 
