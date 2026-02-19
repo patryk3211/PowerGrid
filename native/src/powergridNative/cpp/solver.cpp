@@ -63,6 +63,7 @@ void Solver::resize(int size) {
     m_vec2.resize(size);
     m_residual.resize(size);
     m_rhs.resize(size);
+    m_stateDelta.resize(size);
 
     PG_TRACE("[Solver::resize] Assigning new pointers", size);
     m_Xstore.lda = m_X.nrow = size;
@@ -167,6 +168,7 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
 
     int i;
     double norm = 0;
+    bool skipped = false;
     for(i = 0; i < maxIters; ++i) {
         // Run inner hooks
         int cmdCount = 0;
@@ -186,6 +188,13 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         sp_dgemv(&trans, 1.0, m_A.superMatrix(), m_state, 1, -1.0, m_residual.data(), 1);
         int idxMax = idamax_(&m_size, m_residual.data(), &inc);
         double nextNorm = abs(m_residual[idxMax - 1]);
+        if(i != 0 && nextNorm > norm && !skipped) {
+            double alpha = 0.1;
+            daxpy_(&m_size, &alpha, m_stateDelta.data(), &inc, m_state, &inc);
+            skipped = true; --i;
+            continue;
+        }
+        skipped = false;
         double dNorm = abs(nextNorm - norm);
         norm = nextNorm;
         if(norm < m_absoluteStoppingCriterion || dNorm < m_relativeStoppingCriterion)
@@ -194,14 +203,20 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
             // Right before non-linear devices are disabled.
             // Only append new problem frames if the network has been converging before.
             m_converged = false; // norm < m_minimumAllowedPrecision;
-            if(!m_converged)
-                convergenceProblems(mnaObj, norm, i);
+            // if(!m_converged)
+            convergenceProblems(mnaObj, norm, i);
         }
 
         // Solve A * x = b
         m_A.solve(&m_B);
         // B is now the state vector
         swapBuffers();
+        // x = new state, b = old state
+        {
+            double alpha = -1.0;
+            memcpy(m_stateDelta.data(), m_state, m_size * sizeof(double));
+            daxpy_(&m_size, &alpha, m_b, &inc, m_stateDelta.data(), &inc);
+        }
 
         m_A.samePattern(true);
     }
