@@ -15,20 +15,19 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
-public class BlockWireCutC2SPacket implements SimplePacket {
+public class BlockWireCutC2SPacket implements C2SPacket {
     public final int entityId;
     public final int index1;
     public final int point1;
@@ -63,15 +62,6 @@ public class BlockWireCutC2SPacket implements SimplePacket {
         }
     }
 
-    @Override
-    public void encode(FriendlyByteBuf buf) {
-        buf.writeInt(entityId);
-        buf.writeInt(index1);
-        buf.writeInt(point1);
-        buf.writeInt(index2);
-        buf.writeInt(point2);
-    }
-
     private static BlockWireEntity spawnWire2(BlockWireEntity wire1, Vec3 start, int wireCount, List<BlockWireEntity.Point> segments) {
         if(start == null || segments.isEmpty())
             return null;
@@ -83,91 +73,97 @@ public class BlockWireCutC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var entity = ctx.getPlayer().level().getEntity(entityId);
-            if(!(entity instanceof BlockWireEntity wire)) {
-                PowerGrid.LOGGER.error("Received block wire cut packet with invalid entity");
-                return;
-            }
-            int wireCount = wire.getWireCount();
-            int gridLength2 = 0;
-            var secondSegments = new ArrayList<BlockWireEntity.Point>();
-            Vec3 secondStart = null;
-            for(int i = index2; i < wire.segments.size(); ++i) {
-                var segment = wire.segments.get(i);
-                if(i == index2) {
-                    secondStart = segment.start.relative(segment.direction, point2 / 16f);
-                    var len = segment.gridLength - point2;
-                    if(len > 0) {
-                        secondSegments.add(new BlockWireEntity.Point(segment.direction, len));
-                        gridLength2 += len;
-                    }
-                } else {
-                    secondSegments.add(new BlockWireEntity.Point(segment.direction, segment.gridLength));
-                    gridLength2 += segment.gridLength;
-                }
-            }
-            int wire2Count = (int) Math.ceil(gridLength2 / 16f);
-            while(wire.segments.size() > index1 + 1) {
-                // Remove all segments above index1
-                wire.segments.remove(wire.segments.size() - 1);
-            }
-            var last = wire.segments.remove(wire.segments.size() - 1);
-            wire.segments.add(new BlockWireEntity.Point(last.direction, Math.min(last.gridLength, point1)));
-            int gridLength1 = 0;
-            for(var segment : wire.segments) {
-                gridLength1 += segment.gridLength;
-            }
-            int wire1Count = (int) Math.ceil(gridLength1 / 16f);
-            if(wire1Count >= wire2Count) {
-                // Wire1 is the largest
-                if(gridLength1 < 3) {
-                    // Too short, discard, no wire2 since it's even shorter.
-                    wire.discard();
-                } else {
-                    wire.setItem(wire.getWireItem(), Math.min(wireCount, wire1Count));
-                    wireCount -= wire1Count;
-                    if (wireCount <= 0) {
-                        // Wire2 is discarded - not enough items
-                        wire.setEndpoint2(null);
-                    } else {
-                        // Spawn wire2
-                        var wire2 = spawnWire2(wire, secondStart, Math.min(wire2Count, wireCount), secondSegments);
-                        wireCount -= wire2Count;
-                    }
+    public void write(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
+        buf.writeInt(index1);
+        buf.writeInt(point1);
+        buf.writeInt(index2);
+        buf.writeInt(point2);
+    }
+
+    @Override
+    public void handle(ServerPlayer player) {
+        var entity = player.serverLevel().getEntity(entityId);
+        if(!(entity instanceof BlockWireEntity wire)) {
+            PowerGrid.LOGGER.error("Received block wire cut packet with invalid entity");
+            return;
+        }
+        int wireCount = wire.getWireCount();
+        int gridLength2 = 0;
+        var secondSegments = new ArrayList<BlockWireEntity.Point>();
+        Vec3 secondStart = null;
+        for(int i = index2; i < wire.segments.size(); ++i) {
+            var segment = wire.segments.get(i);
+            if(i == index2) {
+                secondStart = segment.start.relative(segment.direction, point2 / 16f);
+                var len = segment.gridLength - point2;
+                if(len > 0) {
+                    secondSegments.add(new BlockWireEntity.Point(segment.direction, len));
+                    gridLength2 += len;
                 }
             } else {
-                // Wire2 is the largest
-                if(gridLength2 < 3) {
-                    // Too short, discard wire2 but also wire1 since it's even shorter
+                secondSegments.add(new BlockWireEntity.Point(segment.direction, segment.gridLength));
+                gridLength2 += segment.gridLength;
+            }
+        }
+        int wire2Count = (int) Math.ceil(gridLength2 / 16f);
+        while(wire.segments.size() > index1 + 1) {
+            // Remove all segments above index1
+            wire.segments.remove(wire.segments.size() - 1);
+        }
+        var last = wire.segments.remove(wire.segments.size() - 1);
+        wire.segments.add(new BlockWireEntity.Point(last.direction, Math.min(last.gridLength, point1)));
+        int gridLength1 = 0;
+        for(var segment : wire.segments) {
+            gridLength1 += segment.gridLength;
+        }
+        int wire1Count = (int) Math.ceil(gridLength1 / 16f);
+        if(wire1Count >= wire2Count) {
+            // Wire1 is the largest
+            if(gridLength1 < 3) {
+                // Too short, discard, no wire2 since it's even shorter.
+                wire.discard();
+            } else {
+                wire.setItem(wire.getWireItem(), Math.min(wireCount, wire1Count));
+                wireCount -= wire1Count;
+                if (wireCount <= 0) {
+                    // Wire2 is discarded - not enough items
+                    wire.setEndpoint2(null);
+                } else {
+                    // Spawn wire2
+                    var wire2 = spawnWire2(wire, secondStart, Math.min(wire2Count, wireCount), secondSegments);
+                    wireCount -= wire2Count;
+                }
+            }
+        } else {
+            // Wire2 is the largest
+            if(gridLength2 < 3) {
+                // Too short, discard wire2 but also wire1 since it's even shorter
+                wire.discard();
+            } else {
+                var wire2 = spawnWire2(wire, secondStart, Math.min(wireCount, wire2Count), secondSegments);
+                wireCount -= wire2Count;
+                if (wireCount <= 0) {
+                    // Wire1 is discarded - not enough items
                     wire.discard();
                 } else {
-                    var wire2 = spawnWire2(wire, secondStart, Math.min(wireCount, wire2Count), secondSegments);
-                    wireCount -= wire2Count;
-                    if (wireCount <= 0) {
-                        // Wire1 is discarded - not enough items
-                        wire.discard();
-                    } else {
-                        // Keep wire1
-                        wire.setItem(wire.getWireItem(), Math.min(wire1Count, wireCount));
-                        wireCount -= wire1Count;
-                    }
+                    // Keep wire1
+                    wire.setItem(wire.getWireItem(), Math.min(wire1Count, wireCount));
+                    wireCount -= wire1Count;
                 }
             }
-            if(wireCount > 0) {
-                // Drop excess wires
-                var cutter = ctx.getPlayer();
-                for(; wireCount > 0; wireCount -= 64) {
-                    cutter.getInventory().placeItemBackInInventory(new ItemStack(wire.getWireItem(), Math.min(wireCount, 64)));
-                }
+        }
+        if(wireCount > 0) {
+            // Drop excess wires
+            var cutter = player;
+            for(; wireCount > 0; wireCount -= 64) {
+                cutter.getInventory().placeItemBackInInventory(new ItemStack(wire.getWireItem(), Math.min(wireCount, 64)));
             }
+        }
 
-            if(!wire.isRemoved()) {
-                wire.bakeBoundingBoxes();
-                wire.sendExtraData();
-            }
-        });
+        if(!wire.isRemoved()) {
+            wire.bakeBoundingBoxes();
+            wire.sendExtraData();
+        }
     }
 }

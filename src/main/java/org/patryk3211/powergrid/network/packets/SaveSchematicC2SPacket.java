@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -26,14 +25,11 @@ import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class SaveSchematicC2SPacket implements SimplePacket {
+public class SaveSchematicC2SPacket implements C2SPacket {
     private final BlockPos pos;
     private CompoundTag nbt;
-    @Nullable
     private String name;
     private boolean load;
 
@@ -62,7 +58,7 @@ public class SaveSchematicC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeBoolean(nbt != null);
         if(nbt != null) {
@@ -77,33 +73,29 @@ public class SaveSchematicC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var world = ctx.getPlayer().level();
-            var be = world.getBlockEntity(pos);
-            if(be instanceof CircuitDesignTableBlockEntity table) {
-                if(nbt != null) {
-                    table.getSchematic().deserializeNbt(nbt);
-                    table.setSchematicName(name);
-                    table.notifyUpdate();
+    public void handle(ServerPlayer player) {
+        var be = player.serverLevel().getBlockEntity(pos);
+        if(be instanceof CircuitDesignTableBlockEntity table) {
+            if(nbt != null) {
+                table.getSchematic().deserializeNbt(nbt);
+                table.setSchematicName(name);
+                table.notifyUpdate();
 
-                    // Saved successfully.
-                    IMultiScreenHandlerFactory.openScreen((ServerPlayer) ctx.getPlayer(), table, table::sendToMenu, 0);
+                // Saved successfully.
+                IMultiScreenHandlerFactory.openScreen(player, table, table::sendToMenu, 0);
+            } else {
+                if(load) {
+                    // Load schematic from item
+                    table.readFromItem();
                 } else {
-                    if(load) {
-                        // Load schematic from item
-                        table.readFromItem();
-                    } else {
-                        // Save schematic to item
-                        table.writeToItem(ctx.getPlayer().isCreative());
-                    }
-                }
-            } else if(be instanceof ISchematicHolder holder) {
-                if(ctx.getPlayer().isCreative() && nbt != null) {
-                    holder.setSchematic(CircuitSchematic.fromNbt(nbt));
+                    // Save schematic to item
+                    table.writeToItem(player.isCreative());
                 }
             }
-        });
+        } else if(be instanceof ISchematicHolder holder) {
+            if(player.isCreative() && nbt != null) {
+                holder.setSchematic(CircuitSchematic.fromNbt(nbt));
+            }
+        }
     }
 }

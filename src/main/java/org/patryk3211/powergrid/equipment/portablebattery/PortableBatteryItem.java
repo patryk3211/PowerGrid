@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.equipment.portablebattery;
 
+import com.simibubi.create.AllEnchantments;
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.equipment.armor.BaseArmorItem;
 import net.minecraft.core.Holder;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -57,6 +59,15 @@ public class PortableBatteryItem extends BaseArmorItem implements IHaveElectricP
 
     public Block getBlock() {
         return blockItem.get().getBlock();
+    }
+
+    @Override
+    public boolean isEnchantable(ItemStack p_77616_1_) {
+        return true;
+    }
+
+    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
+        return enchantment.is(AllEnchantments.CAPACITY);
     }
 
     @Override

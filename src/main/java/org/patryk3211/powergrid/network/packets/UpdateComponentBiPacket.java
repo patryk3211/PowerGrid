@@ -15,25 +15,26 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.annotation.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
+import org.patryk3211.powergrid.network.S2CPacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
-import java.util.function.Supplier;
-
-public class UpdateComponentBiPacket implements SimplePacket {
+public class UpdateComponentBiPacket implements S2CPacket, C2SPacket {
+    @Nullable
     private final BlockPos pos;
     private final int componentId;
     private final ResourceLocation propertyId;
@@ -65,7 +66,7 @@ public class UpdateComponentBiPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeInt(componentId);
         buf.writeResourceLocation(propertyId);
@@ -86,27 +87,21 @@ public class UpdateComponentBiPacket implements SimplePacket {
         });
     }
 
-    @Environment(EnvType.CLIENT)
-    public void handleClient() {
-        var world = ClientSideAccess.world();
-        handle(world);
-    }
-
-    public void handleServer(Player player) {
+    // Handle Server
+    @Override
+    @Environment(EnvType.SERVER)
+    public void handle(ServerPlayer player) {
         var world = player.level();
         if(!player.mayInteract(world, pos))
             return;
         handle(world);
     }
 
+    // Handle Client
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            switch (ctx.getEnv()) {
-                case CLIENT -> handleClient();
-                case SERVER -> handleServer(ctx.getPlayer());
-            }
-        });
+    @Environment(EnvType.CLIENT)
+    public void handle(Minecraft mc) {
+        var world = ClientSideAccess.world();
+        handle(world);
     }
 }

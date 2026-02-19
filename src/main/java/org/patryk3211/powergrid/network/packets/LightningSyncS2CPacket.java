@@ -17,49 +17,42 @@ package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
-import dev.architectury.networking.NetworkManager;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.S2CPacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
-import java.util.function.Supplier;
-
-public class LightningSyncS2CPacket implements SimplePacket {
+public class LightningSyncS2CPacket implements S2CPacket {
     private final int entityId;
 
     public LightningSyncS2CPacket(MovementContext context) {
-        entityId = context.contraption.entity.getId();
+        this.entityId = context.contraption.entity.getId();
     }
 
-    public LightningSyncS2CPacket(FriendlyByteBuf buffer) {
-        entityId = buffer.readInt();
-    }
-
-    @Override
-    public void encode(FriendlyByteBuf buffer) {
-        buffer.writeInt(entityId);
+    public LightningSyncS2CPacket(FriendlyByteBuf buf) {
+        entityId = buf.readInt();
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        context.get().queue(() -> {
-            var world = ClientSideAccess.world();
-            if(world.getEntity(entityId) instanceof AbstractContraptionEntity entity) {
-                entity.getContraption().forEachActor(world, (behaviour, movementContext) -> {
-                    if(!(behaviour instanceof LightningRodMovementBehaviour lightningBehaviour))
-                        return;
-                    // Lightning resets charge
-                    movementContext.data.putFloat("Charge", 0);
-                    if(movementContext.temporaryData == movementContext) {
-                        // Controller
-                        lightningBehaviour.fireClient(movementContext);
-                    }
-                });
-            }
-        });
+    public void write(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
+    }
+
+    @Override
+    public void handle(Minecraft mc) {
+        var world = ClientSideAccess.world();
+        if(world.getEntity(entityId) instanceof AbstractContraptionEntity entity) {
+            entity.getContraption().forEachActor(world, (behaviour, movementContext) -> {
+                if(!(behaviour instanceof LightningRodMovementBehaviour lightningBehaviour))
+                    return;
+                // Lightning resets charge
+                movementContext.data.putFloat("Charge", 0);
+                if(movementContext.temporaryData == movementContext) {
+                    // Controller
+                    lightningBehaviour.fireClient(movementContext);
+                }
+            });
+        }
     }
 }

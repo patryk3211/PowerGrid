@@ -15,18 +15,15 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class EndpointTrackingC2SPacket implements SimplePacket {
+public class EndpointTrackingC2SPacket implements C2SPacket {
     private final IWireEndpoint endpoint;
     private final boolean end;
 
@@ -46,20 +43,14 @@ public class EndpointTrackingC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeNbt(endpoint.serialize());
         buf.writeBoolean(end);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var sender = ctx.getPlayer();
-            if(!(sender instanceof ServerPlayer))
-                return;
-            var level = sender.level();
-            GlobalElectricNetworks.getWorldNetworks(level).tracking((ServerPlayer) sender, endpoint, end);
-        });
+    public void handle(ServerPlayer player) {
+        var level = player.level();
+        GlobalElectricNetworks.getWorldNetworks(level).tracking(player, endpoint, end);
     }
 }

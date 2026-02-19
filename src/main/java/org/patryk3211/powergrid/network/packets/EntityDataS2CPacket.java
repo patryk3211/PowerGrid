@@ -15,18 +15,17 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.S2CPacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
-public class EntityDataS2CPacket implements SimplePacket {
+public class EntityDataS2CPacket implements S2CPacket {
     private static final Map<Integer, CompoundTag> DEFERRED_DATA = new HashMap<>();
     public final int entityId;
     public final CompoundTag data;
@@ -41,32 +40,30 @@ public class EntityDataS2CPacket implements SimplePacket {
         data = buffer.readNbt();
     }
 
-    @Override
-    public void encode(FriendlyByteBuf buf) {
-        buf.writeInt(entityId);
-        buf.writeNbt(data);
-    }
-
-    @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        context.get().queue(() -> {
-            var world = ClientSideAccess.world();
-            var entity = world.getEntity(entityId);
-            if(entity == null) {
-                DEFERRED_DATA.put(entityId, data);
-                return;
-            }
-            if(entity instanceof IConsumer consumer)
-                consumer.onEntityDataPacket(data);
-        });
-    }
-
     public static void clientEntityAdded(Entity entity) {
         var tag = DEFERRED_DATA.remove(entity.getId());
         if(tag == null)
             return;
         if(entity instanceof IConsumer consumer)
             consumer.onEntityDataPacket(tag);
+    }
+
+    @Override
+    public void write(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
+        buf.writeNbt(data);
+    }
+
+    @Override
+    public void handle(Minecraft mc) {
+        var world = ClientSideAccess.world();
+        var entity = world.getEntity(entityId);
+        if(entity == null) {
+            DEFERRED_DATA.put(entityId, data);
+            return;
+        }
+        if(entity instanceof IConsumer consumer)
+            consumer.onEntityDataPacket(data);
     }
 
     public interface IConsumer {

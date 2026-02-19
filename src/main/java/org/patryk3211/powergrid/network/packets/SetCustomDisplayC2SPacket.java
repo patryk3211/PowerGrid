@@ -17,16 +17,16 @@ package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 import org.patryk3211.powergrid.utility.Unit;
 
-import java.util.function.Supplier;
-
-public class SetCustomDisplayC2SPacket implements SimplePacket {
+public class SetCustomDisplayC2SPacket implements C2SPacket {
+    @Nullable
     private final BlockPos pos;
     private final String equation;
     private final boolean usePrefixes;
@@ -47,7 +47,7 @@ public class SetCustomDisplayC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeUtf(equation);
         buf.writeBoolean(usePrefixes);
@@ -55,15 +55,11 @@ public class SetCustomDisplayC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var player = ctx.getPlayer();
-            var level = player.level();
-            var behaviour = BlockEntityBehaviour.get(level, pos, CustomDisplayBehaviour.TYPE);
-            if(behaviour == null)
-                return;
-            behaviour.set(equation, unit, usePrefixes);
-        });
+    public void handle(ServerPlayer player) {
+        var level = player.level();
+        var behaviour = BlockEntityBehaviour.get(level, pos, CustomDisplayBehaviour.TYPE);
+        if(behaviour == null)
+            return;
+        behaviour.set(equation, unit, usePrefixes);
     }
 }

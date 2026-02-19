@@ -16,14 +16,14 @@
 package org.patryk3211.powergrid.forge;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.circuits.components.forge.CircuitBoardModel;
@@ -33,7 +33,6 @@ import org.patryk3211.powergrid.collections.forge.ModdedParticlesImpl;
 import org.patryk3211.powergrid.electricity.portablebattery.forge.BatteryArmorLayerImpl;
 import org.patryk3211.powergrid.electricity.wire.forge.WirePreviewImpl;
 
-@OnlyIn(Dist.CLIENT)
 public class PowerGridClientImpl {
     public static void init() {
         PowerGridClient.initClient();
@@ -42,9 +41,9 @@ public class PowerGridClientImpl {
         PowerGridImpl.bus.register(PowerGridClientImpl.class);
 
         // Main forge event bus
-        MinecraftForge.EVENT_BUS.register(ForgeClientEvents.class);
-        MinecraftForge.EVENT_BUS.register(WirePreviewImpl.class);
-        PowerGridClient.ELECTRO_ZAPPER_RENDER_HANDLER.registerListeners(MinecraftForge.EVENT_BUS);
+        NeoForge.EVENT_BUS.register(ForgeClientEvents.class);
+        NeoForge.EVENT_BUS.register(WirePreviewImpl.class);
+        PowerGridClient.ELECTRO_ZAPPER_RENDER_HANDLER.registerListeners(NeoForge.EVENT_BUS);
     }
 
     @SubscribeEvent
@@ -55,13 +54,13 @@ public class PowerGridClientImpl {
     @SubscribeEvent
     public static void modelRequestLoad(ModelEvent.RegisterAdditional event) {
         var componentModels = ComponentModels.collectRawIds();
-        componentModels.forEach(event::register);
-        event.register(CircuitBoardModel.BASE_MODEL);
+        componentModels.forEach((event::register));
+        event.register(ModelResourceLocation.inventory(CircuitBoardModel.BASE_MODEL));
     }
 
     @SubscribeEvent
     public static void modelLoaders(ModelEvent.RegisterGeometryLoaders event) {
-        event.register("circuit_board", new CircuitBoardModelLoader());
+        event.register(ResourceLocation.parse("circuit_board"), new CircuitBoardModelLoader());
     }
 
     @SubscribeEvent
