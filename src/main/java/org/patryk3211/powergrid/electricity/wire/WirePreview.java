@@ -38,6 +38,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
@@ -86,8 +87,16 @@ public class WirePreview {
             renderCord(buffer, matrixStack, world, player, target, wireStack);
             return;
         }
-        if(target.getType() != HitResult.Type.BLOCK)
-            return;
+        if(target.getType() != HitResult.Type.BLOCK) {
+            if(target.getType() == HitResult.Type.ENTITY) {
+                var entityHit = (EntityHitResult) target;
+                if(!(entityHit.getEntity() instanceof BlockWireEntity)) {
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
 
         var tag = wireStack.getTagElement("Connection");
         var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));

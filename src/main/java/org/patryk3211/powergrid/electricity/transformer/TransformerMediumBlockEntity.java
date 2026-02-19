@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
 import java.util.List;
@@ -45,12 +46,12 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
 
     @Override
     public double coreAl() {
-        return 10.0;
+        return ModdedConfigs.server().electricity.mediumCoreAl.get();
     }
 
     @Override
     public double couplingFactor() {
-        return 0.99999;
+        return ModdedConfigs.server().electricity.mediumCoreK.get();
     }
 
     @Override

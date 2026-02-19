@@ -32,6 +32,8 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
+import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated1;
+import org.patryk3211.powergrid.electricity.sim.calculation.StampedSupplier;
 import org.patryk3211.powergrid.electricity.sim.special.LRSeriesWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
@@ -39,6 +41,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.AXIS;
@@ -65,12 +68,13 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
     private LRSeriesWire coilWire;
-    private final Precalculated<Float, LRSeriesWire> fieldValue = new Precalculated<>(WindingBlockEntity::fieldCalc, 0f);
+    private final Precalculated1<Float, StampedSupplier<LRSeriesWire>> fieldValue = new Precalculated1<>(WindingBlockEntity::fieldCalc, 0f);
 
     private boolean rebuildParallels = false;
 
     public WindingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        fieldValue.updateDependency(() -> coilWire);
         setLazyTickRate(40);
     }
 
@@ -82,7 +86,10 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return getBlockState().getValue(PART) == 0;
     }
 
-    private static void fieldCalc(LRSeriesWire coil, Precalculated<Float, LRSeriesWire>.ValueHandler handler) {
+    private static void fieldCalc(Supplier<LRSeriesWire> coilSupplier, Precalculated<Float>.ValueHandler handler) {
+        var coil = coilSupplier.get();
+        if(coil == null)
+            return;
         var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
         var current = coil.current();
         current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
@@ -99,8 +106,14 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var be = getSimElementHolder();
         if(be == null)
             return 0;
-        be.fieldValue.updateDependency(be.coilWire);
         return be.fieldValue.get();
+    }
+
+    public Precalculated<Float> fieldStrengthCalc() {
+        var be = getSimElementHolder();
+        if(be == null)
+            return null;
+        return be.fieldValue;
     }
 
     @Override
@@ -254,8 +267,18 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         level.getBlockEntity(be.ownerPosition, ModdedBlockEntities.WINDING.get())
                                 .ifPresent(WindingBlockEntity::dissolveParallels);
                     } else if(be.parallelPositions != null) {
+                        if(parallelPositions == null)
+                            parallelPositions = new HashSet<>();
+                        parallelPositions.addAll(be.parallelPositions);
                         // This is an owner
-                        be.dissolveParallels();
+                        for(var parallelPos : parallelPositions) {
+                            var be2 = level.getBlockEntity(parallelPos, ModdedBlockEntities.WINDING.get());
+                            be2.ifPresent(winding -> {
+                                winding.ownerPosition = worldPosition;
+                            });
+                        }
+                        be.ownerPosition = null;
+                        be.parallelPositions = null;
                         be.electricBehaviour.breakConnections();
                         be.removeElectricBehaviour();
                     }
@@ -274,7 +297,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         be.coilWire = null;
                     }
                 }
-                if(!level.isClientSide || isVirtual()) {
+                if(parallelPositions == null && (!level.isClientSide || isVirtual())) {
                     // Check for parallel windings and housings
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.POSITIVE, parallelCheckAxis), false);
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.NEGATIVE, parallelCheckAxis), false);

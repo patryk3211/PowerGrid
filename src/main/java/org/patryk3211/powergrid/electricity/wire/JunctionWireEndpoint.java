@@ -227,6 +227,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         var entry = worldNodeMap.nodes.remove(id);
         if(entry == null)
             return;
+        worldNodeMap.newNodes.remove(entry.node);
         if(!entry.holders.isEmpty()) {
             PowerGrid.LOGGER.error("Tried to remove junction endpoint entry for a junction with holders");
             return;

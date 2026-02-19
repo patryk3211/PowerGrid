@@ -35,6 +35,7 @@ namespace powergrid {
 
         std::vector<double> m_rhs;
         std::vector<double> m_residual;
+        std::vector<double> m_stateDelta;
 
         double *m_state;
         double *m_b;

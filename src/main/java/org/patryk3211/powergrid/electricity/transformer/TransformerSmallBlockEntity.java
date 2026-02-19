@@ -19,6 +19,7 @@ import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 
 public class TransformerSmallBlockEntity extends TransformerBlockEntity implements IHaveGoggleInformation {
     public TransformerSmallBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -27,12 +28,12 @@ public class TransformerSmallBlockEntity extends TransformerBlockEntity implemen
 
     @Override
     public double coreAl() {
-        return 1.5;
+        return ModdedConfigs.server().electricity.smallCoreAl.get();
     }
 
     @Override
     public double couplingFactor() {
-        return 0.9999;
+        return ModdedConfigs.server().electricity.smallCoreK.getF();
     }
 
     @Override

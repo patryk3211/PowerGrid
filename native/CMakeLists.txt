@@ -4,6 +4,7 @@ project(PowerGridNative VERSION 1.0.0 LANGUAGES CXX)
 
 option(PG_TRACE "Enable tracing in native backend code" false)
 option(PG_MULTITARGET "Enable multi-target OpenBLAS build" false)
+option(PG_NATIVE_VERSION "Version suffix" "0")
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -15,6 +16,7 @@ set(SOURCES
     src/powergridNative/cpp/sparse.cpp
     src/powergridNative/cpp/solver.cpp
     src/powergridNative/cpp/mna.cpp
+    src/powergridNative/cpp/exception_handler.cpp
 )
 
 set(CMAKE_C_FLAGS_DEBUG "-g")
@@ -24,6 +26,7 @@ set(CMAKE_C_FLAGS_RELEASE "-O3 -mavx2")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx2")
 
 add_library(powergridNative SHARED ${SOURCES})
+set_target_properties(powergridNative PROPERTIES OUTPUT_NAME "powergridNative${PG_NATIVE_VERSION}")
 
 target_include_directories(powergridNative PUBLIC src/powergridNative/include ${JVM_INCLUDE})
 
