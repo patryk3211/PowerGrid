@@ -138,8 +138,6 @@ public class PunchCardScreen extends AbstractSimiContainerScreen<PunchCardMenu> 
             if(particle.ttl <= 0)
                 iter.remove();
         }
-        if(nameField != null)
-            nameField.tick();
     }
 
     @Override

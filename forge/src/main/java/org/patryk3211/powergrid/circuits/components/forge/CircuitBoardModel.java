@@ -31,12 +31,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.IQuadTransformer;
-import net.minecraftforge.client.model.QuadTransformers;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.data.ModelProperty;
+import net.neoforged.neoforge.client.model.IQuadTransformer;
+import net.neoforged.neoforge.client.model.QuadTransformers;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelProperty;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -58,7 +56,6 @@ import java.util.List;
 
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
-@OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class CircuitBoardModel implements BakedModel {
@@ -246,8 +243,7 @@ public class CircuitBoardModel implements BakedModel {
                 Direction.UP,
                 BlockModelRotation.X0_Y0,
                 null,
-                true,
-                null // Dangerous but it should be fine if the rotation is not uv locked
+                true
         );
     }
 
@@ -268,8 +264,7 @@ public class CircuitBoardModel implements BakedModel {
                 Direction.UP,
                 BlockModelRotation.X0_Y0,
                 null,
-                true,
-                null // Dangerous but it should be fine if the rotation is not uv locked
+                true
         );
     }
 }

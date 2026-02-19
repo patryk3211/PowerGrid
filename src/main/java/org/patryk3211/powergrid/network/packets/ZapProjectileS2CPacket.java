@@ -15,9 +15,7 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
@@ -26,16 +24,15 @@ import org.joml.Math;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.S2CPacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class ZapProjectileS2CPacket implements SimplePacket {
+public class ZapProjectileS2CPacket implements S2CPacket {
     private enum Type {
         BLOCK_HIT,
         ENTITY_HIT
@@ -80,7 +77,7 @@ public class ZapProjectileS2CPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeEnum(type);
         switch(type) {
             case BLOCK_HIT -> {
@@ -98,35 +95,32 @@ public class ZapProjectileS2CPacket implements SimplePacket {
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        context.get().queue(() -> {
-            var world = ClientSideAccess.world();
-            switch(type) {
-                case BLOCK_HIT -> SparkParticleData.explodeParticles(world, pos.x, pos.y, pos.z, dir, 20);
-                case ENTITY_HIT -> {
-                    var target = world.getEntity(targetEntity);
-                    if(target == null)
-                        return;
-                    var origin = target.getBoundingBox().getCenter();
-                    for(var id : affectedEntities) {
-                        var entity = world.getEntity(id);
-                        if(entity == null)
-                            continue;
-                        var end = entity.getBoundingBox().getCenter();
-                        world.addAlwaysVisibleParticle(new ZapParticleData((float) end.x, (float) end.y, (float) end.z, true), true, origin.x, origin.y, origin.z, 0, 0, 0);
-                        var r = world.random;
-                        for(int i = 0; i < 10; ++i) {
-                            float pos = r.nextFloat();
-                            var x = Math.lerp(pos, origin.x, end.x);
-                            var y = Math.lerp(pos, origin.y, end.y);
-                            var z = Math.lerp(pos, origin.z, end.z);
-                            world.addParticle(SparkParticleData.INSTANCE, x, y, z,
-                                    r.nextFloat() - 0.5f, r.nextFloat() - 0.5f, r.nextFloat() - 0.5f);
-                        }
+    public void handle(Minecraft mc) {
+        var world = ClientSideAccess.world();
+        switch(type) {
+            case BLOCK_HIT -> SparkParticleData.explodeParticles(world, pos.x, pos.y, pos.z, dir, 20);
+            case ENTITY_HIT -> {
+                var target = world.getEntity(targetEntity);
+                if(target == null)
+                    return;
+                var origin = target.getBoundingBox().getCenter();
+                for(var id : affectedEntities) {
+                    var entity = world.getEntity(id);
+                    if(entity == null)
+                        continue;
+                    var end = entity.getBoundingBox().getCenter();
+                    world.addAlwaysVisibleParticle(new ZapParticleData((float) end.x, (float) end.y, (float) end.z, true), true, origin.x, origin.y, origin.z, 0, 0, 0);
+                    var r = world.random;
+                    for(int i = 0; i < 10; ++i) {
+                        float pos = r.nextFloat();
+                        var x = Math.lerp(pos, origin.x, end.x);
+                        var y = Math.lerp(pos, origin.y, end.y);
+                        var z = Math.lerp(pos, origin.z, end.z);
+                        world.addParticle(SparkParticleData.INSTANCE, x, y, z,
+                                r.nextFloat() - 0.5f, r.nextFloat() - 0.5f, r.nextFloat() - 0.5f);
                     }
                 }
             }
-        });
+        }
     }
 }

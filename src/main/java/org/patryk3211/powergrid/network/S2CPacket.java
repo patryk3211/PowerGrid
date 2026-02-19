@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 package org.patryk3211.powergrid.network;
-
-import dev.architectury.networking.NetworkManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 
-import java.util.function.Supplier;
-
-public interface SimplePacket {
-    void encode(FriendlyByteBuf buf);
-
-    void handle(Supplier<NetworkManager.PacketContext> context);
+public interface S2CPacket {
+    void write(FriendlyByteBuf buf);
+    void handle(Minecraft mc);
 }

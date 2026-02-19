@@ -8,6 +8,8 @@
     "ArmBlockEntityMixin",
     "BeltDeployerMixin",
     "BlockStateBaseMixin",
+    "ChunkMapAccessor",
+    "ChunkMapAccessor$TrackedEntityAccessor",
     "EntityMixin",
     "FanProcessingMixin",
     "KineticBlockEntityAccessor",

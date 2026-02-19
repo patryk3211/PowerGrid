@@ -15,18 +15,16 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.collections.ModdedComponentTypes;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class SaveCardC2SPacket implements SimplePacket {
+public class SaveCardC2SPacket implements C2SPacket {
     private final byte[] data;
     private final String name;
     private final boolean lock;
@@ -45,34 +43,28 @@ public class SaveCardC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeBytes(data);
         buf.writeUtf(name);
         buf.writeBoolean(lock);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var player = ctx.getPlayer();
-            var stack = player.getMainHandItem();
-            if(!(stack.getItem() instanceof PunchCardItem))
-                return;
-            if(stack.has(DataComponents.CUSTOM_DATA) && stack.get(DataComponents.CUSTOM_DATA).copyTag().getBoolean("Locked"))
-                return;
-            var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            tag.putByteArray("Data", data);
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-            if(name.isEmpty()) {
-                stack.resetHoverName();
-            } else {
-                stack.setHoverName(Component.literal(name));
-            }
-            if(lock) {
-                tag.putBoolean("Locked", true);
-                tag.putString("Author", player.getDisplayName().getString());
-            }
-        });
+    public void handle(ServerPlayer player) {
+        var stack = player.getMainHandItem();
+        if(!(stack.getItem() instanceof PunchCardItem))
+            return;
+        if(stack.get(ModdedComponentTypes.LOCKED))
+            return;
+        stack.set(ModdedComponentTypes.DATA, data);
+        if(name.isEmpty()) {
+            stack.remove(DataComponents.ITEM_NAME);
+        } else {
+            stack.set(DataComponents.ITEM_NAME, Component.literal(name));
+        }
+        if(lock) {
+            stack.set(ModdedComponentTypes.LOCKED, true);
+            stack.set(ModdedComponentTypes.AUTHOR, player.getDisplayName().getString());
+        }
     }
 }

@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
@@ -27,15 +27,14 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.S2CPacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
 
-public class StateS2CPacket implements SimplePacket {
+public class StateS2CPacket implements S2CPacket {
     private final List<Key> keys = new ArrayList<>();
     private final ByteBuf data;
     private FriendlyByteBuf wrapper;
@@ -63,8 +62,19 @@ public class StateS2CPacket implements SimplePacket {
         buf.readBytes(data, size);
     }
 
+    public void begin(ISynchronizedElement pos) {
+        keys.add(pos.getKey());
+        lengthPosition = wrapper().writerIndex();
+        wrapper().writeInt(0);
+    }
+
+    public void end() {
+        var entryLength = wrapper().writerIndex() - lengthPosition - 4;
+        wrapper.setInt(lengthPosition, entryLength);
+    }
+
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(keys.size());
         for(var key : keys) {
             key.serialize(buf);
@@ -76,42 +86,29 @@ public class StateS2CPacket implements SimplePacket {
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        context.get().queue(() -> {
-            var level = ClientSideAccess.world();
-            for(var key : keys) {
-                var entryLength = wrapper().readInt();
-                var element = key.resolve(level);
-                if(element == null) {
-                    // Skip entry
-                    wrapper().skipBytes(entryLength);
-                } else {
-                    var start = wrapper().readerIndex();
-                    element.readFromSync(wrapper());
-                    var end = wrapper().readerIndex();
-                    if(end - start > entryLength) {
-                        PowerGrid.LOGGER.warn("Buffer read overrun (Entry of {} bytes, read {} bytes)", entryLength, end - start);
-                        wrapper().readerIndex(start + entryLength);
-                    } else if(end - start < entryLength) {
-                        PowerGrid.LOGGER.warn("Buffer read underrun (Entry of {} bytes, read {} bytes)", entryLength, end - start);
-                        wrapper().readerIndex(start + entryLength);
-                    }
+    public void handle(Minecraft mc) {
+        var level = ClientSideAccess.world();
+        for(var key : keys) {
+            var entryLength = wrapper().readInt();
+            var element = key.resolve(level);
+            if(element == null) {
+                // Skip entry
+                wrapper().skipBytes(entryLength);
+            } else {
+                var start = wrapper().readerIndex();
+                element.readFromSync(wrapper());
+                var end = wrapper().readerIndex();
+                if(end - start > entryLength) {
+                    PowerGrid.LOGGER.warn("Buffer read overrun (Entry of {} bytes, read {} bytes)", entryLength, end - start);
+                    wrapper().readerIndex(start + entryLength);
+                } else if(end - start < entryLength) {
+                    PowerGrid.LOGGER.warn("Buffer read underrun (Entry of {} bytes, read {} bytes)", entryLength, end - start);
+                    wrapper().readerIndex(start + entryLength);
                 }
             }
-            // Data is not needed after it has been handled so it's released.
-            data.release();
-        });
-    }
-
-    public void begin(ISynchronizedElement pos) {
-        keys.add(pos.getKey());
-        lengthPosition = wrapper().writerIndex();
-        wrapper().writeInt(0);
-    }
-
-    public void end() {
-        var entryLength = wrapper().writerIndex() - lengthPosition - 4;
-        wrapper.setInt(lengthPosition, entryLength);
+        }
+        // Data is not needed after it has been handled so it's released.
+        data.release();
     }
 
     public interface Key {

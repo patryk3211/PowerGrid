@@ -18,9 +18,7 @@ package org.patryk3211.powergrid.collections.forge;
 import com.simibubi.create.foundation.particle.ICustomParticleData;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +31,6 @@ public class ModdedParticlesImpl {
         all.add(new ParticleEntry<>(type, typeFactory));
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static void registerFactories(RegisterParticleProvidersEvent event) {
         for(var entry : all) {
             entry.registerFactory(event);
@@ -41,7 +38,6 @@ public class ModdedParticlesImpl {
     }
 
     private record ParticleEntry<T extends ParticleOptions>(ParticleType<T> type, Supplier<? extends ICustomParticleData<T>> typeFactory) {
-        @OnlyIn(Dist.CLIENT)
         public void registerFactory(RegisterParticleProvidersEvent event) {
             typeFactory.get().register(type, event);
         }

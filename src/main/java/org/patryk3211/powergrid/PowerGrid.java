@@ -75,7 +75,9 @@ public class PowerGrid {
 
 		registerArchitecturyEvents();
 
-		ModdedPackets.registerPackets();
+		ModdedPackets.register();
+		ModPackets.PACKETS.registerC2SListener();
+		ModPackets.PACKETS.registerS2CListener();
 	}
 
 	public static void registerArchitecturyEvents() {

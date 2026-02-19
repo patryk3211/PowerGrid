@@ -17,14 +17,14 @@ package org.patryk3211.powergrid.compat.tfmg;
 
 import com.drmangotea.tfmg.TFMG;
 import com.drmangotea.tfmg.content.electricity.base.*;
-import com.drmangotea.tfmg.registry.TFMGPackets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.deviceconnector.BridgeElectricBehaviour;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
@@ -136,7 +136,7 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     public void updateNetwork() {
         getOrCreateElectricNetwork().updateNetwork();
         if (!level.isClientSide)
-            TFMGPackets.getChannel().send(PacketDistributor.ALL.noArg(), new NetworkUpdatePacket(BlockPos.of(getPos())));
+            PowerGrid.getChannel().send(PacketDistributor.ALL.noArg(), new NetworkUpdatePacket(BlockPos.of(getPos())));
         sendData();
     }
 

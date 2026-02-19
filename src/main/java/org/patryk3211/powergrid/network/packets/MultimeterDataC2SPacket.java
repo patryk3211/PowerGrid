@@ -15,17 +15,15 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class MultimeterDataC2SPacket implements SimplePacket {
+public class MultimeterDataC2SPacket implements C2SPacket {
     private final Vector3f point;
     private final int wire;
 
@@ -40,30 +38,26 @@ public class MultimeterDataC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeVector3f(point);
         buf.writeInt(wire);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var player = ctx.getPlayer();
-            var stack = player.getMainHandItem();
-            if(!(stack.getItem() instanceof MultimeterItem multimeter))
-                return;
-            var level = player.level();
-            var entity = level.getEntity(wire);
-            if(entity == null)
-                return;
-            if(multimeter.getMode(stack) != 1)
-                multimeter.setMode(stack, 1);
-            var data = multimeter.getModeData(stack);
-            data.putFloat("X", point.x);
-            data.putFloat("Y", point.y);
-            data.putFloat("Z", point.z);
-            data.putUUID("UUID", entity.getUUID());
-        });
+    public void handle(ServerPlayer player) {
+        var stack = player.getMainHandItem();
+        if(!(stack.getItem() instanceof MultimeterItem multimeter))
+            return;
+        var level = player.serverLevel();
+        var entity = level.getEntity(wire);
+        if(entity == null)
+            return;
+        if(multimeter.getMode(stack) != 1)
+            multimeter.setMode(stack, 1);
+        var data = multimeter.getModeData(stack);
+        data.putFloat("X", point.x);
+        data.putFloat("Y", point.y);
+        data.putFloat("Z", point.z);
+        data.putUUID("UUID", entity.getUUID());
     }
 }
