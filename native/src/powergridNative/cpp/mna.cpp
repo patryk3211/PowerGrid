@@ -3,6 +3,9 @@
 
 #include "solver.hpp"
 #include "exception_handler.hpp"
+#ifdef _WIN32
+#include <intrin.h>
+#endif
 
 using namespace powergrid;
 
@@ -19,7 +22,7 @@ static_assert(sizeof(jint) == sizeof(int));
 
 static void cpuid(int a, int c, uint32_t *regs) {
 #ifdef _WIN32
-    __cpuid((int *) regs, (int) i);
+    __cpuidex((int *) regs, a, c);
 #else
     asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3]) : "a" (a), "c" (c));
 #endif

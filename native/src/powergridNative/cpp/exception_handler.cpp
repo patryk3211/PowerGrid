@@ -16,8 +16,9 @@ jmp_buf jump_buffer;
     return EXCEPTION_CONTINUE_SEARCH;
   }
 
-  void set_signal_handler() {
+  bool set_signal_handler() {
     handler_ptr = AddVectoredExceptionHandler(1, windows_exception_handler);
+    return true;
   }
 
   void remove_signal_handler() {
