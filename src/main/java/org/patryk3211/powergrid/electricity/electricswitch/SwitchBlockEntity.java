@@ -92,7 +92,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
             wire.setState(state);
         if(isButton && state)
             buttonTimeout = 10;
-        notifyUpdate();
+        if(!level.isClientSide)
+            notifyUpdate();
     }
 
     @Override

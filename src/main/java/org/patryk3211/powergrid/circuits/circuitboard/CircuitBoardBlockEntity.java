@@ -102,7 +102,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         if(baked == null)
             return;
         baked.read(tag, false);
-        notifyUpdate();
+        if(!level.isClientSide)
+            notifyUpdate();
     }
 
     @Nullable
