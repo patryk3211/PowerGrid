@@ -31,6 +31,8 @@ import java.nio.file.Paths;
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
 public class NativeMNA implements IMNA {
+    private static final String EXPECTED_VERSION = "1";
+
     private static final int OPERATION_BUFFER_COMMAND_LENGTH = 256;
     private static final int JACOBIAN_COMMAND_SIZE = Integer.BYTES * 2 + Double.BYTES;
     private static final int RHS_COMMAND_SIZE = Integer.BYTES + Double.BYTES;
@@ -64,8 +66,8 @@ public class NativeMNA implements IMNA {
     public static void tryLoad() {
         try {
             // Try load from path first
-            System.loadLibrary("powergridNative");
-            if(verifySupport() == 0) {
+            System.loadLibrary("powergridNative" + EXPECTED_VERSION);
+            if (verifySupport() == 0) {
                 PowerGrid.LOGGER.info(MESSAGE_OK);
                 supported = true;
             } else {
@@ -74,21 +76,21 @@ public class NativeMNA implements IMNA {
         } catch (Throwable e) {
             try {
                 Files.createDirectories(NATIVES_DIR);
-                var libName = switch(Util.getPlatform()) {
-                    case LINUX -> "libpowergridNative.so";
-                    case WINDOWS -> "libpowergridNative.dll";
+                var libName = switch (Util.getPlatform()) {
+                    case LINUX -> "libpowergridNative" + EXPECTED_VERSION + ".so";
+                    case WINDOWS -> "libpowergridNative" + EXPECTED_VERSION + ".dll";
                     default -> throw new IllegalArgumentException("Unsupported platform!");
                 };
                 var libPath = NATIVES_DIR.resolve(libName);
                 var loaded = true;
-                if(!Files.exists(libPath)) {
+                if (!Files.exists(libPath)) {
                     // Try extracting the embedded files
-                    var platformFolder = switch(Util.getPlatform()) {
+                    var platformFolder = switch (Util.getPlatform()) {
                         case LINUX -> "linux";
                         case WINDOWS -> "windows";
                         default -> null;
                     };
-                    if(platformFolder == null) {
+                    if (platformFolder == null) {
                         // Platform not available in jar
                         PowerGrid.LOGGER.error(MESSAGE_FAIL, e);
                         return;
@@ -103,9 +105,9 @@ public class NativeMNA implements IMNA {
                         loaded = false;
                     }
                 }
-                if(loaded) {
+                if (loaded) {
                     System.load(libPath.toAbsolutePath().toString());
-                    if(verifySupport() == 0) {
+                    if (verifySupport() == 0) {
                         PowerGrid.LOGGER.info(MESSAGE_OK);
                         supported = true;
                     } else {
@@ -116,6 +118,10 @@ public class NativeMNA implements IMNA {
                 PowerGrid.LOGGER.error(MESSAGE_FAIL, e2);
             }
         }
+    }
+
+    private static void loadBinary() {
+
     }
 
     public NativeMNA(ElectricalNetwork network) {

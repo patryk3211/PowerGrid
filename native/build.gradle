@@ -51,8 +51,9 @@ def configureTask = { String platform, String taskName, String libName ->
                 '-D', "CMAKE_BUILD_TYPE=${platformProperty('cmakeBuildType')}",
                 '-D', "PG_TRACE=${project.nativeTrace}",
                 '-D', "PG_MULTITARGET=${project.multiArch}",
+                '-D', "PG_NATIVE_VERSION=${project.nativeVersionSuffix}",
                 '-G', "${platformProperty('cmakeGenerator')}" ]
-            System.out.println(args);
+            System.out.println(String.join(" ", args));
             def cmakeConf = providers.exec {
                 commandLine args
             }
