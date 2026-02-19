@@ -82,5 +82,5 @@ def configureTask = { String platform, String taskName, String libName ->
     }
 }
 
-configureTask("linux", "buildLinux", "libpowergridNative.so")
-configureTask("windows", "buildWindows", "libpowergridNative.dll")
+configureTask("linux", "buildLinux", "libpowergridNative${project.nativeVersionSuffix}.so")
+configureTask("windows", "buildWindows", "libpowergridNative${project.nativeVersionSuffix}.dll")
