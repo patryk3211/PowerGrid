@@ -32,5 +32,9 @@ jobs:
       with:
         name: dev-build-jars
         path:
-          forge/build/libs/powergrid-mc*-*-[0-9a-f]*.jar
-          fabric/build/libs/powergrid-mc*-*-[0-9a-f]*.jar
+          forge/build/libs/powergrid-mc*-*-*.jar
+          !forge/build/libs/powergrid-mc*-*-*-*.jar
+          fabric/build/libs/powergrid-mc*-*-*.jar
+          !fabric/build/libs/powergrid-mc*-*-*-*.jar
+        if-no-files-found: error
+        retention-days: 30
