@@ -3,9 +3,6 @@
 
 #include "solver.hpp"
 #include "exception_handler.hpp"
-#ifdef _WIN32
-#include <intrin.h>
-#endif
 
 using namespace powergrid;
 
@@ -20,24 +17,9 @@ static_assert(sizeof(jint) == sizeof(int));
 
 #define SOLVER(intptr) ((Solver *) (intptr))
 
-static void cpuid(int a, int c, uint32_t *regs) {
-#ifdef _WIN32
-    __cpuidex((int *) regs, a, c);
-#else
-    asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3]) : "a" (a), "c" (c));
-#endif
-}
-
-static int verificationFunc() {
-    uint32_t bits[4];
-    cpuid(7, 0, bits);
-    // Check for AVX2
-    if(!(bits[1] & (1 << 5)))
-        return 1;
-    return 0;
-}
-
 extern "C" {
+    extern int verificationFunc();
+
     JNIEXPORT jint JNICALL MANGLE(verifySupport)(JNIEnv *env, jobject obj) {
         return run_safely(verificationFunc);
     }
