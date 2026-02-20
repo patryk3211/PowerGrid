@@ -17,9 +17,12 @@ package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.DeployingRecipeGen;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
+
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 public class DeployerApplicationRecipes extends DeployingRecipeGen {
@@ -38,7 +41,7 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
             .output(ModdedItems.STRING_LIGHT_CORD)
     );
 
-    public DeployerApplicationRecipes(PackOutput generator) {
-        super(generator, PowerGrid.MOD_ID);
+    public DeployerApplicationRecipes(PackOutput generator, CompletableFuture<HolderLookup.Provider> registries) {
+        super(generator, registries, PowerGrid.MOD_ID);
     }
 }

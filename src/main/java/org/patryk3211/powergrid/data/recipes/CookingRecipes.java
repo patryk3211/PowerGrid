@@ -15,16 +15,19 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+
+import java.util.concurrent.CompletableFuture;
 
 public class CookingRecipes extends StandardRecipeProvider {
 
-    public CookingRecipes(PackOutput output) {
-        super(output);
+    public CookingRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries);
     }
 
-    @Override
-    public String getName() {
-        return "Power Grid's Cooking Recipes";
-    }
+//    @Override
+//    public String getName() {
+//        return "Power Grid's Cooking Recipes";
+//    }
 }

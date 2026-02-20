@@ -18,23 +18,35 @@ package org.patryk3211.powergrid.data.recipes;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 
+import java.util.concurrent.CompletableFuture;
+
 @SuppressWarnings("unused")
-public class ItemApplicationRecipes extends ProcessingRecipeGen {
+public class ItemApplicationRecipes<P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>, B extends ProcessingRecipeBuilder<P, R, B>> extends ProcessingRecipeGen<P,R,B> {
     GeneratedRecipe CONDUCTIVE_CASING = create(PowerGrid.asResource("conductive_casing"), b -> b.require(AllBlocks.ANDESITE_CASING)
             .require(RecipeTags.zincIngot())
             .output(ModdedBlocks.CONDUCTIVE_CASING));
 
-    public ItemApplicationRecipes(PackOutput generator) {
-        super(generator, PowerGrid.MOD_ID);
+    public ItemApplicationRecipes(PackOutput generator, CompletableFuture<HolderLookup.Provider> registries) {
+        super(generator, registries, PowerGrid.MOD_ID);
     }
 
     @Override
     protected IRecipeTypeInfo getRecipeType() {
         return AllRecipeTypes.ITEM_APPLICATION;
+    }
+
+    @Override
+    protected B getBuilder(ResourceLocation id) {
+        return null;
     }
 }

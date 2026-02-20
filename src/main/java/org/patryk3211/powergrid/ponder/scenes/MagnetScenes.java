@@ -23,6 +23,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -58,7 +59,7 @@ public class MagnetScenes {
             return entity;
         });
 
-        var magnetStack = new ItemStack(ModdedItems.MAGNET);
+        var magnetStack = new ItemStack((ItemLike) ModdedItems.MAGNET);
         scene.world().modifyEntity(item1, entity -> {
             ((ItemEntity) entity).setItem(magnetStack);
             entity.setDeltaMovement(0, 0.2, 0);

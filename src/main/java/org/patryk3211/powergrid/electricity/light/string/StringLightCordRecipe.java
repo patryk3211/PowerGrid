@@ -32,8 +32,8 @@ import java.util.ArrayList;
 public class StringLightCordRecipe extends CustomRecipe {
     public static final RecipeSerializer<StringLightCordRecipe> SERIALIZER = new SimpleCraftingRecipeSerializer<>(StringLightCordRecipe::new);
 
-    public StringLightCordRecipe(ResourceLocation id, CraftingBookCategory category) {
-        super(id, category);
+    public StringLightCordRecipe(CraftingBookCategory category) {
+        super(category);
     }
 
 

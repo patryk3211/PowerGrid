@@ -98,7 +98,7 @@ public class CustomDisplayScreen extends AbstractSimiContainerScreen<CustomDispl
     protected void containerTick() {
         super.containerTick();
         unitSelector.tick();
-        equationField.tick();
+        //equationField.tick();
     }
 
     @Override

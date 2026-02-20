@@ -19,11 +19,14 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.SequencedAssemblyRecipeGen;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
@@ -96,8 +99,8 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
 
             ;
 
-    public SequencedAssemblyRecipes(PackOutput output) {
-        super(output, PowerGrid.MOD_ID);
+    public SequencedAssemblyRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries, PowerGrid.MOD_ID);
     }
 
     @Override

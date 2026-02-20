@@ -17,12 +17,14 @@ package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.patryk3211.powergrid.data.recipes.RecipeTags.*;
 
@@ -532,12 +534,12 @@ public class CraftingRecipes extends StandardRecipeProvider {
 
             ;
 
-    public CraftingRecipes(PackOutput output) {
-        super(output);
+    public CraftingRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries);
     }
 
-    @Override
-    public String getName() {
-        return "Power Grid's Crafting Recipes";
-    }
+//    @Override
+//    public String getName() {
+//        return "Power Grid's Crafting Recipes";
+//    }
 }
