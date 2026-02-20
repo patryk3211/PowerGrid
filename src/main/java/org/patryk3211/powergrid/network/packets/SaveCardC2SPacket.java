@@ -16,11 +16,12 @@
 package org.patryk3211.powergrid.network.packets;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.collections.ModdedComponentTypes;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
 import org.patryk3211.powergrid.network.C2SPacket;
 
@@ -52,19 +53,22 @@ public class SaveCardC2SPacket implements C2SPacket {
     @Override
     public void handle(ServerPlayer player) {
         var stack = player.getMainHandItem();
-        if(!(stack.getItem() instanceof PunchCardItem))
+        if (!(stack.getItem() instanceof PunchCardItem))
             return;
-        if(stack.get(ModdedComponentTypes.LOCKED))
+        if (stack.get(DataComponents.CUSTOM_DATA).contains("Locked"))
             return;
-        stack.set(ModdedComponentTypes.DATA, data);
-        if(name.isEmpty()) {
+        CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+        compoundTag.putByteArray("Data", data);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+        if (name.isEmpty()) {
             stack.remove(DataComponents.ITEM_NAME);
         } else {
             stack.set(DataComponents.ITEM_NAME, Component.literal(name));
         }
-        if(lock) {
-            stack.set(ModdedComponentTypes.LOCKED, true);
-            stack.set(ModdedComponentTypes.AUTHOR, player.getDisplayName().getString());
+        if (lock) {
+            compoundTag.putBoolean("Locked", true);
+            compoundTag.putString("Author", player.getDisplayName().getString());
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
         }
     }
 }

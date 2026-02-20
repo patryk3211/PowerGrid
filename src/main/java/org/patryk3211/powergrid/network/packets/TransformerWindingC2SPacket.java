@@ -15,11 +15,12 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import org.patryk3211.powergrid.collections.ModdedComponentTypes;
+import net.minecraft.world.item.component.CustomData;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
@@ -51,14 +52,17 @@ public class TransformerWindingC2SPacket implements C2SPacket {
     @Override
     public void handle(ServerPlayer player) {
         var stack = player.getItemInHand(hand);
-        if(!(stack.getItem() instanceof IWire) || stack.has(ModdedComponentTypes.CONNECTION))
+        if (!(stack.getItem() instanceof IWire) || stack.get(DataComponents.CUSTOM_DATA).contains("Connection"))
             return;
-        if(stack.has(ModdedComponentTypes.TURNS)) {
+        if (stack.get(DataComponents.CUSTOM_DATA).contains("Turns")) {
             // Alter existing tag
-            stack.set(ModdedComponentTypes.TURNS, nTurns);
+            CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+            compoundTag.putInt("Turns", nTurns);
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
         } else {
             // Create a new tag
-            var endpoint = WireEndpointType.deserialize(Objects.requireNonNull(stack.get(ModdedComponentTypes.CONNECTION)).getCompound("Connection"));
+            CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            var endpoint = WireEndpointType.deserialize(compoundTag.getCompound("Connection"));
             if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
                 return;
             var blockEndpoint = (BlockWireEndpoint) endpoint;
@@ -67,7 +71,8 @@ public class TransformerWindingC2SPacket implements C2SPacket {
             var pos = blockEndpoint.getPos();
             nbt.putIntArray("Initiator", new int[]{pos.getX(), pos.getY(), pos.getZ()});
             nbt.putInt("Terminal", blockEndpoint.getTerminal());
-            stack.set(ModdedComponentTypes.CONNECTION, nbt);
+            compoundTag.put("Connection", nbt);
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
         }
     }
 }

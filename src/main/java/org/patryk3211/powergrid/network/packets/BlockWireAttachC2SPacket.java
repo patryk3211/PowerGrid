@@ -15,11 +15,13 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.CustomData;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.collections.ModdedComponentTypes;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.C2SPacket;
 
@@ -71,7 +73,7 @@ public class BlockWireAttachC2SPacket implements C2SPacket {
             return;
         }
 
-        var existingEndpoint = WireEndpointType.deserialize(stack.get(ModdedComponentTypes.CONNECTION) );
+        var existingEndpoint = WireEndpointType.deserialize(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection") );
 
             IWireEndpoint endpoint;
             if(gridPoint <= 1 && index == 0) {
@@ -96,13 +98,17 @@ public class BlockWireAttachC2SPacket implements C2SPacket {
                 endpoint = wire.getEndpoint1();
             }
             if(endpoint != null && existingEndpoint == null) {
-                if (!stack.getComponents().has(ModdedComponentTypes.CONNECTION)) {
-                    stack.set(ModdedComponentTypes.CONNECTION, endpoint.serialize());
+                if (!stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection")) {
+                    CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+                    compoundTag.put("Connection", endpoint.serialize());
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
                 }
             } else if(endpoint != null) {
                 var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
                 if(result.getResult().consumesAction()) {
-                    stack.remove(ModdedComponentTypes.CONNECTION);
+                    CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+                    compoundTag.remove("Connection");
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
                 }
             }
         }

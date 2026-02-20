@@ -44,8 +44,8 @@ public class StringLightCordItem extends CordItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+    public void appendHoverText(ItemStack stack, TooltipContext tooltipContext, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
+        super.appendHoverText(stack, tooltipContext, tooltipComponents, isAdvanced);
         if(!stack.has(DataComponents.CUSTOM_DATA))
             return;
         var pattern = stack.get(DataComponents.CUSTOM_DATA).copyTag().getByteArray("Pattern");
