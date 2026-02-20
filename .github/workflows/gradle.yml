@@ -6,7 +6,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -24,22 +23,22 @@ jobs:
 
     - name: Build Forge with Gradle Wrapper
       run: ./gradlew :forge:build
-    - name: Build Fabric with Gradle Wrapper
-      run: ./gradlew :fabric:build
-
     - name: Upload Forge Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: forge-build
         path:
-          forge/build/libs
+          forge/build/libs/powergrid-mc*-*-????????.jar
         if-no-files-found: error
         retention-days: 30
+
+    - name: Build Fabric with Gradle Wrapper
+      run: ./gradlew :fabric:build
     - name: Upload Fabric Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: forge-build
+        name: fabric-build
         path:
-          fabric/build/libs
+          fabric/build/libs/powergrid-mc*-*-????????.jar
         if-no-files-found: error
         retention-days: 30
