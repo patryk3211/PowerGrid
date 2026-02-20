@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
 public class NativeMNA implements IMNA {
-    private static final String EXPECTED_VERSION = "1";
+    private static final String EXPECTED_VERSION = "2";
 
     private static final int OPERATION_BUFFER_COMMAND_LENGTH = 256;
     private static final int JACOBIAN_COMMAND_SIZE = Integer.BYTES * 2 + Double.BYTES;
@@ -215,13 +215,13 @@ public class NativeMNA implements IMNA {
     }
 
     @SuppressWarnings("unused")
-    private int runIterHooks(ByteBuffer state) {
+    private int runIterHooks(int iteration, ByteBuffer state) {
         // Run hooks
         network.countUpdates = false;
         this.stateBuffer = state;
         this.stateBuffer.order(ByteOrder.nativeOrder());
         for(var hook : network.innerHooks) {
-            hook.startIteration();
+            hook.startIteration(iteration);
         }
         network.countUpdates = true;
 

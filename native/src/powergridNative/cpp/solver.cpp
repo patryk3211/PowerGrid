@@ -29,7 +29,7 @@ Solver::Solver(void *rhsOpBuf, void *jacobianOpBuf, int cmdCount, void *aux, JNI
     m_relativeStoppingCriterion = 1e-12;
 
     jclass clazz = env->GetObjectClass(mnaObj);
-    m_iterHookMethod = env->GetMethodID(clazz, "runIterHooks", "(Ljava/nio/ByteBuffer;)I");
+    m_iterHookMethod = env->GetMethodID(clazz, "runIterHooks", "(ILjava/nio/ByteBuffer;)I");
     PG_ASSERT(m_iterHookMethod != nullptr, "runIterHooks method not found!");
     m_residualAddMethod = env->GetMethodID(clazz, "runAddResidual", "(Ljava/nio/ByteBuffer;)V");
     PG_ASSERT(m_residualAddMethod != nullptr, "runAddResidual method not found!");
@@ -173,7 +173,7 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         // Run inner hooks
         int cmdCount = 0;
         if(i < maxIters - 10)
-            cmdCount = m_env->CallIntMethod(mnaObj, m_iterHookMethod, m_stateBuffer);
+            cmdCount = m_env->CallIntMethod(mnaObj, m_iterHookMethod, i, m_stateBuffer);
         if(cmdCount != 0)
             processJacobianBuffer(cmdCount);
 
@@ -202,8 +202,7 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         if(m_converged && i >= maxIters - 11) {
             // Right before non-linear devices are disabled.
             // Only append new problem frames if the network has been converging before.
-            m_converged = false; // norm < m_minimumAllowedPrecision;
-            // if(!m_converged)
+            m_converged = false;
             convergenceProblems(mnaObj, norm, i);
         }
 

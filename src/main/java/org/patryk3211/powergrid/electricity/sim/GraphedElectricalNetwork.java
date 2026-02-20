@@ -15,19 +15,23 @@
  */
 package org.patryk3211.powergrid.electricity.sim;
 
+import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.commands.DebugCommand;
-import org.patryk3211.powergrid.electricity.sim.node.*;
+import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceNode;
+import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
+import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.solver.IMNA;
 import org.patryk3211.powergrid.electricity.sim.solver.IMatrixAccess;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 public class GraphedElectricalNetwork extends ElectricalNetwork {
     private final NetworkGraph graph;
@@ -201,9 +205,33 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         return wires;
     }
 
+    public Collection<AbstractElectricWire> findTopProblematicWires(IMatrixAccess residual, int count, double threshold) {
+        var nodes = findProblematicNodes(residual, threshold);
+        var wires = new Object2DoubleArrayMap<AbstractElectricWire>();
+        for(var node1 : nodes) {
+            for(var node2 : nodes) {
+                if(node1 == node2)
+                    continue;
+                double score = Math.max(residual.get(node1.getIndex(), 0), residual.get(node2.getIndex(), 0));
+                if(node1 instanceof IElectricNode enode1 && node2 instanceof IElectricNode enode2) {
+                    for(var wire : graph.getWires(enode1, enode2)) {
+                        wires.compute(wire, (key, value) -> value == null || score > value ? score : value);
+                    }
+                }
+            }
+        }
+        return wires.object2DoubleEntrySet().stream()
+                .sorted(Comparator
+                        .comparingDouble((ToDoubleFunction<Object2DoubleMap.Entry<AbstractElectricWire>>) Object2DoubleMap.Entry::getDoubleValue)
+                        .reversed())
+                .limit(count)
+                .map(Map.Entry::getKey)
+                .toList();
+    }
+
     @Override
     public void convergenceProblems(double residual, IMatrixAccess ResidualVector) {
-        DebugCommand.pushProblems(this, residual, findProblematicWires(ResidualVector, 1e-8f));
+        DebugCommand.pushProblems(this, residual, findTopProblematicWires(ResidualVector, 5, 1e-8));
     }
 
     public NetworkGraph getGraph() {

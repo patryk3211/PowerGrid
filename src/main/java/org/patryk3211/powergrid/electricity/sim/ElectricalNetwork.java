@@ -31,6 +31,10 @@ import java.util.function.Function;
 
 public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
+
+    public double bjtSmoothAlpha = 0.5;
+    public double diodeSmoothAlpha = 0.025;
+
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
 
     private final boolean addGMin;
@@ -684,7 +688,7 @@ public class ElectricalNetwork implements IStamped {
             for(var hook : outerHooks)
                 hook.preSolve();
             for(var hook : innerHooks)
-                hook.startIteration();
+                hook.startIteration(0);
             mna.zeroState();
             for(var hook : outerHooks)
                 hook.postUpperSolve();

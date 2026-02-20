@@ -220,7 +220,7 @@ public class JavaMNA implements IMNA {
         if(i < max - 10) {
             network.countUpdates = false;
             for(var hook : network.innerHooks) {
-                hook.startIteration();
+                hook.startIteration(i);
             }
             network.countUpdates = true;
         }
@@ -335,7 +335,7 @@ public class JavaMNA implements IMNA {
             CommonOps_DDRM.subtract(ErrorVector, ResidualVector, ErrorVector);
             var nextNorm = CommonOps_DDRM.elementMaxAbs(ErrorVector);
             if(i != 0 && nextNorm > norm && !skipped) {
-                CommonOps_DDRM.add(StateVector, 0.1, StateDelta, StateVector);
+                CommonOps_DDRM.add(StateVector, -0.1, StateDelta, StateVector);
                 skipped = true; --i;
                 continue;
             }
@@ -349,7 +349,9 @@ public class JavaMNA implements IMNA {
                 // Only append new problem frames if the network has been converging before.
                 if(converged)
                     network.convergenceProblems(norm, residualAccess);
-                converged = false;
+                converged = false; //norm <= minimumAllowedPrecision;
+//                if(!converged)
+//                    break;
             }
 
             if(SCALING) {

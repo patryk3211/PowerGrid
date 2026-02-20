@@ -24,7 +24,7 @@ public interface ISolverHook {
      * Called at the start of each iteration of Newton solve.
      * In this hook you can change system state matrices.
      */
-    default void startIteration() { }
+    default void startIteration(int iteration) { }
 
     /**
      * Called after the initial residual has been calculated (r = b - A * x)

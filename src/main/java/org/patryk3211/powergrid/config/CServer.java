@@ -20,7 +20,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 public class CServer extends ConfigBase {
-    public static final int CONFIG_VERSION = 1;
+    public static final int CONFIG_VERSION = 2;
     public final ConfigInt version = i(CONFIG_VERSION, "configVersion", Comments.version);
 
     public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);

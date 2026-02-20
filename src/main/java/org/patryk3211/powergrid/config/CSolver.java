@@ -30,12 +30,15 @@ public class CSolver extends ConfigBase {
     public final ConfigBool splittingTransmissionLines = b(false, "splittingTransmissionLines", Comments.splittingTransmissionLines);
     public final ConfigBool splittingTransformers = b(false, "splittingsTransformers", Comments.splittingTransformers);
 
-    public final ConfigInt solverSimpleMaxIterations = i(200, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
-    public final ConfigInt solverComplexMaxIterations = i(200, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
+    public final ConfigInt solverSimpleMaxIterations = i(250, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
+    public final ConfigInt solverComplexMaxIterations = i(250, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
 
-    public final ConfigFloat solverAbsolutePrecision = f(1e-7f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
-    public final ConfigFloat solverRelativePrecision = f(1e-15f, 0, "solverRelativePrecision", Comments.solverRelativePrecision);
+    public final ConfigFloat solverAbsolutePrecision = f(1e-6f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
+    public final ConfigFloat solverRelativePrecision = f(1e-12f, 0, "solverRelativePrecision", Comments.solverRelativePrecision);
     public final ConfigFloat solverAbsoluteMinimumPrecision = f(1e-6f, 0, "solverAbsoluteMinimumPrecision", Comments.solverAbsoluteMinimumPrecision);
+
+    public final ConfigFloat bjtLimAlpha = f(0.5f, 0, 1, "bjtLimAlpha", Comments.bjtLimAlpha);
+    public final ConfigFloat diodeLimAlpha = f(0.025f, 0, 1, "diodeLimAlpha", Comments.diodeLimAlpha);
 
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
 
@@ -79,6 +82,9 @@ public class CSolver extends ConfigBase {
         public static final String solverSimpleMaxIterations = "Maximum solver iterations for networks without dynamic residuals";
         public static final String solverComplexMaxIterations = "Maximum solver iterations for networks with dynamic residuals";
         public static final String multiTicks = "Experimental! This option enables all electrical networks to tick multiple times per world tick. This allows for better simulation precision when reactive components are involved but can have a significant impact on performance.";
+
+        public static final String bjtLimAlpha = "BJT inter-iteration voltage change smoothing multiplier";
+        public static final String diodeLimAlpha = "Diode inter-iteration voltage change smoothing multiplier";
 
         public static final String solverBackend = "Solver MNA backend. The native backend can provide platform-specific acceleration which usually improves performance, however it isn't portable and needs a special binary which might not be available for all platforms. Java backend is portable and always available as fallback.";
     }

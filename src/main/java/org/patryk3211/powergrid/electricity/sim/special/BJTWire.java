@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
@@ -26,7 +25,6 @@ import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
 import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.WrightOmega;
-import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.pnLim;
 
 public class BJTWire extends CompoundWire implements ISolverHook {
     private static final double V_T = 0.025;
@@ -46,10 +44,8 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
     private final double OmegaLogE, OmegaLogC;
 
-    private double Vbc0, Vbe0;
     private double prevCollector;
     private double prevEmitter;
-    private double intDelta;
 
     private double Ic, Ib, Ie;
 
@@ -74,18 +70,22 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         Vcrit = V_T * Math.log(V_T / (Is * Math.sqrt(2)));
     }
 
+    public double pnLim(double V1, double V0, double Vcrit) {
+        if(V0 < Vcrit && V1 < Vcrit)
+            return V1;
+        var dV = V1 - V0;
+        return V0 + dV * network.bjtSmoothAlpha;
+    }
+
     @Override
-    public void startIteration() {
+    public void startIteration(int iteration) {
         // Get smooth potentials
         double Vc = collector.getVoltage();
         double Vb = node1.getVoltage();
         double Ve = node2.getVoltage();
         double Vbe = Vb - Ve, Vbc = Vb - Vc;
-        var dVbc = Vbc - prevCollector;
-        var dVbe = Vbe - prevEmitter;
         Vbc = prevCollector = pnp * pnLim(pnp * Vbc, pnp * prevCollector, Vcrit);
         Vbe = prevEmitter = pnp * pnLim(pnp * Vbe, pnp * prevEmitter, Vcrit);
-        intDelta = intDelta * 0.99 + Math.abs(dVbc) + Math.abs(dVbe);
 
         double WbeTerm = WrightOmega(OmegaLogE + (saturationCurrent * emitterResistance + pnp * Vbe) / V_T);
         double WbcTerm = WrightOmega(OmegaLogC + (saturationCurrent * collectorResistance + pnp * Vbc) / V_T);
@@ -101,7 +101,10 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double Gce = -Gee * forwardGain;
         double Gec = -Gcc * reverseGain;
 
-        double G_add = Mth.clamp(intDelta * 1e-3 * 0.5, 1e-5, 1e-3);
+        double G_add = 1e-4;
+        if(iteration > 100) {
+            G_add = (iteration - 100) * 1e-3;
+        }
 
         // Base - Emitter, simple wire
         setConductance(Gee + G_add);
