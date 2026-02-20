@@ -20,6 +20,7 @@ import com.simibubi.create.api.data.recipe.StandardProcessingRecipeGen;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.StandardProcessingRecipe;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeInput;
@@ -28,6 +29,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -50,8 +52,8 @@ public class MagnetizingRecipes extends StandardProcessingRecipeGen<MagnetizingR
         return super.create(PowerGrid.MOD_ID, singleIngredient, transform);
     }
 
-    public MagnetizingRecipes(PackOutput generator) {
-        super(generator, PowerGrid.MOD_ID);
+    public MagnetizingRecipes(PackOutput generator, CompletableFuture<HolderLookup.Provider> registries) {
+        super(generator, registries, PowerGrid.MOD_ID);
     }
 
     @Override

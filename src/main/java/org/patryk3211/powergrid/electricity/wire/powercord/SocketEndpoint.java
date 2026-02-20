@@ -79,7 +79,10 @@ public class SocketEndpoint implements ICordEndpoint {
 
     @Override
     public void read(CompoundTag nbt) {
-        pos = NbtUtils.readBlockPos(nbt.getCompound("Pos"));
+        var optionalPos = NbtUtils.readBlockPos(nbt,"Pos");
+        if (optionalPos.isPresent())
+
+            pos = NbtUtils.readBlockPos(nbt,"Pos").get();
     }
 
     @Override

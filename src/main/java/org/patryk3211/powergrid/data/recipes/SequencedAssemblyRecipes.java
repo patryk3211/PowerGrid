@@ -103,8 +103,8 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
         super(output, registries, PowerGrid.MOD_ID);
     }
 
-    @Override
-    public String getName() {
-        return "Power Grid's Sequenced Assembly Recipes";
-    }
+//    @Override
+//    public String getName() {
+//        return "Power Grid's Sequenced Assembly Recipes";
+//    }
 }
