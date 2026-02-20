@@ -27,14 +27,19 @@ jobs:
     - name: Build Fabric with Gradle Wrapper
       run: ./gradlew :fabric:build
 
-    - name: Upload Artifacts
+    - name: Upload Forge Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: dev-build-jars
+        name: forge-build
         path:
-          forge/build/libs/powergrid-mc*-*-*.jar
-          !forge/build/libs/powergrid-mc*-*-*-*.jar
-          fabric/build/libs/powergrid-mc*-*-*.jar
-          !fabric/build/libs/powergrid-mc*-*-*-*.jar
+          forge/build/libs
+        if-no-files-found: error
+        retention-days: 30
+    - name: Upload Fabric Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: forge-build
+        path:
+          fabric/build/libs
         if-no-files-found: error
         retention-days: 30
