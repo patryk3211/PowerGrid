@@ -24,7 +24,6 @@ import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
-import org.patryk3211.powergrid.electricity.sim.special.InductorWire;
 import org.patryk3211.powergrid.electricity.sim.special.LRSeriesWire;
 
 public class InductorComponent extends OrientableComponent {
@@ -64,7 +63,7 @@ public class InductorComponent extends OrientableComponent {
     public void stateUpdated(@NotNull PlacedComponent placed) {
         if(placed.wires.isEmpty())
             return;
-        var wire = (InductorWire) placed.wires.get(0);
+        var wire = (LRSeriesWire) placed.wires.get(0);
         wire.setCurrent(placed.get(CURRENT));
     }
 
