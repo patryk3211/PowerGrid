@@ -39,7 +39,7 @@ dependencies {
     include modApi("teamreborn:energy:${project.energy_api_version}")
 
     // Development QOL
-    modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
+//    modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
     modLocalRuntime("dev.engine-room.flywheel:flywheel-fabric-${minecraft_version}:${flywheel_fabric_version}")
     modLocalRuntime "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}"
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
