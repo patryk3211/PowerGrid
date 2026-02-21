@@ -30,6 +30,8 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -162,6 +164,7 @@ public class PowerGridImpl {
     public static void gatherData(GatherDataEvent event) {
         var generator = event.getGenerator();
         var output = generator.getPackOutput();
+        var registries = event.getLookupProvider();
 
         PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
             BiConsumer<String, String> langConsumer = provider::add;
@@ -175,20 +178,20 @@ public class PowerGridImpl {
             ModdedSoundEvents.provideLang(langConsumer);
         });
 
-        generator.addProvider(true, new CookingRecipes(output));
-        generator.addProvider(true, new CraftingRecipes(output));
-        generator.addProvider(true, new CuttingRecipes(output));
-        generator.addProvider(true, new ItemApplicationRecipes(output));
-        generator.addProvider(true, new MagnetizingRecipes(output));
-        generator.addProvider(true, new MechanicalCraftingRecipes(output));
-        generator.addProvider(true, new MixingRecipes(output));
-        generator.addProvider(true, new PressingRecipes(output));
-        generator.addProvider(true, new SequencedAssemblyRecipes(output));
-        generator.addProvider(true, new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(output));
-        generator.addProvider(true, new DeployerApplicationRecipes(output));
+        generator.addProvider(true, (DataProvider.Factory<CookingRecipes>) (PackOutput o) -> new CookingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<CraftingRecipes>) (PackOutput o) -> new CraftingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<CuttingRecipes>) (PackOutput o) -> new CuttingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<ItemApplicationRecipes>) (PackOutput o) -> new ItemApplicationRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MagnetizingRecipes>) (PackOutput o) -> new MagnetizingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MechanicalCraftingRecipes>) (PackOutput o) -> new MechanicalCraftingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MixingRecipes>) (PackOutput o) -> new MixingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<PressingRecipes>) (PackOutput o) -> new PressingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<SequencedAssemblyRecipes>) (PackOutput o) -> new SequencedAssemblyRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes>) (PackOutput o) -> new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<DeployerApplicationRecipes>) (PackOutput o) -> new DeployerApplicationRecipes(o, registries));
 
-        generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
-        generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));
+        generator.addProvider(true, (DataProvider.Factory<BlockTagProvider>) (PackOutput o) -> new BlockTagProvider(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<ItemTagProvider>) (PackOutput o) -> new ItemTagProvider(o, registries));
         generator.addProvider(true, ModdedSoundEvents.provider(output));
     }
 

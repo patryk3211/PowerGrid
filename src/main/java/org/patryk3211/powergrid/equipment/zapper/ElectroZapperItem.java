@@ -127,7 +127,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         world.addFreshEntity(projectile);
 
         ShootableGadgetItemMethods.applyCooldown(user, stack, hand, this::isZapper, 10);
-        Function<Boolean, ElectroZapperS2CPacket> factory = b -> new ElectroZapperS2CPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
+        Function<Boolean, ElectroZapperS2CPacket> factory = b -> new ElectroZapperS2CPacket(barrelPos, hand, b);
         ModdedPackets.sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
         if(!BatteryUtils.drawEnergy(user, fePerUse()))

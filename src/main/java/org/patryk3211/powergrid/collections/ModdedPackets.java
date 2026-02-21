@@ -39,13 +39,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public enum ModdedPackets implements BasePacketPayload.PacketTypeProvider {
-    ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket.STREAM_CODEC),
+    ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket.STREAM_CODEC, null),
     ;
 
     private final CatnipPacketRegistry.PacketType<?> type;
     private final PacketType<?> type_legacy;
 
-    <T extends BasePacketPayload> ModdedPackets(Class<T> clazz, StreamCodec<? super RegistryFriendlyByteBuf, T> codec) {
+    <T extends BasePacketPayload> ModdedPackets(Class<T> clazz, StreamCodec<? super RegistryFriendlyByteBuf, T> codec, PacketType<?> typeLegacy) {
+        type_legacy = typeLegacy;
         String name = this.name().toLowerCase(Locale.ROOT);
         this.type = new CatnipPacketRegistry.PacketType<>(
                 new CustomPacketPayload.Type<>(

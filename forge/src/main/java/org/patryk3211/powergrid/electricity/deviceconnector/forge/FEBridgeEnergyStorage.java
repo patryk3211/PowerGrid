@@ -17,8 +17,8 @@ package org.patryk3211.powergrid.electricity.deviceconnector.forge;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 
 public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
@@ -87,11 +87,12 @@ public class FEBridgeEnergyStorage implements IEnergyStorage, IFEBridgeHandler {
             if(neighbour == null)
                 return 0;
             final long[] amounts = new long[1];
-            neighbour.getCapability(ForgeCapabilities.ENERGY, facing.getOpposite()).ifPresent(handler -> {
+            var handler = be.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, neighbour.getBlockPos(), facing.getOpposite());
+            if (handler != null) {
                 var received = handler.receiveEnergy((int) amount, false);
                 extractEnergy(received, false);
                 amounts[0] = received;
-            });
+            }
             return amounts[0];
         }
         return 0;

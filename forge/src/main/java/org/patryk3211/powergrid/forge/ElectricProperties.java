@@ -25,7 +25,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.utility.Lang;
 

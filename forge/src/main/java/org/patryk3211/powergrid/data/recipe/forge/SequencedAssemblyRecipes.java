@@ -19,13 +19,17 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.SequencedAssemblyRecipeGen;
 import com.simibubi.create.content.fluids.transfer.FillingRecipe;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.world.level.material.FlowingFluid;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedFluids;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.data.FluidConstants;
 import org.patryk3211.powergrid.data.recipes.RecipeTags;
+
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
@@ -40,11 +44,11 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .loops(3)
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet()))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.zincSheet()))
-            .addStep(FillingRecipe::new, rb -> rb.require(ModdedFluids.acid(), FluidConstants.BOTTLE)))
+            .addStep(FillingRecipe::new, rb -> rb.require((FlowingFluid) ModdedFluids.acid(), FluidConstants.BOTTLE)))
 
             ;
 
-    public SequencedAssemblyRecipes(PackOutput output) {
-        super(output, PowerGrid.MOD_ID);
+    public SequencedAssemblyRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries, PowerGrid.MOD_ID);
     }
 }
