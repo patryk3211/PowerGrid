@@ -173,7 +173,7 @@ public class NetworkGraph {
         return conn == null ? null : conn.isEmpty() ? null : conn.get(0);
     }
 
-    public Collection<AbstractElectricWire> getWires(IElectricNode node) {
+    public List<AbstractElectricWire> getWires(IElectricNode node) {
         if(!nodes.containsKey(node))
             return List.of();
 

@@ -2,6 +2,7 @@ package org.patryk3211.powergrid.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
+import net.createmod.catnip.data.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
@@ -14,16 +15,16 @@ import org.patryk3211.powergrid.electricity.sim.PerformanceCounter;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
 
 import static net.minecraft.commands.Commands.literal;
 
 
 public class DebugCommand {
-    private record ProblematicWire(AbstractElectricWire wire, OwnedFloatingNode closestOwnedNode) { }
+    private record ProblematicWire(AbstractElectricWire wire, OwnedFloatingNode closestOwnedNode, double residual) { }
     private record ProblemEntry(Date timestamp, double residual, List<ProblematicWire> wires) { }
     private static final List<ProblemEntry> savedProblematicExecutions = new ArrayList<>();
 
@@ -44,8 +45,8 @@ public class DebugCommand {
         return null;
     }
 
-    public static void pushProblems(GraphedElectricalNetwork network, double residual, Collection<AbstractElectricWire> wires) {
-        var frame = wires.stream().map(wire -> new ProblematicWire(wire, findClosestNode(network.getGraph(), wire))).toList();
+    public static void pushProblems(GraphedElectricalNetwork network, double residual, Collection<Pair<AbstractElectricWire, Double>> wires) {
+        var frame = wires.stream().map(entry -> new ProblematicWire(entry.getFirst(), findClosestNode(network.getGraph(), entry.getFirst()), entry.getSecond())).toList();
         savedProblematicExecutions.add(new ProblemEntry(new Date(), residual, frame));
         if(savedProblematicExecutions.size() > 5)
             savedProblematicExecutions.remove(0);
@@ -69,6 +70,7 @@ public class DebugCommand {
                                 .withStyle(ChatFormatting.GRAY));
                         for(var entry : frame.wires) {
                             source.sendSystemMessage(Component.literal("  " + entry.wire()).withStyle(ChatFormatting.GOLD));
+                            source.sendSystemMessage(Component.literal(String.format("  Wire residual = %g", entry.residual)).withStyle(ChatFormatting.GRAY));
                             source.sendSystemMessage(Component.literal("  Closest owned node:").withStyle(ChatFormatting.DARK_GRAY));
                             source.sendSystemMessage(Component.literal("  " + entry.closestOwnedNode()).withStyle(ChatFormatting.DARK_GRAY));
                         }
