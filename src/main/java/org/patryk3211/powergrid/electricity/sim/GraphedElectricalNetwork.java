@@ -74,6 +74,13 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
             for(var coupled : coupling.coupledNodes()) {
                 deferredNodeCheck.addAll(graph.getConnectedNodes(coupled));
                 removeLeaf(coupled);
+                for(var wire : graph.getWires(coupled)) {
+                    var series = seriesWires.get(wire);
+                    if(series == null)
+                        continue;
+                    dissolveSeriesWire(series, null);
+                    addToCheck(coupled);
+                }
             }
             graph.couple(coupling);
         }
@@ -84,6 +91,12 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         super.removeNode(node);
         if(node instanceof IElectricNode enode) {
             deferredNodeCheck.remove(enode);
+            for(var wire : graph.getWires(enode)) {
+                var series = seriesWires.get(wire);
+                if(series == null)
+                    continue;
+                dissolveSeriesWire(series, null);
+            }
             var connections = graph.getConnectedLines(enode);
             if(!connections.isEmpty()) {
                 PowerGrid.LOGGER.warn("Removed a node which had connections");
@@ -181,6 +194,8 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     }
 
     protected void collectSeries(List<ElectricWire> collection, boolean atEnd, IElectricNode node, AbstractElectricWire wire) {
+        if(graph.connectionCount(node) != 2)
+            return;
         var wires = graph.getWires(node);
         if(wires.size() != 2)
             return;
@@ -251,6 +266,8 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
 
     protected Set<IElectricNode> checkSeries(IElectricNode node) {
         var seriesWires = new ArrayList<ElectricWire>();
+        if(graph.connectionCount(node) != 2)
+            return null;
         var wires = graph.getWires(node);
         if(wires.size() != 2)
             return null;
@@ -313,19 +330,23 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         addToCheck(wire.node2);
     }
 
+    private void dissolveSeriesWire(SeriesWire series, @Nullable AbstractElectricWire except) {
+        super.removeWire(series);
+        seriesWires.entrySet().removeIf(entry -> entry.getValue() == series);
+        series.wires.forEach(part -> {
+            if(part != except) {
+                super.addWire(part);
+            }
+        });
+        series.nodes.forEach(super::addNode);
+    }
+
     @Override
     public void removeWire(AbstractElectricWire wire) {
         graph.disconnect(wire.node1, wire.node2, wire);
         var series = seriesWires.get(wire);
         if(series != null) {
-             super.removeWire(series);
-             seriesWires.entrySet().removeIf(entry -> entry.getValue() == series);
-             series.wires.forEach(part -> {
-                 if(part != wire) {
-                     super.addWire(part);
-                 }
-             });
-             series.nodes.forEach(super::addNode);
+            dissolveSeriesWire(series, wire);
         } else {
             super.removeWire(wire);
         }
@@ -422,6 +443,10 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
 
     @Override
     public void merge(ElectricalNetwork other) {
+        while(!seriesWires.isEmpty()) {
+            var wire = seriesWires.values().iterator().next();
+            dissolveSeriesWire(wire, null);
+        }
         super.merge(other);
         deferredNodeCheck.addAll(other.leafNodes.keySet());
     }
@@ -429,6 +454,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     @Override
     public void clear() {
         super.clear();
+        seriesWires.clear();
         deferredNodeCheck.clear();
     }
 }
