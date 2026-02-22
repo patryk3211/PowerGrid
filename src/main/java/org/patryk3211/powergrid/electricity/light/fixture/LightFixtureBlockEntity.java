@@ -60,7 +60,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
             filament.setResistance(bulbState.resistance());
             filament.setState(!bulbState.isBurned());
         }
-        if(!level.isClientSide)
+        if(level != null && !level.isClientSide)
             notifyUpdate();
     }
 
