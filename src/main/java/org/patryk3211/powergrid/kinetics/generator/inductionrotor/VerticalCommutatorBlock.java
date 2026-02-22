@@ -25,6 +25,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -161,5 +163,15 @@ public class VerticalCommutatorBlock extends AbstractRotorBlock implements IBE<C
             facing = facing.getOpposite();
         return new Vec3(0, 0, 1 / 4f + Math.abs(angularVelocity) / 100f)
                 .yRot((float) Math.PI * (facing.toYRot() - 180) / 180f);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        return state.setValue(HORIZONTAL_FACING, rot.rotate(state.getValue(HORIZONTAL_FACING)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        return state.rotate(mirrorIn.getRotation(state.getValue(HORIZONTAL_FACING)));
     }
 }
