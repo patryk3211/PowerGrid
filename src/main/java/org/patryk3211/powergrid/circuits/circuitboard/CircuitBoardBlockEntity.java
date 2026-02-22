@@ -113,7 +113,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         var orientation = CircuitBoardBlock.getOrientation(getBlockState(), sideIn);
         if(orientation == null)
             return null;
-        if((edgeOut.isX() && orientation.isX()) == (edgeOut.positive() == orientation.positive())) {
+        if(((edgeOut.isX() && orientation.isX()) || (edgeOut.isY() && orientation.isY())) == (edgeOut.positive() == orientation.positive())) {
             edgePosition = 15 - edgePosition;
         }
         for(var placed : getComponents(ViaComponent.class)) {
