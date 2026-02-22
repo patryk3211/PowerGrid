@@ -45,3 +45,20 @@ jobs:
           fabric/build/libs/powergrid-mc*-*-????????.jar
         if-no-files-found: error
         retention-days: 30
+    - name: Send announcement to Discord
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: |
+        curl -H "Content-Type: application/json" \
+           -X POST \
+           --data-binary '{
+           "content": "Power Grid auto-build is ready",
+           "embeds": [
+              {
+                "title": "Auto-build has finished",
+                "description": "Make sure to backup your world, these build are not guaranteed to work!",
+                "url": "https://github.com/patryk3211/PowerGrid/actions",
+                "color": 565479
+              }
+           ]}' \
+           $DISCORD_WEBHOOK
