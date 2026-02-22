@@ -88,15 +88,17 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
 
     @Override
     public void removeNode(INode node) {
-        super.removeNode(node);
         if(node instanceof IElectricNode enode) {
-            deferredNodeCheck.remove(enode);
             for(var wire : graph.getWires(enode)) {
                 var series = seriesWires.get(wire);
                 if(series == null)
                     continue;
                 dissolveSeriesWire(series, null);
             }
+        }
+        super.removeNode(node);
+        if(node instanceof IElectricNode enode) {
+            deferredNodeCheck.remove(enode);
             var connections = graph.getConnectedLines(enode);
             if(!connections.isEmpty()) {
                 PowerGrid.LOGGER.warn("Removed a node which had connections");
@@ -315,6 +317,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
                 partNode2.setNetwork(this);
                 partNode2.assignIndex(-1);
             }
+            part.setNetwork(this);
             affected.add(part.getNode1());
             affected.add(part.getNode2());
         });
@@ -324,6 +327,8 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
 
     @Override
     public void addWire(AbstractElectricWire wire) {
+        dissolveSeriesWire(wire.getNode1());
+        dissolveSeriesWire(wire.getNode2());
         graph.connect(wire.node1, wire.node2, wire);
         super.addWire(wire);
         addToCheck(wire.node1);
@@ -333,23 +338,34 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     private void dissolveSeriesWire(SeriesWire series, @Nullable AbstractElectricWire except) {
         super.removeWire(series);
         seriesWires.entrySet().removeIf(entry -> entry.getValue() == series);
+        series.nodes.forEach(super::addNode);
         series.wires.forEach(part -> {
             if(part != except) {
                 super.addWire(part);
             }
         });
-        series.nodes.forEach(super::addNode);
+    }
+
+    private void dissolveSeriesWire(IElectricNode node) {
+        if(node == null)
+            return;
+        var wires = graph.getWires(node);
+        if(wires.size() != 2)
+            return;
+        var series = seriesWires.get(wires.get(0));
+        if(series != null)
+            dissolveSeriesWire(series, null);
     }
 
     @Override
     public void removeWire(AbstractElectricWire wire) {
-        graph.disconnect(wire.node1, wire.node2, wire);
         var series = seriesWires.get(wire);
         if(series != null) {
             dissolveSeriesWire(series, wire);
         } else {
             super.removeWire(wire);
         }
+        graph.disconnect(wire.node1, wire.node2, wire);
         addToCheck(wire.node1);
         addToCheck(wire.node2);
     }
