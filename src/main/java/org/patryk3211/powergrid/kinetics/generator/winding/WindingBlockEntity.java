@@ -306,7 +306,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         } else {
             var opt = block.getMainBlockEntity(level, worldPosition);
             if(opt.isEmpty()) {
-                level.destroyBlock(worldPosition, false);
+                if(!level.isClientSide)
+                    level.destroyBlock(worldPosition, false);
                 return;
             }
             mainBE = opt.get();

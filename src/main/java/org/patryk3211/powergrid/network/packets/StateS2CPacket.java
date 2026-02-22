@@ -90,10 +90,10 @@ public class StateS2CPacket implements SimplePacket {
                     element.readFromSync(wrapper());
                     var end = wrapper().readerIndex();
                     if(end - start > entryLength) {
-                        PowerGrid.LOGGER.warn("Buffer read overrun (Entry of {} bytes, read {} bytes)", entryLength, end - start);
+                        PowerGrid.LOGGER.warn("Buffer read overrun (Entry of {} bytes, read {} bytes) for {}", entryLength, end - start, element);
                         wrapper().readerIndex(start + entryLength);
                     } else if(end - start < entryLength) {
-                        PowerGrid.LOGGER.warn("Buffer read underrun (Entry of {} bytes, read {} bytes)", entryLength, end - start);
+                        PowerGrid.LOGGER.warn("Buffer read underrun (Entry of {} bytes, read {} bytes) for {}", entryLength, end - start, element);
                         wrapper().readerIndex(start + entryLength);
                     }
                 }
