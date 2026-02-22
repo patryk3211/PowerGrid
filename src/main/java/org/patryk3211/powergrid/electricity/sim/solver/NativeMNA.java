@@ -295,7 +295,8 @@ public class NativeMNA implements IMNA {
         // Run native solve routine.
         int maxIterations = network.maxIterations.apply(network.hasHooks());
         stateBuffer = singleTick(nativePtr, maxIterations, ops);
-        stateBuffer.order(ByteOrder.nativeOrder());
+        if(stateBuffer != null)
+            stateBuffer.order(ByteOrder.nativeOrder());
         byte status = auxBuf.get(0);
         converged = (status & 1) != 0;
 
