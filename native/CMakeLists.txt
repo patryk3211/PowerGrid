@@ -27,14 +27,19 @@ set(SOURCES_SAFE_EXEC
 add_library(powergridNative SHARED ${SOURCES} ${SOURCES_SAFE_EXEC})
 set_target_properties(powergridNative PROPERTIES OUTPUT_NAME "powergridNative${PG_NATIVE_VERSION}")
 
+if(${PG_STATIC_LIBS})
+  set(CMAKE_C_FLAGS "-static")
+  add_link_options("-static")
+endif()
+
 target_include_directories(powergridNative PUBLIC src/powergridNative/include ${JVM_INCLUDE})
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   target_compile_definitions(powergridNative PRIVATE DEBUG)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
   if(${PG_STATIC_LIBS})
-    target_compile_options(powergridNative PRIVATE "-mavx2" "-static-libstdc++" "-static-libgcc")
-    target_link_options(powergridNative PRIVATE "-static-libstdc++" "-static-libgcc")
+    target_compile_options(powergridNative PRIVATE "-mavx2" "-static-libstdc++" "-static-libgcc" "-static")
+    target_link_options(powergridNative PRIVATE "-static-libstdc++" "-static-libgcc" "-static")
   else()
     target_compile_options(powergridNative PRIVATE "-mavx2")
   endif()

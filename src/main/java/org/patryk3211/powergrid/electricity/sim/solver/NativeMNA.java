@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
 public class NativeMNA implements IMNA {
-    private static final String EXPECTED_VERSION = "2";
+    private static final String EXPECTED_VERSION = "3";
 
     private static final int OPERATION_BUFFER_COMMAND_LENGTH = 256;
     private static final int JACOBIAN_COMMAND_SIZE = Integer.BYTES * 2 + Double.BYTES;
