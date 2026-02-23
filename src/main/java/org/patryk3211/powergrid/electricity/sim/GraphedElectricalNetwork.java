@@ -243,6 +243,8 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
                     }
                 }
             }
+        } else {
+            return;
         }
         assert nextWire.getNode1() == node || nextWire.getNode2() == node : "Next wire isn't connected to node";
         if(nextWire.getNode1() == node) {
