@@ -52,6 +52,7 @@ def configureTask = { String platform, String taskName, String libName ->
                 '-D', "PG_TRACE=${project.nativeTrace}",
                 '-D', "PG_MULTITARGET=${project.multiArch}",
                 '-D', "PG_NATIVE_VERSION=${project.nativeVersionSuffix}",
+                '-D', "PG_STATIC_LIBS=${platformProperty('staticLibs')}",
                 '-G', "${platformProperty('cmakeGenerator')}" ]
             System.out.println(String.join(" ", args));
             def cmakeConf = providers.exec {
