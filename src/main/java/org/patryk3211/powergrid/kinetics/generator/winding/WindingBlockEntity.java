@@ -27,10 +27,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
 import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated1;
 import org.patryk3211.powergrid.electricity.sim.calculation.StampedSupplier;
@@ -41,6 +38,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -695,5 +693,25 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if (thermalBehaviour != null)
             thermalBehaviour.applyTickPower(current * current * resistance());
         setUnsaved();
+    }
+
+    public void forSync(Consumer<ISynchronizedElement> consumer) {
+        consumer.accept(electricBehaviour);
+        for(var collected : collectedBEs) {
+            if(collected == this)
+                continue;
+            consumer.accept(collected.thermalBehaviour);
+        }
+        if(parallelPositions != null) {
+            for(var parallel : parallelPositions) {
+                level.getBlockEntity(parallel, ModdedBlockEntities.WINDING.get()).ifPresent(winding -> {
+                    for(var collected : winding.collectedBEs) {
+                        if(collected == this)
+                            continue;
+                        consumer.accept(collected.thermalBehaviour);
+                    }
+                });
+            }
+        }
     }
 }

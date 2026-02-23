@@ -39,6 +39,7 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.*;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
@@ -326,8 +327,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             var eb = bwe.getElectricBehaviour(world);
                             if (eb == null)
                                 continue;
-                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
-                                    .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
+                            var syncState = new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1);
+                            if(eb.blockEntity instanceof WindingBlockEntity winding) {
+                                winding.forSync(sync -> {
+                                    syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                            .put(sync, syncState);
+                                });
+                            } else {
+                                syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                        .put(eb, syncState);
+                            }
                         } else if(endpoint instanceof JunctionWireEndpoint je) {
                             var syncEntry = je.makeSyncEntry(world);
                             if(syncEntry != null)

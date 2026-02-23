@@ -46,9 +46,9 @@ public abstract class AirCurrentMixin {
 
     @Inject(method = "rebuild()V", at = @At("HEAD"))
     private void powerGrid$rebuildHead(CallbackInfo ci) {
-        powerGrid$affectedThermals.forEach(ThermalBehaviour::noCooling);
+        powerGrid$affectedThermals.forEach(behaviour -> behaviour.removeCoolingMultiplier((AirCurrent) (Object) this));
         powerGrid$affectedThermals.clear();
-        powerGrid$affectedCircuits.forEach(CircuitBoardBlockEntity::noCooling);
+        powerGrid$affectedCircuits.forEach(behaviour -> behaviour.removeCoolingMultiplier((AirCurrent) (Object) this));
         powerGrid$affectedCircuits.clear();
     }
 
@@ -66,11 +66,11 @@ public abstract class AirCurrentMixin {
             var thermal = BlockEntityBehaviour.get(world, pos, ThermalBehaviour.TYPE);
             float factor = 1.0f - (float) (i - 1) / limit;
             if(thermal != null) {
-                thermal.setCoolingMultiplier((AirCurrent) (Object) this, factor * initialStrength + 1f);
+                thermal.addCoolingMultiplier((AirCurrent) (Object) this, factor * initialStrength);
                 powerGrid$affectedThermals.add(thermal);
             }
             if(world.getBlockEntity(pos) instanceof CircuitBoardBlockEntity circuit) {
-                circuit.setCoolingMultiplier((AirCurrent) (Object) this, factor * initialStrength + 1f);
+                circuit.addCoolingMultiplier((AirCurrent) (Object) this, factor * initialStrength);
                 powerGrid$affectedCircuits.add(circuit);
             }
         }

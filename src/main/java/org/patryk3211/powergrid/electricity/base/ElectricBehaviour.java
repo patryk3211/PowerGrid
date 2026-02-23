@@ -415,15 +415,15 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         if(thermal != null) {
             buffer.writeFloat(thermal.getTemperature());
         }
-            for (var node : externalNodes) {
-                if (node.getNetwork() == null) {
-                    // Potentially part of a transmission line.
-                    var line = lineGetter.apply(node);
-                    buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
-                } else {
-                    buffer.writeFloat((float) node.getStateValue());
-                }
+        for (var node : externalNodes) {
+            if (node.getNetwork() == null) {
+                // Potentially part of a transmission line.
+                var line = lineGetter.apply(node);
+                buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
+            } else {
+                buffer.writeFloat((float) node.getStateValue());
             }
+        }
         if(!reducedSync) {
             for (var node : internalNodes) {
                 buffer.writeFloat((float) node.getStateValue());
