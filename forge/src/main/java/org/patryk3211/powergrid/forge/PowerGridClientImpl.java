@@ -53,14 +53,14 @@ public class PowerGridClientImpl {
 
     @SubscribeEvent
     public static void modelRequestLoad(ModelEvent.RegisterAdditional event) {
-        var componentModels = ComponentModels.collectRawIds();
-        componentModels.forEach((event::register));
-        event.register(ModelResourceLocation.inventory(CircuitBoardModel.BASE_MODEL));
+        var componentModels = ComponentModels.collectIds();
+        componentModels.forEach(event::register);
+        event.register(new ModelResourceLocation(CircuitBoardModel.BASE_MODEL, "standalone"));
     }
 
     @SubscribeEvent
     public static void modelLoaders(ModelEvent.RegisterGeometryLoaders event) {
-        event.register(ResourceLocation.parse("circuit_board"), new CircuitBoardModelLoader());
+        event.register(PowerGrid.asResource("circuit_board"), new CircuitBoardModelLoader());
     }
 
     @SubscribeEvent

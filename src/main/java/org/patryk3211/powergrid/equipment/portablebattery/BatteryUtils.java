@@ -18,24 +18,29 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 import com.simibubi.create.AllEnchantments;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 public class BatteryUtils {
 
     public static int getMaxCharge(ItemStack stack) {
-        return getMaxCharge(EnchantmentHelper.getItemEnchantmentLevel((Holder<Enchantment>) BuiltInRegistries.REGISTRY.get(AllEnchantments.CAPACITY.registry()), stack));
+        ItemEnchantments enchantments = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+        int level = 0;
+        for (var entry : enchantments.entrySet()) {
+            if (entry.getKey().is(AllEnchantments.CAPACITY)) {
+                level = entry.getIntValue();
+                break;
+            }
+        }
+        return getMaxCharge(level);
     }
 
     public static int getMaxCharge(int level) {

@@ -16,19 +16,16 @@
 package org.patryk3211.powergrid.electricity.deviceconnector.forge;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 
 public class BridgeElectricBehaviourImpl {
     public static IFEBridgeHandler makeFEHandler(BlockEntity be) {
         var facing = be.getBlockState().getValue(DeviceConnectorBlock.FACING);
-        var neighbor = be.getLevel().getBlockEntity(be.getBlockPos().relative(facing));
-        if(neighbor == null)
-            return null;
-        var capability = neighbor.getCapability(ForgeCapabilities.ENERGY, facing.getOpposite());
-        if(capability.filter(IEnergyStorage::canReceive).isEmpty())
+        var neighborPos = be.getBlockPos().relative(facing);
+        var storage = be.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, facing.getOpposite());
+        if(storage == null || !storage.canReceive())
             return null;
         return new FEBridgeEnergyStorage(be);
     }

@@ -29,7 +29,7 @@ import java.util.Set;
 @Environment(EnvType.CLIENT)
 public class ComponentModels {
     public static ModelResourceLocation modelId(ResourceLocation componentId) {
-        return new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(componentId.getNamespace(), "component/" + componentId.getPath()), "component");
+        return new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(componentId.getNamespace(), "component/" + componentId.getPath()), "standalone");
     }
 
     public static ResourceLocation rawModelId(ResourceLocation componentId) {

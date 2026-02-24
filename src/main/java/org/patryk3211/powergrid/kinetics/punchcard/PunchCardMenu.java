@@ -17,9 +17,7 @@ package org.patryk3211.powergrid.kinetics.punchcard;
 
 import com.simibubi.create.foundation.gui.menu.GhostItemMenu;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
@@ -88,7 +86,7 @@ public abstract class PunchCardMenu extends GhostItemMenu<ItemStack> {
     }
 
     public interface PunchCardMenuConstructors {
-        PunchCardMenu create(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf buf);
+        PunchCardMenu create(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf buf);
         PunchCardMenu create(MenuType<?> type, int id, Inventory inv, ItemStack holder);
     }
 }

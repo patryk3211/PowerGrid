@@ -18,15 +18,13 @@ package org.patryk3211.powergrid.electricity.deviceconnector.forge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.capabilities.Capabilities;
 
 public class DeviceConnectorBlockImpl {
     public static boolean hasEnergyStorage(Level world, BlockPos pos, Direction side) {
-        var blockEntity = world.getBlockEntity(pos);
-        if(blockEntity == null)
+        var storage = world.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side);
+        if(storage == null)
             return false;
-        return blockEntity.getCapability(ForgeCapabilities.ENERGY, side)
-                .filter(IEnergyStorage::canReceive).isPresent();
+        return storage.canReceive();
     }
 }

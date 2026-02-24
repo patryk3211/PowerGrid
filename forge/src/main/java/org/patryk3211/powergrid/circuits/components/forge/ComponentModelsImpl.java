@@ -19,11 +19,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.BakedModel;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
-import static org.patryk3211.powergrid.circuits.components.ComponentModels.rawModelId;
+import static org.patryk3211.powergrid.circuits.components.ComponentModels.modelId;
 
 public class ComponentModelsImpl {
     public static BakedModel getModel(PlacedComponent placed) {
         var manager = Minecraft.getInstance().getModelManager();
-        return manager.getModel(rawModelId(placed.component.getModelId(placed)));
+        return manager.getModel(modelId(placed.component.getModelId(placed)));
     }
 }

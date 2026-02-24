@@ -15,15 +15,10 @@
  */
 package org.patryk3211.powergrid.data.recipe.forge;
 
-import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
+import com.simibubi.create.api.data.recipe.MixingRecipeGen;
 import com.simibubi.create.content.processing.recipe.HeatCondition;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluids;
@@ -35,7 +30,7 @@ import org.patryk3211.powergrid.data.FluidConstants;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
-public class MixingRecipes<P extends ProcessingRecipeParams,R extends ProcessingRecipe<?, P>,B extends ProcessingRecipeBuilder<P, R, B>> extends ProcessingRecipeGen<P,R,B> {
+public class MixingRecipes extends MixingRecipeGen {
     GeneratedRecipe
 
     ACID = create("acid", b -> b
@@ -54,15 +49,5 @@ public class MixingRecipes<P extends ProcessingRecipeParams,R extends Processing
 
     public MixingRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, PowerGrid.MOD_ID);
-    }
-
-    @Override
-    protected AllRecipeTypes getRecipeType() {
-        return AllRecipeTypes.MIXING;
-    }
-
-    @Override
-    protected B getBuilder(ResourceLocation id) {
-        return null;
     }
 }
