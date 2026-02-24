@@ -158,18 +158,22 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         }
     }
 
+    private BiConsumer<BlockPos, BlockState> blockBreaker(LevelAccessor world) {
+        return (pos1, state1) -> {
+            world.destroyBlock(pos1, true);
+            if(state1.getValue(PART) != 1) {
+                world.setBlock(pos1, AllBlocks.SHAFT.getDefaultState().setValue(AXIS, getMagneticAxis(state1)), UPDATE_ALL);
+            }
+        };
+    }
+
     @Override
     public void destroy(LevelAccessor world, BlockPos pos, BlockState state) {
         super.destroy(world, pos, state);
         if(world.isClientSide())
             return;
         var axis = state.getValue(AXIS);
-        BiConsumer<BlockPos, BlockState> breakBlock = (pos1, state1) -> {
-            world.destroyBlock(pos1, true);
-            if(state1.getValue(PART) != 1) {
-                world.setBlock(pos1, AllBlocks.SHAFT.getDefaultState().setValue(AXIS, getMagneticAxis(state1)), UPDATE_ALL);
-            }
-        };
+        var breakBlock = blockBreaker(world);
         switch(state.getValue(PART)) {
             case 0 -> walkForward(world, pos, axis, breakBlock);
             case 1 -> {
@@ -246,8 +250,56 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
         updateCase(state, world, pos);
 
         var dir = sourcePos.subtract(pos);
-        if(Direction.fromDelta(dir.getX(), dir.getY(), dir.getZ()).getAxis() == state.getValue(AXIS))
+        var axis = state.getValue(AXIS);
+        if(Direction.fromDelta(dir.getX(), dir.getY(), dir.getZ()).getAxis() == axis) {
+            // Check if it's not broken
+            int part = state.getValue(PART);
+            if(part == 0) {
+                var neighbor = world.getBlockState(pos.relative(axis, 1));
+                if(neighbor.is(this)) {
+                    int part2 = neighbor.getValue(PART);
+                    if ((part2 == 1 || part2 == 2) &&
+                            neighbor.getValue(AXIS) == axis &&
+                            neighbor.getValue(ALONG_FIRST_AXIS) == state.getValue(ALONG_FIRST_AXIS))
+                        return;
+                }
+            } else if(part == 1) {
+                var neighbor1 = world.getBlockState(pos.relative(axis, 1));
+                var neighbor2 = world.getBlockState(pos.relative(axis, -1));
+                if(neighbor1.is(this) && neighbor2.is(this)) {
+                    int part1 = neighbor1.getValue(PART);
+                    int part2 = neighbor2.getValue(PART);
+                    if ((part1 == 2 || part1 == 1) &&
+                            neighbor1.getValue(AXIS) == axis &&
+                            neighbor1.getValue(ALONG_FIRST_AXIS) == state.getValue(ALONG_FIRST_AXIS) &&
+                        (part2 == 0 || part2 == 1) &&
+                            neighbor2.getValue(AXIS) == axis &&
+                            neighbor2.getValue(ALONG_FIRST_AXIS) == state.getValue(ALONG_FIRST_AXIS))
+                        return;
+                }
+            } else if(part == 2) {
+                var neighbor = world.getBlockState(pos.relative(axis, -1));
+                if(neighbor.is(this)) {
+                    int part2 = neighbor.getValue(PART);
+                    if ((part2 == 1 || part2 == 0) &&
+                            neighbor.getValue(AXIS) == axis &&
+                            neighbor.getValue(ALONG_FIRST_AXIS) == state.getValue(ALONG_FIRST_AXIS))
+                        return;
+                }
+            }
+            // Broken
+            var breakBlock = blockBreaker(world);
+            breakBlock.accept(pos, state);
+            switch(part) {
+                case 0 -> walkForward(world, pos, axis, breakBlock);
+                case 1 -> {
+                    walkForward(world, pos, axis, breakBlock);
+                    walkBackward(world, pos, axis, breakBlock);
+                }
+                case 2 -> walkBackward(world, pos, axis, breakBlock);
+            }
             return;
+        }
 
         withBlockEntityDo(world, pos, be -> be.onNeighborChanged(sourcePos));
     }
@@ -294,13 +346,6 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
             return world.getBlockEntity(mainPos, ModdedBlockEntities.WINDING.get());
         return Optional.empty();
     }
-
-//    @Override
-//    public ElectricBehaviour getBehaviour(Level world, BlockPos pos, BlockState state) {
-//        return getMainBlockEntity(world, pos)
-//                .map(winding -> winding.getBehaviourProvider().getBehaviour(ElectricBehaviour.TYPE))
-//                .orElse(null);
-//    }
 
     public Direction.Axis getParallelCheckAxis(BlockState state) {
         var along = state.getValue(ALONG_FIRST_AXIS);
@@ -351,10 +396,6 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
                     return InteractionResult.FAIL;
             }
         }
-
-//        boolean shouldBreak = PlayerBlockBreakEvents.BEFORE.invoker().beforeBlockBreak(world, player, pos, world.getBlockState(pos), null);
-//        if(!shouldBreak)
-//            return InteractionResult.SUCCESS;
 
         if(!(world instanceof ServerLevel serverWorld))
             return InteractionResult.SUCCESS;
