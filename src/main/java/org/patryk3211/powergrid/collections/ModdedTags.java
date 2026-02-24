@@ -21,7 +21,7 @@ import net.minecraft.tags.TagKey;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedTags {
-    public static final String FORGE_NAMESPACE = PowerGrid.forPlatform("c", "forge");
+    public static final String FORGE_NAMESPACE = "c";
 
     public enum Item {
         RAW_ORES(FORGE_NAMESPACE, "raw_ores"),
