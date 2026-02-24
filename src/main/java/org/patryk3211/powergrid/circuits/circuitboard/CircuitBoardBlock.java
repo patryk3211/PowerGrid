@@ -106,7 +106,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         withBlockEntityDo(world, pos, be -> {
             be.setSchematic(CircuitSchematic.fromStack(stack));
-            be.setAdditionalData(stack.get(DataComponents.CUSTOM_DATA).copyTag());
+            be.setAdditionalData(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag());
         });
         super.setPlacedBy(world, pos, state, placer, stack);
     }

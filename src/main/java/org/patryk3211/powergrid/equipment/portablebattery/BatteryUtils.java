@@ -66,7 +66,7 @@ public class BatteryUtils {
         var charge = getCurrentCharge(stack);
         if(charge < fe)
             return false;
-        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         CompoundTag newTag = data.copyTag();
 
         newTag.putInt("Charge", charge - fe);

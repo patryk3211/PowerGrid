@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.mixin;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +37,7 @@ public class BlockStateBaseMixin {
             cancellable = true)
     private void beforeBlockUse(ItemStack stack, Level level, Player player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<ItemInteractionResult> cir) {
         var item = player.getItemInHand(hand);
-        if(item.getItem() instanceof WireItem && !item.get(DataComponents.CUSTOM_DATA).copyTag().isEmpty() && item.get(DataComponents.CUSTOM_DATA).contains("Connection")) {
+        if(item.getItem() instanceof WireItem && !item.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().isEmpty() && item.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection")) {
             cir.setReturnValue(ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION);
         }
     }

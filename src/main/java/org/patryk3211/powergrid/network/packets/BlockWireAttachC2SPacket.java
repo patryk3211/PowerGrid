@@ -73,7 +73,7 @@ public class BlockWireAttachC2SPacket implements C2SPacket {
             return;
         }
 
-        var existingEndpoint = WireEndpointType.deserialize(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection") );
+        var existingEndpoint = WireEndpointType.deserialize(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("Connection") );
 
             IWireEndpoint endpoint;
             if(gridPoint <= 1 && index == 0) {
@@ -99,14 +99,14 @@ public class BlockWireAttachC2SPacket implements C2SPacket {
             }
             if(endpoint != null && existingEndpoint == null) {
                 if (!stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection")) {
-                    CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+                    CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                     compoundTag.put("Connection", endpoint.serialize());
                     stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
                 }
             } else if(endpoint != null) {
                 var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
                 if(result.getResult().consumesAction()) {
-                    CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+                    CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                     compoundTag.remove("Connection");
                     stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
                 }

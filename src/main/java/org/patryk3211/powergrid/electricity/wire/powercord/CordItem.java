@@ -163,7 +163,7 @@ public class CordItem extends WireItem {
 
     private static InteractionResult addEndpoint(UseOnContext context, ICordEndpoint endpoint) {
         var stack = context.getItemInHand();
-        var firstPoint = WireEndpointType.deserialize(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection"));
+        var firstPoint = WireEndpointType.deserialize(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("Connection"));
         if(firstPoint == null) {
             CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             compoundTag.put("Connection", endpoint.serialize());

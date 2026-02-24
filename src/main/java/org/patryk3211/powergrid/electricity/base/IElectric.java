@@ -91,9 +91,9 @@ public interface IElectric extends IWrenchable {
                 sendMessage(context, Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component());
                 return InteractionResult.FAIL;
             }
-            if(!stack.has(DataComponents.CUSTOM_DATA) && stack.get(DataComponents.CUSTOM_DATA).contains("Connection")) {
+            if(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection")) {
                 // Continuing a connection.
-                CompoundTag data = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+                CompoundTag data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                 var endpoint = WireEndpointType.deserialize(data.getCompound("Connection"));
                 if(endpoint == null)
                     return InteractionResult.FAIL;

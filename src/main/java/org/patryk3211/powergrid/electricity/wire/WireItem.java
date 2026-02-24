@@ -69,7 +69,7 @@ public class WireItem extends Item implements IWire {
                 return result;
         }
         var stack = context.getItemInHand();
-        var tag = stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection");
+        var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("Connection");
         if(tag != null) {
             // This will result in the connection being a block wire (instead of a hanging wire)
             var world = context.getLevel();

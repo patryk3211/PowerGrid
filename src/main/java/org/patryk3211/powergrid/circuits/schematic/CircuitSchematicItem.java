@@ -20,6 +20,7 @@ import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -41,7 +42,7 @@ public class CircuitSchematicItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         if(user.isCreative() && user.isShiftKeyDown()) {
             var block = new ItemStack(ModdedBlocks.CIRCUIT_BOARD, 1);
-            block.set(DataComponents.CUSTOM_DATA, user.getItemInHand(hand).get(DataComponents.CUSTOM_DATA));
+            block.set(DataComponents.CUSTOM_DATA, user.getItemInHand(hand).getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY));
             block.remove(DataComponents.CUSTOM_NAME);
             return InteractionResultHolder.success(block);
         } else {

@@ -52,11 +52,11 @@ public class TransformerWindingC2SPacket implements C2SPacket {
     @Override
     public void handle(ServerPlayer player) {
         var stack = player.getItemInHand(hand);
-        if (!(stack.getItem() instanceof IWire) || stack.get(DataComponents.CUSTOM_DATA).contains("Connection"))
+        if (!(stack.getItem() instanceof IWire) || stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection"))
             return;
-        if (stack.get(DataComponents.CUSTOM_DATA).contains("Turns")) {
+        if (stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Turns")) {
             // Alter existing tag
-            CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+            CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             compoundTag.putInt("Turns", nTurns);
             stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
         } else {

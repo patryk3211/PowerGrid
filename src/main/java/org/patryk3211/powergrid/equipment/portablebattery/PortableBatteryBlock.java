@@ -142,7 +142,7 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
             be.setCapacityEnchantLevel(level);
             be.setCharge(BatteryUtils.getCurrentCharge(stack));
 
-            var vanillaTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+            var vanillaTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             if(stack.has(DataComponents.CUSTOM_NAME))
                 be.setName(stack.getHoverName());
 
