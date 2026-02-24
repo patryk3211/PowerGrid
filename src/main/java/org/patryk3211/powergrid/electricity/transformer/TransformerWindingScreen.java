@@ -164,7 +164,7 @@ public class TransformerWindingScreen extends ValueSettingsScreen {
     protected void saveAndClose(double pMouseX, double pMouseY) {
         ValueSettingsBehaviour.ValueSettings closest = getClosestCoordinate((int) pMouseX, (int) pMouseY);
         var value = Math.max(closest.value(), 1);
-        ModdedPackets.getChannel().sendToServer(new TransformerWindingC2SPacket(value, hand));
+        ModdedPackets.sendToServer(new TransformerWindingC2SPacket(value, hand));
         onClose();
     }
 

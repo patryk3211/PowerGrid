@@ -55,9 +55,9 @@ public class SaveCardC2SPacket implements C2SPacket {
         var stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof PunchCardItem))
             return;
-        if (stack.get(DataComponents.CUSTOM_DATA).contains("Locked"))
+        if (stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Locked"))
             return;
-        CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+        CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         compoundTag.putByteArray("Data", data);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
         if (name.isEmpty()) {

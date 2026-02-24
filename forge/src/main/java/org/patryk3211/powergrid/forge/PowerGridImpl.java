@@ -32,6 +32,7 @@ import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -45,6 +46,8 @@ import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.*;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
@@ -52,6 +55,8 @@ import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
+import org.patryk3211.powergrid.network.CustomPayloadWrapper;
+import org.patryk3211.powergrid.network.PacketSetImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
@@ -141,6 +146,31 @@ public class PowerGridImpl {
     @SubscribeEvent
     public static void soundEventRegister(RegisterEvent event) {
         event.register(Registries.SOUND_EVENT, ModdedSoundEventsImpl::register);
+    }
+
+    @SubscribeEvent
+    public static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar(PowerGrid.MOD_ID)
+                .optional();
+
+        var packets = ModPackets.PACKETS;
+        registrar.playToServer(
+                CustomPayloadWrapper.type(packets.c2sPacket),
+                CustomPayloadWrapper.codec(packets.c2sPacket),
+                (payload, context) -> {
+                    if (context.player() instanceof ServerPlayer serverPlayer) {
+                        packets.handleC2SPacket(serverPlayer, payload.data());
+                    }
+                }
+        );
+        registrar.playToClient(
+                CustomPayloadWrapper.type(packets.s2cPacket),
+                CustomPayloadWrapper.codec(packets.s2cPacket),
+                (payload, context) -> {
+                    var mc = net.minecraft.client.Minecraft.getInstance();
+                    packets.handleS2CPacket(mc, payload.data());
+                }
+        );
     }
 
     @SubscribeEvent

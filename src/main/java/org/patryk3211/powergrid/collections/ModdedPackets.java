@@ -16,37 +16,30 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.Create;
-import dev.architectury.networking.NetworkChannel;
-import dev.architectury.networking.NetworkManager;
 import net.createmod.catnip.net.base.BasePacketPayload;
 import net.createmod.catnip.net.base.CatnipPacketRegistry;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperS2CPacket;
+import org.patryk3211.powergrid.network.C2SPacket;
+import org.patryk3211.powergrid.network.S2CPacket;
 import org.patryk3211.powergrid.utility.PlayerLookup;
 
 import java.util.Locale;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public enum ModdedPackets implements BasePacketPayload.PacketTypeProvider {
-    ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket.STREAM_CODEC, null),
+    ELECTRO_ZAPPER_SHOOT(ElectroZapperS2CPacket.class, ElectroZapperS2CPacket.STREAM_CODEC),
     ;
 
     private final CatnipPacketRegistry.PacketType<?> type;
-    private final PacketType<?> type_legacy;
 
-    <T extends BasePacketPayload> ModdedPackets(Class<T> clazz, StreamCodec<? super RegistryFriendlyByteBuf, T> codec, PacketType<?> typeLegacy) {
-        type_legacy = typeLegacy;
+    <T extends BasePacketPayload> ModdedPackets(Class<T> clazz, StreamCodec<? super RegistryFriendlyByteBuf, T> codec) {
         String name = this.name().toLowerCase(Locale.ROOT);
         this.type = new CatnipPacketRegistry.PacketType<>(
                 new CustomPacketPayload.Type<>(
@@ -63,52 +56,47 @@ public enum ModdedPackets implements BasePacketPayload.PacketTypeProvider {
         packetRegistry.registerAllPackets();
     }
 
-    // Old stuff that should probably be removed
-    public static final ResourceLocation CHANNEL_NAME = PowerGrid.asResource("main");
-    private static NetworkChannel channel;
-
     @Override
     @SuppressWarnings("unchecked")
     public <T extends CustomPacketPayload> CustomPacketPayload.Type<T> getType() {
         return (CustomPacketPayload.Type<T>) this.type.type();
     }
 
-    public static NetworkChannel getChannel() {
-        return channel;
+    public static void sendToServer(C2SPacket packet) {
+        ModPackets.PACKETS.send(packet);
     }
 
-    public static class PacketType<T> {
-        private final java.util.function.BiConsumer<T, FriendlyByteBuf> encoder;
-        private final Function<FriendlyByteBuf, T> decoder;
-        private final java.util.function.BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler;
-        private final Class<T> type;
-
-        private PacketType(Class<T> type, java.util.function.BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkManager.PacketContext>> handler) {
-            this.encoder = encoder;
-            this.decoder = decoder;
-            this.handler = handler;
-            this.type = type;
-        }
-
-        private void register() {
-            getChannel().register(type, encoder, decoder, handler);
-        }
-    }
-
-    public static <T> void sendToServer(T packet) {
-        channel.sendToServer(packet);
-//        ModPackets.PACKETS.send(packet);
-    }
-
-    public static <T> void sendToClient(T packet, ServerPlayer player) {
+    public static void sendToClient(S2CPacket packet, ServerPlayer player) {
         ModPackets.PACKETS.sendTo(player, packet);
     }
 
-    public static <T> void sendToClientsTracking(T packet, Entity e) {
-        channel.sendToPlayers(PlayerLookup.tracking(e), packet);
+    public static void sendToClient(CustomPacketPayload packet, ServerPlayer player) {
+        player.connection.send(new ClientboundCustomPayloadPacket(packet));
     }
 
-    public static <T> void sendToClientsAround(T packet, ServerLevel world, Vec3 position, double radius) {
-        channel.sendToPlayers(PlayerLookup.around(world, position, radius), packet);
+    public static void sendToClientsTracking(S2CPacket packet, Entity e) {
+        for (ServerPlayer player : PlayerLookup.tracking(e)) {
+            ModPackets.PACKETS.sendTo(player, packet);
+        }
+    }
+
+    public static void sendToClientsTracking(CustomPacketPayload packet, Entity e) {
+        var wrapped = new ClientboundCustomPayloadPacket(packet);
+        for (ServerPlayer player : PlayerLookup.tracking(e)) {
+            player.connection.send(wrapped);
+        }
+    }
+
+    public static void sendToClientsAround(S2CPacket packet, ServerLevel world, Vec3 position, double radius) {
+        for (ServerPlayer player : PlayerLookup.around(world, position, radius)) {
+            ModPackets.PACKETS.sendTo(player, packet);
+        }
+    }
+
+    public static void sendToClientsAround(CustomPacketPayload packet, ServerLevel world, Vec3 position, double radius) {
+        var wrapped = new ClientboundCustomPayloadPacket(packet);
+        for (ServerPlayer player : PlayerLookup.around(world, position, radius)) {
+            player.connection.send(wrapped);
+        }
     }
 }
