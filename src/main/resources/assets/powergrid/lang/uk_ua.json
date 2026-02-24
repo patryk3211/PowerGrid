@@ -24,5 +24,8 @@
   "block.powergrid.heavy_wire_connector": "Високовольтний ізолятор",
   "block.powergrid.hv_breaker": "Високовольтний автовимикач",
   "block.powergrid.hv_switch": "Високовольтний перемикач",
-  "block.powergrid.light_fixture": "Патрон лампи"
+  "block.powergrid.light_fixture": "Патрон лампи",
+  "block.powergrid.lv_button": "Низьковольтна кнопка",
+  "block.powergrid.lv_switch": "Низьковольтний перемикач",
+  "block.powergrid.mv_switch": "Середньо-вольтова кнопка"
 }
