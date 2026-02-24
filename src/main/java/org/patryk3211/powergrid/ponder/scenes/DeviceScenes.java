@@ -699,6 +699,117 @@ public class DeviceScenes {
         scene.markAsFinished();
     }
 
+    public static void electricFan(SceneBuilder builder, SceneBuildingUtil util){
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("electric_fan", "Making Wind");
+        scene.configureBasePlate(0, 0, 5);
+        var fan = util.grid().at(3, 1, 2);
+        var common = util.grid().at(4, 1, 3);
+        var input = util.grid().at(4, 1, 1);
+
+        scene.showBasePlate();
+        scene.idle(5);
+
+        scene.world().showSection(util.select().fromTo(input, common), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(fan), Direction.DOWN);
+        scene.idle(5);
+
+        scene.electric().addSource(common, 0, 0);
+        scene.electric().connect(common, 0, fan, 0);
+        var wire = scene.electric().connect(input, 0, fan, 1);
+
+        scene.overlay().showText(80)
+                .text("The Electric Fan Moves Air Using Electricity")
+                .pointAt(util.vector().of(3.5, 1.5, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(80);
+        scene.rotateCameraY(60);
+
+        scene.overlay().showText(80)
+                .text("Direction and Speed Are Dependent on the Voltage Applied")
+                .pointAt(util.vector().of(3.5, 1.5, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(10);
+        scene.electric().addSource(input, 0, 40);
+        scene.electric().tickFor(10);
+        scene.idle(70);
+        scene.electric().removeWire(wire);
+        scene.electric().tickFor(10);
+
+        var rheo = util.grid().at(1, 1, 2);
+        var thermo = util.grid().at(1, 1, 1);
+        scene.idle(20);
+        scene.world().setBlock(rheo, ModdedBlocks.RHEOSTAT.getDefaultState(), true);
+        scene.world().setBlock(thermo, ModdedBlocks.THERMOMETER.getDefaultState().setValue(BlockStateProperties.FACING, Direction.SOUTH), true);
+        scene.world().showSection(util.select().position(rheo), Direction.DOWN);
+        scene.world().showSection(util.select().position(thermo), Direction.DOWN);
+        scene.electric().addSource(rheo, 1, 35);
+        scene.electric().addSource(rheo, 0, 0);
+        scene.electric().tickFor(30);
+        scene.addKeyframe();
+        scene.idle(50);
+        scene.overlay().showText(80)
+                .text("Fans Can Blow Air Over Hot Components to Cool Them Down")
+                .attachKeyFrame();
+        scene.idle(30);
+        scene.electric().connect(input, 0, fan, 1);
+        scene.idle(60);
+        scene.markAsFinished();
+
+    }
+
+    public static void encasedFan(SceneBuilder builder, SceneBuildingUtil util){
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("encased_fan", "Cooling Down");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+
+        var fan1 = util.grid().at(3, 1, 3);
+        var fan2 = util.grid().at(1, 1, 3);
+        var rheo = util.grid().at(3, 1, 1);
+        var thermo = util.grid().at(2, 1, 1);
+        var circut = util.grid().at(1, 1, 1);
+        var cog1 = util.grid().at(1, 1, 4);
+        var cog2 = util.grid().at(3, 1, 4);
+
+        scene.world().showSection(util.select().position(fan1), Direction.DOWN);
+        scene.world().showSection(util.select().position(fan2), Direction.DOWN);
+        scene.idle(3);
+        scene.world().showSection(util.select().fromTo(cog1, cog2), Direction.DOWN);
+        scene.idle(3);
+        scene.world().showSection(util.select().position(rheo), Direction.DOWN);
+        scene.world().showSection(util.select().position(circut), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(thermo), Direction.EAST);
+        scene.idle(20);
+
+        scene.overlay().showText(70)
+                .text("Fans Can Be Used to Cool Off Hot Components")
+                .pointAt(util.vector().of(3, 1, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.electric().addSource(rheo, 0, 35);
+        scene.electric().addSource(rheo, 1, 0);
+        scene.electric().tickFor(20);
+        scene.idle(40);
+        scene.world().setKineticSpeed(util.select().fromTo(1, 1, 4, 3, 1, 3), -128);
+        scene.world().setKineticSpeed(util.select().position(2, 1, 4), 128);
+        scene.electric().tickFor(20);
+        scene.idle(40);
+        scene.overlay().showText(80)
+                .text("Also Works on Circuit Boards")
+                .pointAt(util.vector().of(1.25, 1.25, 1.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+        scene.markAsFinished();
+    }
+
     private static class DisChargeBattery extends TickingInstruction {
         private final BlockPos battery;
         private final int time;
