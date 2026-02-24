@@ -50,7 +50,7 @@ public class BatteryUtils {
 
     public static int getCurrentCharge(ItemStack stack) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        if(!data.isEmpty())
+        if(data == null)
             return 0;
 
         CompoundTag tag = data.copyTag();

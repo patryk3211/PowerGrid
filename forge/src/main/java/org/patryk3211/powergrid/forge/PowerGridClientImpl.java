@@ -15,19 +15,20 @@
  */
 package org.patryk3211.powergrid.forge;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.circuits.components.ComponentModels;
 import org.patryk3211.powergrid.circuits.components.forge.CircuitBoardModel;
 import org.patryk3211.powergrid.circuits.components.forge.CircuitBoardModelLoader;
+import org.patryk3211.powergrid.collections.forge.ModdedItemsImpl;
 import org.patryk3211.powergrid.collections.forge.ModdedKeysImpl;
 import org.patryk3211.powergrid.collections.forge.ModdedParticlesImpl;
 import org.patryk3211.powergrid.electricity.portablebattery.forge.BatteryArmorLayerImpl;
@@ -65,12 +66,16 @@ public class PowerGridClientImpl {
 
     @SubscribeEvent
     public static void addEntityLayers(EntityRenderersEvent.AddLayers event) {
-        var dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        BatteryArmorLayerImpl.registerOnAll(dispatcher);
+        BatteryArmorLayerImpl.registerOnAll(event);
     }
 
     @SubscribeEvent
     public static void keyRegistration(RegisterKeyMappingsEvent event) {
         ModdedKeysImpl.register(event);
+    }
+
+    @SubscribeEvent
+    public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
+        ModdedItemsImpl.registerClientExtensions(event);
     }
 }

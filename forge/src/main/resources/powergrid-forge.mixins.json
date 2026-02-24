@@ -7,7 +7,6 @@
     "ArmInteractionPointMixin",
     "BasinRecipeMixin",
     "EntityTrackerAccessor",
-    "ItemAccessor",
     "ThreadedAnvilChunkStorageAccessor"
   ],
   "injectors": {

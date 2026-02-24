@@ -62,7 +62,6 @@ loom {
         named("client") {
             vmArg("-enableassertions")
             vmArg("-Dfabric.development=true")
-            vmArg("-XX:+AllowEnhancedClassRedefinition")
         }
     }
 }

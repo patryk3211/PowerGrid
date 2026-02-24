@@ -16,10 +16,9 @@
 package org.patryk3211.powergrid.electricity.portablebattery.forge;
 
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryArmorLayer;
 
 public class BatteryArmorLayerImpl {
@@ -33,10 +32,12 @@ public class BatteryArmorLayerImpl {
         livingRenderer.addLayer((BatteryArmorLayer) layer);
     }
 
-    public static void registerOnAll(EntityRenderDispatcher dispatcher) {
-        for (EntityRenderer<? extends Player> renderer : dispatcher.getSkinMap().values())
-            registerOn(renderer);
-        for (EntityRenderer<?> renderer : dispatcher.renderers.values())
-            registerOn(renderer);
+    public static void registerOnAll(EntityRenderersEvent.AddLayers event) {
+        for (var skin : event.getSkins()) {
+            var renderer = event.getSkin(skin);
+            if (renderer != null) {
+                registerOn(renderer);
+            }
+        }
     }
 }

@@ -172,7 +172,7 @@ subprojects {
 
 		inputs.properties(properties)
 
-		filesMatching(["fabric.mod.json", "META-INF/mods.toml"]) {
+		filesMatching(["fabric.mod.json", "META-INF/mods.toml", "META-INF/neoforge.mods.toml"]) {
 			expand(properties)
 		}
 	}

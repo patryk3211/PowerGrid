@@ -217,6 +217,7 @@ public class PowerGridImpl {
     public static AbstractPowerGridRegistrate createRegistrate() {
         AbstractPowerGridRegistrate.COMPONENT_ITEMS = ProviderType.register("component_items", ComponentItemEntryProviderImpl::new);
         return ForgePowerGridRegistrate.create(PowerGrid.MOD_ID)
+                .defaultCreativeTab((net.minecraft.resources.ResourceKey<CreativeModeTab>) null)
                 .setTooltipModifierFactory(item ->
                         new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                                 .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
