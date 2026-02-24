@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "org.patryk3211.powergrid.mixin.forge",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8.3",
   "mixins": [
     "ArmInteractionPointMixin",

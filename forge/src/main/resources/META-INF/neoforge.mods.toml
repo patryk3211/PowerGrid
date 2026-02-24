@@ -8,6 +8,7 @@ modId = "powergrid"
 version = "${version}"
 displayName = "Create: Power Grid"
 authors = "patryk3211, Da-Negy, rvndm"
+accessTransformers = "META-INF/accesstransformer.cfg"
 description = '''
 Providing electricity to a world near you.
 '''
