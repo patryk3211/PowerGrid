@@ -115,7 +115,8 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void warmUp(int ticks) {
-        mna.warmUp(ticks > 0 ? 1 : ticks);
+        if(mna != null)
+            mna.warmUp(ticks > 0 ? 1 : ticks);
     }
 
     public void addSegment(Collection<INetworkElement> elements) {
