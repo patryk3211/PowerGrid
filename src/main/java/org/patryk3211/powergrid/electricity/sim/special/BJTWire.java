@@ -55,10 +55,15 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         this.beta = fBeta;
         // alpha = beta / (beta + 1)
         forwardGain = fBeta / (fBeta + 1);
-        reverseGain = fBeta * 0.5 / (fBeta * 0.5 + 1);
+        reverseGain = Math.max(0.5, fBeta * 0.1 / (fBeta * 0.1 + 1));
         saturationCurrent = Is;
-        emitterResistance = Rs;
-        collectorResistance = Rs * 10;
+        if(pnp) {
+            emitterResistance = Rs * 10;
+            collectorResistance = Rs;
+        } else {
+            emitterResistance = Rs;
+            collectorResistance = Rs * 10;
+        }
         this.pnp = pnp ? -1 : 1;
 
         OmegaLogE = Math.log(saturationCurrent * emitterResistance / V_T);
