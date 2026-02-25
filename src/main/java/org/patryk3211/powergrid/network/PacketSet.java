@@ -178,7 +178,7 @@ public abstract class PacketSet {
         public void handle(Minecraft mc) {
             if (ModPackets.PACKETS.version == serverVersion)
                 return;
-            Component error = Component.literal("Steam n' Rails on the client uses a different network format than the server.")
+            Component error = Component.literal("PowerGrid on the client uses a different network format than the server.")
                     .append(" You should use the same version of the mod on both sides.");
             mc.getConnection().onDisconnect(new DisconnectionDetails(error));
         }

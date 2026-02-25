@@ -26,8 +26,6 @@ import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.Objects;
-
 public class TransformerWindingC2SPacket implements C2SPacket {
     private final int nTurns;
     private final InteractionHand hand;
