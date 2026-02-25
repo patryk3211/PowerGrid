@@ -450,7 +450,11 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
             var affected = checkSeries(node);
             if(affected != null) {
                 changed = true;
-                deferredNodeCheck.removeAll(affected);
+                affected.forEach(node1 -> {
+                    if(node1.getIndex() == -1 && !isLeaf(node1))
+                        deferredNodeCheck.remove(node1);
+                    else deferredNodeCheck.add(node1);
+                });
             }
         }
         for(var node : deferredNodeCheck) {
