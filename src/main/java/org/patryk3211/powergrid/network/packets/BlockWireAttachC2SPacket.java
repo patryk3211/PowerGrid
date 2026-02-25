@@ -94,8 +94,8 @@ public class BlockWireAttachC2SPacket implements C2SPacket {
                     endpoint = wire.getEndpoint2();
                 }
             } else {
-                // Possibly a junction.
-                endpoint = wire.getEndpoint1();
+                // Junction.
+                endpoint = new DeferredJunctionWireEndpoint(wire, index, gridPoint);
             }
             if(endpoint != null && existingEndpoint == null) {
                 if (!stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection")) {
