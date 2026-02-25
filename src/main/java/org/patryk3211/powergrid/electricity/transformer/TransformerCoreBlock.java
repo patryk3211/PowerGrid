@@ -53,10 +53,10 @@ public class TransformerCoreBlock extends Block implements IWrenchable {
                     if(!world.isClientSide) {
                         var state = ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
                                 .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, dir.getAxis());
-                        world.setBlockAndUpdate(pos.relative(dir, x).relative(Direction.UP, y), state.setValue(PART, 0));
-                        world.setBlockAndUpdate(pos.relative(dir, x + 1).relative(Direction.UP, y), state.setValue(PART, 1));
-                        world.setBlockAndUpdate(pos.relative(dir, x).relative(Direction.UP, y + 1), state.setValue(PART, 2));
-                        world.setBlockAndUpdate(pos.relative(dir, x + 1).relative(Direction.UP, y + 1), state.setValue(PART, 3));
+                        world.setBlock(pos.relative(dir, x).relative(Direction.UP, y), state.setValue(PART, 0), Block.UPDATE_CLIENTS);
+                        world.setBlock(pos.relative(dir, x + 1).relative(Direction.UP, y), state.setValue(PART, 1), Block.UPDATE_CLIENTS);
+                        world.setBlock(pos.relative(dir, x).relative(Direction.UP, y + 1), state.setValue(PART, 2), Block.UPDATE_CLIENTS);
+                        world.setBlock(pos.relative(dir, x + 1).relative(Direction.UP, y + 1), state.setValue(PART, 3), Block.UPDATE_ALL);
                     }
                     return true;
                 }
