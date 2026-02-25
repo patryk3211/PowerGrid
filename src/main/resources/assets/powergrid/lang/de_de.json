@@ -1,1 +1,14 @@
-{}
+{
+  "block.powergrid.acid": "Säure",
+  "block.powergrid.alarm_bell": "Alarmglocke",
+  "block.powergrid.basin_heater": "Kesselheizung",
+  "block.powergrid.battery": "Batterie",
+  "block.powergrid.carbon_pile": "Kohlehaufen",
+  "block.powergrid.carbon_pile_coil": "Kohlehaufen-Spule",
+  "block.powergrid.cord_junction": "Kabelverbinder",
+  "block.powergrid.creative_current_source": "Kreative Stromquelle",
+  "block.powergrid.creative_resistor": "Kreativer Widerstand",
+  "block.powergrid.creative_voltage_source": "Kreative Spannungsquelle",
+  "block.powergrid.crt": "Braunsche Röhre",
+  "block.powergrid.current_gauge": "Strommesser"
+}
