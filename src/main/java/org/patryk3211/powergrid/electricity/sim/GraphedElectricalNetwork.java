@@ -211,6 +211,8 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         } else {
             return;
         }
+        if(nextWire.getNode1() == null || nextWire.getNode2() == null)
+            return;
         if(nextWire instanceof ElectricWire simple) {
             if(collection.contains(simple))
                 return;
