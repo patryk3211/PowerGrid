@@ -88,11 +88,6 @@ public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<Pu
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return InteractionResult.PASS;
-    }
-
-    @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var player = ctx.getPlayer() == null || !ctx.getPlayer().isShiftKeyDown() ? ctx.getHorizontalDirection().getOpposite() : ctx.getHorizontalDirection();
         return defaultBlockState().setValue(HORIZONTAL_FACING, player);
