@@ -101,8 +101,7 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
         float yPrev = 0;
         var consumer = buffer.getBuffer(ModdedRenderLayers.getColor());
 
-        var color = be.color.getTextureDiffuseColor();
-        consumer.setColor((color * 160) + 16, (color * 160) + 16, (color * 160) + 16, 255);
+        int argbColor = be.color.getTextureDiffuseColor() | 0xFF000000;
         var m4 = ms.last().pose();
         for(int i = 0; i < be.sampleBuffer.length; ++i) {
             float y = Mth.clamp(be.sampleBuffer[(be.head + i) % be.sampleBuffer.length], -1, 1);
@@ -119,10 +118,10 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
 
             float yMid = (yPrev + y) * 0.5f;
             y = yPrev = yMid;
-            consumer.addVertex(m4, yPrev - thickness, x1, 0);
-            consumer.addVertex(m4, yPrev + thickness, x1, 0);
-            consumer.addVertex(m4, y + thickness, x2, 0);
-            consumer.addVertex(m4, y - thickness, x2, 0);
+            consumer.addVertex(m4, yPrev - thickness, x1, 0).setColor(argbColor);
+            consumer.addVertex(m4, yPrev + thickness, x1, 0).setColor(argbColor);
+            consumer.addVertex(m4, y + thickness, x2, 0).setColor(argbColor);
+            consumer.addVertex(m4, y - thickness, x2, 0).setColor(argbColor);
 
             yPrev = y;
         }
