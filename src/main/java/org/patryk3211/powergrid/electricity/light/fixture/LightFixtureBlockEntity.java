@@ -158,7 +158,7 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
                     bulbState = null;
                 }
                 return true;
-            } else if(player.isCreative()) {
+            } else if(player.isCreative() && (usedStack.getItem() instanceof ILightBulb || usedStack.isEmpty())) {
                 bulbState = null;
                 return true;
             }
