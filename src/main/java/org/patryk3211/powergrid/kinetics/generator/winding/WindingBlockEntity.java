@@ -697,18 +697,22 @@ public class WindingBlockEntity extends ElectricBlockEntity {
 
     public void forSync(Consumer<ISynchronizedElement> consumer) {
         consumer.accept(electricBehaviour);
-        for(var collected : collectedBEs) {
-            if(collected == this)
-                continue;
-            consumer.accept(collected.thermalBehaviour);
+        if(collectedBEs != null) {
+            for (var collected : collectedBEs) {
+                if (collected == this)
+                    continue;
+                consumer.accept(collected.thermalBehaviour);
+            }
         }
         if(parallelPositions != null) {
             for(var parallel : parallelPositions) {
                 level.getBlockEntity(parallel, ModdedBlockEntities.WINDING.get()).ifPresent(winding -> {
-                    for(var collected : winding.collectedBEs) {
-                        if(collected == this)
-                            continue;
-                        consumer.accept(collected.thermalBehaviour);
+                    if(winding.collectedBEs != null) {
+                        for (var collected : winding.collectedBEs) {
+                            if (collected == this)
+                                continue;
+                            consumer.accept(collected.thermalBehaviour);
+                        }
                     }
                 });
             }
