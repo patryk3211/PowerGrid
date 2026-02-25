@@ -54,10 +54,11 @@ public class MultimeterDataC2SPacket implements C2SPacket {
             return;
         if(multimeter.getMode(stack) != 1)
             multimeter.setMode(stack, 1);
-        var data = multimeter.getModeData(stack);
+        var data = MultimeterItem.getModeData(stack);
         data.putFloat("X", point.x);
         data.putFloat("Y", point.y);
         data.putFloat("Z", point.z);
         data.putUUID("UUID", entity.getUUID());
+        MultimeterItem.saveModeData(stack, data);
     }
 }
