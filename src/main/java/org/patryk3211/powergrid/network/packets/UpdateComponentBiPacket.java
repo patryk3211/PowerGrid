@@ -89,7 +89,6 @@ public class UpdateComponentBiPacket implements S2CPacket, C2SPacket {
 
     // Handle Server
     @Override
-    @Environment(EnvType.SERVER)
     public void handle(ServerPlayer player) {
         var world = player.level();
         if(!player.mayInteract(world, pos))
@@ -99,7 +98,6 @@ public class UpdateComponentBiPacket implements S2CPacket, C2SPacket {
 
     // Handle Client
     @Override
-    @Environment(EnvType.CLIENT)
     public void handle(Minecraft mc) {
         var world = ClientSideAccess.world();
         handle(world);

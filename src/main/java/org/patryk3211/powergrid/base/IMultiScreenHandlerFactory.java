@@ -43,11 +43,8 @@ public interface IMultiScreenHandlerFactory extends MenuProvider {
         MenuRegistry.openExtendedMenu(player, new ExtendedMenuProvider() {
             @Override
             public void saveExtraData(FriendlyByteBuf buf) {
-                extraDataWriter.accept(saveRegData(buf));
-            }
-
-            public RegistryFriendlyByteBuf saveRegData(FriendlyByteBuf buf) {
-                return new RegistryFriendlyByteBuf(buf.asReadOnly(), null);
+                var regBuf = new RegistryFriendlyByteBuf(buf, player.registryAccess());
+                extraDataWriter.accept(regBuf);
             }
 
             @Override
