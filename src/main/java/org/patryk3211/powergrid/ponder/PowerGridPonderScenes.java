@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.AllItems;
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -87,6 +88,9 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(ModdedBlocks.CONSTANT_SPEED_MOTOR, "constant_speed_motor", DeviceScenes::constantSpeedMotor, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(ModdedBlocks.SERVO, "servo", DeviceScenes::servo, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
+
+        HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_FAN, "electric_fan", DeviceScenes::electricFan, PowerGridPonderTags.ELECTRIC_DEVICES);
+        HELPER.addStoryBoard(AllBlocks.ENCASED_FAN, "encased_fan", DeviceScenes::encasedFan);
 
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet)
