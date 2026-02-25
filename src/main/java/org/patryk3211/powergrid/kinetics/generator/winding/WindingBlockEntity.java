@@ -93,8 +93,8 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
         var B = current * coilConstant();
         var Bprev = handler.get();
-        if(Math.signum(Bprev) != Math.signum(B)) {
-            handler.emit(0.001f);
+        if(Bprev * B < 0) {
+            handler.emit(0.001f * Math.signum(B));
         } else {
             handler.emit(B + 0.001f);
         }
