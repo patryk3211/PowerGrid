@@ -27,6 +27,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -268,8 +269,7 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
-        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         var axis = state.getValue(HORIZONTAL_AXIS);
         int x = 0;
         int y = 0;
@@ -294,6 +294,8 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
         }
         BiFunction<Integer, Integer, Boolean> processOffset = (offsetX, offsetY) -> {
             var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
+            if(!neighborPos.equals(offsetPos))
+                return true; // Ignore
             var offsetState = level.getBlockState(offsetPos);
             if(!offsetState.is(this))
                 return false;
@@ -309,12 +311,9 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
             return offsetState.getValue(HORIZONTAL_AXIS) == axis && offsetState.getValue(PART) == expectPart;
         };
         if(processOffset.apply(x, 0) && processOffset.apply(0, y))
-            return;
+            return state;
         // Destroy
-        level.destroyBlock(pos, true);
-        level.destroyBlock(pos.relative(axis, x), true);
-        level.destroyBlock(pos.relative(Direction.Axis.Y, y), true);
-        level.destroyBlock(pos.relative(axis, x).relative(Direction.Axis.Y, y), true);
+        return Blocks.AIR.defaultBlockState();
     }
 
     @Override
