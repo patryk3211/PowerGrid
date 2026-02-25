@@ -67,6 +67,7 @@ import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.forge.PunchCardMenuImpl;
 import org.patryk3211.powergrid.kinetics.punchcard.forge.PunchCardReaderBlockEntityImpl;
+import org.patryk3211.powergrid.network.CustomPayloadWrapper;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;

@@ -538,8 +538,8 @@ public class CraftingRecipes extends StandardRecipeProvider {
         super(output, registries);
     }
 
-//    @Override
-//    public String getName() {
-//        return "Power Grid's Crafting Recipes";
-//    }
+    @Override
+    public String getName() {
+        return "Power Grid's Crafting Recipes";
+    }
 }

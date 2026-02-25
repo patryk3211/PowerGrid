@@ -1,5 +1,6 @@
 accessWidener v2 named
 
 accessible method net/minecraft/data/recipes/RecipeProvider inventoryTrigger ([Lnet/minecraft/advancements/critereon/ItemPredicate;)Lnet/minecraft/advancements/Criterion;
+extendable method net/minecraft/data/recipes/RecipeProvider getName ()Ljava/lang/String;
 
 accessible class net/minecraft/client/particle/ParticleEngine$SpriteParticleRegistration

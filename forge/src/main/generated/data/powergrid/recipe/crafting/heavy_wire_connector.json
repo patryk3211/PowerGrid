@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:nuggets/iron"
+    },
+    "T": {
+      "item": "minecraft:terracotta"
+    }
+  },
+  "pattern": [
+    " I ",
+    "ITI",
+    " T "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:heavy_wire_connector"
+  }
+}

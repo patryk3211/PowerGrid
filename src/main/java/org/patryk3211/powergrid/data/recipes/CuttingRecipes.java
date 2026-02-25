@@ -15,15 +15,9 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
-import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
-import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
+import com.simibubi.create.api.data.recipe.CuttingRecipeGen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -31,7 +25,7 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
-public class CuttingRecipes<P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>, B extends ProcessingRecipeBuilder<P, R, B>> extends ProcessingRecipeGen<P, R, B> {
+public class CuttingRecipes extends CuttingRecipeGen {
     GeneratedRecipe
 
     COPPER_WIRE = create("copper_wire_cutting", b ->
@@ -52,15 +46,5 @@ public class CuttingRecipes<P extends ProcessingRecipeParams, R extends Processi
 
     public CuttingRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> future) {
         super(output, future, PowerGrid.MOD_ID);
-    }
-
-    @Override
-    protected IRecipeTypeInfo getRecipeType() {
-        return AllRecipeTypes.CUTTING;
-    }
-
-    @Override
-    protected B getBuilder(ResourceLocation id) {
-        return null;
     }
 }

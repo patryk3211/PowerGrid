@@ -26,8 +26,8 @@ public class CookingRecipes extends StandardRecipeProvider {
         super(output, registries);
     }
 
-//    @Override
-//    public String getName() {
-//        return "Power Grid's Cooking Recipes";
-//    }
+    @Override
+    public String getName() {
+        return "Power Grid's Cooking Recipes";
+    }
 }

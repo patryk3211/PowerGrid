@@ -1,0 +1,25 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": true,
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "M": {
+      "tag": "c:copper_coils"
+    },
+    "S": {
+      "item": "create:shaft"
+    }
+  },
+  "pattern": [
+    "AMA",
+    "MSM",
+    "AMA"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:generator_induction_rotor"
+  }
+}

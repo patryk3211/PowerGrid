@@ -1,0 +1,34 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": true,
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "powergrid:conductive_casing"
+    },
+    "G": {
+      "item": "create:cogwheel"
+    },
+    "M": {
+      "item": "create:precision_mechanism"
+    },
+    "S": {
+      "item": "create:shaft"
+    },
+    "Z": {
+      "tag": "c:plates/zinc"
+    },
+    "n": {
+      "tag": "c:nuggets/copper"
+    }
+  },
+  "pattern": [
+    " ZMZ ",
+    "nnCnn",
+    " GSG "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:punch_card_reader"
+  }
+}

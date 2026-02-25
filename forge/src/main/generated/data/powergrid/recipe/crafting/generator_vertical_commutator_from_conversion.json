@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid:generator_commutator"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:generator_vertical_commutator"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "create:empty_schematic"
+    },
+    {
+      "item": "powergrid:circuit_schematic"
+    }
+  ],
+  "keep_held_item": true,
+  "results": [
+    {
+      "id": "powergrid:circuit_schematic"
+    }
+  ]
+}

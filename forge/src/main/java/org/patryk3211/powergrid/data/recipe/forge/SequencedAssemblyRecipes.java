@@ -51,4 +51,8 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
     public SequencedAssemblyRecipes(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries, PowerGrid.MOD_ID);
     }
+
+    public String getName() {
+        return this.modid + "'s sequenced assembly recipes - neoforge";
+    }
 }

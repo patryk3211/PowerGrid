@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "R": {
+      "item": "minecraft:compass"
+    },
+    "S": {
+      "item": "powergrid:resistive_coil"
+    }
+  },
+  "pattern": [
+    " R ",
+    "CSI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:thermometer"
+  }
+}

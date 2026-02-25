@@ -15,22 +15,16 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
-import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.api.data.recipe.ProcessingRecipeGen;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
-import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
+import com.simibubi.create.api.data.recipe.PressingRecipeGen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
-public class PressingRecipes<P extends ProcessingRecipeParams, R extends ProcessingRecipe<?, P>, B extends ProcessingRecipeBuilder<P, R, B>> extends ProcessingRecipeGen<P,R,B> {
+public class PressingRecipes extends PressingRecipeGen {
     GeneratedRecipe
 
     ZINC_SHEET = create("zinc_sheet", b -> b
@@ -40,15 +34,5 @@ public class PressingRecipes<P extends ProcessingRecipeParams, R extends Process
 
     public PressingRecipes(PackOutput generator, CompletableFuture<HolderLookup.Provider> registries) {
         super(generator, registries, PowerGrid.MOD_ID);
-    }
-
-    @Override
-    protected IRecipeTypeInfo getRecipeType() {
-        return AllRecipeTypes.PRESSING;
-    }
-
-    @Override
-    protected B getBuilder(ResourceLocation id) {
-        return null;
     }
 }

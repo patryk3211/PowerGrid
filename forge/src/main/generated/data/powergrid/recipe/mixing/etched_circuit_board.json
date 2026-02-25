@@ -1,0 +1,19 @@
+{
+  "type": "create:mixing",
+  "heat_requirement": "heated",
+  "ingredients": [
+    {
+      "item": "powergrid:unetched_circuit"
+    },
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "powergrid:acid"
+    }
+  ],
+  "results": [
+    {
+      "id": "powergrid:incomplete_circuit"
+    }
+  ]
+}

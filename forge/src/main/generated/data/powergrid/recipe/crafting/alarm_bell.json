@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "B": {
+      "tag": "c:plates/brass"
+    },
+    "C": {
+      "tag": "c:copper_coils"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "pattern": [
+    " B ",
+    "BAB",
+    " CI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:alarm_bell"
+  }
+}
