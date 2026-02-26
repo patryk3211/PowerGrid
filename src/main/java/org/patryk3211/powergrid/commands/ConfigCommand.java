@@ -55,9 +55,8 @@ public class ConfigCommand {
             } else if (obj instanceof ModConfigSpec.ConfigValue) {
                 if(key.equals("solverBackend"))
                     return;
-                ModConfigSpec.ConfigValue<Object> configValue = (ModConfigSpec.ConfigValue<Object>) obj;
-                ModConfigSpec.ValueSpec valueSpec = ModdedConfigs.server().specification.getValues().getRaw(configValue.getPath());
-                configValue.set(valueSpec.getDefault());
+                ModConfigSpec.ConfigValue configValue = (ModConfigSpec.ConfigValue) obj;
+                configValue.set(configValue.getDefault());
             }
         });
     }
