@@ -27,6 +27,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -46,6 +47,7 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 public class TransformerMediumBlock extends TransformerBlock implements IBE<TransformerMediumBlockEntity> {
     public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
@@ -264,6 +266,54 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
         var p1 = pos.relative(Direction.Axis.Y, y);
         var p2 = p1.relative(state.getValue(HORIZONTAL_AXIS), x);
         return initiator.equals(p1) || initiator.equals(p2);
+    }
+
+    @Override
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        var axis = state.getValue(HORIZONTAL_AXIS);
+        int x = 0;
+        int y = 0;
+        int part = state.getValue(PART);
+        switch(state.getValue(PART)) {
+            case 0:
+                x = 1;
+                y = 1;
+                break;
+            case 1:
+                x = -1;
+                y = 1;
+                break;
+            case 2:
+                x = 1;
+                y = -1;
+                break;
+            case 3:
+                x = -1;
+                y = -1;
+                break;
+        }
+        BiFunction<Integer, Integer, Boolean> processOffset = (offsetX, offsetY) -> {
+            var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
+            if(!neighborPos.equals(offsetPos))
+                return true; // Ignore
+            var offsetState = level.getBlockState(offsetPos);
+            if(!offsetState.is(this))
+                return false;
+            int expectPart = part;
+            if(offsetX > 0)
+                expectPart |= 1;
+            else if(offsetX < 0)
+                expectPart &= ~1;
+            if(offsetY > 0)
+                expectPart |= 2;
+            else if(offsetY < 0)
+                expectPart &= ~2;
+            return offsetState.getValue(HORIZONTAL_AXIS) == axis && offsetState.getValue(PART) == expectPart;
+        };
+        if(processOffset.apply(x, 0) && processOffset.apply(0, y))
+            return state;
+        // Destroy
+        return Blocks.AIR.defaultBlockState();
     }
 
     @Override

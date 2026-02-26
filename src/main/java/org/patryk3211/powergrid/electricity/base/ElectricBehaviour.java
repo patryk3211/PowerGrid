@@ -60,6 +60,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     private boolean paused = true;
     private boolean reducedSync = false;
 
+    @Nullable
     private SyncAppender syncAppender;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
@@ -416,15 +417,15 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         if(thermal != null) {
             buffer.writeFloat(thermal.getTemperature());
         }
-            for (var node : externalNodes) {
-                if (node.getNetwork() == null) {
-                    // Potentially part of a transmission line.
-                    var line = lineGetter.apply(node);
-                    buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
-                } else {
-                    buffer.writeFloat((float) node.getStateValue());
-                }
+        for (var node : externalNodes) {
+            if (node.getNetwork() == null) {
+                // Potentially part of a transmission line.
+                var line = lineGetter.apply(node);
+                buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
+            } else {
+                buffer.writeFloat((float) node.getStateValue());
             }
+        }
         if(!reducedSync) {
             for (var node : internalNodes) {
                 buffer.writeFloat((float) node.getStateValue());
@@ -465,7 +466,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         return new StateS2CPacket.PosKey(getPos());
     }
 
-    public void setSyncAppender(SyncAppender syncAppender) {
+    public void setSyncAppender(@Nullable SyncAppender syncAppender) {
         this.syncAppender = syncAppender;
     }
 

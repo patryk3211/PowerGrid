@@ -198,20 +198,26 @@ public class GlobalElectricNetworks {
     }
 
     public static void configsReloaded() {
-        var backend = ModdedConfigs.server().electricity.solver.solverBackend.get();
-        var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
-        var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
-        var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
+        var cSolver = ModdedConfigs.server().electricity.solver;
+        var backend = cSolver.solverBackend.get();
+        var rA = cSolver.solverAbsolutePrecision.get();
+        var rR = cSolver.solverRelativePrecision.get();
+        var rM = cSolver.solverAbsoluteMinimumPrecision.get();
         if(!backend.isSupported()) {
             PowerGrid.LOGGER.error("Selected backend '{}' is not supported! Using Java backend instead", backend);
             backend = CSolver.SolverBackend.JAVA;
-            ModdedConfigs.server().electricity.solver.solverBackend.set(CSolver.SolverBackend.JAVA);
+            cSolver.solverBackend.set(CSolver.SolverBackend.JAVA);
         }
         final var selectedBackend = backend;
         for(var networks : worldNetworks.values()) {
             networks.subnetworks.forEach(network -> {
                 network.switchBackend(selectedBackend);
                 network.setPrecision(rA, rR, rM);
+                network.bjtSmoothAlpha = cSolver.bjtLimAlpha.getF();
+                network.diodeSmoothAlpha = cSolver.diodeLimAlpha.getF();
+                network.triodeLimCathode = cSolver.triodeLimCathode.getF();
+                network.triodeLimAnode = cSolver.triodeLimAnode.getF();
+                network.triodeLimGrid = cSolver.triodeLimGrid.getF();
             });
         }
     }

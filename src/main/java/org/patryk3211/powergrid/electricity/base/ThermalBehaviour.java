@@ -25,6 +25,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -39,8 +40,15 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
-public class ThermalBehaviour extends BlockEntityBehaviour {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchronizedElement {
     public static final BehaviourType<ThermalBehaviour> TYPE = new BehaviourType<>("thermal");
     public static final float BASE_TEMPERATURE = 22.0f;
     public static final int OVERHEAT_TICKS = 2;
@@ -59,8 +67,8 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
     private float dissipationFactor;
     private final float overheatTemperature;
 
-    private AirCurrent coolingAir;
-    private float coolingFactorMultiplier;
+    private final Map<AirCurrent, Float> coolingAir = new HashMap<>();
+    private float totalCoolingFactorMultiplier;
 
     private BlockPos trackedBehaviour;
 
@@ -77,7 +85,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         this.overheatTemperature = overheatTemperature;
 
         this.temperature = BASE_TEMPERATURE;
-        this.coolingFactorMultiplier = 1.0f;
+        this.totalCoolingFactorMultiplier = 1.0f;
 
         if(!shouldOverheat()) {
             // Overheating disabled but some devices still need the temperature in their behaviour.
@@ -191,16 +199,35 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
         this.thermalMass = mass;
     }
 
-    public void noCooling() {
-        coolingFactorMultiplier = 1;
-        coolingAir = null;
-    }
-
-    public void setCoolingMultiplier(AirCurrent current, float value) {
+    public void addCoolingMultiplier(AirCurrent current, float value) {
         if((behaviourFlags & IGNORE_EXTRA_COOLING) != 0)
             return;
-        coolingFactorMultiplier = value;
-        coolingAir = current;
+        var tracked = trackedBehaviour != null ? get(getWorld(), trackedBehaviour, TYPE) : null;
+        if(tracked != null) {
+            tracked.addCoolingMultiplier(current, value);
+        } else {
+            var currentValue = coolingAir.get(current);
+            if (currentValue != null) {
+                totalCoolingFactorMultiplier -= currentValue;
+                if (totalCoolingFactorMultiplier < 1)
+                    totalCoolingFactorMultiplier = 1;
+            }
+            coolingAir.put(current, value);
+            totalCoolingFactorMultiplier += value;
+        }
+    }
+
+    public void removeCoolingMultiplier(AirCurrent current) {
+        if((behaviourFlags & IGNORE_EXTRA_COOLING) != 0)
+            return;
+        var tracked = trackedBehaviour != null ? get(getWorld(), trackedBehaviour, TYPE) : null;
+        if(tracked != null) {
+            tracked.removeCoolingMultiplier(current);
+        } else {
+            var currentValue = coolingAir.remove(current);
+            if (currentValue != null)
+                totalCoolingFactorMultiplier -= currentValue;
+        }
     }
 
     @Override
@@ -220,13 +247,18 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
                 this.temperature = tracked.temperature;
             }
 
-            if (coolingAir != null && (coolingAir.source.isSourceRemoved() || coolingAir.source.getSpeed() == 0)) {
-                noCooling();
+            var iter = coolingAir.entrySet().iterator();
+            while(iter.hasNext()) {
+                var entry = iter.next();
+                if(entry.getKey().source.isSourceRemoved() || entry.getKey().source.getSpeed() == 0) {
+                    totalCoolingFactorMultiplier -= entry.getValue();
+                    iter.remove();
+                }
             }
 
             if (tracked == null) {
                 // Dissipate energy
-                float dissipatedPower = dissipationFactor * coolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
+                float dissipatedPower = dissipationFactor * totalCoolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
                 temperature -= dissipatedPower / 20f / thermalMass;
                 if (dissipatedPower > 0 && temperature < BASE_TEMPERATURE)
                     temperature = BASE_TEMPERATURE;
@@ -260,6 +292,11 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
                 }
             }
         } else {
+            var tracked = trackedBehaviour != null ? get(world, trackedBehaviour, TYPE) : null;
+            if (tracked != null) {
+                this.temperature = tracked.temperature;
+            }
+
             if(((behaviourFlags & OVERHEAT_PARTICLES) != 0) && temperature >= overheatTemperature - 50) {
                 var random = getWorld().getRandom();
                 float chance = (temperature - overheatTemperature + 100) / 100;
@@ -333,6 +370,21 @@ public class ThermalBehaviour extends BlockEntityBehaviour {
 
     public void setTemperature(float temperature) {
         this.temperature = temperature;
+    }
+
+    @Override
+    public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
+        buffer.writeFloat(temperature);
+    }
+
+    @Override
+    public void readFromSync(FriendlyByteBuf buffer) {
+        temperature = buffer.readFloat();
+    }
+
+    @Override
+    public StateS2CPacket.Key getKey() {
+        return new StateS2CPacket.PosKey(getPos());
     }
 
     public static class MachineOverloadDamageSource extends DamageSource {

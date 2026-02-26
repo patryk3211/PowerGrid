@@ -20,9 +20,9 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.ITimeAwareWire;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
-import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
+import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
 
-public class CapacitorWire extends AbstractElectricWire implements ISolverHook, IOuterHook, ITimeAwareWire {
+public class CapacitorWire extends AbstractElectricWire implements IStaticResidual, IOuterHook, ITimeAwareWire {
     private double capacitance;
     private double Ieq;
 
@@ -64,22 +64,17 @@ public class CapacitorWire extends AbstractElectricWire implements ISolverHook, 
             Iprev = (potentialDifference() - V) * capacitance / getDeltaTime();
             // Save voltage with a bit of leakage
             V = potentialDifference() * 0.99999;
+            var G = conductance();
+            Ieq = -G * V - Iprev;
         }
     }
 
     @Override
-    public void startIteration() {
-        var G = conductance();
-        var I = capacitance * (potentialDifference() - V) / getDeltaTime();
-        Ieq = -G * V - (I * 0.05f + Iprev * 0.95f);
-    }
-
-    @Override
-    public void addResidual(IResidualAdder residual) {
+    public void addStaticResidual(IResidualAdder residual) {
         if(node1 != null)
-            residual.add(node1.getIndex(),  Ieq);
+            residual.add(node1.getIndex(), -Ieq);
         if(node2 != null)
-            residual.add(node2.getIndex(), -Ieq);
+            residual.add(node2.getIndex(),  Ieq);
     }
 
     @Override

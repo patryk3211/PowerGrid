@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -63,13 +62,18 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         }
     }
 
-    public static double pnLim(double V1, double V0, double Vcrit) {
+    public double pnLim(double V1, double V0, double Vcrit) {
+        if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
+            return V1;
         var dV = V1 - V0;
         var adV = Math.abs(dV);
         var sdV = Math.signum(dV);
-        if(V1 < Vcrit && V0 < Vcrit)
-            return V0 + 0.5 * (adV + 0.5) * Math.log1p(adV) * sdV;
-        return V0 + 0.1 * (adV + 0.5) * Math.log1p(adV) * sdV;
+        double dX = network.diodeSmoothAlpha * Math.log1p(adV);
+        return V0 + Math.min(dX, adV) * sdV;
+//        if(V0 < Vcrit && V1 < Vcrit)
+//            return V1;
+//        var dV = V1 - V0;
+//        return V0 + dV * network.diodeSmoothAlpha;
     }
 
     public void setTemperatureCelsius(double temperatureCelsius) {
@@ -87,7 +91,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     }
 
     @Override
-    public void startIteration() {
+    public void startIteration(int iteration) {
         // TODO: reverse breakdown
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
@@ -111,13 +115,17 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double WTerm = WrightOmega(Omega_arg);
         double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
         // Adding a resistor across the diode helps with convergence in certain cases.
-        double R = 1e-4f; // 10 kOhm
-        R = Mth.clamp(intDelta * 1e-3, 1e-5, 1e-4);
-        G += R;
+        double G_add = 1e-6;
+        if(iteration > 150) {
+            G_add = 1e-2;
+        } else if(iteration > 100) {
+            G_add = 1e-3; //(iteration - 100) * 1e-3;
+        }
+        G += G_add;
         network.updateConductance(this, G - this.G);
         this.G = G;
         double I = V_T * n * WTerm / R_s - I_s2;
-        this.Ieq = I - (G - R) * V;
+        this.Ieq = I - G * V;
     }
 
     @Override

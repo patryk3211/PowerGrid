@@ -217,11 +217,11 @@ public class CircuitBoardModel implements BakedModel {
                     null, null
             ));
             var trQuads = transformer.process(quads);
-            if(circuit != null)
+            if(circuit != null && circuit.quads != null)
                 circuit.quads.putQuads(side, renderType, trQuads);
             return trQuads;
         }
-        if(circuit != null)
+        if(circuit != null && circuit.quads != null)
             circuit.quads.putQuads(side, renderType, quads);
         return quads;
     }

@@ -51,8 +51,10 @@ def configureTask = { String platform, String taskName, String libName ->
                 '-D', "CMAKE_BUILD_TYPE=${platformProperty('cmakeBuildType')}",
                 '-D', "PG_TRACE=${project.nativeTrace}",
                 '-D', "PG_MULTITARGET=${project.multiArch}",
+                '-D', "PG_NATIVE_VERSION=${project.nativeVersionSuffix}",
+                '-D', "PG_STATIC_LIBS=${platformProperty('staticLibs')}",
                 '-G', "${platformProperty('cmakeGenerator')}" ]
-            System.out.println(args);
+            System.out.println(String.join(" ", args));
             def cmakeConf = providers.exec {
                 commandLine args
             }
@@ -81,5 +83,5 @@ def configureTask = { String platform, String taskName, String libName ->
     }
 }
 
-configureTask("linux", "buildLinux", "libpowergridNative.so")
-configureTask("windows", "buildWindows", "libpowergridNative.dll")
+configureTask("linux", "buildLinux", "libpowergridNative${project.nativeVersionSuffix}.so")
+configureTask("windows", "buildWindows", "libpowergridNative${project.nativeVersionSuffix}.dll")

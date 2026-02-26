@@ -2,6 +2,7 @@
 #include <cstdint>
 
 #include "solver.hpp"
+#include "exception_handler.hpp"
 
 using namespace powergrid;
 
@@ -17,6 +18,12 @@ static_assert(sizeof(jint) == sizeof(int));
 #define SOLVER(intptr) ((Solver *) (intptr))
 
 extern "C" {
+    extern int verificationFunc();
+
+    JNIEXPORT jint JNICALL MANGLE(verifySupport)(JNIEnv *env, jobject obj) {
+        return run_safely(verificationFunc);
+    }
+
     JNIEXPORT jlong JNICALL MANGLE(allocateNativeObject)(JNIEnv *env, jobject mnaObj, jobject rhsOpBuf, jobject jOpBuf, jint maxCmdCount, jobject auxBuf) {
         void *rhs = env->GetDirectBufferAddress(rhsOpBuf);
         void *j = env->GetDirectBufferAddress(jOpBuf);

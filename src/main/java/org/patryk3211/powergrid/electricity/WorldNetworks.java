@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.*;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
@@ -91,18 +92,15 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var line2 = findLineMiddle(line.getNode2());
         if(line2 != null)
             line2.splitAt(line.getNode2());
-        if(!runningDiscovery) {
-            islandDiscoveryQueue.add(line.getNode1().getNetwork());
-            islandDiscoveryQueue.add(line.getNode2().getNetwork());
-        }
+        scheduleIslandDiscovery(line.getNode1().getNetwork());
+        scheduleIslandDiscovery(line.getNode2().getNetwork());
         setDirty();
     }
 
     @Override
     public void lineDisconnected(TransmissionLine line) {
         transmissionLines.remove(line.getId());
-        if(line.getNetwork() != null && !runningDiscovery)
-            islandDiscoveryQueue.add(line.getNetwork());
+        scheduleIslandDiscovery(line.getNetwork());
         setDirty();
     }
 
@@ -112,7 +110,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void scheduleIslandDiscovery(ElectricalNetwork network) {
-        if(network != null)
+        if(network != null && !runningDiscovery)
             islandDiscoveryQueue.add(network);
     }
 
@@ -330,8 +328,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             var eb = bwe.getElectricBehaviour(world);
                             if (eb == null)
                                 continue;
-                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
-                                    .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
+                            var syncState = new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1);
+                            if(eb.blockEntity instanceof WindingBlockEntity winding) {
+                                winding.forSync(sync -> {
+                                    syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                            .put(sync, syncState);
+                                });
+                            } else {
+                                syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                        .put(eb, syncState);
+                            }
                         } else if(endpoint instanceof JunctionWireEndpoint je) {
                             var syncEntry = je.makeSyncEntry(world);
                             if(syncEntry != null)
@@ -771,10 +777,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Also, we need to inform the wire entities about this.
             line.unresolve();
             setDirty();
-            if(removeNode.getNetwork() != null) {
-                islandDiscoveryQueue.add(removeNode.getNetwork());
-                removeNode.remove();
-            }
+            scheduleIslandDiscovery(removeNode.getNetwork());
+            removeNode.remove();
             globalExternalNodes.remove(removeNode.endpoint);
         }
     }
@@ -792,10 +796,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
         }
-        if(ownedNode.getNetwork() != null) {
-            islandDiscoveryQueue.add(ownedNode.getNetwork());
-            ownedNode.remove();
-        }
+        scheduleIslandDiscovery(ownedNode.getNetwork());
+        ownedNode.remove();
         globalExternalNodes.remove(ownedNode.endpoint);
     }
 

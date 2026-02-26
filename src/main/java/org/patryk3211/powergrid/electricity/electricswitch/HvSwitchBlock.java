@@ -235,12 +235,13 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
                 world.destroyBlock(pos.relative(facing), false);
             } else {
                 var pos2 = pos.relative(facing.getOpposite());
+                var state2 = world.getBlockState(pos2);
                 var player = context.getPlayer();
                 if(player != null && !player.isCreative()) {
-                    Block.getDrops(state, serverWorld, pos2, world.getBlockEntity(pos2), player, context.getItemInHand())
+                    Block.getDrops(state2, serverWorld, pos2, world.getBlockEntity(pos2), player, context.getItemInHand())
                             .forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
                 }
-                state.spawnAfterBreak(serverWorld, pos2, ItemStack.EMPTY, true);
+                state2.spawnAfterBreak(serverWorld, pos2, ItemStack.EMPTY, true);
                 world.destroyBlock(pos2, false);
             }
         }

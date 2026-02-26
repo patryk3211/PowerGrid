@@ -118,6 +118,8 @@ public class WireItem extends Item implements IWire {
                 return InteractionResultHolder.fail(null);
             var segments = entity.segments;
             if(bwe.getEnd()) {
+                if(segments.size() == 0)
+                    return InteractionResultHolder.fail(null);
                 var last = segments.get(segments.size() - 1);
                 continueDir = last.direction;
             } else {
@@ -293,6 +295,9 @@ public class WireItem extends Item implements IWire {
         if(stack.has(DataComponents.CUSTOM_DATA) && user.isShiftKeyDown()) {
             CompoundTag tag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
             tag.remove("Connection");
+            tag.remove("Turns");
+            tag.remove("Terminal");
+            tag.remove("Initiator");
             stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
             if(!world.isClientSide)
                 user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);

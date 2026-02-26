@@ -31,6 +31,14 @@ import java.util.function.Function;
 
 public class ElectricalNetwork implements IStamped {
     public static final double G_MIN = 1e-8;
+
+    public double bjtSmoothAlpha = 0.5;
+    public double diodeSmoothAlpha = 0.025;
+
+    public double triodeLimCathode = 0.8;
+    public double triodeLimAnode = 0.8;
+    public double triodeLimGrid = 0.8;
+
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
 
     private final boolean addGMin;
@@ -111,7 +119,8 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void warmUp(int ticks) {
-        mna.warmUp(ticks > 0 ? 1 : ticks);
+        if(mna != null)
+            mna.warmUp(ticks > 0 ? 1 : ticks);
     }
 
     public void addSegment(Collection<INetworkElement> elements) {
@@ -199,6 +208,8 @@ public class ElectricalNetwork implements IStamped {
             leafNodes.remove(node);
             return;
         }
+        if(node.getIndex() == -1 && node.getNetwork() == this)
+            return;
         if(node.getNetwork() != this || node.getIndex() >= nodes.size() || nodes.get(node.getIndex()) != node)
             // This node is not actually in this network.
             return;
@@ -315,6 +326,10 @@ public class ElectricalNetwork implements IStamped {
             return;
         if(!hasNode(wire.node1) || !hasNode(wire.node2))
             return;
+        if(wire.node1.getIndex() == -1 || wire.node2.getIndex() == -1) {
+            PowerGrid.LOGGER.error("Node index negative even though it shouldn't be?", new Throwable());
+            return;
+        }
 
         conductanceDelta += Math.abs(change);
         if(countUpdates) {
@@ -506,18 +521,27 @@ public class ElectricalNetwork implements IStamped {
             mna.hooksChanged();
     }
 
-    public double getValue(INode node) {
+    protected Double tryGetValue(INode node) {
+        if(mna == null)
+            return 0.0;
         if(leafNodes.containsKey(node)) {
             var tracked = leafNodes.get(node);
             if(tracked != null)
                 return getValue(tracked);
-            return 0;
+            return 0.0;
         }
         var index = node.getIndex();
+        if(index == -1)
+            return null;
         if(index < 0 || index >= nodes.size())
-            return 0;
+            return 0.0;
         var value = mna.stateVector().safe_get(index, 0);
-        return Double.isFinite(value) ? value : 0;
+        return Double.isFinite(value) ? value : 0.0;
+    }
+
+    public double getValue(INode node) {
+        var val = tryGetValue(node);
+        return val == null ? 0 : val;
     }
 
     public void setValue(INode node, double value) {
@@ -680,7 +704,7 @@ public class ElectricalNetwork implements IStamped {
             for(var hook : outerHooks)
                 hook.preSolve();
             for(var hook : innerHooks)
-                hook.startIteration();
+                hook.startIteration(0);
             mna.zeroState();
             for(var hook : outerHooks)
                 hook.postUpperSolve();

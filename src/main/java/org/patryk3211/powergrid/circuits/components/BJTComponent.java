@@ -24,7 +24,6 @@ import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
-import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.special.BJTWire;
 
 public abstract class BJTComponent extends OrientableComponent {
@@ -40,16 +39,16 @@ public abstract class BJTComponent extends OrientableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(GAIN, power(20), voltage(60));
+        properties.add(GAIN, power(20));
     }
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var wire = new VLimBJT(
+        var wire = new BJTWire(
                 builder.terminalNode(0), // Collector
                 builder.terminalNode(1), // Base
                 builder.terminalNode(2), // Emitter
-                5.47e-12, placed.get(GAIN), 0.05, pnp
+                5.47e-12, placed.get(GAIN), 0.1, pnp
         );
         builder.add(wire);
         placed.add(wire);
@@ -60,17 +59,17 @@ public abstract class BJTComponent extends OrientableComponent {
                 .setMaxPower(20, 125);
     }
 
-    public static class VLimBJT extends BJTWire {
-        public VLimBJT(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs, boolean pnp) {
-            super(collector, base, emitter, Is, fBeta, Rs, pnp);
-        }
-
-        @Override
-        public float power() {
-            var power = super.power();
-            if(Math.abs(potentialDifference()) > 60 || Math.abs(collectorBase.potentialDifference()) > 60)
-                power += 40;
-            return power;
-        }
-    }
+//    public static class VLimBJT extends BJTWire {
+//        public VLimBJT(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs, boolean pnp) {
+//            super(collector, base, emitter, Is, fBeta, Rs, pnp);
+//        }
+//
+//        @Override
+//        public float power() {
+//            var power = super.power();
+//            if(Math.abs(potentialDifference()) > 60 || Math.abs(collectorBase.potentialDifference()) > 60)
+//                power += 40;
+//            return power;
+//        }
+//    }
 }

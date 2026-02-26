@@ -321,7 +321,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
             updateThermals();
             updateParameters();
         }
-        notifyUpdate();
+        if(!level.isClientSide)
+            notifyUpdate();
     }
 
     private void updateThermals() {

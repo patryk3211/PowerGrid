@@ -159,7 +159,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
             float totalField = 0;
             if (source != null) {
                 for (var rotor : rotors) {
-                    totalField += rotor.calculateField();
+                    totalField += rotor.totalField.get();
                 }
                 source.tick(totalField);
             }

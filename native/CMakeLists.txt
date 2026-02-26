@@ -4,6 +4,8 @@ project(PowerGridNative VERSION 1.0.0 LANGUAGES CXX)
 
 option(PG_TRACE "Enable tracing in native backend code" false)
 option(PG_MULTITARGET "Enable multi-target OpenBLAS build" false)
+option(PG_STATIC_LIBS "Enable static linking of some of the dependencies" false)
+option(PG_NATIVE_VERSION "Version suffix" "0")
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -17,18 +19,31 @@ set(SOURCES
     src/powergridNative/cpp/mna.cpp
 )
 
-set(CMAKE_C_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(SOURCES_SAFE_EXEC
+    src/powergridNative/cpp/exception_handler.cpp
+    src/powergridNative/cpp/verify.cpp
+)
 
-set(CMAKE_C_FLAGS_RELEASE "-O3 -mavx2")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx2")
+add_library(powergridNative SHARED ${SOURCES} ${SOURCES_SAFE_EXEC})
+set_target_properties(powergridNative PROPERTIES OUTPUT_NAME "powergridNative${PG_NATIVE_VERSION}")
 
-add_library(powergridNative SHARED ${SOURCES})
+if(${PG_STATIC_LIBS})
+  set(CMAKE_C_FLAGS "-static")
+  add_link_options("-static")
+endif()
 
 target_include_directories(powergridNative PUBLIC src/powergridNative/include ${JVM_INCLUDE})
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   target_compile_definitions(powergridNative PRIVATE DEBUG)
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+  if(${PG_STATIC_LIBS})
+    target_compile_options(powergridNative PRIVATE "-mavx2" "-static-libstdc++" "-static-libgcc" "-static")
+    target_link_options(powergridNative PRIVATE "-static-libstdc++" "-static-libgcc" "-static")
+  else()
+    target_compile_options(powergridNative PRIVATE "-mavx2")
+  endif()
+  set_source_files_properties(${SOURCES_SAFE_EXEC} PROPERTIES COMPILE_FLAGS "-mno-avx2")
 endif()
 
 if(PG_TRACE)
@@ -74,5 +89,9 @@ set(enable_examples OFF)
 set(enable_fortran OFF)
 set(enable_tests OFF)
 add_subdirectory(superlu)
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+  target_compile_options(superlu PRIVATE "-mavx2")
+endif()
 
 target_link_libraries(powergridNative PUBLIC superlu openblas_static)

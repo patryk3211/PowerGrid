@@ -135,7 +135,8 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
     public void setEnergy(double energy) {
         this.energy = energy;
         updateParameters();
-        notifyUpdate();
+        if(!level.isClientSide)
+            notifyUpdate();
     }
 
     public double getCapacity() {

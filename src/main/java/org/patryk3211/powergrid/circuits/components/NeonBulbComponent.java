@@ -131,6 +131,14 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
     }
 
     @Override
+    public void stateUpdated(@NotNull PlacedComponent placed) {
+        if(placed.wires.isEmpty())
+            return;
+        var wire = (NeonBulbWire) placed.wires.get(0);
+        wire.setLit(placed.get(LIT));
+    }
+
+    @Override
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
         // Render the bulb here to avoid adding all circuit board quads to translucent layer.
         var bulb = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_BULB, be.getBlockState());

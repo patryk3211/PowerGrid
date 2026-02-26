@@ -385,7 +385,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
                 builder.add(couplingI1);
                 builder.add(couplingI2);
             } else {
-                this.coupling = builder.couple(ratio, secondaryStray * ratio * ratio, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
+                this.coupling = builder.couple(ratio, secondaryStray, Tnode, P2, builder.terminalNode(secondaryCoil.getTerminal1()), builder.terminalNode(secondaryCoil.getTerminal2()));
             }
         } else if(primaryCoil.isDefined()) {
             this.primaryStray = builder.connect((float) primaryInductance * mutualMultiplier(), builder.terminalNode(primaryCoil.getTerminal1()), builder.terminalNode(primaryCoil.getTerminal2()));

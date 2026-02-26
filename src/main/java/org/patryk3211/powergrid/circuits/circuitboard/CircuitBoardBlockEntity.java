@@ -69,8 +69,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
     private final Map<CircuitBoardBlockEntity, List<ElectricWire>> edgeViadWires = new HashMap<>();
 
-    private AirCurrent coolingAir;
-    protected float coolingFactorMultiplier = 1;
+    private final Map<AirCurrent, Float> coolingAir = new HashMap<>();
+    public float totalCoolingFactorMultiplier = 1.0f;
 
     @Nullable
     @Environment(EnvType.CLIENT)
@@ -103,7 +103,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         if(baked == null)
             return;
         baked.read(tag, false);
-        notifyUpdate();
+        if(!level.isClientSide)
+            notifyUpdate();
     }
 
     @Nullable
@@ -113,7 +114,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         var orientation = CircuitBoardBlock.getOrientation(getBlockState(), sideIn);
         if(orientation == null)
             return null;
-        if(edgeOut.positive() == orientation.positive()) {
+        if(((edgeOut.isX() && orientation.isX()) || (edgeOut.isY() && orientation.isY())) == (edgeOut.positive() == orientation.positive())) {
             edgePosition = 15 - edgePosition;
         }
         for(var placed : getComponents(ViaComponent.class)) {
@@ -261,8 +262,13 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Override
     public void tick() {
         super.tick();
-        if(coolingAir != null && (coolingAir.source.isSourceRemoved() || coolingAir.source.getSpeed() == 0)) {
-            noCooling();
+        var iter = coolingAir.entrySet().iterator();
+        while(iter.hasNext()) {
+            var entry = iter.next();
+            if(entry.getKey().source.isSourceRemoved() || entry.getKey().source.getSpeed() == 0) {
+                totalCoolingFactorMultiplier -= entry.getValue();
+                iter.remove();
+            }
         }
         if(baked != null) {
             baked.tick();
@@ -439,14 +445,21 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         return baked;
     }
 
-    public void setCoolingMultiplier(AirCurrent current, float value) {
-        coolingFactorMultiplier = value;
-        coolingAir = current;
+    public void addCoolingMultiplier(AirCurrent current, float value) {
+        var currentValue = coolingAir.get(current);
+        if(currentValue != null) {
+            totalCoolingFactorMultiplier -= currentValue;
+            if (totalCoolingFactorMultiplier < 1)
+                totalCoolingFactorMultiplier = 1;
+        }
+        coolingAir.put(current, value);
+        totalCoolingFactorMultiplier += value;
     }
 
-    public void noCooling() {
-        coolingFactorMultiplier = 1;
-        coolingAir = null;
+    public void removeCoolingMultiplier(AirCurrent current) {
+        var currentValue = coolingAir.remove(current);
+        if(currentValue != null)
+            totalCoolingFactorMultiplier -= currentValue;
     }
 
     @Override

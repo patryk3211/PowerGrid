@@ -14,7 +14,15 @@ Create's in-game 'Ponder' documentation will walk you through the basic physics 
 with concepts like Ohm's law.
 </p>
 
+<p>
+You can join the <a href="https://discord.gg/QQqqEnJqGz">Community Discord Server</a> if you want to discuss this mod or ask questions.
+</p>
+
 ## Contributing
 Want to help translate this mod to another language? You can do so with [CrowdIn](https://crowdin.com/project/create-power-grid)
 
 Reporting a bug? Make sure to test it with the latest version available. Describe the steps it takes to reproduce it and include anything that can help with resolving it (screenshots, videos, logs)
+
+## Building
+To build the mod from source you need to run either `:forge:build` or `fabric:build` gradle task, your mod jar will be located in `forge/build/libs` or `fabric/build/libs`.
+If you want to also build the native acceleration binary you have to have **cmake** and a working **C++ compiler** installed. Configure the cmake executable location in `native/gradle.properties`. 

@@ -71,7 +71,7 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     @Override
-    public void startIteration() {
+    public void startIteration(int iteration) {
         if(inductance == 0) {
             Ieq = 0;
             return;

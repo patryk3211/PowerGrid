@@ -26,7 +26,7 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
 public class ResistorComponent extends VerticallyOrientableComponent {
-    public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 1f, 1000_000f);
+    public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 0.1f, 100_000_000f);
 
     private static final ComponentFootprint VERTICAL_FOOTPRINT = new ComponentFootprint.Builder(3, 3)
             .addPad(0, 1, 0).addPad(2, 1, 1).withItem().withOutline().build();

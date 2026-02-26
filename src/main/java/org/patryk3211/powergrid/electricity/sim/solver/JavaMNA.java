@@ -48,7 +48,8 @@ public class JavaMNA implements IMNA {
 
     private DynamicallyTypedMatrix ScaledJ;
     protected DMatrixRMaj StateVector;
-    protected DMatrixRMaj AuxiliaryVector;
+    protected DMatrixRMaj ErrorVector;
+    protected DMatrixRMaj StateDelta;
 
     private double[] columnScales;
     private double[] rowScales;
@@ -202,7 +203,8 @@ public class JavaMNA implements IMNA {
         if(SCALING)
             ScaledJ = new DynamicallyTypedMatrix(size, size, DynamicallyTypedMatrix.Solver.LU);
         ResidualVector = new DMatrixRMaj(size, 1);
-        AuxiliaryVector = new DMatrixRMaj(size, 1);
+        ErrorVector = new DMatrixRMaj(size, 1);
+        StateDelta = new DMatrixRMaj(size, 1);
         StateVector = NewState;
 
         if(SCALING) {
@@ -218,7 +220,7 @@ public class JavaMNA implements IMNA {
         if(i < max - 10) {
             network.countUpdates = false;
             for(var hook : network.innerHooks) {
-                hook.startIteration();
+                hook.startIteration(i);
             }
             network.countUpdates = true;
         }
@@ -323,14 +325,20 @@ public class JavaMNA implements IMNA {
         int maxIterations = network.maxIterations.apply(network.hasHooks());
         int i;
         double norm = 0;
+        boolean skipped = false;
         for (i = 0; i < maxIterations; ++i) {
             iterHooks(i, maxIterations);
             var workMatrix = Jacobian;
             computeResidual();
 
-            workMatrix.mult(StateVector, AuxiliaryVector);
-            CommonOps_DDRM.subtract(AuxiliaryVector, ResidualVector, AuxiliaryVector);
-            var nextNorm = NormOps_DDRM.normP1(AuxiliaryVector);
+            workMatrix.mult(StateVector, ErrorVector);
+            CommonOps_DDRM.subtract(ErrorVector, ResidualVector, ErrorVector);
+            var nextNorm = CommonOps_DDRM.elementMaxAbs(ErrorVector);
+            if(i != 0 && nextNorm > norm && !skipped) {
+                CommonOps_DDRM.add(StateVector, -0.9, StateDelta, StateVector);
+                skipped = true; --i;
+                continue;
+            }
             var dNorm = Math.abs(nextNorm - norm);
             norm = nextNorm;
             if (norm < absoluteStoppingCriterion || dNorm < relativeStoppingCriterion)
@@ -338,11 +346,13 @@ public class JavaMNA implements IMNA {
             if (i >= maxIterations - 11) {
                 // Right before non-linear devices are disabled.
                 // Only append new problem frames if the network has been converging before.
-                var wasConverged = converged;
-                converged = false;
-                if(wasConverged && !converged)
+                if(converged)
                     network.convergenceProblems(norm, residualAccess);
+                converged = false; //norm <= minimumAllowedPrecision;
+//                if(!converged)
+//                    break;
             }
+            skipped = false;
 
             if(SCALING) {
                 prepareScaled(workMatrix);
@@ -382,13 +392,16 @@ public class JavaMNA implements IMNA {
                 }
             }
 
+            StateDelta.setTo(StateVector);
             workMatrix.solve(ResidualVector, StateVector);
             var valid = !MatrixFeatures_DDRM.hasUncountable(StateVector);
             if (valid) {
                 if(SCALING)
                     CommonOps_DDRM.multRows(columnScales, StateVector);
+                CommonOps_DDRM.subtract(StateVector, StateDelta, StateDelta);
             } else {
                 StateVector.zero();
+                StateDelta.zero();
             }
         }
         verifyConvergence(norm, i, maxIterations);
@@ -560,17 +573,17 @@ public class JavaMNA implements IMNA {
 
         @Override
         public double get(int row, int column) {
-            return AuxiliaryVector.data[row];
+            return ErrorVector.data[row];
         }
 
         @Override
         public int numRows() {
-            return AuxiliaryVector.getNumRows();
+            return ErrorVector.getNumRows();
         }
 
         @Override
         public int numCols() {
-            return AuxiliaryVector.getNumCols();
+            return ErrorVector.getNumCols();
         }
     }
 }

@@ -19,25 +19,18 @@ import com.electronwill.nightconfig.core.AbstractConfig;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import net.createmod.catnip.config.ui.ConfigHelper;
-import net.createmod.catnip.data.Pair;
 import net.minecraft.commands.CommandSourceStack;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.CServer;
 import org.patryk3211.powergrid.utility.Lang;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import static net.minecraft.commands.Commands.literal;
 
 public class ConfigCommand {
     public static ArgumentBuilder<CommandSourceStack, ?> reset() {
         return literal("reset_configs")
-                .requires(cs -> cs.hasPermission(3))
+                .requires(cs -> cs.hasPermission(2))
                 .executes(ctx -> {
                     resetConfig(ModdedConfigs.server().specification.getValues());
                     ctx.getSource().sendSystemMessage(Lang.translateDirect("message.config_reset_ok"));
@@ -60,17 +53,11 @@ public class ConfigCommand {
             if (obj instanceof AbstractConfig) {
                 resetConfig((UnmodifiableConfig) obj);
             } else if (obj instanceof ModConfigSpec.ConfigValue) {
+                if(key.equals("solverBackend"))
+                    return;
                 ModConfigSpec.ConfigValue<Object> configValue = (ModConfigSpec.ConfigValue<Object>) obj;
                 ModConfigSpec.ValueSpec valueSpec = ModdedConfigs.server().specification.getValues().getRaw(configValue.getPath());
-
-                List<String> comments = new ArrayList<>();
-
-                if (valueSpec.getComment() != null)
-                    comments.addAll(Arrays.asList(valueSpec.getComment().split("\n")));
-
-                Pair<String, Map<String, String>> metadata = ConfigHelper.readMetadataFromComment(comments);
-
-                ConfigHelper.setValue(String.join(".", configValue.getPath()), configValue, valueSpec.getDefault(), metadata.getSecond());
+                configValue.set(valueSpec.getDefault());
             }
         });
     }
