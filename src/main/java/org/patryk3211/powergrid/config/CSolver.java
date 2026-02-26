@@ -40,6 +40,10 @@ public class CSolver extends ConfigBase {
     public final ConfigFloat bjtLimAlpha = f(0.5f, 0, 1, "bjtLimAlpha", Comments.bjtLimAlpha);
     public final ConfigFloat diodeLimAlpha = f(0.025f, 0, 1, "diodeLimAlpha", Comments.diodeLimAlpha);
 
+    public final ConfigFloat triodeLimAnode = f(0.8f, 0, 1, "triodeLimAnode", Comments.triodeLim);
+    public final ConfigFloat triodeLimCathode = f(0.8f, 0, 1, "triodeLimCathode", Comments.triodeLim);
+    public final ConfigFloat triodeLimGrid = f(0.8f, 0, 1, "triodeLimCathode", Comments.triodeLim);
+
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
 
     public final ConfigEnum<SolverBackend> solverBackend = e(SolverBackend.NATIVE, "solverBackend", Comments.solverBackend);
@@ -85,6 +89,7 @@ public class CSolver extends ConfigBase {
 
         public static final String bjtLimAlpha = "BJT inter-iteration voltage change smoothing multiplier";
         public static final String diodeLimAlpha = "Diode inter-iteration voltage change smoothing multiplier";
+        public static final String triodeLim = "Triode inter-iteration voltage change smoothing multiplier";
 
         public static final String solverBackend = "Solver MNA backend. The native backend can provide platform-specific acceleration which usually improves performance, however it isn't portable and needs a special binary which might not be available for all platforms. Java backend is portable and always available as fallback.";
     }

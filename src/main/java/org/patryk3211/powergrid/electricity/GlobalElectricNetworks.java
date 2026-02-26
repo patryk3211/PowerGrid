@@ -209,6 +209,9 @@ public class GlobalElectricNetworks {
                 network.setPrecision(rA, rR, rM);
                 network.bjtSmoothAlpha = cSolver.bjtLimAlpha.getF();
                 network.diodeSmoothAlpha = cSolver.diodeLimAlpha.getF();
+                network.triodeLimCathode = cSolver.triodeLimCathode.getF();
+                network.triodeLimAnode = cSolver.triodeLimAnode.getF();
+                network.triodeLimGrid = cSolver.triodeLimGrid.getF();
             });
         }
     }

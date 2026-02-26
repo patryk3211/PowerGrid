@@ -35,6 +35,10 @@ public class ElectricalNetwork implements IStamped {
     public double bjtSmoothAlpha = 0.5;
     public double diodeSmoothAlpha = 0.025;
 
+    public double triodeLimCathode = 0.8;
+    public double triodeLimAnode = 0.8;
+    public double triodeLimGrid = 0.8;
+
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
 
     private final boolean addGMin;

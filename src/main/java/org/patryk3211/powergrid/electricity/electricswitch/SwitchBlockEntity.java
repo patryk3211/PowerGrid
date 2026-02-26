@@ -105,6 +105,8 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         }
         if(tag.contains("Overvolted")) {
             overvoltResistance = tag.getFloat("Overvolted");
+            if(overvoltResistance <= 0)
+                overvoltResistance = 1f;
             wire.setResistance(overvoltResistance);
             wire.setState(true);
             if(tag.getBoolean("Effect"))

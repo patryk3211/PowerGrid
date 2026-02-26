@@ -189,7 +189,7 @@ jobject Solver::singleTick(int maxIters, jobject mnaObj, int cmdCount) {
         int idxMax = idamax_(&m_size, m_residual.data(), &inc);
         double nextNorm = abs(m_residual[idxMax - 1]);
         if(i != 0 && nextNorm > norm && !skipped) {
-            double alpha = 0.1;
+            double alpha = -0.9;
             daxpy_(&m_size, &alpha, m_stateDelta.data(), &inc, m_state, &inc);
             skipped = true; --i;
             continue;
