@@ -126,7 +126,7 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
             try (InputStream in = Files.newInputStream(file, StandardOpenOption.READ)) {
                 var nbt = NbtIo.readCompressed(in, NbtAccounter.unlimitedHeap());
                 var schematic = CircuitSchematic.fromNbt(nbt);
-                ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(this.menu.contentHolder, null, schematic));
+                ModdedPackets.sendToServer(new SaveSchematicC2SPacket(this.menu.contentHolder, null, schematic));
             }
         } catch (IOException e) {
             PowerGrid.LOGGER.error("Failed to load circuit schematic", e);
@@ -136,7 +136,7 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
     }
 
     private void back() {
-        ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 0));
+        ModdedPackets.sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 0));
     }
 
     @Override

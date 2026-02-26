@@ -33,6 +33,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -59,9 +60,9 @@ public class WirePreview {
     public static ItemStack getUsedWireStack(Player player) {
         var stack1 = player.getMainHandItem();
         var stack2 = player.getOffhandItem();
-        if(stack1 != null && stack1.getItem() instanceof IWire && stack1.hasTag()) {
+        if(stack1 != null && stack1.getItem() instanceof IWire && stack1.has(DataComponents.CUSTOM_DATA)) {
             return stack1;
-        } else if(stack2 != null && stack2.getItem() instanceof IWire && stack2.hasTag()) {
+        } else if(stack2 != null && stack2.getItem() instanceof IWire && stack2.has(DataComponents.CUSTOM_DATA)) {
             return stack2;
         } else {
             return null;
@@ -69,7 +70,7 @@ public class WirePreview {
     }
 
     private static void renderCord(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target, ItemStack wireStack) {
-        var endpoint = WireEndpointType.deserialize(wireStack.getTagElement("Connection"));
+        var endpoint = WireEndpointType.deserialize(wireStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection"));
         if(!(endpoint instanceof ICordEndpoint cordEndpoint))
             return;
         CordRenderer.renderPreview(cordEndpoint, player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
@@ -89,7 +90,7 @@ public class WirePreview {
         if(target.getType() != HitResult.Type.BLOCK)
             return;
 
-        var tag = wireStack.getTagElement("Connection");
+        var tag = wireStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection");
         var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
         float thickness = wireItem.getWireThickness();
 
@@ -188,7 +189,7 @@ public class WirePreview {
         if(!(wireStack.getItem() instanceof WireItem wire))
             return null;
 
-        var tag = wireStack.getTagElement("Connection");
+        var tag = wireStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection");
         var endpoint = WireEndpointType.deserialize(tag);
         if(endpoint == null)
             return null;

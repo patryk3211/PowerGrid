@@ -28,14 +28,14 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import org.patryk3211.powergrid.PowerGrid;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedFluidsImpl {
-    public static final FluidEntry<ForgeFlowingFluid.Flowing> ACID =
+    public static final FluidEntry<BaseFlowingFluid.Flowing> ACID =
             REGISTRATE.fluid("acid",
                             ResourceLocation.tryBuild("minecraft", "block/water_still"),
                             ResourceLocation.tryBuild("minecraft", "block/water_flow"),
@@ -44,10 +44,10 @@ public class ModdedFluidsImpl {
                     .transform(translucent())
                     .register();
 
-    private static <T extends ForgeFlowingFluid, P> NonNullUnaryOperator<FluidBuilder<T, P>> translucent() {
+    private static <T extends BaseFlowingFluid, P> NonNullUnaryOperator<FluidBuilder<T, P>> translucent() {
         return b -> {
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-                b.renderType(RenderType::translucent);
+                b.renderType(() -> RenderType::translucent);
             });
             return b;
         };

@@ -161,9 +161,16 @@ public class LightFixtureBlock extends DirectionalElectricBlock implements IBE<L
     }
 
     @Override
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResult.PASS;
+    }
+
+    @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if(!player.getMainHandItem().isEmpty())
+            return InteractionResult.PASS;
         return onBlockEntityUse(level, pos, be ->
-                be.replaceBulb(player, InteractionHand.MAIN_HAND, player.getMainHandItem())
+                be.replaceBulb(player, InteractionHand.MAIN_HAND, ItemStack.EMPTY)
                         ? InteractionResult.SUCCESS
                         : InteractionResult.FAIL);
     }

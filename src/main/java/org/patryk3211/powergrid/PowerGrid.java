@@ -70,12 +70,15 @@ public class PowerGrid {
 		ModdedSoundEvents.prepare();
 
 		REGISTRATE = createRegistrate();
+		finalizeRegistrate();
 
 		register();
 
 		registerArchitecturyEvents();
 
-		ModdedPackets.registerPackets();
+		ModdedPackets.register();
+		ModPackets.PACKETS.registerC2SListener();
+		ModPackets.PACKETS.registerS2CListener();
 	}
 
 	public static void registerArchitecturyEvents() {
@@ -122,7 +125,6 @@ public class PowerGrid {
 
 		ModdedParticles.register();
 
-		finalizeRegistrate();
 		RECIPE_SERIALIZERS.register();
 		RECIPE_TYPES.register();
 		FAN_PROCESSING_TYPES.register();

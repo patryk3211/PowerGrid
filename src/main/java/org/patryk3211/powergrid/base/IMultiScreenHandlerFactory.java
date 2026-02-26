@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.base;
 import dev.architectury.registry.menu.ExtendedMenuProvider;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
@@ -38,11 +39,12 @@ public interface IMultiScreenHandlerFactory extends MenuProvider {
     @Nullable
     AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player, int menuIndex);
 
-    static void openScreen(ServerPlayer player, IMultiScreenHandlerFactory factory, Consumer<FriendlyByteBuf> extraDataWriter, int menuIndex) {
+    static void openScreen(ServerPlayer player, IMultiScreenHandlerFactory factory, Consumer<RegistryFriendlyByteBuf> extraDataWriter, int menuIndex) {
         MenuRegistry.openExtendedMenu(player, new ExtendedMenuProvider() {
             @Override
             public void saveExtraData(FriendlyByteBuf buf) {
-                extraDataWriter.accept(buf);
+                var regBuf = new RegistryFriendlyByteBuf(buf, player.registryAccess());
+                extraDataWriter.accept(regBuf);
             }
 
             @Override

@@ -23,8 +23,8 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 
@@ -39,8 +39,8 @@ public class ForgePowerGridRegistrate extends AbstractPowerGridRegistrate {
 
     @NotNull
     @Override
-    protected <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
-        RegistryEntry<T> entry = super.accept(name, type, builder, creator, entryFactory);
+    protected <R, T extends R> RegistryEntry<R, T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<DeferredHolder<R, T>, ? extends RegistryEntry<R, T>> entryFactory) {
+        RegistryEntry<R, T> entry = super.accept(name, type, builder, creator, entryFactory);
         if(type.equals(Registries.ITEM) && this.tooltipModifierFactory != null) {
             this.addRegisterCallback(name, Registries.ITEM, item -> {
                 TooltipModifier modifier = tooltipModifierFactory.apply(item);

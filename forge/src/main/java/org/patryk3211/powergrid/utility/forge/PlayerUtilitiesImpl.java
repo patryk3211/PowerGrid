@@ -18,9 +18,9 @@ package org.patryk3211.powergrid.utility.forge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.event.level.BlockEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.event.level.BlockEvent;
 
 public class PlayerUtilitiesImpl {
     public static boolean isFake(Player player) {
@@ -29,7 +29,7 @@ public class PlayerUtilitiesImpl {
 
     public static boolean cancelBreak(Level world, BlockPos pos, Player player) {
         BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, world.getBlockState(pos), player);
-        MinecraftForge.EVENT_BUS.post(event);
+        NeoForge.EVENT_BUS.post(event);
         return event.isCanceled();
     }
 }

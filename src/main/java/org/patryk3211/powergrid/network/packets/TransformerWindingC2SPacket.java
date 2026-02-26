@@ -15,18 +15,18 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.CustomData;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class TransformerWindingC2SPacket implements SimplePacket {
+public class TransformerWindingC2SPacket implements C2SPacket {
     private final int nTurns;
     private final InteractionHand hand;
 
@@ -40,35 +40,37 @@ public class TransformerWindingC2SPacket implements SimplePacket {
         hand = buf.readEnum(InteractionHand.class);
     }
 
+
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(nTurns);
         buf.writeEnum(hand);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var stack = ctx.getPlayer().getItemInHand(hand);
-            if(!(stack.getItem() instanceof IWire) || !stack.hasTag())
+    public void handle(ServerPlayer player) {
+        var stack = player.getItemInHand(hand);
+        if (!(stack.getItem() instanceof IWire) || stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection"))
+            return;
+        if (stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Turns")) {
+            // Alter existing tag
+            CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            compoundTag.putInt("Turns", nTurns);
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+        } else {
+            // Create a new tag
+            CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            var endpoint = WireEndpointType.deserialize(compoundTag.getCompound("Connection"));
+            if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
                 return;
-            if(stack.getTag().contains("Turns")) {
-                // Alter existing tag
-                stack.getTag().putInt("Turns", nTurns);
-            } else {
-                // Create a new tag
-                var endpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
-                if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
-                    return;
-                var blockEndpoint = (BlockWireEndpoint) endpoint;
-                var nbt = new CompoundTag();
-                nbt.putInt("Turns", nTurns);
-                var pos = blockEndpoint.getPos();
-                nbt.putIntArray("Initiator", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                nbt.putInt("Terminal", blockEndpoint.getTerminal());
-                stack.setTag(nbt);
-            }
-        });
+            var blockEndpoint = (BlockWireEndpoint) endpoint;
+            var nbt = new CompoundTag();
+            nbt.putInt("Turns", nTurns);
+            var pos = blockEndpoint.getPos();
+            nbt.putIntArray("Initiator", new int[]{pos.getX(), pos.getY(), pos.getZ()});
+            nbt.putInt("Terminal", blockEndpoint.getTerminal());
+            compoundTag.put("Connection", nbt);
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+        }
     }
 }

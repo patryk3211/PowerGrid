@@ -22,16 +22,30 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.world.item.Item;
-import org.patryk3211.powergrid.mixin.forge.ItemAccessor;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class ModdedItemsImpl {
+    private static final Map<Item, Supplier<Supplier<CustomRenderedItemModelRenderer>>> PENDING_RENDERERS = new LinkedHashMap<>();
+
     public static <T extends Item, P> NonNullUnaryOperator<ItemBuilder<T, P>> customRenderer(Supplier<Supplier<CustomRenderedItemModelRenderer>> renderer) {
         return b -> b.onRegister(item ->
             EnvExecutor.runInEnv(Env.CLIENT, () -> () ->
-                ((ItemAccessor) item).setRenderProperties(SimpleCustomRenderer.create(item, renderer.get().get()))
+                PENDING_RENDERERS.put(item, renderer)
             )
         );
+    }
+
+    public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
+        for (var entry : PENDING_RENDERERS.entrySet()) {
+            event.registerItem(
+                SimpleCustomRenderer.create(entry.getKey(), entry.getValue().get().get()),
+                entry.getKey()
+            );
+        }
+        PENDING_RENDERERS.clear();
     }
 }

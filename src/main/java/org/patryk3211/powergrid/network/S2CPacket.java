@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.mixin.forge;
+package org.patryk3211.powergrid.network;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
 
-import net.minecraft.world.item.Item;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-
-@Mixin(Item.class)
-public interface ItemAccessor {
-    @Accessor(value = "renderProperties", remap = false)
-    void setRenderProperties(Object object);
+public interface S2CPacket {
+    void write(FriendlyByteBuf buf);
+    void handle(Minecraft mc);
 }

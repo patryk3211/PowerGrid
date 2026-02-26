@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.light.string;
 
 import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -66,7 +67,7 @@ public class StringLightCordEntity extends CordEntity {
         var entity = new StringLightCordEntity(ModdedEntities.STRING_LIGHT_CORD.get(), world);
         entity.setItem((WireItem) item.getItem(), item.getCount());
         byte[] dyes;
-        if(item.hasTag() && (dyes = item.getTag().getByteArray("Pattern")).length > 0){
+        if(item.has(DataComponents.CUSTOM_DATA) && (dyes = item.get(DataComponents.CUSTOM_DATA).copyTag().getByteArray("Pattern")).length > 0){
             entity.colorPattern = new int[dyes.length];
             for(int i = 0; i < dyes.length; ++i) {
                 entity.colorPattern[i] = DyeColor.byId(dyes[i]).getTextureDiffuseColor();

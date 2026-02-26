@@ -30,6 +30,9 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -43,6 +46,8 @@ import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.*;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
@@ -50,6 +55,7 @@ import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
+import org.patryk3211.powergrid.network.CustomPayloadWrapper;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
@@ -142,6 +148,31 @@ public class PowerGridImpl {
     }
 
     @SubscribeEvent
+    public static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar(PowerGrid.MOD_ID)
+                .optional();
+
+        var packets = ModPackets.PACKETS;
+        registrar.playToServer(
+                CustomPayloadWrapper.type(packets.c2sPacket),
+                CustomPayloadWrapper.codec(packets.c2sPacket),
+                (payload, context) -> {
+                    if (context.player() instanceof ServerPlayer serverPlayer) {
+                        packets.handleC2SPacket(serverPlayer, payload.data());
+                    }
+                }
+        );
+        registrar.playToClient(
+                CustomPayloadWrapper.type(packets.s2cPacket),
+                CustomPayloadWrapper.codec(packets.s2cPacket),
+                (payload, context) -> {
+                    var mc = net.minecraft.client.Minecraft.getInstance();
+                    packets.handleS2CPacket(mc, payload.data());
+                }
+        );
+    }
+
+    @SubscribeEvent
     public static void imcEnqueue(InterModEnqueueEvent event) {
         var forbiddenBlockEntities = List.of(
                 ModdedBlockEntities.GENERATOR_CLUTCH,
@@ -162,6 +193,7 @@ public class PowerGridImpl {
     public static void gatherData(GatherDataEvent event) {
         var generator = event.getGenerator();
         var output = generator.getPackOutput();
+        var registries = event.getLookupProvider();
 
         PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
             BiConsumer<String, String> langConsumer = provider::add;
@@ -175,20 +207,20 @@ public class PowerGridImpl {
             ModdedSoundEvents.provideLang(langConsumer);
         });
 
-        generator.addProvider(true, new CookingRecipes(output));
-        generator.addProvider(true, new CraftingRecipes(output));
-        generator.addProvider(true, new CuttingRecipes(output));
-        generator.addProvider(true, new ItemApplicationRecipes(output));
-        generator.addProvider(true, new MagnetizingRecipes(output));
-        generator.addProvider(true, new MechanicalCraftingRecipes(output));
-        generator.addProvider(true, new MixingRecipes(output));
-        generator.addProvider(true, new PressingRecipes(output));
-        generator.addProvider(true, new SequencedAssemblyRecipes(output));
-        generator.addProvider(true, new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(output));
-        generator.addProvider(true, new DeployerApplicationRecipes(output));
+        generator.addProvider(true, (DataProvider.Factory<CookingRecipes>) (PackOutput o) -> new CookingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<CraftingRecipes>) (PackOutput o) -> new CraftingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<CuttingRecipes>) (PackOutput o) -> new CuttingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<ItemApplicationRecipes>) (PackOutput o) -> new ItemApplicationRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MagnetizingRecipes>) (PackOutput o) -> new MagnetizingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MechanicalCraftingRecipes>) (PackOutput o) -> new MechanicalCraftingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MixingRecipes>) (PackOutput o) -> new MixingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<PressingRecipes>) (PackOutput o) -> new PressingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<SequencedAssemblyRecipes>) (PackOutput o) -> new SequencedAssemblyRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes>) (PackOutput o) -> new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<DeployerApplicationRecipes>) (PackOutput o) -> new DeployerApplicationRecipes(o, registries));
 
-        generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
-        generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));
+        generator.addProvider(true, (DataProvider.Factory<BlockTagProvider>) (PackOutput o) -> new BlockTagProvider(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<ItemTagProvider>) (PackOutput o) -> new ItemTagProvider(o, registries));
         generator.addProvider(true, ModdedSoundEvents.provider(output));
     }
 
@@ -214,6 +246,7 @@ public class PowerGridImpl {
     public static AbstractPowerGridRegistrate createRegistrate() {
         AbstractPowerGridRegistrate.COMPONENT_ITEMS = ProviderType.register("component_items", ComponentItemEntryProviderImpl::new);
         return ForgePowerGridRegistrate.create(PowerGrid.MOD_ID)
+                .defaultCreativeTab((net.minecraft.resources.ResourceKey<CreativeModeTab>) null)
                 .setTooltipModifierFactory(item ->
                         new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                                 .andThen(TooltipModifier.mapNull(KineticStats.create(item)))

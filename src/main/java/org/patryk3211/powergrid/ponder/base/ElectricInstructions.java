@@ -23,7 +23,10 @@ import net.createmod.ponder.foundation.element.ElementLinkImpl;
 import net.createmod.ponder.foundation.instruction.FadeOutOfSceneInstruction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.component.CustomData;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.PonderElectricNetwork;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordEntity;
@@ -113,8 +116,10 @@ public class ElectricInstructions {
         var element = new WireElement(level -> {
             var stack = ModdedItems.STRING_LIGHT_CORD.asStack();
             if(colorPattern != null) {
-                stack.getOrCreateTag().putByteArray("Pattern", Arrays.stream(colorPattern)
+                CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+                compoundTag.putByteArray("Pattern", Arrays.stream(colorPattern)
                         .map(color -> (byte) color.ordinal()).toList());
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
             }
             var wire = StringLightCordEntity.create(level, endpoint1, endpoint2, stack, null);
             wire.updateRenderParams();

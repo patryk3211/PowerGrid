@@ -20,14 +20,19 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
@@ -84,14 +89,20 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     }
 
     @Override
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResult.PASS;
+    }
+
+    @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
         var stacks = super.getDrops(state, builder);
         var be = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if(be instanceof MultiBlockBatteryEntity battery) {
             for(var stack : stacks) {
                 if(stack.is(this.asItem())) {
-                    var tag = stack.getOrCreateTag();
+                    var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
                     tag.putDouble("Energy", Math.floor(battery.getIndividualEnergy()));
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                     break;
                 }
             }
@@ -119,10 +130,10 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         Voltage.max(spec.calculateVoltage(1), player, tooltip);
         Power.max(stack, player, tooltip);
         float charge;
-        if(!stack.hasTag() || !stack.getTag().contains("Energy")) {
+        if(!stack.has(DataComponents.CUSTOM_DATA) || !stack.get(DataComponents.CUSTOM_DATA).contains("Energy")) {
             charge = getSpec().getInitialCharge() / getSpec().getMaxCharge();
         } else {
-            charge = (float) (stack.getTag().getDouble("Energy") / getSpec().getMaxCharge());
+            charge = (float) (stack.get(DataComponents.CUSTOM_DATA).copyTag().getDouble("Energy") / getSpec().getMaxCharge());
         }
         Lang.translate("tooltip.charge.current")
                 .style(ChatFormatting.GRAY).addTo(tooltip);

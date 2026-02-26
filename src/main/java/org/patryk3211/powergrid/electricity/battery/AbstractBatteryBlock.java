@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.battery;
 
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -32,9 +33,9 @@ public abstract class AbstractBatteryBlock<T extends BatteryBlockEntity> extends
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
         super.setPlacedBy(world, pos, state, placer, itemStack);
-        if(itemStack.hasTag()) {
+        if(itemStack.has(DataComponents.CUSTOM_DATA)) {
             withBlockEntityDo(world, pos, be -> {
-                var tag = itemStack.getTag();
+                var tag = itemStack.get(DataComponents.CUSTOM_DATA).copyTag();
                 if(tag.contains("Energy")) {
                     be.setEnergy(tag.getDouble("Energy"));
                 }

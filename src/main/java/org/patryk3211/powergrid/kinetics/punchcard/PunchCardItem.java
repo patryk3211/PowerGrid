@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.kinetics.punchcard;
 
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -54,7 +56,7 @@ public class PunchCardItem extends Item implements MenuProvider {
         var stack = player.getItemInHand(hand);
         if(!player.isShiftKeyDown() && hand == InteractionHand.MAIN_HAND) {
             if(!world.isClientSide && player instanceof ServerPlayer serverPlayer)
-                MenuRegistry.openExtendedMenu(serverPlayer, this, buf -> buf.writeItem(stack));
+                MenuRegistry.openExtendedMenu(serverPlayer, this, buf -> ItemStack.OPTIONAL_STREAM_CODEC.encode(new RegistryFriendlyByteBuf(buf.unwrap(), serverPlayer.registryAccess()), stack));
             return InteractionResultHolder.success(stack);
         }
         return InteractionResultHolder.pass(stack);
@@ -66,12 +68,12 @@ public class PunchCardItem extends Item implements MenuProvider {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
-        if(!stack.hasTag())
+    public void appendHoverText(ItemStack stack, TooltipContext tooltipContext, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
+        super.appendHoverText(stack, tooltipContext, tooltipComponents, isAdvanced);
+        if(!stack.has(DataComponents.CUSTOM_DATA))
             return;
-        if(stack.getTag().getBoolean("Locked")) {
-            var author = stack.getTag().getString("Author");
+        if(stack.get(DataComponents.CUSTOM_DATA).copyTag().getBoolean("Locked")) {
+            var author = stack.get(DataComponents.CUSTOM_DATA).copyTag().getString("Author");
             if(author.isEmpty())
                 return;
             var line = Lang.translate("gui.punch_card.author")

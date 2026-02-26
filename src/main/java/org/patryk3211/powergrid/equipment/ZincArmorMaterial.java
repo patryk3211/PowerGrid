@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.equipment;
 
 import com.simibubi.create.AllItems;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
@@ -37,11 +39,13 @@ public class ZincArmorMaterial {
         defenses.put(ArmorItem.Type.BODY, 3);
     }
 
-    public static final ArmorMaterial INSTANCE = new ArmorMaterial(
-            defenses,
-            12,
-            SoundEvents.ARMOR_EQUIP_GENERIC,
-            () -> Ingredient.of(AllItems.ZINC_INGOT),
-            List.of(new ArmorMaterial.Layer(PowerGrid.asResource("zinc"))),
-            0, 0);
+    public static final Holder<ArmorMaterial> INSTANCE = BuiltInRegistries.ARMOR_MATERIAL.wrapAsHolder(
+            new ArmorMaterial(
+                defenses,
+                12,
+                SoundEvents.ARMOR_EQUIP_GENERIC,
+                () -> Ingredient.of(AllItems.ZINC_INGOT),
+                List.of(new ArmorMaterial.Layer(PowerGrid.asResource("zinc"))),
+                0, 0)
+    );
 }

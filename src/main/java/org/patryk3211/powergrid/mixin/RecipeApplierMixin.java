@@ -16,7 +16,10 @@
 package org.patryk3211.powergrid.mixin;
 
 import com.simibubi.create.foundation.recipe.RecipeApplier;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedTags;
@@ -39,13 +42,15 @@ public class RecipeApplierMixin {
         var outputs = cir.getReturnValue();
         if(outputs == null || outputs.isEmpty() ||
                 !stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) ||
-                !stackIn.hasTag() || !stackIn.getTag().contains("Schematic"))
+                !stackIn.has(DataComponents.CUSTOM_DATA) || !stackIn.get(DataComponents.CUSTOM_DATA).contains("Schematic"))
             return;
         // Modify output with NBT
         for(var output : outputs) {
             if(output.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)) {
-                var schematic = stackIn.getTag().getCompound("Schematic").copy();
-                output.getOrCreateTag().put("Schematic", schematic);
+                var schematic = stackIn.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic").copy();
+                CompoundTag compoundTag = output.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+                compoundTag.put("Schematic", schematic);
+                output.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
             }
         }
     }

@@ -17,14 +17,14 @@ package org.patryk3211.powergrid.compat.tfmg;
 
 import com.drmangotea.tfmg.TFMG;
 import com.drmangotea.tfmg.content.electricity.base.*;
-import com.drmangotea.tfmg.registry.TFMGPackets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.deviceconnector.BridgeElectricBehaviour;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
@@ -136,7 +136,7 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     public void updateNetwork() {
         getOrCreateElectricNetwork().updateNetwork();
         if (!level.isClientSide)
-            TFMGPackets.getChannel().send(PacketDistributor.ALL.noArg(), new NetworkUpdatePacket(BlockPos.of(getPos())));
+            PacketDistributor.sendToAllPlayers(new NetworkUpdatePacket(BlockPos.of(getPos())));
         sendData();
     }
 
@@ -206,16 +206,16 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     }
 
     @Override
-    protected void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
+    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
         compound.putInt("GroupId", data.group.id);
         compound.putFloat("GroupResistance", data.group.resistance);
         compound.putInt("PrevVoltage", voltage);
     }
 
     @Override
-    protected void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
+    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
         data.group = new ElectricalGroup(compound.getInt("GroupId"));
         data.group.resistance = compound.getFloat("GroupResistance");
         if (!clientPacket) {

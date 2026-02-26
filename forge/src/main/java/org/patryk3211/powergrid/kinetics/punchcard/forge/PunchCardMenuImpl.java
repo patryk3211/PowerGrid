@@ -15,15 +15,15 @@
  */
 package org.patryk3211.powergrid.kinetics.punchcard.forge;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
 
 public class PunchCardMenuImpl extends PunchCardMenu {
-    public PunchCardMenuImpl(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public PunchCardMenuImpl(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 
@@ -39,7 +39,7 @@ public class PunchCardMenuImpl extends PunchCardMenu {
     public static PunchCardMenuConstructors constructors() {
         return new PunchCardMenuConstructors() {
             @Override
-            public PunchCardMenu create(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf buf) {
+            public PunchCardMenu create(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf buf) {
                 return new PunchCardMenuImpl(type, id, inv, buf);
             }
 

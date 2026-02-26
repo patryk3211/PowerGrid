@@ -190,34 +190,30 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                             double x1, double y1, double z1, double x2, double y2, double z2,
                             double x3, double y3, double z3, double x4, double y4, double z4,
                             float vLen, float v0, float uLen, float u0) {
-        buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
-                .color(color)
-                .uv(u0, v0)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), 0, 1, 0)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
-                .color(color)
-                .uv(u0, v0 + vLen)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), 0, 1, 0)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
-                .color(color)
-                .uv(u0 + uLen, v0 + vLen)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), 0, 1, 0)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
-                .color(color)
-                .uv(u0 + uLen, v0)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), 0, 1, 0)
-                .endVertex();
+        buffer.addVertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
+                .setColor(color)
+                .setUv(u0, v0)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, 0, 1, 0);
+        buffer.addVertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
+                .setColor(color)
+                .setUv(u0, v0 + vLen)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, 0, 1, 0);
+        buffer.addVertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
+                .setColor(color)
+                .setUv(u0 + uLen, v0 + vLen)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, 0, 1, 0);
+        buffer.addVertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
+                .setColor(color)
+                .setUv(u0 + uLen, v0)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, 0, 1, 0);
     }
 
     public static void quad(PoseStack.Pose matrix, VertexConsumer buffer, int light, int color,
@@ -227,50 +223,42 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                             float vLen, float v0, float uLen, float u0) {
         var nLen = Math.sqrt(nX * nX + nY * nY + nZ * nZ);
         nX /= nLen; nY /= nLen; nZ /= nLen;
-        buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
-                .color(color)
-                .uv(u0, v0)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
-                .color(color)
-                .uv(u0, v0 + vLen)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
-                .color(color)
-                .uv(u0 + uLen, v0 + vLen)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
-                .color(color)
-                .uv(u0 + uLen, v0)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), (float) nX, (float) nY, (float) nZ)
-                .endVertex();
+        buffer.addVertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
+                .setColor(color)
+                .setUv(u0, v0)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, (float) nX, (float) nY, (float) nZ);
+        buffer.addVertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
+                .setColor(color)
+                .setUv(u0, v0 + vLen)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, (float) nX, (float) nY, (float) nZ);
+        buffer.addVertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
+                .setColor(color)
+                .setUv(u0 + uLen, v0 + vLen)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, (float) nX, (float) nY, (float) nZ);
+        buffer.addVertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
+                .setColor(color)
+                .setUv(u0 + uLen, v0)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, (float) nX, (float) nY, (float) nZ);
     }
 
     public static void quad(PoseStack.Pose matrix, VertexConsumer buffer, int color,
                             double x1, double y1, double z1, double x2, double y2, double z2,
                             double x3, double y3, double z3, double x4, double y4, double z4) {
-        buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
-                .color(color)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
-                .color(color)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
-                .color(color)
-                .endVertex();
-        buffer.vertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
-                .color(color)
-                .endVertex();
+        buffer.addVertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
+                .setColor(color);
+        buffer.addVertex(matrix.pose(), (float) x2, (float) y2, (float) z2)
+                .setColor(color);
+        buffer.addVertex(matrix.pose(), (float) x4, (float) y4, (float) z4)
+                .setColor(color);
+        buffer.addVertex(matrix.pose(), (float) x3, (float) y3, (float) z3)
+                .setColor(color);
     }
 }

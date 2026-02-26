@@ -114,16 +114,16 @@ public class ZapParticle extends Particle {
         }
     }
 
-    public void renderSegment(VertexConsumer buffer, float x1, float y1, float z1, float x2, float y2, float z2, Vector3f cross1, Vector3f cross2) {
-        buffer.vertex(x1 + cross1.x, y1 + cross1.y, z1 + cross1.z).endVertex();
-        buffer.vertex(x1 - cross1.x, y1 - cross1.y, z1 - cross1.z).endVertex();
-        buffer.vertex(x2 - cross1.x, y2 - cross1.y, z2 - cross1.z).endVertex();
-        buffer.vertex(x2 + cross1.x, y2 + cross1.y, z2 + cross1.z).endVertex();
+    public void renderSegment(VertexConsumer buffer, float x1, float y1, float z1, float x2, float y2, float z2, Vector3f cross1, Vector3f cross2, int color) {
+        buffer.addVertex(x1 + cross1.x, y1 + cross1.y, z1 + cross1.z).setColor(color);
+        buffer.addVertex(x1 - cross1.x, y1 - cross1.y, z1 - cross1.z).setColor(color);
+        buffer.addVertex(x2 - cross1.x, y2 - cross1.y, z2 - cross1.z).setColor(color);
+        buffer.addVertex(x2 + cross1.x, y2 + cross1.y, z2 + cross1.z).setColor(color);
 
-        buffer.vertex(x1 + cross2.x, y1 + cross2.y, z1 + cross2.z).endVertex();
-        buffer.vertex(x1 - cross2.x, y1 - cross2.y, z1 - cross2.z).endVertex();
-        buffer.vertex(x2 - cross2.x, y2 - cross2.y, z2 - cross2.z).endVertex();
-        buffer.vertex(x2 + cross2.x, y2 + cross2.y, z2 + cross2.z).endVertex();
+        buffer.addVertex(x1 + cross2.x, y1 + cross2.y, z1 + cross2.z).setColor(color);
+        buffer.addVertex(x1 - cross2.x, y1 - cross2.y, z1 - cross2.z).setColor(color);
+        buffer.addVertex(x2 - cross2.x, y2 - cross2.y, z2 - cross2.z).setColor(color);
+        buffer.addVertex(x2 + cross2.x, y2 + cross2.y, z2 + cross2.z).setColor(color);
     }
 
     @Override
@@ -133,15 +133,13 @@ public class ZapParticle extends Particle {
 
         var camPos = camera.getPosition();
 
-        buffer.defaultColor((int) (rCol * 255), (int) (gCol * 255), (int) (bCol * 255), (int) (alpha * 255));
+        int argbColor = ((int) (alpha * 255) << 24) | ((int) (rCol * 255) << 16) | ((int) (gCol * 255) << 8) | (int) (bCol * 255);
 
         for(var segment : segments) {
             var pos1 = new Vector3f(segment.getA()).sub(camPos.toVector3f());
             var pos2 = new Vector3f(segment.getB()).sub(camPos.toVector3f());
-            renderSegment(buffer, pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z, cross1, cross2);
+            renderSegment(buffer, pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z, cross1, cross2, argbColor);
         }
-
-        buffer.unsetDefaultColor();
 
         bufferProvider.draw();
     }

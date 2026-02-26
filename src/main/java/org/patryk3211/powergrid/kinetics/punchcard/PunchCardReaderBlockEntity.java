@@ -20,6 +20,7 @@ import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -86,8 +87,8 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
         var index = item.isEmpty() ? -1 : Math.min(Mth.floor(progress.getValue() * 16), 15);
         if(index != oldIndex) {
             byte value = 0;
-            if(!item.isEmpty() && item.hasTag()) {
-                var data = item.getTag().getByteArray("Data");
+            if(!item.isEmpty() && item.has(DataComponents.CUSTOM_DATA)) {
+                var data = item.get(DataComponents.CUSTOM_DATA).copyTag().getByteArray("Data");
                 if(data.length == 16) {
                     value = data[index];
                 }

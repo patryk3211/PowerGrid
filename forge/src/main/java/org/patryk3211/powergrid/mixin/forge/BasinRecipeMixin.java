@@ -20,7 +20,7 @@ import com.simibubi.create.content.processing.basin.BasinBlockEntity;
 import com.simibubi.create.content.processing.basin.BasinRecipe;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.patryk3211.powergrid.utility.RecipeNbtTransfer;
 import org.patryk3211.powergrid.utility.forge.IterateItemHandler;
 import org.spongepowered.asm.mixin.Mixin;

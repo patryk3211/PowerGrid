@@ -39,6 +39,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.PowerGrid;
@@ -134,7 +135,9 @@ public class PowerGridJEI implements IModPlugin {
 
         magnetizing.registerRecipes(registration);
 
-        var conversionType = new mezz.jei.api.recipe.RecipeType<>(Create.asResource("mystery_conversion"), ConversionRecipe.class);
+        @SuppressWarnings("unchecked")
+        var conversionType = (mezz.jei.api.recipe.RecipeType<RecipeHolder<ConversionRecipe>>) (mezz.jei.api.recipe.RecipeType<?>)
+                new mezz.jei.api.recipe.RecipeType<>(Create.asResource("mystery_conversion"), RecipeHolder.class);
         registration.addRecipes(conversionType, List.of(ConversionRecipe.create(
                 new ItemStack(Items.IRON_INGOT), ModdedItems.MAGNET.asStack()
         )));
@@ -147,7 +150,7 @@ public class PowerGridJEI implements IModPlugin {
         private IDrawable background;
         private IDrawable icon;
 
-        private final List<Consumer<List<T>>> recipeListConsumers = new ArrayList<>();
+        private final List<Consumer<List<RecipeHolder<T>>>> recipeListConsumers = new ArrayList<>();
         private final List<Supplier<? extends ItemStack>> catalysts = new ArrayList<>();
 
         public CategoryBuilder(Class<? extends T> recipeClass) {
@@ -164,72 +167,78 @@ public class PowerGridJEI implements IModPlugin {
             return this;
         }
 
-        public CategoryBuilder<T> addRecipeListConsumer(Consumer<List<T>> consumer) {
+        public CategoryBuilder<T> addRecipeListConsumer(Consumer<List<RecipeHolder<T>>> consumer) {
             recipeListConsumers.add(consumer);
             return this;
         }
 
-        public CategoryBuilder<T> addRecipes(Supplier<Collection<? extends T>> collection) {
+        public CategoryBuilder<T> addRecipes(Supplier<Collection<? extends RecipeHolder<T>>> collection) {
             return addRecipeListConsumer(recipes -> recipes.addAll(collection.get()));
         }
 
         @SuppressWarnings("unchecked")
-        public CategoryBuilder<T> addAllRecipesIf(Predicate<Recipe<?>> pred) {
+        public CategoryBuilder<T> addAllRecipesIf(Predicate<RecipeHolder<?>> pred) {
             return addRecipeListConsumer(recipes -> consumeAllRecipes(recipe -> {
                 if (pred.test(recipe))
-                    recipes.add((T) recipe);
+                    recipes.add((RecipeHolder<T>) recipe);
             }));
         }
 
-        public CategoryBuilder<T> addAllRecipesIf(Predicate<Recipe<?>> pred, Function<Recipe<?>, T> converter) {
+        @SuppressWarnings("unchecked")
+        public CategoryBuilder<T> addAllRecipesIf(Predicate<RecipeHolder<?>> pred, Function<RecipeHolder<?>, T> converter) {
             return addRecipeListConsumer(recipes -> consumeAllRecipes(recipe -> {
                 if (pred.test(recipe)) {
-                    recipes.add(converter.apply(recipe));
+                    recipes.add(new RecipeHolder<>(recipe.id(), converter.apply(recipe)));
                 }
             }));
         }
 
+        @SuppressWarnings("unchecked")
         public CategoryBuilder<T> addTypedRecipes(IRecipeTypeInfo recipeTypeEntry) {
-            return addTypedRecipes(recipeTypeEntry::getType);
+            return addTypedRecipes(() -> (RecipeType<? extends T>) recipeTypeEntry.getType());
         }
 
+        @SuppressWarnings("unchecked")
         public CategoryBuilder<T> addTypedRecipes(Supplier<RecipeType<? extends T>> recipeType) {
-            return addRecipeListConsumer(recipes -> CreateJEI.<T>consumeTypedRecipes(recipes::add, recipeType.get()));
+            return addRecipeListConsumer(recipes -> CreateJEI.<T>consumeTypedRecipes(recipe -> recipes.add((RecipeHolder<T>) recipe), recipeType.get()));
         }
 
-        public CategoryBuilder<T> addTypedRecipes(Supplier<RecipeType<? extends T>> recipeType, Function<Recipe<?>, T> converter) {
-            return addRecipeListConsumer(recipes -> CreateJEI.<T>consumeTypedRecipes(recipe -> recipes.add(converter.apply(recipe)), recipeType.get()));
+        @SuppressWarnings("unchecked")
+        public CategoryBuilder<T> addTypedRecipes(Supplier<RecipeType<? extends T>> recipeType, Function<RecipeHolder<?>, T> converter) {
+            return addRecipeListConsumer(recipes -> CreateJEI.<T>consumeTypedRecipes(recipe -> recipes.add(new RecipeHolder<>(recipe.id(), converter.apply(recipe))), recipeType.get()));
         }
 
-        public CategoryBuilder<T> addTypedRecipesIf(Supplier<RecipeType<? extends T>> recipeType, Predicate<Recipe<?>> pred) {
+        @SuppressWarnings("unchecked")
+        public CategoryBuilder<T> addTypedRecipesIf(Supplier<RecipeType<? extends T>> recipeType, Predicate<RecipeHolder<?>> pred) {
             return addRecipeListConsumer(recipes -> CreateJEI.<T>consumeTypedRecipes(recipe -> {
                 if (pred.test(recipe)) {
-                    recipes.add(recipe);
+                    recipes.add((RecipeHolder<T>) recipe);
                 }
             }, recipeType.get()));
         }
 
+        @SuppressWarnings("unchecked")
         public CategoryBuilder<T> addTypedRecipesExcluding(Supplier<RecipeType<? extends T>> recipeType,
                                                                      Supplier<RecipeType<? extends T>> excluded) {
             return addRecipeListConsumer(recipes -> {
-                List<Recipe<?>> excludedRecipes = getTypedRecipes(excluded.get());
+                List<RecipeHolder<?>> excludedRecipes = getTypedRecipes(excluded.get());
                 CreateJEI.<T>consumeTypedRecipes(recipe -> {
-                    for (Recipe<?> excludedRecipe : excludedRecipes) {
-                        if (doInputsMatch(recipe, excludedRecipe)) {
+                    for (RecipeHolder<?> excludedRecipe : excludedRecipes) {
+                        if (doInputsMatch(recipe.value(), excludedRecipe.value())) {
                             return;
                         }
                     }
-                    recipes.add(recipe);
+                    recipes.add((RecipeHolder<T>) recipe);
                 }, recipeType.get());
             });
         }
 
         public CategoryBuilder<T> removeRecipes(Supplier<RecipeType<? extends T>> recipeType) {
             return addRecipeListConsumer(recipes -> {
-                List<Recipe<?>> excludedRecipes = getTypedRecipes(recipeType.get());
+                List<RecipeHolder<?>> excludedRecipes = getTypedRecipes(recipeType.get());
                 recipes.removeIf(recipe -> {
-                    for (Recipe<?> excludedRecipe : excludedRecipes)
-                        if (doInputsMatch(recipe, excludedRecipe) && doOutputsMatch(recipe, excludedRecipe))
+                    for (RecipeHolder<?> excludedRecipe : excludedRecipes)
+                        if (doInputsMatch(recipe.value(), excludedRecipe.value()) && doOutputsMatch(recipe.value(), excludedRecipe.value()))
                             return true;
                     return false;
                 });
@@ -275,12 +284,13 @@ public class PowerGridJEI implements IModPlugin {
             return this;
         }
 
+        @SuppressWarnings("unchecked")
         public CreateRecipeCategory<T> build(String name, CreateRecipeCategory.Factory<T> factory) {
-            Supplier<List<T>> recipesSupplier;
+            Supplier<List<RecipeHolder<T>>> recipesSupplier;
             if (predicate.test(AllConfigs.server().recipes)) {
                 recipesSupplier = () -> {
-                    List<T> recipes = new ArrayList<>();
-                    for (Consumer<List<T>> consumer : recipeListConsumers)
+                    List<RecipeHolder<T>> recipes = new ArrayList<>();
+                    for (Consumer<List<RecipeHolder<T>>> consumer : recipeListConsumers)
                         consumer.accept(recipes);
                     return recipes;
                 };
@@ -288,8 +298,10 @@ public class PowerGridJEI implements IModPlugin {
                 recipesSupplier = Collections::emptyList;
             }
 
+            var holderType = (mezz.jei.api.recipe.RecipeType<RecipeHolder<T>>) (mezz.jei.api.recipe.RecipeType<?>)
+                    new mezz.jei.api.recipe.RecipeType<>(PowerGrid.asResource(name), RecipeHolder.class);
             CreateRecipeCategory.Info<T> info = new CreateRecipeCategory.Info<>(
-                    new mezz.jei.api.recipe.RecipeType<>(PowerGrid.asResource(name), recipeClass),
+                    holderType,
                     Lang.translateDirect("recipe." + name), background, icon, recipesSupplier, catalysts);
             return factory.create(info);
         }

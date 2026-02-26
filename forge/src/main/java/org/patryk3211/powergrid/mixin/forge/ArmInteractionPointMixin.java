@@ -19,12 +19,12 @@ import com.simibubi.create.content.kinetics.belt.BeltHelper;
 import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
 import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.kinetics.mechanicalArm.AllArmInteractionPointTypes;
+import com.simibubi.create.content.kinetics.mechanicalArm.ArmBlockEntity;
 import com.simibubi.create.content.kinetics.mechanicalArm.ArmInteractionPoint;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -35,20 +35,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Mixin(value = ArmInteractionPoint.class, remap = false)
 public abstract class ArmInteractionPointMixin {
-    @Shadow @Nullable protected abstract IItemHandler getHandler();
+    @Shadow protected abstract IItemHandler getHandler(ArmBlockEntity armBlockEntity);
 
     @Shadow public abstract Level getLevel();
 
     @Shadow public abstract BlockPos getPos();
 
     @Unique
-    private ItemStack powerGrid$handleDepot(ItemStack componentStack, boolean simulate) {
-        var handler = getHandler();
+    private ItemStack powerGrid$handleDepot(ArmBlockEntity armBE, ItemStack componentStack, boolean simulate) {
+        var handler = getHandler(armBE);
         if (handler == null)
             return null;
         // Try to insert into a circuit
@@ -70,7 +69,7 @@ public abstract class ArmInteractionPointMixin {
                             return componentStack;
                         }
                     }
-                    return ItemHandlerHelper.copyStackWithSize(componentStack, componentStack.getCount() - 1);
+                    return componentStack.copyWithCount(componentStack.getCount() - 1);
                 }
                 return componentStack;
             }
@@ -109,20 +108,20 @@ public abstract class ArmInteractionPointMixin {
             return null;
         if(inserted.isFalse())
             return stack;
-        return ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - 1);
+        return stack.copyWithCount(stack.getCount() - 1);
     }
 
     @Inject(
             method = "insert",
-            at = @At(value = "INVOKE", target = "Lnet/minecraftforge/items/ItemHandlerHelper;insertItem(Lnet/minecraftforge/items/IItemHandler;Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/item/ItemStack;"),
+            at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/items/ItemHandlerHelper;insertItem(Lnet/neoforged/neoforge/items/IItemHandler;Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/item/ItemStack;"),
             cancellable = true
     )
-    private void insertAssembleCircuit(ItemStack stack, boolean simulate, CallbackInfoReturnable<ItemStack> cir) {
+    private void insertAssembleCircuit(ArmBlockEntity armBE, ItemStack stack, boolean simulate, CallbackInfoReturnable<ItemStack> cir) {
         ItemStack remainder = null;
         if(((Object) this) instanceof AllArmInteractionPointTypes.BeltPoint) {
             remainder = powerGrid$handleBelt(stack, simulate);
         } else if(((Object) this) instanceof AllArmInteractionPointTypes.DepotPoint) {
-            remainder = powerGrid$handleDepot(stack, simulate);
+            remainder = powerGrid$handleDepot(armBE, stack, simulate);
         }
         if(remainder != null)
             cir.setReturnValue(remainder);

@@ -15,10 +15,10 @@
  */
 package org.patryk3211.powergrid.circuits.gui;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.GuiSpriteManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -100,12 +100,44 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         }
     }
 
+    // Port of ctx.blitRepeating method
+    private static void blitRepeating(
+            GuiGraphics ctx,
+            ResourceLocation texture,
+            int x, int y,
+            int width, int height,
+            int uOffset, int vOffset,
+            int sourceWidth, int sourceHeight
+    ) {
+        int drawX = x;
+
+        for (int sliceWidth = Math.min(sourceWidth, width);
+             drawX < x + width;
+             drawX += sliceWidth) {
+
+            int w = Math.min(sliceWidth, x + width - drawX);
+            int u = uOffset + (sourceWidth - w) / 2;
+
+            int drawY = y;
+
+            for (int sliceHeight = Math.min(sourceHeight, height);
+                 drawY < y + height;
+                 drawY += sliceHeight) {
+
+                int h = Math.min(sliceHeight, y + height - drawY);
+                int v = vOffset + (sourceHeight - h) / 2;
+
+                ctx.blit(texture, drawX, drawY, u, v, w, h);
+            }
+        }
+    }
+
     @Override
     protected void doRender(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
         if(component == null)
             return;
 
-        var ms = ctx.pose();
+        PoseStack ms = ctx.pose();
         ms.translate(getX(), getY(), 0);
 
         // Three sliced texture
@@ -120,9 +152,9 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         ctx.drawCenteredString(textRenderer, Component.translatable(key), getWidth() / 2, 5, 0xFFFFFFFF);
 
         // Draw common background for each property
-        ctx.blitRepeating(PROPERTIES, 0, 16, 60, propertyCount * 20, 0, 29, 60, 20);
+        blitRepeating(ctx, PROPERTIES, 0, 16, 60, propertyCount * 20, 0, 29, 60, 20);
         if(width > 120) {
-            ctx.blitRepeating(PROPERTIES, 60, 16, centerSliceSize, propertyCount * 20, 61, 29, 30, 20);
+            blitRepeating(ctx, PROPERTIES, 60, 16, centerSliceSize, propertyCount * 20, 61, 29, 30, 20);
         }
 
         ms.pushPose();
@@ -150,7 +182,7 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         ms.translate(0, yOffset, 0);
         ctx.blit(PROPERTIES, 0, 0, 0, 50, 60, 6);
         if(width > 120) {
-            ctx.blitRepeating(PROPERTIES, 60, 0, centerSliceSize, 6, 61, 50, 30, 6);
+            blitRepeating(ctx, PROPERTIES, 60, 0, centerSliceSize, 6, 61, 50, 30, 6);
         }
         ctx.blit(PROPERTIES, 60 + centerSliceSize, 0, 92, 50, 60, 6);
 

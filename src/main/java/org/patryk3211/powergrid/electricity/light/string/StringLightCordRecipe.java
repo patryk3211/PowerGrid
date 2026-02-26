@@ -16,11 +16,10 @@
 package org.patryk3211.powergrid.electricity.light.string;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -30,8 +29,8 @@ import java.util.ArrayList;
 public class StringLightCordRecipe extends CustomRecipe {
     public static final RecipeSerializer<StringLightCordRecipe> SERIALIZER = new SimpleCraftingRecipeSerializer<>(StringLightCordRecipe::new);
 
-    public StringLightCordRecipe(ResourceLocation id, CraftingBookCategory category) {
-        super(id, category);
+    public StringLightCordRecipe(CraftingBookCategory category) {
+        super(category);
     }
 
 
@@ -63,8 +62,9 @@ public class StringLightCordRecipe extends CustomRecipe {
             }
         }
 
-        var tag = result.getOrCreateTag();
+        var tag = result.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         tag.putByteArray("Pattern", colors);
+        result.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         return result;
     }
 

@@ -122,7 +122,7 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
             // Limit radius to 10 block to avoid having to scan the whole world
             var dangerRadius = Math.min(Math.abs(wire.getResistance() * wire.current() / (2 * Math.PI * DANGER_POTENTIAL)), 10);
             var blockRadius = (int) Math.round(dangerRadius);
-            var bb = new AABB(worldPosition.offset(-blockRadius, -blockRadius, -blockRadius), worldPosition.offset(blockRadius, blockRadius, blockRadius));
+            var bb = new AABB(worldPosition.offset(-blockRadius, -blockRadius, -blockRadius).getCenter(), worldPosition.offset(blockRadius, blockRadius, blockRadius).getCenter());
             var sqrDist = dangerRadius * dangerRadius;
             var center = worldPosition.getCenter();
             var entities = level.getEntitiesOfClass(LivingEntity.class, bb, e -> e.position().distanceToSqr(center) <= sqrDist && e.onGround());
