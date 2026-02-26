@@ -518,6 +518,8 @@ public class ElectricalNetwork implements IStamped {
     }
 
     protected Double tryGetValue(INode node) {
+        if(mna == null)
+            return 0.0;
         if(leafNodes.containsKey(node)) {
             var tracked = leafNodes.get(node);
             if(tracked != null)
