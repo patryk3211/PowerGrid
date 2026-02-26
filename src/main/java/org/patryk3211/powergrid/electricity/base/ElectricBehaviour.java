@@ -59,6 +59,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     private boolean paused = true;
     private boolean reducedSync = false;
 
+    @Nullable
     private SyncAppender syncAppender;
 
     public <T extends SmartBlockEntity & IElectricEntity> ElectricBehaviour(T be) {
@@ -464,7 +465,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         return new StateS2CPacket.PosKey(getPos());
     }
 
-    public void setSyncAppender(SyncAppender syncAppender) {
+    public void setSyncAppender(@Nullable SyncAppender syncAppender) {
         this.syncAppender = syncAppender;
     }
 

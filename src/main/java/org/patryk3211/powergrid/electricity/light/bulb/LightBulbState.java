@@ -21,20 +21,23 @@ import net.fabricmc.api.Environment;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 import static org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock.POWER;
 
-public abstract class LightBulbState {
+public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     protected final Item item;
     protected final ILightBulb bulb;
     protected final LightFixtureBlockEntity fixture;
@@ -76,7 +79,7 @@ public abstract class LightBulbState {
         var world = fixture.getLevel();
         var state = fixture.getBlockState();
         if(newLevel != state.getValue(POWER)) {
-            world.setBlockAndUpdate(fixture.getBlockPos(), state.setValue(POWER, newLevel));
+            world.setBlock(fixture.getBlockPos(), state.setValue(POWER, newLevel), Block.UPDATE_ALL_IMMEDIATE);
         }
     }
 
@@ -96,16 +99,16 @@ public abstract class LightBulbState {
         if(burned)
             return;
 
-        var filament = fixture.getFilament();
-        float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
-        if(filament.isConverged())
-            applyPower(filament.power() - dissipatedPower);
-        if(!Float.isFinite(temperature))
-            temperature = BASE_TEMPERATURE;
-        filament.setResistance(bulb.resistanceFunction(temperature));
-
         var world = fixture.getLevel();
         if(!world.isClientSide) {
+            var filament = fixture.getFilament();
+            float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
+            if(filament.isConverged())
+                applyPower(filament.power() - dissipatedPower);
+            if(!Float.isFinite(temperature))
+                temperature = BASE_TEMPERATURE;
+            filament.setResistance(bulb.resistanceFunction(temperature));
+
             if (isOverheated() && overheatTicks++ >= 4) {
                 burned = true;
                 playEffect = true;
@@ -218,5 +221,15 @@ public abstract class LightBulbState {
 
     public DyeColor getColor() {
         return color;
+    }
+
+    @Override
+    public void writeToSync(FriendlyByteBuf buffer) {
+        buffer.writeFloat(temperature);
+    }
+
+    @Override
+    public void readFromSync(FriendlyByteBuf buffer) {
+        temperature = buffer.readFloat();
     }
 }
