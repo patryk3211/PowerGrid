@@ -19,8 +19,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -30,10 +28,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.config.WireValues;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -69,11 +67,10 @@ public class WireItem extends Item implements IWire {
                 return result;
         }
         var stack = context.getItemInHand();
-        var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("Connection");
-        if(tag != null) {
-            // This will result in the connection being a block wire (instead of a hanging wire)
+        var connection = stack.get(ModdedDataComponents.CONNECTION_DATA.get());
+        if(connection != null) {
             var world = context.getLevel();
-            var endpoint = WireEndpointType.deserialize(tag);
+            var endpoint = connection.endpoint();
             if(endpoint == null)
                 return InteractionResult.FAIL;
 
@@ -83,9 +80,7 @@ public class WireItem extends Item implements IWire {
             if(result.getResult().consumesAction()) {
                 var entity = result.getObject();
                 if(entity != null) {
-                    CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                    compoundTag.put("Connection", new BlockWireEntityEndpoint(entity, true).serialize());
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+                    stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(new BlockWireEntityEndpoint(entity, true)));
                     var player = context.getPlayer();
                     if(player != null)
                         player.setItemInHand(context.getHand(), stack);
@@ -286,19 +281,14 @@ public class WireItem extends Item implements IWire {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return super.isFoil(stack) || (stack.has(DataComponents.CUSTOM_DATA) && stack.get(DataComponents.CUSTOM_DATA).contains("Connection"));
+        return super.isFoil(stack) || stack.has(ModdedDataComponents.CONNECTION_DATA.get());
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
-        if(stack.has(DataComponents.CUSTOM_DATA) && user.isShiftKeyDown()) {
-            CompoundTag tag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
-            tag.remove("Connection");
-            tag.remove("Turns");
-            tag.remove("Terminal");
-            tag.remove("Initiator");
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        if(stack.has(ModdedDataComponents.CONNECTION_DATA.get()) && user.isShiftKeyDown()) {
+            stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
             if(!world.isClientSide)
                 user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
             return InteractionResultHolder.sidedSuccess(stack, true);

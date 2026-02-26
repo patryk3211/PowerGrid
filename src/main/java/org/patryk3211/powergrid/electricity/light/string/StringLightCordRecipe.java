@@ -16,12 +16,12 @@
 package org.patryk3211.powergrid.electricity.light.string;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
 import java.util.ArrayList;
@@ -54,17 +54,15 @@ public class StringLightCordRecipe extends CustomRecipe {
     @Override
     public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
         var result = ModdedItems.STRING_LIGHT_CORD.asStack();
-        var colors = new ArrayList<Byte>();
+        var colors = new ArrayList<DyeColor>();
 
         for(var stack : input.items()) {
             if(stack.getItem() instanceof DyeItem dye) {
-                colors.add((byte) dye.getDyeColor().ordinal());
+                colors.add(dye.getDyeColor());
             }
         }
 
-        var tag = result.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        tag.putByteArray("Pattern", colors);
-        result.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        result.set(ModdedDataComponents.LIGHT_PATTERN.get(), PatternData.of(colors));
         return result;
     }
 

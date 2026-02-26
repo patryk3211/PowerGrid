@@ -33,7 +33,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -42,6 +41,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -61,9 +61,9 @@ public class WirePreview {
     public static ItemStack getUsedWireStack(Player player) {
         var stack1 = player.getMainHandItem();
         var stack2 = player.getOffhandItem();
-        if(stack1 != null && stack1.getItem() instanceof IWire && stack1.has(DataComponents.CUSTOM_DATA)) {
+        if(stack1 != null && stack1.getItem() instanceof IWire && stack1.has(ModdedDataComponents.CONNECTION_DATA.get())) {
             return stack1;
-        } else if(stack2 != null && stack2.getItem() instanceof IWire && stack2.has(DataComponents.CUSTOM_DATA)) {
+        } else if(stack2 != null && stack2.getItem() instanceof IWire && stack2.has(ModdedDataComponents.CONNECTION_DATA.get())) {
             return stack2;
         } else {
             return null;
@@ -71,7 +71,7 @@ public class WirePreview {
     }
 
     private static void renderCord(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target, ItemStack wireStack) {
-        var endpoint = WireEndpointType.deserialize(wireStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection"));
+        var endpoint = wireStack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
         if(!(endpoint instanceof ICordEndpoint cordEndpoint))
             return;
         CordRenderer.renderPreview(cordEndpoint, player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
@@ -99,13 +99,12 @@ public class WirePreview {
             }
         }
 
-        var tag = wireStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection");
-        var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
-        float thickness = wireItem.getWireThickness();
-
-        var endpoint = WireEndpointType.deserialize(tag);
+        var endpoint = wireStack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
         if(endpoint == null)
             return;
+
+        var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
+        float thickness = wireItem.getWireThickness();
 
         var currentPos = endpoint.getExactPosition(world);
         Direction continueDir = null;
@@ -198,8 +197,7 @@ public class WirePreview {
         if(!(wireStack.getItem() instanceof WireItem wire))
             return null;
 
-        var tag = wireStack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Connection");
-        var endpoint = WireEndpointType.deserialize(tag);
+        var endpoint = wireStack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
         if(endpoint == null)
             return null;
 

@@ -125,6 +125,7 @@ public class PowerGrid {
 
 		ModdedParticles.register();
 
+		ModdedDataComponents.REGISTER.register();
 		RECIPE_SERIALIZERS.register();
 		RECIPE_TYPES.register();
 		FAN_PROCESSING_TYPES.register();

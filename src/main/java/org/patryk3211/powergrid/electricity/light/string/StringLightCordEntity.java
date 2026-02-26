@@ -17,14 +17,12 @@ package org.patryk3211.powergrid.electricity.light.string;
 
 import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -34,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
@@ -66,11 +65,11 @@ public class StringLightCordEntity extends CordEntity {
             throw new IllegalArgumentException("ItemStack must be of a CordItem");
         var entity = new StringLightCordEntity(ModdedEntities.STRING_LIGHT_CORD.get(), world);
         entity.setItem((WireItem) item.getItem(), item.getCount());
-        byte[] dyes;
-        if(item.has(DataComponents.CUSTOM_DATA) && (dyes = item.get(DataComponents.CUSTOM_DATA).copyTag().getByteArray("Pattern")).length > 0){
-            entity.colorPattern = new int[dyes.length];
-            for(int i = 0; i < dyes.length; ++i) {
-                entity.colorPattern[i] = DyeColor.byId(dyes[i]).getTextureDiffuseColor();
+        var pattern = item.get(ModdedDataComponents.LIGHT_PATTERN.get());
+        if(pattern != null){
+            entity.colorPattern = new int[pattern.colors().length];
+            for(int i = 0; i < pattern.colors().length; ++i) {
+                entity.colorPattern[i] = pattern.colors()[i].getTextureDiffuseColor();
             }
         }
 

@@ -35,9 +35,7 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 import java.util.Random;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS;
-import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementAxis;
-import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementDelta;
-import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.isPlacementAxisAligned;
+import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.*;
 
 @Environment(EnvType.CLIENT)
 public class WindingPreview {

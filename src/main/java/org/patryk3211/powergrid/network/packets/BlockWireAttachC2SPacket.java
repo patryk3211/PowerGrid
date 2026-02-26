@@ -15,13 +15,11 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.component.CustomData;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.C2SPacket;
 
@@ -73,43 +71,37 @@ public class BlockWireAttachC2SPacket implements C2SPacket {
             return;
         }
 
-        var existingEndpoint = WireEndpointType.deserialize(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("Connection") );
+        var existingEndpoint = stack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
 
-            IWireEndpoint endpoint;
-            if(gridPoint <= 1 && index == 0) {
-                // Extend wire at start.
-                if(wire.getEndpoint1() == null) {
-                    wire = wire.flip();
-                    endpoint = new BlockWireEntityEndpoint(wire, true);
-                } else {
-                    // Possibly a junction.
-                    endpoint = wire.getEndpoint1();
-                }
-            } else if(gridPoint >= segment.gridLength - 1 && index == wire.segments.size() - 1) {
-                // Extend wire at end.
-                if(wire.getEndpoint2() == null) {
-                    endpoint = new BlockWireEntityEndpoint(wire, true);
-                } else {
-                    // Possibly a junction.
-                    endpoint = wire.getEndpoint2();
-                }
+        IWireEndpoint endpoint;
+        if(gridPoint <= 1 && index == 0) {
+            // Extend wire at start.
+            if(wire.getEndpoint1() == null) {
+                wire = wire.flip();
+                endpoint = new BlockWireEntityEndpoint(wire, true);
             } else {
-                // Junction.
-                endpoint = new DeferredJunctionWireEndpoint(wire, index, gridPoint);
+                // Possibly a junction.
+                endpoint = wire.getEndpoint1();
             }
-            if(endpoint != null && existingEndpoint == null) {
-                if (!stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection")) {
-                    CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                    compoundTag.put("Connection", endpoint.serialize());
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
-                }
-            } else if(endpoint != null) {
-                var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
-                if(result.getResult().consumesAction()) {
-                    CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                    compoundTag.remove("Connection");
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
-                }
+        } else if(gridPoint >= segment.gridLength - 1 && index == wire.segments.size() - 1) {
+            // Extend wire at end.
+            if(wire.getEndpoint2() == null) {
+                endpoint = new BlockWireEntityEndpoint(wire, true);
+            } else {
+                // Possibly a junction.
+                endpoint = wire.getEndpoint2();
+            }
+        } else {
+            // Junction.
+            endpoint = new DeferredJunctionWireEndpoint(wire, index, gridPoint);
+        }
+        if(endpoint != null && existingEndpoint == null) {
+            stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(endpoint));
+        } else if(endpoint != null) {
+            var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
+            if(result.getResult().consumesAction()) {
+                stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
             }
         }
+    }
 }

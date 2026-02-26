@@ -23,19 +23,18 @@ import net.createmod.ponder.foundation.element.ElementLinkImpl;
 import net.createmod.ponder.foundation.instruction.FadeOutOfSceneInstruction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.component.CustomData;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.PonderElectricNetwork;
+import org.patryk3211.powergrid.electricity.light.string.PatternData;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 public class ElectricInstructions {
@@ -116,10 +115,7 @@ public class ElectricInstructions {
         var element = new WireElement(level -> {
             var stack = ModdedItems.STRING_LIGHT_CORD.asStack();
             if(colorPattern != null) {
-                CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                compoundTag.putByteArray("Pattern", Arrays.stream(colorPattern)
-                        .map(color -> (byte) color.ordinal()).toList());
-                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+                stack.set(ModdedDataComponents.LIGHT_PATTERN.get(), PatternData.of(List.of(colorPattern)));
             }
             var wire = StringLightCordEntity.create(level, endpoint1, endpoint2, stack, null);
             wire.updateRenderParams();

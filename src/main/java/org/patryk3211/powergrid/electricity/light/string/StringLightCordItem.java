@@ -16,12 +16,11 @@
 package org.patryk3211.powergrid.electricity.light.string;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
@@ -44,15 +43,12 @@ public class StringLightCordItem extends CordItem {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext tooltipContext, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
         super.appendHoverText(stack, tooltipContext, tooltipComponents, isAdvanced);
-        if(!stack.has(DataComponents.CUSTOM_DATA))
-            return;
-        var pattern = stack.get(DataComponents.CUSTOM_DATA).copyTag().getByteArray("Pattern");
-        if(pattern.length == 0)
+        var pattern = stack.get(ModdedDataComponents.LIGHT_PATTERN.get());
+        if(pattern == null)
             return;
         var line = Lang.translate("tooltip.string_light_cord_pattern")
                 .style(ChatFormatting.GRAY);
-        for(var b : pattern) {
-            var color = DyeColor.byId(b);
+        for(var color : pattern.colors()) {
             line.text(color.getTextColor(), "O");
         }
         tooltipComponents.add(line.component());

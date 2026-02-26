@@ -16,8 +16,6 @@
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,16 +23,16 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+import org.patryk3211.powergrid.electricity.wire.WireConnection;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
@@ -163,25 +161,19 @@ public class CordItem extends WireItem {
 
     private static InteractionResult addEndpoint(UseOnContext context, ICordEndpoint endpoint) {
         var stack = context.getItemInHand();
-        var firstPoint = WireEndpointType.deserialize(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("Connection"));
+        var firstPoint = stack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
         if(firstPoint == null) {
-            CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            compoundTag.put("Connection", endpoint.serialize());
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+            stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(endpoint));
             IElectric.sendMessage(context, Lang.translate("message.cord_next").style(ChatFormatting.GRAY).component());
             return InteractionResult.SUCCESS;
         } else if(firstPoint instanceof ICordEndpoint firstCordPoint) {
             // Both endpoints specified
             var result = connect(firstCordPoint, endpoint, context);
-            CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
-            compoundTag.remove("Connection");
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+            stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
             return result;
         } else {
             IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
-            CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
-            compoundTag.remove("Connection");
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+            stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
             return InteractionResult.FAIL;
         }
     }
@@ -189,11 +181,8 @@ public class CordItem extends WireItem {
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
-        if(stack.has(DataComponents.CUSTOM_DATA) && user.isShiftKeyDown()) {
-            CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
-            compoundTag.remove("Connection");
-            compoundTag.remove("Half");
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+        if(stack.has(ModdedDataComponents.CONNECTION_DATA.get()) && user.isShiftKeyDown()) {
+            stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
             if(!world.isClientSide)
                 user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
             return InteractionResultHolder.sidedSuccess(stack, true);
@@ -203,7 +192,7 @@ public class CordItem extends WireItem {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return super.isFoil(stack) || (stack.has(DataComponents.CUSTOM_DATA) && stack.get(DataComponents.CUSTOM_DATA).contains("Half"));
+        return super.isFoil(stack) || stack.has(ModdedDataComponents.CONNECTION_DATA.get());
     }
 
     @NotNull
@@ -216,9 +205,10 @@ public class CordItem extends WireItem {
             var pos = context.getClickedPos();
             var terminal = electric.terminalIndexAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
             if(terminal >= 0) {
-                if(stack.has(DataComponents.CUSTOM_DATA) && stack.get(DataComponents.CUSTOM_DATA).contains("Half")) {
+                var connection = stack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY);
+                if(connection.hasHalf()) {
                     // Tag has the first half of a split cord endpoint
-                    var endpointHalf = WireEndpointType.deserialize(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Half"));
+                    var endpointHalf = connection.half();
                     if(!(endpointHalf instanceof BlockWireEndpoint bwe))
                         return InteractionResult.FAIL;
                     var endpoint2 = new BlockWireEndpoint(pos, terminal);
@@ -230,16 +220,13 @@ public class CordItem extends WireItem {
                         return InteractionResult.FAIL;
                     }
                     var splitEndpoint = new SplitCordEndpoint(bwe, endpoint2);
-                    CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
-                    compoundTag.remove("Half");
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+//                    CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+//                    compoundTag.remove("Half");
+//                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
                     return addEndpoint(context, splitEndpoint);
                 } else {
                     var endpoint = new BlockWireEndpoint(pos, terminal);
-                    var tag = endpoint.serialize();
-                    CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                    compoundTag.put("Half", tag);
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+                    stack.set(ModdedDataComponents.CONNECTION_DATA.get(), connection.withHalf(endpoint));
                     IElectric.sendMessage(context, Lang.translate("message.connection_next").style(ChatFormatting.GRAY).component());
                     return InteractionResult.SUCCESS;
                 }

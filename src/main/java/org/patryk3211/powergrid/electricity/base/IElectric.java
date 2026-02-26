@@ -19,14 +19,11 @@ import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,6 +31,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.utility.Lang;
@@ -91,25 +89,20 @@ public interface IElectric extends IWrenchable {
                 sendMessage(context, Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component());
                 return InteractionResult.FAIL;
             }
-            if(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection")) {
+            if(stack.has(ModdedDataComponents.CONNECTION_DATA.get())) {
                 // Continuing a connection.
-                CompoundTag data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                var endpoint = WireEndpointType.deserialize(data.getCompound("Connection"));
+                var endpoint = stack.get(ModdedDataComponents.CONNECTION_DATA.get()).endpoint();
                 if(endpoint == null)
                     return InteractionResult.FAIL;
                 var result = makeConnection(context.getLevel(), endpoint, new BlockWireEndpoint(pos, terminal), context);
                 if(result.consumesAction()) {
-                    data.remove("Connection");
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(data));
+                    stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
                 }
                 return result;
             } else {
                 // Must be first connection.
                 var endpoint = new BlockWireEndpoint(pos, terminal);
-                var tag = endpoint.serialize();
-                CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                compoundTag.put("Connection", tag);
-                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+                stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(endpoint));
                 sendMessage(context, Lang.translate("message.connection_next").style(ChatFormatting.GRAY).component());
                 return InteractionResult.SUCCESS;
             }

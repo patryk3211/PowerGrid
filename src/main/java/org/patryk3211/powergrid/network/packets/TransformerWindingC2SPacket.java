@@ -15,14 +15,13 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.component.CustomData;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.WireConnection;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.network.C2SPacket;
 
@@ -50,27 +49,20 @@ public class TransformerWindingC2SPacket implements C2SPacket {
     @Override
     public void handle(ServerPlayer player) {
         var stack = player.getItemInHand(hand);
-        if (!(stack.getItem() instanceof IWire) || stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Connection"))
+        var connection = stack.get(ModdedDataComponents.CONNECTION_DATA.get());
+        if (!(stack.getItem() instanceof IWire) || connection == null)
             return;
-        if (stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).contains("Turns")) {
+        if (connection.isTransformer()) {
             // Alter existing tag
-            CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            compoundTag.putInt("Turns", nTurns);
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+            stack.set(ModdedDataComponents.CONNECTION_DATA.get(), connection.withTurns(nTurns));
         } else {
             // Create a new tag
-            CompoundTag compoundTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            var endpoint = WireEndpointType.deserialize(compoundTag.getCompound("Connection"));
+            var endpoint = connection.endpoint();
             if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
                 return;
             var blockEndpoint = (BlockWireEndpoint) endpoint;
-            var nbt = new CompoundTag();
-            nbt.putInt("Turns", nTurns);
             var pos = blockEndpoint.getPos();
-            nbt.putIntArray("Initiator", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-            nbt.putInt("Terminal", blockEndpoint.getTerminal());
-            compoundTag.put("Connection", nbt);
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
+            stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(pos, nTurns, blockEndpoint));
         }
     }
 }
