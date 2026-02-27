@@ -44,7 +44,7 @@ public class WireConnection {
         var trTag = new CompoundTag();
         trTag.putInt("Turns", nTurns);
         trTag.put("Initiator", NbtUtils.writeBlockPos(pos));
-        trTag.put("Terminal", blockEndpoint.serialize());
+        trTag.putInt("Terminal", blockEndpoint.getTerminal());
         tag.put("Transformer", trTag);
         return new WireConnection(tag);
     }

@@ -250,7 +250,7 @@ subprojects {
 			modLoaders.add('neoforge')
 		}
 
-		displayName = "Power Grid - ${version} - ${isFabric ? 'Fabric' : 'NeoForge'}"
+		displayName = "Power Grid - ${mod_version.toString()} - ${isFabric ? 'Fabric' : 'NeoForge'}"
 
 		var createVersion = isFabric ? 'create-fabric' : 'create';
 		curseforge {
