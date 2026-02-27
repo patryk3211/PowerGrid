@@ -11,6 +11,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 set(SOURCES
     src/powergridNative/cpp/dense.cpp
     src/powergridNative/cpp/operations.cpp
