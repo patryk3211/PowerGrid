@@ -22,7 +22,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -32,8 +31,6 @@ import static org.patryk3211.powergrid.data.recipes.RecipeTags.*;
 @SuppressWarnings("unused")
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
-
-    LIGHT_CORD_PATTERN = createSpecial(StringLightCordRecipe::new, "crafting", "light_cord_patterning"),
 
     WIRE_CONNECTOR = create(ModdedBlocks.WIRE_CONNECTOR)
             .unlockedBy(AllItems.ANDESITE_ALLOY::get)
