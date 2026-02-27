@@ -62,7 +62,8 @@ public class StringLightCordRecipe extends CustomRecipe {
             }
         }
 
-        result.set(ModdedDataComponents.LIGHT_PATTERN.get(), PatternData.of(colors));
+        if(!colors.isEmpty())
+            result.set(ModdedDataComponents.LIGHT_PATTERN.get(), PatternData.of(colors));
         return result;
     }
 
