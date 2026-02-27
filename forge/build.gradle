@@ -25,7 +25,7 @@ dependencies {
     neoForge "net.neoforged:neoforge:${neoforge_version}"
 
     modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
-    modImplementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_forge_version}")
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_forge_version}+mc${minecraft_version}")
     modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_forge_version}")
     modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
 
