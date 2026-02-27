@@ -57,6 +57,7 @@ public class ConfigCommand {
                     return;
                 ModConfigSpec.ConfigValue configValue = (ModConfigSpec.ConfigValue) obj;
                 configValue.set(configValue.getDefault());
+                configValue.save();
             }
         });
     }
