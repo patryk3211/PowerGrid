@@ -8,7 +8,6 @@ modId = "powergrid"
 version = "${version}"
 displayName = "Create: Power Grid"
 authors = "patryk3211, Da-Negy, rvndm, casvara"
-accessTransformers = "META-INF/accesstransformer.cfg"
 description = '''
 Providing electricity to a world near you.
 '''
@@ -48,3 +47,5 @@ config = "powergrid.mixins.json"
 config = "powergrid.client.mixins.json"
 [[mixins]]
 config = "powergrid-forge.mixins.json"
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"
