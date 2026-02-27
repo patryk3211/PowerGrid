@@ -23,7 +23,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.mixin.LevelEntitiesAccessor;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -74,7 +73,7 @@ public abstract class ComplexEntityRaycastMixin {
             currentHitDistance = startVec.distanceToSqr(currentHitPoint);
         }
 
-        for(var potentialHitEntity : ((LevelEntitiesAccessor) world).getEntities().getAll()) {
+        for(var potentialHitEntity : world.getEntities().getAll()) {
             if(potentialHitEntity.isSpectator() || !(potentialHitEntity instanceof IComplexRaycast))
                 continue;
             // Perform a cheap bounding box distance check first before going for the complex cast.
