@@ -469,6 +469,5 @@
   "powergrid.tooltip.resistance.switch": "Сопротивление выключателя:",
   "powergrid.tooltip.voltage.max": "Максимальное напряжение:",
   "powergrid.tooltip.voltage.min": "Минимальное напряжение:",
-  "powergrid.tooltip.voltage.rated": "Номинальное напряжение:",
-  "powergrid.tooltip.voltage.rpm": "Об/мин за 1В:"
+  "powergrid.tooltip.voltage.rated": "Номинальное напряжение:"
 }
