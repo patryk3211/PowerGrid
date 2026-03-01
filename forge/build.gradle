@@ -38,7 +38,7 @@ dependencies {
 //    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
 
     // Create: The Factory Must Grow
-    modCompileOnly "maven.modrinth:create-tfmg:1.0.2c"
+    modCompileOnly "maven.modrinth:create-tfmg:1.2.0"
 
     compileOnly("io.github.llamalad7:mixinextras-common:${mixin_extras_version}")
     annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-neoforge:${mixin_extras_version}")))
