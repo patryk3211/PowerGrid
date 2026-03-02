@@ -321,7 +321,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         if(!tag.contains("Schematic")) {
-            level.destroyBlock(worldPosition, false);
+            if(level != null)
+                level.destroyBlock(worldPosition, false);
             return;
         }
         super.read(tag, registries, clientPacket);

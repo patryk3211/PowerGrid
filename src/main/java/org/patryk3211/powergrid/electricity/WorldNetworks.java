@@ -331,6 +331,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             var syncState = new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1);
                             if(eb.blockEntity instanceof WindingBlockEntity winding) {
                                 winding.forSync(sync -> {
+                                    if(sync == null)
+                                        return;
                                     syncStates.computeIfAbsent(player, $ -> new HashMap<>())
                                             .put(sync, syncState);
                                 });
@@ -360,6 +362,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 var behaviours = entry.getValue();
                 for(var pair : behaviours.entrySet()) {
                     if(syncTicks % pair.getValue().lod() != 0)
+                        continue;
+                    if(pair.getKey() == null)
                         continue;
                     packet.begin(pair.getKey());
                     pair.getKey().writeToSync(wrapper, this::findLineMiddle);

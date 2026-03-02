@@ -42,6 +42,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     protected Predicate<T> countToSize;
     private boolean rebuildClient = true;
 
+    private boolean isChecking = false;
+
     public SegmentedBehaviour(SmartBlockEntity be, int maxSize, Predicate<T> countToSize) {
         super(be);
 
@@ -214,6 +216,11 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     }
 
     public void checkConnectivity(@Nullable T without) {
+        if(isChecking) {
+            PowerGrid.LOGGER.error("checkConnectivity recursive call prevented");
+            return;
+        }
+        isChecking = true;
         // Make sure this is always run on the controller
         if(!isController() && !getPos().equals(controllerPos)) {
             var controller = getController();
@@ -222,10 +229,13 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             } else {
                 PowerGrid.LOGGER.warn("Tried to check connectivity but controller is null");
             }
+            isChecking = false;
             return;
         }
-        if(segments == null)
+        if(segments == null) {
+            isChecking = false;
             return;
+        }
         var allConnected = new HashSet<T>();
         var toCheck = new ArrayList<T>();
         toCheck.add((T) this);
@@ -289,6 +299,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
         }
 
         sync();
+        isChecking = false;
     }
 
     public void remove() {

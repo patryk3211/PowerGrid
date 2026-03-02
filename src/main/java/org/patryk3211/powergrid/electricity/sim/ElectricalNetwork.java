@@ -96,13 +96,15 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void cleanup() {
-        mna.cleanup();
+        if(mna != null)
+            mna.cleanup();
         // We must not use the backend after it has been cleaned up.
         mna = null;
     }
 
     public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
-        mna.setPrecision(absoluteCriterion, relativeCriterion, minimumPrecision);
+        if(mna != null)
+            mna.setPrecision(absoluteCriterion, relativeCriterion, minimumPrecision);
     }
 
     // Make sure all variables are completely rebuilt and repopulated.
@@ -339,7 +341,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void alterConductanceMatrix(int row, int column, double change) {
-        if(dirty || Math.abs(change) < G_MIN * 0.1)
+        if(dirty || Math.abs(change) < G_MIN * 0.1 || mna == null)
             return;
         var restore = mna.rowExchange();
         mna.rowExchange(false);
@@ -389,6 +391,8 @@ public class ElectricalNetwork implements IStamped {
     }
 
     protected void populateConductanceMatrix() {
+        if(mna == null)
+            return;
         mna.jacobianPrepareForWrite();
         conductanceDelta = 0;
         conductanceUpdates = 0;
@@ -545,7 +549,7 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void setValue(INode node, double value) {
-        if(dirty)
+        if(dirty || mna == null)
             return;
         if(leafNodes.containsKey(node))
             return;
@@ -559,6 +563,8 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void swapNodes(INode node1, INode node2) {
+        if(mna == null)
+            return;
         var index1 = node1.getIndex();
         var index2 = node2.getIndex();
 
@@ -632,6 +638,8 @@ public class ElectricalNetwork implements IStamped {
     }
 
     protected void prepareMatrices(int multiTicks) {
+        if(mna == null)
+            return;
         var nodeCount = nodes.size();
         if(dirty) {
             mna.allocate(nodeCount);
@@ -700,6 +708,8 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void prepare(int multiTicks) {
+        if(mna == null)
+            return;
         if(sourceCount == 0) {
             for(var hook : outerHooks)
                 hook.preSolve();
@@ -722,6 +732,8 @@ public class ElectricalNetwork implements IStamped {
     }
 
     public void singleTick() {
+        if(mna == null)
+            return;
         ++stamp;
         if(sourceCount == 0)
             return;
