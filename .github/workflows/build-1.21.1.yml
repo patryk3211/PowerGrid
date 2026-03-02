@@ -1,0 +1,51 @@
+name: Dev builds
+
+on:
+  push:
+    branches: [ "architectury-1.21.1/dev" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Build Forge
+      uses: burrunan/gradle-cache-action@v3
+      with:
+        job-id: jdk21
+        arguments: :forge:build
+    - name: Upload Forge Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: forge-build
+        path:
+          forge/build/libs/powergrid-mc*-*-????????.jar
+        if-no-files-found: error
+        retention-days: 30
+
+    - name: Send announcement to Discord
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: |
+        curl -H "Content-Type: application/json" \
+           -X POST \
+           --data-binary '{
+           "content": "Power Grid 1.21.1 auto-build is ready",
+           "embeds": [
+              {
+                "title": "Auto-build has finished",
+                "description": "Make sure to backup your world, these build are not guaranteed to work!",
+                "url": "https://github.com/patryk3211/PowerGrid/actions",
+                "color": 565479
+              }
+           ]}' \
+           $DISCORD_WEBHOOK
