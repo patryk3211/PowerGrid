@@ -113,6 +113,8 @@ public class WireItem extends Item implements IWire {
                 return InteractionResultHolder.fail(null);
             var segments = entity.segments;
             if(bwe.getEnd()) {
+                if(segments.size() == 0)
+                    return InteractionResultHolder.fail(null);
                 var last = segments.get(segments.size() - 1);
                 continueDir = last.direction;
             } else {
@@ -287,6 +289,9 @@ public class WireItem extends Item implements IWire {
         var stack = user.getItemInHand(hand);
         if(stack.hasTag() && user.isShiftKeyDown()) {
             stack.removeTagKey("Connection");
+            stack.removeTagKey("Turns");
+            stack.removeTagKey("Terminal");
+            stack.removeTagKey("Initiator");
             if(!world.isClientSide)
                 user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
             return InteractionResultHolder.sidedSuccess(stack, true);

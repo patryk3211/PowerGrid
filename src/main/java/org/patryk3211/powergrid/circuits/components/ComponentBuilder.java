@@ -48,8 +48,9 @@ public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Co
     }
 
     public ComponentBuilder<T, P> footprint(int width, int height, NonNullUnaryOperator<ComponentFootprint.Builder> transform) {
-        var keyBase = "component." + getOwner().getModid() + "." + getName();
-        var builder = transform.apply(new ComponentFootprint.Builder(width, height, keyBase));
+        var sharedKeyBase = "component." + getOwner().getModid();
+        var keyBase = sharedKeyBase + "." + getName();
+        var builder = transform.apply(new ComponentFootprint.Builder(width, height, keyBase, sharedKeyBase));
         addMiscData(ProviderType.LANG, provider -> builder.translatedPads.forEach(provider::add));
         this.footprint = builder.build();
         return this;

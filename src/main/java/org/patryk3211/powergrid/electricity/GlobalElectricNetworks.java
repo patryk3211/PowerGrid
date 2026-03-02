@@ -27,7 +27,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -133,8 +135,6 @@ public class GlobalElectricNetworks {
         if(node.getNetwork() != null) {
             if(node.getNetwork().isLeaf(node)) {
                 line.append(Component.literal(" -").withStyle(ChatFormatting.GREEN));
-            } else if(node.getNetwork().isOptimized(node)) {
-                line.append(Component.literal(" *").withStyle(ChatFormatting.GREEN));
             }
         }
         return line;
@@ -192,14 +192,26 @@ public class GlobalElectricNetworks {
     }
 
     public static void configsReloaded() {
-        var solverType = ModdedConfigs.server().electricity.solver.solverType.get();
-        var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
-        var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
-        var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
+        var cSolver = ModdedConfigs.server().electricity.solver;
+        var backend = cSolver.solverBackend.get();
+        var rA = cSolver.solverAbsolutePrecision.get();
+        var rR = cSolver.solverRelativePrecision.get();
+        var rM = cSolver.solverAbsoluteMinimumPrecision.get();
+        if(!backend.isSupported()) {
+            PowerGrid.LOGGER.error("Selected backend '{}' is not supported! Using Java backend instead", backend);
+            backend = CSolver.SolverBackend.JAVA;
+            cSolver.solverBackend.set(CSolver.SolverBackend.JAVA);
+        }
+        final var selectedBackend = backend;
         for(var networks : worldNetworks.values()) {
             networks.subnetworks.forEach(network -> {
-                network.setSolverType(solverType);
+                network.switchBackend(selectedBackend);
                 network.setPrecision(rA, rR, rM);
+                network.bjtSmoothAlpha = cSolver.bjtLimAlpha.getF();
+                network.diodeSmoothAlpha = cSolver.diodeLimAlpha.getF();
+                network.triodeLimCathode = cSolver.triodeLimCathode.getF();
+                network.triodeLimAnode = cSolver.triodeLimAnode.getF();
+                network.triodeLimGrid = cSolver.triodeLimGrid.getF();
             });
         }
     }

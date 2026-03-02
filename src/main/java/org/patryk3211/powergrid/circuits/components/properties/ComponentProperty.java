@@ -35,6 +35,10 @@ public abstract class ComponentProperty<T> {
         return this;
     }
 
+    public <X extends ComponentProperty<T>> X cast() {
+        return (X) this;
+    }
+
     public ResourceLocation id() {
         return new ResourceLocation(namespace, name);
     }

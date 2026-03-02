@@ -17,12 +17,15 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
@@ -93,6 +96,33 @@ public class AutoCordEndpoint implements ICordEndpoint {
         if(plugFacing != null) {
             nbt.putByte("Plug", (byte) plugFacing.ordinal());
         }
+    }
+
+    public IElectric getElectricBlock(Level world) {
+        if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
+            return null;
+        return IElectric.getAt(world, pos);
+    }
+
+    @Nullable
+    public ElectricBehaviour getElectricBehaviour(Level world) {
+        if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
+            return null;
+        var electric = getElectricBlock(world);
+        if(electric == null)
+            return null;
+        var state = world.getBlockState(pos);
+        return electric.getBehaviour(world, pos, state);
+    }
+
+    @Override
+    public boolean isValid(Level world) {
+        if(!world.isLoaded(pos))
+            return false;
+        var behaviour = getElectricBehaviour(world);
+        if(behaviour == null)
+            return false;
+        return behaviour.hasTerminal(terminal1) && behaviour.hasTerminal(terminal2);
     }
 
     @Override

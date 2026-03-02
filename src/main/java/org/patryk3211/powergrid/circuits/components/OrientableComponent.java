@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
@@ -42,5 +43,12 @@ public abstract class OrientableComponent extends Component {
         if(placed == null)
             return footprint;
         return footprint.rotated(placed.get(ORIENTATION));
+    }
+
+    public boolean rotate(@NotNull PlacedComponent placed, boolean counterClockwise) {
+        var orientation = placed.get(Orientation.PROPERTY);
+        orientation = counterClockwise ? orientation.getCounterClockwise() : orientation.getClockwise();
+        placed.set(Orientation.PROPERTY, orientation);
+        return true;
     }
 }

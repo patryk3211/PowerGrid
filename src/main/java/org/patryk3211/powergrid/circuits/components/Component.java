@@ -21,11 +21,13 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ConstantProperty;
@@ -78,7 +80,10 @@ public abstract class Component {
 
     @Environment(EnvType.CLIENT)
     public static void modelChanged(BlockPos pos) {
+        var level = Minecraft.getInstance().level;
         var renderer = Minecraft.getInstance().levelRenderer;
+        if(level != null && level.getBlockEntity(pos) instanceof CircuitBoardBlockEntity circuit)
+            circuit.quads = null;
         renderer.setBlocksDirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
 
@@ -115,6 +120,10 @@ public abstract class Component {
      */
     public void stateUpdated(@NotNull PlacedComponent placed) {
 
+    }
+
+    public boolean rotate(@NotNull PlacedComponent placed, boolean counterClockwise) {
+        return false;
     }
 
     public ComponentFootprint footprint(@Nullable PlacedComponent placed) {
@@ -156,6 +165,14 @@ public abstract class Component {
 
     public static void renderDataTick(@NotNull PlacedComponent placed) {
         placed.data(FloatPair.class).ifPresent(data -> data.prev = data.current);
+    }
+
+    /**
+     * Data fixer, handles changes between updates.
+     * @param tag Tag to modify
+     */
+    public void dataFixup(@NotNull CompoundTag tag) {
+
     }
 
     public static class FloatPair {

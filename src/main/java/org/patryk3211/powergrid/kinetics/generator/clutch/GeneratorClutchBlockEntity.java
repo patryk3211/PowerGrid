@@ -156,9 +156,9 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
                 var network = getOrCreateNetwork();
                 network.updateStressFor(this, calculateStressApplied());
                 network.updateCapacityFor(this, calculateAddedStressCapacity());
+                notifyUpdate();
             }
             recalculateStress = false;
-            notifyUpdate();
         }
         if(mode.get() == ClutchMode.MOTOR) {
             var force = (float) (torqueForStress() * motorLoad * lastCapacityProvided / 30 * Math.PI);

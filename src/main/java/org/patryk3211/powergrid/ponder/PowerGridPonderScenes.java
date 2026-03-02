@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.AllItems;
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -88,6 +89,9 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.CONSTANT_SPEED_MOTOR, "constant_speed_motor", DeviceScenes::constantSpeedMotor, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(ModdedBlocks.SERVO, "servo", DeviceScenes::servo, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
 
+        HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_FAN, "electric_fan", DeviceScenes::electricFan, PowerGridPonderTags.ELECTRIC_DEVICES);
+        HELPER.addStoryBoard(AllBlocks.ENCASED_FAN, "encased_fan", DeviceScenes::encasedFan);
+
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet)
                 .addStoryBoard("lightning_attractor", MagnetScenes::lightningAttractor);
@@ -124,7 +128,8 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "circuit/voltage", CircuitScenes::voltageGauge, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "circuit/current", CircuitScenes::currentGauge, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.CAPACITOR, "circuit/capacitor", CircuitScenes::capacitor, PowerGridPonderTags.CIRCUIT_COMPONENTS);
-        HELPER.addStoryBoard(ModdedItems.RELAY, "circuit/relay", CircuitScenes::relay, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.forComponents(ModdedItems.RELAY, ModdedItems.RELAY_DPDT)
+                .addStoryBoard("circuit/relay", CircuitScenes::relay, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(AllItems.ELECTRON_TUBE, "circuit/electron_tube", CircuitScenes::electronTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.REDSTONE_RELAY, "circuit/redstone_relay", CircuitScenes::redstoneRelay, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(AllItems.COPPER_NUGGET, "circuit/via", CircuitScenes::via, PowerGridPonderTags.CIRCUIT_COMPONENTS);

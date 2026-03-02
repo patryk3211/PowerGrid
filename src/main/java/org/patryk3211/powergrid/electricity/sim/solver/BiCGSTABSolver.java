@@ -71,11 +71,6 @@ public class BiCGSTABSolver implements ISolver {
     }
 
     @Override
-    public ElectricalNetwork.SolverType type() {
-        return ElectricalNetwork.SolverType.BICGSTAB;
-    }
-
-    @Override
     public void setTargetPrecision(double targetPrecision) {
         this.targetPrecision = targetPrecision;
     }

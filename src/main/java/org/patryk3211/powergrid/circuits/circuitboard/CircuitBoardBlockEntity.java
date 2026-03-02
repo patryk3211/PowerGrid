@@ -21,6 +21,8 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.math.VecHelper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,6 +42,7 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -49,6 +52,8 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
+import org.patryk3211.powergrid.electricity.wire.CircuitBoardEndpoint;
+import org.patryk3211.powergrid.network.packets.EndpointTrackingC2SPacket;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -63,8 +68,12 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     private final Map<Class<?>, Collection<PlacedComponent>> componentCache = new HashMap<>();
     private final Map<CircuitBoardBlockEntity, List<ElectricWire>> edgeViadWires = new HashMap<>();
 
-    private AirCurrent coolingAir;
-    protected float coolingFactorMultiplier = 1;
+    private final Map<AirCurrent, Float> coolingAir = new HashMap<>();
+    public float totalCoolingFactorMultiplier = 1.0f;
+
+    @Nullable
+    @Environment(EnvType.CLIENT)
+    public CircuitBoardModelQuads quads;
 
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -93,7 +102,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         if(baked == null)
             return;
         baked.read(tag, false);
-        notifyUpdate();
+        if(!level.isClientSide)
+            notifyUpdate();
     }
 
     @Nullable
@@ -103,7 +113,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         var orientation = CircuitBoardBlock.getOrientation(getBlockState(), sideIn);
         if(orientation == null)
             return null;
-        if(edgeOut.positive() == orientation.positive()) {
+        if(((edgeOut.isX() && orientation.isX()) || (edgeOut.isY() && orientation.isY())) == (edgeOut.positive() == orientation.positive())) {
             edgePosition = 15 - edgePosition;
         }
         for(var placed : getComponents(ViaComponent.class)) {
@@ -242,13 +252,22 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public void initialize() {
         super.initialize();
         edgeConnect();
+        if(level.isClientSide) {
+            // Layer position doesn't matter here.
+            ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(new CircuitBoardEndpoint(worldPosition, 0, 0), false));
+        }
     }
 
     @Override
     public void tick() {
         super.tick();
-        if(coolingAir != null && (coolingAir.source.isSourceRemoved() || coolingAir.source.getSpeed() == 0)) {
-            noCooling();
+        var iter = coolingAir.entrySet().iterator();
+        while(iter.hasNext()) {
+            var entry = iter.next();
+            if(entry.getKey().source.isSourceRemoved() || entry.getKey().source.getSpeed() == 0) {
+                totalCoolingFactorMultiplier -= entry.getValue();
+                iter.remove();
+            }
         }
         if(baked != null) {
             baked.tick();
@@ -301,7 +320,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         if(!tag.contains("Schematic")) {
-            level.destroyBlock(worldPosition, false);
+            if(level != null)
+                level.destroyBlock(worldPosition, false);
             return;
         }
         super.read(tag, clientPacket);
@@ -366,6 +386,15 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     @Override
+    public void invalidate() {
+        super.invalidate();
+        if(level.isClientSide) {
+            // Layer position doesn't matter here.
+            ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(new CircuitBoardEndpoint(worldPosition, 0, 0), true));
+        }
+    }
+
+    @Override
     public void remove() {
         disconnectViad();
         super.remove();
@@ -416,14 +445,21 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         return baked;
     }
 
-    public void setCoolingMultiplier(AirCurrent current, float value) {
-        coolingFactorMultiplier = value;
-        coolingAir = current;
+    public void addCoolingMultiplier(AirCurrent current, float value) {
+        var currentValue = coolingAir.get(current);
+        if(currentValue != null) {
+            totalCoolingFactorMultiplier -= currentValue;
+            if (totalCoolingFactorMultiplier < 1)
+                totalCoolingFactorMultiplier = 1;
+        }
+        coolingAir.put(current, value);
+        totalCoolingFactorMultiplier += value;
     }
 
-    public void noCooling() {
-        coolingFactorMultiplier = 1;
-        coolingAir = null;
+    public void removeCoolingMultiplier(AirCurrent current) {
+        var currentValue = coolingAir.remove(current);
+        if(currentValue != null)
+            totalCoolingFactorMultiplier -= currentValue;
     }
 
     @Override

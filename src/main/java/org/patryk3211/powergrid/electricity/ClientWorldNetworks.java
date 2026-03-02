@@ -76,7 +76,7 @@ public class ClientWorldNetworks extends WorldNetworks {
     @Override
     public void lineDisconnected(TransmissionLine line) {
         transmissionLines.remove(line.getId());
-        islandDiscoveryQueue.add(line.getNetwork());
+        scheduleIslandDiscovery(line.getNetwork());
     }
 
     @Override

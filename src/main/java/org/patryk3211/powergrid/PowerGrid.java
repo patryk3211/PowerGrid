@@ -40,8 +40,9 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
-import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
+import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
@@ -63,6 +64,8 @@ public class PowerGrid {
 	public static void init() {
 		LOGGER.info("Power grid starting, prepare to be electrocuted");
 		ElectricalNetwork.LOGGER = LOGGER;
+
+		NativeMNA.tryLoad();
 
 		ModdedSoundEvents.prepare();
 

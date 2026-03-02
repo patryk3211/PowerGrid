@@ -36,6 +36,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
 
     public CurrentGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        maxValue = MAX_VALUES[0];
     }
 
     @Override
@@ -79,6 +80,16 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
         float resistance = resistance();
         builder.setTerminalCount(2);
         wire = builder.connect(resistance, builder.terminalNode(0), builder.terminalNode(1));
+    }
+
+    @Override
+    public float getMaxValue() {
+        return maxValue;
+    }
+
+    @Override
+    public ChatFormatting getColor(float value) {
+        return measurementColor(value, maxValue);
     }
 
     @Override
@@ -140,7 +151,11 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        addTooltip(tooltip, getValue(), maxValue, gaugeValue.getValue() <= 1);
+        Lang.builder().translate("gui.current_meter.title")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        display.format(getValue()).forGoggles(tooltip, 1);
         return true;
     }
 }

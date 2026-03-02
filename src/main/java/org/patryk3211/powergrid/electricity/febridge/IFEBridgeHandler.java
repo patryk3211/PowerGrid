@@ -15,8 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.febridge;
 
+import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 public interface IFEBridgeHandler {
     static float voltToFE() {
@@ -30,11 +31,14 @@ public interface IFEBridgeHandler {
     long getAmount();
     void setAmount(long amount);
 
-    default void charge(SwitchedWire wire) {
+    default void charge(ElectricWire wire) {
         float wattsToFE = IFEBridgeHandler.wattToFE();
-        if(wire.getState()) {
-            var I = wire.current();
-            setAmount(getAmount() + Math.round(I * I * wire.getResistance() * wattsToFE));
+        long maxCharge = (long) (Math.abs(wire.potentialDifference()) * IFEBridgeHandler.voltToFE());
+        var I = wire.current();
+        var amount = getAmount();
+        var newAmount = Math.min(amount + Mth.floor(I * I * wire.getResistance() * wattsToFE), maxCharge);
+        if(newAmount != amount) {
+            setAmount(newAmount);
             setChanged();
         }
     }
@@ -42,22 +46,21 @@ public interface IFEBridgeHandler {
     long moveEnergy();
     void setChanged();
 
-    default void manageWire(SwitchedWire wire) {
+    default void manageWire(ElectricWire wire) {
         var V = Math.abs(wire.potentialDifference());
         long maxCharge = (long) (V * IFEBridgeHandler.voltToFE());
         long missingCharge = maxCharge - getAmount();
         if(missingCharge <= 0) {
-            wire.setState(false);
+            wire.setResistance(1000);
             return;
         }
 
         float targetWatts = missingCharge / IFEBridgeHandler.wattToFE();
         float resistance = V * V / targetWatts;
         if(resistance > 0) {
-            wire.setResistance(resistance);
-            wire.setState(true);
+            wire.setResistance(Math.min(resistance, 1000));
         } else {
-            wire.setState(false);
+            wire.setResistance(1000);
         }
     }
 }

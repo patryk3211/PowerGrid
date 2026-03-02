@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "powergrid:zinc_sheet"
+    "powergrid:zinc_sheet",
+    {
+      "id": "createdeco:zinc_sheet",
+      "required": false
+    }
   ]
 }

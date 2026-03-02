@@ -42,6 +42,8 @@ public class ComponentFootprint {
     private final int width;
     private final int height;
 
+    public final int originalWidth, originalHeight;
+
     private final SortedMap<Point, PadData> pads;
     private final boolean outline;
     private final boolean withItem;
@@ -50,9 +52,11 @@ public class ComponentFootprint {
 
     private ItemStack renderedStack;
 
-    protected ComponentFootprint(int width, int height, SortedMap<Point, PadData> pads, boolean outline, boolean withItem, @Nullable Orientation arrow) {
+    protected ComponentFootprint(int width, int height, int originalWidth, int originalHeight, SortedMap<Point, PadData> pads, boolean outline, boolean withItem, @Nullable Orientation arrow) {
         this.width = width;
         this.height = height;
+        this.originalWidth = originalWidth;
+        this.originalHeight = originalHeight;
         this.pads = pads;
         this.outline = outline;
         this.withItem = withItem;
@@ -171,6 +175,14 @@ public class ComponentFootprint {
         return height;
     }
 
+    public int getOriginalWidth() {
+        return originalWidth;
+    }
+
+    public int getOriginalHeight() {
+        return originalHeight;
+    }
+
     public Map<Point, PadData> getPads() {
         return pads;
     }
@@ -214,7 +226,7 @@ public class ComponentFootprint {
             pads.put(new Point(x, y), pad.getValue());
         }
 
-        var footprint = new ComponentFootprint(width, height, pads, this.outline, withItem, arrow == null ? null : arrow.rotate(orientation));
+        var footprint = new ComponentFootprint(width, height, originalWidth, originalHeight, pads, this.outline, withItem, arrow == null ? null : arrow.rotate(orientation));
         // Copy cached stack if one is available.
         footprint.renderedStack = this.renderedStack;
         return footprint;
@@ -228,16 +240,19 @@ public class ComponentFootprint {
         private Orientation arrow = null;
         @Nullable
         private final String translationKey;
+        @Nullable
+        private final String sharedKeyBase;
         public final Map<String, String> translatedPads = new HashMap<>();
 
         public Builder(int width, int height) {
-            this(width, height, null);
+            this(width, height, null, null);
         }
 
-        public Builder(int width, int height, String translationKeyBase) {
+        public Builder(int width, int height, @Nullable String translationKeyBase, @Nullable String sharedKeyBase) {
             this.width = width;
             this.height = height;
             this.translationKey = translationKeyBase;
+            this.sharedKeyBase = sharedKeyBase;
         }
 
         private void validatePad(int x, int y) {
@@ -261,7 +276,7 @@ public class ComponentFootprint {
             return this;
         }
 
-        public Builder addPad(int x, int y, int nodeIndex, String defaultLang, String defaultShort) {
+        public Builder addPad(int x, int y, int nodeIndex, String defaultLang, @Nullable String defaultShort) {
             if(translationKey == null)
                 throw new IllegalCallerException("This method may only be used when the translation key base is set");
             var key = translationKey + "." + nodeIndex;
@@ -269,6 +284,14 @@ public class ComponentFootprint {
             if(defaultShort != null)
                 translatedPads.put(key + ".short", defaultShort);
             return addPad(x, y, nodeIndex, Component.translatable(key), defaultShort == null ? null : Component.translatable(key + ".short"));
+        }
+
+        public Builder addPadSharedText(int x, int y, int nodeIndex, @NotNull String key, @Nullable String keyShort) {
+            if(sharedKeyBase == null)
+                throw new IllegalCallerException("This method may only be used when the translation key base is set");
+            return addPad(x, y, nodeIndex,
+                    Component.translatable(sharedKeyBase + "." + key),
+                    keyShort == null ? null : Component.translatable(sharedKeyBase + "." + keyShort));
         }
 
         public Builder withOutline() {
@@ -303,7 +326,7 @@ public class ComponentFootprint {
                 if (padIndices.last() != padIndices.size() - 1)
                     throw new IllegalStateException("Footprint pad indices must not contain any gaps");
             }
-            return new ComponentFootprint(width, height, pads, outline, withItem, arrow);
+            return new ComponentFootprint(width, height, width, height, pads, outline, withItem, arrow);
         }
     }
 

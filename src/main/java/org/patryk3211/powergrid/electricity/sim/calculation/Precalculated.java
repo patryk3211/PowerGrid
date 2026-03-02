@@ -15,66 +15,54 @@
  */
 package org.patryk3211.powergrid.electricity.sim.calculation;
 
-import org.jetbrains.annotations.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+public abstract class Precalculated<T> implements IStamped {
+    protected int ourStamp = 0;
 
-public class Precalculated<T, D extends IStamped> implements IStamped {
-    private final BiFunction<D, T, T> func;
-    @Nullable
-    private D dependency;
-    private int dependencyStamp = -1;
-    private int ourStamp = 0;
+    protected final T defaultValue;
+    protected T value;
 
-    private final T defaultValue;
-    private T value = null;
+    protected final List<Object> auxData = new ArrayList<>();
+    protected final ValueHandler handler = new ValueHandler();
 
-    public Precalculated(Function<D, T> func) {
-        this.func = (dep, prev) -> func.apply(dep);
-        this.defaultValue = null;
-    }
-
-    public Precalculated(Function<D, T> func, T defaultValue) {
-        this.func = (dep, prev) -> func.apply(dep);
+    public Precalculated(T defaultValue) {
         this.defaultValue = defaultValue;
         this.value = defaultValue;
     }
 
-    public Precalculated(BiFunction<D, T, T> func, T defaultValue) {
-        this.func = func;
-        this.defaultValue = defaultValue;
-        this.value = defaultValue;
-    }
+    public abstract T get();
+    public abstract int getStamp();
+    public abstract void invalidate();
 
-    public void updateDependency(@Nullable D dependency) {
-        this.dependency = dependency;
-        if(dependency == null) {
-            this.dependencyStamp = -1;
+    public class ValueHandler {
+        public void emit(T value) {
+            Precalculated.this.value = value;
         }
-    }
 
-    public T get() {
-        if(dependency == null) {
-            value = defaultValue;
-        } else if(dependencyStamp != dependency.getStamp()) {
-            ++ourStamp;
-            dependencyStamp = dependency.getStamp();
-            value = func.apply(dependency, value);
+        public <A> void store(int slot, A value) {
+            if(slot < auxData.size()) {
+                auxData.set(slot, value);
+            } else if(slot == auxData.size()) {
+                auxData.add(value);
+            } else {
+                throw new IndexOutOfBoundsException();
+            }
         }
-        return value;
-    }
 
-    @Override
-    public int getStamp() {
-        if(dependency == null)
-            return -1;
-        if(dependencyStamp != dependency.getStamp())
-            return ourStamp + 1;
-        return ourStamp;
-    }
+        public T get() {
+            return Precalculated.this.value;
+        }
 
-    public void invalidate() {
-        --dependencyStamp;
+        public <A> A get(int slot, Class<A> clazz) {
+            return get(slot, clazz, null);
+        }
+
+        public <A> A get(int slot, Class<A> clazz, A defaultValue) {
+            if(slot < 0 || slot >= auxData.size())
+                return defaultValue;
+            return clazz.cast(auxData.get(slot));
+        }
     }
 }

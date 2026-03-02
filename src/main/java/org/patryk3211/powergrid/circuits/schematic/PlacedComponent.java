@@ -56,6 +56,7 @@ public class PlacedComponent {
 
     public PlacedComponent(CompoundTag tag) {
         this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUUID("UUID"));
+        component.dataFixup(tag);
         var propertyMap = tag.getCompound("Properties");
         for(var entry : properties) {
             entry.read(propertyMap);

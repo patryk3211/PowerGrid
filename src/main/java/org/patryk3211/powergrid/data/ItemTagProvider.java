@@ -21,7 +21,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -39,5 +42,8 @@ public class ItemTagProvider extends TagsProvider<Item> {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
+        tag(ModdedTags.plates("zinc"))
+                .add(reverseLookup(ModdedItems.ZINC_SHEET.asItem()))
+                .addOptional(ResourceLocation.tryBuild("createdeco", "zinc_sheet"));
     }
 }

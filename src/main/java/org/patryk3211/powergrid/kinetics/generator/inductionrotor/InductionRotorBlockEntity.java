@@ -21,6 +21,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
+import org.patryk3211.powergrid.electricity.sim.calculation.PrecalculatedN;
+import org.patryk3211.powergrid.electricity.sim.calculation.StampedSupplier;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
@@ -29,6 +32,7 @@ import java.util.List;
 
 public class InductionRotorBlockEntity extends RotorBlockEntity {
     public float field;
+    public final PrecalculatedN<Float, StampedSupplier<Precalculated<Float>>> totalField = new PrecalculatedN<>(this::recalculateField, 0.0f);
 
     public InductionRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -44,13 +48,21 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         super.addBehaviours(behaviours);
     }
 
-    public float calculateField() {
+    @Override
+    public void initialize() {
+        super.initialize();
+        neighborsChanged();
+    }
+
+    public void neighborsChanged() {
         assert level != null;
-        field = 0;
         var state = getBlockState();
+        int index = -1;
+        var deps = new StampedSupplier[4];
         for(var dir : Direction.values()) {
             if(dir.getAxis() == state.getValue(InductionRotorBlock.AXIS))
                 continue;
+            ++index;
             var otherState = level.getBlockState(worldPosition.relative(dir));
             if(otherState.getBlock() instanceof WindingBlock winding) {
                 var magnetic = winding.getMagneticAxis(otherState);
@@ -58,11 +70,23 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
                     continue;
                 var be = level.getBlockEntity(worldPosition.relative(dir));
                 if(be instanceof WindingBlockEntity wbe) {
-                    // Average field around 4 sides of the rotor.
-                    field += wbe.fieldStrength() * 0.25f;
+                    deps[index] = wbe::fieldStrengthCalc;
                 }
             }
         }
-        return field;
+        totalField.updateDependency(deps);
+    }
+
+    private void recalculateField(StampedSupplier<Precalculated<Float>>[] deps, Precalculated<Float>.ValueHandler handler) {
+        float sum = 0;
+        // Average field around 4 sides of the rotor.
+        for(int i = 0; i < deps.length; ++i) {
+            if(deps[i] == null)
+                continue;
+            var calc = deps[i].get();
+            if(calc != null)
+                sum += calc.get();
+        }
+        handler.emit(sum / deps.length);
     }
 }

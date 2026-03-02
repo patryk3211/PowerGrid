@@ -1,3 +1,5 @@
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+
 plugins {
 	id 'maven-publish'
 	id 'architectury-plugin' version '3.4-SNAPSHOT'
@@ -131,6 +133,8 @@ var changelogFile = file('build/changelog.md')
 changelogFile.parentFile.mkdir()
 changelogFile.createNewFile()
 subprojects {
+	if(project.name == 'native')
+		return;
 	apply plugin: "com.github.johnrengelman.shadow"
 	apply plugin: "me.modmuss50.mod-publish-plugin"
 
@@ -187,6 +191,7 @@ subprojects {
 			version = "mc${project.minecraft_version}-${project.mod_version}-${hash}"
 	})
 
+	def projNative = project(':native')
 	tasks.jar {
 		inputs.property "archivesName", project.base.archivesName
 
@@ -205,6 +210,13 @@ subprojects {
 		inputFile.set shadowJar.archiveFile
 		dependsOn shadowJar
 		archiveClassifier = null
+
+		from({ -> projNative.tasks.buildLinux.outputs }) {
+			into('native/linux')
+		}
+		from({ -> projNative.tasks.buildWindows.outputs }) {
+			into('native/windows')
+		}
 	}
 
 	tasks.named("shadowJar") {
@@ -297,8 +309,22 @@ dependencies {
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 }
 
+
+def os = DefaultNativePlatform.currentOperatingSystem
+String libDir = null
+if(os.isWindows()) {
+	libDir = project(':native').layout.buildDirectory.dir("cmake/windows").get()
+	classes.dependsOn 'native:buildWindows'
+} else if(os.isLinux()) {
+	libDir = project(':native').layout.buildDirectory.dir("cmake/linux").get()
+	classes.dependsOn 'native:buildLinux'
+}
+
+ext.nativeLibDir = libDir
+
 test {
 	useJUnitPlatform()
+	jvmArgs "-Djava.library.path=" + libDir
 }
 
 sourceSets.main {

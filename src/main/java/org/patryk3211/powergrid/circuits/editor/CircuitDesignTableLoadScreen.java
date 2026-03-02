@@ -206,4 +206,12 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
             graphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
         }
     }
+
+    @Override
+    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
+        var result = super.keyPressed(pKeyCode, pScanCode, pModifiers);
+        if(getFocused() == fileNameInput)
+            return true;
+        return result;
+    }
 }

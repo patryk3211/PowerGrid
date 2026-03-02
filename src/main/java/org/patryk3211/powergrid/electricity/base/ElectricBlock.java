@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.base;
 import com.google.common.collect.ImmutableMap;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.context.UseOnContext;
@@ -30,6 +31,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public abstract class ElectricBlock extends Block implements IElectric {
     private BlockStateTerminalCollection terminals = null;
     private ImmutableMap<BlockState, VoxelShape> outlines = null;

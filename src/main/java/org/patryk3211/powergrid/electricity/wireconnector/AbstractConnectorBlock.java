@@ -16,25 +16,24 @@
 package org.patryk3211.powergrid.electricity.wireconnector;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.base.ElectricBlock;
+import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 
-public abstract class AbstractConnectorBlock extends ElectricBlock implements IBE<ConnectorBlockEntity> {
-    public static final DirectionProperty FACING = BlockStateProperties.FACING;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public abstract class AbstractConnectorBlock extends DirectionalElectricBlock implements IBE<ConnectorBlockEntity> {
     public AbstractConnectorBlock(Properties settings) {
         super(settings);
     }
@@ -42,12 +41,6 @@ public abstract class AbstractConnectorBlock extends ElectricBlock implements IB
     @Override
     public Class<ConnectorBlockEntity> getBlockEntityClass() {
         return ConnectorBlockEntity.class;
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        builder.add(FACING);
     }
 
     @Override

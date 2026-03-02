@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
+import com.simibubi.create.api.boiler.BoilerHeater;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.api.contraption.BlockMovementChecks.CheckResult;
@@ -52,6 +53,7 @@ import org.patryk3211.powergrid.config.CResistance;
 import org.patryk3211.powergrid.config.CStress;
 import org.patryk3211.powergrid.config.CThermal;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
+import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
@@ -193,7 +195,10 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::softMetal)
             .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistances("idle", 10, "mixing", 9))
+            .transform(CResistance.setResistance(10))
+            .onRegister(block -> {
+                BoilerHeater.REGISTRY.register(block, BasinHeaterBlockEntity::boilerHeater);
+            })
             .simpleItem()
             .register();
 

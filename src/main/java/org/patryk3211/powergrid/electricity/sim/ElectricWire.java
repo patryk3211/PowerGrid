@@ -50,4 +50,9 @@ public class ElectricWire extends AbstractElectricWire {
         if(!Double.isFinite(resistance))
             throw new IllegalArgumentException("Wire resistance is not finite");
     }
+
+    @Override
+    public String toString() {
+        return String.format("ElectricWire(R=%g)", resistance);
+    }
 }

@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.wireconnector;
 
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -25,30 +26,28 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.base.ElectricBlock;
+import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
-public class CordJunctionBlock extends ElectricBlock implements IBE<CordJunctionBlockEntity>, IAcceptCord {
-    private static final VoxelShaper SHAPER = VoxelShaper.forDirectional(box(4, 0, 4, 12, 3, 12), Direction.DOWN);
+import javax.annotation.ParametersAreNonnullByDefault;
 
-    public static final DirectionProperty FACING = BlockStateProperties.FACING;
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
+public class CordJunctionBlock extends DirectionalElectricBlock implements IBE<CordJunctionBlockEntity>, IAcceptCord {
+    private static final VoxelShaper SHAPER = VoxelShaper.forDirectional(box(4, 0, 4, 12, 3, 12), Direction.DOWN);
 
     public CordJunctionBlock(Properties settings) {
         super(settings);
@@ -57,12 +56,6 @@ public class CordJunctionBlock extends ElectricBlock implements IBE<CordJunction
     @Override
     public Class<CordJunctionBlockEntity> getBlockEntityClass() {
         return CordJunctionBlockEntity.class;
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        builder.add(FACING);
     }
 
     @Override

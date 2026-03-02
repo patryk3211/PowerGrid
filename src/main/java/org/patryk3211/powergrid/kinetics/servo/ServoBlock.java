@@ -19,6 +19,7 @@ import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.data.Iterate;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -27,11 +28,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -43,25 +47,37 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 4, 12, 14, 6, 14, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 4, 12.5, 14, 6, 13.5, 16)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 10, 12, 14, 12, 14, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 10, 12.5, 14, 12, 13.5, 16)
                     .withColor(IDecoratedTerminal.BLUE),
-            new TerminalBoundingBox(IDecoratedTerminal.CONTROL, 7, 12, 14, 9, 14, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.CONTROL, 7, 12.5, 14, 9, 13.5, 16)
                     .withColor(IDecoratedTerminal.GREEN)
     };
 
-    private static final VoxelShape NORTH_SHAPE = box(2, 3, 1, 14, 13, 15);
+    private static final VoxelShape NORTH_SHAPE = Shapes.or(
+            box(3, 3, 0.5, 13, 13, 15.5),
+            box(2.5, 2.5, 0.5, 13.5, 13.5, 3.5)
+    );
+    private static final VoxelShape UP_SHAPE = Shapes.or(
+            box(3, 0.5, 3, 13, 15.5, 13),
+            box(2.5, 12.5, 2.5, 13.5, 15.5, 13.5)
+    );
 
     public ServoBlock(Properties properties) {
         super(properties);
-        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, TERMINALS_NORTH, NORTH_SHAPE));
+        setTerminalCollection(DirectionalElectricBlock.directionalNorthTerminals(this, TERMINALS_NORTH, NORTH_SHAPE, UP_SHAPE));
     }
 
     @Override
@@ -126,7 +142,18 @@ public class ServoBlock extends ElectricKineticBlock implements IBE<ServoBlockEn
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance("on"), player, tooltip);
         var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
-        var maxPower = ServoBlockEntity.MAX_SPEED * torque / 60;
+        var maxPower = ServoBlockEntity.MAX_SPEED * torque / CONVERSION_CONSTANT;
         Voltage.max((int) Math.sqrt(maxPower * resistance("on")), player, tooltip);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
     }
 }

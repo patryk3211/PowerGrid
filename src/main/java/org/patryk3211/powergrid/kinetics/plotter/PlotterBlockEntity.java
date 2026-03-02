@@ -99,6 +99,10 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
             return;
         var old = sampleBuffer;
         sampleBuffer = new float[(int) (128 / Math.abs(getSpeed()) * 40)];
+        if(old.length == 0) {
+            head = 0;
+            return;
+        }
         for(int i = 0; i < sampleBuffer.length; ++i) {
             float oldI = (float) i / sampleBuffer.length * old.length;
             int i0 = Mth.clamp(Mth.floor(oldI), 0, old.length - 1);

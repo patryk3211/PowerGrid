@@ -25,7 +25,7 @@ import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
-import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -35,11 +35,11 @@ public class BridgeElectricBehaviour extends ProxyElectricBehaviour {
     private long readEnergy;
     public long currentRate;
     private boolean fetched = false;
-    private final Supplier<SwitchedWire> converterWire;
+    private final Supplier<ElectricWire> converterWire;
     private boolean isProxy = false;
     protected int cooldownTicks = 0;
 
-    public <T extends SmartBlockEntity & IElectricEntity> BridgeElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<SwitchedWire> converterWire) {
+    public <T extends SmartBlockEntity & IElectricEntity> BridgeElectricBehaviour(T be, BlockPos behaviourPosition, Supplier<ElectricWire> converterWire) {
         super(be, true, () -> behaviourPosition);
         this.converterWire = converterWire;
     }

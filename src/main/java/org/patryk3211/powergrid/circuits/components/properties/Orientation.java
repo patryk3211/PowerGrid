@@ -71,4 +71,12 @@ public enum Orientation {
     public boolean positive() {
         return this == RIGHT || this == DOWN;
     }
+
+    public boolean isX() {
+        return this == RIGHT || this == LEFT;
+    }
+
+    public boolean isY() {
+        return this == UP || this == DOWN;
+    }
 }

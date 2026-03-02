@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.*;
@@ -37,10 +38,8 @@ import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
-import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.*;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
@@ -92,18 +91,15 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var line2 = findLineMiddle(line.getNode2());
         if(line2 != null)
             line2.splitAt(line.getNode2());
-        if(!runningDiscovery) {
-            islandDiscoveryQueue.add(line.getNode1().getNetwork());
-            islandDiscoveryQueue.add(line.getNode2().getNetwork());
-        }
+        scheduleIslandDiscovery(line.getNode1().getNetwork());
+        scheduleIslandDiscovery(line.getNode2().getNetwork());
         setDirty();
     }
 
     @Override
     public void lineDisconnected(TransmissionLine line) {
         transmissionLines.remove(line.getId());
-        if(line.getNetwork() != null && !runningDiscovery)
-            islandDiscoveryQueue.add(line.getNetwork());
+        scheduleIslandDiscovery(line.getNetwork());
         setDirty();
     }
 
@@ -113,7 +109,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void scheduleIslandDiscovery(ElectricalNetwork network) {
-        if(network != null)
+        if(network != null && !runningDiscovery)
             islandDiscoveryQueue.add(network);
     }
 
@@ -227,6 +223,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
         network.clear();
         subnetworks.remove(network);
+        network.cleanup();
     }
 
     public void preTick() {
@@ -264,6 +261,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             var network = iter.next();
             if (network.isEmpty()) {
                 iter.remove();
+                network.cleanup();
                 continue;
             }
             network.prepare(multiTick);
@@ -329,13 +327,30 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             var eb = bwe.getElectricBehaviour(world);
                             if (eb == null)
                                 continue;
-                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
-                                    .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
+                            var syncState = new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1);
+                            if(eb.blockEntity instanceof WindingBlockEntity winding) {
+                                winding.forSync(sync -> {
+                                    if(sync == null)
+                                        return;
+                                    syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                            .put(sync, syncState);
+                                });
+                            } else {
+                                syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                        .put(eb, syncState);
+                            }
                         } else if(endpoint instanceof JunctionWireEndpoint je) {
                             var syncEntry = je.makeSyncEntry(world);
                             if(syncEntry != null)
                                 syncStates.computeIfAbsent(player, $ -> new HashMap<>())
                                         .put(syncEntry, new SyncState((int) (je.getExactPosition(world).distanceTo(player.position()) / 16 + 1)));
+                        } else if(endpoint instanceof CircuitBoardEndpoint cbe) {
+                            // Circuits might not have external terminals so they need a special tracking entry
+                            var eb = cbe.getElectricBehaviour(world);
+                            if (eb == null)
+                                continue;
+                            syncStates.computeIfAbsent(player, $ -> new HashMap<>())
+                                    .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
                         }
                     }
                 }
@@ -346,6 +361,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 var behaviours = entry.getValue();
                 for(var pair : behaviours.entrySet()) {
                     if(syncTicks % pair.getValue().lod() != 0)
+                        continue;
+                    if(pair.getKey() == null)
                         continue;
                     packet.begin(pair.getKey());
                     pair.getKey().writeToSync(wrapper, this::findLineMiddle);
@@ -377,10 +394,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var network = new GraphedElectricalNetwork(globalGraph, true, ModdedConfigs.server().electricity.solver.solverType.get());
+        var backend = ModdedConfigs.server().electricity.solver.solverBackend.get();
+        if(!backend.isSupported())
+            backend = CSolver.SolverBackend.JAVA;
+        var network = new GraphedElectricalNetwork(globalGraph, true, backend::create);
         network.maxIterations = hooks -> hooks
                 ? ModdedConfigs.server().electricity.solver.solverComplexMaxIterations.get()
                 : ModdedConfigs.server().electricity.solver.solverSimpleMaxIterations.get();
+        var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
+        var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
+        var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
+        network.setPrecision(rA, rR, rM);
         subnetworks.add(network);
         return network;
     }
@@ -757,10 +781,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Also, we need to inform the wire entities about this.
             line.unresolve();
             setDirty();
-            if(removeNode.getNetwork() != null) {
-                islandDiscoveryQueue.add(removeNode.getNetwork());
-                removeNode.remove();
-            }
+            scheduleIslandDiscovery(removeNode.getNetwork());
+            removeNode.remove();
             globalExternalNodes.remove(removeNode.endpoint);
         }
     }
@@ -778,10 +800,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
         }
-        if(ownedNode.getNetwork() != null) {
-            islandDiscoveryQueue.add(ownedNode.getNetwork());
-            ownedNode.remove();
-        }
+        scheduleIslandDiscovery(ownedNode.getNetwork());
+        ownedNode.remove();
         globalExternalNodes.remove(ownedNode.endpoint);
     }
 

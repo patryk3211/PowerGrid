@@ -39,6 +39,9 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
+import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.calculateSpeed;
+
 public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     public static final int AVERAGING_TICKS = 5;
 
@@ -69,7 +72,7 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxPower = 256 * torque() / 60;
+        var maxPower = 256 * torque() / CONVERSION_CONSTANT;
         var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
@@ -137,8 +140,7 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
 
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
-            var speedFromPower = (coil.power() / torque()) * 60;
-            avgSpeed += speedFromPower * Math.signum(coil.current());
+            avgSpeed += calculateSpeed(coil.power(), torque()) * Math.signum(coil.current());
         }
         super.tick();
     }

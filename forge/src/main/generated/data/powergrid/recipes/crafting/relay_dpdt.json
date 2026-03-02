@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "forge:copper_coils"
+    },
+    {
+      "tag": "forge:plates/iron"
+    },
+    {
+      "tag": "forge:plates/iron"
+    },
+    {
+      "item": "create:andesite_alloy"
+    }
+  ],
+  "result": {
+    "item": "powergrid:relay_dpdt"
+  }
+}

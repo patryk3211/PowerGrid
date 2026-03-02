@@ -25,11 +25,14 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 
-public class ResistorComponent extends OrientableComponent {
-    public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 1f, 1000_000f);
+public class ResistorComponent extends VerticallyOrientableComponent {
+    public static final FloatProperty RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "resistor_value", 100f, 0.1f, 100_000_000f);
+
+    private static final ComponentFootprint VERTICAL_FOOTPRINT = new ComponentFootprint.Builder(3, 3)
+            .addPad(0, 1, 0).addPad(2, 1, 1).withItem().withOutline().build();
 
     public ResistorComponent(ComponentFootprint footprint) {
-        super(footprint);
+        super(footprint, VERTICAL_FOOTPRINT);
     }
 
     @Override
@@ -41,7 +44,6 @@ public class ResistorComponent extends OrientableComponent {
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var wire = builder.connect(placed.get(RESISTANCE), builder.terminalNode(0), builder.terminalNode(1));
-        // 1 watt of dissipation power, these are not high power resistors.
         thermals.builder()
                 .setThermalMass(0.05f)
                 .setMaxPower(25, 125f)

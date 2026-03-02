@@ -37,14 +37,28 @@ public class ElectricGaugeDisplaySource extends PercentOrProgressBarDisplaySourc
     @Override
     protected MutableComponent formatNumeric(DisplayLinkContext context, Float currentLevel) {
         if(context.getSourceBlockEntity() instanceof GaugeBlockEntity gauge) {
-            var value = gauge.getValue();
-            if(getMode(context) == 1) {
-                value = Math.abs(value);
+            if(getMode(context) == 3) {
+                return gauge.getCustomFormatted();
+            } else {
+                var value = gauge.getValue();
+                if (getMode(context) == 1) {
+                    value = Math.abs(value);
+                }
+                var prefix = " ";
+                var max = gauge.getMaxValue();
+                if(value > max) {
+                    value = max;
+                    prefix = "> ";
+                } else if(value < -max) {
+                    value = -max;
+                    prefix = "< ";
+                }
+                return Lang.text(prefix)
+                        .add(Lang.numberConstant(value))
+                        .add(Component.literal(" "))
+                        .add(gauge.getUnit().get())
+                        .component();
             }
-            return Lang.numberConstant(value)
-                    .add(Component.literal(" "))
-                    .add(gauge.getUnit().get())
-                    .component();
         }
         return super.formatNumeric(context, currentLevel);
     }
@@ -77,7 +91,7 @@ public class ElectricGaugeDisplaySource extends PercentOrProgressBarDisplaySourc
 
         builder.addSelectionScrollInput(0, 120, (si, l) -> si
                         .forOptions(Lang.translatedOptions("display_source.electric_gauge",
-                                "progress_bar", "absolute", "polarized"))
+                                "progress_bar", "absolute", "polarized", "custom"))
                         .titled(Lang.translateDirect("display_source.display_information")),
                 "Mode");
     }

@@ -39,6 +39,7 @@ import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.info.Current;
@@ -52,8 +53,6 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class MultimeterItem extends Item implements IHaveElectricProperties {
-    public static final float MAX_DISTANCE = 5;
-
     public MultimeterItem(Properties properties) {
         super(properties.stacksTo(1));
     }
@@ -123,13 +122,14 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
         super.inventoryTick(stack, level, entity, slotId, isSelected);
         var data = getModeData(stack);
+        var maxDistance = ModdedConfigs.server().electricity.multimeterDistance.getF();
         switch(getMode(stack)) {
             case 0 -> {
                 var pos = WireEndpointType.deserialize(data.getCompound("Pos"));
                 var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
                 if(pos != null) {
                     var posPos = pos.getExactPosition(level);
-                    if(posPos.distanceTo(entity.position()) > MAX_DISTANCE || !pos.isValid(level)) {
+                    if(posPos.distanceTo(entity.position()) > maxDistance || !pos.isValid(level)) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
@@ -139,7 +139,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 }
                 if(neg != null) {
                     var negPos = neg.getExactPosition(level);
-                    if(negPos.distanceTo(entity.position()) > MAX_DISTANCE || !neg.isValid(level)) {
+                    if(negPos.distanceTo(entity.position()) > maxDistance || !neg.isValid(level)) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
@@ -166,7 +166,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 }
                 if(data.contains("X")) {
                     var point = new Vec3(data.getFloat("X"), data.getFloat("Y"), data.getFloat("Z"));
-                    if(point.distanceTo(entity.position()) > MAX_DISTANCE) {
+                    if(point.distanceTo(entity.position()) > maxDistance) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
@@ -259,12 +259,16 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     posV = data.getFloat("PosV");
                 } else {
                     var posNode = pos instanceof CircuitBoardEndpoint e ? e.getGenericNode(level) : pos.getNode(level);
+                    if(posNode == null)
+                        yield 0;
                     posV = posNode.getVoltage();
                 }
                 if(data.contains("NegV")) {
                     negV = data.getFloat("NegV");
                 } else {
                     var negNode = neg instanceof CircuitBoardEndpoint e ? e.getGenericNode(level) : neg.getNode(level);
+                    if(negNode == null)
+                        yield 0;
                     negV = negNode.getVoltage();
                 }
                 yield posV - negV;
@@ -286,10 +290,11 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         return switch(getMode(stack)) {
             case 0 -> {
                 var voltage = Unit.VOLTAGE.formatWithPrefixes(measurement);
-                if(measurement > 500) {
-                    voltage = Lang.text(">500 ").add(Unit.VOLTAGE.get());
-                } else if(measurement < -500) {
-                    voltage = Lang.text("<-500 ").add(Unit.VOLTAGE.get());
+                var maxVolt = ModdedConfigs.server().electricity.multimeterVoltage.getF();
+                if(measurement > maxVolt) {
+                    voltage = Lang.text(">" + maxVolt + " ").add(Unit.VOLTAGE.get());
+                } else if(measurement < -maxVolt) {
+                    voltage = Lang.text("<-" + maxVolt + " ").add(Unit.VOLTAGE.get());
                 }
                 yield Lang.translate("tooltip.multimeter.voltage")
                         .add(voltage.style(ChatFormatting.BLUE))
@@ -298,10 +303,11 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
             }
             case 1 -> {
                 var current = Unit.CURRENT.formatWithPrefixes(measurement);
-                if(measurement > 50) {
-                    current = Lang.text(">50 ").add(Unit.CURRENT.get());
-                } else if(measurement < -50) {
-                    current = Lang.text("<-50 ").add(Unit.CURRENT.get());
+                var maxAmp = ModdedConfigs.server().electricity.multimeterCurrent.getF();
+                if(measurement > maxAmp) {
+                    current = Lang.text(">" + maxAmp + " ").add(Unit.CURRENT.get());
+                } else if(measurement < -maxAmp) {
+                    current = Lang.text("<-" + maxAmp + " ").add(Unit.CURRENT.get());
                 }
                 yield Lang.translate("tooltip.multimeter.current")
                         .add(current.style(ChatFormatting.YELLOW))
@@ -315,8 +321,8 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
     public float getDial(Level level, ItemStack stack) {
         var measurement = getMeasurement(level, stack);
         var value = Math.abs(switch(getMode(stack)) {
-            case 0 -> measurement / 500f;
-            case 1 -> measurement / 50f;
+            case 0 -> measurement / ModdedConfigs.server().electricity.multimeterVoltage.getF();
+            case 1 -> measurement / ModdedConfigs.server().electricity.multimeterCurrent.getF();
             default -> 0;
         });
         if(value > 1)
@@ -326,7 +332,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Voltage.max(500, player, tooltip);
-        Current.max(50, player, tooltip);
+        Voltage.max(ModdedConfigs.server().electricity.multimeterVoltage.getF(), player, tooltip);
+        Current.max(ModdedConfigs.server().electricity.multimeterCurrent.getF(), player, tooltip);
     }
 }

@@ -85,6 +85,7 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
+            .lang("Wire Cutters")
             .register();
 
     public static final ItemEntry<Item> EMPTY_CIRCUIT = REGISTRATE.item("empty_circuit", Item::new)
@@ -148,17 +149,30 @@ public class ModdedItems {
 
     public static final ItemEntry<Item> INTEGRATED_CIRCUIT = ingredient("integrated_circuit");
     public static final ItemEntry<Item> ELECTRICAL_GIZMO = ingredient("electrical_gizmo");
-    public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag, plates("zinc"));
+    public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag);
 
     public static final ItemEntry<Item> RELAY = ingredient("relay");
+    public static final ItemEntry<Item> RELAY_DPDT = REGISTRATE.item("relay_dpdt", Item::new)
+            .lang("Double Pole Relay")
+            .register();
     public static final ItemEntry<Item> RESISTOR = ingredient("resistor");
     public static final ItemEntry<Item> REDSTONE_RELAY = ingredient("redstone_relay");
     public static final ItemEntry<Item> DIODE = ingredient("diode");
+    public static final ItemEntry<Item> VFET = REGISTRATE.item("vfet", Item::new)
+            .lang("Static Induction Transistor")
+            .register();
+    public static final ItemEntry<Item> BJT_NPN = REGISTRATE.item("bjt_npn", Item::new)
+            .lang("NPN BJT")
+            .register();
+    public static final ItemEntry<Item> BJT_PNP = REGISTRATE.item("bjt_pnp", Item::new)
+            .lang("PNP BJT")
+            .register();
     public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
     public static final ItemEntry<Item> REGULATOR_TUBE = ingredient("regulator_tube");
     public static final ItemEntry<Item> NEON_BULB = ingredient("neon_bulb");
     public static final ItemEntry<Item> BARRETTER_TUBE = ingredient("barretter_tube");
+    public static final ItemEntry<Item> VARISTOR = ingredient("varistor");
 
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_TRANSFORMER_CORE = sequencedIngredient("incomplete_transformer_core");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_ELECTRICAL_GIZMO = sequencedIngredient("incomplete_electrical_gizmo");
@@ -170,6 +184,12 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BATTERY = sequencedIngredient("incomplete_battery");
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_PUNCH_CARD = sequencedIngredient("incomplete_punch_card");
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BJT_NPN = sequencedIngredientBuilder("incomplete_bjt_npn")
+            .lang("Incomplete NPN BJT")
+            .register();
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BJT_PNP = sequencedIngredientBuilder("incomplete_bjt_pnp")
+            .lang("Incomplete PNP BJT")
+            .register();
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
             .transform(customRenderer(() -> ElectroZapperItemRenderer::new))

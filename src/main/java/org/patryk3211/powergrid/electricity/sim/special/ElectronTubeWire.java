@@ -66,7 +66,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     }
 
     @Override
-    public void startIteration() {
+    public void startIteration(int iteration) {
         // Implementation adapted from Falstad https://www.falstad.com/circuit-java/
         double vCathode = node1.getVoltage();
         double vGrid = grid.getVoltage();
@@ -74,9 +74,9 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         var dVc = vCathode - prevCathode;
         var dVg = vGrid - prevGrid;
         var dVa = vAnode - prevAnode;
-        vCathode = prevCathode + softDelta(Math.abs(dVc), 1.2) * Math.signum(dVc);
-        vGrid = prevGrid + softDelta(Math.abs(dVg), 1.2) * Math.signum(dVg);
-        vAnode = prevAnode + softDelta(Math.abs(dVa), 1.0) * Math.signum(dVa);
+        vCathode = prevCathode + Math.log1p(Math.abs(dVc)) * network.triodeLimCathode * Math.signum(dVc);
+        vGrid = prevGrid + Math.log1p(Math.abs(dVg)) * network.triodeLimGrid * Math.signum(dVg);
+        vAnode = prevAnode + Math.log1p(Math.abs(dVa)) * network.triodeLimAnode * Math.signum(dVa);
         prevAnode = vAnode;
         prevCathode = vCathode;
         prevGrid = vGrid;
@@ -84,10 +84,10 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         vAnode -= vCathode;
 
         double ids, Gds, gm = 0;
-        double ival = vGrid + vAnode / gain;
+        double ival = (vGrid * vAnode) / (vGrid + vAnode) + vAnode / gain;
         gridCathode.setConductance(GRID_CONDUCTANCE);
 
-        if (ival < 0 || saturationCurrent == 0) {
+        if (ival < 0 || vGrid + vAnode <= 0 || saturationCurrent == 0) {
             Gds = ElectricalNetwork.G_MIN;
             ids = vAnode * Gds;
         } else {
@@ -103,7 +103,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
         Ia = -ids + Gds * vAnode + gm * vGrid;
 
-        var iGrid = vGrid > 0.01 ? GRID_CONDUCTANCE * vGrid : 0;
+        var iGrid = GRID_CONDUCTANCE * vGrid;
         Itube = (float) (ids + iGrid);
         Ptube = (float) (ids * vAnode + iGrid * vGrid);
 

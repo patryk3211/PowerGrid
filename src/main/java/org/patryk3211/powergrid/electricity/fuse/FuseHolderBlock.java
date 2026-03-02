@@ -29,12 +29,16 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.SurfaceElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public class FuseHolderBlock extends SurfaceElectricBlock implements IBE<FuseHolderBlockEntity> {
     public static final EnumProperty<FuseState> STATE = EnumProperty.create("state", FuseState.class);
 
@@ -64,6 +68,7 @@ public class FuseHolderBlock extends SurfaceElectricBlock implements IBE<FuseHol
         builder.add(STATE);
     }
 
+    @NotNull
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return onBlockEntityUse(world, pos, be -> {

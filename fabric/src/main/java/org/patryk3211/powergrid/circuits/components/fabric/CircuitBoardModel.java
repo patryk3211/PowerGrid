@@ -194,9 +194,8 @@ public class CircuitBoardModel implements UnbakedModel, BakedModel {
                 int color = placed.destroyed ? 0xFF404040 : -1;
                 if(placed.has(Orientation.PROPERTY)) {
                     var orientation = placed.get(Orientation.PROPERTY);
-                    // We need the raw footprint dimensions (without rotations)
-                    var footprint = placed.component.footprint(null);
-                    context.pushTransform(new RotateOffsetTransform(placed.x, 2, placed.y, orientation, footprint.getWidth(), footprint.getHeight(), color));
+                    var footprint = placed.component.footprint(placed);
+                    context.pushTransform(new RotateOffsetTransform(placed.x, 2, placed.y, orientation, footprint.getOriginalWidth(), footprint.getOriginalHeight(), color));
                 } else {
                     context.pushTransform(new OffsetTransform(placed.x, 2, placed.y, color));
                 }

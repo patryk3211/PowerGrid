@@ -44,9 +44,15 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public void initialize() {
+        super.initialize();
+        if(!level.isClientSide)
+            electricBehaviour.setSyncAppender(bulbState);
+    }
 
+    @Override
+    public void electricalTick() {
+        super.electricalTick();
         if(bulbState != null) {
             bulbState.tick();
             setUnsaved();
@@ -60,7 +66,10 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
             filament.setResistance(bulbState.resistance());
             filament.setState(!bulbState.isBurned());
         }
-        notifyUpdate();
+        electricBehaviour.setSyncAppender(bulbState);
+        if(level != null && !level.isClientSide) {
+            notifyUpdate();
+        }
     }
 
     @Nullable

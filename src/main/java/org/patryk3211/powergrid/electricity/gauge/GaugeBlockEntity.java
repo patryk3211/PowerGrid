@@ -17,16 +17,20 @@ package org.patryk3211.powergrid.electricity.gauge;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
 import net.createmod.catnip.math.VecHelper;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -39,6 +43,7 @@ import java.util.List;
  */
 public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     protected GaugeValueBehaviour gaugeValue;
+    protected CustomDisplayBehaviour display;
     protected float maxValue;
 
     public float dialTarget;
@@ -66,10 +71,23 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
         }
     }
 
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        display = new CustomDisplayBehaviour(this, getUnit(), this instanceof CurrentGaugeBlockEntity, this::getMaxValue, this::getColor);
+        behaviours.add(display);
+    }
+
     public float getProgress() {
         return Mth.clamp(dialTarget, 0, 1);
     }
 
+    public MutableComponent getCustomFormatted() {
+        return display.format(getValue()).component();
+    }
+
+    public abstract float getMaxValue();
+    public abstract ChatFormatting getColor(float value);
     public abstract float getValue();
     public abstract Unit getUnit();
 

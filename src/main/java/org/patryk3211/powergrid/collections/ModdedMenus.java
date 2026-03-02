@@ -23,6 +23,8 @@ import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.editor.*;
+import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayMenu;
+import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayScreen;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardScreen;
 
@@ -39,6 +41,9 @@ public class ModdedMenus {
 
     public static final MenuEntry<PunchCardMenu> PUNCH_CARD =
             register("punch_card", PunchCardMenu.CONSTRUCTORS::create, () -> PunchCardScreen::new);
+
+    public static final MenuEntry<CustomDisplayMenu> CUSTOM_DISPLAY =
+            register("custom_display", CustomDisplayMenu::new, () -> CustomDisplayScreen::new);
 
     private static <C extends AbstractContainerMenu, S extends Screen & MenuAccess<C>> MenuEntry<C> register(String name, MenuBuilder.ForgeMenuFactory<C> factory, NonNullSupplier<MenuBuilder.ScreenFactory<C, S>> screenFactory) {
         return PowerGrid.REGISTRATE.menu(name, factory, screenFactory).register();

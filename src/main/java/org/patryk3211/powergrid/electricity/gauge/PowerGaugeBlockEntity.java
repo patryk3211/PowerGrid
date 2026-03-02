@@ -37,6 +37,7 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
 
     public PowerGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        maxValue = MAX_VALUES[0];
     }
 
     @Override
@@ -88,6 +89,16 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
     }
 
     @Override
+    public float getMaxValue() {
+        return maxValue;
+    }
+
+    @Override
+    public ChatFormatting getColor(float value) {
+        return measurementColor(value, maxValue);
+    }
+
+    @Override
     public float getValue() {
         return series.current() * shunt.potentialDifference();
     }
@@ -133,7 +144,11 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        addTooltip(tooltip, getValue(), maxValue);
+        Lang.builder().translate("gui.power_meter.title")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        display.format(getValue()).forGoggles(tooltip, 1);
         return true;
     }
 }

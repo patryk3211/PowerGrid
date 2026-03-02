@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
@@ -27,6 +28,8 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -34,6 +37,10 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public abstract class AbstractRotorBlock extends Block implements IRotorAssemblyPart, IWrenchable, IRotate {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
 
@@ -127,5 +134,16 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
     @Override
     public Direction.Axis getRotationAxis(BlockState state) {
         return null;
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        Direction.Axis axis = state.getValue(AXIS);
+        return state.setValue(AXIS, rot.rotate(Direction.get(Direction.AxisDirection.POSITIVE, axis)).getAxis());
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        return state;
     }
 }
