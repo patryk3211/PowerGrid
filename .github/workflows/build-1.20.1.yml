@@ -52,7 +52,7 @@ jobs:
         curl -H "Content-Type: application/json" \
            -X POST \
            --data-binary '{
-           "content": "Power Grid auto-build is ready",
+           "content": "Power Grid 1.20.1 auto-build is ready",
            "embeds": [
               {
                 "title": "Auto-build has finished",
