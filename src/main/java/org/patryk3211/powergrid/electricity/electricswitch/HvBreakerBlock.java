@@ -107,6 +107,11 @@ public class HvBreakerBlock extends HorizontalKineticBlock implements IElectric,
     }
 
     @Override
+    public boolean accepts(ItemStack wireStack) {
+        return true;
+    }
+
+    @Override
     public Class<HvBreakerBlockEntity> getBlockEntityClass() {
         return HvBreakerBlockEntity.class;
     }
