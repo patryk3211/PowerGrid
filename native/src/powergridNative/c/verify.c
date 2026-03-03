@@ -11,7 +11,7 @@ static void cpuid(int a, int c, uint32_t *regs) {
 #endif
 }
 
-extern "C" int verificationFunc() {
+int verificationFunc() {
     uint32_t bits[4];
     cpuid(7, 0, bits);
     // Check for AVX2
