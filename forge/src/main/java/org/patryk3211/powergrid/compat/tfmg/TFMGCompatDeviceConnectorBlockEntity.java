@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.compat.tfmg;
 
-import com.drmangotea.tfmg.TFMG;
 import com.drmangotea.tfmg.content.electricity.base.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,20 +38,20 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     public TFMGCompatDeviceConnectorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
         data.connectNextTick = true;
-        data.group = new ElectricalGroup(-1);
     }
 
     @Override
     protected BridgeElectricBehaviour makeBridge() {
-        return new TFMGBridgeElectricBehaviour(this, worldPosition.relative(getBlockState().getValue(DeviceConnectorBlock.FACING)), () -> converterWire);
+        return new TFMGBridgeElectricBehaviour(this,
+                worldPosition.relative(getBlockState().getValue(DeviceConnectorBlock.FACING)), () -> converterWire);
     }
 
     @Override
     public void lazyTick() {
         super.lazyTick();
         var newVoltage = (int) Math.abs(converterWire.potentialDifference());
-        if(newVoltage != voltage) {
-            if(firstUpdate) {
+        if (newVoltage != voltage) {
+            if (firstUpdate) {
                 firstUpdate = false;
             } else {
                 voltage = newVoltage;
@@ -67,7 +66,7 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
         powerRefresh = false;
         float power = getGeneratorLoad();
         var resistance = voltage * voltage / power;
-        if(power > 0 && resistance > 0) {
+        if (power > 0 && resistance > 0) {
             converterWire.setResistance(resistance);
         } else {
             converterWire.setResistance(1e+6);
@@ -77,7 +76,7 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     @Override
     public void tick() {
         super.tick();
-        if(powerRefresh)
+        if (powerRefresh)
             refreshPower();
         tickElectricity();
     }
@@ -110,11 +109,6 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     @Override
     public int powerGeneration() {
         return ModdedConfigs.server().electricity.tfmgConnectorPower.get();
-    }
-
-    @Override
-    public int frequencyGeneration() {
-        return 0;
     }
 
     @Override
@@ -151,16 +145,6 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     }
 
     @Override
-    public void setFrequency(int i) {
-        data.frequency = i;
-    }
-
-    @Override
-    public void setNetworkResistance(int i) {
-        data.networkResistance = i;
-    }
-
-    @Override
     public void setNetwork(long network) {
         this.data.electricalNetworkId = network;
         if (network != getPos())
@@ -169,59 +153,15 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     }
 
     @Override
-    public boolean destroyed() {
-        return data.destroyed;
-    }
-
-    @Override
     public void remove() {
         super.remove();
-        this.data.destroyed = true;
-        for (Direction d : Direction.values()) {
-            if (hasElectricitySlot(d))
-                if (getLevelAccessor().getBlockEntity(BlockPos.of(getPos()).relative(d)) instanceof IElectric be && be.hasElectricitySlot(d.getOpposite())) {
-                    ElectricNetworkManager.networks.get(getLevel())
-                            .remove(be.getPos());
-                    be.setNetwork(be.getPos());
-                    be.onPlaced();
-                    be.updateNextTick();
-                }
-        }
-        if (data.electricalNetworkId != getPos())
-            getOrCreateElectricNetwork().getMembers().remove(this);
-
-        if (data.electricalNetworkId == getPos())
-            ElectricNetworkManager.networks.get(getLevel())
-                    .remove(getData().getId());
-    }
-
-    @Override
-    public ElectricalNetwork getOrCreateElectricNetwork() {
-        if (level.getBlockEntity(BlockPos.of(data.electricalNetworkId)) instanceof IElectric) {
-            return TFMG.NETWORK_MANAGER.getOrCreateNetworkFor((IElectric) level.getBlockEntity(BlockPos.of(data.electricalNetworkId)));
-        } else {
-            ElectricNetworkManager.networks.get(getLevel()).remove(data.electricalNetworkId);
-            return TFMG.NETWORK_MANAGER.getOrCreateNetworkFor(this);
-        }
-    }
-
-    @Override
-    protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
-        super.write(compound, registries, clientPacket);
-        compound.putInt("GroupId", data.group.id);
-        compound.putFloat("GroupResistance", data.group.resistance);
-        compound.putInt("PrevVoltage", voltage);
+        onRemoved();
     }
 
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(compound, registries, clientPacket);
-        data.group = new ElectricalGroup(compound.getInt("GroupId"));
-        data.group.resistance = compound.getFloat("GroupResistance");
-        if (!clientPacket) {
-            data.connectNextTick = true;
-            voltage = compound.getInt("PrevVoltage");
-        }
+        readElectricity(compound, clientPacket);
     }
 
     @Override
