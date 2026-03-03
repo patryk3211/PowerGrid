@@ -85,6 +85,11 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         electricBehaviour.setSyncAppender(this);
     }
 
+    @Environment(EnvType.CLIENT)
+    public void refreshModel() {
+        quads = null;
+    }
+
     @Override
     public void setSchematic(CircuitSchematic schematic) {
         if(level.isClientSide)
