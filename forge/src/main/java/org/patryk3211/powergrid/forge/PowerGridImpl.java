@@ -44,6 +44,8 @@ import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -188,6 +190,12 @@ public class PowerGridImpl {
         forbiddenBlockEntities.stream()
                 .map(entry -> entry.getId().toString())
                 .forEach(id -> InterModComms.sendTo("carryon", "blacklistBlock", () -> id));
+    }
+
+    @SubscribeEvent
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModdedBlockEntities.PUNCH_CARD_READER.get(),
+                (be, side) -> ((PunchCardReaderBlockEntityImpl) be).getItemHandler(side));
     }
 
     @SubscribeEvent
