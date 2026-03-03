@@ -23,10 +23,13 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.DyeColor;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
+import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
@@ -34,6 +37,9 @@ import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 public class LightBulbComponent extends OrientableComponent implements IRenderedComponent, IGoggleLabel {
+    
+    public static final EnumProperty<DyeColor> COLOR = new EnumProperty<DyeColor>(PowerGrid.MOD_ID, "color", DyeColor.class);
+
     public LightBulbComponent(ComponentFootprint footprint) {
         super(footprint);
     }
@@ -41,7 +47,7 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(LABEL, voltage(12), power(3f));
+        properties.add(LABEL, COLOR, voltage(12), power(3f));
     }
 
     @Override
@@ -78,10 +84,19 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
         // Render the bulb here to avoid adding all circuit board quads to cutout layer.
         var bulb = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_BULB, be.getBlockState());
         bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
+	
+	    var color = placed.get(COLOR).getTextureDiffuseColors();
 
-        int a = 0;
+	    var red = color[0];
+        var green = color[1];
+        var blue = color[2];
+
+        int a = 0, r = 0, g = 0, b = 0;
         if(placed.customData instanceof FloatPair temps) {
             a = (int) (temps.lerped(partialTicks) * 128);
+            r = (int) (red * temps.lerped(partialTicks) * 128);
+            g = (int) (green * temps.lerped(partialTicks) * 128);
+            b = (int) (blue * temps.lerped(partialTicks) * 128);
         }
         var center = 1.5f / 16f;
         var orientation = placed.get(ORIENTATION);
@@ -89,7 +104,7 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
             var buffer = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_GLOW, be.getBlockState());
             buffer
                     .disableDiffuse()
-                    .color(a, a, a, 255)
+                    .color(r, g, b, 255)
                     .light(LightTexture.FULL_BRIGHT)
                     .translate(center, center, center)
                     .rotateYDegrees(orientation.ordinal() * 90)
