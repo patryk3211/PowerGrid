@@ -167,7 +167,8 @@ subprojects {
 				neoforge_version_range : project.neoforge_version_range,
 				fabric_version       : project.fabric_version,
 				loader_version       : project.loader_version,
-				minecraft_version    : project.minecraft_version
+				minecraft_version    : project.minecraft_version,
+				tfmg_forge_range	 : project.tfmg_forge_range
 		]
 
 		inputs.properties(properties)

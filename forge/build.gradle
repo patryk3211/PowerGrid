@@ -52,7 +52,7 @@ dependencies {
 
     modLocalRuntime("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_forge_version}")
     modLocalRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
-//    modLocalRuntime("maven.modrinth:create-tfmg:1.0.2c")
+//    modLocalRuntime("maven.modrinth:create-tfmg:1.2.0")
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
 }
 
