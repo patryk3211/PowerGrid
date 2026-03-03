@@ -2,7 +2,7 @@ name: Dev builds
 
 on:
   push:
-    branches: [ "architectury-1.20.1/dev", "architectury-1.21.1/dev" ]
+    branches: [ "architectury-1.20.1/dev" ]
 
 jobs:
   build:
