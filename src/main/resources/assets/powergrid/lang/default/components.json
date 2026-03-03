@@ -6,6 +6,7 @@
   "powergrid.component.property.voltage": "Voltage",
   "powergrid.component.property.voltage.summary": "Maximum voltage that this component can handle",
   "powergrid.component.property.label": "Label",
+  "powergrid.component.property.color": "Color",
 
   "powergrid.component.property.tube_gain": "Gain",
   "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
