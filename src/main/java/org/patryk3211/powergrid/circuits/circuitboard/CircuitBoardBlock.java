@@ -38,6 +38,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -379,6 +380,14 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         if(beResult != InteractionResult.PASS)
             return beResult;
         return super.useWithoutItem(state, level, pos, player, hit);
+    }
+
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        var result = super.onWrenched(state, context);
+        if(result.consumesAction() && context.getLevel().isClientSide)
+            withBlockEntityDo(context.getLevel(), context.getClickedPos(), CircuitBoardBlockEntity::refreshModel);
+        return result;
     }
 
     @Override
