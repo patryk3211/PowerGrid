@@ -128,7 +128,7 @@ public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<Pu
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return onBlockEntityUseItemOn(level, pos, be -> {
             var side = hit.getDirection();
-            if(side != Direction.UP && side != state.getValue(HORIZONTAL_FACING))
+            if(side != Direction.UP && side != state.getValue(HORIZONTAL_FACING) || stack.isEmpty())
                 return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
             if(stack.getItem() instanceof PunchCardItem) {
                 if(be.insertCard(stack, side)) {
