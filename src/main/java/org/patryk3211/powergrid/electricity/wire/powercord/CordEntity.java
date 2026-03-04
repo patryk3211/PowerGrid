@@ -116,7 +116,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             float y = (y1 + y2) * 0.5f + eY;
             if(y < minY.getValue())
                 minY.setValue(y);
-        });
+        }, 0.5f);
         return box.setMinY(minY.getValue()).inflate(0.1f);
     }
 
