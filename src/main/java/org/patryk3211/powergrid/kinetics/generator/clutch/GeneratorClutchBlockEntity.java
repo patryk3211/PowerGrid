@@ -24,6 +24,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOp
 import com.simibubi.create.foundation.gui.AllIcons;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableFloat;
@@ -161,7 +162,11 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
             recalculateStress = false;
         }
         if(mode.get() == ClutchMode.MOTOR) {
-            var force = (float) (torqueForStress() * motorLoad * lastCapacityProvided / 30 * Math.PI);
+            var force = (float) (torqueForStress() * Mth.clamp(motorLoad, 0, 1) * lastCapacityProvided / 30 * Math.PI);
+            var maxForce = rotorBehaviour.getAngularVelocity() * rotorBehaviour.getInertia();
+            if(force > Math.abs(maxForce)) {
+                force = Math.abs(maxForce);
+            }
             rotorBehaviour.applyTickForce(-force * Math.signum(rotorBehaviour.getAngularVelocity()));
         }
     }
@@ -172,6 +177,9 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
         compound.putByte("Power", (byte) currentRedstonePower);
         if(generatedSpeed != 0)
             compound.putInt("GeneratedSpeed", generatedSpeed);
+        if(clientPacket && mode.get() == ClutchMode.MOTOR) {
+            compound.putFloat("MotorLoad", motorLoad);
+        }
     }
 
     @Override
@@ -182,6 +190,9 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
             generatedSpeed = compound.getInt("GeneratedSpeed");
         } else {
             generatedSpeed = 0;
+        }
+        if(clientPacket && mode.get() == ClutchMode.MOTOR) {
+            motorLoad = compound.getFloat("MotorLoad");
         }
     }
 
