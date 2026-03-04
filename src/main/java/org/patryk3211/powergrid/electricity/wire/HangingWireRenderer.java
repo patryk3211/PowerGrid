@@ -32,6 +32,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 
 @Environment(EnvType.CLIENT)
@@ -73,13 +74,17 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         var pos = entity.position();
         float segmentSize = 0.5f;
         boolean simpleModel;
-        var playerPos = Minecraft.getInstance().player.position();
-        if(playerPos.distanceToSqr(pos) > 64 * 64) {
-            segmentSize = 3.0f;
-            simpleModel = true;
-        } else if(playerPos.distanceToSqr(pos) > 32 * 32) {
-            segmentSize = 1.5f;
-            simpleModel = !Minecraft.useFancyGraphics();
+        if(ModdedConfigs.client().wireLOD.get()) {
+            var playerPos = Minecraft.getInstance().player.position();
+            if (playerPos.distanceToSqr(pos) > 64 * 64) {
+                segmentSize = 3.0f;
+                simpleModel = true;
+            } else if (playerPos.distanceToSqr(pos) > 32 * 32) {
+                segmentSize = 1.5f;
+                simpleModel = !Minecraft.useFancyGraphics();
+            } else {
+                simpleModel = !Minecraft.useFancyGraphics();
+            }
         } else {
             simpleModel = !Minecraft.useFancyGraphics();
         }
