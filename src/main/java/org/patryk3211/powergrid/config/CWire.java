@@ -69,6 +69,11 @@ public class CWire extends ConfigBase implements WireValues.Provider {
     }
 
     @Override
+    public @Nullable DoubleSupplier itemUseMultiplier(WireItem wire) {
+        return get(wire, "item-use-multiplier");
+    }
+
+    @Override
     public @Nullable DoubleSupplier thermalMass(WireItem wire) {
         return get(wire, "thermal-mass");
     }
@@ -92,11 +97,12 @@ public class CWire extends ConfigBase implements WireValues.Provider {
         DEFAULT_VALUES.put(id, value);
     }
 
-    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> set(double resistance, double maxLength, double thermalMass, double maxCurrent) {
+    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> set(double resistance, double maxLength, double itemUseMultiplier, double thermalMass, double maxCurrent) {
         return builder -> {
             assertFromPowerGrid(builder);
             add(builder, "resistance", resistance);
             add(builder, "max-length", maxLength);
+            add(builder, "item-use-multiplier", itemUseMultiplier);
             add(builder, "thermal-mass", thermalMass);
             add(builder, "max-current", maxCurrent);
             return builder;

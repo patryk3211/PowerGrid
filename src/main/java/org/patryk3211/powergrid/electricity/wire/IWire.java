@@ -28,6 +28,7 @@ import java.util.List;
 public interface IWire extends IHaveElectricProperties {
     float getResistance();
     float getMaximumLength();
+    float getItemUseMultiplier();
 
     float getDissipationFactor();
     float getThermalMass();
