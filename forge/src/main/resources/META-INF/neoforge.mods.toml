@@ -15,35 +15,35 @@ logoFile = "assets/powergrid/icon.png"
 
 [[dependencies.powergrid]]
 modId = "neoforge"
-mandatory = true
+type = "required"
 versionRange = "${neoforge_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.powergrid]]
 modId = "minecraft"
-mandatory = true
+type = "required"
 versionRange = "[${minecraft_version},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.powergrid]]
 modId = "architectury"
-mandatory = true
+type = "required"
 versionRange = "[${architectury_version},)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.powergrid]]
 modId = "create"
-mandatory = true
+type = "required"
 versionRange = "${create_forge_version}"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.powergrid]]
 modId = "tfmg"
-mandatory = false
+type = "optional"
 versionRange = "${tfmg_forge_range}"
 ordering = "NONE"
 side = "BOTH"
