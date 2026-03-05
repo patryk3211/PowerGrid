@@ -185,7 +185,7 @@ public class WirePreview {
         }
 
         if(!player.isCreative()) {
-            int requiredItemCount = Math.max(Math.round(length), 1);
+            int requiredItemCount = Math.max(Math.round(length * wireItem.getItemUseMultiplier()), 1);
             PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
         }
     }

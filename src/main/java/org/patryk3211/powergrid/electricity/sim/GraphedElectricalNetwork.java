@@ -362,7 +362,10 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     private void dissolveSeriesWire(SeriesWire series, @Nullable AbstractElectricWire except) {
         super.removeWire(series);
         seriesWires.entrySet().removeIf(entry -> entry.getValue() == series);
-        series.nodes.forEach(super::addNode);
+        series.nodes.forEach(node -> {
+            super.addNode(node);
+            addToCheck(node);
+        });
         series.wires.forEach(part -> {
             if(part != except) {
                 super.addWire(part);
@@ -487,6 +490,12 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
 
     @Override
     public void merge(ElectricalNetwork other) {
+        if(other instanceof GraphedElectricalNetwork graphed) {
+            while(!graphed.seriesWires.isEmpty()) {
+                var wire = graphed.seriesWires.values().iterator().next();
+                graphed.dissolveSeriesWire(wire, null);
+            }
+        }
         while(!seriesWires.isEmpty()) {
             var wire = seriesWires.values().iterator().next();
             dissolveSeriesWire(wire, null);

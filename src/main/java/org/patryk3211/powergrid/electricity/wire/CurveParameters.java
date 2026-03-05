@@ -27,6 +27,8 @@ public class CurveParameters {
     public final Vec3 cross1, cross2;
     public final float thickness;
 
+    private float segmentSize;
+
     // Catenary parameter calculation implemented according to:
     // https://math.stackexchange.com/questions/3557767/how-to-construct-a-catenary-of-a-specified-length-through-two-specified-points
     public CurveParameters(Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness) {
@@ -35,6 +37,7 @@ public class CurveParameters {
         dx = (float) direction.length();
         normal = direction.normalize();
         this.thickness = (float) thickness;
+        segmentSize = 0.5f;
 
         if(dx > 0) {
             // Calculate total curve length using "material parameters"
@@ -75,13 +78,13 @@ public class CurveParameters {
         return (float) (a * Math.cosh((x - b) / a) + c);
     }
 
-    public void runForSegments(ISegmentConsumer consumer) {
+    public void runForSegments(ISegmentConsumer consumer, float segmentSize) {
         runForSegments(((x1, y1, z1, x2, y2, z2, offset, length, first, last) ->
-                consumer.apply(x1, y1, z1, x2, y2, z2, offset, length)));
+                consumer.apply(x1, y1, z1, x2, y2, z2, offset, length)), segmentSize);
     }
 
-    public void runForSegments(IMarkedSegmentConsumer consumer) {
-        int segmentCount = Math.max((int) Math.round(L / HangingWireRenderer.SEGMENT_SIZE), 5);
+    public void runForSegments(IMarkedSegmentConsumer consumer, float segmentSize) {
+        int segmentCount = Math.max((int) Math.round(L / segmentSize), 5);
 
         if(dx > 0) {
             float prevX = -dx / 2;

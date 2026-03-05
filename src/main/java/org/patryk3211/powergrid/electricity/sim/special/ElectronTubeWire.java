@@ -84,10 +84,15 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         vAnode -= vCathode;
 
         double ids, Gds, gm = 0;
-        double ival = (vGrid * vAnode) / (vGrid + vAnode) + vAnode / gain;
+        double ival;
+        if(vGrid > 0) {
+            ival = (vGrid * vAnode) / (vGrid + vAnode) + vAnode / gain;
+        } else {
+            ival = vGrid + vAnode / gain;
+        }
         gridCathode.setConductance(GRID_CONDUCTANCE);
 
-        if (ival < 0 || vGrid + vAnode <= 0 || saturationCurrent == 0) {
+        if (ival < 0 || (vGrid > 0 && vGrid + vAnode <= 0) || saturationCurrent == 0) {
             Gds = ElectricalNetwork.G_MIN;
             ids = vAnode * Gds;
         } else {

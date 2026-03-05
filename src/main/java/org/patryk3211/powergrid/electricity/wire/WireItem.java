@@ -136,7 +136,7 @@ public class WireItem extends Item implements IWire {
 
             if(endpoint1.type() != WireEndpointType.BLOCK_WIRE) {
                 // New entity must be created.
-                var newItems = (int) Math.ceil(addedLength);
+                var newItems = (int) Math.ceil(addedLength * ((IWire) stack.getItem()).getItemUseMultiplier());
                 if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
                     if(player != null)
                         player.displayClientMessage(Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component(), true);
@@ -170,7 +170,7 @@ public class WireItem extends Item implements IWire {
                     return InteractionResultHolder.fail(null);
                 }
 
-                var newItems = (int) Math.ceil(wire.getTotalLength() + addedLength - wire.getWireCount());
+                var newItems = (int) Math.ceil((wire.getTotalLength() + addedLength) * ((IWire) stack.getItem()).getItemUseMultiplier() - wire.getWireCount());
                 if(!PlayerUtilities.hasEnoughItems(player, stack, newItems)) {
                     if(player != null)
                         player.displayClientMessage(Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component(), true);
@@ -304,6 +304,11 @@ public class WireItem extends Item implements IWire {
     @Override
     public float getMaximumLength() {
         return WireValues.maxLength(this);
+    }
+
+    @Override
+    public float getItemUseMultiplier() {
+        return WireValues.itemUseMultiplier(this);
     }
 
     @Override

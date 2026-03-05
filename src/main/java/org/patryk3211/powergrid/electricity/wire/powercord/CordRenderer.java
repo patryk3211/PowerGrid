@@ -19,6 +19,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -32,6 +33,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
 
@@ -88,6 +90,22 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
         int color = entity.getColor() | 0xFF000000;
 
         var pos = entity.position();
+        float segmentSize = 0.5f;
+        boolean simpleModel;
+        if(ModdedConfigs.client().wireLOD.get()) {
+            var playerPos = Minecraft.getInstance().player.position();
+            if (playerPos.distanceToSqr(pos) > 64 * 64) {
+                segmentSize = 3.0f;
+                simpleModel = true;
+            } else if (playerPos.distanceToSqr(pos) > 32 * 32) {
+                segmentSize = 1.5f;
+                simpleModel = !Minecraft.useFancyGraphics();
+            } else {
+                simpleModel = !Minecraft.useFancyGraphics();
+            }
+        } else {
+            simpleModel = !Minecraft.useFancyGraphics();
+        }
         var world = entity.level();
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length, first, last) -> {
             var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
@@ -112,7 +130,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             (float) (y2 - (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
                             (float) (z2 - (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
                             smallCross1, smallCross2, currentLight, 0xFFB02E26,
-                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset, simpleModel);
 
                     direction = new Vec3(x2 - p2.x + pos.x, y2 - p2.y + pos.y, z2 - p2.z + pos.z);
                     v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
@@ -124,7 +142,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             (float) (y2 + (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
                             (float) (z2 + (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
                             smallCross1, smallCross2, currentLight, 0xFF3C44AA,
-                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
                     renderPlug(matrices, vertexConsumers,
@@ -155,7 +173,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             (float) (z1 - (smallCross1.z + smallCross2.z) * 0.5f - normal.z / 32f),
                             (float) (p1.x - pos.x), (float) (p1.y - pos.y), (float) (p1.z - pos.z),
                             smallCross1, smallCross2, currentLight, 0xFFB02E26,
-                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset, simpleModel);
 
                     direction = new Vec3(x1 - p2.x + pos.x, y1 - p2.y + pos.y, z1 - p2.z + pos.z);
                     v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
@@ -167,7 +185,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             (float) (z1 + (smallCross1.z + smallCross2.z) * 0.5f - normal.z / 32f),
                             (float) (p2.x - pos.x), (float) (p2.y - pos.y), (float) (p2.z - pos.z),
                             smallCross1, smallCross2, currentLight, 0xFF3C44AA,
-                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
                     renderPlug(matrices, vertexConsumers,
@@ -187,8 +205,8 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                     x1, y1, z1,
                     x2, y2, z2,
                     rp.cross1, rp.cross2, currentLight, color,
-                    rp.thickness, thicknessOffset, length, offset);
-        });
+                    rp.thickness, thicknessOffset, length, offset, simpleModel);
+        }, segmentSize);
     }
 
     public static void renderPreview(ICordEndpoint start, Vec3 end, PoseStack matrices, MultiBufferSource vertexConsumers, Level level, CordItem item, int color) {
@@ -224,7 +242,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             (float) (y2 - (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
                             (float) (z2 - (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
                             smallCross1, smallCross2, currentLight, 0xFFB02E26,
-                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset, !Minecraft.useFancyGraphics());
 
                     direction = new Vec3(x2 - p2.x + pos.x, y2 - p2.y + pos.y, z2 - p2.z + pos.z);
                     v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
@@ -236,7 +254,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             (float) (y2 + (smallCross1.y + smallCross2.y) * 0.5f + normal.y / 32f),
                             (float) (z2 + (smallCross1.z + smallCross2.z) * 0.5f + normal.z / 32f),
                             smallCross1, smallCross2, currentLight, 0xFF3C44AA,
-                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset);
+                            rp.thickness * 0.5f, thicknessOffset, length * 2, offset, !Minecraft.useFancyGraphics());
                     return;
                 } else if(start instanceof SocketEndpoint socket) {
                     renderPlug(matrices, vertexConsumers,
@@ -255,8 +273,8 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                     x1, y1, z1,
                     x2, y2, z2,
                     rp.cross1, rp.cross2, currentLight, color,
-                    rp.thickness, thicknessOffset, length, offset);
-        });
+                    rp.thickness, thicknessOffset, length, offset, !Minecraft.useFancyGraphics());
+        }, 0.5f);
         matrices.popPose();
     }
 }

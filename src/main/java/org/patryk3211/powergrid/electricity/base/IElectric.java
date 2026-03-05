@@ -195,7 +195,7 @@ public interface IElectric extends IWrenchable {
         }
 
         // We round the exact distance between terminals for a more favourable item usage.
-        int requiredItemCount = Math.max(Math.round(distance), 1);
+        int requiredItemCount = Math.max(Math.round(distance * item.getItemUseMultiplier()), 1);
         if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, requiredItemCount)) {
             sendMessage(context, Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
