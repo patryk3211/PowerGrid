@@ -84,10 +84,10 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
         // Render the bulb here to avoid adding all circuit board quads to cutout layer.
         var bulb = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_BULB, be.getBlockState());
         bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
-	
-	    var color = placed.get(COLOR).getTextureDiffuseColors();
+        
+        var color = placed.get(COLOR).getTextureDiffuseColors();
 
-	    var red = color[0];
+        var red = color[0];
         var green = color[1];
         var blue = color[2];
 

@@ -148,10 +148,10 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
         var bulb = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_BULB, be.getBlockState());
         bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.translucent()));
 
-		var color = placed.get(COLOR).getTextureDiffuseColors();
-		var red = color[0];
-		var green = color[1];
-		var blue = color[2];
+        var color = placed.get(COLOR).getTextureDiffuseColors();
+        var red = color[0];
+        var green = color[1];
+        var blue = color[2];
 
         int a1 = 0, r1 = 0, g1 = 0, b1 = 0, a2 = 0, r2 = 0, g2 = 0, b2 = 0;
         if(placed.customData instanceof LerpPair pair) { 
@@ -169,7 +169,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
         var center = 1 / 16f;
         var orientation = placed.get(ORIENTATION);
 
-	if(a1 != 0) {
+        if(a1 != 0) {
             var buffer = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_GLOW, be.getBlockState());
             buffer
                     .disableDiffuse()
