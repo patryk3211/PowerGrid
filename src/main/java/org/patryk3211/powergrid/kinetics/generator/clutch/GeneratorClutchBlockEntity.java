@@ -120,7 +120,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     @Override
     public void lazyTick() {
         super.lazyTick();
-        if(mode.get() == ClutchMode.MOTOR) {
+        if(mode.get() == ClutchMode.MOTOR && !level.isClientSide) {
             var newSpeed = (int) rotorBehaviour.getAngularVelocity();
             // Max speed constraints.
             if(newSpeed > 256)
@@ -163,7 +163,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
         }
         if(mode.get() == ClutchMode.MOTOR) {
             var force = (float) (torqueForStress() * Mth.clamp(motorLoad, 0, 1) * lastCapacityProvided / 30 * Math.PI);
-            var maxForce = rotorBehaviour.getAngularVelocity() * rotorBehaviour.getInertia();
+            var maxForce = rotorBehaviour.getAngularVelocity() * rotorBehaviour.getInertia() * 20f;
             if(force > Math.abs(maxForce)) {
                 force = Math.abs(maxForce);
             }
