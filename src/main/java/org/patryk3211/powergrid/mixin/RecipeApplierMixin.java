@@ -32,7 +32,8 @@ public class RecipeApplierMixin {
     @Inject(
             method = "applyRecipeOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
             at = @At("RETURN"),
-            remap = false
+            remap = false,
+            order = 1500
     )
     private static void recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, boolean returnProcessingRemainder, CallbackInfoReturnable<List<ItemStack>> cir) {
         var outputs = cir.getReturnValue();
