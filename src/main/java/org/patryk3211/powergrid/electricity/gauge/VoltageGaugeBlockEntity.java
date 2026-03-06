@@ -70,11 +70,10 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        // 20 kilo-ohm "impedance".
         builder.setTerminalCount(2);
         node1 = builder.terminalNode(0);
         node2 = builder.terminalNode(1);
-        builder.connect(20e3f, node1, node2);
+        builder.connect(resistance(), node1, node2);
     }
 
     @Override
