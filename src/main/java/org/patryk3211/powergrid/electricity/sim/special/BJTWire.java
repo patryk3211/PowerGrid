@@ -49,6 +49,8 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
     private double Ic, Ib, Ie;
 
+    private float power;
+
     public BJTWire(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs, boolean pnp) {
         super(base, emitter);
         this.collector = collector;
@@ -123,6 +125,25 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         this.Ib = Ib - (G_add + Gcc + Gec) * Vbc - (G_add + Gee + Gce) * Vbe;
         this.Ic = Ic + (Gcc + G_add) * Vbc + Gce * Vbe;
         this.Ie = Ie + (Gee + G_add) * Vbe + Gec * Vbc;
+
+        power = 0;
+        if(Vbe > 0) {
+            power += (float) (Vbe * Ib);
+        }
+        if(Vbc > 0) {
+            power += (float) (Vbc * Ib);
+        }
+        if(Ic > 0) {
+            power += (float) ((Vc - Ve) * Ic);
+        }
+        if(Ie > 0) {
+            power += (float) ((Ve - Vc) * Ie);
+        }
+    }
+
+    @Override
+    public float power() {
+        return power;
     }
 
     @Override
