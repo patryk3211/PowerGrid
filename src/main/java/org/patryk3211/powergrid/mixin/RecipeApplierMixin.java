@@ -32,10 +32,9 @@ public class RecipeApplierMixin {
     @Inject(
             method = "applyRecipeOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/Recipe;Z)Ljava/util/List;",
             at = @At("RETURN"),
-            remap = false,
             order = 1500
     )
-    private static void recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, boolean returnProcessingRemainder, CallbackInfoReturnable<List<ItemStack>> cir) {
+    private static void powerGrid$recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, boolean returnProcessingRemainder, CallbackInfoReturnable<List<ItemStack>> cir) {
         var outputs = cir.getReturnValue();
         if(outputs == null || outputs.isEmpty() ||
                 !stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) ||

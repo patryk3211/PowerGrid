@@ -119,7 +119,7 @@ public abstract class ArmInteractionPointMixin {
             at = @At(value = "INVOKE", target = "Lnet/fabricmc/fabric/api/transfer/v1/storage/Storage;insert(Ljava/lang/Object;JLnet/fabricmc/fabric/api/transfer/v1/transaction/TransactionContext;)J"),
             cancellable = true
     )
-    private void insertAssembleCircuit(ItemStack stack, TransactionContext ctx, CallbackInfoReturnable<ItemStack> cir) {
+    private void powerGrid$insertAssembleCircuit(ItemStack stack, TransactionContext ctx, CallbackInfoReturnable<ItemStack> cir) {
         ItemStack remainder = null;
         if(((Object) this) instanceof AllArmInteractionPointTypes.BeltPoint) {
             remainder = powerGrid$handleBelt(stack, ctx);
