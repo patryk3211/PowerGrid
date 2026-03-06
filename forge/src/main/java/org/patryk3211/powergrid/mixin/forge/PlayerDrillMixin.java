@@ -2,6 +2,7 @@ package org.patryk3211.powergrid.mixin.forge;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -37,6 +38,11 @@ public abstract class PlayerDrillMixin extends LivingEntity implements PlayerDri
     @Unique
     public int powerGrid$drillSpeed = 0;
 
+    @Unique
+    public float powerGrid$animation = 0;
+    @Unique
+    public float powerGrid$animationPrev = 0;
+
     @Override
     public void powerGrid$setMining(boolean value) {
         powerGrid$mining = value;
@@ -59,8 +65,16 @@ public abstract class PlayerDrillMixin extends LivingEntity implements PlayerDri
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void powerGrid$tick(CallbackInfo ci) {
-        if(level().isClientSide)
+        if(level().isClientSide) {
+            var speed = 3f + 7f * powerGrid$drillSpeedMultiplier();
+            powerGrid$animationPrev = powerGrid$animation;
+            powerGrid$animation += speed;
+            if(powerGrid$animation > 360 && powerGrid$animationPrev > 360) {
+                powerGrid$animation -= 360;
+                powerGrid$animationPrev -= 360;
+            }
             return;
+        }
         if(!powerGrid$mining && powerGrid$drillSpeed > 0)
             --powerGrid$drillSpeed;
         int speedLevel = powerGrid$drillSpeed / DrillItem.TICKS_PER_SPEED_LEVEL;
@@ -68,6 +82,11 @@ public abstract class PlayerDrillMixin extends LivingEntity implements PlayerDri
             ModdedPackets.sendToClient(new DrillSpeedS2CPacket(speedLevel), player);
             powerGrid$prevDrillSpeed = speedLevel;
         }
+    }
+
+    @Override
+    public float powerGrid$animation(float pt) {
+        return Mth.lerp(pt, powerGrid$animationPrev, powerGrid$animation);
     }
 
     @Override

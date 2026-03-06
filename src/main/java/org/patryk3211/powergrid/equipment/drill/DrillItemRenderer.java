@@ -25,7 +25,6 @@ import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.PowerGrid;
@@ -42,15 +41,16 @@ public class DrillItemRenderer extends CustomRenderedItemModelRenderer {
 
         float offset = -2.5f / 16;
         float worldTime = AnimationTickHolder.getRenderTime() / 10;
-        float angle = worldTime * -25;
-        float speed = 1.0f;
+        float angle = 0; //worldTime * -25;
+        float speed = 0.0f;
         if(player instanceof PlayerDrillExtensions ext) {
-            speed += ext.powerGrid$drillSpeedMultiplier() * 2.0f;
+            angle = -ext.powerGrid$animation(AnimationTickHolder.getPartialTicks());
+//            speed += ext.powerGrid$drillSpeedMultiplier() * 0.5f;
         }
 
-        if (mainHand)
-            angle += 360 * Mth.clamp(speed * 5, 0, 1);
-        angle %= 360;
+//        if (mainHand)
+//            angle += 360 * speed * 5; //Mth.clamp(speed * 5, 0, 1);
+//        angle %= 360;
 
         ms.pushPose();
         ms.translate(0, offset, 0);

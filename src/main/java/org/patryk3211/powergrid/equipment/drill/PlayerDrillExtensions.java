@@ -8,4 +8,6 @@ public interface PlayerDrillExtensions {
     void powerGrid$blockDrilled(float power);
 
     void powerGrid$receiveSpeed(int speed);
+
+    float powerGrid$animation(float pt);
 }
