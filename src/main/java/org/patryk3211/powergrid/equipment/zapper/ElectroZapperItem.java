@@ -75,21 +75,21 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, fePerUse());
+        return BatteryUtils.isBarVisible(stack, energyPerUse(), 0.5f);
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, fePerUse());
+        return BatteryUtils.getBarWidth(stack, energyPerUse(), 0.5f);
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, fePerUse());
+        return BatteryUtils.getBarColor(stack, energyPerUse(), 0.5f);
     }
 
-    public static int fePerUse() {
-        return ModdedConfigs.server().electricity.electroZapperFePerShot.get();
+    public static int energyPerUse() {
+        return ModdedConfigs.server().electricity.electroZapperEnergyPerShot.get();
     }
 
     @Environment(EnvType.CLIENT)
@@ -105,6 +105,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
             return InteractionResultHolder.success(stack);
         }
 
+        var power = BatteryUtils.drawEnergy(user, energyPerUse());
         var barrelPos = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == InteractionHand.MAIN_HAND,
                 new Vec3(.25f, -0.15f, 1.0f));
         var correction = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == InteractionHand.MAIN_HAND,
@@ -115,7 +116,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
                 .normalize()
                 .scale(4);
 
-        var projectile = ZapProjectileEntity.create(world, barrelPos, motion, (float) lookVec.y, (float) lookVec.x);
+        var projectile = ZapProjectileEntity.create(world, barrelPos, motion, Math.max(power, 0.5f));
         projectile.setOwner(user);
         world.addFreshEntity(projectile);
 
@@ -123,7 +124,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         Function<Boolean, ElectroZapperS2CPacket> factory = b -> new ElectroZapperS2CPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
         ModdedPackets.sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
-        if(!BatteryUtils.drawEnergy(user, fePerUse()))
+        if(power < 0.5f)
             stack.hurtAndBreak(1, user, $ -> {});
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }

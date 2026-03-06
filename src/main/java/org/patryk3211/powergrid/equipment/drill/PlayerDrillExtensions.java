@@ -5,5 +5,7 @@ public interface PlayerDrillExtensions {
     boolean powerGrid$isMining();
 
     float powerGrid$drillSpeedMultiplier();
-    void powerGrid$blockDrilled();
+    void powerGrid$blockDrilled(float power);
+
+    void powerGrid$receiveSpeed(int speed);
 }

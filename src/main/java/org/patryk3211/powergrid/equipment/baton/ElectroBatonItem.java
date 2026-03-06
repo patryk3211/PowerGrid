@@ -28,6 +28,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
 import org.patryk3211.powergrid.equipment.ZincToolMaterial;
 
@@ -51,23 +52,23 @@ public class ElectroBatonItem extends SwordItem {
         modifiers = builder.build();
     }
 
-    public static int fePerUse() {
-        return 100;
+    public static int energyPerUse() {
+        return ModdedConfigs.server().electricity.electroBatonEnergyPerUse.get();
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, fePerUse());
+        return BatteryUtils.getBarColor(stack, energyPerUse(), 0.5f);
     }
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, fePerUse());
+        return BatteryUtils.isBarVisible(stack, energyPerUse(), 0.5f);
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, fePerUse());
+        return BatteryUtils.getBarWidth(stack, energyPerUse(), 0.5f);
     }
 
     @Override
@@ -78,10 +79,11 @@ public class ElectroBatonItem extends SwordItem {
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if(attacker instanceof Player player) {
-            if(BatteryUtils.drawEnergy(player, fePerUse())) {
+            float power = BatteryUtils.drawEnergy(player, energyPerUse());
+            if(power > 0.5f) {
                 // Apply stun
                 var health = target.getMaxHealth();
-                var stunStrength = Mth.clamp(Math.round(30 - health), 0, 10);
+                var stunStrength = (int) Mth.clamp(Math.round(30 - health) * power, 0, 10);
                 if(stunStrength > 0)
                     target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, stunStrength, false, false));
                 return true;

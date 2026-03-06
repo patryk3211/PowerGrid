@@ -1,11 +1,11 @@
 {
   "powergrid.tooltip.holdForDescription": "Hold [%1$s] for Properties",
 
-  "item.powergrid.electrozapper.tooltip.summary": "Fires a lightning bolt that bounces off of nearby enemies, splitting the damage between them. Can be powered with _Forge Energy_ from a _Portable Battery_",
+  "item.powergrid.electrozapper.tooltip.summary": "Fires a lightning bolt that bounces off of nearby enemies, splitting the damage between them. Can be powered with _Energy_ from a _Portable Battery_",
   "item.powergrid.electrozapper.tooltip.condition1": "When R-Clicked",
   "item.powergrid.electrozapper.tooltip.behaviour1": "_Shoots_ a lightning bolt",
   "item.powergrid.electrozapper.tooltip.condition2": "While wearing a Portable Battery",
-  "item.powergrid.electrozapper.tooltip.behaviour2": "_No durability_ will be used. Instead, _Forge Energy_ is drained from the Battery",
+  "item.powergrid.electrozapper.tooltip.behaviour2": "_No durability_ will be used. Instead, _Energy_ is drained from the Battery",
 
   "powergrid.electrozapper.bolt": "Lightning Bolt",
   "powergrid.electrozapper.bolt.damage": "%1$s Attack Damage",
@@ -13,13 +13,17 @@
 
   "item.powergrid.portable_battery.tooltip.summary": "A _Wearable Battery_ for carrying energy",
   "item.powergrid.portable_battery.tooltip.condition1": "When Worn",
-  "item.powergrid.portable_battery.tooltip.behaviour1": "Provides _Forge Energy_ to Equipment that requires it",
+  "item.powergrid.portable_battery.tooltip.behaviour1": "Provides _Energy_ to Equipment that requires it",
   "item.powergrid.portable_battery.tooltip.condition2": "When placed, Powered by Electricity",
   "item.powergrid.portable_battery.tooltip.behaviour2": "Stores energy at a rate depending on the _Supplied Voltage_",
 
-  "item.powergrid.electrobaton.tooltip.summary": "Pushes back and stuns enemies (if they aren't too strong) when powered with _Forge Energy_ from a _Portable Battery_",
+  "item.powergrid.electrobaton.tooltip.summary": "Pushes back and stuns enemies (if they aren't too strong) when powered with _Energy_ from a _Portable Battery_",
   "item.powergrid.electrobaton.tooltip.condition1": "While wearing a Portable Battery",
-  "item.powergrid.electrobaton.tooltip.behaviour1": "Attacked enemies will be _stunned_ and _no durability_ will be used. Instead, _Forge Energy_ is drained from the Battery",
+  "item.powergrid.electrobaton.tooltip.behaviour1": "Attacked enemies will be _stunned_ and _no durability_ will be used. Instead, _Energy_ is drained from the Battery",
+
+  "item.powergrid.portable_drill.tooltip.summary": "Mines blocks with the strength of a diamond. When powered with _Energy_ from a _Portable Battery_, it mines faster the longer you use it.",
+  "item.powergrid.portable_drill.tooltip.condition1": "While wearing a Portable Battery",
+  "item.powergrid.portable_drill.tooltip.behaviour1": "_No durability_ will be used. Instead, _Energy_ is drained from the Battery",
 
   "block.powergrid.thermometer.tooltip.summary": "A simple device which measures the temperature of things",
   "block.powergrid.thermometer.tooltip.condition1": "When Held",

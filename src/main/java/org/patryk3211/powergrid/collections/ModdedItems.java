@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
 import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.equipment.drill.DrillItem;
+import org.patryk3211.powergrid.equipment.drill.DrillItemRenderer;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
@@ -205,6 +206,7 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<DrillItem> PORTABLE_DRILL = REGISTRATE.item("portable_drill", DrillItem::new)
+            .transform(customRenderer(() -> DrillItemRenderer::new))
             .model(itemWithParent("item/drill/item"))
             .register();
 
