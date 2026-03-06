@@ -38,8 +38,8 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private double prevAnode;
 
     private double Ia;
-    private float Itube;
-    private float Ptube;
+    private double Itube;
+    private double Ptube;
 
     private final ConductanceWire gridCathode;
     private final GMStamp gmStamp;
@@ -109,8 +109,8 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         Ia = -ids + Gds * vAnode + gm * vGrid;
 
         var iGrid = GRID_CONDUCTANCE * vGrid;
-        Itube = (float) (ids + iGrid);
-        Ptube = (float) (ids * vAnode + iGrid * vGrid);
+        Itube = ids + iGrid;
+        Ptube = ids * vAnode + iGrid * vGrid;
 
         // Anode-Cathode "wire"
         setConductance(Gds);
@@ -124,12 +124,12 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     }
 
     @Override
-    public float current() {
+    public double current() {
         return Itube;
     }
 
     @Override
-    public float power() {
+    public double power() {
         return Ptube;
     }
 

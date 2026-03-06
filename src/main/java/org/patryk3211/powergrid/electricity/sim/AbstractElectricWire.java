@@ -102,7 +102,7 @@ public abstract class AbstractElectricWire implements INetworkElement {
         return node2;
     }
 
-    public float potentialDifference() {
+    public double potentialDifference() {
         if(node1 == null)
             return -node2.getVoltage();
         if(node2 == null)
@@ -110,13 +110,13 @@ public abstract class AbstractElectricWire implements INetworkElement {
         return node1.getVoltage() - node2.getVoltage();
     }
 
-    public float current() {
+    public double current() {
         if(network == null)
             return 0;
-        return (float) (potentialDifference() * conductance());
+        return potentialDifference() * conductance();
     }
 
-    public float power() {
+    public double power() {
         return current() * potentialDifference();
     }
 

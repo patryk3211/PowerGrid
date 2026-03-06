@@ -526,14 +526,14 @@ public class TransmissionLine extends ElectricWire {
         return id;
     }
 
-    public float voltageFor(OwnedFloatingNode node) {
+    public double voltageFor(OwnedFloatingNode node) {
         if(node == node1 || node == node2)
             return node.getVoltage();
-        float R = 0;
+        double R = 0;
         for(var segment : segments) {
             R += segment.getResistance();
             if(segment.getNode2() == node) {
-                var a = (float) (R / getResistance());
+                var a = R / getResistance();
                 return node1.getVoltage() * (1 - a) + node2.getVoltage() * a;
             }
         }

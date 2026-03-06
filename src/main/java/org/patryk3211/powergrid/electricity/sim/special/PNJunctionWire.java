@@ -81,8 +81,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     }
 
     @Override
-    public float current() {
-        return (float) (this.Ieq + this.G * potentialDifference());
+    public double current() {
+        return this.Ieq + this.G * potentialDifference();
     }
 
     @Override

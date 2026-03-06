@@ -28,6 +28,7 @@ import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -410,6 +411,26 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         }
     }
 
+    public static boolean doubleSync() {
+        return ModdedConfigs.common().syncWithDoubles.get();
+    }
+
+    public static void writeToBuffer(FriendlyByteBuf buffer, double value) {
+        if(doubleSync()) {
+            buffer.writeDouble(value);
+        } else {
+            buffer.writeFloat((float) value);
+        }
+    }
+
+    public static double readFromBuffer(FriendlyByteBuf buffer) {
+        if(doubleSync()) {
+            return buffer.readDouble();
+        } else {
+            return buffer.readFloat();
+        }
+    }
+
     @Override
     public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineGetter) {
         var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
@@ -420,14 +441,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
             if (node.getNetwork() == null) {
                 // Potentially part of a transmission line.
                 var line = lineGetter.apply(node);
-                buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
+                writeToBuffer(buffer, line == null ? 0 : line.voltageFor(node));
             } else {
-                buffer.writeFloat((float) node.getStateValue());
+                writeToBuffer(buffer, node.getStateValue());
             }
         }
         if(!reducedSync) {
             for (var node : internalNodes) {
-                buffer.writeFloat((float) node.getStateValue());
+                writeToBuffer(buffer, node.getStateValue());
             }
             for (var wire : internalWires) {
                 if (wire instanceof SwitchedWire switched)
@@ -445,11 +466,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
             thermal.setTemperature(buffer.readFloat());
         }
         for (var node : externalNodes) {
-            node.setStateValue(buffer.readFloat());
+            node.setStateValue(readFromBuffer(buffer));
         }
         if(!reducedSync) {
             for (var node : internalNodes) {
-                node.setStateValue(buffer.readFloat());
+                node.setStateValue(readFromBuffer(buffer));
             }
             for (var wire : internalWires) {
                 if (wire instanceof SwitchedWire switched)

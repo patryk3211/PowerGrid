@@ -33,6 +33,9 @@ import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 import java.util.*;
 import java.util.function.Function;
 
+import static org.patryk3211.powergrid.electricity.base.ElectricBehaviour.readFromBuffer;
+import static org.patryk3211.powergrid.electricity.base.ElectricBehaviour.writeToBuffer;
+
 public class JunctionWireEndpoint implements IWireEndpoint {
     private static final Map<Level, WorldEntry> JUNCTION_NODES = new HashMap<>();
 
@@ -285,7 +288,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
 
         @Override
         public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
-            float V = 0;
+            double V = 0;
             if (node.getNetwork() == null) {
                 var line = lineLookup.apply(node);
                 if (line != null)
@@ -293,13 +296,12 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             } else {
                 V = node.getVoltage();
             }
-            buffer.writeFloat(V);
+            writeToBuffer(buffer, V);
         }
 
         @Override
         public void readFromSync(FriendlyByteBuf buffer) {
-            var V = buffer.readFloat();
-            node.setStateValue(V);
+            node.setStateValue(readFromBuffer(buffer));
         }
 
         @Override

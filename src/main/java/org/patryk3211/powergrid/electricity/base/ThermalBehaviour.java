@@ -332,10 +332,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
         return temperature >= overheatTemperature;
     }
 
-    public void applyTickPower(float power) {
-        if(Float.isFinite(power)) {
+    public void applyTickPower(double power) {
+        if(Double.isFinite(power)) {
             var energy = power / 20f;
-            temperature += energy / thermalMass;
+            temperature += (float) (energy / thermalMass);
         }
     }
 

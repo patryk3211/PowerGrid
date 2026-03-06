@@ -26,8 +26,8 @@ public class TransmissionLinePort extends VoltageSourceCoupling implements IOute
     public TransmissionLinePort other;
     public boolean solved = false;
 
-    float I, V;
-    private float Ieq;
+    double I, V;
+    private double Ieq;
 
     public TransmissionLinePort(IElectricNode node, float resistance, TransmissionLine line) {
         this(node, null, resistance, line);

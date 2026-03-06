@@ -16,6 +16,6 @@
 package org.patryk3211.powergrid.electricity.sim.node;
 
 public interface IElectricNode extends INode {
-    float getVoltage();
-    float getCurrent();
+    double getVoltage();
+    double getCurrent();
 }

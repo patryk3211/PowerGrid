@@ -59,20 +59,20 @@ public abstract class ElectricNode implements IElectricNode {
     }
 
     @Override
-    public float getVoltage() {
+    public double getVoltage() {
         return 0;
     }
 
     @Override
-    public float getCurrent() {
+    public double getCurrent() {
         return 0;
     }
 
-    public void setVoltage(float voltage) {
+    public void setVoltage(double voltage) {
 
     }
 
-    public void setCurrent(float current) {
+    public void setCurrent(double current) {
 
     }
 }

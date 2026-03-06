@@ -94,9 +94,9 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var B = current * coilConstant() + 0.001f;
         var Bprev = handler.get();
         if(Bprev * B < 0) {
-            handler.emit(0.001f * Math.signum(B));
+            handler.emit((float) (0.001 * Math.signum(B)));
         } else {
-            handler.emit(B);
+            handler.emit((float) B);
         }
     }
 
@@ -482,7 +482,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if(coilWire != null) {
-            tag.putFloat("Current", coilWire.current());
+            tag.putFloat("Current", (float) coilWire.current());
         }
         if(clientPacket) {
             if(isMain()) {
@@ -634,7 +634,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var be = getSimElementHolder();
         if(be == null || !be.coilWire.isConverged())
             return 0;
-        return be.coilWire.current();
+        return (float) be.coilWire.current();
     }
 
     @Override

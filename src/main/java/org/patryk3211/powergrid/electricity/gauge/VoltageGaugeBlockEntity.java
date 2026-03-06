@@ -88,7 +88,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public float getValue() {
-        return node1.getVoltage() - node2.getVoltage();
+        return (float) (node1.getVoltage() - node2.getVoltage());
     }
 
     @Override

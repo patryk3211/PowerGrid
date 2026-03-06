@@ -54,8 +54,8 @@ public class CapacitorWire extends AbstractElectricWire implements IStaticResidu
     }
 
     @Override
-    public float current() {
-        return (float) (super.current() + Ieq);
+    public double current() {
+        return super.current() + Ieq;
     }
 
     @Override

@@ -54,14 +54,14 @@ public class VoltageGaugeComponent extends GaugeComponent {
         if(placed.wires.isEmpty())
             return 0;
         var wire = placed.wires.get(0);
-        return Mth.clamp(Math.abs(wire.potentialDifference()) / placed.get(MAX_VOLTAGE), 0, 1.125f);
+        return Mth.clamp((float) (Math.abs(wire.potentialDifference()) / placed.get(MAX_VOLTAGE)), 0, 1.125f);
     }
 
     public float getValue(PlacedComponent placed) {
         if(placed.wires.isEmpty())
             return 0;
         var wire = placed.wires.get(0);
-        return Math.abs(wire.potentialDifference());
+        return Math.abs((float) wire.potentialDifference());
     }
 
     @Override

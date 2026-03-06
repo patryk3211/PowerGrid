@@ -153,7 +153,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         super.tick();
         if(!isSpeedRequirementFulfilled())
             return;
-        headTarget = Mth.clamp(wire.potentialDifference() / maxValue, -1, 1);
+        headTarget = Mth.clamp((float) (wire.potentialDifference() / maxValue), -1, 1);
         prevHeadPosition = headPosition;
         headPosition += (headTarget - headPosition) * 0.9f;
 
