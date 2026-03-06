@@ -39,7 +39,7 @@ public class BasinRecipeMixin {
                     target = "Lcom/simibubi/create/content/processing/basin/BasinBlockEntity;acceptOutputs(Ljava/util/List;Ljava/util/List;Z)Z"
             )
     )
-    private static void applyTransferNbtForge(BasinBlockEntity basin, Recipe<?> recipe, boolean test, CallbackInfoReturnable<Boolean> cir, @Local IItemHandler availableItems, @Local(ordinal = 0) List<ItemStack> outputs) {
+    private static void powerGrid$applyTransferNbtForge(BasinBlockEntity basin, Recipe<?> recipe, boolean test, CallbackInfoReturnable<Boolean> cir, @Local IItemHandler availableItems, @Local(ordinal = 0) List<ItemStack> outputs) {
         RecipeNbtTransfer.transfer(IterateItemHandler.iterable(availableItems), outputs);
     }
 }

@@ -27,22 +27,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Mixin(ArmBlockEntity.class)
 public abstract class ArmBlockEntityMixin {
-    @Shadow(remap = false) float chasedPointProgress;
-    @Shadow(remap = false) ArmBlockEntity.Phase phase;
-    @Shadow(remap = false) @Nullable protected abstract ArmInteractionPoint getTargetedInteractionPoint();
-
     @Shadow(remap = false) List<ArmInteractionPoint> outputs;
 
     @Inject(method = "tick()V", at = @At(
             value = "INVOKE",
             shift = At.Shift.AFTER,
             target = "Lcom/simibubi/create/content/kinetics/mechanicalArm/ArmBlockEntity;tickMovementProgress()Z"))
-    private void tickLockCircuitOnBelt(CallbackInfo ci) {
+    private void powerGrid$tickLockCircuitOnBelt(CallbackInfo ci) {
         for(var point : outputs) {
             var beltBE = BeltHelper.getSegmentBE(point.getLevel(), point.getPos());
             if (beltBE == null)

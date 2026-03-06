@@ -767,8 +767,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         Collection<TransmissionLine> lines;
         while(true) {
             lines = globalGraph.getConnectedLines(ownedNode);
-            if(lines.size() != 1)
+            if(lines.size() != 1 || globalGraph.connectionCount(ownedNode) != 1) {
+                // We CANNOT delete the node, as it still is part of a bigger circuit.
                 break;
+            }
             // No need to keep this line (or the node).
             var line = lines.iterator().next();
             var removeNode = ownedNode;
@@ -905,6 +907,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(ModdedConfigs.logsEnabled())
                 PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
             var parts = partNodeMap.remove(oldNode);
+            if(oldNode.getNetwork() != null) {
+                inNetwork(oldNode.getNetwork(), newNode);
+            }
             if(parts != null) {
                 for(TransmissionLinePart part : parts) {
                     if(ModdedConfigs.logsEnabled())
@@ -941,7 +946,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
             if(oldNode.getNetwork() != null) {
-                inNetwork(oldNode.getNetwork(), newNode);
                 var unified = oldNode.getNetwork();
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {

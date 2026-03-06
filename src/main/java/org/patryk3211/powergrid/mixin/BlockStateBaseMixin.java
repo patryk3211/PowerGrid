@@ -32,7 +32,7 @@ public class BlockStateBaseMixin {
     @Inject(method = "use(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;",
             at = @At("HEAD"),
             cancellable = true)
-    private void beforeBlockUse(Level level, Player player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<InteractionResult> cir) {
+    private void powerGrid$beforeBlockUse(Level level, Player player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<InteractionResult> cir) {
         var item = player.getItemInHand(hand);
         if(item.getItem() instanceof WireItem && item.hasTag() && item.getTagElement("Connection") != null) {
             cir.setReturnValue(InteractionResult.PASS);

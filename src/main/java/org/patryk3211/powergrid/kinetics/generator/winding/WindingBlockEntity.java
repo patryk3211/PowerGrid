@@ -91,12 +91,12 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
         var current = coil.current();
         current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
-        var B = current * coilConstant();
+        var B = current * coilConstant() + 0.001f;
         var Bprev = handler.get();
         if(Bprev * B < 0) {
             handler.emit(0.001f * Math.signum(B));
         } else {
-            handler.emit(B + 0.001f);
+            handler.emit(B);
         }
     }
 

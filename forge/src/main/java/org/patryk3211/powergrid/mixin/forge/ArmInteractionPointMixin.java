@@ -117,7 +117,7 @@ public abstract class ArmInteractionPointMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraftforge/items/ItemHandlerHelper;insertItem(Lnet/minecraftforge/items/IItemHandler;Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/world/item/ItemStack;"),
             cancellable = true
     )
-    private void insertAssembleCircuit(ItemStack stack, boolean simulate, CallbackInfoReturnable<ItemStack> cir) {
+    private void powerGrid$insertAssembleCircuit(ItemStack stack, boolean simulate, CallbackInfoReturnable<ItemStack> cir) {
         ItemStack remainder = null;
         if(((Object) this) instanceof AllArmInteractionPointTypes.BeltPoint) {
             remainder = powerGrid$handleBelt(stack, simulate);

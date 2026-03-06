@@ -42,7 +42,7 @@ public class CSolver extends ConfigBase {
 
     public final ConfigFloat triodeLimAnode = f(0.8f, 0, 1, "triodeLimAnode", Comments.triodeLim);
     public final ConfigFloat triodeLimCathode = f(0.8f, 0, 1, "triodeLimCathode", Comments.triodeLim);
-    public final ConfigFloat triodeLimGrid = f(0.8f, 0, 1, "triodeLimCathode", Comments.triodeLim);
+    public final ConfigFloat triodeLimGrid = f(0.8f, 0, 1, "triodeLimGrid", Comments.triodeLim);
 
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
 

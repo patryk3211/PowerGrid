@@ -34,7 +34,7 @@ public abstract class EntityMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onLightningStrike(ServerLevel world, LightningBolt lightning, CallbackInfo ci) {
+    private void powerGrid$onLightningStrike(ServerLevel world, LightningBolt lightning, CallbackInfo ci) {
         if((Object) this instanceof ItemEntity item) {
             var stack = item.getItem();
             if(stack.is(Items.IRON_INGOT)) {
