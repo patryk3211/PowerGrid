@@ -394,17 +394,23 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var backend = ModdedConfigs.server().electricity.solver.solverBackend.get();
+        var cSolver = ModdedConfigs.server().electricity.solver;
+        var backend = cSolver.solverBackend.get();
         if(!backend.isSupported())
             backend = CSolver.SolverBackend.JAVA;
         var network = new GraphedElectricalNetwork(globalGraph, true, backend::create);
         network.maxIterations = hooks -> hooks
-                ? ModdedConfigs.server().electricity.solver.solverComplexMaxIterations.get()
-                : ModdedConfigs.server().electricity.solver.solverSimpleMaxIterations.get();
-        var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
-        var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
-        var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
+                ? cSolver.solverComplexMaxIterations.get()
+                : cSolver.solverSimpleMaxIterations.get();
+        var rA = cSolver.solverAbsolutePrecision.get();
+        var rR = cSolver.solverRelativePrecision.get();
+        var rM = cSolver.solverAbsoluteMinimumPrecision.get();
         network.setPrecision(rA, rR, rM);
+        network.bjtSmoothAlpha = cSolver.bjtLimAlpha.getF();
+        network.diodeSmoothAlpha = cSolver.diodeLimAlpha.getF();
+        network.triodeLimCathode = cSolver.triodeLimCathode.getF();
+        network.triodeLimAnode = cSolver.triodeLimAnode.getF();
+        network.triodeLimGrid = cSolver.triodeLimGrid.getF();
         subnetworks.add(network);
         return network;
     }
