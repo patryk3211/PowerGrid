@@ -412,7 +412,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     }
 
     public static boolean doubleSync() {
-        return ModdedConfigs.common().syncWithDoubles.get();
+        return ModdedConfigs.server().electricity.syncWithDoubles.get();
     }
 
     public static void writeToBuffer(FriendlyByteBuf buffer, double value) {
