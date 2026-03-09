@@ -57,7 +57,7 @@
   "component.powergrid.bjt_npn.0.short": "C",
   "component.powergrid.bjt_npn.1": "ベース",
   "component.powergrid.bjt_npn.1.short": "B",
-  "component.powergrid.bjt_npn.2": "エミター",
+  "component.powergrid.bjt_npn.2": "エミッター",
   "component.powergrid.bjt_npn.2.short": "E",
   "component.powergrid.bjt_pnp.0": "コレクター",
   "component.powergrid.bjt_pnp.0.short": "C",
