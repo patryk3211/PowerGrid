@@ -464,8 +464,6 @@ public class ElectricalNetwork implements IStamped {
                     if (anchor == null && source.getNegative() instanceof FloatingNode floating) {
                         anchor = floating;
                     }
-                } else if (node instanceof FloatingNode) {
-                    mna.jacobianAdd(node.getIndex(), node.getIndex(), G_MIN);
                 }
             }
             if(groundReferenceCount == 0) {
