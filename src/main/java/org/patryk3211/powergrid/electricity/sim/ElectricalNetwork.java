@@ -516,6 +516,7 @@ public class ElectricalNetwork implements IStamped {
         nodes.clear();
         wires.clear();
         couplings.clear();
+        outerHooks.clear();
         innerHooks.clear();
         residuals.clear();
         leafNodes.clear();
