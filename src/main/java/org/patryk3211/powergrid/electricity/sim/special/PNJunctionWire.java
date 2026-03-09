@@ -66,10 +66,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
             return V1;
         var dV = V1 - V0;
-        var adV = Math.abs(dV);
-        var sdV = Math.signum(dV);
-        double dX = network.diodeSmoothAlpha * Math.log1p(adV);
-        return V0 + Math.min(dX, adV) * sdV;
+        return V0 + network.diodeSmoothAlpha * dV;
     }
 
     public void setTemperatureCelsius(double temperatureCelsius) {
