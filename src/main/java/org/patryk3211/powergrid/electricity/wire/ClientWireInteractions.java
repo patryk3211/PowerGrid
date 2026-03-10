@@ -52,6 +52,12 @@ public class ClientWireInteractions {
         if(currentEntity != entityHit.getEntity())
             return;
 
+        if(currentEntity.isRemoved() || currentEntity.segments.isEmpty()) {
+            currentEntity = null;
+            firstSegmentIndex = -1;
+            return;
+        }
+
         var segment = getSegment(currentEntity, target.getLocation());
         if(segment != null) {
             int index1, index2, point1, point2;
@@ -71,8 +77,14 @@ public class ClientWireInteractions {
                     point2 = segment.getB();
                 }
             }
-            index1 = Mth.clamp(index1, 0, currentEntity.segments.size() - 1);
-            index2 = Mth.clamp(index2, 0, currentEntity.segments.size() - 1);
+            int maxIndex = currentEntity.segments.size() - 1;
+            if(index1 < 0 || index2 < 0 || index1 > maxIndex || index2 > maxIndex) {
+                currentEntity = null;
+                firstSegmentIndex = -1;
+                return;
+            }
+            index1 = Mth.clamp(index1, 0, maxIndex);
+            index2 = Mth.clamp(index2, 0, maxIndex);
             for(int i = index1; i <= index2; ++i) {
                 var wireSegment = currentEntity.segments.get(i);
                 Vec3 start = wireSegment.start, end = wireSegment.start.add(wireSegment.vector());
@@ -97,6 +109,8 @@ public class ClientWireInteractions {
             // Test with slightly larger bounding boxes.
             if(bb.inflate(thickness * 0.2f).contains(localPos)) {
                 // Found segment containing hit pos.
+                if(i >= entity.segments.size())
+                    continue;
                 var segment = entity.segments.get(i);
                 int segmentPoint = switch(segment.direction.getAxis()) {
                     case X -> (int) Math.round(Math.abs(segment.start.x - hitPos.x) * 16);
