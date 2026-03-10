@@ -232,7 +232,6 @@
   "powergrid.gui.circuit_designer.file_dialog": "Файловий діалог",
   "powergrid.gui.circuit_designer.file_load": "Завантажити з файлу",
   "powergrid.gui.circuit_designer.file_save": "Зберегти до файлу",
-  "powergrid.gui.circuit_designer.file_scroll": "Прокручуйте, щоби вибрати, або введіть ім'я",
   "powergrid.gui.circuit_designer.files": "Доступні намітки",
   "powergrid.gui.circuit_designer.invalid_file": "Недійсний чи пошкоджений файл наміток",
   "powergrid.gui.circuit_designer.layer": "Перемкнути шар",
