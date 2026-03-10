@@ -172,7 +172,8 @@
   "powergrid.gui.circuit_designer.file_load": "Load from file",
   "powergrid.gui.circuit_designer.file_save": "Save to file",
   "powergrid.gui.circuit_designer.files": "Available Schematics",
-  "powergrid.gui.circuit_designer.file_scroll": "Scroll to Select or Type in a Name",
+
+  "powergrid.gui.edit_scroll_box.scroll": "Scroll to Select or Type in a Name",
 
   "powergrid.gui.punch_card.author": "by ",
   "powergrid.gui.punch_card.sign": "Sign",
