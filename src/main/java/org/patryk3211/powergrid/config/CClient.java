@@ -30,6 +30,9 @@ public class CClient extends ConfigBase {
 
     public final ConfigBool wireLOD = b(true, "wireLOD", Comments.wireLOD);
 
+    public final ConfigFloat hummingSoundMultiplier = f(1.0f, 0.0f, "hummingSoundMultiplier", Comments.hummingSoundMultiplier);
+    public final ConfigFloat generatorSoundMultiplier = f(1.0f, 0.0f, "generatorSoundMultiplier", Comments.generatorSoundMultiplier);
+
     @Override
     public String getName() {
         return "common";
@@ -46,5 +49,8 @@ public class CClient extends ConfigBase {
         public static final String crtZDepth = "Controls how much the CRT trace falls as it fades. This values shouldn't be too small or it can cause Z fighting";
 
         public static final String wireLOD = "Enable decreased level of detail rendering of far away wires";
+
+        public static final String hummingSoundMultiplier = "Multiplier for all humming ambient sounds";
+        public static final String generatorSoundMultiplier = "Multiplier for generator ambient sound";
     }
 }
