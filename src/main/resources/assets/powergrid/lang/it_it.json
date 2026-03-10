@@ -300,7 +300,6 @@
   "powergrid.gui.circuit_designer.file_dialog": "Finestra di dialogo del file",
   "powergrid.gui.circuit_designer.file_load": "Carica da file",
   "powergrid.gui.circuit_designer.file_save": "Salva file",
-  "powergrid.gui.circuit_designer.file_scroll": "Scorri per Selezionare o Digita un Nome",
   "powergrid.gui.circuit_designer.files": "Schemi Disponibili",
   "powergrid.gui.circuit_designer.invalid_file": "File dello schema invalido o corrotto",
   "powergrid.gui.circuit_designer.layer": "Cambia livello",
