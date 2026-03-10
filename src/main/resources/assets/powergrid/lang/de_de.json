@@ -308,7 +308,6 @@
   "powergrid.gui.circuit_designer.file_dialog": "Dateidialog",
   "powergrid.gui.circuit_designer.file_load": "Aus Datei laden",
   "powergrid.gui.circuit_designer.file_save": "Als Datei speichern",
-  "powergrid.gui.circuit_designer.file_scroll": "Scrollen, um Namen zu wählen oder einzugeben",
   "powergrid.gui.circuit_designer.files": "Verfügbare Schaltpläne",
   "powergrid.gui.circuit_designer.invalid_file": "Ungültige oder beschädigte Schaltplandatei",
   "powergrid.gui.circuit_designer.layer": "Ebene wechseln",
