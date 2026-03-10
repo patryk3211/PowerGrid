@@ -915,9 +915,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(ModdedConfigs.logsEnabled())
                 PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
             var parts = partNodeMap.remove(oldNode);
-            if(oldNode.getNetwork() != null) {
-                inNetwork(oldNode.getNetwork(), newNode);
-            }
             if(parts != null) {
                 for(TransmissionLinePart part : parts) {
                     if(ModdedConfigs.logsEnabled())
@@ -954,6 +951,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
             if(oldNode.getNetwork() != null) {
+                inNetwork(oldNode.getNetwork(), newNode);
                 var unified = oldNode.getNetwork();
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {
