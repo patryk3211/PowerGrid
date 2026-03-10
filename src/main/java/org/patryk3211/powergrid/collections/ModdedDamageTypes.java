@@ -23,4 +23,5 @@ import org.patryk3211.powergrid.PowerGrid;
 public class ModdedDamageTypes {
     public static final ResourceKey<DamageType> OVERLOADED_MACHINE = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("overloaded_machine"));
     public static final ResourceKey<DamageType> ZAP = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("zap"));
+    public static final ResourceKey<DamageType> LIVE_WIRE_CUTTING = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("live_wire_cutting"));
 }

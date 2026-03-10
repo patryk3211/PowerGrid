@@ -31,5 +31,7 @@
   "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
   "death.attack.zap": "%1$s was zapped by %2$s",
-  "death.attack.zap.item": "%1$s was zapped by %2$s using %3$s"
+  "death.attack.zap.item": "%1$s was zapped by %2$s using %3$s",
+
+  "death.attack.live_wire_cutting": "%s wasn't careful when cutting wires"
 }
