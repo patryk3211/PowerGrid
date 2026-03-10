@@ -17,15 +17,23 @@ package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 
-public class InductionRotorBlock extends AbstractRotorBlock implements IBE<InductionRotorBlockEntity> {
+import java.util.List;
+
+public class InductionRotorBlock extends AbstractRotorBlock implements IBE<InductionRotorBlockEntity>, IHaveElectricProperties {
     public InductionRotorBlock(Properties properties) {
         super(properties);
     }
@@ -49,5 +57,15 @@ public class InductionRotorBlock extends AbstractRotorBlock implements IBE<Induc
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
+
+    @Override
+    public boolean alwaysDisplay() {
+        return true;
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Resistance.series(ResistanceValues.get(this), player, tooltip);
     }
 }
