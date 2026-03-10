@@ -17,10 +17,15 @@ package org.patryk3211.powergrid.electricity.deviceconnector;
 
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.createmod.catnip.lang.LangBuilder;
 import net.createmod.catnip.math.VoxelShaper;
+import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -40,20 +45,25 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
+import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.List;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class DeviceConnectorBlock extends DirectionalElectricBlock implements IBE<DeviceConnectorBlockEntity>, IAcceptCord {
+public class DeviceConnectorBlock extends DirectionalElectricBlock implements IBE<DeviceConnectorBlockEntity>, IAcceptCord, IHaveElectricProperties {
     public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;
     public static final BooleanProperty POLARIZED = BooleanProperty.create("polarized");
 
@@ -233,5 +243,25 @@ public class DeviceConnectorBlock extends DirectionalElectricBlock implements IB
             return state.setValue(ROTATION, rotation);
         }
         return super.rotate(state, rot);
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        tooltip.add(Lang.translateDirect("tooltip.device_connector.header"));
+        Resistance.minimum(1000, player, tooltip);
+
+        Lang.translate("tooltip.device_connector.rate").style(ChatFormatting.GRAY).addTo(tooltip);
+        LangBuilder valueText = Lang.builder().add(Component.nullToEmpty(" "));
+        valueText.add(Lang.number(ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF()))
+                .add(Component.nullToEmpty(" "))
+                .add(Lang.translateDirect("tooltip.device_connector.fe_w"));
+        valueText.style(ChatFormatting.DARK_AQUA).addTo(tooltip);
+
+        Lang.translate("tooltip.device_connector.buffer").style(ChatFormatting.GRAY).addTo(tooltip);
+        valueText = Lang.builder().add(Component.nullToEmpty(" "));
+        valueText.add(Lang.number(ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF()))
+                .add(Component.nullToEmpty(" "))
+                .add(Lang.translateDirect("tooltip.device_connector.fe_v"));
+        valueText.style(ChatFormatting.DARK_AQUA).addTo(tooltip);
     }
 }
