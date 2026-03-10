@@ -313,7 +313,6 @@
   "powergrid.gui.circuit_designer.file_dialog": "Диалоговое окно с файлом",
   "powergrid.gui.circuit_designer.file_load": "Загрузка из файла",
   "powergrid.gui.circuit_designer.file_save": "Сохранить как файл",
-  "powergrid.gui.circuit_designer.file_scroll": "Прокрутите страницу, чтобы выбрать или ввести имя",
   "powergrid.gui.circuit_designer.files": "Доступные схемы",
   "powergrid.gui.circuit_designer.invalid_file": "Недопустимый или поврежденный файл схемы",
   "powergrid.gui.circuit_designer.layer": "Переключить слой",
