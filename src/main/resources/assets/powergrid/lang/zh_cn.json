@@ -308,7 +308,6 @@
   "powergrid.gui.circuit_designer.file_dialog": "文件对话框",
   "powergrid.gui.circuit_designer.file_load": "从文件加载",
   "powergrid.gui.circuit_designer.file_save": "保存到文件",
-  "powergrid.gui.circuit_designer.file_scroll": "滚动选择或输入一个名称",
   "powergrid.gui.circuit_designer.files": "可用蓝图",
   "powergrid.gui.circuit_designer.invalid_file": "无效或损坏的蓝图文件",
   "powergrid.gui.circuit_designer.layer": "切换层",
