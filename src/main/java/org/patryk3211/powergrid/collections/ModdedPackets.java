@@ -52,6 +52,7 @@ public enum ModdedPackets {
     MULTIMETER_DATA(MultimeterDataC2SPacket.class, MultimeterDataC2SPacket::new),
     SAVE_CARD(SaveCardC2SPacket.class, SaveCardC2SPacket::new),
     SET_CUSTOM_DISPLAY(SetCustomDisplayC2SPacket.class, SetCustomDisplayC2SPacket::new),
+    NEGOTIATE_SYNC(NegotiateSyncC2SPacket.class, NegotiateSyncC2SPacket::new),
 
     UPDATE_COMPONENT(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new),
     ;

@@ -17,9 +17,13 @@ package org.patryk3211.powergrid;
 
 import com.mojang.blaze3d.platform.Window;
 import dev.architectury.event.events.client.ClientGuiEvent;
+import dev.architectury.event.events.client.ClientPlayerEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -30,6 +34,7 @@ import org.patryk3211.powergrid.equipment.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
+import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
@@ -51,9 +56,14 @@ public class PowerGridClient {
 	}
 
 	public static void registerArchitecturyEvents() {
+		ClientPlayerEvent.CLIENT_PLAYER_JOIN.register(PowerGridClient::clientJoin);
 		ClientTickEvent.CLIENT_LEVEL_PRE.register(GlobalElectricNetworks::preTick);
 		ClientTickEvent.CLIENT_LEVEL_POST.register(TerminalHandler::tick);
 		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
+	}
+
+	private static void clientJoin(LocalPlayer player) {
+		ModdedPackets.sendToServer(new NegotiateSyncC2SPacket(ModdedConfigs.common().syncWithDoubles.get()));
 	}
 
 	private static void clientTick(Minecraft client) {
