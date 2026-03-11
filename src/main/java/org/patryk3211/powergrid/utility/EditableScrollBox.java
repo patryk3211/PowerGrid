@@ -36,9 +36,7 @@ public class EditableScrollBox extends EditBox {
         onChanged();
     }
 
-    @Override
     public void tick() {
-        super.tick();
         soundPlayed = false;
     }
 
@@ -79,8 +77,8 @@ public class EditableScrollBox extends EditBox {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        int step = (int) -Math.signum(delta) * (AllKeys.shiftDown() ? 5 : 1);
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        int step = (int) -Math.signum(scrollY) * (AllKeys.shiftDown() ? 5 : 1);
 
         int priorState = selectedIndex;
         boolean shifted = AllKeys.shiftDown();
