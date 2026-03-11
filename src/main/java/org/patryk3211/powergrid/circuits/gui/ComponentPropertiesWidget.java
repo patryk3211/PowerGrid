@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
+import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.components.properties.IntProperty;
 import org.patryk3211.powergrid.circuits.components.properties.StringProperty;
@@ -86,6 +87,9 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
                     propertyWidgets.add(new TextFieldPropertyWidget<>(textRenderer, x, y, component.getEntry(property)));
                 } else if(property instanceof BooleanProperty bProp) {
                     propertyWidgets.add(new BooleanPropertyWidget(textRenderer, x, y, component.getEntry(bProp)));
+                } else if(property instanceof EnumProperty) {
+                    var clazz = property.defaultValue().getClass();
+                    propertyWidgets.add(new EnumPropertyWidget(textRenderer, x, y, component.getEntry(property), property.defaultValue().getClass()));
                 } else {
                     propertyWidgets.add(new ConstantPropertyWidget<>(textRenderer, x, y, component.getEntry(property)));
                 }
