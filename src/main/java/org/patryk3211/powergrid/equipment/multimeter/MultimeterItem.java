@@ -296,7 +296,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     yield 0;
                 if(!pos.isValid(level) || !neg.isValid(level))
                     yield 0;
-                float posV = 0, negV = 0;
+                double posV = 0, negV = 0;
                 if(data.contains("PosV")) {
                     posV = data.getFloat("PosV");
                 } else {
@@ -313,7 +313,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                         yield 0;
                     negV = negNode.getVoltage();
                 }
-                yield posV - negV;
+                yield (float) (posV - negV);
             }
             case 1 -> {
                 var lineId = data.getInt("EID");

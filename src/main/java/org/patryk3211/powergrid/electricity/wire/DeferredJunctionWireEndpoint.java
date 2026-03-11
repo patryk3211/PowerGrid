@@ -80,6 +80,8 @@ public class DeferredJunctionWireEndpoint implements IWireEndpoint {
             return entityPos.getCenter();
         if(segmentIndex >= wire.segments.size())
             segmentIndex = wire.segments.size() - 1;
+        if(segmentIndex < 0)
+            return entityPos.getCenter();
         var segment = wire.segments.get(segmentIndex);
         return segment.start.relative(segment.direction, segmentPoint / 16f);
     }

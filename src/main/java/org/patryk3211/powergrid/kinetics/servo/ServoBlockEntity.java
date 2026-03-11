@@ -101,8 +101,8 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     public void tick() {
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
-            avgSpeed += calculateSpeed(coil.power(), torque());
-            avgTarget += control.potentialDifference();
+            avgSpeed += (float) calculateSpeed(coil.power(), torque());
+            avgTarget += (float) control.potentialDifference();
         }
         super.tick();
 

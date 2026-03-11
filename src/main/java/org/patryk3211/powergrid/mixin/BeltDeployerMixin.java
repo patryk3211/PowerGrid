@@ -37,7 +37,7 @@ public class BeltDeployerMixin {
     @Inject(method = "activate",
             at = @At(value = "INVOKE",
                     target = "Lcom/simibubi/create/content/kinetics/deployer/DeployerBlockEntity;award(Lcom/simibubi/create/foundation/advancement/CreateAdvancement;)V"))
-    private static void activateMixin(TransportedItemStack transported, TransportedItemStackHandlerBehaviour handler, DeployerBlockEntity blockEntity, Recipe<?> recipe, CallbackInfo ci, @Local List<TransportedItemStack> collect) {
+    private static void powerGrid$activateMixin(TransportedItemStack transported, TransportedItemStackHandlerBehaviour handler, DeployerBlockEntity blockEntity, Recipe<?> recipe, CallbackInfo ci, @Local List<TransportedItemStack> collect) {
         var player = blockEntity.getPlayer();
         var stack = player == null ? ItemStack.EMPTY : player.getMainHandItem();
         if(stack.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)) {

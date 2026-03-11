@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ChunkMapMixin {
     @Inject(method = "updateChunkScheduling(JILnet/minecraft/server/level/ChunkHolder;I)Lnet/minecraft/server/level/ChunkHolder;",
             at = @At("RETURN"))
-    private static void updateTickets(long chunkPos, int newLevel, ChunkHolder holder, int oldLevel, CallbackInfoReturnable<ChunkHolder> cir) {
+    private static void powerGrid$updateTickets(long chunkPos, int newLevel, ChunkHolder holder, int oldLevel, CallbackInfoReturnable<ChunkHolder> cir) {
         if(!ChunkLevel.isLoaded(oldLevel) && !ChunkLevel.isLoaded(newLevel))
             return;
         if(holder == null)

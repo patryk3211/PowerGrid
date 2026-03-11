@@ -68,7 +68,7 @@ public class VFETComponent extends OrientableComponent {
         }
 
         @Override
-        public float power() {
+        public double power() {
             var power = super.power();
             if(Math.abs(potentialDifference()) > 60)
                 power += 20;

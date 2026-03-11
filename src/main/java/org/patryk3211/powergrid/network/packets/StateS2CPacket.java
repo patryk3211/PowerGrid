@@ -36,12 +36,14 @@ import java.util.UUID;
 
 public class StateS2CPacket implements S2CPacket {
     private final List<Key> keys = new ArrayList<>();
+    private final boolean useDoubles;
     private final ByteBuf data;
     private FriendlyByteBuf wrapper;
     private int lengthPosition;
 
     // Typically the server side constructor
-    public StateS2CPacket() {
+    public StateS2CPacket(boolean useDoubles) {
+        this.useDoubles = useDoubles;
         this.data = PooledByteBufAllocator.DEFAULT.buffer();
     }
 
@@ -53,6 +55,7 @@ public class StateS2CPacket implements S2CPacket {
 
     // Typically the client side constructor
     public StateS2CPacket(FriendlyByteBuf buf) {
+        useDoubles = buf.readBoolean();
         int count = buf.readInt();
         for(int i = 0; i < count; ++i) {
             keys.add(Key.read(buf));
@@ -75,6 +78,7 @@ public class StateS2CPacket implements S2CPacket {
 
     @Override
     public void write(FriendlyByteBuf buf) {
+        buf.writeBoolean(useDoubles);
         buf.writeInt(keys.size());
         for(var key : keys) {
             key.serialize(buf);
@@ -96,7 +100,7 @@ public class StateS2CPacket implements S2CPacket {
                 wrapper().skipBytes(entryLength);
             } else {
                 var start = wrapper().readerIndex();
-                element.readFromSync(wrapper());
+                element.readFromSync(wrapper(), useDoubles);
                 var end = wrapper().readerIndex();
                 if(end - start > entryLength) {
                     PowerGrid.LOGGER.warn("Buffer read overrun (Entry of {} bytes, read {} bytes) for {}", entryLength, end - start, element);

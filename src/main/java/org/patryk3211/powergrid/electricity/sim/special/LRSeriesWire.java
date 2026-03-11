@@ -47,8 +47,8 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     @Override
-    public float current() {
-        return (float) (super.current() + Ieq);
+    public double current() {
+        return super.current() + Ieq;
     }
 
     public void setCurrent(float current) {

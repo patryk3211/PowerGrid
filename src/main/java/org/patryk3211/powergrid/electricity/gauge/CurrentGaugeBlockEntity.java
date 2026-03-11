@@ -95,7 +95,7 @@ public class CurrentGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public float getValue() {
-        return wire.current();
+        return (float) wire.current();
     }
 
     @Override

@@ -411,8 +411,24 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         }
     }
 
+    public static void writeToBuffer(FriendlyByteBuf buffer, double value, boolean useDoubles) {
+        if(useDoubles) {
+            buffer.writeDouble(value);
+        } else {
+            buffer.writeFloat((float) value);
+        }
+    }
+
+    public static double readFromBuffer(FriendlyByteBuf buffer, boolean useDoubles) {
+        if(useDoubles) {
+            return buffer.readDouble();
+        } else {
+            return buffer.readFloat();
+        }
+    }
+
     @Override
-    public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineGetter) {
+    public void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineGetter) {
         var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
         if(thermal != null) {
             buffer.writeFloat(thermal.getTemperature());
@@ -421,14 +437,14 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
             if (node.getNetwork() == null) {
                 // Potentially part of a transmission line.
                 var line = lineGetter.apply(node);
-                buffer.writeFloat(line == null ? 0 : line.voltageFor(node));
+                writeToBuffer(buffer, line == null ? 0 : line.voltageFor(node), useDoubles);
             } else {
-                buffer.writeFloat((float) node.getStateValue());
+                writeToBuffer(buffer, node.getStateValue(), useDoubles);
             }
         }
         if(!reducedSync) {
             for (var node : internalNodes) {
-                buffer.writeFloat((float) node.getStateValue());
+                writeToBuffer(buffer, node.getStateValue(), useDoubles);
             }
             for (var wire : internalWires) {
                 if (wire instanceof SwitchedWire switched)
@@ -440,17 +456,17 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     }
 
     @Override
-    public void readFromSync(FriendlyByteBuf buffer) {
+    public void readFromSync(FriendlyByteBuf buffer, boolean useDoubles) {
         var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
         if(thermal != null) {
             thermal.setTemperature(buffer.readFloat());
         }
         for (var node : externalNodes) {
-            node.setStateValue(buffer.readFloat());
+            node.setStateValue(readFromBuffer(buffer, useDoubles));
         }
         if(!reducedSync) {
             for (var node : internalNodes) {
-                node.setStateValue(buffer.readFloat());
+                node.setStateValue(readFromBuffer(buffer, useDoubles));
             }
             for (var wire : internalWires) {
                 if (wire instanceof SwitchedWire switched)

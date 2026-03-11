@@ -101,7 +101,7 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public float getValue() {
-        return series.current() * shunt.potentialDifference();
+        return (float) (series.current() * shunt.potentialDifference());
     }
 
     @Override

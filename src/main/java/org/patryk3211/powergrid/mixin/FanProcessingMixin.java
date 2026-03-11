@@ -37,7 +37,7 @@ public class FanProcessingMixin {
                     shift = At.Shift.AFTER
             )
     )
-    private static void modifyProcessingTime(ItemEntity entity, FanProcessingType type, CallbackInfoReturnable<Integer> cir, @Local(ordinal = 2) CompoundTag processing) {
+    private static void powerGrid$modifyProcessingTime(ItemEntity entity, FanProcessingType type, CallbackInfoReturnable<Integer> cir, @Local(ordinal = 2) CompoundTag processing) {
         if(type instanceof IProcessingTypeModifier modifier) {
             int time = processing.getInt("Time");
             time = modifier.modifyTime(time);

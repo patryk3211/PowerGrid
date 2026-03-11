@@ -19,8 +19,6 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
-import com.simibubi.create.foundation.gui.widget.Label;
-import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.CommonComponents;
@@ -28,14 +26,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.SetCustomDisplayC2SPacket;
+import org.patryk3211.powergrid.utility.EditableScrollBox;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class CustomDisplayScreen extends AbstractSimiContainerScreen<CustomDisplayMenu> {
     protected static final ResourceLocation TEXTURE = PowerGrid.texture("gui/custom_display");
@@ -48,7 +49,7 @@ public class CustomDisplayScreen extends AbstractSimiContainerScreen<CustomDispl
     private final ItemStack stack;
 
     private EditBox equationField;
-    private SelectionScrollInput unitSelector;
+    private EditableScrollBox unitSelector;
 
     public CustomDisplayScreen(CustomDisplayMenu container, Inventory inv, Component title) {
         super(container, inv, title);
@@ -76,20 +77,25 @@ public class CustomDisplayScreen extends AbstractSimiContainerScreen<CustomDispl
         equationField.setEditable(true);
         equationField.setResponder(str -> menu.expression = str);
 
-        var unitLabel = new Label(leftPos + 42, topPos + 53, CommonComponents.EMPTY).withShadow();
-        unitLabel.text = menu.unit.getName();
-
-        unitSelector = new SelectionScrollInput(leftPos + 42, topPos + 53, 90, 9);
-        unitSelector.writingTo(unitLabel);
-        unitSelector.forOptions(Arrays.stream(Unit.values()).map(Unit::getName).toList());
-        unitSelector.setState(menu.unit.ordinal());
-        unitSelector.calling(i -> menu.unit = Unit.values()[i]);
+        unitSelector = new EditableScrollBox(font, leftPos + 42, topPos + 53, 90, 9, CommonComponents.EMPTY, TOOLTIP_UNIT);
+        unitSelector.setOptions(Arrays.stream(Unit.values()).map(Unit::string).toList());
+        if(menu.unit != null) {
+            unitSelector.setState(menu.unit.ordinal());
+        } else {
+            unitSelector.setValue(menu.unitStr);
+        }
+        unitSelector.calling(i -> {
+            menu.unit = Unit.values()[i];
+            menu.unitStr = null;
+        }, str -> {
+            menu.unit = null;
+            menu.unitStr = str;
+        });
 
         addRenderableWidget(prefixBtn);
         addRenderableWidget(saveBtn);
         addRenderableWidget(new TooltipWidget(leftPos + 15, topPos + 26, 18, 18, TOOLTIP_EXPR));
         addRenderableWidget(new TooltipWidget(leftPos + 15, topPos + 48, 18, 18, TOOLTIP_UNIT));
-        addRenderableWidget(unitLabel);
         addRenderableWidget(unitSelector);
         addRenderableWidget(equationField);
     }
@@ -106,7 +112,20 @@ public class CustomDisplayScreen extends AbstractSimiContainerScreen<CustomDispl
         var result = super.keyPressed(pKeyCode, pScanCode, pModifiers);
         if(getFocused() == equationField)
             return true;
+        if(getFocused() == unitSelector)
+            return true;
         return result;
+    }
+
+    @Override
+    protected void renderForeground(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        super.renderForeground(graphics, mouseX, mouseY, partialTicks);
+        if(unitSelector != null && unitSelector.isMouseOver(mouseX, mouseY)) {
+            List<Component> tooltip = unitSelector.getToolTip();
+            if(tooltip.isEmpty())
+                return;
+            graphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
+        }
     }
 
     @Override
@@ -130,6 +149,6 @@ public class CustomDisplayScreen extends AbstractSimiContainerScreen<CustomDispl
     @Override
     public void onClose() {
         super.onClose();
-        ModdedPackets.sendToServer(new SetCustomDisplayC2SPacket(menu.contentHolder, menu.expression, menu.enablePrefixes, menu.unit));
+        ModdedPackets.sendToServer(new SetCustomDisplayC2SPacket(menu.contentHolder, menu.expression, menu.enablePrefixes, menu.unit, menu.unitStr));
     }
 }

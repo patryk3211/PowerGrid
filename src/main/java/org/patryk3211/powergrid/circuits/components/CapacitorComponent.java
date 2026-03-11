@@ -52,7 +52,7 @@ public class CapacitorComponent extends OrientableComponent {
     public boolean tick(@NotNull PlacedComponent placed) {
         if(!placed.wires.isEmpty()) {
             // Make charge persistent
-            placed.set(CHARGE, placed.wires.get(0).potentialDifference());
+            placed.set(CHARGE, (float) placed.wires.get(0).potentialDifference());
         }
         return true;
     }

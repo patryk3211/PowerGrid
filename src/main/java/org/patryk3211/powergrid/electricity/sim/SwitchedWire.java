@@ -64,7 +64,7 @@ public class SwitchedWire extends ElectricWire {
     }
 
     @Override
-    public float current() {
+    public double current() {
         return state ? super.current() : 0;
     }
 

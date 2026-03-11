@@ -31,19 +31,27 @@ public class SetCustomDisplayC2SPacket implements C2SPacket {
     private final String equation;
     private final boolean usePrefixes;
     private final Unit unit;
+    private final String unitStr;
 
-    public SetCustomDisplayC2SPacket(SmartBlockEntity be, String equation, boolean usePrefixes, Unit unit) {
+    public SetCustomDisplayC2SPacket(SmartBlockEntity be, String equation, boolean usePrefixes, Unit unit, String unitStr) {
         this.pos = be.getBlockPos();
         this.equation = equation;
         this.usePrefixes = usePrefixes;
         this.unit = unit;
+        this.unitStr = unitStr;
     }
 
     public SetCustomDisplayC2SPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
         equation = buf.readUtf();
         usePrefixes = buf.readBoolean();
-        unit = buf.readEnum(Unit.class);
+        if(buf.readBoolean()) {
+            unit = buf.readEnum(Unit.class);
+            unitStr = null;
+        } else {
+            unit = null;
+            unitStr = buf.readUtf(8);
+        }
     }
 
     @Override
@@ -51,7 +59,13 @@ public class SetCustomDisplayC2SPacket implements C2SPacket {
         buf.writeBlockPos(pos);
         buf.writeUtf(equation);
         buf.writeBoolean(usePrefixes);
-        buf.writeEnum(unit);
+        if(unit != null) {
+            buf.writeBoolean(true);
+            buf.writeEnum(unit);
+        } else {
+            buf.writeBoolean(false);
+            buf.writeUtf(unitStr, 8);
+        }
     }
 
     @Override
@@ -60,6 +74,6 @@ public class SetCustomDisplayC2SPacket implements C2SPacket {
         var behaviour = BlockEntityBehaviour.get(level, pos, CustomDisplayBehaviour.TYPE);
         if(behaviour == null)
             return;
-        behaviour.set(equation, unit, usePrefixes);
+        behaviour.set(equation, unit, unitStr, usePrefixes);
     }
 }

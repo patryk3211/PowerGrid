@@ -172,7 +172,7 @@ public class StringLightCordEntity extends CordEntity {
     public void tick() {
         if(!level().isClientSide || level() instanceof PonderLevel) {
             if(pWire1 != null && pWire2 != null) {
-                filamentPower = (pWire1.power() + pWire2.power()) / Math.max(itemCount, 1);
+                filamentPower = (float) ((pWire1.power() + pWire2.power()) / Math.max(itemCount, 1));
                 var power = filamentPower - DISSIPATION_FACTOR * filamentTemperature;
                 filamentTemperature += power * 0.05f / THERMAL_MASS;
 

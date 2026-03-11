@@ -23,4 +23,8 @@ import java.util.List;
 
 public interface IHaveElectricProperties {
     void appendProperties(ItemStack stack, Player player, List<Component> tooltip);
+
+    default boolean alwaysDisplay() {
+        return false;
+    }
 }

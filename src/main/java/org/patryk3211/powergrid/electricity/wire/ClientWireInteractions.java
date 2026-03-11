@@ -92,6 +92,9 @@ public class ClientWireInteractions {
     private static Tuple<Integer, Integer> getSegment(BlockWireEntity entity, Vec3 hitPos) {
         var localPos = hitPos.subtract(entity.position());
         var thickness = entity.getWireItem().getWireThickness();
+        // Bounding boxes haven't been baked.
+        if(entity.segments.size() != entity.boundingBoxes.size())
+            return null;
         for(int i = 0; i < entity.boundingBoxes.size(); ++i) {
             var bb = entity.boundingBoxes.get(i);
             // Test with slightly larger bounding boxes.

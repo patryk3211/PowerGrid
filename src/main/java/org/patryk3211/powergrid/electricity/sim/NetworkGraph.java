@@ -105,22 +105,23 @@ public class NetworkGraph {
         }
     }
 
-    public void disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
+    public boolean disconnect(IElectricNode node1, IElectricNode node2, @NotNull AbstractElectricWire wire) {
         if((node1 != null && !nodes.containsKey(node1)) || (node2 != null && !nodes.containsKey(node2)))
-            return;
+            return false;
 
         var object1 = nodes.get(node1);
         var object2 = nodes.get(node2);
 
+        boolean removed = false;
         var conns1 = object1.connections.get(object2);
         if(conns1 != null) {
-            conns1.remove(wire);
+            removed |= conns1.remove(wire);
             if(conns1.isEmpty())
                 object1.connections.remove(object2);
         }
         var conns2 = object2.connections.get(object1);
         if(conns2 != null) {
-            conns2.remove(wire);
+            removed |= conns2.remove(wire);
             if(conns2.isEmpty())
                 object2.connections.remove(object1);
         }
@@ -128,11 +129,12 @@ public class NetworkGraph {
             hooks.removeWire(wire);
 
         if(wire instanceof TransmissionLine line) {
-            object1.connectedLines.remove(line);
-            object2.connectedLines.remove(line);
+            removed |= object1.connectedLines.remove(line);
+            removed |= object2.connectedLines.remove(line);
             if(hooks != null)
                 hooks.lineDisconnected(line);
         }
+        return removed;
     }
 
     public void couple(ICouplingNode coupling) {

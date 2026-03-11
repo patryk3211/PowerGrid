@@ -49,6 +49,7 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
     protected String equationStr = "x";
     protected Expression expr = new Variable();
     protected Unit unit;
+    public String unitStr;
     protected boolean prefixes;
 
     private final Supplier<Float> maxValue;
@@ -123,8 +124,14 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
             prefix = "";
         }
         line += String.format("%.2f %s", evaluatedValue, prefix);
-        return Lang.text(line).add(unit.get())
+        var component = Lang.text(line)
                 .style(color.apply(Math.abs(value)));
+        if(unit != null) {
+            component.add(unit.get());
+        } else if(unitStr != null) {
+            component.add(Component.literal(unitStr));
+        }
+        return component;
     }
 
     @Override
@@ -136,7 +143,12 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
             if(equationStr.isEmpty())
                 equationStr = "x";
             expr = Expression.tryParse(equationStr).orElse(null);
-            unit = Unit.values()[tag.getByte("Unit")];
+            if(tag.contains("Unit")) {
+                unit = Unit.values()[tag.getByte("Unit")];
+            } else if(tag.contains("UnitS")) {
+                unit = null;
+                unitStr = tag.getString("UnitS");
+            }
             prefixes = tag.getBoolean("Prefix");
         }
     }
@@ -145,7 +157,11 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
     public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(nbt, registries, clientPacket);
         var tag = new CompoundTag();
-        tag.putByte("Unit", (byte) unit.ordinal());
+        if(unit == null && unitStr != null) {
+            tag.putString("UnitS", unitStr);
+        } else if(unit != null) {
+            tag.putByte("Unit", (byte) unit.ordinal());
+        }
         tag.putString("Eq", equationStr);
         tag.putBoolean("Prefix", prefixes);
         nbt.put("Fmt", tag);
@@ -161,10 +177,11 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
         return TYPE;
     }
 
-    public void set(String equation, Unit unit, boolean usePrefixes) {
+    public void set(String equation, Unit unit, String unitStr, boolean usePrefixes) {
         this.equationStr = equation;
         this.expr = Expression.tryParse(equationStr).orElse(null);
         this.unit = unit;
+        this.unitStr = unitStr;
         this.prefixes = usePrefixes;
         blockEntity.notifyUpdate();
     }

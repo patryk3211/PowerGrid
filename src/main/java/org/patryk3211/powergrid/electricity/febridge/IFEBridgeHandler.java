@@ -56,7 +56,7 @@ public interface IFEBridgeHandler {
         }
 
         float targetWatts = missingCharge / IFEBridgeHandler.wattToFE();
-        float resistance = V * V / targetWatts;
+        float resistance = (float) (V * V / targetWatts);
         if(resistance > 0) {
             wire.setResistance(Math.min(resistance, 1000));
         } else {

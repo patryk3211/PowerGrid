@@ -128,7 +128,7 @@ public class CarbonPileCoilBlockEntity extends ElectricBlockEntity implements IH
     public void electricalTick() {
         applyPower(coil);
         if(coil.isConverged()) {
-            coilPull = Mth.clamp(Math.abs(coil.current()) * 5, 0, 2) * 0.5f + coilPull * 0.5f;
+            coilPull = (float) (Mth.clamp(Math.abs(coil.current()) * 5, 0, 2) * 0.5 + coilPull * 0.5);
             refreshResistance();
             setUnsaved();
         }

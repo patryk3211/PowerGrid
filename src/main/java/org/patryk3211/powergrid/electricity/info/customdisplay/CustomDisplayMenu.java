@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.utility.Unit;
 public class CustomDisplayMenu extends MenuBase<SmartBlockEntity> {
     protected String expression;
     protected Unit unit;
+    protected String unitStr;
     protected boolean enablePrefixes;
 
     public CustomDisplayMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
@@ -56,6 +57,7 @@ public class CustomDisplayMenu extends MenuBase<SmartBlockEntity> {
             return;
         expression = cdb.equationStr;
         unit = cdb.unit;
+        unitStr = cdb.unitStr;
         enablePrefixes = cdb.prefixes;
     }
 

@@ -44,7 +44,7 @@ public class GeneratorCoupling extends VoltageSourceCoupling {
 
     public void tick(float newField) {
         if(isConverged())
-            rotor.applyTickForce(field * getCurrent());
+            rotor.applyTickForce((float) (field * getCurrent()));
 
         setField(newField);
         setVoltage(field * rotor.getAngularVelocityRadians());

@@ -66,14 +66,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
             return V1;
         var dV = V1 - V0;
-        var adV = Math.abs(dV);
-        var sdV = Math.signum(dV);
-        double dX = network.diodeSmoothAlpha * Math.log1p(adV);
-        return V0 + Math.min(dX, adV) * sdV;
-//        if(V0 < Vcrit && V1 < Vcrit)
-//            return V1;
-//        var dV = V1 - V0;
-//        return V0 + dV * network.diodeSmoothAlpha;
+        return V0 + network.diodeSmoothAlpha * dV;
     }
 
     public void setTemperatureCelsius(double temperatureCelsius) {
@@ -81,8 +74,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     }
 
     @Override
-    public float current() {
-        return (float) (this.Ieq + this.G * potentialDifference());
+    public double current() {
+        return this.Ieq + this.G * potentialDifference();
     }
 
     @Override
@@ -116,10 +109,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
         // Adding a resistor across the diode helps with convergence in certain cases.
         double G_add = 1e-6;
-        if(iteration > 150) {
-            G_add = 1e-2;
-        } else if(iteration > 100) {
-            G_add = 1e-3; //(iteration - 100) * 1e-3;
+        if(iteration > 100) {
+            G_add = Math.min((iteration - 100) * 1e-3, 0.01);
         }
         G += G_add;
         network.updateConductance(this, G - this.G);

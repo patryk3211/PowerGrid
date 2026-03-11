@@ -63,7 +63,7 @@ public class SeriesWire extends AbstractElectricWire implements IOuterHook {
             } else {
                 nextNode = wire.getNode1();
             }
-            var voltage = prevVoltage - I / wire.conductance();
+            double voltage = prevVoltage - I / wire.conductance();
             nextNode.setSavedValue(voltage);
             previousNode = nextNode;
             prevVoltage = voltage;

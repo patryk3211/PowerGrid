@@ -41,6 +41,7 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
+import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
@@ -357,7 +358,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
             for(var entry : syncStates.entrySet()) {
-                var packet = new StateS2CPacket();
+                boolean useDoubles = NegotiateSyncC2SPacket.useDoubles(entry.getKey());
+                var packet = new StateS2CPacket(useDoubles);
                 var wrapper = packet.wrapper();
                 var behaviours = entry.getValue();
                 for(var pair : behaviours.entrySet()) {
@@ -366,7 +368,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     if(pair.getKey() == null)
                         continue;
                     packet.begin(pair.getKey());
-                    pair.getKey().writeToSync(wrapper, this::findLineMiddle);
+                    pair.getKey().writeToSync(wrapper, useDoubles, this::findLineMiddle);
                     packet.end();
                 }
                 ModdedPackets.sendToClient(packet, entry.getKey());
@@ -395,17 +397,23 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public ElectricalNetwork newNetwork() {
-        var backend = ModdedConfigs.server().electricity.solver.solverBackend.get();
+        var cSolver = ModdedConfigs.server().electricity.solver;
+        var backend = cSolver.solverBackend.get();
         if(!backend.isSupported())
             backend = CSolver.SolverBackend.JAVA;
         var network = new GraphedElectricalNetwork(globalGraph, true, backend::create);
         network.maxIterations = hooks -> hooks
-                ? ModdedConfigs.server().electricity.solver.solverComplexMaxIterations.get()
-                : ModdedConfigs.server().electricity.solver.solverSimpleMaxIterations.get();
-        var rA = ModdedConfigs.server().electricity.solver.solverAbsolutePrecision.get();
-        var rR = ModdedConfigs.server().electricity.solver.solverRelativePrecision.get();
-        var rM = ModdedConfigs.server().electricity.solver.solverAbsoluteMinimumPrecision.get();
+                ? cSolver.solverComplexMaxIterations.get()
+                : cSolver.solverSimpleMaxIterations.get();
+        var rA = cSolver.solverAbsolutePrecision.get();
+        var rR = cSolver.solverRelativePrecision.get();
+        var rM = cSolver.solverAbsoluteMinimumPrecision.get();
         network.setPrecision(rA, rR, rM);
+        network.bjtSmoothAlpha = cSolver.bjtLimAlpha.getF();
+        network.diodeSmoothAlpha = cSolver.diodeLimAlpha.getF();
+        network.triodeLimCathode = cSolver.triodeLimCathode.getF();
+        network.triodeLimAnode = cSolver.triodeLimAnode.getF();
+        network.triodeLimGrid = cSolver.triodeLimGrid.getF();
         subnetworks.add(network);
         return network;
     }
@@ -767,8 +775,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         Collection<TransmissionLine> lines;
         while(true) {
             lines = globalGraph.getConnectedLines(ownedNode);
-            if(lines.size() != 1)
+            if(lines.size() != 1 || globalGraph.connectionCount(ownedNode) != 1) {
+                // We CANNOT delete the node, as it still is part of a bigger circuit.
                 break;
+            }
             // No need to keep this line (or the node).
             var line = lines.iterator().next();
             var removeNode = ownedNode;
@@ -905,9 +915,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(ModdedConfigs.logsEnabled())
                 PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
             var parts = partNodeMap.remove(oldNode);
-            if(oldNode.getNetwork() != null) {
-                inNetwork(oldNode.getNetwork(), newNode);
-            }
             if(parts != null) {
                 for(TransmissionLinePart part : parts) {
                     if(ModdedConfigs.logsEnabled())
@@ -944,6 +951,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
             if(oldNode.getNetwork() != null) {
+                inNetwork(oldNode.getNetwork(), newNode);
                 var unified = oldNode.getNetwork();
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {

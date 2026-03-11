@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 public class DummyElectricalNetwork extends GraphedElectricalNetwork {
-    private double[] nodeValues;
     private int warmUpTicks;
     private boolean converged;
 
@@ -85,23 +84,9 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
 
     @Override
     protected void prepareMatrices(int multiTicks) {
-        // Client is not simulated so don't bother with allocating any other matrices.
-        // The network is basically just there to hold the state vector and make all other code,
+        // Client is not simulated so don't bother with allocating anything.
+        // The network is basically just there to hold the provide method definitions and make all other code,
         // that expects a network to work.
-        var shouldReallocate = dirty || nodeValues.length != nodes.size();
-        if(shouldReallocate) {
-            var count = nodes.size();
-            var NewState = new double[count];
-            // Use previous state matrix to accelerate warm up
-            if(nodeValues != null) {
-                for(int i = 0; i < count; ++i) {
-                    NewState[i] = getValue(nodes.get(i));
-                }
-            }
-
-            nodeValues = NewState;
-            dirty = false;
-        }
     }
 
     @Override
@@ -117,11 +102,6 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
 
     @Override
     public void singleTick() {
-//        if(warmUpTicks > 0) {
-//            converged = false;
-//            warmUpTicks = 0;
-//        } else {
-            converged = true;
-//        }
+        converged = true;
     }
 }

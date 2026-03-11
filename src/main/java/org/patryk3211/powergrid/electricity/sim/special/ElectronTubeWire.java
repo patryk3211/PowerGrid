@@ -38,8 +38,8 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private double prevAnode;
 
     private double Ia;
-    private float Itube;
-    private float Ptube;
+    private double Itube;
+    private double Ptube;
 
     private final ConductanceWire gridCathode;
     private final GMStamp gmStamp;
@@ -74,9 +74,9 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         var dVc = vCathode - prevCathode;
         var dVg = vGrid - prevGrid;
         var dVa = vAnode - prevAnode;
-        vCathode = prevCathode + Math.log1p(Math.abs(dVc)) * network.triodeLimCathode * Math.signum(dVc);
-        vGrid = prevGrid + Math.log1p(Math.abs(dVg)) * network.triodeLimGrid * Math.signum(dVg);
-        vAnode = prevAnode + Math.log1p(Math.abs(dVa)) * network.triodeLimAnode * Math.signum(dVa);
+        vCathode = prevCathode + Math.min(0.5f, Math.abs(dVc)) * network.triodeLimCathode * Math.signum(dVc);
+        vGrid = prevGrid + Math.min(0.5f, Math.abs(dVg)) * network.triodeLimGrid * Math.signum(dVg);
+        vAnode = prevAnode + Math.min(0.5f, Math.abs(dVa)) * network.triodeLimAnode * Math.signum(dVa);
         prevAnode = vAnode;
         prevCathode = vCathode;
         prevGrid = vGrid;
@@ -102,15 +102,15 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
             var x = ids / saturationCurrent;
             ids = ids / Math.sqrt(Math.sqrt(1 + x * x));
 
-            Gds = q;
-            gm = q / gain;
+            Gds = q / gain;
+            gm = q;
         }
 
         Ia = -ids + Gds * vAnode + gm * vGrid;
 
         var iGrid = GRID_CONDUCTANCE * vGrid;
-        Itube = (float) (ids + iGrid);
-        Ptube = (float) (ids * vAnode + iGrid * vGrid);
+        Itube = ids + iGrid;
+        Ptube = ids * vAnode + iGrid * vGrid;
 
         // Anode-Cathode "wire"
         setConductance(Gds);
@@ -124,12 +124,12 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     }
 
     @Override
-    public float current() {
+    public double current() {
         return Itube;
     }
 
     @Override
-    public float power() {
+    public double power() {
         return Ptube;
     }
 

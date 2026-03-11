@@ -29,7 +29,7 @@ public abstract class BlueprintOverlayMixin {
                     target = "Lnet/minecraft/client/Minecraft;getInstance()Lnet/minecraft/client/Minecraft;",
                     shift = At.Shift.AFTER),
             cancellable = true)
-    private static void preventDeactivation(CallbackInfo ci) {
+    private static void powerGrid$preventDeactivation(CallbackInfo ci) {
         if(PlacementOverlay.thisActivation) {
             PlacementOverlay.thisActivation = false;
             ci.cancel();

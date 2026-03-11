@@ -38,7 +38,7 @@ public class BasinRecipeMixin {
                     target = "Lcom/simibubi/create/content/processing/basin/BasinBlockEntity;acceptOutputs(Ljava/util/List;Ljava/util/List;Lnet/fabricmc/fabric/api/transfer/v1/transaction/TransactionContext;)Z"
             )
     )
-    private static void applyTransferNbtFabric(BasinBlockEntity basin, Recipe<?> recipe, boolean test, CallbackInfoReturnable<Boolean> cir, @Local NonNullList<ItemStack> consumedItems, @Local(ordinal = 0) List<ItemStack> outputs) {
+    private static void powerGrid$applyTransferNbtFabric(BasinBlockEntity basin, Recipe<?> recipe, boolean test, CallbackInfoReturnable<Boolean> cir, @Local NonNullList<ItemStack> consumedItems, @Local(ordinal = 0) List<ItemStack> outputs) {
         RecipeNbtTransfer.transfer(consumedItems, outputs);
     }
 

@@ -58,7 +58,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         return (float) (BlockStressValues.getCapacity(getBlockState().getBlock()) * ModdedConfigs.server().kinetics.torqueForStress.getF());
     }
 
-    public static float calculateSpeed(float power, float torque) {
+    public static double calculateSpeed(double power, double torque) {
         return power / torque * CONVERSION_CONSTANT;
     }
 
@@ -127,7 +127,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         assert level != null;
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
-            avgSpeed += calculateSpeed(coil.power(), torque()) * Math.signum(coil.current());
+            avgSpeed += (float) (calculateSpeed(coil.power(), torque()) * Math.signum(coil.current()));
         }
         super.tick();
     }

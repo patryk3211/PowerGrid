@@ -56,17 +56,17 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
     }
 
     public float getVolume() {
-        var I = Math.abs(wire.current());
-        if(I < 0.25f)
+        double I = Math.abs(wire.current());
+        if(I < 0.25)
             return 0;
-        return I * 2.0f;
+        return (float) (I * 2.0);
     }
 
     public float getPitch() {
-        var I = Math.abs(wire.current());
-        if(I < 0.5f)
+        double I = Math.abs(wire.current());
+        if(I < 0.5)
             return 0.75f;
-        return Math.min(0.5f + I * 0.5f, 1.25f);
+        return (float) Math.min(0.5 + I * 0.5, 1.25);
     }
 
     @Override

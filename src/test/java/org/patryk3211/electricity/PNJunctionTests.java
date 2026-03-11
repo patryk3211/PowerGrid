@@ -80,8 +80,12 @@ public class PNJunctionTests extends TestHelper {
 
             System.out.printf("V1 current: %f\n", V1.getCurrent());
             System.out.printf("V2 current: %f\n", V2.getCurrent());
-            System.out.printf("GND current %f\n\n", GND.getCurrent());
+            System.out.printf("GND current %f\n", GND.getCurrent());
             Assertions.assertTrue(Net.network.isConverged(), "NPN failed to converge");
+
+            var sourcePower = V1.getCurrent() * V1.getVoltage() + V2.getCurrent() * V2.getVoltage();
+            System.out.printf("Sourced power: %f\n", sourcePower);
+            System.out.printf("Transistor power: %f\n\n", T.power());
         }
 
         Assertions.assertEquals(V2.getCurrent(), V1.getCurrent() / 10, 1e-6, "Collector current is invalid with respect to base");
