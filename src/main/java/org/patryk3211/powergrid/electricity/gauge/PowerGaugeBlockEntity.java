@@ -102,7 +102,7 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
         } else if (maxValue == 200) {
           shunt_resistance = resistance("shunt_range_200w");
         } else if (maxValue == 2000) {
-          shunt_resistance = resistance("shunt_range_2kv");
+          shunt_resistance = resistance("shunt_range_2kw");
         } else if (maxValue == 20000) {
           shunt_resistance = resistance("shunt_range_20kw");
         } else {
