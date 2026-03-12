@@ -43,7 +43,7 @@ public interface IMultiScreenHandlerFactory extends MenuProvider {
         MenuRegistry.openExtendedMenu(player, new ExtendedMenuProvider() {
             @Override
             public void saveExtraData(FriendlyByteBuf buf) {
-                var regBuf = new RegistryFriendlyByteBuf(buf, player.registryAccess());
+                var regBuf = new RegistryFriendlyByteBuf(buf.unwrap(), player.registryAccess());
                 extraDataWriter.accept(regBuf);
             }
 
@@ -55,6 +55,11 @@ public interface IMultiScreenHandlerFactory extends MenuProvider {
             @Override
             public @Nullable AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player player) {
                 return factory.createMenu(syncId, playerInventory, player, menuIndex);
+            }
+
+            // Override on NeoForge
+            public boolean shouldTriggerClientSideContainerClosingOnOpen() {
+                return false;
             }
         });
     }
