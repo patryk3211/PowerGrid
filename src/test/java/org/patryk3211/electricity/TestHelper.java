@@ -33,17 +33,17 @@ public abstract class TestHelper {
         public VoltageSourceCoupling coupling;
 
         @Override
-        public void setVoltage(float voltage) {
+        public void setVoltage(double voltage) {
             coupling.setVoltage(voltage);
         }
 
         @Override
-        public float getVoltage() {
+        public double getVoltage() {
             return coupling.getVoltage();
         }
 
         @Override
-        public float getCurrent() {
+        public double getCurrent() {
             return -coupling.getCurrent();
         }
     }
