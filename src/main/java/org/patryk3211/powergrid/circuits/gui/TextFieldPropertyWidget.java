@@ -37,7 +37,7 @@ public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends Prop
 
         this.changeMadeCallback = changeMadeCallback;
 
-        widget = new EditBox(textRenderer, x + 8, y + 6, 46, 18, Component.empty());
+        widget = new EditBox(textRenderer, x + 8, y + 6, 46, 12, Component.empty());
         widget.setValue(property.stringValue());
         widget.setTextColor(-1);
         widget.setTextColorUneditable(-1);
