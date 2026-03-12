@@ -82,9 +82,9 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        float series_resistance = resistance("series");
+        float seriesResistance = resistance("series");
         builder.setTerminalCount(3);
-        series = builder.connect(series_resistance, builder.terminalNode(0), builder.terminalNode(1));
+        series = builder.connect(seriesResistance, builder.terminalNode(0), builder.terminalNode(1));
         shunt = builder.connect(resistance("shunt_range_20w"), builder.terminalNode(0), builder.terminalNode(2));
     }
 
@@ -96,19 +96,19 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
     private void setMaxValue(float value) {
       maxValue = value;
       if (shunt != null) {
-        float shunt_resistance;
+        float shuntResistance;
         if (maxValue == 20) {
-          shunt_resistance = resistance("shunt_range_20w");
+          shuntResistance = resistance("shunt_range_20w");
         } else if (maxValue == 200) {
-          shunt_resistance = resistance("shunt_range_200w");
+          shuntResistance = resistance("shunt_range_200w");
         } else if (maxValue == 2000) {
-          shunt_resistance = resistance("shunt_range_2kw");
+          shuntResistance = resistance("shunt_range_2kw");
         } else if (maxValue == 20000) {
-          shunt_resistance = resistance("shunt_range_20kw");
+          shuntResistance = resistance("shunt_range_20kw");
         } else {
           throw new IllegalArgumentException("Maximum value must match valid range");
         }
-        shunt.setResistance(shunt_resistance);
+        shunt.setResistance(shuntResistance);
       }
     }
 
