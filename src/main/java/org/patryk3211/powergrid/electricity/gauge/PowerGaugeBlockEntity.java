@@ -46,7 +46,7 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
         gaugeValue = new GaugeValueBehaviour(Component.translatable("powergrid.devices.gauge.power"),
                 Unit.POWER.get().component(), MAX_VALUES, this, new BoxTransform());
         gaugeValue.withCallback(i -> {
-            maxValue = MAX_VALUES[i];
+            setMaxValue(MAX_VALUES[i]);
             sendData();
         });
         behaviours.add(gaugeValue);
@@ -55,7 +55,7 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        maxValue = MAX_VALUES[gaugeValue.getValue()];
+        setMaxValue(MAX_VALUES[gaugeValue.getValue()]);
     }
 
     @Override
@@ -82,15 +82,34 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        float resistance = resistance();
+        float series_resistance = resistance("series");
         builder.setTerminalCount(3);
-        series = builder.connect(resistance, builder.terminalNode(0), builder.terminalNode(1));
-        shunt = builder.connect(20e3f, builder.terminalNode(0), builder.terminalNode(2));
+        series = builder.connect(series_resistance, builder.terminalNode(0), builder.terminalNode(1));
+        shunt = builder.connect(resistance("shunt_range_20w"), builder.terminalNode(0), builder.terminalNode(2));
     }
 
     @Override
     public float getMaxValue() {
         return maxValue;
+    }
+
+    private void setMaxValue(float value) {
+      maxValue = value;
+      if (shunt != null) {
+        float shunt_resistance;
+        if (maxValue == 20) {
+          shunt_resistance = resistance("shunt_range_20w");
+        } else if (maxValue == 200) {
+          shunt_resistance = resistance("shunt_range_200w");
+        } else if (maxValue == 2000) {
+          shunt_resistance = resistance("shunt_range_2kv");
+        } else if (maxValue == 20000) {
+          shunt_resistance = resistance("shunt_range_20kw");
+        } else {
+          throw new IllegalArgumentException("Maximum value must match valid range");
+        }
+        shunt.setResistance(shunt_resistance);
+      }
     }
 
     @Override
