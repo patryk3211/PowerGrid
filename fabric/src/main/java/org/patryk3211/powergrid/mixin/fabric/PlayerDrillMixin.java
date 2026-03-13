@@ -1,6 +1,5 @@
-package org.patryk3211.powergrid.mixin.forge;
+package org.patryk3211.powergrid.mixin.fabric;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
@@ -108,8 +107,8 @@ public abstract class PlayerDrillMixin extends LivingEntity implements PlayerDri
             powerGrid$drillSpeed = maxLevel;
     }
 
-    @Inject(method = "getDigSpeed", at = @At("RETURN"), cancellable = true, remap = false)
-    private void powerGrid$adjustDrillDigSpeed(BlockState arg, BlockPos pos, CallbackInfoReturnable<Float> cir) {
+    @Inject(method = "getDestroySpeed", at = @At("RETURN"), cancellable = true, remap = false)
+    private void powerGrid$adjustDrillDigSpeed(BlockState arg, CallbackInfoReturnable<Float> cir) {
         var stack = getItemBySlot(EquipmentSlot.MAINHAND);
         if(!(stack.getItem() instanceof DrillItem) || !DrillItem.canMine(arg))
             return;

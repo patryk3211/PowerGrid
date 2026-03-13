@@ -25,6 +25,7 @@ public class CServer extends ConfigBase {
 
     public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
     public final CRecipes recipes = nested(0, CRecipes::new, Comments.recipes);
+    public final CEquipment equipment = nested(0, CEquipment::new, Comments.equipment);
     public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
 
     @Override
@@ -56,6 +57,7 @@ public class CServer extends ConfigBase {
         public static final String electricity = "All things related to purely electrical devices";
         public static final String kinetics = "Things related to kinetic and electrokinetic devices";
         public static final String recipes = "Recipe configuration values";
+        public static final String equipment = "Equipment configuration values";
         public static final String version = "Config version check, values below 0 will disable config version checker";
     }
 }

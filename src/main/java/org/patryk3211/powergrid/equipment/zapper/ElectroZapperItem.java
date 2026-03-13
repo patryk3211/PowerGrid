@@ -89,7 +89,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
     }
 
     public static int energyPerUse() {
-        return ModdedConfigs.server().electricity.electroZapperEnergyPerShot.get();
+        return ModdedConfigs.server().equipment.electroZapperEnergyPerShot.get();
     }
 
     @Environment(EnvType.CLIENT)

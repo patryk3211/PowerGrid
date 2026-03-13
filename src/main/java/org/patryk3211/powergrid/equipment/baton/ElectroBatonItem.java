@@ -53,7 +53,7 @@ public class ElectroBatonItem extends SwordItem {
     }
 
     public static int energyPerUse() {
-        return ModdedConfigs.server().electricity.electroBatonEnergyPerUse.get();
+        return ModdedConfigs.server().equipment.electroBatonEnergyPerUse.get();
     }
 
     @Override

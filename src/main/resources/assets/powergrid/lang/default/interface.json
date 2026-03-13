@@ -115,6 +115,8 @@
 
   "powergrid.tooltip.string_light_cord_pattern": "Pattern: ",
 
+  "powergrid.tooltip.boosted": "Boosted",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",

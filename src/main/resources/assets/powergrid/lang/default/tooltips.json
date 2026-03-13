@@ -51,5 +51,7 @@
   "item.powergrid.wire_cutter.tooltip.condition1": "When R-Clicked on a wire",
   "item.powergrid.wire_cutter.tooltip.behaviour1": "Removes a hanging wire, or selected segment of a block wire",
   "item.powergrid.wire_cutter.tooltip.condition2": "When Shift R-Clicked on a block wire",
-  "item.powergrid.wire_cutter.tooltip.behaviour2": "Removes the whole block wire"
+  "item.powergrid.wire_cutter.tooltip.behaviour2": "Removes the whole block wire",
+
+  "item.powergrid.integrated_circuit.tooltip.summary": "The integrated circuit is back! By deploying a circuit over a _compatible_ piece of equipment, you can _boost_ it, improving its _performance_ for a _limited_ number of uses. Beware, once boosted, the item will consume _twice_ as much power."
 }

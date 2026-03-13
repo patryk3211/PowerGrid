@@ -32,8 +32,8 @@ public class BatteryUtils {
     }
 
     public static int getMaxCharge(int level) {
-        return ModdedConfigs.server().electricity.portableBatteryBaseCapacity.get() +
-                ModdedConfigs.server().electricity.portableBatteryEnchantCapacity.get() * level;
+        return ModdedConfigs.server().equipment.portableBatteryBaseCapacity.get() +
+                ModdedConfigs.server().equipment.portableBatteryEnchantCapacity.get() * level;
     }
 
     public static int getCurrentCharge(ItemStack stack) {

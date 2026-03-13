@@ -149,6 +149,7 @@
   "item.powergrid.incomplete_unetched_circuit": "Incomplete Unetched Circuit",
   "item.powergrid.insulated_copper_wire": "Insulated Copper Wire",
   "item.powergrid.integrated_circuit": "Integrated Circuit",
+  "item.powergrid.integrated_circuit.tooltip.summary": "The integrated circuit is back! By deploying a circuit over a _compatible_ piece of equipment, you can _boost_ it, improving its _performance_ for a _limited_ number of uses. Beware, once boosted, the item will consume _twice_ as much power.",
   "item.powergrid.iron_wire": "Iron Wire",
   "item.powergrid.light_bulb": "Light Bulb",
   "item.powergrid.lv_light_bulb": "LV Light Bulb",

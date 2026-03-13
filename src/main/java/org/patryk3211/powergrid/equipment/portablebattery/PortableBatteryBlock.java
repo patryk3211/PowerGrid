@@ -82,7 +82,7 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     }
 
     public int capacity() {
-        return ModdedConfigs.server().electricity.portableBatteryBaseCapacity.get();
+        return ModdedConfigs.server().equipment.portableBatteryBaseCapacity.get();
     }
 
     @Override

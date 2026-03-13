@@ -1,0 +1,19 @@
+{
+  "type": "powergrid:boost_recipe",
+  "ingredients": [
+    {
+      "item": "powergrid:portable_drill"
+    },
+    {
+      "item": "powergrid:integrated_circuit"
+    }
+  ],
+  "results": [
+    {
+      "item": "powergrid:portable_drill",
+      "nbt": {
+        "Damage": 0
+      }
+    }
+  ]
+}
