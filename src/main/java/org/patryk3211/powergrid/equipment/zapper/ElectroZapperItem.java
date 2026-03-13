@@ -40,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -100,12 +101,15 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
+        boolean boosted = ItemBoostUtils.isBoosted(stack);
         if(world.isClientSide) {
             clientUse(hand);
+            if(boosted)
+                ItemBoostUtils.damageBoost(stack, () -> user.broadcastBreakEvent(hand));
             return InteractionResultHolder.success(stack);
         }
 
-        var power = BatteryUtils.drawEnergy(user, energyPerUse());
+        float power = BatteryUtils.drawEnergy(user, energyPerUse());
         var barrelPos = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == InteractionHand.MAIN_HAND,
                 new Vec3(.25f, -0.15f, 1.0f));
         var correction = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == InteractionHand.MAIN_HAND,
@@ -116,7 +120,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
                 .normalize()
                 .scale(4);
 
-        var projectile = ZapProjectileEntity.create(world, barrelPos, motion, Math.max(power, 0.5f));
+        var projectile = ZapProjectileEntity.create(world, barrelPos, motion, Math.max(power, 0.5f) * (boosted ? 2 : 1));
         projectile.setOwner(user);
         world.addFreshEntity(projectile);
 
@@ -126,6 +130,8 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
         if(power < 0.5f)
             stack.hurtAndBreak(1, user, $ -> {});
+        if(boosted)
+            ItemBoostUtils.damageBoost(stack, () -> user.broadcastBreakEvent(hand));
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }
 

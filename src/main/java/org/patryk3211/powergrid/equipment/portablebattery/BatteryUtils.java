@@ -24,6 +24,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 public class BatteryUtils {
@@ -122,6 +123,8 @@ public class BatteryUtils {
                     var battery = getBattery(player);
                     if(battery == null || tryDrawEnergy(battery, energyPerUse) < minPower)
                         return Mth.hsvToRgb(Math.max(0.0F, 1.0F - (float) stack.getDamageValue() / stack.getMaxDamage()) / 3.0F, 1.0F, 1.0F);
+                    if(ItemBoostUtils.isBoosted(stack))
+                        return 0x80B0EF;
                     return battery.getBarColor();
                 }).orElse(0);
     }
