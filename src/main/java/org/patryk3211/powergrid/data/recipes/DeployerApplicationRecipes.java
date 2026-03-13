@@ -41,7 +41,9 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
             .output(ModdedItems.STRING_LIGHT_CORD)
     ),
 
-    BOOST_DRILL = boost(ModdedItems.PORTABLE_DRILL);
+    BOOST_DRILL = boost(ModdedItems.PORTABLE_DRILL),
+    BOOST_ZAPPER = boost(ModdedItems.ELECTROZAPPER),
+    BOOST_BATON = boost(ModdedItems.ELECTROBATON);
 
     public DeployerApplicationRecipes(PackOutput generator) {
         super(generator, PowerGrid.MOD_ID);

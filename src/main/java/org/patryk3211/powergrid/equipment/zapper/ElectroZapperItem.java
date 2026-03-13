@@ -101,11 +101,9 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
-        boolean boosted = ItemBoostUtils.isBoosted(stack);
+        boolean boosted = ItemBoostUtils.useBoost(stack, user);
         if(world.isClientSide) {
             clientUse(hand);
-            if(boosted)
-                ItemBoostUtils.damageBoost(stack, () -> user.broadcastBreakEvent(hand));
             return InteractionResultHolder.success(stack);
         }
 
@@ -130,8 +128,6 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
         if(power < 0.5f)
             stack.hurtAndBreak(1, user, $ -> {});
-        if(boosted)
-            ItemBoostUtils.damageBoost(stack, () -> user.broadcastBreakEvent(hand));
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }
 

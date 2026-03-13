@@ -2,6 +2,8 @@ package org.patryk3211.powergrid.equipment;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -41,5 +43,12 @@ public class ItemBoostUtils {
             return;
         }
         tag.putInt("Boosted", dmg);
+    }
+
+    public static boolean useBoost(ItemStack stack, LivingEntity entity) {
+        if(!isBoosted(stack))
+            return false;
+        ItemBoostUtils.damageBoost(stack, () -> entity.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+        return true;
     }
 }

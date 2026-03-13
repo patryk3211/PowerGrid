@@ -63,7 +63,7 @@ public class DrillItem extends DiggerItem {
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity miningEntity) {
         if(miningEntity instanceof Player player) {
-            boolean boosted = ItemBoostUtils.isBoosted(stack);
+            boolean boosted = ItemBoostUtils.useBoost(stack, player);
             float power = BatteryUtils.drawEnergy(player, energyPerUse() * (boosted ? 2 : 1));
             if(miningEntity instanceof PlayerDrillExtensions ext) {
                 ext.powerGrid$blockDrilled(power);
@@ -71,8 +71,6 @@ public class DrillItem extends DiggerItem {
             if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power < 0.3f) {
                 stack.hurtAndBreak(1, miningEntity, (livingEntity) -> livingEntity.broadcastBreakEvent(EquipmentSlot.MAINHAND));
             }
-            if(boosted)
-                ItemBoostUtils.damageBoost(stack, () -> player.broadcastBreakEvent(EquipmentSlot.MAINHAND));
             return true;
         }
         return super.mineBlock(stack, level, state, pos, miningEntity);
