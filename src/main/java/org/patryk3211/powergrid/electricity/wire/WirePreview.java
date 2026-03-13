@@ -191,6 +191,7 @@ public class WirePreview {
     }
 
     public static Component distanceOverlay(Player player) {
+        //TODO: add a warning if the original connector is missing
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return null;
@@ -208,10 +209,13 @@ public class WirePreview {
             return null;
         var hitPoint = target.getLocation();
         var distance = hitPoint.distanceTo(currentPos);
-        return Lang.translate("gui.endpoint_distance")
+        var msg = Lang.translate("gui.endpoint_distance")
                 .add(Lang.numberConstant(distance).style(distance < wire.getMaximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
-                .style(ChatFormatting.WHITE)
-                .component();
+                .style(ChatFormatting.WHITE);
+        if(!endpoint.isValid(player.level())) msg.add(Lang.translate(" message.no_original_connector").style(ChatFormatting.YELLOW).style(ChatFormatting.ITALIC));
+
+        return msg.component();
+
     }
 
     public static void notifyOfBlock(BlockPos pos) {

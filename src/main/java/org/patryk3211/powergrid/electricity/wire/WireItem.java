@@ -155,7 +155,11 @@ public class WireItem extends Item implements IWire {
                     if(!((ServerLevel) world).tryAddFreshEntityWithPassengers(entity)) {
                         PowerGrid.LOGGER.error("Failed to spawn new block wire entity.");
                         if(player != null)
-                            player.displayClientMessage(Lang.translate("message.connection_failed").style(ChatFormatting.RED).component(), true);
+                            if(!endpoint1.isValid(player.level())){
+                                player.displayClientMessage(Lang.translate("message.no_original_connector").style(ChatFormatting.RED).component(), true);
+                            }else {
+                                player.displayClientMessage(Lang.translate("message.connection_failed").style(ChatFormatting.RED).component(), true);
+                            }
                         return InteractionResultHolder.fail(null);
                     }
                     PlayerUtilities.removeItems(player, stack, newItems);
