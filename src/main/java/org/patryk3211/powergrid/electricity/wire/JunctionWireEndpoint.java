@@ -287,7 +287,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         }
 
         @Override
-        public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
+        public void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
             double V = 0;
             if (node.getNetwork() == null) {
                 var line = lineLookup.apply(node);
@@ -296,12 +296,12 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             } else {
                 V = node.getVoltage();
             }
-            writeToBuffer(buffer, V);
+            writeToBuffer(buffer, V, useDoubles);
         }
 
         @Override
-        public void readFromSync(FriendlyByteBuf buffer) {
-            node.setStateValue(readFromBuffer(buffer));
+        public void readFromSync(FriendlyByteBuf buffer, boolean useDoubles) {
+            node.setStateValue(readFromBuffer(buffer, useDoubles));
         }
 
         @Override

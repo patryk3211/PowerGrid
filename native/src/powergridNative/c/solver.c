@@ -185,12 +185,14 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
     double norm = 0;
     char skipped = FALSE;
     for(i = 0; i < maxIters; ++i) {
-        // Run inner hooks
-        int cmdCount = 0;
-        if(i < maxIters - 10)
-            cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
-        if(cmdCount != 0)
-            solver_process_jacobian_buffer(solver, cmdCount);
+        if(!skipped) {
+            // Run inner hooks
+            int cmdCount = 0;
+            if(i < maxIters - 10)
+                cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
+            if(cmdCount != 0)
+                solver_process_jacobian_buffer(solver, cmdCount);
+        }
 
         // Compute residual vector
         memcpy(solver->m_b, solver->m_rhs, solver->m_size * sizeof(double));

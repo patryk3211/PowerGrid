@@ -59,6 +59,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat mediumCoreAl = f(10.0f, 0, "mediumCoreAl", Comments.mediumCoreAl);
     public final ConfigFloat mediumCoreK = f(0.99999f, 0, 1, "mediumCoreK", Comments.mediumCoreK);
 
+
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);

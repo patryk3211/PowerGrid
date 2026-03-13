@@ -78,11 +78,15 @@ public class ElectricProperties implements TooltipModifier {
             }
         }
 
-        var shift = EnvExecutor.getInEnv(Env.CLIENT, () -> Screen::hasShiftDown).orElse(false);
-        if(!hasSummary) {
-            context.getToolTip().add(header(shift));
-        }
-        if(shift) {
+        if(!properties.alwaysDisplay()) {
+            var shift = EnvExecutor.getInEnv(Env.CLIENT, () -> Screen::hasShiftDown).orElse(false);
+            if (!hasSummary) {
+                context.getToolTip().add(header(shift));
+            }
+            if (shift) {
+                properties.appendProperties(context.getItemStack(), context.getEntity(), context.getToolTip());
+            }
+        } else {
             properties.appendProperties(context.getItemStack(), context.getEntity(), context.getToolTip());
         }
     }

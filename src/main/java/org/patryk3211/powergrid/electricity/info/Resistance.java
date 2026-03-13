@@ -60,6 +60,10 @@ public class Resistance {
         resistance(Lang.translate("tooltip.resistance.series").style(ChatFormatting.GRAY), value, player, tooltip);
     }
 
+    public static void minimum(float value, Player player, List<Component> tooltip) {
+        resistance(Lang.translate("tooltip.resistance.minimum").style(ChatFormatting.GRAY), value, player, tooltip);
+    }
+
     public static void switchResistance(float value, Player player, List<Component> tooltip) {
         resistance(Lang.translate("tooltip.resistance.switch").style(ChatFormatting.GRAY), value, player, tooltip);
     }

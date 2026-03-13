@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
+import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
 import java.util.*;
@@ -356,7 +357,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
             for(var entry : syncStates.entrySet()) {
-                var packet = new StateS2CPacket();
+                boolean useDoubles = NegotiateSyncC2SPacket.useDoubles(entry.getKey());
+                var packet = new StateS2CPacket(useDoubles);
                 var wrapper = packet.wrapper();
                 var behaviours = entry.getValue();
                 for(var pair : behaviours.entrySet()) {
@@ -365,7 +367,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     if(pair.getKey() == null)
                         continue;
                     packet.begin(pair.getKey());
-                    pair.getKey().writeToSync(wrapper, this::findLineMiddle);
+                    pair.getKey().writeToSync(wrapper, useDoubles, this::findLineMiddle);
                     packet.end();
                 }
                 ModdedPackets.sendToClient(packet, entry.getKey());
@@ -913,9 +915,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             if(ModdedConfigs.logsEnabled())
                 PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
             var parts = partNodeMap.remove(oldNode);
-            if(oldNode.getNetwork() != null) {
-                inNetwork(oldNode.getNetwork(), newNode);
-            }
             if(parts != null) {
                 for(TransmissionLinePart part : parts) {
                     if(ModdedConfigs.logsEnabled())
@@ -952,6 +951,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 }
             }
             if(oldNode.getNetwork() != null) {
+                inNetwork(oldNode.getNetwork(), newNode);
                 var unified = oldNode.getNetwork();
                 var lines = List.copyOf(globalGraph.getConnectedLines(oldNode));
                 for (var line : lines) {
