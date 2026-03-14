@@ -31,11 +31,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.IComponentGoggleInformation;
+import org.patryk3211.powergrid.circuits.components.IInteractableComponent;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
@@ -44,10 +47,7 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.base.IElectric;
-import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.FloatingNode;
@@ -75,8 +75,53 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Environment(EnvType.CLIENT)
     public CircuitBoardModelQuads quads;
 
+    private VoxelShape shapeCache = null;
+    private int angleXCache = 0;
+    private int angleYCache = 0;
+    private int terminalCountCache = 0;
+    private int interactableCountCache = 0;
+
     public CircuitBoardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    /**
+     * Get the shape of this circuit board. Shapes will be fetched from cache if the board orientation and components
+     * have not changed since the last getShape call.
+     * @param state a BlockState containing the orientation of this circuit board
+     * @param baseShape the base VoxelShape to build upon
+     * @return the VoxelShape of the board in the provided orientation
+     */
+    public VoxelShape getShape(BlockState state, VoxelShape baseShape) {
+        int x = CircuitBoardBlock.getAngleX(state);
+        int y = CircuitBoardBlock.getAngleY(state);
+        VoxelShape newShape = baseShape;
+
+        int terminalCount = terminalCount();
+        int interactableCount = getComponents(IInteractableComponent.class).size();
+
+        // Recompute shape if shaped components or orientation have changed
+        if (shapeCache == null || angleXCache != x || angleYCache != y ||
+                terminalCountCache != terminalCount || interactableCountCache != interactableCount) {
+            for (int i = 0; i < terminalCount; i++) {
+                var terminal = terminal(state, i);
+                newShape = Shapes.or(((TerminalBoundingBox) terminal).getShape(), newShape);
+            }
+            for (var placed : getComponents(IInteractableComponent.class)) {
+                var dynamic = (IInteractableComponent) placed.component;
+                newShape = Shapes.or(CircuitBoardBlock.rotate(dynamic.getShape(placed), x, y), newShape);
+            }
+            shapeCache = newShape;
+            angleXCache = x;
+            angleYCache = y;
+            terminalCountCache = terminalCount;
+            interactableCountCache = interactableCount;
+        }
+        else {
+            newShape = shapeCache;
+        }
+
+        return newShape;
     }
 
     @Override
