@@ -26,6 +26,7 @@ import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.decoration.encasing.EncasedCTBehaviour;
 import com.simibubi.create.content.decoration.encasing.EncasingRegistry;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
+import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
@@ -193,6 +194,18 @@ public class ModdedBlocks {
     public static final BlockEntry<BasinHeaterBlock> BASIN_HEATER = REGISTRATE.block("basin_heater", BasinHeaterBlock::new)
             .blockstate(basinHeater("block/basin_heater"))
             .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.lightLevel(state -> {
+                BlazeBurnerBlock.HeatLevel heat = state.getValue(BasinHeaterBlock.HEAT_LEVEL);
+
+                if (heat == BlazeBurnerBlock.HeatLevel.NONE)
+                    return 0;
+                if (heat == BlazeBurnerBlock.HeatLevel.KINDLED)
+                    return 12;
+                if (heat == BlazeBurnerBlock.HeatLevel.SEETHING)
+                    return 15;
+
+                return 0;
+            }))
             .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(10))
