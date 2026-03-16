@@ -29,40 +29,11 @@ public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
     private final T defaultValue;
 
     public EnumProperty(String namespace, String name, Class<T> clazz) {
-        super(namespace, name);
-        this.clazz = clazz;
-        this.values = clazz.getEnumConstants();
-        this.allValues = values;
-        this.ordinalMap = new int[allValues.length];
-
-        for (int i = 0; i < allValues.length; i++) {
-            for (int j = 0; j < values.length; j++) {
-                if (values[j].ordinal() == allValues[i].ordinal()) {
-                    ordinalMap[i] = j;
-                    break;
-                }
-            }
-        }
-
-        defaultValue = values[0];
+        this(namespace, name, clazz, clazz.getEnumConstants());
     }
 
     public EnumProperty(String namespace, String name, Class<T> clazz, T[] values) {
-        super(namespace, name);
-        this.clazz = clazz;
-        this.values = values;
-        this.allValues = clazz.getEnumConstants();
-        this.ordinalMap = new int[allValues.length];
-
-        for (int i = 0; i < allValues.length; i++) {
-            for (int j = 0; j < values.length; j++) {
-                if (values[j].ordinal() == allValues[i].ordinal()) {
-                    ordinalMap[i] = j;
-                    break;
-                }
-            }
-        }
-        defaultValue = values[0];
+        this(namespace, name, clazz, values, values[0]);
     }
 
     public EnumProperty(String namespace, String name, Class<T> clazz, T[] values, T defaultValue) {
@@ -116,5 +87,10 @@ public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
     @Override
     public T defaultValue() {
         return defaultValue;
+    }
+
+    @Override
+    public T[] allValues() {
+        return values;
     }
 }

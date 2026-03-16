@@ -58,6 +58,7 @@ public abstract class ComponentProperty<T> {
     public abstract Tag write(T value);
 
     public abstract T defaultValue();
+    public abstract T[] allValues();
 
     @Override
     public String toString() {

@@ -52,4 +52,9 @@ public class BooleanProperty extends ComponentProperty<Boolean> {
     public Boolean defaultValue() {
         return false;
     }
+
+    @Override
+    public Boolean[] allValues() {
+        return null;
+    }
 }

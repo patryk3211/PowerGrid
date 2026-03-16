@@ -56,6 +56,11 @@ public class CalculatedProperty<T> extends ComponentProperty<T> {
         return null;
     }
 
+    @Override
+    public T[] allValues() {
+        return null;
+    }
+
     public T calculate(PlacedComponent state) {
         return calculate.apply(state);
     }

@@ -15,11 +15,13 @@
  */
 package org.patryk3211.powergrid.circuits.gui;
 
+import com.simibubi.create.foundation.gui.widget.Label;
 import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,15 +36,30 @@ import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PR
 public class EnumPropertyWidget<T extends Enum, P extends PropertyEntry<T>> extends PropertyWidget<T, P> {
     private final Class<T> clazz;
     private final SelectionScrollInput widget;
+    private final Label widgetLabel;
     private ArrayList<Component> componentValues;
     private ArrayList<T> values;
 
     public EnumPropertyWidget(Font textRenderer, int x, int y, P property, Class<T> clazz) {
         super(textRenderer, x, y, property);
         widget = new SelectionScrollInput(x + 4, y + 1, 52, 18);
+        widgetLabel = new Label(x + 5, y + 2, CommonComponents.EMPTY);
+        widgetLabel.text = CommonComponents.EMPTY;
+
         componentValues = new ArrayList<Component>();
-        this.values = new ArrayList<T>(Arrays.asList(clazz.getEnumConstants()));
+        this.values = new ArrayList<T>(Arrays.asList(property.property.allValues()));
         this.clazz = clazz;
+
+        widget.writingTo(widgetLabel);
+
+        ArrayList<Component> options = new ArrayList<Component>(); 
+        for (int i = 0; i < values.size(); i++) {
+            options.add(Component.literal(property.property.toString(values.get(i))));
+        }
+
+        widget.forOptions(options);
+        componentValues = options;
+ 
     }
 
     @Override
@@ -67,16 +84,8 @@ public class EnumPropertyWidget<T extends Enum, P extends PropertyEntry<T>> exte
 
     @Override
     public void tick() {
-        ArrayList<Component> options = new ArrayList<Component>(); 
-        for (int i = 0; i < values.size(); i++) {
-            options.add(Component.literal(property.property.toString(values.get(i))));
-        }
-        if (!componentValues.equals(options)) {
-            widget.forOptions(options);
-            componentValues = options;
-        }
         widget.tick();
-        property.setValue(values.get(widget.getState()).toString());
+        property.setValueRaw(values.get(widget.getState()));
     }
 
     @Override

@@ -66,4 +66,9 @@ public class StringProperty extends ComponentProperty<String> {
     public String defaultValue() {
         return defaultValue;
     }
+
+    @Override
+    public String[] allValues() {
+        return null;
+    }
 }
