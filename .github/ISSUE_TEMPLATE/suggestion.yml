@@ -1,0 +1,21 @@
+name: Suggestion
+description: "Suggest a feature or a change to the mod"
+labels: [ "request" ]
+body:
+  - type: textarea
+    attributes:
+      label: Description
+      description: >
+        Describe your suggestion, add details that can help when implementing it,
+        convince us why it is a good suggestion that we should consider adding.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Please check before submiting your suggestion.
+      options:
+        - label: I have verified that my suggestion has not been suggested before, both in open **and closed** issues.
+          required: true
+  - type: markdown
+    attributes:
+      value: "Thank you for making your suggestion, we will review it as soon as possible!"
