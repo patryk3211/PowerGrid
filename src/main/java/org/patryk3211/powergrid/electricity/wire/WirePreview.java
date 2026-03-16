@@ -212,7 +212,12 @@ public class WirePreview {
         var msg = Lang.translate("gui.endpoint_distance")
                 .add(Lang.numberConstant(distance).style(distance < wire.getMaximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
                 .style(ChatFormatting.WHITE);
-        if(!endpoint.isValid(player.level())) msg.add(Lang.translate(" message.no_original_connector").style(ChatFormatting.YELLOW).style(ChatFormatting.ITALIC));
+        if(!endpoint.isValid(player.level())) {
+            msg.add(Component.literal(" "))
+                    .add(Lang.translate("message.no_original_connector")
+                    .style(ChatFormatting.YELLOW)
+                    .style(ChatFormatting.ITALIC));
+        }
 
         return msg.component();
 
