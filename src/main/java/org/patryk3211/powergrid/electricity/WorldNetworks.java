@@ -67,6 +67,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private boolean runningDiscovery = false;
     private int syncTicks = 0;
 
+    private CompoundTag nbt;
+
     private record SyncState(int lod) { }
     private final Map<ServerPlayer, Map<ISynchronizedElement, SyncState>> syncStates = new HashMap<>();
 
@@ -78,7 +80,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public WorldNetworks(Level world, CompoundTag nbt) {
         this(world);
-        readNbt(nbt);
+        this.nbt = nbt;
+    }
+
+    void completeLoad() {
+        if(nbt != null) {
+            readNbt(nbt);
+            nbt = null;
+        }
     }
 
     @Override
