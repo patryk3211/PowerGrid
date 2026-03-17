@@ -644,8 +644,6 @@
   "powergrid.tooltip.crt.grid": "그리드 전압:",
   "powergrid.tooltip.crt.heater": "가열기 전압:",
   "powergrid.tooltip.current.max": "최대 전류:",
-  "powergrid.tooltip.device_connector.buffer": "버퍼 크기:",
-  "powergrid.tooltip.device_connector.fe_v": "FE/V",
   "powergrid.tooltip.device_connector.fe_w": "FE/W",
   "powergrid.tooltip.device_connector.header": "FE로 변환할 경우:",
   "powergrid.tooltip.device_connector.rate": "전환율:",
